@@ -26,8 +26,8 @@ exports.register_user = (req, res, next) => {
             });
         })
         .then(doc => {
-            return res.status(200).json({
-                message: 'user ' + doc.email + 'successfully created'
+            return res.status(201).json({
+                message: 'user successfully created'
             });
         })
         .catch(err => {
@@ -39,7 +39,7 @@ exports.register_user = (req, res, next) => {
 }
 
 exports.login_user = (req, res, next) => {
-    model.User.findOne({ where: { email: req.body.email }, attributes: {exclude: ['password']} })
+    model.User.findOne({ where: { email: req.body.email } })
         .then(user => {
             if (!user) {
                 return res.status(404).json({

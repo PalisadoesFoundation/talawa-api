@@ -41,7 +41,7 @@ exports.create_activity = (req, res, next) => {
 }
 
 exports.fetch_activities = (req, res, next) => {
-    model.Activity.findAll()
+    model.Activity.findAll({include: [{model: model.UserActivity}]})
         .then(activities => {
             const response = {
                 count: activities.length,
@@ -51,7 +51,8 @@ exports.fetch_activities = (req, res, next) => {
                         title: activity.dataValues.title,
                         description: activity.dataValues.description,
                         date: activity.dataValues.date.toDateString(),
-                        time: activity.dataValues.date.toLocaleTimeString()
+                        time: activity.dataValues.date.toLocaleTimeString(),
+                        users: activity.dataValues.UserActivities.length
                     }
                 })
             }
