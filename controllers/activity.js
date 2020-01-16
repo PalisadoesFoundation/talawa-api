@@ -1,60 +1,56 @@
 const model = require('../models');
 
-exports.create_activity = (req, res, next) => {
-    model.Activity.findOne({ where: { title: req.body.title } })
-        .then(activity => {
-            if (activity) {
-                throw 'User already exists';
+exports.create_activity = async (req, res, next) => {
+    try {
+        const activityCount = await model.Activity.count({ where: { title: req.body.title } });
+        const userCount = await model.User.count({ where: { id: req.body.admin } });
+
+        if (activityCount > 0)
+            throw 'Activity already exists';
+        if (userCount == 0)
+            throw 'User doesnt exist';
+
+        const activity = (await model.Activity.create({
+            title: req.body.title,
+            description: req.body.description,
+            date: req.body.date
+        })).dataValues;
+        console.log(activity)
+        await model.UserActivity.create({
+            userId: req.body.admin,
+            activityId: activity.id,
+            isAdmin: true
+        });
+
+        req.body.users.map(async user => {
+            let count = await model.User.count({ where: { id: user } });
+            if (count > 0) {
+                await model.UserActivity.create({
+                    userId: user,
+                    activityId: activity.id,
+                    isAdmin: false
+                }).catch(err => {throw err});
             }
-        })
-        .then(() => {
-            return model.User.findOne({ where: { id: req.body.userId } });
-        })
-        .then(user => {
-            if (!user)
-                throw 'User doesnt exist';
-        })
-        .then(() => {
-            return model.Activity.create({
-                title: req.body.title,
-                description: req.body.description,
-                date: req.body.date
-            });
-        })
-        .then(activity => {
-            model.UserActivity.create({
-                userId: req.body.admin,
-                activityId: activity.id,
-                isAdmin: true
-            });
-            users.map(user => {
-                if(model.User.findOne({where: {id: user}})){
-                    model.UserActivity.create({
-                        userId: user,
-                        activityId: activity.id,
-                        isAdmin: false
-                    })
-                }
-            })
-        })
-        .then(() => {
-            return res.status(201).json({
-                message: 'Activity ' + req.body.title + ' successfully created'
-            });
-        })
-        .catch(err => {
-            return res.status(409).json({
-                message: err
-            });
-        })
+        });
+
+        return res.status(201).json({
+            message: 'Activity "' + req.body.title + '" was successfully created'
+        });
+        
+    } catch (err) {
+        return res.status(409).json({
+            message: err
+        });
+    }
 }
 
 exports.fetch_activities = (req, res, next) => {
-    model.Activity.findAll({include: [{model: model.UserActivity}]})
+    model.Activity.findAll({ include: [{ model: model.UserActivity }] })
         .then(activities => {
             const response = {
                 count: activities.length,
                 activities: activities.map(activity => {
+                    console.log(activity)
                     return {
                         id: activity.dataValues.id,
                         title: activity.dataValues.title,
