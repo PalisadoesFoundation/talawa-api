@@ -1,4 +1,5 @@
 const model = require('../models');
+const Op = require('Sequelize').Op;
 
 exports.create_responsibility = (req, res, next) => {
     model.Responsibility.findOne({ where: { title: req.body.title } })
@@ -132,7 +133,7 @@ exports.update_responsibility = (req, res, next) => {
 }
 
 exports.delete_responsibility = (req, res, next) => {
-    model.Responsibility.destroy({ where: { activityId: req.params.respId } })
+    model.Responsibility.destroy({ where: { id: req.params.respId } })
         .then(doc => {
             return res.status(200).json(doc);
         })
@@ -142,7 +143,7 @@ exports.delete_responsibility = (req, res, next) => {
 }
 
 exports.fetch_responsibility_by_activity = (req, res, next) => {
-    model.Responsibility.findAll({ where: { activityId: req.params.activityId } })
+    model.Responsibility.findAll({ where: { id: req.params.activityId } })
         .then(resps => {
             const response = {
                 count: resps.length,
@@ -164,3 +165,4 @@ exports.fetch_responsibility_by_activity = (req, res, next) => {
             console.log(err);
         });
 }
+

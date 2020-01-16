@@ -22,11 +22,20 @@ exports.create_activity = (req, res, next) => {
             });
         })
         .then(activity => {
-            return model.UserActivity.create({
-                userId: req.body.userId,
+            model.UserActivity.create({
+                userId: req.body.admin,
                 activityId: activity.id,
                 isAdmin: true
             });
+            users.map(user => {
+                if(model.User.findOne({where: {id: user}})){
+                    model.UserActivity.create({
+                        userId: user,
+                        activityId: activity.id,
+                        isAdmin: false
+                    })
+                }
+            })
         })
         .then(() => {
             return res.status(201).json({

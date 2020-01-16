@@ -8,6 +8,8 @@ router.post('/login', UserController.login_user);
 
 router.get('/', UserController.fetchUsers);
 
+router.get('/filter/:userId', UserController.fetchUsersFilter);
+
 router.get('/:userId', UserController.fetchUser);
 
 router.patch('/:userId', UserController.updateUser);
