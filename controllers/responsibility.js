@@ -1,47 +1,58 @@
 const model = require('../models');
 const Op = require('Sequelize').Op;
 
-exports.create_responsibility = (req, res, next) => {
-    model.Responsibility.findOne({ where: { title: req.body.title } })
-        .then(resp => {
-            if (resp)
-                throw 'Responsibility already exists';
-        })
-        .then(() => {
-            return model.Activity.findOne({ where: { id: req.body.activityId } });
-        })
-        .then(activity => {
-            if (!activity)
-                throw 'Activity doesnt exists';
-        })
-        .then(() => {
-            return model.User.findOne({ where: { id: req.body.userId } });
-        })
-        .then(user => {
-            if (!user)
-                throw 'User doesnt exists';
-        })
-        .then(() => {
-            return model.Responsibility.create({
-                title: req.body.title,
-                description: req.body.description,
-                date: req.body.date,
-                priority: 1,
-                isCompleted: false,
-                activityId: req.body.activityId,
-                userId: req.body.userId
+exports.create_responsibility = async (req, res, next) => {
+    try {
+        const responsibilityCount = await model.Responsibility.count({
+            where: {
+                title: req.body.title
+            },
+            include: {
+                model: model.Activity,
+                where: {
+                    id: req.body.activityId
+                }
+            }
+        });
+        const activityCount = await model.Activity.count({
+            where: {
+                id: req.body.activityId
+            }
+        });
+        if (req.body.userId != null) {
+            const userCount = await model.User.count({
+                where: {
+                    id: req.body.userId
+                }
             });
-        })
-        .then(() => {
-            return res.status(201).json({
-                message: 'Responsibility ' + req.body.title + ' successfully created'
-            });
-        })
-        .catch(err => {
-            return res.status(409).json({
-                message: err
-            });
-        })
+            if (userCount == 0)
+                throw 'User does not exist';
+        }
+        if (activityCount == 0)
+            throw 'Activity does not exist'
+        if (responsibilityCount > 0)
+            throw 'Responsibility already exists';
+
+        await model.Responsibility.create({
+            title: req.body.title,
+            description: req.body.description,
+            date: req.body.date,
+            priority: 1,
+            isCompleted: false,
+            activityId: req.body.activityId,
+            userId: req.body.userId
+        });
+
+        return res.status(201).json({
+            message: 'Responsibility ' + req.body.title + ' successfully created'
+        });
+
+    } catch (err) {
+        return res.status(409).json({
+            message: err
+        });
+
+    }
 }
 
 exports.fetch_responsibilities = (req, res, next) => {
@@ -71,22 +82,21 @@ exports.fetch_responsibilities = (req, res, next) => {
 
 exports.fetch_responsibility = (req, res, next) => {
     model.Responsibility.findOne({
-        where: {
-            id: req.params.respId
-        },
-        include: [
-            {
-                model: model.Activity
+            where: {
+                id: req.params.respId
             },
-            {
-                model: model.User,
-                attributes: {
-                    exclude: ['password']
+            include: [{
+                    model: model.Activity
+                },
+                {
+                    model: model.User,
+                    attributes: {
+                        exclude: ['password']
+                    }
                 }
-            }
-        ]
+            ]
 
-    })
+        })
         .then(resp => {
             const response = {
                 id: resp.dataValues.id,
@@ -120,7 +130,11 @@ exports.fetch_responsibility = (req, res, next) => {
 
 exports.update_responsibility = (req, res, next) => {
 
-    model.Responsibility.findOne({ where: { id: req.params.respId } })
+    model.Responsibility.findOne({
+            where: {
+                id: req.params.respId
+            }
+        })
         .then(resp => {
             return resp.update(req.body.updates);
         })
@@ -133,7 +147,11 @@ exports.update_responsibility = (req, res, next) => {
 }
 
 exports.delete_responsibility = (req, res, next) => {
-    model.Responsibility.destroy({ where: { id: req.params.respId } })
+    model.Responsibility.destroy({
+            where: {
+                id: req.params.respId
+            }
+        })
         .then(doc => {
             return res.status(200).json(doc);
         })
@@ -143,7 +161,11 @@ exports.delete_responsibility = (req, res, next) => {
 }
 
 exports.fetch_responsibility_by_activity = (req, res, next) => {
-    model.Responsibility.findAll({ where: { id: req.params.activityId } })
+    model.Responsibility.findAll({
+            where: {
+                id: req.params.activityId
+            }
+        })
         .then(resps => {
             const response = {
                 count: resps.length,
@@ -165,4 +187,3 @@ exports.fetch_responsibility_by_activity = (req, res, next) => {
             console.log(err);
         });
 }
-
