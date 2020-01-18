@@ -117,6 +117,36 @@ exports.fetchUsersFilter = async (req, res, next) => {
     }
 }
 
+exports.fetchUsersByActivity = async (req, res, next) => {
+    try{
+        const users = await model.User.findAll({ 
+            include: {
+                model: model.UserActivity, 
+                where: {
+                    activityId: req.params.activityId
+                }
+            }, 
+            attributes: {
+                exclude: ['password']
+            }
+        });
+        const response = {
+            count: users.length,
+            users: users.map(user => {
+                return {
+                    id: user.dataValues.id,
+                    firstName: user.dataValues.firstName,
+                    lastName: user.dataValues.lastName,
+                    email: user.dataValues.email
+                }
+            })
+        }
+        res.status(200).json(response);
+    }catch(err){
+        console.log(err);
+    }
+}
+
 exports.fetchUser = async (req, res, next) => {
     try{
         const user = await model.User.findOne({ where: { id: req.params.userId }, attributes: {exclude: ['password']} });

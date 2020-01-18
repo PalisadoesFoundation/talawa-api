@@ -163,7 +163,7 @@ exports.delete_responsibility = (req, res, next) => {
 exports.fetch_responsibility_by_activity = (req, res, next) => {
     model.Responsibility.findAll({
             where: {
-                id: req.params.activityId
+                activityId: req.params.activityId
             }
         })
         .then(resps => {

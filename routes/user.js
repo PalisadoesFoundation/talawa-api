@@ -10,6 +10,8 @@ router.get('/', UserController.fetchUsers);
 
 router.get('/filter/:userId', UserController.fetchUsersFilter);
 
+router.get('/getUsersByActivity/:activityId', UserController.fetchUsersByActivity);
+
 router.get('/:userId', UserController.fetchUser);
 
 router.patch('/:userId', UserController.updateUser);
