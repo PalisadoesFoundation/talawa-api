@@ -14,5 +14,7 @@ router.patch('/:activityId', ActivityController.update_activity);
 router.delete('/:activityId', ActivityController.delete_activity);
 
 //Specific Procedures
-router.get('/fetchUsersByActivity/:activityId', ActivityController.fetch_user_by_activity);
+router.get('/fetchUsersByActivity/:activityId', ActivityController.fetch_users_by_activity);
+/*Optional*/
+// router.get('/fetchUserByActivity/:activityId/:userId', ActivityController.fetch_user_by_activity);
 module.exports = router;

@@ -2,6 +2,7 @@ const model = require('../models');
 
 exports.create_activity = async (req, res, next) => {
     try {
+        console.log(req.body)
         const activityCount = await model.Activity.count({ where: { title: req.body.title } });
         const userCount = await model.User.count({ where: { id: req.body.admin } });
 
@@ -152,7 +153,7 @@ exports.delete_activity = (req, res, next) => {
         })
 }
 
-exports.fetch_user_by_activity = (req, res, next) => {
+exports.fetch_users_by_activity = (req, res, next) => {
     model.Activity.findOne({
         where: {
             id: req.params.activityId
@@ -181,3 +182,48 @@ exports.fetch_user_by_activity = (req, res, next) => {
             console.log(err);
         })
 }
+
+
+exports.delete_activity = (req, res, next) => {
+    model.UserActivity.destroy({ where: { activityId: req.params.activityId } })
+        .then(userActivity => {
+            return model.Activity.destroy({ where: { id: req.params.activityId } });
+        })
+        .then(doc => {
+            return res.status(200).json(doc);
+        })
+        .catch(err => {
+            console.log(err);
+        })
+}
+// *Optional*
+// exports.fetch_user_by_activity = (req, res, next) => {
+//     model.Activity.findOne({
+//         where: {
+//             id: req.params.activityId
+//         },
+//         include: [
+//             {
+//                 model: model.UserActivity,
+//                 include: [{
+//                     model: model.User,
+//                     where: {id: req.params.userId},
+//                     attributes: {
+//                         exclude: ['password']
+//                     }
+//                 }]
+//             }
+//         ]
+//     })
+//         .then(doc => {
+//             const response = {
+//                 users: doc.UserActivities.map(userActivity => {
+//                     return userActivity.User
+//                 })
+//             }
+//             res.status(200).json(response);
+//         })
+//         .catch(err => {
+//             console.log(err);
+//         })
+// }

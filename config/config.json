@@ -2,7 +2,7 @@
   "development": {
     "username": "postgres",
     "password": "secret",
-    "database": "sequelize-tut",
+    "database": "talawa-db",
     "host": "127.0.0.1",
     "dialect": "postgres"
   },

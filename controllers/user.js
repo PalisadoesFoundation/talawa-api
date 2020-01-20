@@ -39,41 +39,36 @@ exports.register_user = (req, res, next) => {
         });
 }
 
-exports.login_user = (req, res, next) => {
-    model.User.findOne({ where: { email: req.body.email } })
-        .then(user => {
-            if (!user) {
-                return res.status(404).json({
-                    message: 'Auth failed'
-                })
-
-            }
-            else {
-                bcrypt.compare(req.body.password, user.dataValues.password, (err, result) => {
-                    if (err) {
-                        return res.status(404).json({
-                            message: 'Auth failed'
-                        });
-                    }
-                    if (result) {
-                        var token = jwt.sign({
-                            email: user.dataValues.email,
-                            userId: user.dataValues._id
-                        }, process.env.JWT_KEY,
-                            {
-                                expiresIn: "1h"
-                            })
-                        return res.status(200).json({
-                            message: 'Auth successful',
-                            token: token
-                        })
-                    }
+exports.login_user = async (req, res, next) => {
+    try{
+        const user = await model.User.findOne({ where: { email: req.body.email }});
+        if(!user)
+            throw 'User does not exist';
+        else{
+            const result = await bcrypt.compare(req.body.password, user.dataValues.password);
+            if (result) {
+                var token = jwt.sign({
+                    id: user.dataValues.id,
+                    email: user.dataValues.email,
+                    firstName: user.dataValues.firstName,
+                    lastName: user.dataValues.lastName,
+                }, process.env.JWT_KEY,
+                    {
+                        expiresIn: "1h"
+                    })
+                return res.status(200).json({
+                    token: token
                 })
             }
+            else{
+                throw 'Invalid email/password'
+            }
+        }
+    }catch(err){
+        return res.status(409).json({
+            message: err
         })
-        .catch(err => {
-            console.log(err);
-        });
+    }
 }
 
 exports.fetchUsers = async (req, res, next) => {
