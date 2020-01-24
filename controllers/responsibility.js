@@ -177,7 +177,9 @@ exports.fetch_responsibility_by_activity = (req, res, next) => {
                         date: resp.dataValues.date.toDateString(),
                         time: resp.dataValues.date.toLocaleTimeString(),
                         priority: resp.dataValues.priority,
-                        isCompleted: resp.dataValues.isCompleted
+                        isCompleted: resp.dataValues.isCompleted,
+                        activityId: resp.dataValues.activityId,
+                        userId: resp.dataValues.userId
                     }
                 })
             }

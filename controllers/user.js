@@ -146,7 +146,7 @@ exports.fetchUser = async (req, res, next) => {
     try{
         const user = await model.User.findOne({ where: { id: req.params.userId }, attributes: {exclude: ['password']} });
         if(user)
-            return res.status(200).json(doc);
+            return res.status(200).json(user);
         else
             throw 'User does not exist'
     }catch(err){

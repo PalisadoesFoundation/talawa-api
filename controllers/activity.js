@@ -30,14 +30,14 @@ exports.create_activity = async (req, res, next) => {
                     userId: user,
                     activityId: activity.id,
                     isAdmin: false
-                }).catch(err => {throw err});
+                }).catch(err => { throw err });
             }
         });
 
         return res.status(201).json({
             message: 'Activity "' + req.body.title + '" was successfully created'
         });
-        
+
     } catch (err) {
         return res.status(409).json({
             message: err
@@ -51,7 +51,6 @@ exports.fetch_activities = (req, res, next) => {
             const response = {
                 count: activities.length,
                 activities: activities.map(activity => {
-                    console.log(activity)
                     return {
                         id: activity.dataValues.id,
                         title: activity.dataValues.title,
@@ -195,6 +194,35 @@ exports.delete_activity = (req, res, next) => {
         .catch(err => {
             console.log(err);
         })
+}
+
+exports.fetch_activities_by_user = async (req, res, next) => {
+    try {
+        let activities = await model.Activity.findAll({
+            include: {
+                model: model.UserActivity,
+                where: {
+                    userId: req.params.userId
+                }
+            }
+        });
+        const response = {
+            count: activities.length,
+            activities: activities.map(activity => {
+                return {
+                    id: activity.dataValues.id,
+                    title: activity.dataValues.title,
+                    description: activity.dataValues.description,
+                    date: activity.dataValues.date.toDateString(),
+                    time: activity.dataValues.date.toLocaleTimeString(),
+                    users: activity.dataValues.UserActivities.length
+                }
+            })
+        }
+        res.status(200).json(response);
+    } catch (err) {
+        res.status(404).json(err);
+    }
 }
 // *Optional*
 // exports.fetch_user_by_activity = (req, res, next) => {
