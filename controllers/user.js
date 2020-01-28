@@ -177,3 +177,19 @@ exports.deleteUser = (req, res, next) => {
             console.log(err);
         })
 }
+
+exports.validateEmail = async (req, res,next) => {
+    try{
+        var userCount = await model.User.count({where: {email: req.body.email}});
+        console.log(userCount)
+        res.status(200).json({
+            count: userCount
+        });
+    }catch(e){
+        console.log(e)
+        res.status(500).json({
+            message: e
+        });
+    }
+    
+}

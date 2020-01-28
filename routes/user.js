@@ -18,4 +18,5 @@ router.patch('/:userId', UserController.updateUser);
 
 router.delete('/:userId', UserController.deleteUser);
 
+router.post('/validateEmail', UserController.validateEmail);
 module.exports = router;
