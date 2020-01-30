@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const ActivityController = require('../controllers/activity');
+const checkAuth = require('../middleware/check-auth');
 
 //CRUD Operations
-router.post('/', ActivityController.create_activity);
+router.post('/',  ActivityController.create_activity);
 
-router.get('/', ActivityController.fetch_activities);
+router.get('/', checkAuth, ActivityController.fetch_activities);
 
 router.get('/:activityId', ActivityController.fetch_activity);
 

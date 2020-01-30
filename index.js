@@ -9,11 +9,10 @@ var io = require('socket.io')(http);
 
 const PORT = process.env.PORT || 3000;
 
+const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const activityRoutes = require('./routes/activity');
 const respRoutes = require('./routes/responsibility');
-
-
 
 // adding Helmet to enhance your API's security
 app.use(helmet());
@@ -29,6 +28,7 @@ app.get('/', function(req, res){
     res.sendFile(__dirname + '/index.html');
 });
 
+app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
 app.use('/activities', activityRoutes);
 app.use('/responsibility', respRoutes);
