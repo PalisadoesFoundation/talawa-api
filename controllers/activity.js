@@ -14,7 +14,7 @@ exports.create_activity = async (req, res, next) => {
         const activity = (await model.Activity.create({
             title: req.body.title,
             description: req.body.description,
-            date: req.body.date
+            date: req.body.datetime
         })).dataValues;
         console.log(activity)
         await model.UserActivity.create({
@@ -55,8 +55,7 @@ exports.fetch_activities = (req, res, next) => {
                         id: activity.dataValues.id,
                         title: activity.dataValues.title,
                         description: activity.dataValues.description,
-                        date: activity.dataValues.date.toDateString(),
-                        time: activity.dataValues.date.toLocaleTimeString(),
+                        datetime: activity.dataValues.date.valueOf(),
                         users: activity.dataValues.UserActivities.length
                     }
                 })
@@ -94,8 +93,7 @@ exports.fetch_activity = (req, res, next) => {
                 id: activity.dataValues.id,
                 title: activity.dataValues.title,
                 description: activity.dataValues.description,
-                date: activity.dataValues.date.toDateString(),
-                time: activity.dataValues.date.toLocaleTimeString(),
+                datetime: activity.dataValues.date.valueOf(),
                 users: activity.dataValues.UserActivities.map(UserActivity => {
                     const user = UserActivity.User;
                     return {
@@ -110,8 +108,7 @@ exports.fetch_activity = (req, res, next) => {
                         id: resp.id,
                         title: resp.title,
                         description: resp.description,
-                        date: resp.date.toDateString(),
-                        time: resp.date.toLocaleTimeString(),
+                        datetime: resp.date.valueOf(),
                         priority: resp.priority,
                         isCompleted: resp.isCompleted
                     }
@@ -213,9 +210,8 @@ exports.fetch_activities_by_user = async (req, res, next) => {
                     id: activity.dataValues.id,
                     title: activity.dataValues.title,
                     description: activity.dataValues.description,
-                    date: activity.dataValues.date.toDateString(),
-                    time: activity.dataValues.date.toLocaleTimeString(),
-                    users: activity.dataValues.UserActivities.length
+                    datetime: activity.dataValues.date.valueOf(),
+                    userCount: activity.dataValues.UserActivities.length
                 }
             })
         }

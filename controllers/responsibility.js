@@ -36,7 +36,7 @@ exports.create_responsibility = async (req, res, next) => {
         await model.Responsibility.create({
             title: req.body.title,
             description: req.body.description,
-            date: req.body.date,
+            date: req.body.datetime,
             priority: 1,
             isCompleted: false,
             activityId: req.body.activityId,
@@ -65,8 +65,7 @@ exports.fetch_responsibilities = (req, res, next) => {
                         id: resp.dataValues.id,
                         title: resp.dataValues.title,
                         description: resp.dataValues.description,
-                        date: resp.dataValues.date.toDateString(),
-                        time: resp.dataValues.date.toLocaleTimeString(),
+                        datetime: resp.dataValues.date.valueOf(),
                         priority: resp.dataValues.priority,
                         isCompleted: resp.dataValues.isCompleted
                     }
@@ -102,16 +101,14 @@ exports.fetch_responsibility = (req, res, next) => {
                 id: resp.dataValues.id,
                 title: resp.dataValues.title,
                 description: resp.dataValues.description,
-                date: resp.dataValues.date.toDateString(),
-                time: resp.dataValues.date.toLocaleTimeString(),
+                datetime: resp.dataValues.date.valueOf(),
                 priority: resp.dataValues.priority,
                 isCompleted: resp.dataValues.isCompleted,
                 activity: {
                     id: resp.dataValues.Activity.id,
                     title: resp.dataValues.Activity.title,
                     description: resp.dataValues.Activity.description,
-                    date: resp.dataValues.Activity.date.toDateString(),
-                    time: resp.dataValues.Activity.date.toLocaleTimeString(),
+                    datetime: resp.dataValues.Activity.date.valueOf(),
                 },
                 user: {
                     id: resp.dataValues.User.id,
@@ -174,8 +171,7 @@ exports.fetch_responsibility_by_activity = (req, res, next) => {
                         id: resp.dataValues.id,
                         title: resp.dataValues.title,
                         description: resp.dataValues.description,
-                        date: resp.dataValues.date.toDateString(),
-                        time: resp.dataValues.date.toLocaleTimeString(),
+                        datetime: resp.dataValues.date.valueOf(),
                         priority: resp.dataValues.priority,
                         isCompleted: resp.dataValues.isCompleted,
                         activityId: resp.dataValues.activityId,
