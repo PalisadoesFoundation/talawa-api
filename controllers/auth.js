@@ -3,7 +3,8 @@ const model = require('../models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-exports.register_user = (req, res, next) => {
+exports.register_user = async (req, res, next) => {
+    const authCount = model.User.findOne()
     model.User.findOne({ where: { email: req.body.email }, attributes: {exclude: ['password']} })
         .then(user => {
             if (user) {
@@ -40,13 +41,11 @@ exports.register_user = (req, res, next) => {
 
 exports.login_user = async (req, res, next) => {
     try{
-        console.log('hi')
         const user = await model.User.findOne({ where: { email: req.body.email }});
-        console.log(user)
         if(!user)
             throw 'User does not exist';
         else{
-            const result = await bcrypt.compare(req.body.password, user.dataValues.password);
+            const result = await bcrypt.compare(req.body.password, user.dataValues.password).catch(console.error);
             if (result) {
                 var token = jwt.sign({
                     id: user.dataValues.id,
