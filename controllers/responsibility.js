@@ -1,5 +1,4 @@
 const model = require('../models');
-const Op = require('Sequelize').Op;
 
 exports.create_responsibility = async (req, res, next) => {
     try {
