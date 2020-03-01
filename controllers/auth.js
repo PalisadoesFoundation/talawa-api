@@ -45,7 +45,7 @@ exports.login_user = async (req, res, next) => {
         if(!user)
             throw 'User does not exist';
         else{
-            const result = await bcrypt.compare(req.body.password, user.dataValues.password).catch(console.error);
+            const result = await bcrypt.compare(req.body.password, user.dataValues.password);
             if (result) {
                 var token = jwt.sign({
                     id: user.dataValues.id,
