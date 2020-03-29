@@ -3,10 +3,10 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const app = require('express')();
-const http = require('http').createServer(app);
-var io = require('socket.io')(http);
+const http = require('http').Server(app);
+var io = require('./socket/').listen(http)  
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 7000;
 
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
@@ -29,7 +29,7 @@ app.use(morgan('combined'));
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
   });
-  
+
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
 app.use('/activities', activityRoutes);
@@ -49,14 +49,6 @@ app.use((error, req, res, next) =>{
         }
     });
 });
-
-io.on("connection", (userSocket) => {
-    console.log('connected');
-    userSocket.on("send_message", (data) => {
-        console.log('data')
-        userSocket.broadcast.emit("receive_message", data)
-    })
-})
 
 http.listen(PORT, function(){
     console.log('listening on *:' + PORT);

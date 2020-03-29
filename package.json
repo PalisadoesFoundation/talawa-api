@@ -19,6 +19,7 @@
     "morgan": "^1.9.1",
     "pg": "^7.17.0",
     "pg-hstore": "^2.3.3",
+    "pusher": "^3.0.0",
     "sequelize": "^5.21.3",
     "sequelize-cli": "^5.5.1",
     "socket.io": "^2.3.0",

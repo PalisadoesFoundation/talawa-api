@@ -211,7 +211,6 @@ exports.fetch_activities_by_user = async (req, res, next) => {
                     title: activity.dataValues.title,
                     description: activity.dataValues.description,
                     datetime: activity.dataValues.date.valueOf(),
-                    userCount: activity.dataValues.UserActivities.length
                 }
             })
         }
