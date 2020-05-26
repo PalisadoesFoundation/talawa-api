@@ -1,0 +1,30 @@
+{
+  "name": "talawa-api-rework",
+  "version": "1.0.0",
+  "description": "\"# tenten-api-rework\"",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js --ext js,graphql"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Laurell876/tenten-api-rework.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Laurell876/tenten-api-rework/issues"
+  },
+  "homepage": "https://github.com/Laurell876/tenten-api-rework#readme",
+  "dependencies": {
+    "apollo-server": "^2.13.1",
+    "bcryptjs": "^2.4.3",
+    "graphql": "^15.0.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.9.15",
+    "nodemon": "^2.0.4",
+    "validator": "^13.0.0"
+  }
+}
