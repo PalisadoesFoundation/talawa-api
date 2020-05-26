@@ -9,7 +9,7 @@ const typeDefs = gql`
     email: String!
     password: String
     createdOrganizations: [Organization]
-    joinedOrganization: [Organization]
+    joinedOrganizations: [Organization]
     adminFor: [Organization]
   }
 
@@ -50,7 +50,6 @@ const typeDefs = gql`
   input OrganizationInput {
     name:String!  
     description: String!
-    creator: ID!
     isPublic: Boolean!
   }
   input UpdateOrganizationInput {

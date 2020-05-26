@@ -7,7 +7,7 @@ const Query = {
     try {
       if (args.id) {
         const users = await User.find({_id:args.id});
-        if (!users) throw new Error("User not found");
+        if (!users[0]) throw new Error("User not found");
         else
           return users.map(user=>{
             return {

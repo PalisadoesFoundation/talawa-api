@@ -6,14 +6,15 @@ const createOrganization = async (parent, args, context, info) => {
   if (!context.isAuth) throw new Error("User is not authenticated");
 
   try {
-    //check to see if user in the creator field exists
-    let userFound = await User.findOne({ _id: args.data.creator });
+    //gets user in token - to be used later on
+    let userFound = await User.findOne({ _id: context.userId });
     if (!userFound) {
       throw new Error("User does not exist");
     }
 
     let newOrganization = new Organization({
       ...args.data,
+      creator: context.userId
     });
 
     newOrganization.admins.push(userFound);
