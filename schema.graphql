@@ -42,7 +42,7 @@ const typeDefs = gql`
   }
 
   type Query {
-    users: [User!]!,
+    users(id: ID): [User],
     login(data: LoginInput!): AuthData!
     organizations(id: ID): [Organization]
   }

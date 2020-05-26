@@ -14,7 +14,7 @@ const removeOrganizaiton = async (parent, args, context, info) => {
     creatorCheck(context, org)
 
     //delete organzation
-    await Organization.remove({_id: args.id})
+    await Organization.deleteOne({_id: args.id})
 
     return org
   } catch (e) {

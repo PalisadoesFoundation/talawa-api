@@ -5,10 +5,22 @@ const { login } = require("./Auth");
 const Query = {
   users: async (parent, args, context, info) => {
     try {
-      const users = await User.find();
-      return users.map((user) => {
-        return { ...user._doc, password: null };
-      });
+      if (args.id) {
+        const users = await User.find({_id:args.id});
+        if (!users) throw new Error("User not found");
+        else
+          return users.map(user=>{
+            return {
+            ...user._doc,
+            password: null,
+            }
+          });
+      } else {
+        const users = await User.find();
+        return users.map((user) => {
+          return { ...user._doc, password: null };
+        });
+      }
     } catch (e) {
       throw e;
     }
@@ -16,14 +28,14 @@ const Query = {
   login,
   organizations: async (parent, args, context, info) => {
     try {
-      if(args.id) {
+      if (args.id) {
         const organizationFound = await Organization.find({ _id: args.id });
-        if(!organizationFound[0]) {
-          throw new Error("Organization not found")
+        if (!organizationFound[0]) {
+          throw new Error("Organization not found");
         }
-        return organizationFound
-      }else {
-        return await Organization.find()
+        return organizationFound;
+      } else {
+        return await Organization.find();
       }
     } catch (e) {
       throw e;
