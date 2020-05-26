@@ -11,6 +11,10 @@ const organizationSchema = new Schema({
         type:String,
         required:true
     },
+    isPublic: {
+        type:Boolean,
+        required:true
+    },
     creator: {
         type: Schema.Types.ObjectId,
         ref: "User",

@@ -1,5 +1,5 @@
 const User = require("../models/User");
-const Organization = require("../models/Organization")
+const Organization = require("../models/Organization");
 const { login } = require("./Auth");
 
 const Query = {
@@ -14,14 +14,21 @@ const Query = {
     }
   },
   login,
-  organizations: async (parent, args,context, info)=> {
+  organizations: async (parent, args, context, info) => {
     try {
-      return args.id ? await Organization.find({_id: args.id}): await Organization.find()
-
-    }catch(e) {
+      if(args.id) {
+        const organizationFound = await Organization.find({ _id: args.id });
+        if(!organizationFound[0]) {
+          throw new Error("Organization not found")
+        }
+        return organizationFound
+      }else {
+        return await Organization.find()
+      }
+    } catch (e) {
       throw e;
     }
-  }
+  },
 };
 
 module.exports = Query;

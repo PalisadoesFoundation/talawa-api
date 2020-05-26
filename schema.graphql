@@ -17,6 +17,7 @@ const typeDefs = gql`
     _id: ID!
     name:String!
     description: String!
+    isPublic: Boolean! 
     creator: User!
     members: [User]
     admins(adminId: ID): [User]
@@ -50,12 +51,24 @@ const typeDefs = gql`
     name:String!  
     description: String!
     creator: ID!
+    isPublic: Boolean!
   }
+  input UpdateOrganizationInput {
+    id:ID!
+    name:String
+    description: String
+    isPublic: Boolean
+  }
+
+
+
 
 
   type Mutation {
     signUp(data: UserInput!): User!
     createOrganization(data: OrganizationInput): Organization!
+    updateOrganization(data: UpdateOrganizationInput) : Organization!
+    removeOrganization(id: ID!) : Organization!
   }
 `
 
