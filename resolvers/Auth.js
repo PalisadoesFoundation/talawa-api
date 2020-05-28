@@ -17,7 +17,7 @@ const signUp = async (parent, args, context, info) => {
     });
 
     user = await user.save();
-    return { ...user._doc };
+    return { ...user._doc, password:null };
   } catch (e) {
     throw e;
   }
