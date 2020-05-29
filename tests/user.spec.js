@@ -4,7 +4,7 @@ const shortid = require('shortid');
 
 describe("user resolvers", ()=> {
     test("allUsers",async ()=> {
-        const response = await axios.post("http://localhost:4000", {
+        const response = await axios.post("https://talawa-testing.herokuapp.com/", {
             query: `query {
                 users {
                   _id
@@ -24,7 +24,7 @@ describe("user resolvers", ()=> {
         var id = shortid.generate()
         var email = `${id}@test.com`
         console.log(email)
-        const response = await axios.post("http://localhost:4000", {
+        const response = await axios.post("https://talawa-testing.herokuapp.com/", {
             query: `
             mutation {
                 signUp(data: {
