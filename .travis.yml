@@ -2,7 +2,7 @@ language: node_js
 node_js:
   - 12
 
-script: node index.js
+script: npm run start
 services:
     - mongodb
 
