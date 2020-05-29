@@ -16,6 +16,8 @@ describe("organization resolvers", () => {
     expect(Array.isArray(data.data.organizations)).toBeTruthy();
   });
 
+
+  let createdOrgId;
   test("createOrganization", async () => {
     const response = await axios.post(
       "https://talawa-testing.herokuapp.com/",
@@ -40,6 +42,7 @@ describe("organization resolvers", () => {
       }
     );
     const { data } = response;
+    createdOrgId = data.data.createOrganization._id
     expect(data.data.createOrganization).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
@@ -48,6 +51,8 @@ describe("organization resolvers", () => {
     );
   });
 
+  
+
   test("updateOrganization", async () => {
     const response = await axios.post(
       "https://talawa-testing.herokuapp.com/",
@@ -55,12 +60,11 @@ describe("organization resolvers", () => {
         query: `
             mutation {
                 updateOrganization(data: {
-                    id: "5ed18229d7f4a244f8dee540",
+                    id: "${createdOrgId}",
                     description: "new description",
                     isPublic: false
                     }) {
                         _id
-                        name
                         description
                         isPublic
                     }
@@ -77,8 +81,7 @@ describe("organization resolvers", () => {
     expect(data).toMatchObject({
       data: {
         updateOrganization: {
-          _id: "5ed18229d7f4a244f8dee540",
-          name: "test org",
+          _id: `${createdOrgId}`,
           description: "new description",
           isPublic: false,
         },
@@ -136,7 +139,6 @@ describe("organization resolvers", () => {
       }
     );
 
-    console.log(deletedResponse.data)
     expect(deletedResponse.data).toMatchObject(
         {
             "data": {
