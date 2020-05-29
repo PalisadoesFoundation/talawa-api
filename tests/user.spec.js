@@ -23,7 +23,6 @@ describe("user resolvers", ()=> {
     test("signUp", async()=> {
         var id = shortid.generate()
         var email = `${id}@test.com`
-        console.log(email)
         const response = await axios.post("https://talawa-testing.herokuapp.com/", {
             query: `
             mutation {
@@ -41,7 +40,6 @@ describe("user resolvers", ()=> {
               `            
         })
         const {data} = response;
-        console.log(data)
         expect(data).toMatchObject({
             "data": {
               "signUp": {
@@ -52,4 +50,32 @@ describe("user resolvers", ()=> {
             }
           })
     })
+
+
+
+    test("login",async ()=> {
+        const response = await axios.post("https://talawa-testing.herokuapp.com/", {
+            query: `
+            {
+                login(data: {
+                  email:"testdb2@test.com",
+                  password:"password"
+                }) {
+                  userId
+                  token
+                  tokenExpiration
+                }  
+              }
+              `            
+        })
+        const {data} = response;
+        expect(data.data.login).toEqual(expect.objectContaining({
+            userId: expect.any(String),
+            token: expect.any(String),
+            tokenExpiration: expect.any(Number)
+        }))
+
+
+    })
+
 })

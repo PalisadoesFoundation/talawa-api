@@ -6,9 +6,13 @@ const Organization = {
     return user;
   },
   admins: async (parent, args, context, info) => {
+    const adminIds = [];
+    parent.admins.forEach(admin=> {
+      adminId.push(admin._id)
+    })
     const admins = await User.find({
       _id: {
-        $in: [...parent.admins],
+        $in: adminIds,
       },
     });
     return admins;
