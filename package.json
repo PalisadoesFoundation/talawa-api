@@ -4,8 +4,9 @@
   "description": "\"# tenten-api-rework\"",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js --ext js,graphql"
+    "test": "jest",
+    "start": "nodemon index.js --ext js,graphql",
+    "test-server": "cross-env TEST_DB=testmongo nodemon index.js --ext js,graphql"
   },
   "repository": {
     "type": "git",
@@ -21,7 +22,9 @@
   "dependencies": {
     "apollo-server": "^2.13.1",
     "axios": "^0.19.2",
+    "babel-jest": "^26.0.1",
     "bcryptjs": "^2.4.3",
+    "cross-env": "^7.0.2",
     "graphql": "^15.0.0",
     "jest": "^26.0.1",
     "jsonwebtoken": "^8.5.1",
