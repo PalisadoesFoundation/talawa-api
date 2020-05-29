@@ -6,13 +6,14 @@ const isAuth = require("./middleware/is-auth");
 const User = require("./resolvers/User");
 const express = require("express");
 const connect = require("./db.js");
-
+const Organization = require("./resolvers/Organization")
 const app = express();
 
 const resolvers = {
   Query,
   Mutation,
   User,
+  Organization
 };
 
 const server = new ApolloServer({

@@ -40,7 +40,7 @@ const Query = {
     } catch (e) {
       throw e;
     }
-  },
+  }
 };
 
 module.exports = Query;
