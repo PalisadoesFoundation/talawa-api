@@ -70,8 +70,7 @@ describe("user resolvers", ()=> {
         const {data} = response;
         expect(data.data.login).toEqual(expect.objectContaining({
             userId: expect.any(String),
-            token: expect.any(String),
-            tokenExpiration: expect.any(Number)
+            token: expect.any(String)
         }))
 
 
