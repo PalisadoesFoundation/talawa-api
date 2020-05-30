@@ -42,15 +42,11 @@ const login = async (parent, args, context, info) => {
 
     const token = await jwt.sign(
       { userId: user.id, email: user.email },
-      "somesupersecretkey",
-      {
-        expiresIn: "1h",
-      }
+      "somesupersecretkey"
     );
     return {
       userId: user.id,
-      token: token,
-      tokenExpiration: 1,
+      token: token
     };
     //the key should be changed for production
   } catch (e) {

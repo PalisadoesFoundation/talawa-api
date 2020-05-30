@@ -63,7 +63,6 @@ describe("user resolvers", ()=> {
                 }) {
                   userId
                   token
-                  tokenExpiration
                 }  
               }
               `            

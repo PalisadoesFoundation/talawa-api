@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZWQxNmQ0MmVhMTg1YjAwMjQyYmQ4MDQiLCJlbWFpbCI6InRlc3RkYjJAdGVzdC5jb20iLCJpYXQiOjE1OTA3ODM1NjgsImV4cCI6MTU5MDc4NzE2OH0.qlFp5oTT52AWhGKDu2-TAhYpxkChl-Ue5gn0p77fKA8"
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZWQxNmQ0MmVhMTg1YjAwMjQyYmQ4MDQiLCJlbWFpbCI6InRlc3RkYjJAdGVzdC5jb20iLCJpYXQiOjE1OTA3OTQyNDksImV4cCI6MTU5MDc5Nzg0OX0.grEeew10YlNYxC3CqQ8gAqwXYUVguslHGq9quKstSQw"
 
 describe("organization resolvers", () => {
   test("allOrganizations", async () => {
