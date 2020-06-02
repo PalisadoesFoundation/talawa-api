@@ -12,10 +12,9 @@ Welcome to the Talawa API documentation!
    :caption: Contents:
 
    palisadoes
-   schema
-   queries
-   mutations
    authentication
+   organizations
+   
 
 
 Indices and tables
