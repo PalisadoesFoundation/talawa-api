@@ -9,3 +9,7 @@ This will help to introduce me to the RST language
 
 Code Snippet
 ------------
+
+..code-block:: node
+
+print 'hello'
