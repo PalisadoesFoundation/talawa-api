@@ -7,7 +7,7 @@ Any registered user can create an organization. After creating an organization t
 How To Create An Organization
 -----------------------------
 
-In order to create an organization the user has to enter the organization's name and description as well as whether or not it will be a public organization. Any user can join a public organization while users have to send a request to join private organizations. Theses requests can be accepted or rejected by any of the organization's administrators.
+In order to create an organization the user has to enter the organization's name and description as well as whether or not it will be a public organization. Any user can join a public organization while users have to send a request to join private organizations. These requests can be accepted or rejected by any of the organization's administrators.
 
 How To Update An Organization
 -----------------------------
