@@ -6,15 +6,16 @@
 Welcome to the Talawa API documentation!
 ========================================
 
-Go to before you begin, :ref:`go to byb <settingup>`
-
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    palisadoes
-   beforeyoubegin
+   schema
+   queries
+   mutations
+   authentication
 
 
 Indices and tables
