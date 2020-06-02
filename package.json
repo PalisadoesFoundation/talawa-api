@@ -1,9 +1,5 @@
 {
   "name": "talawa-api-rework",
-  "graphdoc": {
-    "endpoint": "http://localhost:4000/",
-    "output": "./doc/schema"
-  },
   "version": "1.0.0",
   "description": "\"# tenten-api-rework\"",
   "main": "index.js",
