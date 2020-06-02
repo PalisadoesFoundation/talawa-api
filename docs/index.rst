@@ -6,23 +6,14 @@
 Welcome to the Talawa API documentation!
 ========================================
 
-Another simple header
-=====================
-
-Here is some text explaining some very complicated stuff.::
->>>print 'hello'
-hello
->>>
-
-Guide
-^^^^^
+Go to before you begin, :ref:`go to byb <settingup>`
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    palisadoes
-   test
+   beforeyoubegin
 
 
 Indices and tables
