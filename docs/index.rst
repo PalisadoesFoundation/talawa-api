@@ -12,6 +12,7 @@ Welcome to the Talawa API documentation!
    :caption: Contents:
 
    palisadoes
+   architecture
    authentication
    organizations
    
