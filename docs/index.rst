@@ -9,16 +9,6 @@ Welcome to the Talawa API documentation!
 Go to before you begin, :ref:`go to byb <settingup>`
 
 
-.. graphiql::
-   :view_only:
-   :query:
-      query {
-         author {
-            id
-            name
-         }
-      }
-
 .. toctree::
    :maxdepth: 2
    :caption: Contents:

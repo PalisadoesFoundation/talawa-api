@@ -31,7 +31,7 @@
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinxcontrib.fulltoc','sphinx_graphiql']
+extensions = ['sphinxcontrib.fulltoc']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -165,6 +165,3 @@ texinfo_documents = [
      author, 'TalawaAPI', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-
-GRAPHIQL_DEFAULT_ENDPOINT = "https://talawa-testing.herokuapp.com//graphql"
