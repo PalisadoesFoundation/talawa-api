@@ -1,10 +1,13 @@
 const axios = require("axios");
+const { URL } = require("../constants");
+const getToken = require("./functions/getToken");
+let token 
+beforeAll(async ()=>{token = await getToken()})
 
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZWQxNmQ0MmVhMTg1YjAwMjQyYmQ4MDQiLCJlbWFpbCI6InRlc3RkYjJAdGVzdC5jb20iLCJpYXQiOjE1OTA3OTQyNDksImV4cCI6MTU5MDc5Nzg0OX0.grEeew10YlNYxC3CqQ8gAqwXYUVguslHGq9quKstSQw"
 
 describe("organization resolvers", () => {
   test("allOrganizations", async () => {
-    const response = await axios.post("https://talawa-testing.herokuapp.com/", {
+    const response = await axios.post(URL, {
       query: `query {
                 organizations {
                     _id
@@ -16,11 +19,10 @@ describe("organization resolvers", () => {
     expect(Array.isArray(data.data.organizations)).toBeTruthy();
   });
 
-
   let createdOrgId;
   test("createOrganization", async () => {
     const response = await axios.post(
-      "https://talawa-testing.herokuapp.com/",
+      URL,
       {
         query: `
             mutation {
@@ -37,12 +39,14 @@ describe("organization resolvers", () => {
       },
       {
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
       }
     );
     const { data } = response;
-    createdOrgId = data.data.createOrganization._id
+    //console.log(data)
+    //console.log(token)
+    createdOrgId = data.data.createOrganization._id;
     expect(data.data.createOrganization).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
@@ -51,11 +55,9 @@ describe("organization resolvers", () => {
     );
   });
 
-  
-
   test("updateOrganization", async () => {
     const response = await axios.post(
-      "https://talawa-testing.herokuapp.com/",
+      URL,
       {
         query: `
             mutation {
@@ -73,7 +75,7 @@ describe("organization resolvers", () => {
       },
       {
         headers: {
-          Authorization:`Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
       }
     );
@@ -90,9 +92,9 @@ describe("organization resolvers", () => {
   });
 
   test("removeOrganization", async () => {
-      //a new organization is created then deleted
+    //a new organization is created then deleted
     const response = await axios.post(
-      "https://talawa-testing.herokuapp.com/",
+      URL,
       {
         query: `
             mutation {
@@ -109,7 +111,7 @@ describe("organization resolvers", () => {
       },
       {
         headers: {
-          Authorization:`Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
       }
     );
@@ -119,7 +121,7 @@ describe("organization resolvers", () => {
     const newOrgId = data.data.createOrganization._id;
 
     const deletedResponse = await axios.post(
-      "https://talawa-testing.herokuapp.com/",
+      URL,
       {
         query: `
             mutation {
@@ -134,26 +136,22 @@ describe("organization resolvers", () => {
       },
       {
         headers: {
-          Authorization:`Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
       }
     );
 
-    expect(deletedResponse.data).toMatchObject(
-        {
-            "data": {
-                "removeOrganization": {
-                    "_id": `${newOrgId}`,
-                    "name": "test org",
-                    "description": "test description",
-                    "isPublic": true
-                }
-            }
-        }
-    )
-
+    expect(deletedResponse.data).toMatchObject({
+      data: {
+        removeOrganization: {
+          _id: `${newOrgId}`,
+          name: "test org",
+          description: "test description",
+          isPublic: true,
+        },
+      },
+    });
   });
 });
 
-
-module.exports.token =token
+module.exports.token = token;

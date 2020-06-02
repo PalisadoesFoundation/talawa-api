@@ -1,9 +1,10 @@
 const axios = require("axios");
-const token = require("./organization.spec.js");
+const {URL} = require("../constants")
+
 
 describe("user resolvers", () => {
   test("users-subqueries", async () => {
-    const response = await axios.post("https://talawa-testing.herokuapp.com/", {
+    const response = await axios.post(URL, {
       query: `
       {
         users {
