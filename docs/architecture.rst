@@ -1,6 +1,7 @@
 How It Works?
 =============
 
+Talawa is a mobile application that allows organizations to plan events and foster communication between its members.
 
 
 What Is An Organization?
