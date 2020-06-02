@@ -26,9 +26,7 @@ This has been a Calico Challenge project in 2019. It will be written in python w
 ## Prerequesites
 Talawa API development prerequisites
 - [Node v12.14.1 (or later)][node]
-### Optional
-- [Yarn v1.19.1 (or later)][yarn]
-## Setup
+
 Clone and change into the project
 ```sh
 $ git clone https://github.com/PalisadoesFoundation/talawa-api.git
@@ -41,11 +39,11 @@ $ npm install
 ```
 To run the project in development mode, run the following command
 ```sh
-$ npm run dev
-```
-For production, run the following command
-```sh
 $ npm run start
+```
+For testing, run the following command
+```sh
+$ npm run test
 ```
 Start developing!
 
