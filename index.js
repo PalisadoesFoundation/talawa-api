@@ -29,7 +29,7 @@ server.applyMiddleware({ app });
 
 app.use(cors()); 
 
-app.use(express.static("doc"));
+//app.use(express.static("doc"));
 
 
 connect
