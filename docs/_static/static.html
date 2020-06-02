@@ -1,0 +1,64 @@
+<head>
+
+    <!-- GraphiQL -->
+<script src="//cdn.jsdelivr.net/react/15.4.2/react.min.js"></script>
+<script src="//cdn.jsdelivr.net/react/15.4.2/react-dom.min.js"></script>
+<script src="https://rawgit.com/hasura/sphinx_graphiql/master/static/graphiql/graphiql.min.js"></script>
+<link href="https://rawgit.com/hasura/sphinx_graphiql/master/static/graphiql/graphiql.css" rel="stylesheet">
+<link href="https://rawgit.com/hasura/sphinx_graphiql/master/static/styles.css" rel="stylesheet">
+<script type="text/javascript">
+  // graphql query fetcher
+  const graphQLFetcher = function(endpoint) {
+    endpoint = endpoint || "{{ GRAPHIQL_DEFAULT_ENDPOINT }}";
+    return function(graphQLParams) {
+      const params = {
+        method: 'post',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(graphQLParams),
+        credentials: 'include'
+      };
+      return fetch(endpoint, params)
+        .then(function (response) {
+          return response.text();
+        })
+        .then(function (responseBody) {
+          try {
+            return JSON.parse(responseBody);
+          } catch (error) {
+            return responseBody;
+          }
+        });
+    }
+  };
+   
+  // create GraphiQL components and embed into HTML
+  const setupGraphiQL = function() {
+    if (typeof(React) === 'undefined' || typeof(ReactDOM) === 'undefined' || typeof(GraphiQL) === 'undefined') {
+      return;
+    }
+   
+    const targets = document.getElementsByClassName('graphiql');
+    for (let i = 0; i < targets.length; i++) {
+      const target = targets[i];
+      const endpoint = target.getElementsByClassName("endpoint")[0].innerHTML.trim();
+      const query = target.getElementsByClassName("query")[0].innerHTML.trim();
+      const response = target.getElementsByClassName("response")[0].innerHTML.trim();
+      const graphiQLElement = React.createElement(GraphiQL, {
+        fetcher: graphQLFetcher(endpoint),
+        schema: null, // TODO: Pass undefined to fetch schema via introspection
+        query: query,
+        response: response
+      });
+      ReactDOM.render(graphiQLElement, target);
+    }
+  };
+                                       
+  // if graphiql elements present, setup graphiql
+  if (document.getElementsByClassName('graphiql').length > 0) {
+    setupGraphiQL();
+  }
+</script>obgtfr z
+</head>

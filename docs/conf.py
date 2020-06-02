@@ -165,3 +165,7 @@ texinfo_documents = [
      author, 'TalawaAPI', 'One line description of project.',
      'Miscellaneous'),
 ]
+
+extensions.append('sphinx_graphiql')
+
+GRAPHIQL_DEFAULT_ENDPOINT = "https://talawa-testing.herokuapp.com//graphql"
