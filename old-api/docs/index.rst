@@ -6,16 +6,11 @@
 Welcome to the Talawa API documentation!
 ========================================
 
-
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    palisadoes
-   architecture
-   authentication
-   organizations
-   
 
 
 Indices and tables

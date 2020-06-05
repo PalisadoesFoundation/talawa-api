@@ -1,55 +1,43 @@
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const app = require('express')();
-const http = require('http').Server(app);
-var io = require('./socket/').listen(http)  
+const { ApolloServer, gql } = require("apollo-server-express");
+const Query = require("./resolvers/Query");
+const Mutation = require("./resolvers/Mutation");
+const typeDefs = require("./schema.graphql");
+const isAuth = require("./middleware/is-auth");
+const User = require("./resolvers/User");
+const express = require("express");
+const connect = require("./db.js");
+const Organization = require("./resolvers/Organization")
+const cors = require("cors");
 
-const PORT = process.env.PORT || 7000;
+const app = express();
 
-const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/user');
-const activityRoutes = require('./routes/activity');
-const respRoutes = require('./routes/responsibility');
+const resolvers = {
+  Query,
+  Mutation,
+  User,
+  Organization
+};
 
-// adding Helmet to enhance your API's security
-app.use(helmet());
-// using bodyParser to parse JSON bodies into JS objects
-app.use(bodyParser.urlencoded({extended: false}));
-app.use(bodyParser.json());
-// enabling CORS for all requests
-app.use(cors());
-// adding morgan to log HTTP requests
-app.use(morgan('combined'));
-
-// app.get('/', (req, res) => {
-//     res.send("Talawa API")
-// })
-app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/index.html');
-  });
-
-app.use('/auth', authRoutes);
-app.use('/user', userRoutes);
-app.use('/activities', activityRoutes);
-app.use('/responsibility', respRoutes);
-
-app.use((req, res, next) =>{
-    const error = new Error('Not found');
-    error.status = 404;
-    next(error);
-})
-
-app.use((error, req, res, next) =>{
-    res.status(error.status || 500);
-    res.json({
-        error:{
-            message: error.message
-        }
-    });
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  context: ({ req }) => {
+    return isAuth(req);
+  },
 });
+server.applyMiddleware({ app });
 
-http.listen(PORT, function(){
-    console.log('listening on *:' + PORT);
-});
+app.use(cors()); 
+
+//app.use(express.static("doc"));
+
+
+connect
+  .then(() => {
+    app.listen({ port: process.env.PORT || 4000 }, () =>
+    console.log(
+      `🚀 Server ready at http://localhost:4000${server.graphqlPath}`
+    )
+  );
+  })
+  .catch((e) => console.log(e));
