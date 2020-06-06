@@ -11,6 +11,9 @@ module.exports = async (parent, args, context, info) => {
     let org = await Organization.findOne({ _id: args.organizationId });
     if (!org) throw new Error("Organization not found");
 
+    //ensures organization is public
+    if(!org._doc.isPublic) throw new Error("Organization is not public")
+
     //ensure user exists
     const user = await User.findOne({ _id: context.userId });
     if (!user) throw new Error("User does not exist");
