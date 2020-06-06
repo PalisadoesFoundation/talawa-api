@@ -60,6 +60,9 @@ const typeDefs = gql`
 
 
 
+  input UserAndOrganizationInput{
+    organizationId: ID!, UserId: ID!
+  }
 
 
   type Mutation {
@@ -67,6 +70,9 @@ const typeDefs = gql`
     createOrganization(data: OrganizationInput): Organization!
     updateOrganization(id:ID!, data: UpdateOrganizationInput) : Organization!
     removeOrganization(id: ID!) : Organization!
+    createAdmin (data: UserAndOrganizationInput!) : User!
+    removeAdmin (data: UserAndOrganizationInput!) : User!
+    joinOrganization (data: UserAndOrganizationInput) : User!
   }
 `
 
