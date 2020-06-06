@@ -44,6 +44,7 @@ const createOrganization = async (parent, args, context, info) => {
       }
     );
 
+
     return {
       ...newOrganization._doc,
     };
