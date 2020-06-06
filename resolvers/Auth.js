@@ -17,12 +17,21 @@ const signUp = async (parent, args, context, info) => {
     });
 
     user = await user.save();
-    return { ...user._doc, password:null };
+
+    const token = await jwt.sign(
+      { userId: user.id, email: user.email },
+      "somesupersecretkey"
+    );
+    return {
+      userId: user.id,
+      token: token,
+    };
+
+    //return { ...user._doc, password:null };
   } catch (e) {
     throw e;
   }
 };
-
 
 const login = async (parent, args, context, info) => {
   try {
@@ -46,7 +55,7 @@ const login = async (parent, args, context, info) => {
     );
     return {
       userId: user.id,
-      token: token
+      token: token,
     };
     //the key should be changed for production
   } catch (e) {

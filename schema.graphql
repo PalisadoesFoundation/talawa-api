@@ -63,7 +63,7 @@ const typeDefs = gql`
 
 
   type Mutation {
-    signUp(data: UserInput!): User!
+    signUp(data: UserInput!): AuthData!
     createOrganization(data: OrganizationInput): Organization!
     updateOrganization(data: UpdateOrganizationInput) : Organization!
     removeOrganization(id: ID!) : Organization!
