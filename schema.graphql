@@ -44,6 +44,7 @@ const typeDefs = gql`
     users(id: ID): [User],
     login(data: LoginInput!): AuthData!
     organizations(id: ID): [Organization]
+    me:User!
   }
 
   input OrganizationInput {
