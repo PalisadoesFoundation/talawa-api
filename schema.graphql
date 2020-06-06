@@ -72,7 +72,7 @@ const typeDefs = gql`
     removeOrganization(id: ID!) : Organization!
     createAdmin (data: UserAndOrganizationInput!) : User!
     removeAdmin (data: UserAndOrganizationInput!) : User!
-    joinOrganization (data: UserAndOrganizationInput) : User!
+    joinPublicOrganization (organizationId: ID!) : User!
   }
 `
 

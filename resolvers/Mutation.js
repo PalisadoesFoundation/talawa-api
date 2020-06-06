@@ -4,7 +4,8 @@ const updateOrganization = require("./organization_mutations/updateOrganization"
 const removeOrganization = require("./organization_mutations/removeOrganization")
 const createAdmin = require("./admin_mutations/createAdmin")
 const removeAdmin = require("./admin_mutations/removeAdmin")
-const joinOrganization = require("./member_mutations/join_organization")
+const joinPublicOrganization = require("./member_mutations/join_public_organization")
+const leaveOrganization = require("./member_mutations/join_public_organization")
 
 
 const Mutation = {
@@ -14,7 +15,7 @@ const Mutation = {
   removeOrganization,
   createAdmin,
   removeAdmin,
-  joinOrganization
+  joinPublicOrganization
 };
 
 module.exports = Mutation;

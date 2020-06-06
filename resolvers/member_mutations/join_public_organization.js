@@ -8,17 +8,18 @@ module.exports = async (parent, args, context, info) => {
   authCheck(context);
   try {
     //ensure organization exists
-    let org = await Organization.findOne({ _id: args.data.organizationId });
+    let org = await Organization.findOne({ _id: args.organizationId });
     if (!org) throw new Error("Organization not found");
 
     //ensure user exists
-    const user = await User.findOne({ _id: args.data.UserId });
+    const user = await User.findOne({ _id: context.userId });
     if (!user) throw new Error("User does not exist");
 
-    //ensure person adding user is an admin
-    adminCheck(context, org);
+    //check to see if user is already a member
+    const members = org._doc.members.filter(member=> member == user.id)
+    if(members.length!=0) throw new Error("User is already a member")
 
-    //add user to organization's member field
+    //add user to organization's members field
     org.overwrite({
         ...org._doc,
         members: [...org._doc.members, user]
