@@ -32,9 +32,12 @@ const Query = {
       //Ensure user exists
       const user = await User.findOne({ _id: context.userId });
       if(!user) throw new Error("User does not exist")
-      console.log(user._doc)
+      //console.log(user._doc)
 
-      return user._doc
+      return {
+        ...user._doc,
+        password:null
+      }
     } catch (e) {
       throw e;
     }

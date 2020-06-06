@@ -53,7 +53,6 @@ const typeDefs = gql`
     isPublic: Boolean!
   }
   input UpdateOrganizationInput {
-    id:ID!
     name:String
     description: String
     isPublic: Boolean
@@ -66,7 +65,7 @@ const typeDefs = gql`
   type Mutation {
     signUp(data: UserInput!): AuthData!
     createOrganization(data: OrganizationInput): Organization!
-    updateOrganization(data: UpdateOrganizationInput) : Organization!
+    updateOrganization(id:ID!, data: UpdateOrganizationInput) : Organization!
     removeOrganization(id: ID!) : Organization!
   }
 `
