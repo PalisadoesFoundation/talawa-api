@@ -33,23 +33,19 @@ describe("user resolvers", () => {
                   email: "${email}"
                   password:"password"
                 }) {
-                  firstName
-                  lastName
-                  email
+                  userId
+                  token
                 }
               }
               `,
     });
     const { data } = response;
-    expect(data).toMatchObject({
-      data: {
-        signUp: {
-          firstName: "testdb2",
-          lastName: "testdb2",
-          email: `${email}`,
-        },
-      },
-    });
+    expect(data.data.signUp).toEqual(
+      expect.objectContaining({
+        userId: expect.any(String),
+        token: expect.any(String),
+      })
+    );
   });
 
   test("login", async () => {

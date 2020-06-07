@@ -1,9 +1,10 @@
 const axios = require("axios");
 const { URL } = require("../constants");
 const getToken = require("./functions/getToken");
-let token 
-beforeAll(async ()=>{token = await getToken()})
-
+let token;
+beforeAll(async () => {
+  token = await getToken();
+});
 
 describe("organization resolvers", () => {
   test("allOrganizations", async () => {
@@ -61,8 +62,7 @@ describe("organization resolvers", () => {
       {
         query: `
             mutation {
-                updateOrganization(data: {
-                    id: "${createdOrgId}",
+                updateOrganization(id: "${createdOrgId}", data: {
                     description: "new description",
                     isPublic: false
                     }) {
