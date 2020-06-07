@@ -14,7 +14,7 @@ module.exports = async (parent, args, context, info) => {
     creatorCheck(context, org);
 
     //ensures user to be made admin exists
-    const user = await User.findOne({ _id: args.data.UserId });
+    const user = await User.findOne({ _id: args.data.userId });
     if (!user) throw new Error("User does not exist");
 
     //ensures user is a member of the organization

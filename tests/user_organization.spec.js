@@ -119,7 +119,7 @@ describe("User-Organization Resolvers", () => {
         query: `mutation {
             createAdmin(data: {
               organizationId: "${createdOrgId}"
-              UserId: "${newUserId}"
+              userId: "${newUserId}"
             }) {
               _id
               firstName
@@ -155,7 +155,7 @@ describe("User-Organization Resolvers", () => {
         query: `mutation {
         removeAdmin(data: {
           organizationId: "${createdOrgId}"
-          UserId: "${newUserId}"
+          userId: "${newUserId}"
         }) {
           _id
           firstName
@@ -178,7 +178,7 @@ describe("User-Organization Resolvers", () => {
         _id: expect.any(String),
         firstName: expect.any(String),
         lastName: expect.any(String),
-        email: expect.any(String),
+        email: expect.any(String)
       })
     );
   });
@@ -290,7 +290,7 @@ describe("User-Organization Resolvers", () => {
       }
     );
     const removeMemberData = removeMemberResponse.data;
-      console.log(removeMemberResponse.data.errors[0])
+      //console.log(removeMemberResponse.data.errors[0])
     expect(removeMemberData.data.removeMember).toEqual(
       expect.objectContaining({
         _id: expect.any(String),

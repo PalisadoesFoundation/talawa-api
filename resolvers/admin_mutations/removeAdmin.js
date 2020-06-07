@@ -13,7 +13,7 @@ module.exports = async (parent, args, context, info) => {
     if (!org) throw new Error("Organization not found");
 
     //ensure user exists
-    const user = await User.findOne({ _id: args.data.UserId });
+    const user = await User.findOne({ _id: args.data.userId });
     if (!user) throw new Error("User does not exist");
 
     //ensure user is an admin
