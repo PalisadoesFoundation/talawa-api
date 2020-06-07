@@ -23,10 +23,10 @@ module.exports = async (parent, args, context, info) => {
     if (members.length == 0) throw new Error("User is not a member");
 
     //ensure the user the admin is trying to remove isn't an admin
-    if(org._doc.admins.includes(users.id)) throw new Error("Administrators cannot remove members who are also Administrators")
+    if(org._doc.admins.includes(user.id)) throw new Error("Administrators cannot remove members who are also Administrators")
 
     //ensure the user the admin is trying to remove isn't the creator
-    if(org._doc.creator == users.id) throw new Error("Administratos cannot remove the creator of the organization from the organization")
+    if(org._doc.creator == user.id) throw new Error("Administratos cannot remove the creator of the organization from the organization")
 
     //remove member from organization
     org.overwrite({

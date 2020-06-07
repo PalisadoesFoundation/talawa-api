@@ -172,7 +172,6 @@ describe("User-Organization Resolvers", () => {
       }
     );
 
-
     const { data } = response;
     expect(data.data.removeAdmin).toEqual(
       expect.objectContaining({
@@ -209,6 +208,90 @@ describe("User-Organization Resolvers", () => {
 
     const { data } = response;
     expect(data.data.leaveOrganization).toEqual(
+      expect.objectContaining({
+        _id: expect.any(String),
+        firstName: expect.any(String),
+        lastName: expect.any(String),
+        email: expect.any(String),
+      })
+    );
+  });
+
+  //ADMIN REMOVES USER FROM ORGANIZATION
+
+  //A NEW USER HAS TO BE CREATED THEN ADDED TO THE ORGANIZATION THEN REMOVED
+  test("Remove Member from organization", async () => {
+    //new user is created
+    var id = shortid.generate();
+    var email = `${id}@test.com`;
+
+    const signUpResponse = await axios.post(URL, {
+      query: `
+            mutation {
+                signUp(data: {
+                  firstName:"testdb2",
+                  lastName:"testdb2"
+                  email: "${email}"
+                  password:"password"
+                }) {
+                  userId
+                  token
+                }
+              }
+              `,
+    });
+    const { data } = signUpResponse;
+    const userToken = data.data.signUp.token;
+    const createdUserId = data.data.signUp.userId;
+
+    //user joins organizations
+    const joinOrgRes = await axios.post(
+      URL,
+      {
+        query: `
+        mutation {
+            joinPublicOrganization(organizationId: "${createdOrgId}") {
+              _id
+              firstName
+              lastName
+              email
+            }
+          }`,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
+      }
+    );
+    //console.log(joinOrgRes.data)
+
+    //Admin removes user from organization
+    const removeMemberResponse = await axios.post(
+      URL,
+      {
+        query: `mutation {
+          removeMember(data: {
+            organizationId: "${createdOrgId}",
+            userId: "${createdUserId}",
+          }) {
+            _id
+            firstName
+            lastName
+            password
+            email
+          }
+        }`,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const removeMemberData = removeMemberResponse.data;
+      console.log(removeMemberResponse.data.errors[0])
+    expect(removeMemberData.data.removeMember).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
         firstName: expect.any(String),
