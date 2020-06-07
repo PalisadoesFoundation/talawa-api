@@ -19,9 +19,36 @@ const removeOrganizaiton = async (parent, args, context, info) => {
     //remove organization from the user's created organization field
     user.overwrite({
       ...user._doc,
-      createdOrganizations: user._doc.createdOrganizations.filter(organization => organization.id != org.id)
-    })
+      createdOrganizations: user._doc.createdOrganizations.filter(
+        (organization) => organization.id != org.id
+      ),
+    });
     user.save();
+
+    //Remove organization from all member's joined organizations field
+    let users = await User.find();
+    users.forEach(async (user) => {
+      if (user._doc.joinedOrganizations.includes(org.id)) {
+        user.overwrite({
+          ...user._doc,
+          joinedOrganizations: user._doc.joinedOrganizations.filter(
+            (organization) => organization.id != org.id
+          ),
+        });
+        await user.save()
+      }
+    });
+
+    //Remove organization from all member's adminFor field
+    users.forEach(async user=> {
+      if(user._doc.adminFor.includes(org.id)) {
+        user.overwrite({
+          ...user._doc,
+          adminFor: user._doc.adminFor.filter(organization=> organization.id != org.id)
+        })
+        await user.save()
+      }
+    })
 
     //delete organzation
     await Organization.deleteOne({ _id: args.id });
