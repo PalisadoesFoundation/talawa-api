@@ -15,6 +15,9 @@ module.exports = async (parent, args, context, info) => {
     const user = await User.findOne({ _id: context.userId });
     if (!user) throw new Error("User does not exist");
 
+    //checks to see if the user trying to leave is the owner of the organization
+    if(user.id == org._doc.creator) throw new Error("Creator of organization cannot leave")
+
     //check to see if user is already a member
     const members = org._doc.members.filter((member) => member == user.id);
     if (members.length == 0) throw new Error("User is not a member");
