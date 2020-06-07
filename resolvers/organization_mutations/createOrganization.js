@@ -30,6 +30,13 @@ const createOrganization = async (parent, args, context, info) => {
     })
     await newOrganization.save()
 
+    //adds organization to users joined organizations field
+    userFound.overwrite({
+      ...userFound._doc,
+      joinedOrganizations: [...userFound._doc.joinedOrganizations, newOrganization]
+    })
+    await userFound.save()
+
     //add organization to the creator's createdOrganizations field
     let updatedUser = await User.updateOne(
       { _id: userFound.id },
