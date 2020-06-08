@@ -5,8 +5,8 @@ Organizations
 Types of Organizations
 ----------------------
 
-Public Organization
-```````````````````
+Public Organizations
+````````````````````
 
 These are organizations that don't restrict membership. Any user can join a public organization.
 

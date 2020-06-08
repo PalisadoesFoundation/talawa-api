@@ -25,7 +25,7 @@ Once a user leaves an organization he no longer has access to information relati
 
 
 
-How To Remove A User
---------------------
+How To Remove A User From An Organization
+-----------------------------------------
 
 An administrator of an organization can remove any user of an organization unless that user is also an administrator or the creator of that organization
