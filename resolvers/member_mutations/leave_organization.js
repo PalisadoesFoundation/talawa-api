@@ -22,6 +22,14 @@ module.exports = async (parent, args, context, info) => {
     const members = org._doc.members.filter((member) => member == user.id);
     if (members.length == 0) throw new Error("User is not a member");
 
+
+    //if the user is an admin he is removed from the organization's admin field
+    org.overwrite({
+      ...org._doc,
+      admins: org._doc.admins.filter(admin=>admin!=user.id)
+    })
+    await org.save()
+
     //remove user from the organization's members field
     org.overwrite({
       ...org._doc,
