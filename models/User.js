@@ -27,10 +27,28 @@ const userSchema = new Schema({
             ref: "Organization"
         }
     ],
+    createdEvents: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "Event"
+        }
+    ],
     joinedOrganizations: [
         {
             type: Schema.Types.ObjectId,
             ref: "Organization"
+        }
+    ],
+    registeredEvents: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "Event"
+        }
+    ],
+    eventAdmin: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "Event"
         }
     ],
     adminFor: [

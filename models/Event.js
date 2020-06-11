@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const eventSchema = new Schema({
-    name: {
+    title: {
         type:String,
         required:true
     },
@@ -11,16 +11,24 @@ const eventSchema = new Schema({
         type:String,
         required:true
     },
+    attendees: {
+        type:String,
+        required:false
+    },
     isPublic: {
         type:Boolean,
         required:true
+    },
+    isRegisterable: {
+        type: Boolean,
+        required: true,
     },
     creator: {
         type: Schema.Types.ObjectId,
         ref: "User",
         required:true
     },
-    members: [
+    registrants: [
         {
             type: Schema.Types.ObjectId,
             ref: "User"

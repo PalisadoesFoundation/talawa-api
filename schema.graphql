@@ -10,8 +10,24 @@ const typeDefs = gql`
     password: String
     createdOrganizations: [Organization]
     joinedOrganizations: [Organization]
+    createdEvents: [Event]
+    registeredEvents: [Event]
+    eventAdmin: [Event]
     adminFor: [Organization]
   }
+
+  type Event {
+    _id: ID!
+    title:String!
+    description: String!
+    attendees: String!
+    isPublic: Boolean! 
+    isRegisterable: Boolean! 
+    creator: User!
+    registrants: [User]
+    admins(adminId: ID): [User]
+  }
+
 
   type Organization {
     _id: ID!
@@ -44,14 +60,26 @@ const typeDefs = gql`
     users(id: ID): [User],
     login(data: LoginInput!): AuthData!
     organizations(id: ID): [Organization]
+    events(id: ID): [Event]
     me:User!
   }
 
   input OrganizationInput {
-    name:String!  
+    title:String!
     description: String!
-    isPublic: Boolean!
+    attendees: String
+    isPublic: Boolean! 
+    isRegisterable: Boolean! 
   }
+
+  input EventInput {
+    title:String!
+    description: String!
+    attendees: String
+    isPublic: Boolean! 
+    isRegisterable: Boolean! 
+  }
+
   input UpdateOrganizationInput {
     name:String
     description: String
@@ -67,6 +95,7 @@ const typeDefs = gql`
 
   type Mutation {
     signUp(data: UserInput!): AuthData!
+    createEvent(data: EventInput): Event!
     createOrganization(data: OrganizationInput): Organization!
     updateOrganization(id:ID!, data: UpdateOrganizationInput) : Organization!
     removeOrganization(id: ID!) : Organization!

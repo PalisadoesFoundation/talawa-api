@@ -1,4 +1,5 @@
 const { signUp } = require("./Auth.js");
+const createEvent = require("./event_mutations/createEvent")
 const createOrganization = require("./organization_mutations/createOrganization")
 const updateOrganization = require("./organization_mutations/updateOrganization")
 const removeOrganization = require("./organization_mutations/removeOrganization")
@@ -11,6 +12,7 @@ const removeMember = require("./member_mutations/removeMember")
 const Mutation = {
   signUp,
   createOrganization,
+  createEvent,
   updateOrganization,
   removeOrganization,
   createAdmin,
