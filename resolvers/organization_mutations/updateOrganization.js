@@ -1,9 +1,10 @@
 const User = require("../../models/User");
 const Organization = require("../../models/Organization");
 const authCheck = require("../functions/authCheck");
-const creatorCheck = require("../functions/creatorCheck");
+const adminCheck = require("../functions/adminCheck");
 
-const removeOrganizaiton = async (parent, args, context, info) => {
+
+const updateOrganization = async (parent, args, context, info) => {
   authCheck(context);
   try {
     //checks to see if organization exists
@@ -11,15 +12,20 @@ const removeOrganizaiton = async (parent, args, context, info) => {
     if (!org) throw new Error("Organization not found");
 
     //check if the user is an admin
-    creatorCheck(context, org)
+    adminCheck(context, org)
 
-    //delete organzation
-    await Organization.deleteOne({_id: args.id})
 
-    return org
+    //UPDATE ORGANIZATION
+    org.overwrite({
+      ...org._doc,
+      ...args.data
+    })
+    await org.save();
+
+    return org;
   } catch (e) {
     throw e;
   }
 };
 
-module.exports = removeOrganizaiton;
+module.exports = updateOrganization;

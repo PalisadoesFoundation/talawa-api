@@ -1,4 +1,4 @@
-Creating Users
+Authentication
 ==============
 
 
