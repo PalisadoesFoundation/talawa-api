@@ -15,8 +15,8 @@ const createEvent = async (parent, args, context, info) => {
     let newEvent = new Event({
       ...args.data,
       creator: context.userId,
-      registrants: [userId],
-      admins: [userId]
+      registrants: [context.userId],
+      admins: [context.userId]
     });
     await newEvent.save()
 
