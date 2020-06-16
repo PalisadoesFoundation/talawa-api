@@ -5,75 +5,95 @@ const { login } = require("./Auth");
 const authCheck = require("./functions/authCheck");
 
 const Query = {
-  users: async (parent, args, context, info) => {
-    try {
-      if (args.id) {
-        const users = await User.find({ _id: args.id });
-        if (!users[0]) throw new Error("User not found");
-        else
-          return users.map((user) => {
-            return {
-              ...user._doc,
-              password: null,
-            };
-          });
-      } else {
-        const users = await User.find();
-        return users.map((user) => {
-          return { ...user._doc, password: null };
-        });
-      }
-    } catch (e) {
-      throw e;
-    }
-  },
-  me: async (parent, args, context, info) => {
-    authCheck(context);
-    try {
-      //Ensure user exists
-      const user = await User.findOne({ _id: context.userId });
-      if(!user) throw new Error("User does not exist")
-      //console.log(user._doc)
+	users: async (parent, args, context, info) => {
+		try {
+			if (args.id) {
+				const users = await User.find({ _id: args.id })
+					.populate("createdOrganizations")
+					.populate("createdEvents")
+					.populate("joinedOrganizations")
+					.populate("registeredEvents")
+					.populate("eventAdmin")
+					.populate("adminFor");
+				if (!users[0]) throw new Error("User not found");
+				else
+					return users.map((user) => {
+						return {
+							...user._doc,
+							password: null,
+						};
+					});
+			} else {
+				const users = await User.find()
+					.populate("createdOrganizations")
+					.populate("createdEvents")
+					.populate("joinedOrganizations")
+					.populate("registeredEvents")
+					.populate("eventAdmin")
+					.populate("adminFor");
+				return users.map((user) => {
+					return { ...user._doc, password: null };
+				});
+			}
+		} catch (e) {
+			throw e;
+		}
+	},
+	me: async (parent, args, context, info) => {
+		authCheck(context);
+		try {
+			//Ensure user exists
+			const user = await User.findOne({ _id: context.userId });
+			if (!user) throw new Error("User does not exist");
+			//console.log(user._doc)
 
-      return {
-        ...user._doc,
-        password:null
-      }
-    } catch (e) {
-      throw e;
-    }
-  },
-  login,
-  organizations: async (parent, args, context, info) => {
-    try {
-      if (args.id) {
-        const organizationFound = await Organization.find({ _id: args.id });
-        if (!organizationFound[0]) {
-          throw new Error("Organization not found");
-        }
-        return organizationFound;
-      } else {
-        return await Organization.find();
-      }
-    } catch (e) {
-      throw e;
-    }
-  },
-  events: async (parent, args, context, info) => {
-    try {
-      if (args.id) {
-        const eventFound = await Event.find({ _id: args.id }).populate('registrants').populate('creator').populate('admins');
-        if (!eventFound[0]) {
-          throw new Error("Event not found");
-        }
-        return eventFound;
-      } else {
-        return await Event.find().populate('registrants').populate('creator').populate('admins');
-      }
-    } catch (e) {
-      throw e;
-    }
-  },
+			return {
+				...user._doc,
+				password: null,
+			};
+		} catch (e) {
+			throw e;
+		}
+	},
+	login,
+	organizations: async (parent, args, context, info) => {
+		try {
+			if (args.id) {
+				const organizationFound = await Organization.find({
+					_id: args.id,
+				});
+				if (!organizationFound[0]) {
+					throw new Error("Organization not found");
+				}
+				return organizationFound;
+			} else {
+				return await Organization.find();
+			}
+		} catch (e) {
+			throw e;
+		}
+	},
+	events: async (parent, args, context, info) => {
+		try {
+			if (args.id) {
+				const eventFound = await Event.find({ _id: args.id })
+					.populate("registrants")
+					.populate("creator")
+					.populate("admins");
+				if (!eventFound[0]) {
+					throw new Error("Event not found");
+				}
+				return eventFound;
+			} else {
+				return await Event.find()
+					.populate("registrants")
+					.populate("creator")
+					.populate("admins");
+			}
+		} catch (e) {
+			throw e;
+		}
+	},
 };
 
 module.exports = Query;

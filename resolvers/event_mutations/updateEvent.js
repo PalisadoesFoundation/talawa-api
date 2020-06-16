@@ -1,31 +1,30 @@
 const User = require("../../models/User");
-const Organization = require("../../models/Organization");
+const Event = require("../../models/Event");
+
 const authCheck = require("../functions/authCheck");
-const adminCheck = require("../functions/adminCheck");
 
+const updateEvent = async (parent, args, context, info) => {
+	authCheck(context);
+	try {
+		const user = await User.findOne({ _id: context.userId });
+		if (!user) throw new Error("User does not exist");
 
-const updateOrganization = async (parent, args, context, info) => {
-  authCheck(context);
-  try {
-    //checks to see if organization exists
-    let org = await Organization.findOne({ _id: args.id });
-    if (!org) throw new Error("Organization not found");
+		let event = await Event.findOne({ _id: args.id });
+		if (!event) throw new Error("Event not found");
 
-    //check if the user is an admin
-    adminCheck(context, org)
+		if (!event.admins.includes(context.userId)) {
+			throw new Error("User cannot delete event they didn't create");
+		}
 
-
-    //UPDATE ORGANIZATION
-    org.overwrite({
-      ...org._doc,
-      ...args.data
-    })
-    await org.save();
-
-    return org;
-  } catch (e) {
-    throw e;
-  }
+		let newEvent = await Event.findOneAndUpdate(
+			{ _id: args.id },
+			{ ...args.data },
+			{ new: true }
+		);
+		return newEvent;
+	} catch (e) {
+		throw e;
+	}
 };
 
-module.exports = updateOrganization;
+module.exports = updateEvent;

@@ -80,6 +80,15 @@ const typeDefs = gql`
     isRegisterable: Boolean! 
   }
 
+  input UpdateEventInput {
+    title:String
+    description: String
+    attendees: String
+    isPublic: Boolean
+    isRegisterable: Boolean
+  }
+
+
   input UpdateOrganizationInput {
     name:String
     description: String
@@ -96,6 +105,8 @@ const typeDefs = gql`
   type Mutation {
     signUp(data: UserInput!): AuthData!
     createEvent(data: EventInput): Event!
+    removeEvent(id: ID!): Event!
+    updateEvent(id:ID!, data: UpdateEventInput) : Event!
     createOrganization(data: OrganizationInput): Organization!
     updateOrganization(id:ID!, data: UpdateOrganizationInput) : Organization!
     removeOrganization(id: ID!) : Organization!

@@ -1,7 +1,5 @@
 {
     "env" : {
-        "MONGO_USER":"root",
-        "MONGO_PASSWORD":"janelle123",
-        "MONGO_DB":"talawa"
+        "MONGO_URL": "mongodb://root:janelle123@ds023428.mlab.com:23428/talawa"
     }
 }
