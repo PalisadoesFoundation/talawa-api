@@ -15,10 +15,6 @@ module.exports = async (parent, args, context, info) => {
     //ensure user is an admin
     adminCheck(context, org);
 
-    //ensure user exists
-    const user = await User.findOne({ _id: args.data.userId });
-    if (!user) throw new Error("User does not exist");
-
     //find post
     let post = await Post.findOne({_id: args.postId });
     if(!post) throw new Error("Post does not exist");
