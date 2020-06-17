@@ -15,7 +15,7 @@ Only the creator of the organization can remove administrators.
 
 
 What can an Administrator do?
-----------------------------
+-----------------------------
 
 Administratos can remove any member from an organization as long as that member is not also an administrator or the creator.
 They can also remove any post made by any user, as well as any event or group chat created by members of the organization
