@@ -64,6 +64,37 @@ const typeDefs = gql`
     organizationId: ID!, userId: ID!
   }
 
+  type Post {
+    text: String
+    createdAt: String
+    imageUrl: String
+    videoUrl:String
+    creator: User
+    organization: Organization
+    linkedBy: User
+    comments: User
+  }
+
+  type Event {
+    title: String
+    description:String
+    attendees:String
+    isPublic:String
+    isRegisterable: String
+    creator:User
+    registrants: [User]
+    admins:[User]
+  }
+
+  type Message {
+    text: String
+    createdAt: String
+    imageUrl: String
+    videoUrl:String
+        creator: User
+    organization: Organization
+  }
+
 
   type Mutation {
     signUp(data: UserInput!): AuthData!
@@ -75,6 +106,11 @@ const typeDefs = gql`
     joinPublicOrganization (organizationId: ID!) : User!
     leaveOrganization (organizationId: ID!) : User!
     removeMember (data: UserAndOrganizationInput!) : User!
+
+    adminRemovePost(organizationId: ID!, postId:ID!):Post!
+    adminRemoveEvent(organizationId: ID!,eventId: ID!): Event!
+    adminRemoveGroupChat(organizationId:ID!, groupChatId:ID!):Message!
+
   }
 `
 
