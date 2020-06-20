@@ -10,6 +10,12 @@ const removeAdmin = require("./admin_mutations/removeAdmin")
 const joinPublicOrganization = require("./member_mutations/join_public_organization")
 const leaveOrganization = require("./member_mutations/leave_organization")
 const removeMember = require("./member_mutations/removeMember")
+const registerForEvent = require("./event_mutations/registerForEvent")
+
+const createEventProject = require("./event_project_mutations/createProject")
+const removeEventProject = require("./event_project_mutations/removeProject")
+const updateEventProject = require("./event_project_mutations/updateProject")
+
 
 const Mutation = {
   signUp,
@@ -23,7 +29,11 @@ const Mutation = {
   removeAdmin,
   joinPublicOrganization,
   leaveOrganization,
-  removeMember
+  removeMember,
+  registerForEvent,
+  createEventProject,
+  removeEventProject,
+  updateEventProject,
 };
 
 module.exports = Mutation;

@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const Organization = require("../models/Organization");
 const Event = require("../models/Event");
+const EventProject = require("../models/EventProject");
 const { login } = require("./Auth");
 const authCheck = require("./functions/authCheck");
 
@@ -73,6 +74,20 @@ const Query = {
 			throw e;
 		}
 	},
+	event: async (parent, args, context, info) => {
+		try {
+			const eventFound = await Event.find({ _id: args.id })
+				.populate("registrants")
+				.populate("creator")
+				.populate("admins");
+			if (!eventFound) {
+				throw new Error("Event not found");
+			}
+			return { ...eventFound._doc };
+		} catch (e) {
+			throw e;
+		}
+	},
 	events: async (parent, args, context, info) => {
 		try {
 			if (args.id) {
@@ -90,6 +105,51 @@ const Query = {
 					.populate("creator")
 					.populate("admins");
 			}
+		} catch (e) {
+			throw e;
+		}
+	},
+	project: async (parent, args, context, info) => {
+		try {
+			const eventProjectFound = await EventProject.findOne({
+				_id: args.id,
+			})
+				.populate("event")
+				.populate("creator");
+			if (!eventProjectFound) {
+				throw new Error("Event not found");
+			}
+			return { ...eventProjectFound._doc };
+		} catch (e) {
+			throw e;
+		}
+	},
+	projects: async (parent, args, context, info) => {
+		try {
+			if (args.id) {
+				const eventProjectFound = await EventProject.find({
+					_id: args.id,
+				})
+					.populate("event")
+					.populate("creator");
+				if (!eventProjectFound[0]) {
+					throw new Error("Event not found");
+				}
+				return eventProjectFound;
+			} else {
+				return await EventProject.find()
+					.populate("event")
+					.populate("creator");
+			}
+		} catch (e) {
+			throw e;
+		}
+	},
+	projectsByEvent: async (parent, args, context, info) => {
+		try {
+			return await EventProject.find({ event: args.id })
+				.populate("event")
+				.populate("creator");
 		} catch (e) {
 			throw e;
 		}

@@ -9,6 +9,7 @@ const connect = mongoose
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    useFindAndModify: false
   }
 )
 

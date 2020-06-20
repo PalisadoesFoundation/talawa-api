@@ -20,6 +20,8 @@ const typeDefs = gql`
     _id: ID!
     title:String!
     description: String!
+    recurring: Boolean!
+    recurrance: String
     attendees: String!
     isPublic: Boolean! 
     isRegisterable: Boolean! 
@@ -27,6 +29,14 @@ const typeDefs = gql`
     registrants: [User]
     admins(adminId: ID): [User]
   }
+
+  type EventProject {
+    _id: ID!
+    title:String!
+    description: String!
+    event: Event!
+  }
+
 
 
   type Organization {
@@ -61,6 +71,10 @@ const typeDefs = gql`
     login(data: LoginInput!): AuthData!
     organizations(id: ID): [Organization]
     events(id: ID): [Event]
+    event(id: ID): Event
+    project(id: ID): EventProject
+    projects(id: ID): [EventProject]
+    projectsByEvent(id: ID!): [EventProject]
     me:User!
   }
 
@@ -75,6 +89,8 @@ const typeDefs = gql`
   input EventInput {
     title:String!
     description: String!
+    recurring: Boolean!
+    recurrance: String
     attendees: String
     isPublic: Boolean! 
     isRegisterable: Boolean! 
@@ -83,9 +99,23 @@ const typeDefs = gql`
   input UpdateEventInput {
     title:String
     description: String
+    recurring: Boolean
+    recurrance: String
     attendees: String
     isPublic: Boolean
     isRegisterable: Boolean
+  }
+
+
+  input EventProjectInput {
+    title:String!
+    description: String!
+    eventId: String
+  }
+
+  input UpdateEventProjectInput {
+    title:String
+    description: String
   }
 
 
@@ -106,7 +136,11 @@ const typeDefs = gql`
     signUp(data: UserInput!): AuthData!
     createEvent(data: EventInput): Event!
     removeEvent(id: ID!): Event!
+    registerForEvent(id: ID!): Event!
     updateEvent(id:ID!, data: UpdateEventInput) : Event!
+    createEventProject(data: EventProjectInput): EventProject!
+    removeEventProject(id: ID!): EventProject!
+    updateEventProject(id:ID!, data: UpdateEventProjectInput) : EventProject!
     createOrganization(data: OrganizationInput): Organization!
     updateOrganization(id:ID!, data: UpdateOrganizationInput) : Organization!
     removeOrganization(id: ID!) : Organization!
