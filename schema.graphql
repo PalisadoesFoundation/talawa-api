@@ -86,7 +86,6 @@ const typeDefs = gql`
     description: String!
     attendees: String
     isPublic: Boolean! 
-    isRegisterable: Boolean! 
   }
 
   input EventInput {
