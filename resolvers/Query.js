@@ -1,5 +1,7 @@
 const User = require("../models/User");
 const Organization = require("../models/Organization");
+const Event = require("../models/Event");
+
 const { login } = require("./Auth");
 const authCheck = require("./functions/authCheck");
 
@@ -58,6 +60,27 @@ const Query = {
       throw e;
     }
   },
+	events: async (parent, args, context, info) => {
+		try {
+			if (args.id) {
+				const eventFound = await Event.find({ _id: args.id })
+					.populate("registrants")
+					.populate("creator")
+					.populate("admins");
+				if (!eventFound[0]) {
+					throw new Error("Event not found");
+				}
+				return eventFound;
+			} else {
+				return await Event.find()
+					.populate("registrants")
+					.populate("creator")
+					.populate("admins");
+			}
+		} catch (e) {
+			throw e;
+		}
+	},
 };
 
 module.exports = Query;

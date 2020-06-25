@@ -12,9 +12,12 @@ const adminRemovePost = require("./admin_mutations/admin-remove-post");
 const adminRemoveEvent = require("./admin_mutations/admin-remove-event");
 const adminRemoveGroupChat = require("./admin_mutations/admin-remove-group-chat");
 
+const createEvent = require("./event_mutations/createEvent")
+
 const Mutation = {
   signUp,
   createOrganization,
+  createEvent,
   updateOrganization,
   removeOrganization,
   createAdmin,

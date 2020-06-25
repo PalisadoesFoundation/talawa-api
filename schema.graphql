@@ -45,6 +45,8 @@ const typeDefs = gql`
     login(data: LoginInput!): AuthData!
     organizations(id: ID): [Organization]
     me:User!
+    events(id: ID): [Event]
+    event(id: ID): Event
   }
 
   input OrganizationInput {
@@ -65,6 +67,7 @@ const typeDefs = gql`
   }
 
   type Post {
+    _id: ID
     text: String
     createdAt: String
     imageUrl: String
@@ -75,15 +78,21 @@ const typeDefs = gql`
     comments: User
   }
 
+
+
   type Event {
-    title: String
-    description:String
-    attendees:String
-    isPublic:String
-    isRegisterable: String
-    creator:User
+    _id: ID!
+    organization: Organization!
+    title:String!
+    description: String!
+    recurring: Boolean
+    recurrance: String
+    attendees: String!
+    isPublic: Boolean! 
+    isRegisterable: Boolean! 
+    creator: User!
     registrants: [User]
-    admins:[User]
+    admins(adminId: ID): [User]
   }
 
   type Message {
@@ -93,6 +102,16 @@ const typeDefs = gql`
     videoUrl:String
         creator: User
     organization: Organization
+  }
+
+  input EventInput {
+    title:String!
+    description: String!
+    recurring: Boolean!
+    recurrance: String
+    attendees: String
+    isPublic: Boolean! 
+    isRegisterable: Boolean! 
   }
 
 
@@ -110,6 +129,9 @@ const typeDefs = gql`
     adminRemovePost(organizationId: ID!, postId:ID!):Post!
     adminRemoveEvent(organizationId: ID!,eventId: ID!): Event!
     adminRemoveGroupChat(organizationId:ID!, groupChatId:ID!):Message!
+
+
+     createEvent(data: EventInput): Event!
 
   }
 `
