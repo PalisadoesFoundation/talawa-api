@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 
 const connect = mongoose
 .connect(
-  "mongodb+srv://devtest876:319JsGBLuWVP8Jvx@talawa-dev-nk4oo.mongodb.net/official-db?retryWrites=true&w=majority",
+  "mongodb://root:janelle123@ds023428.mlab.com:23428/talawa",
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
