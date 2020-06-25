@@ -32,6 +32,18 @@ const organizationSchema = new Schema({
             ref: "User",
             required:true
         }
+    ],
+    groupChats: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "Message",
+        }
+    ],
+    posts:[
+        {
+            type: Schema.Types.ObjectId,
+            ref: "Post",
+        }
     ]
 })
 

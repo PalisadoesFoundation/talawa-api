@@ -10,8 +10,35 @@ const typeDefs = gql`
     password: String
     createdOrganizations: [Organization]
     joinedOrganizations: [Organization]
+    createdEvents: [Event]
+    registeredEvents: [Event]
+    eventAdmin: [Event]
     adminFor: [Organization]
   }
+
+  type Event {
+    _id: ID!
+    title:String!
+    description: String!
+    recurring: Boolean!
+    recurrance: String
+    attendees: String!
+    isPublic: Boolean! 
+    isRegisterable: Boolean! 
+    creator: User!
+    registrants: [User]
+    admins(adminId: ID): [User]
+    organization: Organization!
+  }
+
+  type EventProject {
+    _id: ID!
+    title:String!
+    description: String!
+    event: Event!
+  }
+
+
 
   type Organization {
     _id: ID!
@@ -44,16 +71,58 @@ const typeDefs = gql`
     users(id: ID): [User],
     login(data: LoginInput!): AuthData!
     organizations(id: ID): [Organization]
-    me:User!
     events(id: ID): [Event]
     event(id: ID): Event
+    project(id: ID): EventProject
+    projects(id: ID): [EventProject]
+    projectsByEvent(id: ID!): [EventProject]
+    me:User!
+    posts: [Post]
+    groupChats: [Message]
   }
 
   input OrganizationInput {
-    name:String!  
+    name:String!
     description: String!
-    isPublic: Boolean!
+    attendees: String
+    isPublic: Boolean! 
+    isRegisterable: Boolean! 
   }
+
+  input EventInput {
+    title:String!
+    description: String!
+    recurring: Boolean!
+    recurrance: String
+    attendees: String
+    isPublic: Boolean! 
+    isRegisterable: Boolean! 
+    organizationId: ID!
+  }
+
+  input UpdateEventInput {
+    title:String
+    description: String
+    recurring: Boolean
+    recurrance: String
+    attendees: String
+    isPublic: Boolean
+    isRegisterable: Boolean
+  }
+
+
+  input EventProjectInput {
+    title:String!
+    description: String!
+    eventId: String
+  }
+
+  input UpdateEventProjectInput {
+    title:String
+    description: String
+  }
+
+
   input UpdateOrganizationInput {
     name:String
     description: String
@@ -80,43 +149,39 @@ const typeDefs = gql`
 
 
 
-  type Event {
-    _id: ID!
-    organization: Organization!
-    title:String!
-    description: String!
-    recurring: Boolean
-    recurrance: String
-    attendees: String!
-    isPublic: Boolean! 
-    isRegisterable: Boolean! 
-    creator: User!
-    registrants: [User]
-    admins(adminId: ID): [User]
-  }
-
   type Message {
+    _id: ID!
     text: String
     createdAt: String
     imageUrl: String
     videoUrl:String
-        creator: User
+    creator: User
     organization: Organization
   }
 
-  input EventInput {
-    title:String!
-    description: String!
-    recurring: Boolean!
-    recurrance: String
-    attendees: String
-    isPublic: Boolean! 
-    isRegisterable: Boolean! 
+  input PostInput {
+    organizationId:ID!
+    text: String
+  }
+
+  input GroupChatInput {
+    text: String
+    createdAt: String
+    imageUrl: String
+    videoUrl:String
+    organizationId: ID!
   }
 
 
   type Mutation {
     signUp(data: UserInput!): AuthData!
+    createEvent(data: EventInput): Event!
+    removeEvent(id: ID!): Event!
+    registerForEvent(id: ID!): Event!
+    updateEvent(id:ID!, data: UpdateEventInput) : Event!
+    createEventProject(data: EventProjectInput): EventProject!
+    removeEventProject(id: ID!): EventProject!
+    updateEventProject(id:ID!, data: UpdateEventProjectInput) : EventProject!
     createOrganization(data: OrganizationInput): Organization!
     updateOrganization(id:ID!, data: UpdateOrganizationInput) : Organization!
     removeOrganization(id: ID!) : Organization!
@@ -130,9 +195,10 @@ const typeDefs = gql`
     adminRemoveEvent(organizationId: ID!,eventId: ID!): Event!
     adminRemoveGroupChat(organizationId:ID!, groupChatId:ID!):Message!
 
+    createPost(data: PostInput!): Post!
 
-     createEvent(data: EventInput): Event!
-
+    
+    createGroupChat(data: GroupChatInput!): Message!
   }
 `
 
