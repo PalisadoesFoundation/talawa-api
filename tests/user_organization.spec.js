@@ -6,6 +6,9 @@ const shortid = require("shortid");
 let token;
 beforeAll(async () => {
   token = await getToken();
+
+  //Prevent CORS error
+  const adapter = require('axios/lib/adapters/http')
 });
 
 describe("User-Organization Resolvers", () => {
