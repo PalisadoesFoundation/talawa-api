@@ -11,6 +11,10 @@ const cors = require("cors");
 
 const app = express();
 
+console.log(process.env.MONGO_USER)
+console.log(process.env.MONGO_PASSWORD)
+console.log(process.env.MONGO_DB)
+
 
 const resolvers = {
   Query,
