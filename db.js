@@ -10,4 +10,4 @@ const connect = mongoose
   }
 )
 
-module.exports = connect
+module.exports = connect  
