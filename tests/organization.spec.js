@@ -4,9 +4,6 @@ const getToken = require("./functions/getToken");
 let token;
 beforeAll(async () => {
   token = await getToken();
-
-  //Prevent CORS error
-  const adapter = require('axios/lib/adapters/http')
 });
 
 describe("organization resolvers", () => {

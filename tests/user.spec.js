@@ -2,12 +2,7 @@ const axios = require("axios");
 const shortid = require("shortid");
 const { URL } = require("../constants");
 
-beforeAll(async () => {
-  token = await getToken();
 
-  //Prevent CORS error
-  const adapter = require('axios/lib/adapters/http')
-});
 
 
 describe("user resolvers", () => {
