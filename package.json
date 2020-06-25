@@ -4,9 +4,9 @@
   "description": "\"# tenten-api-rework\"",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "cross-env jest",
     "start": "cross-env node index.js",
-    "dev": "nodemon index.js --ext js,graphql",
+    "dev": "cross-env nodemon index.js --ext js,graphql",
     "test-server": "cross-env TEST_DB=testmongo nodemon index.js --ext js,graphql"
   },
   "repository": {
