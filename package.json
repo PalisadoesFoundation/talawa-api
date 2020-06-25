@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "start": "nodemon index.js --ext js,graphql",
+    "start": "cross-env TEST_DB=testmongo nodemon index.js --ext js,graphql",
     "test-server": "cross-env TEST_DB=testmongo nodemon index.js --ext js,graphql"
   },
   "repository": {
