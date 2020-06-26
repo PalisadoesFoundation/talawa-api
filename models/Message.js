@@ -21,11 +21,6 @@ const messageSchema = new Schema({
         ref: "User",
         required:true
     },
-    organization: {
-        type: Schema.Types.ObjectId,
-        ref: "Organization",
-        required:true
-    },
     group: {
         type: Schema.Types.ObjectId,
         ref: "Group",
