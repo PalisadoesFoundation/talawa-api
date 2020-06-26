@@ -155,7 +155,6 @@ const typeDefs = gql`
     imageUrl: String
     videoUrl:String
     creator: User
-    organization: Organization
   }
 
   input PostInput {

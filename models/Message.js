@@ -26,6 +26,11 @@ const messageSchema = new Schema({
         ref: "Organization",
         required:true
     },
+    group: {
+        type: Schema.Types.ObjectId,
+        ref: "Group",
+        required:true
+    },
 })
 
 module.exports = mongoose.model("Message", messageSchema);
