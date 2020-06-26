@@ -8,8 +8,12 @@ const Event = require("../../models/Event");
 module.exports = async (parent, args, context, info) => {
   authCheck(context);
   try {
+    //find event
+    let event = await Event.findOne({ _id: args.eventId });
+    if (!event) throw new Error("Event does not exist");
+
     //ensure organization exists
-    let org = await Organization.findOne({ _id: args.organizationId });
+    let org = await Organization.findOne({ _id: event.organization });
     if (!org) throw new Error("Organization not found");
 
     //ensure user is an admin
@@ -21,22 +25,19 @@ module.exports = async (parent, args, context, info) => {
       throw new Error("User does not exist");
     }
 
-    //find event
-    let event = await Event.findOne({ _id: args.eventId });
-    if (!event) throw new Error("Event does not exist");
-
-    //remove event from organization
-    // org.overwrite({
-    //   ...org._doc,
-    //   events: org._doc.events.filter((event) => event != args.eventId),
-    // });
-    // await org.save();
-
-    // //remove post from user
-    // user.overwrite({
-    //   ...user._doc,
-    //   events: user._doc.events.filter((event) => event != args.eventId),
-    // });
+    //remove event from user
+    user.overwrite({
+      ...user._doc,
+      eventAdmin: user._doc.eventAdmin.filter(
+        (eventAdmin) => eventAdmin != event.id
+      ),
+      createdEvents: user._doc.createdEvents.filter(
+        (createdEvent) => createdEvent != event.id
+      ),
+      registeredEvents: user._doc.registeredEvents.filter(
+        (registeredEvent) => registeredEvent != event.id
+      ),
+    });
 
     await user.save();
 

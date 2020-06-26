@@ -28,7 +28,7 @@ const typeDefs = gql`
     creator: User!
     registrants: [User]
     admins(adminId: ID): [User]
-    organization: Organization!
+    organization: Organization
   }
 
   type EventProject {
@@ -191,7 +191,7 @@ const typeDefs = gql`
     removeMember (data: UserAndOrganizationInput!) : User!
 
     adminRemovePost(organizationId: ID!, postId:ID!):Post!
-    adminRemoveEvent(organizationId: ID!,eventId: ID!): Event!
+    adminRemoveEvent(eventId: ID!): Event!
     adminRemoveGroupChat(organizationId:ID!, groupChatId:ID!):Message!
 
     createPost(data: PostInput!): Post!
