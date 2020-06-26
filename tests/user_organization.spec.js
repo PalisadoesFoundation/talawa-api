@@ -111,6 +111,45 @@ describe("User-Organization Resolvers", () => {
     );
   });
 
+  //NEW USER CREATES AN EVENT
+  let createdEventId;
+  test("User Creates Event", async () => {
+    const response = await axios.post(
+      URL,
+      {
+        query: `
+        mutation{
+          createEvent(data:{
+                title:"to be deleted"
+            description: "to be deleted"
+            recurring: false
+            attendees: "to be deleted"
+            isPublic: false
+            isRegisterable:false
+            organizationId: "${createdOrgId}"
+          }){
+            _id
+          }
+        }
+          }`,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${newUserToken}`,
+        },
+      }
+    );
+
+    const { data } = response;
+    createdEventId = data.data.createEvent._id;
+    expect(data.data.createEvent).toEqual(
+      expect.objectContaining({
+        _id: expect(createdEventId),
+      })
+    );
+  });
+
+
   //USER IS MADE ADMIN
   test("User is made admin", async () => {
     const response = await axios.post(
@@ -142,6 +181,35 @@ describe("User-Organization Resolvers", () => {
         firstName: expect.any(String),
         lastName: expect.any(String),
         email: expect.any(String),
+      })
+    );
+  });
+
+  //ADMIN REMOVES EVENT
+
+  test("Admin Removes Event", async () => {
+    const response = await axios.post(
+      URL,
+      {
+        query: `
+        mutation{
+          adminRemoveEvent(eventId:"${createdEventId}") {
+            _id
+          }
+        }
+          }`,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${newUserToken}`,
+        },
+      }
+    );
+
+    const { data } = response;
+    expect(data.data.createEvent).toEqual(
+      expect.objectContaining({
+        _id: expect(createdEventId),
       })
     );
   });
@@ -178,7 +246,7 @@ describe("User-Organization Resolvers", () => {
         _id: expect.any(String),
         firstName: expect.any(String),
         lastName: expect.any(String),
-        email: expect.any(String)
+        email: expect.any(String),
       })
     );
   });
@@ -290,7 +358,7 @@ describe("User-Organization Resolvers", () => {
       }
     );
     const removeMemberData = removeMemberResponse.data;
-      //console.log(removeMemberResponse.data.errors[0])
+    //console.log(removeMemberResponse.data.errors[0])
     expect(removeMemberData.data.removeMember).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
