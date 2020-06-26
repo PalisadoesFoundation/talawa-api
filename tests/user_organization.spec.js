@@ -8,10 +8,11 @@ beforeAll(async () => {
   token = await getToken();
 });
 
+let createdOrgId = "test";
+
 describe("User-Organization Resolvers", () => {
   //ORGANIZATION IS CREATED
 
-  let createdOrgId;
   test("createOrganization", async () => {
     const response = await axios.post(
       URL,
@@ -37,6 +38,7 @@ describe("User-Organization Resolvers", () => {
     );
     const { data } = response;
     createdOrgId = data.data.createOrganization._id;
+    console.log(createdOrgId);
     expect(data.data.createOrganization).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
@@ -46,6 +48,7 @@ describe("User-Organization Resolvers", () => {
   });
 
   //NEW USER IS CREATED
+
   let newUserToken;
   let newUserId;
   test("signUp", async () => {
@@ -78,7 +81,6 @@ describe("User-Organization Resolvers", () => {
   });
 
   //NEW USER JOINS ORGANIZATION
-
   test("Join Public Organization", async () => {
     const response = await axios.post(
       URL,
@@ -99,7 +101,6 @@ describe("User-Organization Resolvers", () => {
         },
       }
     );
-
     const { data } = response;
     expect(data.data.joinPublicOrganization).toEqual(
       expect.objectContaining({
@@ -114,41 +115,47 @@ describe("User-Organization Resolvers", () => {
   //NEW USER CREATES AN EVENT
   let createdEventId;
   test("User Creates Event", async () => {
-    const response = await axios.post(
-      URL,
-      {
-        query: `
-        mutation{
-          createEvent(data:{
-                title:"to be deleted"
-            description: "to be deleted"
-            recurring: false
-            attendees: "to be deleted"
-            isPublic: false
-            isRegisterable:false
-            organizationId: "${createdOrgId}"
-          }){
-            _id
-          }
-        }
-          }`,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${newUserToken}`,
+    try {
+      const response = await axios.post(
+        URL,
+        {
+          query: `
+            mutation{
+              createEvent(data:{
+                  title:"to be deleted"
+                  description: "to be deleted"
+                  recurring: false
+                  attendees: "to be deleted"
+                  isPublic: false
+                  isRegisterable:false
+                  organizationId: "${createdOrgId}"
+                }){
+                  _id
+                }
+            }`,
         },
-      }
-    );
+        {
+          headers: {
+            Authorization: `Bearer ${newUserToken}`,
+          },
+        }
+      );
 
-    const { data } = response;
-    createdEventId = data.data.createEvent._id;
-    expect(data.data.createEvent).toEqual(
-      expect.objectContaining({
-        _id: expect(createdEventId),
-      })
-    );
+      const { data } = response;
+      createdEventId = data.data.createEvent._id;
+  
+      expect(data.data.createEvent).toEqual(
+        expect.objectContaining({
+          _id: createdEventId,
+        })
+      );
+    } catch(e) {
+      console.log("an error has occurred")
+      console.log(e);
+      throw e
+    }
+
   });
-
 
   //USER IS MADE ADMIN
   test("User is made admin", async () => {
@@ -197,7 +204,7 @@ describe("User-Organization Resolvers", () => {
             _id
           }
         }
-          }`,
+          `,
       },
       {
         headers: {
@@ -207,9 +214,9 @@ describe("User-Organization Resolvers", () => {
     );
 
     const { data } = response;
-    expect(data.data.createEvent).toEqual(
+    expect(data.data.adminRemoveEvent).toEqual(
       expect.objectContaining({
-        _id: expect(createdEventId),
+        _id: createdEventId,
       })
     );
   });
