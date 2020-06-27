@@ -2,7 +2,7 @@ const User = require("../models/User");
 const Organization = require("../models/Organization");
 const Event = require("../models/Event");
 const Post = require("../models/Post");
-const GroupChat = require("../models/Message");
+const Group = require("../models/Group");
 
 
 const EventProject = require("../models/EventProject");
@@ -182,9 +182,9 @@ const Query = {
 			throw e;
 		}
 	},
-	groupChats: async(parent,args,context,info)=> {
+	groups: async(parent,args,context,info)=> {
 		try {
-			return await GroupChat.find();
+			return await Group.find();
 		} catch (e) {
 			throw e;
 		}

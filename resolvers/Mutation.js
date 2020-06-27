@@ -19,11 +19,11 @@ const updateEventProject = require("./event_project_mutations/updateProject")
 
 const adminRemovePost = require("./admin_mutations/admin-remove-post");
 const adminRemoveEvent = require("./admin_mutations/admin-remove-event");
-const adminRemoveGroupChat = require("./admin_mutations/admin-remove-group-chat");
+const adminRemoveGroup = require("./admin_mutations/admin-remove-group-chat");
 
 const createPost = require("./post_mutations/create_post")
 
-const createGroupChat = require("./group_chat_mutations/create_group_chat")
+const createGroup = require("./group_chat_mutations/create_group_chat")
 
 
 
@@ -41,14 +41,14 @@ const Mutation = {
   leaveOrganization,
   removeMember,
   adminRemovePost,
-  adminRemoveGroupChat,
+  adminRemoveGroup,
   adminRemoveEvent,
   registerForEvent,
   createEventProject,
   removeEventProject,
   updateEventProject,
   createPost,
-  createGroupChat
+  createGroup
 };
 
 module.exports = Mutation;

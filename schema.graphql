@@ -78,7 +78,7 @@ const typeDefs = gql`
     projectsByEvent(id: ID!): [EventProject]
     me:User!
     posts: [Post]
-    groupChats: [Message]
+    groups: [Group]
   }
 
   input OrganizationInput {
@@ -162,12 +162,19 @@ const typeDefs = gql`
     text: String
   }
 
-  input GroupChatInput {
-    text: String
-    createdAt: String
-    imageUrl: String
-    videoUrl:String
+  input GroupInput {
+    title: String
+    description:String
     organizationId: ID!
+  }
+
+  type Group {
+    _id: ID
+    title: String
+    description:String
+    createdAt:String
+    organization: Organization!
+    admins: [User]
   }
 
 
@@ -191,12 +198,12 @@ const typeDefs = gql`
 
     adminRemovePost(organizationId: ID!, postId:ID!):Post!
     adminRemoveEvent(eventId: ID!): Event!
-    adminRemoveGroupChat(organizationId:ID!, groupChatId:ID!):Message!
+    adminRemoveGroup(groupId:ID!):Message!
 
     createPost(data: PostInput!): Post!
 
     
-    createGroupChat(data: GroupChatInput!): Message!
+    createGroup(data: GroupInput!): Group!
   }
 `
 

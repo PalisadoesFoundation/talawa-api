@@ -4,14 +4,17 @@ const authCheck = require("../functions/authCheck");
 const creatorCheck = require("../functions/creatorCheck");
 const adminCheck = require("../functions/adminCheck");
 
-//TO BE CHANGED TO GROUPCHAT
-const GroupChat= require("../../models/Message");
+const Group = require("../../models/Group");
 
 module.exports = async (parent, args, context, info) => {
   authCheck(context);
   try {
+    //find message
+    let group = await Group.findOne({ _id: args.groupId });
+    if (!group) throw new Error("Group does not exist");
+
     //ensure organization exists
-    let org = await Organization.findOne({ _id: args.organizationId });
+    let org = await Organization.findOne({ _id: group._doc.organization._id });
     if (!org) throw new Error("Organization not found");
 
     //ensure user is an admin
@@ -22,12 +25,6 @@ module.exports = async (parent, args, context, info) => {
     if (!user) {
       throw new Error("User does not exist");
     }
-
-    //TO BE CHANGED TO GROUPCHAT
-
-    //find message
-    let groupChat = await GroupChat.findOne({ _id: args.groupChatId });
-    if (!groupChat) throw new Error("Group Chat does not exist");
 
     //remove message from organization
     // org.overwrite({
@@ -44,11 +41,11 @@ module.exports = async (parent, args, context, info) => {
     // await user.save();
 
     //delete post
-    await GroupChat.deleteOne({ _id: args.groupChatId });
+    await Group.deleteOne({ _id: args.groupId });
 
     //return user
     return {
-      ...groupChat._doc,
+      ...group._doc,
     };
   } catch (e) {
     throw e;
