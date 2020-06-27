@@ -231,6 +231,46 @@ describe("User-Organization Resolvers", () => {
     );
   });
 
+
+    //ADMIN REMOVES GROUP
+
+    test("Admin removes group", async () => {
+      try {
+        const response = await axios.post(
+          URL,
+          {
+            query: `
+            mutation{
+              adminRemoveGroup(groupId:"${createdGroupId}"){
+                _id
+              }
+            }
+              `,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${newUserToken}`,
+            },
+          }
+        );
+  
+        const { data } = response;
+  
+        expect(data.data.adminRemoveGroup).toEqual(
+          expect.objectContaining({
+            _id: createdGroupId,
+          })
+        );
+      } catch (e) {
+        console.log("an error has occurred");
+        console.log(e);
+        throw e;
+      }
+    });
+  
+
+
+
   //ADMIN REMOVES EVENT
 
   test("Admin Removes Event", async () => {
@@ -259,6 +299,9 @@ describe("User-Organization Resolvers", () => {
       })
     );
   });
+
+
+
 
   //ADMIN IS REMOVED
 
