@@ -38,6 +38,16 @@ const typeDefs = gql`
     event: Event!
   }
 
+  type Task {
+    _id: ID!
+    title: String!
+    description: String
+    project: EventProject!
+    creator: User!
+    createdAt: String!
+    deadline: String
+  }
+
 
 
   type Organization {
@@ -109,6 +119,18 @@ const typeDefs = gql`
     isRegisterable: Boolean
   }
 
+  input TaskInput {
+    title: String!
+    description: String
+    deadline: String
+  }
+
+
+  input UpdateTaskInput {
+    title: String
+    description: String
+    deadline: String
+  }
 
   input EventProjectInput {
     title:String!
@@ -192,6 +214,10 @@ const typeDefs = gql`
     adminRemovePost(organizationId: ID!, postId:ID!):Post!
     adminRemoveEvent(eventId: ID!): Event!
     adminRemoveGroupChat(organizationId:ID!, groupChatId:ID!):Message!
+
+    createTask(data: TaskInput, projectId: ID!): Task!
+    updateTask(id:ID!, data: UpdateTaskInput) : Task
+    removeTask(id: ID!) : Task
 
     createPost(data: PostInput!): Post!
 
