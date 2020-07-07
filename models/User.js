@@ -56,6 +56,12 @@ const userSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref: "Organization"
         }
+    ],
+    membershipRequests: [
+        {
+            type: Schema.Types.ObjectId,
+            ref:"MembershipRequest"
+        }
     ]
 })
 

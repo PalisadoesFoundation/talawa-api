@@ -44,6 +44,12 @@ const organizationSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref: "Post",
         }
+    ],
+    membershipRequests: [
+        {
+            type: Schema.Types.ObjectId,
+            ref:"MembershipRequest"
+        }
     ]
 })
 

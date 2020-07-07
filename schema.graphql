@@ -14,6 +14,8 @@ const typeDefs = gql`
     registeredEvents: [Event]
     eventAdmin: [Event]
     adminFor: [Organization]
+        membershipRequests: [MembershipRequest]
+
   }
 
   type Event {
@@ -48,6 +50,7 @@ const typeDefs = gql`
     creator: User!
     members: [User]
     admins(adminId: ID): [User]
+    membershipRequests: [MembershipRequest]
   }
 
   input UserInput {
@@ -78,7 +81,7 @@ const typeDefs = gql`
     projectsByEvent(id: ID!): [EventProject]
     me:User!
     posts: [Post]
-    groups: [Group]
+    groups: [Group],
   }
 
   input OrganizationInput {
@@ -177,6 +180,12 @@ const typeDefs = gql`
     admins: [User]
   }
 
+  type MembershipRequest {
+    _id: ID!
+    user: User!
+    organization: Organization!
+  }
+
 
   type Mutation {
     signUp(data: UserInput!): AuthData!
@@ -204,6 +213,10 @@ const typeDefs = gql`
 
     
     createGroup(data: GroupInput!): Group!
+
+    sendMembershipRequest(organizationId: ID!) : MembershipRequest!
+    acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest!
+    removeMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   }
 `
 

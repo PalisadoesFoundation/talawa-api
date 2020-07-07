@@ -8,6 +8,7 @@ const express = require("express");
 const connect = require("./db.js");
 const Organization = require("./resolvers/Organization")
 const cors = require("cors");
+const MembershipRequest = require("./resolvers/MembershipRequest");
 
 const app = express();
 
@@ -16,7 +17,8 @@ const resolvers = {
   Query,
   Mutation,
   User,
-  Organization
+  Organization,
+  MembershipRequest
 };
 
 const server = new ApolloServer({

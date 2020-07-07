@@ -1,4 +1,8 @@
 const User = require("../models/User");
+const MembershipRequest = require("../models/MembershipRequest");
+
+
+
 const Organization = {
   creator: async (parent, args, context, info) => {
     const user = await User.findById(parent.creator._id);
@@ -21,6 +25,14 @@ const Organization = {
     });
     return members;
   },
+  membershipRequests: async(parent,args,context,info)=>{
+    const membershipRequests = await MembershipRequest.find({
+      _id: {
+        $in: [...parent.membershipRequests]
+      }
+    })
+    return membershipRequests;
+  }
 };
 
 module.exports = Organization;
