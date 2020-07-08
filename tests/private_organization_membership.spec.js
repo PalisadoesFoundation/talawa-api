@@ -85,7 +85,7 @@ describe("Private Organization Membership Tests", () => {
       }
     );
 
-    console.log("send request response", sendRequestResponse)
+    console.log("send request response data", sendRequestResponse.data)
 
 
     const sendRequestData = sendRequestResponse.data;
