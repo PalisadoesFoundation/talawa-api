@@ -83,7 +83,7 @@ describe("Private Organization Membership Tests", () => {
       }
     );
 
-    console.log(sendRequestResponse.data)
+    console.log(sendRequestResponse)
 
 
     const sendRequestData = sendRequestResponse.data;
@@ -120,7 +120,7 @@ describe("Private Organization Membership Tests", () => {
     );
 
     const rejectRequestData = rejectRequestResponse.data;
-    console.log(rejectRequestData);
+    console.log(rejectRequestData.data);
 
     expect(rejectRequestData.data.rejectMembershipRequest).toEqual(
       expect.objectContaining({
