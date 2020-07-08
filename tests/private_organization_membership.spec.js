@@ -1,23 +1,25 @@
 const axios = require("axios");
-const {
-    URL
-} = require("../constants");
+const { URL } = require("../constants");
 const getToken = require("./functions/getToken");
 const shortid = require("shortid");
 
 let token;
 beforeAll(async () => {
-    token = await getToken();
+  token = await getToken();
 });
 
-
-describe("Private Organization Membership Tests", async () => {
-
+describe("Private Organization Membership Tests", () => {
     let createdOrganizationId;
+    let newUserToken;
+    let newUserId;
+
+  //New user sends membership request to join organization
+  test("User sends private organization membership request", async () => {
     // Private Organization is created - by default user
     const createdOrganizationResponse = await axios.post(
-        URL, {
-            query: `
+      URL,
+      {
+        query: `
             mutation {
                 createOrganization(data: {
                     name:"test org"
@@ -29,24 +31,23 @@ describe("Private Organization Membership Tests", async () => {
                     }
             }
             `,
-        }, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        }
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
 
-    createdOrganizationId = createdOrganizationResponse.data.data.createOrganization._id
-
-
+    createdOrganizationId =
+      createdOrganizationResponse.data.data.createOrganization._id;
 
     //New user is created
-    let newUserToken;
-    let newUserId;
+
     let id = shortid.generate();
     let email = `${id}@test.com`;
     const response = await axios.post(URL, {
-        query: `
+      query: `
         mutation {
             signUp(data: {
             firstName:"testdb2",
@@ -64,34 +65,33 @@ describe("Private Organization Membership Tests", async () => {
     newUserToken = signUpData.data.signUp.token;
     newUserId = signUpData.data.signUp.userId;
 
-
-    //New user sends membership request to join organization
-    test("User sends private organization membership request", async () => {
-        const sendRequestResponse = await axios.post(
-            URL, {
-                query: `
+    const sendRequestResponse = await axios.post(
+      URL,
+      {
+        query: `
                     mutation{
                     sendMembershipRequest(organizationId: "${createdOrganizationId}"){
                         _id
                     }
                 }`,
-            }, {
-                headers: {
-                    Authorization: `Bearer ${newUserToken}`,
-                },
-            }
-        );
-        const sendRequestData = sendRequestResponse.data;
-        expect(sendRequestData.data.sendMembershipRequest).toEqual(
-            expect.objectContaining({
-                _id: expect.any(String)
-            })
-        );
-    })
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${newUserToken}`,
+        },
+      }
+    );
+    const sendRequestData = sendRequestResponse.data;
+    expect(sendRequestData.data.sendMembershipRequest).toEqual(
+      expect.objectContaining({
+        _id: expect.any(String),
+      })
+    );
+  });
 
-    //admin rejects membership request
+  //admin rejects membership request
 
-    //new user re-sends membership request to join organization
+  //new user re-sends membership request to join organization
 
-    //admin accepts membership request
-})
+  //admin accepts membership request
+});
