@@ -83,7 +83,7 @@ describe("Private Organization Membership Tests", () => {
       }
     );
 
-    console.log(sendRequestResponse.data)
+    console.log("send request response", sendRequestResponse)
 
 
     const sendRequestData = sendRequestResponse.data;
@@ -96,7 +96,7 @@ describe("Private Organization Membership Tests", () => {
   });
 
 
-  console.log(newRequestId)
+  console.log("new request id",newRequestId)
 
 
   //admin rejects membership request
@@ -120,7 +120,7 @@ describe("Private Organization Membership Tests", () => {
     );
 
     const rejectRequestData = rejectRequestResponse.data;
-    console.log(rejectRequestData.data);
+    console.log("reject response data", rejectRequestData);
 
     expect(rejectRequestData.data.rejectMembershipRequest).toEqual(
       expect.objectContaining({
