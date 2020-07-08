@@ -90,6 +90,8 @@ describe("Private Organization Membership Tests", () => {
 
     const sendRequestData = sendRequestResponse.data;
     newRequestId = sendRequestData.data.sendMembershipRequest._id;
+    console.log("new request id",newRequestId)
+
     expect(sendRequestData.data.sendMembershipRequest).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
@@ -98,7 +100,6 @@ describe("Private Organization Membership Tests", () => {
   });
 
 
-  console.log("new request id",newRequestId)
 
 
   //admin rejects membership request
