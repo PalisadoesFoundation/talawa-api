@@ -47,6 +47,8 @@ describe("User-Organization Resolvers", () => {
     );
   });
 
+
+
   //NEW USER IS CREATED
 
   let newUserToken;
