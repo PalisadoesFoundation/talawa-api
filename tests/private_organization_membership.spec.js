@@ -112,6 +112,7 @@ describe("Private Organization Membership Tests", () => {
     );
 
     const rejectRequestData = rejectRequestResponse.data;
+    console.log(rejectRequestData);s
 
     expect(rejectRequestData.data.rejectMembershipRequest).toEqual(
       expect.objectContaining({
