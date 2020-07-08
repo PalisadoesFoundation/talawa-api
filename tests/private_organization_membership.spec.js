@@ -39,8 +39,7 @@ describe("Private Organization Membership Tests", () => {
       }
     );
 
-    createdOrganizationId =
-      createdOrganizationResponse.data.data.createOrganization._id;
+    createdOrganizationId = createdOrganizationResponse.data.data.createOrganization._id;
 
     //New user is created
 

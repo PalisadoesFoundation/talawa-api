@@ -1,14 +1,18 @@
 const axios = require("axios");
 const { URL } = require("../constants");
 const getToken = require("./functions/getToken");
+
+
 let token;
+
+
 beforeAll(async () => {
   token = await getToken();
 });
 
 describe("organization resolvers", () => {
   test("allOrganizations", async () => {
-    const response = await axios.post(URL, {
+    let response = await axios.post(URL, {
       query: `query {
                 organizations {
                     _id
@@ -16,13 +20,13 @@ describe("organization resolvers", () => {
                 }
             }`,
     });
-    const { data } = response;
+    let { data } = response;
     expect(Array.isArray(data.data.organizations)).toBeTruthy();
   });
 
   let createdOrgId;
   test("createOrganization", async () => {
-    const response = await axios.post(
+    let createdOrgResponse = await axios.post(
       URL,
       {
         query: `
@@ -44,10 +48,10 @@ describe("organization resolvers", () => {
         },
       }
     );
-    const { data } = response;
-    //console.log(data)
-    //console.log(token)
+
+    let { data } = createdOrgResponse;
     createdOrgId = data.data.createOrganization._id;
+    console.log(createdOrgId);
     expect(data.data.createOrganization).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
