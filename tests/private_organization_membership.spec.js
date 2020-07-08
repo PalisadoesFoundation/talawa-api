@@ -89,6 +89,9 @@ describe("Private Organization Membership Tests", () => {
   });
 
   //admin rejects membership request
+  test("Admin rejects membership request", async()=>{
+      
+  })
 
   //new user re-sends membership request to join organization
 

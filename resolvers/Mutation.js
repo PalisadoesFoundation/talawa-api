@@ -27,7 +27,7 @@ const createGroup = require("./group_chat_mutations/create_group_chat")
 
 const sendMembershipRequest = require("./membership_request_mutations/send_membership_request");
 const acceptMembershipRequest = require("./membership_request_mutations/accept_membership_request");
-const removeMembershipRequest = require("./membership_request_mutations/reject_membership_request");
+const rejectMembershipRequest = require("./membership_request_mutations/reject_membership_request");
 
 
 const Mutation = {
@@ -54,7 +54,7 @@ const Mutation = {
   createGroup,
   sendMembershipRequest,
   acceptMembershipRequest,
-  removeMembershipRequest
+  rejectMembershipRequest
 };
 
 module.exports = Mutation;
