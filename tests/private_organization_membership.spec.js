@@ -11,7 +11,7 @@ beforeAll(async () => {
 });
 
 
-describe("Private Organization Membership Tests", () => {
+describe("Private Organization Membership Tests", async () => {
 
     let createdOrganizationId;
     // Private Organization is created - by default user
