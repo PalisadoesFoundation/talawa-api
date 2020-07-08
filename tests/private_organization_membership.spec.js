@@ -9,9 +9,10 @@ beforeAll(async () => {
 });
 
 describe("Private Organization Membership Tests", () => {
-    let createdOrganizationId;
-    let newUserToken;
-    let newUserId;
+  let newRequestId;
+  let createdOrganizationId;
+  let newUserToken;
+  let newUserId;
 
   //New user sends membership request to join organization
   test("User sends private organization membership request", async () => {
@@ -39,7 +40,8 @@ describe("Private Organization Membership Tests", () => {
       }
     );
 
-    createdOrganizationId = createdOrganizationResponse.data.data.createOrganization._id;
+    createdOrganizationId =
+      createdOrganizationResponse.data.data.createOrganization._id;
 
     //New user is created
 
@@ -81,6 +83,7 @@ describe("Private Organization Membership Tests", () => {
       }
     );
     const sendRequestData = sendRequestResponse.data;
+    newRequestId = sendRequestData.data.sendMembershipRequest._id;
     expect(sendRequestData.data.sendMembershipRequest).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
@@ -89,9 +92,33 @@ describe("Private Organization Membership Tests", () => {
   });
 
   //admin rejects membership request
-  test("Admin rejects membership request", async()=>{
-      
-  })
+  test("Admin rejects membership request", async () => {
+    const rejectRequestResponse = axios.post(
+      URL,
+      {
+        query: `
+              mutation{
+                rejectMembershipRequest(membershipRequestId: "${newRequestId}"){
+                  _id
+                }
+              }
+              `,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const rejectRequestData = rejectRequestResponse.data;
+
+    expect(rejectRequestData.data.rejectMembershipRequest).toEqual(
+      expect.objectContaining({
+        _id: expect.any(String),
+      })
+    );
+  });
 
   //new user re-sends membership request to join organization
 
