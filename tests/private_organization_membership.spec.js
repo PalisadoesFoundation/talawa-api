@@ -67,7 +67,7 @@ describe("Private Organization Membership Tests", async () => {
 
     //New user sends membership request to join organization
     test("User sends private organization membership request", async () => {
-        const response = await axios.post(
+        const sendRequestResponse = await axios.post(
             URL, {
                 query: `
                     mutation{
@@ -81,9 +81,8 @@ describe("Private Organization Membership Tests", async () => {
                 },
             }
         );
-        const sendRequestData = response.data;
-        expect(sendRequestData.data.joinPublicOrganization).toEqual(
-
+        const sendRequestData = sendRequestResponse.data;
+        expect(sendRequestData.data.sendMembershipRequest).toEqual(
             expect.objectContaining({
                 _id: expect.any(String)
             })
