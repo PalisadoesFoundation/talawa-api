@@ -66,6 +66,8 @@ describe("Private Organization Membership Tests", () => {
     newUserToken = signUpData.data.signUp.token;
     newUserId = signUpData.data.signUp.userId;
 
+    console.log("created org id", createdOrganizationId);
+
     const sendRequestResponse = await axios.post(
       URL,
       {
