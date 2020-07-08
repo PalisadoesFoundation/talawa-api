@@ -82,6 +82,10 @@ describe("Private Organization Membership Tests", () => {
         },
       }
     );
+
+    console.log(sendRequestResponse)
+
+
     const sendRequestData = sendRequestResponse.data;
     newRequestId = sendRequestData.data.sendMembershipRequest._id;
     expect(sendRequestData.data.sendMembershipRequest).toEqual(
@@ -91,7 +95,6 @@ describe("Private Organization Membership Tests", () => {
     );
   });
 
-  console.log(sendRequestResponse)
 
   console.log(newRequestId)
 
