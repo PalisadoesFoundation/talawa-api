@@ -91,6 +91,11 @@ describe("Private Organization Membership Tests", () => {
     );
   });
 
+  console.log(sendRequestResponse)
+
+  console.log(newRequestId)
+
+
   //admin rejects membership request
   test("Admin rejects membership request", async () => {
     const rejectRequestResponse = axios.post(
@@ -113,7 +118,6 @@ describe("Private Organization Membership Tests", () => {
 
     const rejectRequestData = rejectRequestResponse.data;
     console.log(rejectRequestData);
-    console.log(newRequestId)
 
     expect(rejectRequestData.data.rejectMembershipRequest).toEqual(
       expect.objectContaining({
