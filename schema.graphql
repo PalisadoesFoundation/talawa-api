@@ -217,6 +217,7 @@ const typeDefs = gql`
     sendMembershipRequest(organizationId: ID!) : MembershipRequest!
     acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest!
     rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
+    cancelMembershipRequest(membershipRequestId: ID!) : MembershipRequest!
   }
 `
 

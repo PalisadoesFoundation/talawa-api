@@ -1,6 +1,6 @@
 
 
-const URL = "https://talawa-testing.herokuapp.com/graphql"
+const URL = " http://localhost:4000/graphql"
 
 
 module.exports.URL = URL
