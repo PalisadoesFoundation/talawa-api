@@ -20,7 +20,6 @@ const createOrganization = async (parent, args, context, info) => {
     //makes the creator an admin of the organization
     newOrganization.admins.push(userFound);
 
-    newOrganization = await newOrganization.save();
 
 
     //makes the creator a member of the organization
@@ -28,8 +27,9 @@ const createOrganization = async (parent, args, context, info) => {
       ...newOrganization._doc,
       members: [...newOrganization._doc.members, userFound]
     })
-    await newOrganization.save()
 
+    newOrganization = await newOrganization.save();
+    
     //adds organization to users joined organizations field
     userFound.overwrite({
       ...userFound._doc,
@@ -38,7 +38,7 @@ const createOrganization = async (parent, args, context, info) => {
     await userFound.save()
 
     //add organization to the creator's createdOrganizations field
-    let updatedUser = await User.updateOne(
+    await User.updateOne(
       { _id: userFound.id },
       {
         $set: {

@@ -50,8 +50,15 @@ describe("organization resolvers", () => {
     );
 
     let { data } = createdOrgResponse;
-    createdOrgId = data.data.createOrganization._id;
-    console.log(createdOrgId);
+
+    //console.log("token",token);
+    console.log(createdOrgResponse.data.errors)
+
+    createdOrgId = createdOrgResponse.data.data.createOrganization._id
+
+
+
+    //console.log(createdOrgId);
     expect(data.data.createOrganization).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
@@ -60,8 +67,10 @@ describe("organization resolvers", () => {
     );
   });
 
+  console.log(createdOrgId)
+
   test("updateOrganization", async () => {
-    const response = await axios.post(
+    let updateOrgRes = await axios.post(
       URL,
       {
         query: `
@@ -83,7 +92,12 @@ describe("organization resolvers", () => {
         },
       }
     );
-    const { data } = response;
+
+
+    let{ data } = updateOrgRes;
+    console.log(updateOrgRes.data)
+
+    
     expect(data).toMatchObject({
       data: {
         updateOrganization: {
@@ -97,7 +111,7 @@ describe("organization resolvers", () => {
 
   test("removeOrganization", async () => {
     //a new organization is created then deleted
-    const response = await axios.post(
+    let response = await axios.post(
       URL,
       {
         query: `
@@ -120,7 +134,7 @@ describe("organization resolvers", () => {
       }
     );
 
-    const { data } = response;
+    let { data } = response;
 
     const newOrgId = data.data.createOrganization._id;
 
