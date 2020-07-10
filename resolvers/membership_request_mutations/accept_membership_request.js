@@ -3,6 +3,9 @@ const Organization = require("../../models/Organization");
 const MembershipRequest = require("../../models/MembershipRequest");
 const authCheck = require("../functions/authCheck");
 const adminCheck = require("../functions/adminCheck");
+const organizationExists = require("../../helper_functions/organizationExists");
+const userExists = require("../../helper_functions/userExists")
+
 
 module.exports = async (parent, args, context, info) => {
   authCheck(context);
@@ -14,14 +17,12 @@ module.exports = async (parent, args, context, info) => {
     if (!membershipRequest) throw new Error("Membership request not found");
 
     //ensure org exists
-    let org = await Organization.findOne({
-      _id: membershipRequest.organization,
-    });
-    if (!org) throw new Error("Organization not found");
+    let org = await organizationExists(membershipRequest.organization);
+
 
     //ensure user exists
-    const user = await User.findOne({ _id: membershipRequest.user });
-    if (!user) throw new Error("User does not exist");
+    let user = await userExists(membershipRequest.user);
+
 
     //ensure user is admin
     adminCheck(context, org);
