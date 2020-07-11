@@ -3,6 +3,7 @@ const { URL } = require("../constants");
 const getToken = require("./functions/getToken");
 
 let token;
+let createdOrgId;
 
 beforeAll(async () => {
   token = await getToken();
@@ -23,7 +24,6 @@ describe("organization resolvers", () => {
     expect(Array.isArray(data.data.organizations)).toBeTruthy();
   });
 
-  let createdOrgId;
   test("createOrganization", async () => {
     let createdOrgResponse = await axios.post(
       URL,
@@ -34,9 +34,9 @@ describe("organization resolvers", () => {
                     name:"test org"
                     description:"test description"
                     isPublic: true
+                    visibleInSearch: true
                     }) {
                         _id
-                        name
                     }
             }
               `,
@@ -47,119 +47,84 @@ describe("organization resolvers", () => {
         },
       }
     );
-    console.log(createdOrgResponse.data.errors);
     let { data } = createdOrgResponse;
     createdOrgId = createdOrgResponse.data.data.createOrganization._id;
     //console.log(createdOrgId);
     expect(data.data.createOrganization).toEqual(
       expect.objectContaining({
-        _id: expect.any(String),
-        name: expect.any(String),
+        _id: expect.any(String)
       })
     );
   });
 
   // console.log(createdOrgId)
 
-  // test("updateOrganization", async () => {
-  //   let updateOrgRes = await axios.post(
-  //     URL,
-  //     {
-  //       query: `
-  //           mutation {
-  //               updateOrganization(id: "${createdOrgId}", data: {
-  //                   description: "new description",
-  //                   isPublic: false
-  //                   }) {
-  //                       _id
-  //                       description
-  //                       isPublic
-  //                   }
-  //           }
-  //             `,
-  //     },
-  //     {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     }
-  //   );
+  test("updateOrganization", async () => {
+    let updateOrgRes = await axios.post(
+      URL,
+      {
+        query: `
+            mutation {
+                updateOrganization(id: "${createdOrgId}", data: {
+                    description: "new description",
+                    isPublic: false
+                    }) {
+                        _id
+                        description
+                        isPublic
+                    }
+            }
+              `,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-  //   let{ data } = updateOrgRes;
-  //   console.log(updateOrgRes.data)
+    let{ data } = updateOrgRes;
 
-  //   expect(data).toMatchObject({
-  //     data: {
-  //       updateOrganization: {
-  //         _id: `${createdOrgId}`,
-  //         description: "new description",
-  //         isPublic: false,
-  //       },
-  //     },
-  //   });
-  // });
+    expect(data).toMatchObject({
+      data: {
+        updateOrganization: {
+          _id: `${createdOrgId}`,
+          description: "new description",
+          isPublic: false,
+        },
+      },
+    });
+  });
 
-  // test("removeOrganization", async () => {
-  //   //a new organization is created then deleted
-  //   let response = await axios.post(
-  //     URL,
-  //     {
-  //       query: `
-  //           mutation {
-  //               createOrganization(data: {
-  //                   name:"test org"
-  //                   description:"test description"
-  //                   isPublic: true
-  //                   }) {
-  //                       _id
-  //                       name
-  //                   }
-  //           }
-  //             `,
-  //     },
-  //     {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     }
-  //   );
+  test("removeOrganization", async () => {
+    
 
-  //   let { data } = response;
+    const deletedResponse = await axios.post(
+      URL,
+      {
+        query: `
+            mutation {
+                removeOrganization(id: "${createdOrgId}") {
+                    _id
+                }
+            }
+            `,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-  //   const newOrgId = data.data.createOrganization._id;
-
-  //   const deletedResponse = await axios.post(
-  //     URL,
-  //     {
-  //       query: `
-  //           mutation {
-  //               removeOrganization(id: "${newOrgId}") {
-  //                   _id
-  //                   name
-  //                   description
-  //                   isPublic
-  //               }
-  //           }
-  //           `,
-  //     },
-  //     {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     }
-  //   );
-
-  //   expect(deletedResponse.data).toMatchObject({
-  //     data: {
-  //       removeOrganization: {
-  //         _id: `${newOrgId}`,
-  //         name: "test org",
-  //         description: "test description",
-  //         isPublic: true,
-  //       },
-  //     },
-  //   });
-  // });
+    expect(deletedResponse.data).toMatchObject({
+      data: {
+        removeOrganization: {
+          _id: `${createdOrgId}`
+        },
+      },
+    });
+  });
 });
 
 module.exports.token = token;

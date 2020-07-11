@@ -23,6 +23,7 @@ describe("User-Organization Resolvers", () => {
                     name:"test org"
                     description:"test description"
                     isPublic: true
+                    visibleInSearch: true
                     }) {
                         _id
                         name
@@ -145,6 +146,8 @@ describe("User-Organization Resolvers", () => {
 
       const { data } = response;
       createdEventId = data.data.createEvent._id;
+      console.log(data)
+      console.log(createdEventId)
 
       expect(data.data.createEvent).toEqual(
         expect.objectContaining({
@@ -495,4 +498,7 @@ describe("User-Organization Resolvers", () => {
       },
     });
   });
+
+
+
 });

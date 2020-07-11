@@ -26,9 +26,9 @@ describe("Private Organization Membership Tests", () => {
                     name:"test org"
                     description:"test description"
                     isPublic: false
+                    visibleInSearch: true
                     }) {
                         _id
-                        name
                     }
             }
             `,
@@ -39,6 +39,8 @@ describe("Private Organization Membership Tests", () => {
         },
       }
     );
+
+    console.log(createdOrganizationResponse.data)
 
     createdOrganizationId =
       createdOrganizationResponse.data.data.createOrganization._id;
@@ -102,35 +104,35 @@ describe("Private Organization Membership Tests", () => {
 
 
 
-//   //admin rejects membership request
-//   test("Admin rejects membership request", async () => {
-//     const rejectRequestResponse = axios.post(
-//       URL,
-//       {
-//         query: `
-//               mutation{
-//                 rejectMembershipRequest(membershipRequestId: "${newRequestId}"){
-//                   _id
-//                 }
-//               }
-//               `,
-//       },
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//       }
-//     );
+  //admin rejects membership request
+  test("Admin rejects membership request", async () => {
+    const rejectRequestResponse = await axios.post(
+      URL,
+      {
+        query: `
+              mutation{
+                rejectMembershipRequest(membershipRequestId: "${newRequestId}"){
+                  _id
+                }
+              }
+              `,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-//     const rejectRequestData = rejectRequestResponse.data;
-//     console.log("reject response data", rejectRequestData);
+    const rejectRequestData = rejectRequestResponse.data;
+    console.log("reject response data", rejectRequestData);
 
-//     expect(rejectRequestData.data.rejectMembershipRequest).toEqual(
-//       expect.objectContaining({
-//         _id: expect.any(String),
-//       })
-//     );
-//   });
+    expect(rejectRequestData.data.rejectMembershipRequest).toEqual(
+      expect.objectContaining({
+        _id: expect.any(String),
+      })
+    );
+  });
 
   //new user re-sends membership request to join organization
 
