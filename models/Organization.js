@@ -56,7 +56,8 @@ const organizationSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref:"User"
         }
-    ]
+    ],
+    visibleInSearch: Boolean
 })
 
 module.exports = mongoose.model("Organization", organizationSchema);

@@ -14,6 +14,7 @@ module.exports = `
     admins(adminId: ID): [User]
     membershipRequests: [MembershipRequest]
     blockedUsers: [User]
+    visibleInSearch: Boolean!
   }
 
 
@@ -24,6 +25,7 @@ module.exports = `
     description: String!
     attendees: String
     isPublic: Boolean! 
+    visibleInSearch: Boolean!
   }
 
   
@@ -31,6 +33,7 @@ module.exports = `
     name:String
     description: String
     isPublic: Boolean
+    visibleInSearch: Boolean
   }
 
 
