@@ -31,5 +31,8 @@ module.exports = `
     acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest!
     rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
     cancelMembershipRequest(membershipRequestId: ID!) : MembershipRequest!
+
+    blockUser(organizationId: ID!, userId: ID!) : User!
+    unblockUser(organizationId: ID!, userId:ID!) : User!
   }
 `

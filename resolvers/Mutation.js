@@ -30,6 +30,9 @@ const acceptMembershipRequest = require("./membership_request_mutations/accept_m
 const rejectMembershipRequest = require("./membership_request_mutations/reject_membership_request");
 const cancelMembershipRequest = require("./membership_request_mutations/cancel_membership_request");
 
+const blockUser = require("./block_user_mutations/block_user");
+const unblockUser = require("./block_user_mutations/unblock_user");
+
 const Mutation = {
   signUp,
   createOrganization,
@@ -55,7 +58,9 @@ const Mutation = {
   sendMembershipRequest,
   acceptMembershipRequest,
   rejectMembershipRequest,
-  cancelMembershipRequest
+  cancelMembershipRequest,
+  blockUser,
+  unblockUser
 };
 
 module.exports = Mutation;
