@@ -1,0 +1,35 @@
+module.exports = `
+
+ type Mutation {
+    signUp(data: UserInput!): AuthData!
+    createEvent(data: EventInput): Event!
+    removeEvent(id: ID!): Event!
+    registerForEvent(id: ID!): Event!
+    updateEvent(id:ID!, data: UpdateEventInput) : Event!
+    createEventProject(data: EventProjectInput): EventProject!
+    removeEventProject(id: ID!): EventProject!
+    updateEventProject(id:ID!, data: UpdateEventProjectInput) : EventProject!
+    createOrganization(data: OrganizationInput): Organization!
+    updateOrganization(id:ID!, data: UpdateOrganizationInput) : Organization!
+    removeOrganization(id: ID!) : Organization!
+    createAdmin (data: UserAndOrganizationInput!) : User!
+    removeAdmin (data: UserAndOrganizationInput!) : User!
+    joinPublicOrganization (organizationId: ID!) : User!
+    leaveOrganization (organizationId: ID!) : User!
+    removeMember (data: UserAndOrganizationInput!) : User!
+
+    adminRemovePost(organizationId: ID!, postId:ID!):Post!
+    adminRemoveEvent(eventId: ID!): Event!
+    adminRemoveGroup(groupId:ID!):Message!
+
+    createPost(data: PostInput!): Post!
+
+    
+    createGroup(data: GroupInput!): Group!
+
+    sendMembershipRequest(organizationId: ID!) : MembershipRequest!
+    acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest!
+    rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
+    cancelMembershipRequest(membershipRequestId: ID!) : MembershipRequest!
+  }
+`

@@ -50,6 +50,12 @@ const organizationSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref:"MembershipRequest"
         }
+    ],
+    blockedUsers: [
+        {
+            type: Schema.Types.ObjectId,
+            ref:"User"
+        }
     ]
 })
 

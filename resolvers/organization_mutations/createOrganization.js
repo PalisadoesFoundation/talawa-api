@@ -10,7 +10,7 @@ const createOrganization = async (parent, args, context, info) => {
 
   try {
     //gets user in token - to be used later on
-    let userFound = await userExists(membershipRequest.user);
+    let userFound = await userExists(context.userId);
 
     let newOrganization = new Organization({
       ...args.data,
@@ -18,7 +18,6 @@ const createOrganization = async (parent, args, context, info) => {
       admins: [userFound],
       members: [userFound]
     });
-    console.log(newOrganization._doc.admins);
 
     await newOrganization.save();
 

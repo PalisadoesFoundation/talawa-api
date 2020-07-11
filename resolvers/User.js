@@ -28,6 +28,14 @@ const User = {
       }
     })
     return membershipRequests;
+  },
+  organizationsBlockedBy: async(parent,args,context,info)=>{
+    const orgs = await Organization.find({
+      _id:{
+        $in: [...parent.organizationsBlockedBy]
+      }
+    })
+    return orgs;
   }
 };
 

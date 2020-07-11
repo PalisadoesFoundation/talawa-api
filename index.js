@@ -1,7 +1,7 @@
 const { ApolloServer, gql } = require("apollo-server-express");
 const Query = require("./resolvers/Query");
 const Mutation = require("./resolvers/Mutation");
-const typeDefs = require("./schema.graphql");
+const typeDefs = require("./schema/schema.graphql");
 const isAuth = require("./middleware/is-auth");
 const User = require("./resolvers/User");
 const express = require("express");

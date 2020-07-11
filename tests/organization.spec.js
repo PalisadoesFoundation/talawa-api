@@ -2,9 +2,7 @@ const axios = require("axios");
 const { URL } = require("../constants");
 const getToken = require("./functions/getToken");
 
-
 let token;
-
 
 beforeAll(async () => {
   token = await getToken();
@@ -13,12 +11,13 @@ beforeAll(async () => {
 describe("organization resolvers", () => {
   test("allOrganizations", async () => {
     let response = await axios.post(URL, {
-      query: `query {
+      query: `{
                 organizations {
                     _id
                     name
                 }
-            }`,
+            }
+            `,
     });
     let { data } = response;
     expect(Array.isArray(data.data.organizations)).toBeTruthy();
@@ -48,16 +47,9 @@ describe("organization resolvers", () => {
         },
       }
     );
-
+    console.log(createdOrgResponse.data.errors);
     let { data } = createdOrgResponse;
-
-    //console.log("token",token);
-    console.log(createdOrgResponse.data.errors)
-
-    createdOrgId = createdOrgResponse.data.data.createOrganization._id
-
-
-
+    createdOrgId = createdOrgResponse.data.data.createOrganization._id;
     //console.log(createdOrgId);
     expect(data.data.createOrganization).toEqual(
       expect.objectContaining({
@@ -67,109 +59,107 @@ describe("organization resolvers", () => {
     );
   });
 
-  console.log(createdOrgId)
+  // console.log(createdOrgId)
 
-  test("updateOrganization", async () => {
-    let updateOrgRes = await axios.post(
-      URL,
-      {
-        query: `
-            mutation {
-                updateOrganization(id: "${createdOrgId}", data: {
-                    description: "new description",
-                    isPublic: false
-                    }) {
-                        _id
-                        description
-                        isPublic
-                    }
-            }
-              `,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+  // test("updateOrganization", async () => {
+  //   let updateOrgRes = await axios.post(
+  //     URL,
+  //     {
+  //       query: `
+  //           mutation {
+  //               updateOrganization(id: "${createdOrgId}", data: {
+  //                   description: "new description",
+  //                   isPublic: false
+  //                   }) {
+  //                       _id
+  //                       description
+  //                       isPublic
+  //                   }
+  //           }
+  //             `,
+  //     },
+  //     {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     }
+  //   );
 
+  //   let{ data } = updateOrgRes;
+  //   console.log(updateOrgRes.data)
 
-    let{ data } = updateOrgRes;
-    console.log(updateOrgRes.data)
+  //   expect(data).toMatchObject({
+  //     data: {
+  //       updateOrganization: {
+  //         _id: `${createdOrgId}`,
+  //         description: "new description",
+  //         isPublic: false,
+  //       },
+  //     },
+  //   });
+  // });
 
-    
-    expect(data).toMatchObject({
-      data: {
-        updateOrganization: {
-          _id: `${createdOrgId}`,
-          description: "new description",
-          isPublic: false,
-        },
-      },
-    });
-  });
+  // test("removeOrganization", async () => {
+  //   //a new organization is created then deleted
+  //   let response = await axios.post(
+  //     URL,
+  //     {
+  //       query: `
+  //           mutation {
+  //               createOrganization(data: {
+  //                   name:"test org"
+  //                   description:"test description"
+  //                   isPublic: true
+  //                   }) {
+  //                       _id
+  //                       name
+  //                   }
+  //           }
+  //             `,
+  //     },
+  //     {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     }
+  //   );
 
-  test("removeOrganization", async () => {
-    //a new organization is created then deleted
-    let response = await axios.post(
-      URL,
-      {
-        query: `
-            mutation {
-                createOrganization(data: {
-                    name:"test org"
-                    description:"test description"
-                    isPublic: true
-                    }) {
-                        _id
-                        name
-                    }
-            }
-              `,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+  //   let { data } = response;
 
-    let { data } = response;
+  //   const newOrgId = data.data.createOrganization._id;
 
-    const newOrgId = data.data.createOrganization._id;
+  //   const deletedResponse = await axios.post(
+  //     URL,
+  //     {
+  //       query: `
+  //           mutation {
+  //               removeOrganization(id: "${newOrgId}") {
+  //                   _id
+  //                   name
+  //                   description
+  //                   isPublic
+  //               }
+  //           }
+  //           `,
+  //     },
+  //     {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     }
+  //   );
 
-    const deletedResponse = await axios.post(
-      URL,
-      {
-        query: `
-            mutation {
-                removeOrganization(id: "${newOrgId}") {
-                    _id
-                    name
-                    description
-                    isPublic
-                }
-            }
-            `,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    expect(deletedResponse.data).toMatchObject({
-      data: {
-        removeOrganization: {
-          _id: `${newOrgId}`,
-          name: "test org",
-          description: "test description",
-          isPublic: true,
-        },
-      },
-    });
-  });
+  //   expect(deletedResponse.data).toMatchObject({
+  //     data: {
+  //       removeOrganization: {
+  //         _id: `${newOrgId}`,
+  //         name: "test org",
+  //         description: "test description",
+  //         isPublic: true,
+  //       },
+  //     },
+  //   });
+  // });
 });
 
 module.exports.token = token;

@@ -1,0 +1,50 @@
+
+
+module.exports = `
+
+
+
+  type Organization {
+    _id: ID!
+    name:String!
+    description: String!
+    isPublic: Boolean! 
+    creator: User!
+    members: [User]
+    admins(adminId: ID): [User]
+    membershipRequests: [MembershipRequest]
+    blockedUsers: [User]
+  }
+
+
+
+
+  input OrganizationInput {
+    name:String!
+    description: String!
+    attendees: String
+    isPublic: Boolean! 
+  }
+
+  
+  input UpdateOrganizationInput {
+    name:String
+    description: String
+    isPublic: Boolean
+  }
+
+
+
+  input UserAndOrganizationInput{
+    organizationId: ID!, userId: ID!
+  }
+
+
+  type MembershipRequest {
+    _id: ID!
+    user: User!
+    organization: Organization!
+  }
+
+
+`
