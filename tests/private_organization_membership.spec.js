@@ -40,7 +40,7 @@ describe("Private Organization Membership Tests", () => {
       }
     );
 
-    console.log(createdOrganizationResponse.data)
+    //console.log(createdOrganizationResponse.data)
 
     createdOrganizationId =
       createdOrganizationResponse.data.data.createOrganization._id;
@@ -68,7 +68,7 @@ describe("Private Organization Membership Tests", () => {
     newUserToken = signUpData.data.signUp.token;
     newUserId = signUpData.data.signUp.userId;
 
-    console.log("created org id", createdOrganizationId);
+    //console.log("created org id", createdOrganizationId);
 
     const sendRequestResponse = await axios.post(
       URL,
@@ -87,12 +87,12 @@ describe("Private Organization Membership Tests", () => {
       }
     );
 
-    console.log("send request response data", sendRequestResponse.data)
+    //console.log("send request response data", sendRequestResponse.data)
 
 
     const sendRequestData = sendRequestResponse.data;
     newRequestId = sendRequestData.data.sendMembershipRequest._id;
-    console.log("new request id",newRequestId)
+    //console.log("new request id",newRequestId)
 
     expect(sendRequestData.data.sendMembershipRequest).toEqual(
       expect.objectContaining({
@@ -125,16 +125,141 @@ describe("Private Organization Membership Tests", () => {
     );
 
     const rejectRequestData = rejectRequestResponse.data;
-    console.log("reject response data", rejectRequestData);
+    //console.log("reject response data", rejectRequestData);
 
     expect(rejectRequestData.data.rejectMembershipRequest).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
       })
     );
+
+
   });
 
-  //new user re-sends membership request to join organization
 
-  //admin accepts membership request
+
+  // USER SENDS REQUEST THEN CANCELS IT
+  test("User sends membership requests then cancels it", async () => {
+    
+
+    
+    let requestId;
+    const sendRequestResponse = await axios.post(
+      URL,
+      {
+        query: `
+                    mutation{
+                    sendMembershipRequest(organizationId: "${createdOrganizationId}"){
+                        _id
+                    }
+                }`,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${newUserToken}`,
+        },
+      }
+    );
+    const sendRequestData = sendRequestResponse.data;
+    requestId = sendRequestData.data.sendMembershipRequest._id;
+
+
+    
+
+    const cancelRequestResponse = await axios.post(
+      URL,
+      {
+        query: `
+              mutation{
+                cancelMembershipRequest(membershipRequestId: "${requestId}"){
+                  _id
+                }
+              }
+              `,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${newUserToken}`,
+        },
+      }
+    );
+
+    const cancelRequestData = cancelRequestResponse.data;
+    //console.log("reject response data", acceptRequestData);
+
+    expect(cancelRequestData.data.cancelMembershipRequest).toEqual(
+      expect.objectContaining({
+        _id: expect.any(String),
+      })
+    );
+
+
+  })
+
+
+
+
+
+  // A NEW REQUEST IS SENT AND ACCEPTED
+
+  test("User sends membership request and admin accepts it", async () => {
+
+    // SEND REQUEST
+
+    let requestId;
+    const sendRequestResponse = await axios.post(
+      URL,
+      {
+        query: `
+                    mutation{
+                    sendMembershipRequest(organizationId: "${createdOrganizationId}"){
+                        _id
+                    }
+                }`,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${newUserToken}`,
+        },
+      }
+    );
+    const sendRequestData = sendRequestResponse.data;
+    requestId = sendRequestData.data.sendMembershipRequest._id;
+
+
+
+    // ACCEPT REQUEST
+
+
+    const acceptRequestResponse = await axios.post(
+      URL,
+      {
+        query: `
+              mutation{
+                acceptMembershipRequest(membershipRequestId: "${requestId}"){
+                  _id
+                }
+              }
+              `,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const acceptRequestData = acceptRequestResponse.data;
+    //console.log("reject response data", acceptRequestData);
+
+    expect(acceptRequestData.data.acceptMembershipRequest).toEqual(
+      expect.objectContaining({
+        _id: expect.any(String),
+      })
+    );
+
+  })
+
+
+
 });
