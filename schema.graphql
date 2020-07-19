@@ -20,6 +20,7 @@ const typeDefs = gql`
     _id: ID!
     title:String!
     description: String!
+    date: String!
     recurring: Boolean!
     recurrance: String
     attendees: String!
@@ -29,6 +30,7 @@ const typeDefs = gql`
     registrants: [User]
     admins(adminId: ID): [User]
     organization: Organization
+    location: String
   }
 
   type EventProject {
@@ -107,6 +109,8 @@ const typeDefs = gql`
     isPublic: Boolean! 
     isRegisterable: Boolean! 
     organizationId: ID!
+    date: String!
+    location: String
   }
 
   input UpdateEventInput {
@@ -117,6 +121,8 @@ const typeDefs = gql`
     attendees: String
     isPublic: Boolean
     isRegisterable: Boolean
+    date: String
+    location: String
   }
 
   input TaskInput {

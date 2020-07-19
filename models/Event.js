@@ -15,14 +15,18 @@ const eventSchema = new Schema({
 		type: String,
 		required: false,
 	},
+	location: {
+		type: String,
+	},
 	recurring: {
 		type: Boolean,
 		required: true,
 		default: false,
 	},
+	date: { type: Date, required: true },
 	recurrance: {
-        type: String,
-        enum : ['DAILY','WEEKLY', 'MONTHLY', 'YEARLY'],
+		type: String,
+		enum: ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"],
 		required: function () {
 			return this.recurring;
 		},
@@ -61,7 +65,7 @@ const eventSchema = new Schema({
 		type: Schema.Types.ObjectId,
 		ref: "Organization",
 		required: true,
-	}
+	},
 });
 
 module.exports = mongoose.model("Event", eventSchema);
