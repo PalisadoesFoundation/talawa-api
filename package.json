@@ -5,9 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "start": "node index.js",
-    "dev": "nodemon index.js --ext js,graphql",
-    "test-server": "cross-env TEST_DB=testmongo nodemon index.js --ext js,graphql"
+    "start": "nodemon index.js --ext js,graphql,json",
+    "test-server": "cross-env TEST_DB=talawa-test-db nodemon index.js --ext js,graphql"
   },
   "repository": {
     "type": "git",
