@@ -2,8 +2,6 @@ const User = require("../../models/User");
 const Post = require("../../models/Post");
 
 const authCheck = require("../functions/authCheck");
-const creatorCheck = require("../functions/creatorCheck");
-
 module.exports = async (parent, args, context, info) => {
   //ensure user is authenticated
   authCheck(context);

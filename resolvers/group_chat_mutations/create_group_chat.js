@@ -1,12 +1,5 @@
 const User = require("../../models/User");
-const Message = require("../../models/Message");
-/*
-
-    TO BE UPDATED
-
-*/
-
-const GroupChat = require("../../models/Message");
+const Group = require("../../models/Group");
 const authCheck = require("../functions/authCheck");
 const creatorCheck = require("../functions/creatorCheck");
 
@@ -20,25 +13,19 @@ module.exports = async (parent, args, context, info) => {
       throw new Error("User does not exist");
     }
 
-    /*
 
-    TO BE UPDATED
-
-    */
-
-    //creates new Post
-    let newMessage = new Message({
+    //creates new Group Chat
+    let newGroup = new Group({
       ...args.data,
-      creator: context.userId,
-      organization: args.data.organizationId,
-    });
+      organization:args.data.organizationId
+    })
 
-    newMessage = await newMessage.save();
+    newGroup = await newGroup.save();
 
     //add creator
 
     return {
-      ...newMessage._doc,
+      ...newGroup._doc,
     };
   } catch (e) {
     throw e;

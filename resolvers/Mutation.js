@@ -22,13 +22,23 @@ const updateTask = require("./project_task_mutations/updateTask")
 
 const adminRemovePost = require("./admin_mutations/admin-remove-post");
 const adminRemoveEvent = require("./admin_mutations/admin-remove-event");
-const adminRemoveGroupChat = require("./admin_mutations/admin-remove-group-chat");
+const adminRemoveGroup = require("./admin_mutations/admin-remove-group-chat");
 
-const createPost = require("./post_mutations/create_post")
+const createPost = require("./post_mutations/createPost")
+const removePost = require("./post_mutations/removePost")
+const likePost = require("./post_mutations/likePost")
+const unlikePost = require("./post_mutations/unlikePost")
 
-const createGroupChat = require("./group_chat_mutations/create_group_chat")
 
+const createGroup = require("./group_chat_mutations/create_group_chat")
 
+const sendMembershipRequest = require("./membership_request_mutations/send_membership_request");
+const acceptMembershipRequest = require("./membership_request_mutations/accept_membership_request");
+const rejectMembershipRequest = require("./membership_request_mutations/reject_membership_request");
+const cancelMembershipRequest = require("./membership_request_mutations/cancel_membership_request");
+
+const blockUser = require("./block_user_mutations/block_user");
+const unblockUser = require("./block_user_mutations/unblock_user");
 
 const Mutation = {
   signUp,
@@ -44,17 +54,26 @@ const Mutation = {
   leaveOrganization,
   removeMember,
   adminRemovePost,
-  adminRemoveGroupChat,
+  adminRemoveGroup,
   adminRemoveEvent,
   registerForEvent,
   createEventProject,
   removeEventProject,
   updateEventProject,
   createPost,
-  createGroupChat,
+  removePost,
+  likePost,
+  unlikePost,
   createTask,
   removeTask,
   updateTask,
+  createGroup,
+  sendMembershipRequest,
+  acceptMembershipRequest,
+  rejectMembershipRequest,
+  cancelMembershipRequest,
+  blockUser,
+  unblockUser,
 };
 
 module.exports = Mutation;

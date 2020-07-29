@@ -1,6 +1,5 @@
 const User = require("../../models/User");
 const EventProject = require("../../models/EventProject");
-const Event = require("../../models/Event");
 
 const authCheck = require("../functions/authCheck");
 

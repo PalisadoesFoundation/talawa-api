@@ -1,0 +1,32 @@
+module.exports = `
+  type Post {
+    _id: ID
+    text: String!
+    createdAt: String
+    imageUrl: String
+    videoUrl:String
+    creator: User!
+    organization: Organization!
+    likedBy: [User]
+    # comments: [Comment]
+  }
+  input PostInput {
+    _id: ID
+    text: String!
+    imageUrl: String
+    videoUrl:String
+    organizationId: ID!
+  }
+
+  type Comment {
+    _id: ID
+    text: String!
+    createdAt: String
+    creator: User!
+    post: Post!
+  }
+  
+  input CommentInput {
+    text: String!
+  }
+`

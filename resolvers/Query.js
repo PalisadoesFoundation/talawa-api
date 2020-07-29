@@ -2,13 +2,11 @@ const User = require("../models/User");
 const Organization = require("../models/Organization");
 const Event = require("../models/Event");
 const Post = require("../models/Post");
-const GroupChat = require("../models/Message");
-
+const Group = require("../models/Group");
 
 const EventProject = require("../models/EventProject");
 const { login } = require("./Auth");
 const authCheck = require("./functions/authCheck");
-
 
 const Query = {
 	users: async (parent, args, context, info) => {
@@ -53,30 +51,14 @@ const Query = {
 			if (!user) throw new Error("User does not exist");
 			//console.log(user._doc)
 
-      return {
-        ...user._doc,
-        password:null
-      }
-    } catch (e) {
-      throw e;
-    }
-  },
-  login,
-  organizations: async (parent, args, context, info) => {
-    try {
-      if (args.id) {
-        const organizationFound = await Organization.find({ _id: args.id });
-        if (!organizationFound[0]) {
-          throw new Error("Organization not found");
-        }
-        return organizationFound;
-      } else {
-        return await Organization.find();
-      }
-    } catch (e) {
-      throw e;
-    }
-  },
+			return {
+				...user._doc,
+				password: null,
+			};
+		} catch (e) {
+			throw e;
+		}
+	},
 	login,
 	organizations: async (parent, args, context, info) => {
 		try {
@@ -97,35 +79,24 @@ const Query = {
 	},
 	event: async (parent, args, context, info) => {
 		try {
-			const eventFound = await Event.find({ _id: args.id })
+			const eventFound = await Event.findOne({ _id: args.id })
 				.populate("registrants")
 				.populate("creator")
 				.populate("admins");
 			if (!eventFound) {
 				throw new Error("Event not found");
 			}
-			return { ...eventFound._doc };
+			return eventFound;
 		} catch (e) {
 			throw e;
 		}
 	},
 	events: async (parent, args, context, info) => {
 		try {
-			if (args.id) {
-				const eventFound = await Event.find({ _id: args.id })
-					.populate("registrants")
-					.populate("creator")
-					.populate("admins");
-				if (!eventFound[0]) {
-					throw new Error("Event not found");
-				}
-				return eventFound;
-			} else {
-				return await Event.find()
-					.populate("registrants")
-					.populate("creator")
-					.populate("admins");
-			}
+			return await Event.find()
+				.populate("registrants")
+				.populate("creator")
+				.populate("admins");
 		} catch (e) {
 			throw e;
 		}
@@ -141,30 +112,17 @@ const Query = {
 			if (!eventProjectFound) {
 				throw new Error("Event not found");
 			}
-			return { ...eventProjectFound._doc };
+			return eventProjectFound;
 		} catch (e) {
 			throw e;
 		}
 	},
 	projects: async (parent, args, context, info) => {
 		try {
-			if (args.id) {
-				const eventProjectFound = await EventProject.find({
-					_id: args.id,
-				})
-					.populate("event")
-					.populate("tasks")
-					.populate("creator");
-				if (!eventProjectFound[0]) {
-					throw new Error("Event not found");
-				}
-				return eventProjectFound;
-			} else {
-				return await EventProject.find()
-					.populate("event")
-					.populate("tasks")
-					.populate("creator");
-			}
+			return await EventProject.find()
+				.populate("event")
+				.populate("tasks")
+				.populate("creator");
 		} catch (e) {
 			throw e;
 		}
@@ -179,20 +137,49 @@ const Query = {
 			throw e;
 		}
 	},
-	posts: async (parent, args, context, info) => {
+	post: async (parent, args, context, info) => {
 		try {
-			return await Post.find();
+			const postFound = await Post.findOne({
+				_id: args.id,
+			})
+				.populate("organization")
+				.populate("likedBy")
+				.populate("creator");
+			if (!postFound) {
+				throw new Error("Post not found");
+			}
+			return postFound;
 		} catch (e) {
 			throw e;
 		}
 	},
-	groupChats: async(parent,args,context,info)=> {
+	posts: async (parent, args, context, info) => {
 		try {
-			return await GroupChat.find();
+			return await Post.find()
+				.populate("organization")
+				.populate("likedBy")
+				.populate("creator");
 		} catch (e) {
 			throw e;
 		}
-	}
+	},
+	postsByOrganization: async (parent, args, context, info) => {
+		try {
+			return await Post.find({ organization: args.id })
+				.populate("organization")
+				.populate("likedBy")
+				.populate("creator");
+		} catch (e) {
+			throw e;
+		}
+	},
+	groups: async (parent, args, context, info) => {
+		try {
+			return await Group.find();
+		} catch (e) {
+			throw e;
+		}
+	},
 };
 
 module.exports = Query;

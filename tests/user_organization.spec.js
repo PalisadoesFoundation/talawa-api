@@ -23,6 +23,7 @@ describe("User-Organization Resolvers", () => {
                     name:"test org"
                     description:"test description"
                     isPublic: true
+                    visibleInSearch: true
                     }) {
                         _id
                         name
@@ -46,6 +47,8 @@ describe("User-Organization Resolvers", () => {
       })
     );
   });
+
+
 
   //NEW USER IS CREATED
 
@@ -143,18 +146,59 @@ describe("User-Organization Resolvers", () => {
 
       const { data } = response;
       createdEventId = data.data.createEvent._id;
-  
+      console.log(data)
+      console.log(createdEventId)
+
       expect(data.data.createEvent).toEqual(
         expect.objectContaining({
           _id: createdEventId,
         })
       );
-    } catch(e) {
-      console.log("an error has occurred")
+    } catch (e) {
+      console.log("an error has occurred");
       console.log(e);
-      throw e
+      throw e;
     }
+  });
 
+  //NEW USER CREATES A GROUP
+  let createdGroupId;
+  test("User Creates Group", async () => {
+    try {
+      const response = await axios.post(
+        URL,
+        {
+          query: `
+          mutation{
+            createGroup(data:{
+              organizationId:"${createdOrgId}"
+              title: "test group"
+            }){
+              _id
+            }
+          }
+            `,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${newUserToken}`,
+          },
+        }
+      );
+
+      const { data } = response;
+      createdGroupId = data.data.createGroup._id;
+
+      expect(data.data.createGroup).toEqual(
+        expect.objectContaining({
+          _id: createdGroupId,
+        })
+      );
+    } catch (e) {
+      console.log("an error has occurred");
+      console.log(e);
+      throw e;
+    }
   });
 
   //USER IS MADE ADMIN
@@ -192,6 +236,46 @@ describe("User-Organization Resolvers", () => {
     );
   });
 
+
+    //ADMIN REMOVES GROUP
+
+    test("Admin removes group", async () => {
+      try {
+        const response = await axios.post(
+          URL,
+          {
+            query: `
+            mutation{
+              adminRemoveGroup(groupId:"${createdGroupId}"){
+                _id
+              }
+            }
+              `,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${newUserToken}`,
+            },
+          }
+        );
+  
+        const { data } = response;
+  
+        expect(data.data.adminRemoveGroup).toEqual(
+          expect.objectContaining({
+            _id: createdGroupId,
+          })
+        );
+      } catch (e) {
+        console.log("an error has occurred");
+        console.log(e);
+        throw e;
+      }
+    });
+  
+
+
+
   //ADMIN REMOVES EVENT
 
   test("Admin Removes Event", async () => {
@@ -220,6 +304,9 @@ describe("User-Organization Resolvers", () => {
       })
     );
   });
+
+
+
 
   //ADMIN IS REMOVED
 
@@ -411,4 +498,7 @@ describe("User-Organization Resolvers", () => {
       },
     });
   });
+
+
+
 });

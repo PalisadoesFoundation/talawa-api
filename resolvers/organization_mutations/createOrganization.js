@@ -1,60 +1,46 @@
+
+const mongoose = require("mongoose");
+
+
 const User = require("../../models/User");
 const Organization = require("../../models/Organization");
-
+const authCheck = require("../functions/authCheck");
+const userExists = require("../../helper_functions/userExists")
 const createOrganization = async (parent, args, context, info) => {
   //authentication check
-  if (!context.isAuth) throw new Error("User is not authenticated");
+  authCheck(context);
 
   try {
     //gets user in token - to be used later on
-    let userFound = await User.findOne({ _id: context.userId });
-    if (!userFound) {
-      throw new Error("User does not exist");
-    }
+    let userFound = await userExists(context.userId);
 
     let newOrganization = new Organization({
       ...args.data,
-      creator: context.userId
+      creator: mongoose.Types.ObjectId(context.userId),
+      admins: [userFound],
+      members: [userFound]
     });
-
-    //makes the creator an admin of the organization
-    newOrganization.admins.push(userFound);
-
     newOrganization = await newOrganization.save();
 
 
-    //makes the creator a member of the organization
-    newOrganization.overwrite({
-      ...newOrganization._doc,
-      members: [...newOrganization._doc.members, userFound]
-    })
-    await newOrganization.save()
-
     //adds organization to users joined organizations field
-    userFound.overwrite({
-      ...userFound._doc,
-      joinedOrganizations: [...userFound._doc.joinedOrganizations, newOrganization]
-    })
-    await userFound.save()
-
-    //add organization to the creator's createdOrganizations field
-    let updatedUser = await User.updateOne(
-      { _id: userFound.id },
-      {
-        $set: {
-          createdOrganizations: [
-            ...userFound.createdOrganizations,
-            newOrganization,
-          ],
-          adminFor: [...userFound.createdOrganizations, newOrganization],
-        },
-      }
-    );
+    await userFound.updateOne(
+      {_id: userFound.id},
+      {$set: {
+      joinedOrganizations: [
+        ...userFound._doc.joinedOrganizations,
+        newOrganization,
+      ],
+      createdOrganization: [
+        ...userFound._doc.createdOrganizations,
+        newOrganization,
+      ],
+      adminFor: [...userFound._doc.adminFor, newOrganization],
+    }});
 
 
-    return {
-      ...newOrganization._doc,
-    };
+    return newOrganization._doc;
+    
   } catch (e) {
     throw e;
   }

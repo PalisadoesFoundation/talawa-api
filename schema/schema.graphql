@@ -1,0 +1,45 @@
+const { gql } = require("apollo-server-express");
+const mutation = require("./mutation.graphql");
+const query = require("./query.graphql");
+const user = require("./user/user.graphql");
+const auth = require("./user/auth.graphql");
+const organization = require("./organization/organization.graphql");
+const event = require("./event/event.graphql");
+const newsfeed = require("./newsfeed/newsfeed.graphql");
+
+const typeDefs = gql`
+  type Message {
+    _id: ID!
+    text: String
+    createdAt: String
+    imageUrl: String
+    videoUrl:String
+    creator: User
+  }
+
+  input GroupInput {
+    title: String
+    description:String
+    organizationId: ID!
+  }
+
+  type Group {
+    _id: ID
+    title: String
+    description:String
+    createdAt:String
+    organization: Organization!
+    admins: [User]
+  }
+  
+  ${mutation}
+  ${query}
+  ${user}
+  ${auth}
+  ${organization}
+  ${event}
+  ${newsfeed}
+`
+
+
+module.exports = typeDefs

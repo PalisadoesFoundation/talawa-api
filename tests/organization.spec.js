@@ -1,28 +1,31 @@
 const axios = require("axios");
 const { URL } = require("../constants");
 const getToken = require("./functions/getToken");
+
 let token;
+let createdOrgId;
+
 beforeAll(async () => {
   token = await getToken();
 });
 
 describe("organization resolvers", () => {
   test("allOrganizations", async () => {
-    const response = await axios.post(URL, {
-      query: `query {
+    let response = await axios.post(URL, {
+      query: `{
                 organizations {
                     _id
                     name
                 }
-            }`,
+            }
+            `,
     });
-    const { data } = response;
+    let { data } = response;
     expect(Array.isArray(data.data.organizations)).toBeTruthy();
   });
 
-  let createdOrgId;
   test("createOrganization", async () => {
-    const response = await axios.post(
+    let createdOrgResponse = await axios.post(
       URL,
       {
         query: `
@@ -31,9 +34,9 @@ describe("organization resolvers", () => {
                     name:"test org"
                     description:"test description"
                     isPublic: true
+                    visibleInSearch: true
                     }) {
                         _id
-                        name
                     }
             }
               `,
@@ -44,20 +47,20 @@ describe("organization resolvers", () => {
         },
       }
     );
-    const { data } = response;
-    //console.log(data)
-    //console.log(token)
-    createdOrgId = data.data.createOrganization._id;
+    let { data } = createdOrgResponse;
+    createdOrgId = createdOrgResponse.data.data.createOrganization._id;
+    //console.log(createdOrgId);
     expect(data.data.createOrganization).toEqual(
       expect.objectContaining({
-        _id: expect.any(String),
-        name: expect.any(String),
+        _id: expect.any(String)
       })
     );
   });
 
+  // console.log(createdOrgId)
+
   test("updateOrganization", async () => {
-    const response = await axios.post(
+    let updateOrgRes = await axios.post(
       URL,
       {
         query: `
@@ -79,7 +82,9 @@ describe("organization resolvers", () => {
         },
       }
     );
-    const { data } = response;
+
+    let{ data } = updateOrgRes;
+
     expect(data).toMatchObject({
       data: {
         updateOrganization: {
@@ -92,44 +97,15 @@ describe("organization resolvers", () => {
   });
 
   test("removeOrganization", async () => {
-    //a new organization is created then deleted
-    const response = await axios.post(
-      URL,
-      {
-        query: `
-            mutation {
-                createOrganization(data: {
-                    name:"test org"
-                    description:"test description"
-                    isPublic: true
-                    }) {
-                        _id
-                        name
-                    }
-            }
-              `,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    const { data } = response;
-
-    const newOrgId = data.data.createOrganization._id;
+    
 
     const deletedResponse = await axios.post(
       URL,
       {
         query: `
             mutation {
-                removeOrganization(id: "${newOrgId}") {
+                removeOrganization(id: "${createdOrgId}") {
                     _id
-                    name
-                    description
-                    isPublic
                 }
             }
             `,
@@ -144,10 +120,7 @@ describe("organization resolvers", () => {
     expect(deletedResponse.data).toMatchObject({
       data: {
         removeOrganization: {
-          _id: `${newOrgId}`,
-          name: "test org",
-          description: "test description",
-          isPublic: true,
+          _id: `${createdOrgId}`
         },
       },
     });

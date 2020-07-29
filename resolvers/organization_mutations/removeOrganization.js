@@ -35,7 +35,6 @@ const removeOrganizaiton = async (parent, args, context, info) => {
             (organization) => organization.id != org.id
           ),
         });
-        await user.save()
       }
     });
 

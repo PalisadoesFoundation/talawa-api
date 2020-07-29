@@ -1,0 +1,21 @@
+
+
+module.exports = `
+
+  type Query {
+    users(id: ID): [User],
+    login(data: LoginInput!): AuthData!
+    organizations(id: ID): [Organization]
+    events(id: ID): [Event]
+    event(id: ID): Event
+    project(id: ID): EventProject
+    projects: [EventProject]
+    projectsByEvent(id: ID!): [EventProject]
+    me:User!
+    posts: [Post]
+    postsByOrganization(id: ID!): [Post]
+    post(id: ID): Post
+    groups: [Group]
+  }
+
+`

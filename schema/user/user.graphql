@@ -1,0 +1,30 @@
+
+
+module.exports = `
+
+  type User {
+    _id: ID!
+    firstName: String!
+    lastName: String!
+    email: String!
+    password: String
+    createdOrganizations: [Organization]
+    joinedOrganizations: [Organization]
+    createdEvents: [Event]
+    registeredEvents: [Event]
+    eventAdmin: [Event]
+    adminFor: [Organization]
+    membershipRequests: [MembershipRequest]
+    organizationsBlockedBy: [Organization]
+  }
+
+
+  
+  input UserInput {
+    firstName: String!
+    lastName: String!
+    email: String!
+    password: String!
+  }
+
+`
