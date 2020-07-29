@@ -26,6 +26,8 @@ const adminRemoveGroup = require("./admin_mutations/admin-remove-group-chat");
 
 const createPost = require("./post_mutations/createPost")
 const removePost = require("./post_mutations/removePost")
+const createComment = require("./post_mutations/createComment")
+const removeComment = require("./post_mutations/removeComment")
 const likePost = require("./post_mutations/likePost")
 const unlikePost = require("./post_mutations/unlikePost")
 
@@ -74,6 +76,8 @@ const Mutation = {
   blockUser,
   unblockUser,
   createGroupChat,
+  createComment,
+  removeComment,
 };
 
 module.exports = Mutation;

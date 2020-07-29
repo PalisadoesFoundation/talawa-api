@@ -10,7 +10,7 @@ const removePost = async (parent, args, context, info) => {
 		if (!user) throw new Error("User does not exist");
 
 		let post = await Post.findOne({ _id: args.id });
-		if (!post) throw new Error("post not found");
+		if (!post) throw new Error("Post not found");
 
 		if (!(post.creator !== context.userId)) {
 			throw new Error("User cannot delete post they didn't create");

@@ -1,5 +1,5 @@
 const User = require("../../models/User");
-const Post = require("../../models/EventProject");
+const Post = require("../../models/Post");
 
 const authCheck = require("../functions/authCheck");
 
@@ -9,18 +9,20 @@ const unlikePost = async (parent, args, context, info) => {
 		const user = await User.findOne({ _id: context.userId });
 		if (!user) throw new Error("User does not exist");
 
-		// let post = await Post.findOne({ _id: args.id });
-		// if (!post) throw new Error("Post not found");
-
-		let newPost = Post.updateOne(
-			{ id: args.id },
+		let post = await Post.findOne({ _id: args.id });
+		if (!post) {
+			throw new Error("Post not found");
+		}
+		let newPost = await Post.findOneAndUpdate(
+			{ _id: args.id },
 			{
 				$pull: {
-					likedBy: context.userId
+					likedBy: context.userId,
 				},
 			},
 			{ new: true }
 		);
+
 		return newPost;
 	} catch (e) {
 		throw e;

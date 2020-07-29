@@ -3,6 +3,7 @@ const Organization = require("../models/Organization");
 const Event = require("../models/Event");
 const Post = require("../models/Post");
 const Group = require("../models/Group");
+const Comment = require("../models/Comment");
 
 const EventProject = require("../models/EventProject");
 const { login } = require("./Auth");
@@ -137,12 +138,34 @@ const Query = {
 			throw e;
 		}
 	},
+	comments: async (parent, args, context, info) => {
+		try {
+			return await Comment.find().populate("creator").populate("post");
+		} catch (e) {
+			throw e;
+		}
+	},
+	commentsByPost: async (parent, args, context, info) => {
+		try {
+			return await Comment.find({ post: args.id })
+				.populate("creator")
+				.populate("post");
+		} catch (e) {
+			throw e;
+		}
+	},
 	post: async (parent, args, context, info) => {
 		try {
 			const postFound = await Post.findOne({
 				_id: args.id,
 			})
 				.populate("organization")
+				.populate({
+					path : 'comments',
+					populate : {
+					  path : 'creator'
+					}
+				  })
 				.populate("likedBy")
 				.populate("creator");
 			if (!postFound) {
@@ -158,6 +181,12 @@ const Query = {
 			return await Post.find()
 				.populate("organization")
 				.populate("likedBy")
+				.populate({
+					path : 'comments',
+					populate : {
+					  path : 'creator'
+					}
+				  })
 				.populate("creator");
 		} catch (e) {
 			throw e;
@@ -168,6 +197,12 @@ const Query = {
 			return await Post.find({ organization: args.id })
 				.populate("organization")
 				.populate("likedBy")
+				.populate({
+					path : 'comments',
+					populate : {
+					  path : 'creator'
+					}
+				  })
 				.populate("creator");
 		} catch (e) {
 			throw e;

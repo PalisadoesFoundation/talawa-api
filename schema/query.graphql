@@ -14,6 +14,8 @@ module.exports = `
     me:User!
     posts: [Post]
     postsByOrganization(id: ID!): [Post]
+    comments: [Comment]
+    commentsByPost(id: ID!): [Comment]
     post(id: ID): Post
     groups: [Group]
   }

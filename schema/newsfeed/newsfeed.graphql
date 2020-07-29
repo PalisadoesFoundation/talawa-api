@@ -8,7 +8,7 @@ module.exports = `
     creator: User!
     organization: Organization!
     likedBy: [User]
-    # comments: [Comment]
+    comments: [Comment]
   }
   input PostInput {
     _id: ID
