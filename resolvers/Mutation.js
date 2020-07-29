@@ -16,6 +16,9 @@ const createEventProject = require("./event_project_mutations/createProject")
 const removeEventProject = require("./event_project_mutations/removeProject")
 const updateEventProject = require("./event_project_mutations/updateProject")
 
+const createTask = require("./project_task_mutations/createTask")
+const removeTask = require("./project_task_mutations/removeTask")
+const updateTask = require("./project_task_mutations/updateTask")
 
 const adminRemovePost = require("./admin_mutations/admin-remove-post");
 const adminRemoveEvent = require("./admin_mutations/admin-remove-event");
@@ -60,7 +63,11 @@ const Mutation = {
   rejectMembershipRequest,
   cancelMembershipRequest,
   blockUser,
-  unblockUser
+  unblockUser,
+  createGroupChat,
+  createTask,
+  removeTask,
+  updateTask,
 };
 
 module.exports = Mutation;

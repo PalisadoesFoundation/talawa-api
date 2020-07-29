@@ -136,6 +136,7 @@ const Query = {
 				_id: args.id,
 			})
 				.populate("event")
+				.populate("tasks")
 				.populate("creator");
 			if (!eventProjectFound) {
 				throw new Error("Event not found");
@@ -152,6 +153,7 @@ const Query = {
 					_id: args.id,
 				})
 					.populate("event")
+					.populate("tasks")
 					.populate("creator");
 				if (!eventProjectFound[0]) {
 					throw new Error("Event not found");
@@ -160,6 +162,7 @@ const Query = {
 			} else {
 				return await EventProject.find()
 					.populate("event")
+					.populate("tasks")
 					.populate("creator");
 			}
 		} catch (e) {
@@ -170,6 +173,7 @@ const Query = {
 		try {
 			return await EventProject.find({ event: args.id })
 				.populate("event")
+				.populate("tasks")
 				.populate("creator");
 		} catch (e) {
 			throw e;

@@ -2,19 +2,19 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
-const eventProjectSchema = new Schema({
+const taskSchema = new Schema({
 	title: {
 		type: String,
 		required: true,
 	},
 	description: {
 		type: String,
-		required: true,
 	},
 	createdAt: { type: Date, default: Date.now },
-	event: {
+	deadline: { type: Date },
+	project: {
 		type: Schema.Types.ObjectId,
-		ref: "Event",
+		ref: "EventProject",
 		required: true,
 	},
 	creator: {
@@ -22,12 +22,6 @@ const eventProjectSchema = new Schema({
 		ref: "User",
 		required: true,
 	},
-	tasks: [
-		{
-			type: Schema.Types.ObjectId,
-			ref: "Task",
-		},
-	],
 });
 
-module.exports = mongoose.model("EventProject", eventProjectSchema);
+module.exports = mongoose.model("Task", taskSchema);
