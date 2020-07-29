@@ -1,11 +1,9 @@
-
 const mongoose = require("mongoose");
-
 
 const User = require("../../models/User");
 const Organization = require("../../models/Organization");
 const authCheck = require("../functions/authCheck");
-const userExists = require("../../helper_functions/userExists")
+const userExists = require("../../helper_functions/userExists");
 const createOrganization = async (parent, args, context, info) => {
   //authentication check
   authCheck(context);
@@ -18,29 +16,19 @@ const createOrganization = async (parent, args, context, info) => {
       ...args.data,
       creator: mongoose.Types.ObjectId(context.userId),
       admins: [userFound],
-      members: [userFound]
+      members: [userFound],
     });
     newOrganization = await newOrganization.save();
 
-
-    //adds organization to users joined organizations field
-    await userFound.updateOne(
-      {_id: userFound.id},
-      {$set: {
-      joinedOrganizations: [
-        ...userFound._doc.joinedOrganizations,
-        newOrganization,
-      ],
-      createdOrganization: [
-        ...userFound._doc.createdOrganizations,
-        newOrganization,
-      ],
-      adminFor: [...userFound._doc.adminFor, newOrganization],
-    }});
-
+    userFound.overwrite({
+      ...userFound._doc,
+      joinedOrganizations: [...userFound._doc.joinedOrganizations, newOrganization],
+      createdOrganizations: [...userFound._doc.createdOrganizations, newOrganization],
+      adminFor: [...userFound._doc.adminFor, newOrganization]
+    });
+    await userFound.save();
 
     return newOrganization._doc;
-    
   } catch (e) {
     throw e;
   }

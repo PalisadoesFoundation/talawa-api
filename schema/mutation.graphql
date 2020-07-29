@@ -43,5 +43,8 @@ module.exports = `
 
     blockUser(organizationId: ID!, userId: ID!) : User!
     unblockUser(organizationId: ID!, userId:ID!) : User!
+
+    createGroupChat(data: GroupInput!): Message!
   }
+  
 `

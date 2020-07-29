@@ -30,7 +30,7 @@ const likePost = require("./post_mutations/likePost")
 const unlikePost = require("./post_mutations/unlikePost")
 
 
-const createGroup = require("./group_chat_mutations/create_group_chat")
+const createGroupChat = require("./group_chat_mutations/create_group_chat")
 
 const sendMembershipRequest = require("./membership_request_mutations/send_membership_request");
 const acceptMembershipRequest = require("./membership_request_mutations/accept_membership_request");
@@ -67,13 +67,13 @@ const Mutation = {
   createTask,
   removeTask,
   updateTask,
-  createGroup,
   sendMembershipRequest,
   acceptMembershipRequest,
   rejectMembershipRequest,
   cancelMembershipRequest,
   blockUser,
   unblockUser,
+  createGroupChat,
 };
 
 module.exports = Mutation;

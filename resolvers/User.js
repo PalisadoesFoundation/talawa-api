@@ -8,18 +8,21 @@ const User = {
     return await Organization.find({creator: parent._id});
   },
   adminFor: async(parent,args,context,info)=> {
-    let organizations = await Organization.find();
-    organizations = organizations.filter((org)=> {
-      if(parent.adminFor.includes(org._id)) return org
+
+
+    return await Organization.find({
+      _id:{
+        $in: [...parent.adminFor]
+      }
     })
-    return organizations
   },
   joinedOrganizations: async (parent, args,context,info)=> {
-    let organizations = await Organization.find();
-    organizations = organizations.filter((org)=> {
-      if(parent.joinedOrganizations.includes(org._id)) return org
+
+    return await Organization.find({
+      _id: {
+        $in: [...parent.joinedOrganizations]
+      }
     })
-    return organizations
   },
   membershipRequests: async(parent,args,context,info)=>{
     const membershipRequests = await MembershipRequest.find({
