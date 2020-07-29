@@ -10,15 +10,15 @@ const createOrganization = async (parent, args, context, info) => {
 
   try {
     //gets user in token - to be used later on
-    let userFound = await userExists(context.userId);
+    let userFound = await User.findOne({ _id: context.userId });
+    if (!userFound) throw new Error("User does not exist");
 
     let newOrganization = new Organization({
       ...args.data,
-      creator: mongoose.Types.ObjectId(context.userId),
+      creator: userFound,
       admins: [userFound],
       members: [userFound],
     });
-    newOrganization = await newOrganization.save();
 
     userFound.overwrite({
       ...userFound._doc,
@@ -26,7 +26,13 @@ const createOrganization = async (parent, args, context, info) => {
       createdOrganizations: [...userFound._doc.createdOrganizations, newOrganization],
       adminFor: [...userFound._doc.adminFor, newOrganization]
     });
-    await userFound.save();
+
+    const promise1 = new Promise((resolve, reject) => {
+      newOrganization.save();
+    });
+    promise1.then(()=>{
+      userFound.save();
+    })
 
     return newOrganization._doc;
   } catch (e) {
