@@ -23,16 +23,16 @@ describe("Block user functionality tests", () => {
       URL,
       {
         query: `
-              mutation {
-                  createOrganization(data: {
-                      name:"test org"
-                      description:"test description"
-                      isPublic: false
-                      visibleInSearch: true
-                      }) {
-                          _id
-                      }
+        mutation {
+          createOrganization(data: {
+              name:"test org"
+              description:"test description"
+              isPublic: true
+              visibleInSearch: true
+              }) {
+                  _id
               }
+      }
               `,
       },
       {
