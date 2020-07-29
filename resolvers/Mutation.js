@@ -26,7 +26,7 @@ const adminRemoveGroup = require("./admin_mutations/admin-remove-group-chat");
 
 const createPost = require("./post_mutations/create_post")
 
-const createGroup = require("./group_chat_mutations/create_group_chat")
+const createGroupChat = require("./group_chat_mutations/create_group_chat")
 
 const sendMembershipRequest = require("./membership_request_mutations/send_membership_request");
 const acceptMembershipRequest = require("./membership_request_mutations/accept_membership_request");
@@ -57,7 +57,6 @@ const Mutation = {
   removeEventProject,
   updateEventProject,
   createPost,
-  createGroup,
   sendMembershipRequest,
   acceptMembershipRequest,
   rejectMembershipRequest,
@@ -67,7 +66,7 @@ const Mutation = {
   createGroupChat,
   createTask,
   removeTask,
-  updateTask,
+  updateTask
 };
 
 module.exports = Mutation;

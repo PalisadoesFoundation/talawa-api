@@ -24,7 +24,6 @@ module.exports = `
 
     createPost(data: PostInput!): Post!
 
-    createGroup(data: GroupInput!): Group!
 
     sendMembershipRequest(organizationId: ID!) : MembershipRequest!
     acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest!
@@ -33,6 +32,16 @@ module.exports = `
 
     blockUser(organizationId: ID!, userId: ID!) : User!
     unblockUser(organizationId: ID!, userId:ID!) : User!
+
+
+
+
+    createTask(data: TaskInput, projectId: ID!): Task!
+    updateTask(id:ID!, data: UpdateTaskInput) : Task
+    removeTask(id: ID!) : Task
+
+    
+    createGroupChat(data: GroupChatInput!): Message!
   }
   
 `
