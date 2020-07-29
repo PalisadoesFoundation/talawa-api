@@ -1,8 +1,6 @@
 const User = require("../../models/User");
 const Organization = require("../../models/Organization");
 const authCheck = require("../functions/authCheck");
-const creatorCheck = require("../functions/creatorCheck");
-const adminCheck = require("../functions/adminCheck");
 
 module.exports = async (parent, args, context, info) => {
   authCheck(context);

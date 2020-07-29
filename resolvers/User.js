@@ -15,11 +15,13 @@ const User = {
     return organizations
   },
   joinedOrganizations: async (parent, args,context,info)=> {
-    let organizations = await Organization.find();
-    organizations = organizations.filter((org)=> {
-      if(parent.joinedOrganizations.includes(org._id)) return org
+
+    const joinedOrgs = await Organization.find({
+      _id: {
+        $in: [...parent.joinedOrganizations]
+      }
     })
-    return organizations
+    return joinedOrgs
   },
   membershipRequests: async(parent,args,context,info)=>{
     const membershipRequests = await MembershipRequest.find({

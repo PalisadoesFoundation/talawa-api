@@ -24,7 +24,6 @@ module.exports = `
 
     createPost(data: PostInput!): Post!
 
-    
     createGroup(data: GroupInput!): Group!
 
     sendMembershipRequest(organizationId: ID!) : MembershipRequest!
@@ -35,4 +34,5 @@ module.exports = `
     blockUser(organizationId: ID!, userId: ID!) : User!
     unblockUser(organizationId: ID!, userId:ID!) : User!
   }
+  
 `
