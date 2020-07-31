@@ -1,7 +1,7 @@
 {
     "env" : {
         "MONGO_USER":"talawa-admin",
-        "MONGO_PASSWORD":"QJAYSm3OwU60Scwj",
+        "MONGO_PASSWORD":"j7B9JtK8hY6gcBPf",
         "MONGO_DB":"talawa-db"
     }
 }
