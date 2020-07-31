@@ -27,6 +27,8 @@ const createOrganization = async (parent, args, context, info) => {
       adminFor: [...userFound._doc.adminFor, newOrganization]
     });
 
+
+    // parallel saves have to be done like this because of versioning in mongoose
     const promise1 = new Promise((resolve, reject) => {
       newOrganization.save();
     });
