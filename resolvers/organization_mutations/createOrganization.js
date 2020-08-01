@@ -19,22 +19,31 @@ const createOrganization = async (parent, args, context, info) => {
       admins: [userFound],
       members: [userFound],
     });
+    await newOrganization.save();
 
-    userFound.overwrite({
-      ...userFound._doc,
-      joinedOrganizations: [...userFound._doc.joinedOrganizations, newOrganization],
-      createdOrganizations: [...userFound._doc.createdOrganizations, newOrganization],
-      adminFor: [...userFound._doc.adminFor, newOrganization]
-    });
+    await User.findOneAndUpdate(
+      { _id: userFound.id },
+      {
+        $set: {
+          joinedOrganizations: [
+            ...userFound._doc.joinedOrganizations,
+            newOrganization,
+          ],
+          createdOrganizations: [
+            ...userFound._doc.createdOrganizations,
+            newOrganization,
+          ],
+          adminFor: [...userFound._doc.adminFor, newOrganization],
+        },
+      }
+    );
 
-
-    // parallel saves have to be done like this because of versioning in mongoose
-    const promise1 = new Promise((resolve, reject) => {
-      newOrganization.save();
-    });
-    promise1.then(()=>{
-      userFound.save();
-    })
+    // await userFound.overwrite({
+    //   ...userFound._doc,
+    //   joinedOrganizations: [...userFound._doc.joinedOrganizations, newOrganization],
+    //   createdOrganizations: [...userFound._doc.createdOrganizations, newOrganization],
+    //   adminFor: [...userFound._doc.adminFor, newOrganization]
+    // });
 
     return newOrganization._doc;
   } catch (e) {
