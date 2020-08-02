@@ -12,7 +12,9 @@ const updateEvent = async (parent, args, context, info) => {
 		let eventProject = await EventProject.findOne({ _id: args.id });
 		if (!eventProject) throw new Error("Event Project not found");
 
-		if (!eventProject.admins.includes(context.userId)) {
+		console.log(eventProject.creator !== context.userId);
+
+		if (!(eventProject.creator !== context.userId)) {
 			throw new Error("User cannot delete project they didn't create");
 		}
 

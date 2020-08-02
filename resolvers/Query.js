@@ -102,6 +102,16 @@ const Query = {
 			throw e;
 		}
 	},
+	eventsByOrganization: async (parent, args, context, info) => {
+		try {
+			return await Event.find({ organization: args.id })
+			.populate("registrants")
+			.populate("creator")
+			.populate("admins");
+		} catch (e) {
+			throw e;
+		}
+	},
 	project: async (parent, args, context, info) => {
 		try {
 			const eventProjectFound = await EventProject.findOne({

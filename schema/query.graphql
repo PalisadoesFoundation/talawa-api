@@ -7,6 +7,7 @@ module.exports = `
     login(data: LoginInput!): AuthData!
     organizations(id: ID): [Organization]
     events(id: ID): [Event]
+    eventsByOrganization(id: ID): [Event]
     event(id: ID): Event
     project(id: ID): EventProject
     projects: [EventProject]

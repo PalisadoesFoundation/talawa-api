@@ -21,6 +21,7 @@ module.exports = `
         title:String!
         description: String!
         event: Event!
+        tasks: [Task]
     }
 
     type Task {
