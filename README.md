@@ -59,8 +59,8 @@ Start developing!
 
 To run this api five environment variables need to be set:  
 
-MONGO_USER  
-MONGO_PASSWORD  
-MONGO_DB  
-ACCESS_TOKEN_SECRET  
-REFRESH_TOKEN_SECRET  
+1. MONGO_USER  
+2. MONGO_PASSWORD  
+3. MONGO_DB  
+4. ACCESS_TOKEN_SECRET  
+5. REFRESH_TOKEN_SECRET  
