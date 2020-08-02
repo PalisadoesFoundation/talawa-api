@@ -55,10 +55,10 @@ Start developing!
 [yarn]: <https://yarnpkg.com/>
 
 
-ENVIRONMENT VARIABLES
-To run this api five environment variables need to be set:
-MONGO_USER
-MONGO_PASSWORD
-MONGO_DB
-ACCESS_TOKEN_SECRET
-REFRESH_TOKEN_SECRET
+ENVIRONMENT VARIABLES  
+To run this api five environment variables need to be set:  
+MONGO_USER  
+MONGO_PASSWORD  
+MONGO_DB  
+ACCESS_TOKEN_SECRET  
+REFRESH_TOKEN_SECRET  
