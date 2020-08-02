@@ -23,7 +23,20 @@ const eventSchema = new Schema({
 		required: true,
 		default: false,
 	},
-	date: { type: Date, required: true },
+	allDay: { type: Boolean, required: true },
+	date: { type: String, required: true },
+	startTime: {
+		type: String,
+		required: function () {
+			return !this.allDay;
+		},
+	},
+	endTime: {
+		type: String,
+		required: function () {
+			return !this.allDay;
+		},
+	},
 	recurrance: {
 		type: String,
 		enum: ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"],

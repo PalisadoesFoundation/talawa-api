@@ -3,7 +3,10 @@ module.exports = `
         _id: ID!
         title:String!
         description: String!
-        date: String
+        date: String!
+        allDay: Boolean!
+        startTime: String
+        endTime: String
         recurring: Boolean!
         recurrance: String
         attendees: String!
@@ -14,6 +17,7 @@ module.exports = `
         admins(adminId: ID): [User]
         organization: Organization
         location: String
+
     }
 
     type EventProject {
@@ -44,6 +48,9 @@ module.exports = `
         isRegisterable: Boolean! 
         organizationId: ID!
         date: String!
+        allDay: Boolean!
+        startTime: String
+        endTime: String
         location: String
     }
 
@@ -57,6 +64,9 @@ module.exports = `
         isRegisterable: Boolean
         date: String
         location: String
+        allDay: Boolean
+        startTime: String
+        endTime: String
     }
 
     input TaskInput {

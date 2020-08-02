@@ -23,8 +23,6 @@ const likePost = async (parent, args, context, info) => {
 			},
 			{ new: true }
 		);
-
-		console.log(newPost);
 		return newPost;
 	} catch (e) {
 		throw e;

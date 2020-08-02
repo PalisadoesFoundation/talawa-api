@@ -64,7 +64,8 @@ describe("event resolvers", () => {
                   recurring: true,
                   recurrance: "YEARLY",
                   location: "Test",
-                  date: "2/2/2020",
+				  date: "2/2/2020",
+				  allDay: true,
                   organizationId: "${createdOrgId}",
           }) {
               _id
@@ -208,7 +209,8 @@ describe("event resolvers", () => {
 	                  isRegisterable: true,
 	                  recurring: true,
 	                  recurrance: "YEARLY",
-	                  location: "Test",
+					  location: "Test",
+					  allDay: true,
 	                  date: "2/2/2020",
 	                  organizationId: "5ef5149792d1c1002474169b",
 	          }) {
