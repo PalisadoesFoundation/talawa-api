@@ -16,7 +16,6 @@ module.exports = async (parent, args, context, info) => {
   
       let user = new User({
         ...args.data,
-        tokenVersion: 0,
         password: hashedPassword,
       });
   

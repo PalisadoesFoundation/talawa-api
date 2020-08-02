@@ -23,6 +23,7 @@ const isAuth = (req) => {
       isAuth,
     };
   }
+  //console.log(token);
 
   //uses key created in the auth resolver
   //to be changed in production
@@ -33,13 +34,10 @@ const isAuth = (req) => {
     decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err, decoded) {
       if (err) {
           if(err.name = "TokenExpiredError") {
-            expired = true;
-            return {
-              isAuth,
-              expired
-            };
+            expired = true;s
           }
       }
+      return decoded;
     });
   } catch (e) {
     const isAuth = false;
@@ -51,6 +49,7 @@ const isAuth = (req) => {
 
   //if the decoded token is not set
   if (!decodedToken) {
+    console.log("decoded token is not present")
     const isAuth = false;
     return {
       isAuth,

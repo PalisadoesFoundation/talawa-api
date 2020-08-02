@@ -16,5 +16,4 @@ module.exports.createRefreshToken = async (user) => {
         process.env.REFRESH_TOKEN_SECRET,
         {expiresIn: "30d"}
     );
-
 }
