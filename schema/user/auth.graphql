@@ -9,8 +9,14 @@ module.exports = `
   }
   
   type AuthData {
-    userId: ID!
-    token:String!
+    user: User!,
+    accessToken: String!
+    refreshToken: String!
+  }
+
+  type ExtendSession {
+    accessToken: String!
+    refreshToken: String!
   }
 
 

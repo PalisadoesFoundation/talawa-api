@@ -1,4 +1,8 @@
-const { signUp } = require("./Auth.js");
+const signUp = require("./auth_mutations/signup");
+const login = require('./auth_mutations/login');
+const refreshToken = require("./auth_mutations/refresh_token");
+const revokeRefreshTokenForUser = require("./auth_mutations/revoke_refresh_token_for_user");
+
 const createEvent = require("./event_mutations/createEvent")
 const removeEvent = require("./event_mutations/removeEvent")
 const updateEvent = require("./event_mutations/updateEvent")
@@ -38,6 +42,10 @@ const unblockUser = require("./block_user_mutations/unblock_user");
 
 const Mutation = {
   signUp,
+  login,
+  refreshToken,
+  revokeRefreshTokenForUser,
+
   createOrganization,
   createEvent,
   removeEvent,
@@ -57,12 +65,15 @@ const Mutation = {
   removeEventProject,
   updateEventProject,
   createPost,
+
   sendMembershipRequest,
   acceptMembershipRequest,
   rejectMembershipRequest,
   cancelMembershipRequest,
+
   blockUser,
   unblockUser,
+
   createGroupChat,
   createTask,
   removeTask,

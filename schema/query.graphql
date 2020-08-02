@@ -4,7 +4,6 @@ module.exports = `
 
   type Query {
     users(id: ID): [User],
-    login(data: LoginInput!): AuthData!
     organizations(id: ID): [Organization]
     events(id: ID): [Event]
     event(id: ID): Event

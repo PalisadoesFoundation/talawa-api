@@ -29,7 +29,7 @@ const isAuth = (req) => {
   //only tokens created with this key will be valid tokens
   let decodedToken;
   try {
-    decodedToken = jwt.verify(token, "somesupersecretkey");
+    decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
   } catch (e) {
     const isAuth = false;
     return {

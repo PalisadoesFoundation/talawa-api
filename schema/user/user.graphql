@@ -3,6 +3,7 @@
 module.exports = `
 
   type User {
+    tokenVersion: Int!
     _id: ID!
     firstName: String!
     lastName: String!

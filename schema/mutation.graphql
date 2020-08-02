@@ -2,6 +2,10 @@ module.exports = `
 
  type Mutation {
     signUp(data: UserInput!): AuthData!
+    login(data: LoginInput!): AuthData!
+    refreshToken(refreshToken: String!) : ExtendSession!
+    revokeRefreshTokenForUser(userId: String!) : Boolean!
+
     createEvent(data: EventInput): Event!
     removeEvent(id: ID!): Event!
     registerForEvent(id: ID!): Event!
