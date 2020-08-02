@@ -47,11 +47,18 @@ $ npm run test
 ```
 Start developing!
 
-"# tenten-api-rework" 
-database credentials are in nodemon.json file
  
 [readthedocs]: <https://talawa.readthedocs.io/>
 [repo]: <https://github.com/PalisadoesFoundation/talawa>
 [pfd]: <http://www.palisadoes.org>
 [node]: <https://nodejs.org/en/>
 [yarn]: <https://yarnpkg.com/>
+
+
+ENVIRONMENT VARIABLES
+To run this api five environment variables need to be set:
+MONGO_USER
+MONGO_PASSWORD
+MONGO_DB
+ACCESS_TOKEN_SECRET
+REFRESH_TOKEN_SECRET
