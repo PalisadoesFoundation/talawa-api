@@ -2,13 +2,13 @@ const jwt = require("jsonwebtoken");
 
 const isAuth = (req) => {
   //This checks to see if there is an authorization field within the incoming request
-  const authHeader = req.headers.authorization
-  
+  const authHeader = req.headers.authorization;
+
   //if there is no token
   if (!authHeader) {
     const isAuth = false;
     return {
-      isAuth
+      isAuth,
     };
   }
 
@@ -20,7 +20,7 @@ const isAuth = (req) => {
   if (!token || token === "") {
     const isAuth = false;
     return {
-      isAuth
+      isAuth,
     };
   }
 
@@ -28,12 +28,24 @@ const isAuth = (req) => {
   //to be changed in production
   //only tokens created with this key will be valid tokens
   let decodedToken;
+  let expired = false;
   try {
-    decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err, decoded) {
+      if (err) {
+          if(err.name = "TokenExpiredError") {
+            expired = true;
+            return {
+              isAuth,
+              expired
+            };
+          }
+      }
+    });
   } catch (e) {
     const isAuth = false;
     return {
-      isAuth
+      isAuth,
+      expired
     };
   }
 
@@ -41,7 +53,7 @@ const isAuth = (req) => {
   if (!decodedToken) {
     const isAuth = false;
     return {
-      isAuth
+      isAuth,
     };
   }
 
@@ -52,8 +64,8 @@ const isAuth = (req) => {
 
   return {
     isAuth,
-    userId
-  }
-}
+    userId,
+  };
+};
 
-module.exports = isAuth
+module.exports = isAuth;
