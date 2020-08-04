@@ -2,13 +2,13 @@ const jwt = require("jsonwebtoken");
 
 const isAuth = (req) => {
   //This checks to see if there is an authorization field within the incoming request
-  const authHeader = req.headers.authorization
-  
+  const authHeader = req.headers.authorization;
+
   //if there is no token
   if (!authHeader) {
     const isAuth = false;
     return {
-      isAuth
+      isAuth,
     };
   }
 
@@ -20,28 +20,39 @@ const isAuth = (req) => {
   if (!token || token === "") {
     const isAuth = false;
     return {
-      isAuth
+      isAuth,
     };
   }
+  //console.log(token);
 
   //uses key created in the auth resolver
   //to be changed in production
   //only tokens created with this key will be valid tokens
   let decodedToken;
+  let expired = false;
   try {
-    decodedToken = jwt.verify(token, "somesupersecretkey");
+    decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err, decoded) {
+      if (err) {
+          if(err.name = "TokenExpiredError") {
+            expired = true;s
+          }
+      }
+      return decoded;
+    });
   } catch (e) {
     const isAuth = false;
     return {
-      isAuth
+      isAuth,
+      expired
     };
   }
 
   //if the decoded token is not set
   if (!decodedToken) {
+    console.log("decoded token is not present")
     const isAuth = false;
     return {
-      isAuth
+      isAuth,
     };
   }
 
@@ -52,8 +63,8 @@ const isAuth = (req) => {
 
   return {
     isAuth,
-    userId
-  }
-}
+    userId,
+  };
+};
 
-module.exports = isAuth
+module.exports = isAuth;

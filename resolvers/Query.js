@@ -6,7 +6,7 @@ const Group = require("../models/Group");
 const Comment = require("../models/Comment");
 
 const EventProject = require("../models/EventProject");
-const { login } = require("./Auth");
+
 const authCheck = require("./functions/authCheck");
 
 const Query = {
@@ -60,7 +60,6 @@ const Query = {
 			throw e;
 		}
 	},
-	login,
 	organizations: async (parent, args, context, info) => {
 		try {
 			if (args.id) {
@@ -105,9 +104,9 @@ const Query = {
 	eventsByOrganization: async (parent, args, context, info) => {
 		try {
 			return await Event.find({ organization: args.id })
-			.populate("registrants")
-			.populate("creator")
-			.populate("admins");
+				.populate("registrants")
+				.populate("creator")
+				.populate("admins");
 		} catch (e) {
 			throw e;
 		}
@@ -171,11 +170,11 @@ const Query = {
 			})
 				.populate("organization")
 				.populate({
-					path : 'comments',
-					populate : {
-					  path : 'creator'
-					}
-				  })
+					path: "comments",
+					populate: {
+						path: "creator",
+					},
+				})
 				.populate("likedBy")
 				.populate("creator");
 			if (!postFound) {
@@ -192,11 +191,11 @@ const Query = {
 				.populate("organization")
 				.populate("likedBy")
 				.populate({
-					path : 'comments',
-					populate : {
-					  path : 'creator'
-					}
-				  })
+					path: "comments",
+					populate: {
+						path: "creator",
+					},
+				})
 				.populate("creator");
 		} catch (e) {
 			throw e;
@@ -208,11 +207,11 @@ const Query = {
 				.populate("organization")
 				.populate("likedBy")
 				.populate({
-					path : 'comments',
-					populate : {
-					  path : 'creator'
-					}
-				  })
+					path: "comments",
+					populate: {
+						path: "creator",
+					},
+				})
 				.populate("creator");
 		} catch (e) {
 			throw e;

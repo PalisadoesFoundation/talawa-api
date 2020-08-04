@@ -3,6 +3,10 @@ const { isEmail } = require("validator");
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
+  tokenVersion: {
+    type: Number,
+    default:0
+  },
   firstName: {
     type: String,
     required: true,
