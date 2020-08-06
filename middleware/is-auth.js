@@ -33,12 +33,21 @@ const isAuth = (req) => {
   try {
     decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function(err, decoded) {
       if (err) {
-          if(err.name = "TokenExpiredError") {
-            expired = true;s
-          }
+          return err;
+      } else{
+        console.log("decoded")
+          return decoded;
       }
-      return decoded;
-    });
+    }); // If there is an error decoded token would contain it
+
+    if(decodedToken.name=='TokenExpiredError') { // If the token has expired set the expired value to true and return it
+      expired = true;
+      const isAuth = false;
+      return {
+        isAuth,
+        expired
+      }
+    }
   } catch (e) {
     const isAuth = false;
     return {
