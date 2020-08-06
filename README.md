@@ -57,7 +57,7 @@ Start developing!
 
 # Environment Variables
 
-To run this api five environment variables need to be set:  
+To run this api five environment variables need to be set in a .env file in the root of the api:  
 
 1. MONGO_USER  
 2. MONGO_PASSWORD  
