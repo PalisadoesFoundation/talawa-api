@@ -3,6 +3,8 @@
         "MONGO_USER":"root",
         "MONGO_PASSWORD":"janelle123",
         "MONGO_DB":"talawa",
-        "MONGO_URL": "ds023428.mlab.com:23428"
+        "MONGO_URL": "ds023428.mlab.com:23428",
+        "ACCESS_TOKEN_SECRET":"oHaEUnmUxn",
+        "REFRESH_TOKEN_SECRET":"Ie2iBUyyZL"
     }
 }
