@@ -1,3 +1,6 @@
+
+require('dotenv').config() // pull env variables from .env file
+
 const { ApolloServer, gql } = require("apollo-server-express");
 const Query = require("./resolvers/Query");
 const Mutation = require("./resolvers/Mutation");
@@ -9,7 +12,6 @@ const connect = require("./db.js");
 const Organization = require("./resolvers/Organization")
 const cors = require("cors");
 const MembershipRequest = require("./resolvers/MembershipRequest");
-
 const app = express();
 
 
