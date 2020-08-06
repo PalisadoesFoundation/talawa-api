@@ -6,8 +6,7 @@ const {createAccessToken, createRefreshToken} = require("../../helper_functions/
 
 
 module.exports = async(parent, args, context,info) =>{
-    authCheck(context);
-
+    // This route should not be protected because the access token will be expired
 
     const refreshToken = args.refreshToken;
     if(!refreshToken) {
