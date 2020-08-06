@@ -58,15 +58,17 @@ describe("Private Organization Membership Tests", () => {
             email: "${email}"
             password:"password"
             }) {
-            userId
-            token
+            user{
+              _id
+            }
+            accessToken
             }
         }
         `,
     });
     const signUpData = response.data;
-    newUserToken = signUpData.data.signUp.token;
-    newUserId = signUpData.data.signUp.userId;
+    newUserToken = signUpData.data.signUp.accessToken;
+    newUserId = signUpData.data.signUp.user._id;
 
     //console.log("created org id", createdOrganizationId);
 
@@ -140,9 +142,9 @@ describe("Private Organization Membership Tests", () => {
 
   // USER SENDS REQUEST THEN CANCELS IT
   test("User sends membership requests then cancels it", async () => {
-    
 
-    
+
+
     let requestId;
     const sendRequestResponse = await axios.post(
       URL,
@@ -164,7 +166,7 @@ describe("Private Organization Membership Tests", () => {
     requestId = sendRequestData.data.sendMembershipRequest._id;
 
 
-    
+
 
     const cancelRequestResponse = await axios.post(
       URL,

@@ -54,16 +54,18 @@ describe("Block user functionality tests", () => {
                 email: "${email}"
                 password:"password"
                 }) {
-                userId
-                token
+                user{
+                  _id
+                }
+                accessToken
                 }
             }
             `,
     });
 
     const signUpData = signUpResponse.data;
-    newUserToken = signUpData.data.signUp.token;
-    newUserId = signUpData.data.signUp.userId;
+    newUserToken = signUpData.data.signUp.accessToken;
+    newUserId = signUpData.data.signUp.user._id;
 
     const blockUserResponse = await axios.post(
       URL,
@@ -96,30 +98,30 @@ describe("Block user functionality tests", () => {
   // TEST: ORGANIZATION UNBLOCKS USER
   test("Organization unblocks user", async () => {
     const unblockUserResponse = await axios.post(
-        URL,
-        {
-          query: `
+      URL,
+      {
+        query: `
                       mutation{
                         unblockUser(organizationId: "${createdOrganizationId}", userId: "${newUserId}"){
                           _id
                         }
                       }
                       `,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-  
-      const unblockUserData = unblockUserResponse.data;
-  
-  
-      expect(unblockUserData.data.unblockUser).toEqual(
-        expect.objectContaining({
-          _id: expect.any(String),
-        })
-      );
+      }
+    );
+
+    const unblockUserData = unblockUserResponse.data;
+
+
+    expect(unblockUserData.data.unblockUser).toEqual(
+      expect.objectContaining({
+        _id: expect.any(String),
+      })
+    );
   })
 });

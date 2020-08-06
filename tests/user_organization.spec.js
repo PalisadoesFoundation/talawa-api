@@ -66,19 +66,20 @@ describe("User-Organization Resolvers", () => {
                   email: "${email}"
                   password:"password"
                 }) {
-                  userId
-                  token
+                  user{
+                    _id
+                  }
+                  accessToken
                 }
               }
               `,
     });
     const { data } = response;
-    newUserToken = data.data.signUp.token;
-    newUserId = data.data.signUp.userId;
+    newUserToken = data.data.signUp.accessToken;
+    newUserId = data.data.signUp.user._id;
     expect(data.data.signUp).toEqual(
       expect.objectContaining({
-        userId: expect.any(String),
-        token: expect.any(String),
+        accessToken: expect.any(String),
       })
     );
   });
@@ -326,15 +327,17 @@ describe("User-Organization Resolvers", () => {
                   email: "${email}"
                   password:"password"
                 }) {
-                  userId
-                  token
+                  user{
+                    _id
+                  }
+                  accessToken
                 }
               }
               `,
     });
     const { data } = signUpResponse;
-    const userToken = data.data.signUp.token;
-    const createdUserId = data.data.signUp.userId;
+    const userToken = data.data.signUp.accessToken;
+    const createdUserId = data.data.signUp.user._id;
 
     //user joins organizations
     const joinOrgRes = await axios.post(
