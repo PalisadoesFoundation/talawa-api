@@ -6,13 +6,18 @@ module.exports = `
     users(id: ID): [User],
     organizations(id: ID): [Organization]
     events(id: ID): [Event]
+    eventsByOrganization(id: ID): [Event]
     event(id: ID): Event
     project(id: ID): EventProject
-    projects(id: ID): [EventProject]
+    projects: [EventProject]
     projectsByEvent(id: ID!): [EventProject]
     me:User!
     posts: [Post]
-    groups: [Group],
+    postsByOrganization(id: ID!): [Post]
+    comments: [Comment]
+    commentsByPost(id: ID!): [Comment]
+    post(id: ID): Post
+    groups: [Group]
   }
 
 `

@@ -21,7 +21,9 @@ const updateEvent = async (parent, args, context, info) => {
 			{ ...args.data },
 			{ new: true }
 		);
-		return newEvent;
+		return {
+			...newEvent._doc
+		}
 	} catch (e) {
 		throw e;
 	}

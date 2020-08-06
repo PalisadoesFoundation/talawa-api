@@ -18,7 +18,7 @@ const registerForEvent = async (parent, args, context, info) => {
     }
 
     //add event to the user record
-    await User.updateOne(
+    await User.findOneAndUpdate(
       { _id: userFound.id },
       {
         $push: {

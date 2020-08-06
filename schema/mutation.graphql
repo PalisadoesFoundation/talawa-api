@@ -26,8 +26,19 @@ module.exports = `
     adminRemoveEvent(eventId: ID!): Event!
     adminRemoveGroup(groupId:ID!):Message!
 
-    createPost(data: PostInput!): Post!
+    createPost(data: PostInput!): Post
+    removePost(id:ID!): Post
+    likePost(id:ID!): Post
+    unlikePost(id:ID!): Post
 
+    createComment(postId:ID!, data: CommentInput!): Comment
+    removeComment(id:ID!): Comment
+
+    createTask(data: TaskInput, projectId: ID!): Task!
+    updateTask(id:ID!, data: UpdateTaskInput) : Task
+    removeTask(id: ID!) : Task
+
+    createGroup(data: GroupInput!): Group!
 
     sendMembershipRequest(organizationId: ID!) : MembershipRequest!
     acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest!
@@ -37,15 +48,7 @@ module.exports = `
     blockUser(organizationId: ID!, userId: ID!) : User!
     unblockUser(organizationId: ID!, userId:ID!) : User!
 
-
-
-
-    createTask(data: TaskInput, projectId: ID!): Task!
-    updateTask(id:ID!, data: UpdateTaskInput) : Task
-    removeTask(id: ID!) : Task
-
-    
-    createGroupChat(data: GroupChatInput!): Message!
+    createGroupChat(data: GroupInput!): Message!
   }
   
 `

@@ -25,17 +25,17 @@ const createTask = async (parent, args, context, info) => {
 			project: eventProjectFound,
 			creator: userFound,
 		});
+		await task.save();
 
-		await EventProject.updateOne(
-			{ id: args.projectId },
+		await EventProject.findOneAndUpdate(
+			{ _id: args.projectId },
 			{
 				$push: {
-					tasks: task
+					tasks: task,
 				},
-			}
+			},
+			{ new: true }
 		);
-
-		await task.save();
 
 		return {
 			...task._doc,

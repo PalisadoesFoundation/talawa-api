@@ -1,0 +1,95 @@
+module.exports = `
+    type Event {
+        _id: ID!
+        title:String!
+        description: String!
+        date: String!
+        allDay: Boolean!
+        startTime: String
+        endTime: String
+        recurring: Boolean!
+        recurrance: String
+        attendees: String!
+        isPublic: Boolean! 
+        isRegisterable: Boolean! 
+        creator: User!
+        registrants: [User]
+        admins(adminId: ID): [User]
+        organization: Organization
+        location: String
+
+    }
+
+    type EventProject {
+        _id: ID!
+        title:String!
+        description: String!
+        event: Event!
+        tasks: [Task]
+    }
+
+    type Task {
+        _id: ID!
+        title: String!
+        description: String
+        project: EventProject!
+        creator: User!
+        createdAt: String!
+        deadline: String
+    }
+
+    input EventInput {
+        title:String!
+        description: String!
+        recurring: Boolean!
+        recurrance: String
+        attendees: String
+        isPublic: Boolean! 
+        isRegisterable: Boolean! 
+        organizationId: ID!
+        date: String!
+        allDay: Boolean!
+        startTime: String
+        endTime: String
+        location: String
+    }
+
+    input UpdateEventInput {
+        title:String
+        description: String
+        recurring: Boolean
+        recurrance: String
+        attendees: String
+        isPublic: Boolean
+        isRegisterable: Boolean
+        date: String
+        location: String
+        allDay: Boolean
+        startTime: String
+        endTime: String
+    }
+
+    input TaskInput {
+        title: String!
+        description: String
+        deadline: String
+    }
+
+
+    input UpdateTaskInput {
+        title: String
+        description: String
+        deadline: String
+    }
+
+    input EventProjectInput {
+        title:String!
+        description: String!
+        eventId: String
+    }
+
+    input UpdateEventProjectInput {
+        title:String
+        description: String
+    }
+`

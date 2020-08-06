@@ -1,9 +1,8 @@
 const User = require("../../models/User");
+const Comment = require("../../models/Comment");
 const Post = require("../../models/Post");
 
 const authCheck = require("../functions/authCheck");
-const creatorCheck = require("../functions/creatorCheck");
-
 module.exports = async (parent, args, context, info) => {
   //ensure user is authenticated
   authCheck(context);
@@ -14,22 +13,27 @@ module.exports = async (parent, args, context, info) => {
       throw new Error("User does not exist");
 	}
 	
-
-	//creates new Post
-    let newPost = new Post({
+    let newComment = new Comment({
       ...args.data,
 	  creator: context.userId,
-	  organization: args.data.organizationId
-	});
+	  post: args.postId
+  });
+  
+  await Post.updateOne(
+    { _id: args.postId },
+    {
+      $push: {
+        comments: newComment
+      },
+    }
+  );
+
 	
-    newPost = await newPost.save();
+  newComment = await newComment.save();
 
-
-
-	//add creator
 
 	return {
-		...newPost._doc
+		...newComment._doc
 	}
 
   } catch (e) {

@@ -4,109 +4,10 @@ const query = require("./query.graphql");
 const user = require("./user/user.graphql");
 const auth = require("./user/auth.graphql");
 const organization = require("./organization/organization.graphql");
+const event = require("./event/event.graphql");
+const newsfeed = require("./newsfeed/newsfeed.graphql");
 
 const typeDefs = gql`
-
-
-  type Event {
-    _id: ID!
-    title:String!
-    description: String!
-    recurring: Boolean!
-    recurrance: String
-    attendees: String!
-    isPublic: Boolean! 
-    isRegisterable: Boolean! 
-    creator: User!
-    registrants: [User]
-    admins(adminId: ID): [User]
-    organization: Organization
-  }
-
-  type EventProject {
-    _id: ID!
-    title:String!
-    description: String!
-    event: Event!
-  }
-
-  
-  type Task {
-    _id: ID!
-    title: String!
-    description: String
-    project: EventProject!
-    creator: User!
-    createdAt: String!
-    deadline: String
-  }
-
-
-
-  input EventInput {
-    title:String!
-    description: String!
-    recurring: Boolean!
-    recurrance: String
-    attendees: String
-    isPublic: Boolean! 
-    isRegisterable: Boolean! 
-    organizationId: ID!
-  }
-
-  input UpdateEventInput {
-    title:String
-    description: String
-    recurring: Boolean
-    recurrance: String
-    attendees: String
-    isPublic: Boolean
-    isRegisterable: Boolean
-  }
-
-  
-  input TaskInput {
-    title: String!
-    description: String
-    deadline: String
-  }
-
-
-  input UpdateTaskInput {
-    title: String
-    description: String
-    deadline: String
-  }
-
-
-
-
-  input EventProjectInput {
-    title:String!
-    description: String!
-    eventId: String
-  }
-
-  input UpdateEventProjectInput {
-    title:String
-    description: String
-  }
-
-
-  type Post {
-    _id: ID
-    text: String
-    createdAt: String
-    imageUrl: String
-    videoUrl:String
-    creator: User
-    organization: Organization
-    linkedBy: User
-    comments: User
-  }
-
-
-
   type Message {
     _id: ID!
     text: String
@@ -114,11 +15,6 @@ const typeDefs = gql`
     imageUrl: String
     videoUrl:String
     creator: User
-  }
-
-  input PostInput {
-    organizationId:ID!
-    text: String
   }
 
   input GroupInput {
@@ -135,31 +31,14 @@ const typeDefs = gql`
     organization: Organization!
     admins: [User]
   }
-
-    input GroupChatInput {
-    text: String
-    createdAt: String
-    imageUrl: String
-    videoUrl:String
-    organizationId: ID!
-  }
-
-
-
-
   
   ${mutation}
   ${query}
   ${user}
   ${auth}
   ${organization}
-
-
-
-  
-    
-
-  
+  ${event}
+  ${newsfeed}
 `
 
 
