@@ -59,13 +59,15 @@ describe("event resolvers", () => {
               data: {
                   title: "Talawa Conference Test",
                   description: "National conference that happens yearly",
-                  isPublic: true,
+				  isPublic: true,
                   isRegisterable: true,
                   recurring: true,
                   recurrance: "YEARLY",
                   location: "Test",
 				  date: "2/2/2020",
 				  allDay: true,
+				  endTime:"1/1/2001"
+				  startTime:"1/1/2000"
                   organizationId: "${createdOrgId}",
           }) {
               _id
@@ -205,14 +207,16 @@ describe("event resolvers", () => {
 	              data: {
 	                  title: "Test",
 	                  description: "National conference that happens yearly",
-	                  isPublic: true,
+					  isPublic: true,
 	                  isRegisterable: true,
 	                  recurring: true,
 	                  recurrance: "YEARLY",
 					  location: "Test",
+					  date:"2/2/2020",
 					  allDay: true,
-	                  date: "2/2/2020",
-	                  organizationId: "5ef5149792d1c1002474169b",
+					  endTime:"1/1/2001"
+					  startTime:"1/1/2000"
+	                  organizationId: "${createdOrgId}",
 	          }) {
 	              _id
 	              title

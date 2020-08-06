@@ -127,12 +127,16 @@ describe("User-Organization Resolvers", () => {
             mutation{
               createEvent(data:{
                   title:"to be deleted"
+                  date: "3/8/2020"
+                  allDay: false
                   description: "to be deleted"
                   recurring: false
                   attendees: "to be deleted"
                   isPublic: false
                   isRegisterable:false
                   organizationId: "${createdOrgId}"
+                  endTime:"1/1/2001"
+                  startTime:"1/1/2000"
                 }){
                   _id
                 }
@@ -147,8 +151,6 @@ describe("User-Organization Resolvers", () => {
 
       const { data } = response;
       createdEventId = data.data.createEvent._id;
-      console.log(data)
-      console.log(createdEventId)
 
       expect(data.data.createEvent).toEqual(
         expect.objectContaining({
@@ -157,7 +159,6 @@ describe("User-Organization Resolvers", () => {
       );
     } catch (e) {
       console.log("an error has occurred");
-      console.log(e);
       throw e;
     }
   });

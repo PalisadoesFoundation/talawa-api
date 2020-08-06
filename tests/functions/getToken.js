@@ -8,7 +8,8 @@ const { URL } = require("../../constants")
 module.exports = async () => {
   console.log("TOKEN SET")
   const response = await axios.post(URL, {
-    query: `mutation{
+    query: `
+    mutation{
       login(data:{
                 email:"testdb2@test.com",
                 password:"password"
@@ -19,7 +20,8 @@ module.exports = async () => {
         accessToken
         refreshToken
       }
-    }`,
+    }
+    `,
   });
 
 
