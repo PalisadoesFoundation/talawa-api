@@ -48,7 +48,11 @@ const unblockUser = require("./block_user_mutations/unblock_user");
 
 
 const addUserImage = require("./user_image_mutations/add_user_image");
+const removeUserImage = require("./user_image_mutations/remove_user_image");
+
 const addOrganizationImage = require("./organization_image_mutations/add_organization_image");
+
+
 
 const Mutation = {
   signUp,
@@ -95,6 +99,7 @@ const Mutation = {
   
 
   addUserImage,
+  removeUserImage,
   addOrganizationImage
 };
 

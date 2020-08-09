@@ -53,6 +53,7 @@ module.exports = `
     createGroupChat(data: GroupInput!): Message!
 
     addUserImage(file: Upload!): User!
+    removeUserImage: User!
     addOrganizationImage(file: Upload!, organizationId: String!): Organization!
   }
   
