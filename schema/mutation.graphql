@@ -55,6 +55,7 @@ module.exports = `
     addUserImage(file: Upload!): User!
     removeUserImage: User!
     addOrganizationImage(file: Upload!, organizationId: String!): Organization!
+    removeOrganizationImage(organizationId: String!): Organization!
   }
   
 `

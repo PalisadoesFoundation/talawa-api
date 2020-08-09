@@ -51,7 +51,7 @@ const addUserImage = require("./user_image_mutations/add_user_image");
 const removeUserImage = require("./user_image_mutations/remove_user_image");
 
 const addOrganizationImage = require("./organization_image_mutations/add_organization_image");
-
+const removeOrganizationImage = require("./organization_image_mutations/remove_organization_image");
 
 
 const Mutation = {
@@ -100,7 +100,8 @@ const Mutation = {
 
   addUserImage,
   removeUserImage,
-  addOrganizationImage
+  addOrganizationImage,
+  removeOrganizationImage
 };
 
 module.exports = Mutation;

@@ -5,7 +5,7 @@ module.exports = `
 
 
   type Organization {
-    image:String!
+    image:String
     _id: ID!
     name:String!
     description: String!
