@@ -3,6 +3,9 @@ const { isEmail } = require("validator");
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
+  image: {
+    type: String
+  },
   tokenVersion: {
     type: Number,
     default:0

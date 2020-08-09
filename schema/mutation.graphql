@@ -49,6 +49,9 @@ module.exports = `
     unblockUser(organizationId: ID!, userId:ID!) : User!
 
     createGroupChat(data: GroupInput!): Message!
+
+    addUserImage(file: Upload!): User!
+    addOrganizationImage(file: Upload!, organizationId: String!): Organization!
   }
   
 `

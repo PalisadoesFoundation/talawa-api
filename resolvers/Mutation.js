@@ -46,6 +46,10 @@ const cancelMembershipRequest = require("./membership_request_mutations/cancel_m
 const blockUser = require("./block_user_mutations/block_user");
 const unblockUser = require("./block_user_mutations/unblock_user");
 
+
+const addUserImage = require("./user_image_mutations/add_user_image");
+const addOrganizationImage = require("./organization_image_mutations/add_organization_image");
+
 const Mutation = {
   signUp,
   login,
@@ -88,6 +92,10 @@ const Mutation = {
   createGroupChat,
   createComment,
   removeComment,
+  
+
+  addUserImage,
+  addOrganizationImage
 };
 
 module.exports = Mutation;
