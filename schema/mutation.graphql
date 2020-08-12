@@ -1,7 +1,7 @@
 module.exports = `
 
  type Mutation {
-    signUp(data: UserInput!): AuthData!
+    signUp(data: UserInput!, file:Upload): AuthData!
     login(data: LoginInput!): AuthData!
     refreshToken(refreshToken: String!) : ExtendSession!
     revokeRefreshTokenForUser(userId: String!) : Boolean!
@@ -13,8 +13,10 @@ module.exports = `
     createEventProject(data: EventProjectInput): EventProject!
     removeEventProject(id: ID!): EventProject!
     updateEventProject(id:ID!, data: UpdateEventProjectInput) : EventProject!
-    createOrganization(data: OrganizationInput): Organization!
+
+    createOrganization(data: OrganizationInput, file:Upload): Organization!
     updateOrganization(id:ID!, data: UpdateOrganizationInput) : Organization!
+
     removeOrganization(id: ID!) : Organization!
     createAdmin (data: UserAndOrganizationInput!) : User!
     removeAdmin (data: UserAndOrganizationInput!) : User!
@@ -49,6 +51,11 @@ module.exports = `
     unblockUser(organizationId: ID!, userId:ID!) : User!
 
     createGroupChat(data: GroupInput!): Message!
+
+    addUserImage(file: Upload!): User!
+    removeUserImage: User!
+    addOrganizationImage(file: Upload!, organizationId: String!): Organization!
+    removeOrganizationImage(organizationId: String!): Organization!
   }
   
 `

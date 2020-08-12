@@ -17,6 +17,7 @@ module.exports = `
     adminFor: [Organization]
     membershipRequests: [MembershipRequest]
     organizationsBlockedBy: [Organization]
+    image: String
   }
 
 
