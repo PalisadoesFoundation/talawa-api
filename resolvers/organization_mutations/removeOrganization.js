@@ -52,7 +52,10 @@ const removeOrganizaiton = async (parent, args, context, info) => {
     //delete organzation
     await Organization.deleteOne({ _id: args.id });
 
-    return org;
+    return {
+      ...user._doc,
+      password: null
+    };
   } catch (e) {
     throw e;
   }

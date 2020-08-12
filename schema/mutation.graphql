@@ -17,7 +17,8 @@ module.exports = `
     createOrganization(data: OrganizationInput, file:Upload): Organization!
     updateOrganization(id:ID!, data: UpdateOrganizationInput) : Organization!
 
-    removeOrganization(id: ID!) : Organization!
+    removeOrganization(id: ID!) : User!
+    
     createAdmin (data: UserAndOrganizationInput!) : User!
     removeAdmin (data: UserAndOrganizationInput!) : User!
     joinPublicOrganization (organizationId: ID!) : User!
