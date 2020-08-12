@@ -117,13 +117,14 @@ describe("organization resolvers", () => {
       }
     );
 
-    expect(deletedResponse.data).toMatchObject({
-      data: {
-        removeOrganization: {
-          _id: `${createdOrgId}`
-        },
-      },
-    });
+
+    expect(deletedResponse.data.data.removeOrganization).toEqual(
+			expect.objectContaining({
+				_id: expect.any(String)
+			})
+		);
+
+
   });
 });
 
