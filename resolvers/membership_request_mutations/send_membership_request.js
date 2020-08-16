@@ -15,6 +15,19 @@ module.exports = async (parent, args, context, info) => {
     if (!org) throw new Error("Organization not found");
 
     //create membership request
+
+    //check to see if request already exists
+    
+    let reqExists = org._doc.membershipRequests.filter(async req => {
+      let request = await MembershipRequest.findOne({_id: req});
+      let requestUser = await User.findOne({_id: request.user})
+      if(requestUser._id.toString() == user._id) return req
+    })
+    if(reqExists.length>0)throw new Error("This user has already sent a membership request to this organization") 
+
+    //let exists = org._doc.membershipRequests.filter(req => req.user._id == user.id)
+    //if(exists.length>0) throw new Error("This user has already sent a membership request to this organization")
+
     let newMembershipRequest = new MembershipRequest({
         user,
         organization: org,
