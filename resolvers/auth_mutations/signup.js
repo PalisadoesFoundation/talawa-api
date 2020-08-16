@@ -9,7 +9,7 @@ const path = require("path")
 
 module.exports = async (parent, args, context, info) => {
   try {
-    const emailTaken = await User.findOne({ email: args.data.email });
+    const emailTaken = await User.findOne({ email: args.data.email.toLowerCase() });
     if (emailTaken) {
       throw new Error("Email address taken.");
     }
@@ -37,6 +37,7 @@ module.exports = async (parent, args, context, info) => {
 
     let user = new User({
       ...args.data,
+      email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
       image: userImage,
       password: hashedPassword
     });
