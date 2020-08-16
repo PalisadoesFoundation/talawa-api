@@ -9,7 +9,7 @@ const path = require("path")
 
 module.exports = async (parent, args, context, info) => {
   try {
-    const emailTaken = await User.findOne({ email: args.data.email });
+    const emailTaken = await User.findOne({ email: args.data.email.toLowerCase() });
     if (emailTaken) {
       throw new Error("Email address taken.");
     }

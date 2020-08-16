@@ -7,7 +7,7 @@ const {createAccessToken, createRefreshToken} = require("../../helper_functions/
 
 module.exports = async (parent, args, context, info) => {
     try {
-      const user = await User.findOne({ email: args.data.email });
+      const user = await User.findOne({ email: args.data.email.toLowerCase() });
       if (!user) {
         throw new Error("Invalid Credentials");
       }
