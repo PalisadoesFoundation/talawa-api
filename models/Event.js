@@ -24,7 +24,7 @@ const eventSchema = new Schema({
 		default: false,
 	},
 	allDay: { type: Boolean, required: true },
-	date: { type: String, required: true },
+	date: { type: Date, required: true },
 	startTime: {
 		type: String,
 		required: function () {
