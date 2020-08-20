@@ -183,6 +183,8 @@ const Query = {
 			if (!postFound) {
 				throw new Error("Post not found");
 			}
+			postFound.likeCount = postFound.likedBy.length || 0;
+			postFound.commentCount = postFound.comments.length || 0;
 			return postFound;
 		} catch (e) {
 			throw e;
@@ -190,7 +192,7 @@ const Query = {
 	},
 	posts: async (parent, args, context, info) => {
 		try {
-			return await Post.find()
+			const p = await Post.find()
 				.populate("organization")
 				.populate("likedBy")
 				.populate({
@@ -200,13 +202,19 @@ const Query = {
 					},
 				})
 				.populate("creator");
-		} catch (e) {
+			const posts = p.map((post) => {
+				post.likeCount = post.likedBy.length || 0;
+				post.commentCount = post.comments.length || 0;
+				return post;
+			});
+			return posts;
+		} catch (error) {
 			throw e;
 		}
 	},
 	postsByOrganization: async (parent, args, context, info) => {
 		try {
-			return await Post.find({ organization: args.id })
+			const p = await Post.find({ organization: args.id })
 				.populate("organization")
 				.populate("likedBy")
 				.populate({
@@ -216,6 +224,12 @@ const Query = {
 					},
 				})
 				.populate("creator");
+			const posts = p.map((post) => {
+				post.likeCount = post.likedBy.length || 0;
+				post.commentCount = post.comments.length || 0;
+				return post;
+			});
+			return posts;
 		} catch (e) {
 			throw e;
 		}

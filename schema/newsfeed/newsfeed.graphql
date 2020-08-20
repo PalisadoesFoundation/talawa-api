@@ -10,6 +10,8 @@ module.exports = `
     organization: Organization!
     likedBy: [User]
     comments: [Comment]
+    likeCount: Int
+    commentCount: Int 
   }
   input PostInput {
     _id: ID
