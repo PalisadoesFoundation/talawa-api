@@ -2,6 +2,7 @@ module.exports = `
   type Post {
     _id: ID
     text: String!
+    title: String
     createdAt: String
     imageUrl: String
     videoUrl:String
@@ -13,6 +14,7 @@ module.exports = `
   input PostInput {
     _id: ID
     text: String!
+    title: String
     imageUrl: String
     videoUrl:String
     organizationId: ID!

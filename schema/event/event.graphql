@@ -17,22 +17,22 @@ module.exports = `
         admins(adminId: ID): [User]
         organization: Organization
         location: String
-
-    }
-
-    type EventProject {
-        _id: ID!
-        title:String!
-        description: String!
-        event: Event!
         tasks: [Task]
     }
+
+    # type EventProject {
+    #     _id: ID!
+    #     title:String!
+    #     description: String!
+    #     event: Event!
+    #     tasks: [Task]
+    # }
 
     type Task {
         _id: ID!
         title: String!
         description: String
-        project: EventProject!
+        event: Event!
         creator: User!
         createdAt: String!
         deadline: String
@@ -82,14 +82,14 @@ module.exports = `
         deadline: String
     }
 
-    input EventProjectInput {
-        title:String!
-        description: String!
-        eventId: String
-    }
+#     input EventProjectInput {
+#         title:String!
+#         description: String!
+#         eventId: String
+#     }
 
-    input UpdateEventProjectInput {
-        title:String
-        description: String
-    }
-`
+#     input UpdateEventProjectInput {
+#         title:String
+#         description: String
+#     }
+# `

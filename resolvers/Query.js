@@ -82,6 +82,7 @@ const Query = {
 			const eventFound = await Event.findOne({ _id: args.id })
 				.populate("registrants")
 				.populate("creator")
+				.populate("tasks")
 				.populate("admins");
 			if (!eventFound) {
 				throw new Error("Event not found");
@@ -96,6 +97,7 @@ const Query = {
 			return await Event.find()
 				.populate("registrants")
 				.populate("creator")
+				.populate("tasks")
 				.populate("admins");
 		} catch (e) {
 			throw e;
@@ -106,47 +108,48 @@ const Query = {
 			return await Event.find({ organization: args.id })
 				.populate("registrants")
 				.populate("creator")
+				.populate("tasks")
 				.populate("admins");
 		} catch (e) {
 			throw e;
 		}
 	},
-	project: async (parent, args, context, info) => {
-		try {
-			const eventProjectFound = await EventProject.findOne({
-				_id: args.id,
-			})
-				.populate("event")
-				.populate("tasks")
-				.populate("creator");
-			if (!eventProjectFound) {
-				throw new Error("Event not found");
-			}
-			return eventProjectFound;
-		} catch (e) {
-			throw e;
-		}
-	},
-	projects: async (parent, args, context, info) => {
-		try {
-			return await EventProject.find()
-				.populate("event")
-				.populate("tasks")
-				.populate("creator");
-		} catch (e) {
-			throw e;
-		}
-	},
-	projectsByEvent: async (parent, args, context, info) => {
-		try {
-			return await EventProject.find({ event: args.id })
-				.populate("event")
-				.populate("tasks")
-				.populate("creator");
-		} catch (e) {
-			throw e;
-		}
-	},
+	// project: async (parent, args, context, info) => {
+	// 	try {
+	// 		const eventProjectFound = await EventProject.findOne({
+	// 			_id: args.id,
+	// 		})
+	// 			.populate("event")
+	// 			.populate("tasks")
+	// 			.populate("creator");
+	// 		if (!eventProjectFound) {
+	// 			throw new Error("Event not found");
+	// 		}
+	// 		return eventProjectFound;
+	// 	} catch (e) {
+	// 		throw e;
+	// 	}
+	// },
+	// projects: async (parent, args, context, info) => {
+	// 	try {
+	// 		return await EventProject.find()
+	// 			.populate("event")
+	// 			.populate("tasks")
+	// 			.populate("creator");
+	// 	} catch (e) {
+	// 		throw e;
+	// 	}
+	// },
+	// projectsByEvent: async (parent, args, context, info) => {
+	// 	try {
+	// 		return await EventProject.find({ event: args.id })
+	// 			.populate("event")
+	// 			.populate("tasks")
+	// 			.populate("creator");
+	// 	} catch (e) {
+	// 		throw e;
+	// 	}
+	// },
 	comments: async (parent, args, context, info) => {
 		try {
 			return await Comment.find().populate("creator").populate("post");

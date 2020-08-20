@@ -1,6 +1,6 @@
 const User = require("../../models/User");
 const Task = require("../../models/Task");
-const EventProject = require("../../models/EventProject");
+const Event = require("../../models/Event");
 
 const createTask = async (parent, args, context, info) => {
 	//authentication check
@@ -13,22 +13,22 @@ const createTask = async (parent, args, context, info) => {
 			throw new Error("User does not exist");
 		}
 
-		let eventProjectFound = await EventProject.findOne({
-			_id: args.projectId,
+		let eventFound = await Event.findOne({
+			_id: args.eventId,
 		});
-		if (!eventProjectFound) {
-			throw new Error("Project does not exist");
+		if (!eventFound) {
+			throw new Error("Event does not exist");
 		}
 
 		let task = new Task({
 			...args.data,
-			project: eventProjectFound,
+			event: eventFound,
 			creator: userFound,
 		});
 		await task.save();
 
-		await EventProject.findOneAndUpdate(
-			{ _id: args.projectId },
+		await Event.findOneAndUpdate(
+			{ _id: args.eventId },
 			{
 				$push: {
 					tasks: task,
@@ -36,7 +36,6 @@ const createTask = async (parent, args, context, info) => {
 			},
 			{ new: true }
 		);
-
 		return {
 			...task._doc,
 		};
