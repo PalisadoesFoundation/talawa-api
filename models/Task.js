@@ -12,9 +12,9 @@ const taskSchema = new Schema({
 	},
 	createdAt: { type: Date, default: Date.now },
 	deadline: { type: Date },
-	project: {
+	event: {
 		type: Schema.Types.ObjectId,
-		ref: "EventProject",
+		ref: "Event",
 		required: true,
 	},
 	creator: {
