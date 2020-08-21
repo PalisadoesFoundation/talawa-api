@@ -8,6 +8,7 @@ const userExists = require("../../helper_functions/userExists");
 const shortid = require("shortid");
 const { createWriteStream, unlink } = require("fs");
 const path = require("path")
+const imageAlreadyInDbCheck = require("../../helper_functions/imageAlreadyInDbCheck")
 
 
 
@@ -40,9 +41,12 @@ const createOrganization = async (parent, args, context, info) => {
       organizationImage = `images/${id}-${filename}`
     }
 
+    let orgImageAlreadyInDb = await imageAlreadyInDbCheck(organizationImage, null); 
+
+
     let newOrganization = new Organization({
       ...args.data,
-      image: organizationImage,
+      image: orgImageAlreadyInDb ? orgImageAlreadyInDb : organizationImage,
       creator: userFound,
       admins: [userFound],
       members: [userFound],

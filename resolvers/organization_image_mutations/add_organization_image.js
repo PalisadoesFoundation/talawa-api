@@ -24,14 +24,6 @@ module.exports = async (parent, args, context, info) => {
         let organizationImage;
         if (args.file) {
 
-            if (org.image) { // If user already has a profile picture delete it from the API
-                unlink(org.image, function (err) {
-                    if (err) throw err;
-                    // if no error, file has been deleted successfully
-                    console.log("File deleted!");
-                });
-            }
-
             const id = shortid.generate();
 
             const { createReadStream, filename } = await args.file;
@@ -49,7 +41,7 @@ module.exports = async (parent, args, context, info) => {
         }
 
 
-        let orgImageAlreadyInDb = await imageAlreadyInDbCheck(organizationImage, org); 
+        let orgImageAlreadyInDb = await imageAlreadyInDbCheck(organizationImage, org.image); 
 
 
         const newOrganization = await Organization.findOneAndUpdate(

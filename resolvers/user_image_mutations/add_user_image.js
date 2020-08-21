@@ -35,7 +35,7 @@ const addUserImage = async (parent, args, context, info) => {
         userImage = `images/${id}-${filename}`
 
 
-        let userImageAlreadyInDb = await imageAlreadyInDbCheck(userImage, user); 
+        let userImageAlreadyInDb = await imageAlreadyInDbCheck(userImage, user.image); 
         
 
         return await User.findOneAndUpdate(

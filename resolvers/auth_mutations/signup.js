@@ -5,6 +5,7 @@ const { createAccessToken, createRefreshToken } = require("../../helper_function
 const shortid = require("shortid");
 const { createWriteStream, unlink } = require("fs");
 const path = require("path")
+const imageAlreadyInDbCheck = require("../../helper_functions/imageAlreadyInDbCheck")
 
 
 module.exports = async (parent, args, context, info) => {
@@ -35,10 +36,12 @@ module.exports = async (parent, args, context, info) => {
       userImage = `images/${id}-${filename}`
     }
 
+    let userImageAlreadyInDb = await imageAlreadyInDbCheck(userImage, null);
+    
     let user = new User({
       ...args.data,
       email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
-      image: userImage,
+      image: userImageAlreadyInDb ? userImageAlreadyInDb : userImage,
       password: hashedPassword
     });
     
