@@ -11,6 +11,11 @@ const imageHashSchema = new Schema({
     fileName: {
         type: String,
         required: true
+    },
+    numberOfUses: {
+        type: Number,
+        default: 0,
+        required: true
     }
 })
 

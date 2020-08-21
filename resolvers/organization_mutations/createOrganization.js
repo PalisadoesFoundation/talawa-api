@@ -20,6 +20,8 @@ const createOrganization = async (parent, args, context, info) => {
     let userFound = await userExists(context.userId);
 
     let organizationImage
+
+    //Upload file
     if (args.file) {
       organizationImage = await uploadImage(args.file);
     }

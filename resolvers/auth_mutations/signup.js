@@ -16,6 +16,7 @@ module.exports = async (parent, args, context, info) => {
 
     const hashedPassword = await bcrypt.hash(args.data.password, 12);
 
+    // Upload file
     let userImage;
     if (args.file) {
       userImage = await uploadImage(args.file)

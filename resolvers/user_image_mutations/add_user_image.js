@@ -16,7 +16,6 @@ const addUserImage = async (parent, args, context, info) => {
         // Upload New Image
         let userImage = await uploadImage(args.file)
 
-
         let userImageAlreadyInDb = await imageAlreadyInDbCheck(userImage, user.image); 
         
 
