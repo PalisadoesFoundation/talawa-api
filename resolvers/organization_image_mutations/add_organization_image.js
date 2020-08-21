@@ -6,6 +6,7 @@ const shortid = require("shortid");
 const { createWriteStream, unlink } = require("fs");
 const path = require("path")
 const adminCheck = require("../functions/adminCheck");
+const imageAlreadyInDbCheck = require("../../helper_functions/imageAlreadyInDbCheck")
 
 module.exports = async (parent, args, context, info) => {
     authCheck(context);
@@ -47,11 +48,15 @@ module.exports = async (parent, args, context, info) => {
             organizationImage = `images/${id}-${filename}`
         }
 
+
+        let orgImageAlreadyInDb = await imageAlreadyInDbCheck(organizationImage, org); 
+
+
         const newOrganization = await Organization.findOneAndUpdate(
             { _id: org.id },
             {
                 $set: {
-                    image: organizationImage
+                    image: orgImageAlreadyInDb ? orgImageAlreadyInDb : organizationImage
                 }
             },
             {

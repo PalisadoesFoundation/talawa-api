@@ -15,7 +15,7 @@ const addUserImage = async (parent, args, context, info) => {
         if (!user) throw new Error("User not found")
 
         let userImage;
-        let userImageAlreadyInDb;
+        
 
 
         // Upload New Image
@@ -35,9 +35,20 @@ const addUserImage = async (parent, args, context, info) => {
         userImage = `images/${id}-${filename}`
 
 
-        imageAlreadyInDbCheck(userImage, userImageAlreadyInDb, user);
+        let userImageAlreadyInDb = await imageAlreadyInDbCheck(userImage, user); 
+        
 
-        return await User.findOne({ _id: user.id })
+        return await User.findOneAndUpdate(
+            { _id: user.id },
+            {
+                $set: {
+                    image: userImageAlreadyInDb ? userImageAlreadyInDb : userImage // if the image already exists use that image other wise use the image just uploaded
+                }
+            },
+            {
+                new: true
+            }
+        );
 
 
     } catch (e) {
