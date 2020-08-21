@@ -44,7 +44,9 @@ module.exports = function imageAlreadyInDbCheck(imageJustUploadedPath, imageAlre
         })
     }).then(()=>{
         return fileName;
-    });
+    }).catch((e)=>[
+        console.log(e)
+    ]);
 
 
 }

@@ -5,10 +5,9 @@ const Organization = require("../../models/Organization");
 const authCheck = require("../functions/authCheck");
 const userExists = require("../../helper_functions/userExists");
 
-const shortid = require("shortid");
-const { createWriteStream, unlink } = require("fs");
-const path = require("path")
+
 const imageAlreadyInDbCheck = require("../../helper_functions/imageAlreadyInDbCheck")
+const uploadImage = require("../../helper_functions/uploadImage");
 
 
 
@@ -18,30 +17,14 @@ const createOrganization = async (parent, args, context, info) => {
 
   try {
     //gets user in token - to be used later on
-    let userFound = await User.findOne({ _id: context.userId });
-    if (!userFound) throw new Error("User does not exist");
+    let userFound = await userExists(context.userId);
 
-    
-    let organizationImage;
+    let organizationImage
     if (args.file) {
-
-      const id = shortid.generate();
-
-      const { createReadStream, filename } = await args.file;
-
-      const upload = await new Promise((res) =>
-        createReadStream().pipe(
-          createWriteStream(
-            path.join(__dirname, "../../images", `/${id}-${filename}`)
-          )
-        )
-          .on("close", res)
-      );
-
-      organizationImage = `images/${id}-${filename}`
+      organizationImage = await uploadImage(args.file);
     }
 
-    let orgImageAlreadyInDb = await imageAlreadyInDbCheck(organizationImage, null); 
+    let orgImageAlreadyInDb = await imageAlreadyInDbCheck(organizationImage, null);
 
 
     let newOrganization = new Organization({

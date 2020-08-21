@@ -1,9 +1,7 @@
 const User = require("../../models/User");
 const authCheck = require("../functions/authCheck");
-const shortid = require("shortid");
-const { createWriteStream, unlink } = require("fs");
-const path = require("path")
 const imageAlreadyInDbCheck = require("../../helper_functions/imageAlreadyInDbCheck")
+const uploadImage = require("../../helper_functions/uploadImage");
 
 
 
@@ -14,25 +12,9 @@ const addUserImage = async (parent, args, context, info) => {
         const user = await User.findById(context.userId);
         if (!user) throw new Error("User not found")
 
-        let userImage;
-        
-
 
         // Upload New Image
-        const id = shortid.generate();
-        const { createReadStream, filename } = await args.file;
-
-        // upload new image
-        const upload = await new Promise((res) =>
-            createReadStream().pipe(
-                createWriteStream(
-                    path.join(__dirname, "../../images", `/${id}-${filename}`)
-                )
-            )
-                .on("close", res)
-        );
-
-        userImage = `images/${id}-${filename}`
+        let userImage = await uploadImage(args.file)
 
 
         let userImageAlreadyInDb = await imageAlreadyInDbCheck(userImage, user.image); 

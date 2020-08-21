@@ -2,10 +2,9 @@
 const User = require("../../models/User");
 const bcrypt = require("bcryptjs");
 const { createAccessToken, createRefreshToken } = require("../../helper_functions/auth");
-const shortid = require("shortid");
-const { createWriteStream, unlink } = require("fs");
-const path = require("path")
+
 const imageAlreadyInDbCheck = require("../../helper_functions/imageAlreadyInDbCheck")
+const uploadImage = require("../../helper_functions/uploadImage");
 
 
 module.exports = async (parent, args, context, info) => {
@@ -19,21 +18,7 @@ module.exports = async (parent, args, context, info) => {
 
     let userImage;
     if (args.file) {
-
-      const id = shortid.generate();
-
-      const { createReadStream, filename } = await args.file;
-
-      const upload = await new Promise((res) =>
-        createReadStream().pipe(
-          createWriteStream(
-            path.join(__dirname, "../../images", `/${id}-${filename}`)
-          )
-        )
-          .on("close", res)
-      );
-
-      userImage = `images/${id}-${filename}`
+      userImage = await uploadImage(args.file)
     }
 
     let userImageAlreadyInDb = await imageAlreadyInDbCheck(userImage, null);
