@@ -33,7 +33,7 @@ const server = new ApolloServer({
 server.applyMiddleware({ app });
 
 //makes folder available public
-app.use("/images", express.static(path.join(__dirname, "../images")))
+app.use("/images", express.static(path.join(__dirname, "./images")))
 
 
 app.use(cors());

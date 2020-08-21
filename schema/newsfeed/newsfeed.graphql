@@ -2,6 +2,7 @@ module.exports = `
   type Post {
     _id: ID
     text: String!
+    title: String
     createdAt: String
     imageUrl: String
     videoUrl:String
@@ -9,10 +10,13 @@ module.exports = `
     organization: Organization!
     likedBy: [User]
     comments: [Comment]
+    likeCount: Int
+    commentCount: Int 
   }
   input PostInput {
     _id: ID
     text: String!
+    title: String
     imageUrl: String
     videoUrl:String
     organizationId: ID!

@@ -24,7 +24,7 @@ const eventSchema = new Schema({
 		default: false,
 	},
 	allDay: { type: Boolean, required: true },
-	date: { type: String, required: true },
+	date: { type: Date, required: true },
 	startTime: {
 		type: String,
 		required: function () {
@@ -79,6 +79,12 @@ const eventSchema = new Schema({
 		ref: "Organization",
 		required: true,
 	},
+	tasks: [
+		{
+			type: Schema.Types.ObjectId,
+			ref: "Task",
+		},
+	],
 });
 
 module.exports = mongoose.model("Event", eventSchema);
