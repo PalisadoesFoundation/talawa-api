@@ -19,16 +19,15 @@ const createOrganization = async (parent, args, context, info) => {
     //gets user in token - to be used later on
     let userFound = await userExists(context.userId);
 
-    let organizationImage
-
     //Upload file
+    let uploadImageObj;
     if (args.file) {
       uploadImageObj = await uploadImage(args.file, null);
     }
 
     let newOrganization = new Organization({
       ...args.data,
-      image: uploadImageObj.imageAlreadyInDbPath ? uploadImageObj.imageAlreadyInDbPath : uploadImageObj.newImagePath,
+      image: uploadImageObj ? uploadImageObj.imageAlreadyInDbPath ? uploadImageObj.imageAlreadyInDbPath : uploadImageObj.newImagePath : null,
       creator: userFound,
       admins: [userFound],
       members: [userFound],
