@@ -2,6 +2,7 @@
 const ImageHash = require("../models/ImageHash")
 const { imageHash } = require('image-hash');
 const deleteImage = require("./deleteImage");
+const deleteDuplicatedImage = require("./deleteDuplicatedImage");
 
 // Check to see if image already exists in db using hash
 // if its there point to that image and remove the image just uploaded
@@ -19,37 +20,39 @@ module.exports = function imageAlreadyInDbCheck(imageJustUploadedPath, imageAlre
                 hashValue: hash
             });
 
-            let imageHashObj = await ImageHash.findOneAndUpdate({ // Increase the number of places this image is used
-                hashValue: hash
-            }, {
-                $inc: {
-                    'numberOfUses': 1
-                }
-            }, {
-                new:true
-            })
-            console.log("num: " + imageHashObj._doc.numberOfUses)
-
             if (imageAlreadyExistsInDb) {
+
+                let imageHashObj = await ImageHash.findOneAndUpdate({ // Increase the number of places this image is used
+                    hashValue: hash
+                }, {
+                    $inc: {
+                        'numberOfUses': 1
+                    }
+                }, {
+                    new:true
+                })
+                console.log("num of uses of hash (old image): " + imageHashObj._doc.numberOfUses)
 
                 console.log("Image already exists in db");
 
                 // remove the image that was just uploaded
-                deleteImage(imageJustUploadedPath);
+                deleteDuplicatedImage(imageJustUploadedPath);
 
                 fileName = imageAlreadyExistsInDb._doc.fileName; // will include have file already in db if pic is already saved will be null otherwise
             }
             else {
                 if (imageAlreadyOnItem) { // If user already has a profile picture delete it from the API
-                    deleteImage(imageAlreadyOnItem);
+                    await deleteImage(imageAlreadyOnItem);
                 }
 
-                const hashObj = new ImageHash({
+                let hashObj = new ImageHash({
                     hashValue: hash,
                     fileName: imageJustUploadedPath,
-                    numberOfUses: 0
+                    numberOfUses: 1
                 });
-                await hashObj.save();
+                hashObj = await hashObj.save();
+                console.log("number of uses of hash (new image) : " + hashObj._doc.numberOfUses)
+                
             }
 
 

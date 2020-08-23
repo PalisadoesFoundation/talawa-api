@@ -2,7 +2,7 @@
 const shortid = require("shortid");
 const { createWriteStream} = require("fs");
 const path = require("path")
-
+const  imageAlreadyInDbCheck = require("./imageAlreadyInDbCheck");
 
 
 module.exports = async (file) => {
@@ -20,7 +20,14 @@ module.exports = async (file) => {
     );
     let imagePath = `images/${id}-${filename}`;
 
-    return imagePath;
+    //return imagePath;
+
+    let imageAlreadyInDbPath = await imageAlreadyInDbCheck(imagePath);
+
+    return {
+        newImagePath: imagePath,
+        imageAlreadyInDbPath: imageAlreadyInDbPath
+    }
 }
 
 

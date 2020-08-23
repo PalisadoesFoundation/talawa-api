@@ -23,15 +23,15 @@ const createOrganization = async (parent, args, context, info) => {
 
     //Upload file
     if (args.file) {
-      organizationImage = await uploadImage(args.file);
+      uploadImageObj = await uploadImage(args.file);
     }
 
-    let orgImageAlreadyInDb = await imageAlreadyInDbCheck(organizationImage, null);
+    //let orgImageAlreadyInDb = await imageAlreadyInDbCheck(organizationImage, null);
 
 
     let newOrganization = new Organization({
       ...args.data,
-      image: orgImageAlreadyInDb ? orgImageAlreadyInDb : organizationImage,
+      image: uploadImageObj.imageAlreadyInDbPath ? uploadImageObj.imageAlreadyInDbPath : uploadImageObj.newImagePath,
       creator: userFound,
       admins: [userFound],
       members: [userFound],

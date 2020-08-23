@@ -14,16 +14,16 @@ const addUserImage = async (parent, args, context, info) => {
 
 
         // Upload New Image
-        let userImage = await uploadImage(args.file)
+        let uploadImageObj = await uploadImage(args.file)
 
-        let userImageAlreadyInDb = await imageAlreadyInDbCheck(userImage, user.image); 
+        //let userImageAlreadyInDb = await imageAlreadyInDbCheck(userImage, user.image); 
         
 
         return await User.findOneAndUpdate(
             { _id: user.id },
             {
                 $set: {
-                    image: userImageAlreadyInDb ? userImageAlreadyInDb : userImage // if the image already exists use that image other wise use the image just uploaded
+                    image: uploadImageObj.imageAlreadyInDbPath ? uploadImageObj.imageAlreadyInDbPath : uploadImageObj.newImagePath // if the image already exists use that image other wise use the image just uploaded
                 }
             },
             {

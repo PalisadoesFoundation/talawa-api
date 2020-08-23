@@ -17,17 +17,16 @@ module.exports = async (parent, args, context, info) => {
     const hashedPassword = await bcrypt.hash(args.data.password, 12);
 
     // Upload file
-    let userImage;
+    let uploadImageObj;
     if (args.file) {
-      userImage = await uploadImage(args.file)
+      uploadImageObj = await uploadImage(args.file)
     }
-
-    let userImageAlreadyInDb = await imageAlreadyInDbCheck(userImage, null);
+    //let userImageAlreadyInDb = await imageAlreadyInDbCheck(userImage, null);
     
     let user = new User({
       ...args.data,
       email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
-      image: userImageAlreadyInDb ? userImageAlreadyInDb : userImage,
+      image: uploadImageObj.imageAlreadyInDbPath ? uploadImageObj.imageAlreadyInDbPath : uploadImageObj.newImagePath,
       password: hashedPassword
     });
     

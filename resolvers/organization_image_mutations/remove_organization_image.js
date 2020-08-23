@@ -19,7 +19,7 @@ module.exports = async (parent, args, context, info) => {
 
     if (!org.image) throw new Error("Organization does not have a profile image")
 
-    deleteImage(org.image)
+    await deleteImage(org.image)
 
     const newOrganization = await Organization.findOneAndUpdate({
         _id: org.id
