@@ -23,11 +23,8 @@ const createOrganization = async (parent, args, context, info) => {
 
     //Upload file
     if (args.file) {
-      uploadImageObj = await uploadImage(args.file);
+      uploadImageObj = await uploadImage(args.file, null);
     }
-
-    //let orgImageAlreadyInDb = await imageAlreadyInDbCheck(organizationImage, null);
-
 
     let newOrganization = new Organization({
       ...args.data,

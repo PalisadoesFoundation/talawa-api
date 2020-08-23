@@ -19,10 +19,9 @@ module.exports = async (parent, args, context, info) => {
     // Upload file
     let uploadImageObj;
     if (args.file) {
-      uploadImageObj = await uploadImage(args.file)
+      uploadImageObj = await uploadImage(args.file, null)
     }
-    //let userImageAlreadyInDb = await imageAlreadyInDbCheck(userImage, null);
-    
+
     let user = new User({
       ...args.data,
       email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors

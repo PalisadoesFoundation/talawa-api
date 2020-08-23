@@ -20,10 +20,7 @@ module.exports = async (parent, args, context, info) => {
         adminCheck(context, org) // Ensures user is an administrator of the organization
 
         // Upload Image
-        let uploadImageObj = await uploadImage(args.file)
-
-        //let orgImageAlreadyInDb = await imageAlreadyInDbCheck(organizationImage, org.image); 
-
+        let uploadImageObj = await uploadImage(args.file, org.image)
 
         const newOrganization = await Organization.findOneAndUpdate(
             { _id: org.id },

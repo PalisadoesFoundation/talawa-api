@@ -1,6 +1,5 @@
 const User = require("../../models/User");
 const authCheck = require("../functions/authCheck");
-const imageAlreadyInDbCheck = require("../../helper_functions/imageAlreadyInDbCheck")
 const uploadImage = require("../../helper_functions/uploadImage");
 
 
@@ -14,9 +13,7 @@ const addUserImage = async (parent, args, context, info) => {
 
 
         // Upload New Image
-        let uploadImageObj = await uploadImage(args.file)
-
-        //let userImageAlreadyInDb = await imageAlreadyInDbCheck(userImage, user.image); 
+        let uploadImageObj = await uploadImage(args.file, user.image)
         
 
         return await User.findOneAndUpdate(
