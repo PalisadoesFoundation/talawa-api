@@ -1,0 +1,62 @@
+module.exports = `
+
+ type Mutation {
+    signUp(data: UserInput!, file:Upload): AuthData!
+    login(data: LoginInput!): AuthData!
+    refreshToken(refreshToken: String!) : ExtendSession!
+    revokeRefreshTokenForUser(userId: String!) : Boolean!
+
+    createEvent(data: EventInput): Event!
+    removeEvent(id: ID!): Event!
+    registerForEvent(id: ID!): Event!
+    updateEvent(id:ID!, data: UpdateEventInput) : Event!
+    createEventProject(data: EventProjectInput): EventProject!
+    removeEventProject(id: ID!): EventProject!
+    updateEventProject(id:ID!, data: UpdateEventProjectInput) : EventProject!
+
+    createOrganization(data: OrganizationInput, file:Upload): Organization!
+    updateOrganization(id:ID!, data: UpdateOrganizationInput) : Organization!
+
+    removeOrganization(id: ID!) : User!
+    
+    createAdmin (data: UserAndOrganizationInput!) : User!
+    removeAdmin (data: UserAndOrganizationInput!) : User!
+    joinPublicOrganization (organizationId: ID!) : User!
+    leaveOrganization (organizationId: ID!) : User!
+    removeMember (data: UserAndOrganizationInput!) : User!
+
+    adminRemovePost(organizationId: ID!, postId:ID!):Post!
+    adminRemoveEvent(eventId: ID!): Event!
+    adminRemoveGroup(groupId:ID!):Message!
+
+    createPost(data: PostInput!): Post
+    removePost(id:ID!): Post
+    likePost(id:ID!): Post
+    unlikePost(id:ID!): Post
+
+    createComment(postId:ID!, data: CommentInput!): Comment
+    removeComment(id:ID!): Comment
+
+    createTask(data: TaskInput, projectId: ID!): Task!
+    updateTask(id:ID!, data: UpdateTaskInput) : Task
+    removeTask(id: ID!) : Task
+
+    createGroup(data: GroupInput!): Group!
+
+    sendMembershipRequest(organizationId: ID!) : MembershipRequest!
+    acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest!
+    rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
+    cancelMembershipRequest(membershipRequestId: ID!) : MembershipRequest!
+
+    blockUser(organizationId: ID!, userId: ID!) : User!
+    unblockUser(organizationId: ID!, userId:ID!) : User!
+
+    createGroupChat(data: GroupInput!): Message!
+
+    addUserImage(file: Upload!): User!
+    removeUserImage: User!
+    addOrganizationImage(file: Upload!, organizationId: String!): Organization!
+    removeOrganizationImage(organizationId: String!): Organization!
+  }
+  
+`

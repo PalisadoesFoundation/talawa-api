@@ -1,36 +1,31 @@
 const axios = require("axios");
-const {URL} = require("../../constants")
+
+const { URL } = require("../../constants")
 
 
 
 //sets token before every test
-getToken = async () => {
+module.exports = async () => {
   console.log("TOKEN SET")
-    const response = await axios.post(URL, {
-      query: `
-      {
-          login(data: {
-            email:"testdb2@test.com",
-            password:"password"
-          }) {
-            userId
-            token
-          }  
+  const response = await axios.post(URL, {
+    query: `
+    mutation{
+      login(data:{
+                email:"testdb2@test.com",
+                password:"password"
+      }){
+        user{
+        _id
         }
-        `,
-    });
-  
-  
-    const { data } = response;
-    // expect(data.data.login).toEqual(
-    //   expect.objectContaining({
-    //     userId: expect.any(String),
-    //     token: expect.any(String),
-    //   })
-    // );
-  
-    token = data.data.login.token;
-    return token
-  }
+        accessToken
+        refreshToken
+      }
+    }
+    `,
+  });
 
-module.exports = getToken
+
+  const { data } = response;
+  return data.data.login.accessToken;
+
+}

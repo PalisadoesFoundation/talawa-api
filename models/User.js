@@ -1,45 +1,80 @@
 const mongoose = require("mongoose");
-const { isEmail } = require('validator');
+const { isEmail } = require("validator");
 const Schema = mongoose.Schema;
 
-
 const userSchema = new Schema({
-    firstName: {
-        type: String,
-        required: true
+  image: {
+    type: String
+  },
+  tokenVersion: {
+    type: Number,
+    default:0
+  },
+  firstName: {
+    type: String,
+    required: true,
+  },
+  lastName: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    validate: [isEmail, "invalid email"],
+    required: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  createdOrganizations: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Organization",
     },
-    lastName: {
-        type: String,
-        required: true
+  ],
+  createdEvents: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Event",
     },
-    email: {
-        type: String,
-        validate: [ isEmail, 'invalid email' ],
-        required: true
+  ],
+  joinedOrganizations: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Organization",
     },
-    password: {
-        type: String,
-        required: true
+  ],
+  registeredEvents: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Event",
     },
-    createdOrganizations: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: "Organization"
-        }
-    ],
-    joinedOrganizations: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: "Organization"
-        }
-    ],
-    adminFor: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: "Organization"
-        }
-    ]
-})
+  ],
+  eventAdmin: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Event",
+    },
+  ],
+  adminFor: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Organization",
+    },
+  ],
+  membershipRequests: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "MembershipRequest",
+    },
+  ],
+  organizationsBlockedBy: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Organization",
+    },
+  ],
+});
 
 module.exports = mongoose.model("User", userSchema);
-

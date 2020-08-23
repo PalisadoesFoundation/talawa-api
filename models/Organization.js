@@ -3,6 +3,9 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const organizationSchema = new Schema({
+    image:{
+        type:String,
+    },
     name: {
         type:String,
         required:true
@@ -32,7 +35,32 @@ const organizationSchema = new Schema({
             ref: "User",
             required:true
         }
-    ]
+    ],
+    groupChats: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "Message",
+        }
+    ],
+    posts:[
+        {
+            type: Schema.Types.ObjectId,
+            ref: "Post",
+        }
+    ],
+    membershipRequests: [
+        {
+            type: Schema.Types.ObjectId,
+            ref:"MembershipRequest"
+        }
+    ],
+    blockedUsers: [
+        {
+            type: Schema.Types.ObjectId,
+            ref:"User"
+        }
+    ],
+    visibleInSearch: Boolean
 })
 
 module.exports = mongoose.model("Organization", organizationSchema);

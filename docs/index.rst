@@ -15,6 +15,8 @@ Welcome to the Talawa API documentation!
    architecture
    authentication
    organizations
+   membership
+   administration
    
 
 

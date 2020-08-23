@@ -33,35 +33,34 @@ describe("user resolvers", () => {
                   email: "${email}"
                   password:"password"
                 }) {
-                  firstName
-                  lastName
-                  email
+                  user{
+                    _id
+                  }
+                  accessToken
                 }
               }
               `,
     });
     const { data } = response;
-    expect(data).toMatchObject({
-      data: {
-        signUp: {
-          firstName: "testdb2",
-          lastName: "testdb2",
-          email: `${email}`,
-        },
-      },
-    });
+    expect(data.data.signUp).toEqual(
+      expect.objectContaining({
+        accessToken: expect.any(String),
+      })
+    );
   });
 
   test("login", async () => {
     const response = await axios.post(URL, {
       query: `
-            {
+            mutation{
                 login(data: {
                   email:"testdb2@test.com",
                   password:"password"
                 }) {
-                  userId
-                  token
+                  user{
+                    _id
+                  }
+                  accessToken
                 }  
               }
               `,
@@ -69,8 +68,7 @@ describe("user resolvers", () => {
     const { data } = response;
     expect(data.data.login).toEqual(
       expect.objectContaining({
-        userId: expect.any(String),
-        token: expect.any(String),
+        accessToken: expect.any(String),
       })
     );
 
