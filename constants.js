@@ -1,6 +1,6 @@
 
 
-const URL = "http://localhost:4000/graphql"
+const URL = "http://calico.palisadoes.org/talawa/graphql"
 
 
 module.exports.URL = URL
