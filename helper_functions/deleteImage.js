@@ -19,7 +19,7 @@ async function deleteImage(imageToBeDeleted, imageBelongingToItem) {
       fileName: imageToBeDeleted,
     });
 
-    if (hash.numberOfUses > 1) {
+    if (hash && hash.numberOfUses > 1) {
       // image is only deleted if it is only used once
       console.log("Image cannot be deleted");
     } else {

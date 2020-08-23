@@ -21,6 +21,13 @@ module.exports = async (file, itemImage) => {
   );
   let imageJustUploadedPath = `images/${id}-${filename}`;
 
+  // throw an error if file is not png or jpg
+  let extension = filename.split(".").pop();
+  if (extension != "png" && extension != "jpg") {
+    await deleteImage(imageJustUploadedPath);
+    throw new Error("Invalid file Type. Only .jpg and .png files are accepted");
+  }
+
   //return imagePath;
 
   if (itemImage) {

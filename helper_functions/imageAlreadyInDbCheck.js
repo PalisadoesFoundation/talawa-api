@@ -11,7 +11,7 @@ module.exports = function imageAlreadyInDbCheck(imageJustUploadedPath, itemImage
   let fileName;
   return new Promise((resolve, reject) => {
     imageHash(`./${imageJustUploadedPath}`, 16, true, async (error, data) => {
-      if (error) throw error;
+      //if (error) throw error;
       hash = data;
 
       // Finds an entry with the same hash
@@ -70,5 +70,5 @@ module.exports = function imageAlreadyInDbCheck(imageJustUploadedPath, itemImage
     .then(() => {
       return fileName;
     })
-    .catch((e) => [console.log(e)]);
+    .catch((e) => { throw new Error("Invalid file type")});
 };

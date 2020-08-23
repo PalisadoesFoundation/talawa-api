@@ -14,6 +14,8 @@ module.exports = async (imageJustUploadedPath, itemImage) => {
       });
     }).then(() => {
       return oldImageHash;
+    }).catch((e)=>{
+      throw new Error("Invalid file type")
     });
 
     await new Promise((resolve, reject) => {
@@ -24,6 +26,8 @@ module.exports = async (imageJustUploadedPath, itemImage) => {
       });
     }).then(() => {
       return newImageHash;
+    }).catch((e)=>{
+      throw new Error("Invalid file type")
     });
     console.log("old image hash: " + oldImageHash);
     console.log("new image hash: " + newImageHash);
