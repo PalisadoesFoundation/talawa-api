@@ -2,8 +2,9 @@
 const authCheck = require("../functions/authCheck");
 const { unlink } = require("fs");
 const User = require("../../models/User");
-
-
+const Organization = require("../../models/Organization")
+const deleteImage = require("../../helper_functions/deleteImage")
+const ImageHash = require("../../models/ImageHash")
 
 module.exports = async (parent, args, context, info) => {
     authCheck(context);
@@ -13,11 +14,8 @@ module.exports = async (parent, args, context, info) => {
 
     if(!user.image) throw new Error("User does not have a profile image")
 
-    unlink(user.image, function (err) {
-        if (err) throw err;
-        // if no error, file has been deleted successfully
-        console.log("File deleted!");
-    });
+    await deleteImage(user.image);
+
 
     const newUser = await User.findOneAndUpdate({
         _id:user.id

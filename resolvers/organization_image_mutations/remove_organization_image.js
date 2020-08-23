@@ -4,6 +4,7 @@ const Organization = require("../../models/Organization");
 const User = require("../../models/User");
 const { unlink } = require("fs");
 const adminCheck = require("../functions/adminCheck");
+const deleteImage = require("../../helper_functions/deleteImage")
 
 module.exports = async (parent, args, context, info) => {
     authCheck(context);
@@ -18,11 +19,7 @@ module.exports = async (parent, args, context, info) => {
 
     if (!org.image) throw new Error("Organization does not have a profile image")
 
-    unlink(org.image, function (err) {
-        if (err) throw err;
-        // if no error, file has been deleted successfully
-        console.log("File deleted!");
-    });
+    await deleteImage(org.image)
 
     const newOrganization = await Organization.findOneAndUpdate({
         _id: org.id
