@@ -4,6 +4,8 @@ const path = require("path");
 const imageAlreadyInDbCheck = require("./imageAlreadyInDbCheck");
 const deleteImage = require("./deleteImage");
 const { imageHash } = require("image-hash");
+const imageExtensionCheck = require("./imageExtensionCheck");
+
 
 module.exports = async (file, itemImage) => {
   const id = shortid.generate();
@@ -22,15 +24,12 @@ module.exports = async (file, itemImage) => {
   let imageJustUploadedPath = `images/${id}-${filename}`;
 
   // throw an error if file is not png or jpg
-  let extension = filename.split(".").pop();
-  if (extension != "png" && extension != "jpg") {
-    await deleteImage(imageJustUploadedPath);
-    throw new Error("Invalid file Type. Only .jpg and .png files are accepted");
-  }
+  await imageExtensionCheck(imageJustUploadedPath);
 
   //return imagePath;
 
   if (itemImage) {
+    console.log("old image should be deleted: " )
     // If user/org already has an image delete it from the API
     await deleteImage(itemImage, imageJustUploadedPath);
   }

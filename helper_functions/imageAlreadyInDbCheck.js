@@ -21,7 +21,7 @@ module.exports = function imageAlreadyInDbCheck(imageJustUploadedPath, itemImage
 
       if (imageAlreadyExistsInDb) {
         let tryingToReUploadADuplicate;
-          tryingToReUploadADuplicate = reuploadDuplicateCheck(
+          tryingToReUploadADuplicate = await reuploadDuplicateCheck(
             imageJustUploadedPath,
             itemImage
           );
@@ -41,12 +41,12 @@ module.exports = function imageAlreadyInDbCheck(imageJustUploadedPath, itemImage
               new: true,
             }
           );
-          console.log(
-            "num of uses of hash (old image): " + imageHashObj._doc.numberOfUses
-          );
+          // console.log(
+          //   "num of uses of hash (old image): " + imageHashObj._doc.numberOfUses
+          // );
         }
 
-        console.log("Image already exists in db");
+        //console.log("Image already exists in db");
 
         // remove the image that was just uploaded
         deleteDuplicatedImage(imageJustUploadedPath);
@@ -59,9 +59,9 @@ module.exports = function imageAlreadyInDbCheck(imageJustUploadedPath, itemImage
           numberOfUses: 1,
         });
         hashObj = await hashObj.save();
-        console.log(
-          "number of uses of hash (new image) : " + hashObj._doc.numberOfUses
-        );
+        // console.log(
+        //   "number of uses of hash (new image) : " + hashObj._doc.numberOfUses
+        // );
       }
 
       resolve();

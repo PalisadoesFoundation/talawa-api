@@ -4,20 +4,23 @@ const ImageHash = require("../models/ImageHash");
 const reuploadDuplicateCheck = require("./ReuploadDuplicateCheck");
 
 async function deleteImage(imageToBeDeleted, imageBelongingToItem) {
+
   let tryingToReUploadADuplicate;
   if (imageBelongingToItem) {
-    tryingToReUploadADuplicate = reuploadDuplicateCheck(
+    tryingToReUploadADuplicate = await reuploadDuplicateCheck(
       imageBelongingToItem,
       imageToBeDeleted
     );
   }
 
   if (!tryingToReUploadADuplicate) {
+    //console.log("Image isnt duplicate")
     // Only remove the old image if its different from the new one
     // Ensure image hash isn't used by multiple users/organization before deleting it
     let hash = await ImageHash.findOne({
       fileName: imageToBeDeleted,
     });
+
 
     if (hash && hash.numberOfUses > 1) {
       // image is only deleted if it is only used once
