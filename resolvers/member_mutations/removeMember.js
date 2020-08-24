@@ -16,7 +16,7 @@ module.exports = async (parent, args, context, info) => {
 
     let errors = [];
     
-    let updatedOrg;
+
     for await (const userId of args.data.userIds) {
       // do not run an async function inside a for each loop - it doesnt work
       //ensure user exists
@@ -50,7 +50,7 @@ module.exports = async (parent, args, context, info) => {
       }
 
       //remove member from organization
-      updatedOrg = await Organization.findOneAndUpdate(
+      org = await Organization.findOneAndUpdate(
         { _id: org.id },
         {
           $set: {
@@ -77,7 +77,7 @@ module.exports = async (parent, args, context, info) => {
 
     if (errors.length > 0) throw new Error(errors.join());
 
-    return updatedOrg;
+    return org;
   } catch (e) {
     throw e;
   }
