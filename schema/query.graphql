@@ -7,13 +7,13 @@ module.exports = `
     organizations(id: ID): [Organization]
     events(id: ID): [Event]
     eventsByOrganization(id: ID): [Event]
+    registeredEventsByUser(id: ID): [Event]
     event(id: ID): Event
-    # project(id: ID): EventProject
-    # projects: [EventProject]
-    # projectsByEvent(id: ID!): [EventProject]
     me:User!
     posts: [Post]
     postsByOrganization(id: ID!): [Post]
+    tasksByEvent(id: ID!): [Task]
+    tasksByUser(id: ID!): [Task]
     comments: [Comment]
     commentsByPost(id: ID!): [Comment]
     post(id: ID): Post

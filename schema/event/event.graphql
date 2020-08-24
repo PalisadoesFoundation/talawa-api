@@ -13,11 +13,12 @@ module.exports = `
         isPublic: Boolean! 
         isRegisterable: Boolean! 
         creator: User!
-        registrants: [User]
+        # registrants: [User]
         admins(adminId: ID): [User]
         organization: Organization
         location: String
         tasks: [Task]
+        isRegistered: Boolean
     }
 
     # type EventProject {
