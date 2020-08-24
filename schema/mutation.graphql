@@ -23,7 +23,9 @@ module.exports = `
     removeAdmin (data: UserAndOrganizationInput!) : User!
     joinPublicOrganization (organizationId: ID!) : User!
     leaveOrganization (organizationId: ID!) : User!
-    removeMember (data: UserAndOrganizationInput!) : User!
+
+    removeMember (data: MultipleUsersAndOrganizationInput!) : Organization!
+    # removeMultipleMembers(data: MultipleUsersAndOrganizationInput!) : Organization!
 
     adminRemovePost(organizationId: ID!, postId:ID!):Post!
     adminRemoveEvent(eventId: ID!): Event!
