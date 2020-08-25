@@ -14,16 +14,19 @@ const likePost = async (parent, args, context, info) => {
 			throw new Error("Post not found");
 		}
 
-		let newPost = await Post.findOneAndUpdate(
-			{ _id: args.id },
-			{
-				$push: {
-					likedBy: user,
+		if (!post.likedBy.includes(context.userId)) {
+			let newPost = await Post.findOneAndUpdate(
+				{ _id: args.id },
+				{
+					$push: {
+						likedBy: user,
+					},
 				},
-			},
-			{ new: true }
-		);
-		return newPost;
+				{ new: true }
+			);
+			return newPost;
+		}
+		return post;
 	} catch (e) {
 		throw e;
 	}
