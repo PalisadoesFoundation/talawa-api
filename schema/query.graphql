@@ -9,6 +9,7 @@ module.exports = `
     eventsByOrganization(id: ID): [Event]
     registeredEventsByUser(id: ID): [Event]
     event(id: ID): Event
+    registrantsByEvent(id: ID): [User]
     me:User!
     posts: [Post]
     postsByOrganization(id: ID!): [Post]

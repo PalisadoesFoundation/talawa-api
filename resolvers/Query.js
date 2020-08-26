@@ -79,7 +79,6 @@ const Query = {
 	},
 	event: async (parent, args, context, info) => {
 		try {
-			console.log("User ID:", context.userId);
 			const eventFound = await Event.findOne({ _id: args.id })
 				// .populate("registrants")
 				.populate("creator", "-password")
@@ -98,9 +97,20 @@ const Query = {
 			throw e;
 		}
 	},
+	registrantsByEvent: async (parent, args, context, info) => {
+		try {
+			const eventFound = await Event.findOne({ _id: args.id })
+				.populate("registrants", "-password");
+			if (!eventFound) {
+				throw new Error("Event not found");
+			}
+			return eventFound.registrants || [];
+		} catch (e) {
+			throw e;
+		}
+	},
 	events: async (parent, args, context, info) => {
 		try {
-			console.log("User ID:", context);
 			const e = await Event.find()
 				// .populate("registrants")
 				.populate("creator", "-password")

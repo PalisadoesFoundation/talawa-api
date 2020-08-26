@@ -3,7 +3,8 @@ module.exports = `
         _id: ID!
         title:String!
         description: String!
-        date: String!
+        startDate: String!
+        endDate: String!
         allDay: Boolean!
         startTime: String
         endTime: String
@@ -48,7 +49,8 @@ module.exports = `
         isPublic: Boolean! 
         isRegisterable: Boolean! 
         organizationId: ID!
-        date: String!
+        startDate: String!
+        endDate: String
         allDay: Boolean!
         startTime: String
         endTime: String
@@ -63,7 +65,8 @@ module.exports = `
         attendees: String
         isPublic: Boolean
         isRegisterable: Boolean
-        date: String
+        startDate: String
+        endDate: String
         location: String
         allDay: Boolean
         startTime: String

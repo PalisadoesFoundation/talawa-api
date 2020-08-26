@@ -64,10 +64,10 @@ describe("event resolvers", () => {
                   recurring: true,
                   recurrance: "YEARLY",
                   location: "Test",
-				  date: "2/2/2020",
+				  startDate: "2/2/2020",
 				  allDay: true,
-				  endTime:"1/1/2001"
-				  startTime:"1/1/2000"
+				  endTime:"2:00 PM"
+				  startTime:"1:00 PM"
                   organizationId: "${createdOrgId}",
           }) {
               _id
@@ -163,6 +163,20 @@ describe("event resolvers", () => {
 			})
 		);
 	});
+
+	test("registrantsByEvent", async () => {
+		const response = await axios.post(URL, {
+			query: `query {
+                registrantsByEvent (id: "${createdEventId}") {
+					firstName
+					email
+                }
+            }`,
+		});
+		const { data } = response;
+		expect(Array.isArray(data.data.registrantsByEvent)).toBeTruthy();
+	});
+
 
 	test("updateEvent", async () => {
 		const response = await axios.post(
@@ -267,6 +281,18 @@ describe("event resolvers", () => {
 		});
 	});
 
+	test("tasksByEvent", async () => {
+		const response = await axios.post(URL, {
+			query: `query {
+                tasksByEvent (id: "${createdEventId}") {
+					title
+					description
+                }
+            }`,
+		});
+		const { data } = response;
+		expect(Array.isArray(data.data.tasksByEvent)).toBeTruthy();
+	});
 
 	test("removeTask", async () => {
 		const response = await axios.post(
@@ -334,18 +360,18 @@ describe("event resolvers", () => {
 	        mutation {
 	          createEvent(
 	              data: {
-	                  title: "Test",
-	                  description: "National conference that happens yearly",
-					  isPublic: true,
-	                  isRegisterable: true,
-	                  recurring: true,
-	                  recurrance: "YEARLY",
-					  location: "Test",
-					  date:"2/2/2020",
-					  allDay: true,
-					  endTime:"1/1/2001"
-					  startTime:"1/1/2000"
-	                  organizationId: "${createdOrgId}",
+					title: "Test",
+					description: "National conference that happens yearly",
+					isPublic: true,
+					isRegisterable: true,
+					recurring: true,
+					recurrance: "YEARLY",
+					location: "Test",
+					startDate: "2/2/2020",
+					allDay: true,
+					endTime:"2:00 PM"
+					startTime:"1:00 PM"
+					organizationId: "${createdOrgId}",
 	          }) {
 	              _id
 	              title
