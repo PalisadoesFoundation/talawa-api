@@ -117,7 +117,7 @@ describe("User-Organization Resolvers", () => {
   });
 
   //NEW USER CREATES AN EVENT
-  let createdEventId;
+  // let createdEventId;
   // test("User Creates Event", async () => {
   //   try {
   //     const response = await axios.post(
@@ -201,6 +201,8 @@ describe("User-Organization Resolvers", () => {
     );
   });
 
+
+    //ADMIN REMOVES GROUP
 
   
 
