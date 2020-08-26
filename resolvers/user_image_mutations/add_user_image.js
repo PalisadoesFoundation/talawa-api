@@ -1,8 +1,8 @@
 const User = require("../../models/User");
 const authCheck = require("../functions/authCheck");
-const shortid = require("shortid");
-const { createWriteStream, unlink } = require("fs");
-const path = require("path")
+const uploadImage = require("../../helper_functions/uploadImage");
+
+
 
 const addUserImage = async (parent, args, context, info) => {
     authCheck(context);
@@ -11,43 +11,23 @@ const addUserImage = async (parent, args, context, info) => {
         const user = await User.findById(context.userId);
         if (!user) throw new Error("User not found")
 
-        let userImage;
-        if (args.file) {
 
-            if(user.image) { // If user already has a profile picture delete it from the API
-                unlink(user.image, function (err) {
-                    if (err) throw err;
-                    // if no error, file has been deleted successfully
-                    console.log("File deleted!");
-                  });
-            }
+        // Upload New Image
+        let uploadImageObj = await uploadImage(args.file, user.image)
+        
 
-            const id = shortid.generate();
-
-            const { createReadStream, filename } = await args.file;
-
-            const upload = await new Promise((res) =>
-                createReadStream().pipe(
-                    createWriteStream(
-                        path.join(__dirname, "../../images", `/${id}-${filename}`)
-                    )
-                )
-                    .on("close", res)
-            );
-
-            userImage = `images/${id}-${filename}`
-        }
-
-        const newUser = await User.findOneAndUpdate(
-            {_id: user.id},
-            {$set: {
-                image: userImage
-            }}, 
+        return await User.findOneAndUpdate(
+            { _id: user.id },
             {
-                new:true
-            })
+                $set: {
+                    image: uploadImageObj.imageAlreadyInDbPath ? uploadImageObj.imageAlreadyInDbPath : uploadImageObj.newImagePath // if the image already exists use that image other wise use the image just uploaded
+                }
+            },
+            {
+                new: true
+            }
+        );
 
-        return newUser;
 
     } catch (e) {
         throw e;

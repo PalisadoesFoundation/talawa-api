@@ -54,6 +54,7 @@ module.exports = async (parent, args, context, info) => {
     //remove membership request from user
     user.overwrite({
         ...user._doc,
+        joinedOrganizations: [...user._doc.joinedOrganizations, org],
         membershipRequests: user._doc.membershipRequests.filter(request => request._id !== membershipRequest.id)
     })
 

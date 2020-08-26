@@ -2,10 +2,10 @@ const Organization = require("../../models/Organization");
 const User = require("../../models/User");
 
 const authCheck = require("../functions/authCheck");
-const shortid = require("shortid");
-const { createWriteStream, unlink } = require("fs");
-const path = require("path")
 const adminCheck = require("../functions/adminCheck");
+const imageAlreadyInDbCheck = require("../../helper_functions/imageAlreadyInDbCheck")
+const uploadImage = require("../../helper_functions/uploadImage");
+
 
 module.exports = async (parent, args, context, info) => {
     authCheck(context);
@@ -19,39 +19,14 @@ module.exports = async (parent, args, context, info) => {
 
         adminCheck(context, org) // Ensures user is an administrator of the organization
 
-
-        let organizationImage;
-        if (args.file) {
-
-            if (org.image) { // If user already has a profile picture delete it from the API
-                unlink(org.image, function (err) {
-                    if (err) throw err;
-                    // if no error, file has been deleted successfully
-                    console.log("File deleted!");
-                });
-            }
-
-            const id = shortid.generate();
-
-            const { createReadStream, filename } = await args.file;
-
-            const upload = await new Promise((res) =>
-                createReadStream().pipe(
-                    createWriteStream(
-                        path.join(__dirname, "../../images", `/${id}-${filename}`)
-                    )
-                )
-                    .on("close", res)
-            );
-
-            organizationImage = `images/${id}-${filename}`
-        }
+        // Upload Image
+        let uploadImageObj = await uploadImage(args.file, org.image)
 
         const newOrganization = await Organization.findOneAndUpdate(
             { _id: org.id },
             {
                 $set: {
-                    image: organizationImage
+                    image: uploadImageObj.imageAlreadyInDbPath ? uploadImageObj.imageAlreadyInDbPath : uploadImageObj.newImagePath
                 }
             },
             {

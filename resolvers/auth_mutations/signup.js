@@ -2,42 +2,30 @@
 const User = require("../../models/User");
 const bcrypt = require("bcryptjs");
 const { createAccessToken, createRefreshToken } = require("../../helper_functions/auth");
-const shortid = require("shortid");
-const { createWriteStream, unlink } = require("fs");
-const path = require("path")
+
+const imageAlreadyInDbCheck = require("../../helper_functions/imageAlreadyInDbCheck")
+const uploadImage = require("../../helper_functions/uploadImage");
 
 
 module.exports = async (parent, args, context, info) => {
   try {
-    const emailTaken = await User.findOne({ email: args.data.email });
+    const emailTaken = await User.findOne({ email: args.data.email.toLowerCase() });
     if (emailTaken) {
       throw new Error("Email address taken.");
     }
 
     const hashedPassword = await bcrypt.hash(args.data.password, 12);
 
-    let userImage;
+    // Upload file
+    let uploadImageObj;
     if (args.file) {
-
-      const id = shortid.generate();
-
-      const { createReadStream, filename } = await args.file;
-
-      const upload = await new Promise((res) =>
-        createReadStream().pipe(
-          createWriteStream(
-            path.join(__dirname, "../../images", `/${id}-${filename}`)
-          )
-        )
-          .on("close", res)
-      );
-
-      userImage = `images/${id}-${filename}`
+      uploadImageObj = await uploadImage(args.file, null)
     }
 
     let user = new User({
       ...args.data,
-      image: userImage,
+      email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
+      image: uploadImageObj ? uploadImageObj.imageAlreadyInDbPath ? uploadImageObj.imageAlreadyInDbPath : uploadImageObj.newImagePath : null,
       password: hashedPassword
     });
     

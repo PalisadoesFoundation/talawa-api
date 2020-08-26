@@ -14,32 +14,70 @@ module.exports = async (parent, args, context, info) => {
     //ensure user is an admin
     adminCheck(context, org);
 
-    //ensure user exists
-    const user = await User.findOne({ _id: args.data.userId });
-    if (!user) throw new Error("User does not exist");
+    let errors = [];
+    
 
-    //ensure member being removed by admin is already a member
-    const members = org._doc.members.filter((member) => member == user.id);
-    if (members.length == 0) throw new Error("User is not a member");
+    for await (const userId of args.data.userIds) {
+      // do not run an async function inside a for each loop - it doesnt work
+      //ensure user exists
+      const user = await User.findOne({ _id: userId });
+      // Errors inside a loop stop the loop it doesnt throw the error, errors have to be stored in an array an thrown at the end
+      if (!user) {
+        errors.push("User does not exist");
+        break;
+      }
+      //ensure member being removed by admin is already a member
+      const members = org._doc.members.filter((member) => member == user.id);
+      if (members.length == 0) {
+        errors.push("User is not a member");
+        break;
+      }
 
-    //ensure the user the admin is trying to remove isn't an admin
-    if(org._doc.admins.includes(user.id)) throw new Error("Administrators cannot remove members who are also Administrators")
+      //ensure the user the admin is trying to remove isn't an admin
+      if (org._doc.admins.includes(user.id)) {
+        errors.push(
+          "Administrators cannot remove members who are also Administrators"
+        );
+        break;
+      }
 
-    //ensure the user the admin is trying to remove isn't the creator
-    if(org._doc.creator == user.id) throw new Error("Administratos cannot remove the creator of the organization from the organization")
+      //ensure the user the admin is trying to remove isn't the creator
+      if (org._doc.creator == user.id) {
+        errors.push(
+          "Administratos cannot remove the creator of the organization from the organization"
+        );
+        break;
+      }
 
-    //remove member from organization
-    org.overwrite({
-      ...org._doc,
-      members: org._doc.members.filter((member) => member != user.id),
-    });
-    await org.save();
+      //remove member from organization
+      org = await Organization.findOneAndUpdate(
+        { _id: org.id },
+        {
+          $set: {
+            members: org._doc.members.filter((member) => member != user.id),
+          },
+        },
+        {
+          new: true,
+        }
+      );
 
-    //return user
-    return {
-      ...user._doc,
-      password: null,
-    };
+      //remove org from user
+      await User.findOneAndUpdate(
+        { _id: user.id },
+        {
+          $set: {
+            joinedOrganizations: user._doc.joinedOrganizations.filter(
+              (organization) => organization != org.id
+            ),
+          },
+        }
+      );
+    }
+
+    if (errors.length > 0) throw new Error(errors.join());
+
+    return org;
   } catch (e) {
     throw e;
   }

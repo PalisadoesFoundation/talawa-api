@@ -13,7 +13,11 @@ const createAdmin = require("./admin_mutations/createAdmin")
 const removeAdmin = require("./admin_mutations/removeAdmin")
 const joinPublicOrganization = require("./member_mutations/join_public_organization")
 const leaveOrganization = require("./member_mutations/leave_organization")
-const removeMember = require("./member_mutations/removeMember")
+
+
+const removeMember = require("./member_mutations/removeMember");
+//const removeMultipleMembers = require("./member_mutations/removeMultipleMembers");
+
 const registerForEvent = require("./event_mutations/registerForEvent")
 
 // const createEventProject = require("./event_project_mutations/createProject")
@@ -70,7 +74,10 @@ const Mutation = {
   removeAdmin,
   joinPublicOrganization,
   leaveOrganization,
+
   removeMember,
+  //removeMultipleMembers,
+
   adminRemovePost,
   adminRemoveGroup,
   adminRemoveEvent,
