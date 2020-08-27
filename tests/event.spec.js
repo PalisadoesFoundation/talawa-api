@@ -64,10 +64,10 @@ describe("event resolvers", () => {
                   recurring: true,
                   recurrance: "YEARLY",
                   location: "Test",
-				  date: "2/2/2020",
+				  startDate: "2/2/2020",
 				  allDay: true,
-				  endTime:"1/1/2001"
-				  startTime:"1/1/2000"
+				  endTime:"2:00 PM"
+				  startTime:"1:00 PM"
                   organizationId: "${createdOrgId}",
           }) {
               _id
@@ -164,6 +164,20 @@ describe("event resolvers", () => {
 		);
 	});
 
+	test("registrantsByEvent", async () => {
+		const response = await axios.post(URL, {
+			query: `query {
+                registrantsByEvent (id: "${createdEventId}") {
+					firstName
+					email
+                }
+            }`,
+		});
+		const { data } = response;
+		expect(Array.isArray(data.data.registrantsByEvent)).toBeTruthy();
+	});
+
+
 	test("updateEvent", async () => {
 		const response = await axios.post(
 			URL,
@@ -196,183 +210,9 @@ describe("event resolvers", () => {
 		});
 	});
 
-	test("removeEvent", async () => {
-		//a new organization is created then deleted
-		const response = await axios.post(
-			URL,
-			{
-				query: `
-	        mutation {
-	          createEvent(
-	              data: {
-	                  title: "Test",
-	                  description: "National conference that happens yearly",
-					  isPublic: true,
-	                  isRegisterable: true,
-	                  recurring: true,
-	                  recurrance: "YEARLY",
-					  location: "Test",
-					  date:"2/2/2020",
-					  allDay: true,
-					  endTime:"1/1/2001"
-					  startTime:"1/1/2000"
-	                  organizationId: "${createdOrgId}",
-	          }) {
-	              _id
-	              title
-	              description
-	          }
-	      }
-	              `,
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			}
-		);
 
-		const newEventId = response.data.data.createEvent._id;
-
-		const deletedResponse = await axios.post(
-			URL,
-			{
-				query: `
-	            mutation {
-	                removeEvent(id: "${newEventId}") {
-	                    _id
-	                    title
-	                }
-	            }
-	            `,
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			}
-		);
-
-		expect(deletedResponse.data).toMatchObject({
-			data: {
-				removeEvent: {
-					_id: `${newEventId}`,
-					title: "Test",
-				},
-			},
-		});
-	});
-
-	//Event Projects
-
-	test("allProjects", async () => {
-		const response = await axios.post(URL, {
-			query: `query {
-	        projects {
-	                    _id
-	                    title
-	                }
-	            }`,
-		});
-		const { data } = response;
-		expect(Array.isArray(data.data.projects)).toBeTruthy();
-	});
-
-	let createdProjectId;
-	test("createEventProject", async () => {
-		const response = await axios.post(
-			URL,
-			{
-				query: `
-	          mutation {
-	            createEventProject(
-	                data: {
-	                    title: "Create demo sections",
-	                    description: "Test",
-	                    eventId: "${createdEventId}",
-	            }) {
-	                _id
-	                title
-	                description
-	            }
-	          }
-	              `,
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			}
-		);
-		const { data } = response;
-		createdProjectId = data.data.createEventProject._id;
-		expect(data.data.createEventProject).toEqual(
-			expect.objectContaining({
-				_id: expect.any(String),
-				title: expect.any(String),
-				description: expect.any(String),
-			})
-		);
-	});
-
-	test("allProjectsByEvent", async () => {
-		const response = await axios.post(URL, {
-			query: `query {
-	        projectsByEvent(id: "${createdEventId}") {
-	                    _id
-	                    title
-	                }
-	            }`,
-		});
-		const { data } = response;
-		expect(Array.isArray(data.data.projectsByEvent)).toBeTruthy();
-	});
-
-	test("projectInfo", async () => {
-		const response = await axios.post(URL, {
-			query: `query {
-	        project(id: "${createdProjectId}") {
-	                    _id
-	                    title
-	                }
-	            }`,
-		});
-		const { data } = response;
-		expect(data.data.project).toBeTruthy();
-	});
-
-	test("updateEventProject", async () => {
-		const response = await axios.post(
-			URL,
-			{
-				query: `
-	        mutation {
-	          updateEventProject(id: "${createdProjectId}", data: {
-	              title: "Updated"
-	          }) {
-	              _id
-	              title
-	          }
-	      }
-	              `,
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			}
-		);
-		const { data } = response;
-		expect(data).toMatchObject({
-			data: {
-				updateEventProject: {
-					_id: `${createdProjectId}`,
-					title: "Updated",
-				},
-			},
-		});
-	});
-
+	//Event Task
+	
 	let createdTaskId;
 	test("createTask", async () => {
 		const response = await axios.post(
@@ -383,7 +223,7 @@ describe("event resolvers", () => {
 				createTask(
 					data: {
 						title: "Task",
-				}, projectId: "${createdProjectId}") {
+				}, eventId: "${createdEventId}") {
 					_id
 					title
 					description
@@ -441,6 +281,19 @@ describe("event resolvers", () => {
 		});
 	});
 
+	test("tasksByEvent", async () => {
+		const response = await axios.post(URL, {
+			query: `query {
+                tasksByEvent (id: "${createdEventId}") {
+					title
+					description
+                }
+            }`,
+		});
+		const { data } = response;
+		expect(Array.isArray(data.data.tasksByEvent)).toBeTruthy();
+	});
+
 	test("removeTask", async () => {
 		const response = await axios.post(
 			URL,
@@ -450,7 +303,7 @@ describe("event resolvers", () => {
 				createTask(
 					data: {
 						title: "TaskRemove",
-				}, projectId: "${createdProjectId}") {
+				}, eventId: "${createdEventId}") {
 					_id
 					title
 					description
@@ -498,23 +351,33 @@ describe("event resolvers", () => {
 		});
 	});
 
-	test("removeEventProject", async () => {
+	test("removeEvent", async () => {
+		//a new organization is created then deleted
 		const response = await axios.post(
 			URL,
 			{
 				query: `
-	          mutation {
-	            createEventProject(
-	                data: {
-	                    title: "Test",
-	                    description: "Test",
-	                    eventId: "${createdEventId}",
-	            }) {
-	                _id
-	                title
-	                description
-	            }
+	        mutation {
+	          createEvent(
+	              data: {
+					title: "Test",
+					description: "National conference that happens yearly",
+					isPublic: true,
+					isRegisterable: true,
+					recurring: true,
+					recurrance: "YEARLY",
+					location: "Test",
+					startDate: "2/2/2020",
+					allDay: true,
+					endTime:"2:00 PM"
+					startTime:"1:00 PM"
+					organizationId: "${createdOrgId}",
+	          }) {
+	              _id
+	              title
+	              description
 	          }
+	      }
 	              `,
 			},
 			{
@@ -524,14 +387,14 @@ describe("event resolvers", () => {
 			}
 		);
 
-		const newProjectId = response.data.data.createEventProject._id;
+		const newEventId = response.data.data.createEvent._id;
 
 		const deletedResponse = await axios.post(
 			URL,
 			{
 				query: `
 	            mutation {
-	              removeEventProject(id: "${newProjectId}") {
+	                removeEvent(id: "${newEventId}") {
 	                    _id
 	                    title
 	                }
@@ -547,13 +410,14 @@ describe("event resolvers", () => {
 
 		expect(deletedResponse.data).toMatchObject({
 			data: {
-				removeEventProject: {
-					_id: `${newProjectId}`,
+				removeEvent: {
+					_id: `${newEventId}`,
 					title: "Test",
 				},
 			},
 		});
 	});
+
 });
 
 module.exports.token = token;
