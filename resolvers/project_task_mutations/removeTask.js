@@ -1,5 +1,5 @@
 const User = require("../../models/User");
-const EventProject = require("../../models/EventProject");
+const Event = require("../../models/Event");
 const Task = require("../../models/Task");
 
 const authCheck = require("../functions/authCheck");
@@ -17,8 +17,8 @@ const removeTask = async (parent, args, context, info) => {
 			throw new Error("User cannot delete task they didn't create");
 		}
 
-		await EventProject.updateMany(
-			{ id: foundTask.project },
+		await Event.updateMany(
+			{ id: foundTask.event },
 			{
 				$pull: {
 					tasks: args.id,

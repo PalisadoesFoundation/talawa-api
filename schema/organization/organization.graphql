@@ -43,6 +43,11 @@ module.exports = `
     organizationId: ID!, userId: ID!
   }
 
+  input MultipleUsersAndOrganizationInput {
+    organizationId: ID!,
+    userIds: [ID!]!
+  }
+
 
   type MembershipRequest {
     _id: ID!

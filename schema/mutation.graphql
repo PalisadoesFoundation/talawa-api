@@ -10,9 +10,9 @@ module.exports = `
     removeEvent(id: ID!): Event!
     registerForEvent(id: ID!): Event!
     updateEvent(id:ID!, data: UpdateEventInput) : Event!
-    createEventProject(data: EventProjectInput): EventProject!
-    removeEventProject(id: ID!): EventProject!
-    updateEventProject(id:ID!, data: UpdateEventProjectInput) : EventProject!
+    # createEventProject(data: EventProjectInput): EventProject!
+    # removeEventProject(id: ID!): EventProject!
+    # updateEventProject(id:ID!, data: UpdateEventProjectInput) : EventProject!
 
     createOrganization(data: OrganizationInput, file:Upload): Organization!
     updateOrganization(id:ID!, data: UpdateOrganizationInput) : Organization!
@@ -23,7 +23,9 @@ module.exports = `
     removeAdmin (data: UserAndOrganizationInput!) : User!
     joinPublicOrganization (organizationId: ID!) : User!
     leaveOrganization (organizationId: ID!) : User!
-    removeMember (data: UserAndOrganizationInput!) : User!
+
+    removeMember (data: MultipleUsersAndOrganizationInput!) : Organization!
+    # removeMultipleMembers(data: MultipleUsersAndOrganizationInput!) : Organization!
 
     adminRemovePost(organizationId: ID!, postId:ID!):Post!
     adminRemoveEvent(eventId: ID!): Event!
@@ -37,7 +39,7 @@ module.exports = `
     createComment(postId:ID!, data: CommentInput!): Comment
     removeComment(id:ID!): Comment
 
-    createTask(data: TaskInput, projectId: ID!): Task!
+    createTask(data: TaskInput, eventId: ID!): Task!
     updateTask(id:ID!, data: UpdateTaskInput) : Task
     removeTask(id: ID!) : Task
 

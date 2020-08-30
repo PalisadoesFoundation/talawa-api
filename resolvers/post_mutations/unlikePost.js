@@ -13,17 +13,20 @@ const unlikePost = async (parent, args, context, info) => {
 		if (!post) {
 			throw new Error("Post not found");
 		}
-		let newPost = await Post.findOneAndUpdate(
-			{ _id: args.id },
-			{
-				$pull: {
-					likedBy: context.userId,
+		if (post.likedBy.includes(context.userId)) {
+			let newPost = await Post.findOneAndUpdate(
+				{ _id: args.id },
+				{
+					$pull: {
+						likedBy: context.userId,
+					},
 				},
-			},
-			{ new: true }
-		);
+				{ new: true }
+			);
 
-		return newPost;
+			return newPost;
+		}
+		return post;
 	} catch (e) {
 		throw e;
 	}

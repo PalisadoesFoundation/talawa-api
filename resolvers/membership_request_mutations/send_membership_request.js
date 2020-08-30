@@ -15,28 +15,43 @@ module.exports = async (parent, args, context, info) => {
     if (!org) throw new Error("Organization not found");
 
     //create membership request
+    let exists = await MembershipRequest.find(
+      {
+        user: user.id,
+        organization: org.id
+      }
+    )
+    console.log(exists)
+    if(exists.length>0)throw new Error("This user has already sent a membership request to this organization") 
+
     let newMembershipRequest = new MembershipRequest({
-        user,
-        organization: org,
+      user,
+      organization: org,
     })
     newMembershipRequest = await newMembershipRequest.save();
 
     //add membership request to organization
-    org.overwrite({
-        ...org._doc,
-        membershipRequests: [...org._doc.membershipRequests, newMembershipRequest]
-    })
-    await org.save();
+    await Organization.findOneAndUpdate(
+      {_id: org._doc._id},
+      {
+        $set: {
+          membershipRequests: [...org._doc.membershipRequests, newMembershipRequest]
+        }
+      }
+    )
 
     //add membership request to user
-    user.overwrite({
-        ...user._doc,
-        membershipRequests: [...user._doc.membershipRequests, newMembershipRequest]
-    })
-    await user.save();
+    await User.findOneAndUpdate(
+      {_id: user._doc._id},
+      {
+        $set: {
+          membershipRequests: [...user._doc.membershipRequests, newMembershipRequest]
+        }
+      }
+    )
 
-    return newMembershipRequest._doc; 
-    
+    return newMembershipRequest._doc;
+
   } catch (e) {
     throw e;
   }

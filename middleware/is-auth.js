@@ -35,7 +35,7 @@ const isAuth = (req) => {
       if (err) {
           return err;
       } else{
-        console.log("decoded")
+        //console.log("decoded")
           return decoded;
       }
     }); // If there is an error decoded token would contain it

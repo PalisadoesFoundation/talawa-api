@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const moment = require("moment");
 
 const Schema = mongoose.Schema;
 
@@ -24,15 +25,33 @@ const eventSchema = new Schema({
 		default: false,
 	},
 	allDay: { type: Boolean, required: true },
-	date: { type: String, required: true },
+	startDate: { type: Date, required: true },
+	endDate: {
+		type: Date,
+		required: function () {
+			return !this.allDay;
+		},
+	},
 	startTime: {
 		type: String,
+		validate: {
+			validator: function (v) {
+				return moment(v, "LT", true).isValid();
+			},
+			message: (props) => "Start time is not valid",
+		},
 		required: function () {
 			return !this.allDay;
 		},
 	},
 	endTime: {
 		type: String,
+		validate: {
+			validator: function (v) {
+				return moment(v, "LT", true).isValid();
+			},
+			message: (props) => "End time is not valid",
+		},
 		required: function () {
 			return !this.allDay;
 		},
@@ -79,6 +98,12 @@ const eventSchema = new Schema({
 		ref: "Organization",
 		required: true,
 	},
+	tasks: [
+		{
+			type: Schema.Types.ObjectId,
+			ref: "Task",
+		},
+	],
 });
 
 module.exports = mongoose.model("Event", eventSchema);
