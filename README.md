@@ -64,3 +64,7 @@ To run this api five environment variables need to be set in a .env file in the 
 3. MONGO_DB  
 4. ACCESS_TOKEN_SECRET  
 5. REFRESH_TOKEN_SECRET  
+
+# Image Upload
+
+To enable image upload functionalities create an images folder in the root of the project
