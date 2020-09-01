@@ -65,13 +65,6 @@ To run this api five environment variables need to be set in a .env file in the 
 4. ACCESS_TOKEN_SECRET  
 5. REFRESH_TOKEN_SECRET  
 
-<<<<<<< HEAD
-
-# Uploading Images
-
-In order to han
-=======
 # Image Upload
 
 To enable image upload functionalities create an images folder in the root of the project
->>>>>>> 53f1249cf497b9c9c7f7f3aa14aa516af403447d
