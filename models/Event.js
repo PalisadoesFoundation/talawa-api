@@ -25,40 +25,40 @@ const eventSchema = new Schema({
 		default: false,
 	},
 	allDay: { type: Boolean, required: true },
-	startDate: { type: Date, required: true },
+	startDate: { type: String, required: true },
 	endDate: {
-		type: Date,
+		type: String,
 		required: function () {
 			return !this.allDay;
 		},
 	},
 	startTime: {
 		type: String,
-		validate: {
-			validator: function (v) {
-				return moment(v, "LT", true).isValid();
-			},
-			message: (props) => "Start time is not valid",
-		},
+		// validate: {
+		// 	validator: function (v) {
+		// 		return moment(v, "LT", true).isValid();
+		// 	},
+		// 	message: (props) => "Start time is not valid",
+		// },
 		required: function () {
 			return !this.allDay;
 		},
 	},
 	endTime: {
 		type: String,
-		validate: {
-			validator: function (v) {
-				return moment(v, "LT", true).isValid();
-			},
-			message: (props) => "End time is not valid",
-		},
+		// validate: {
+		// 	validator: function (v) {
+		// 		return moment(v, "LT", true).isValid();
+		// 	},
+		// 	message: (props) => "End time is not valid",
+		// },
 		required: function () {
 			return !this.allDay;
 		},
 	},
 	recurrance: {
 		type: String,
-		enum: ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"],
+		enum: ["DAILY", "WEEKLY", "MONTHLY", "YEARLY", "ONCE"],
 		required: function () {
 			return this.recurring;
 		},
