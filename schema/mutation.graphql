@@ -31,7 +31,7 @@ module.exports = `
     adminRemoveEvent(eventId: ID!): Event!
     adminRemoveGroup(groupId:ID!):Message!
 
-    createPost(data: PostInput!): Post
+    createPost(data: PostInput!, file: Upload): Post
     removePost(id:ID!): Post
     likePost(id:ID!): Post
     unlikePost(id:ID!): Post

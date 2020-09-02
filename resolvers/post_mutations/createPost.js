@@ -14,9 +14,10 @@ module.exports = async (parent, args, context, info) => {
 		if (!userFound) {
 			throw new Error("User does not exist");
 		}
-
-		let uploadImageObj = await uploadImage(args.file, "");
-
+		let uploadImageObj;
+		if (args.file) {
+			uploadImageObj = await uploadImage(args.file, "");
+		}
 		//creates new Post
 		let newPost = new Post({
 			...args.data,
