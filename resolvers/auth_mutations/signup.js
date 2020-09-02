@@ -34,7 +34,10 @@ module.exports = async (parent, args, context, info) => {
     const refreshToken = await createRefreshToken(user);
 
     return {
-      user: user._doc,
+      user: {
+        ...user._doc,
+        password:null
+      },
       accessToken,
       refreshToken
     };
