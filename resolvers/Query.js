@@ -104,7 +104,13 @@ const Query = {
 			if (!eventFound) {
 				throw new Error("Event not found");
 			}
-			return eventFound.registrants || [];
+			//return eventFound.registrants || [];
+			return eventFound.registrants ? eventFound.registrants.map((registrant) => {
+				return {
+					...registrant._doc,
+					password: null,
+				};
+			}) : [];
 		} catch (e) {
 			throw e;
 		}
