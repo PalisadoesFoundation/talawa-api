@@ -36,7 +36,10 @@ module.exports = async (parent, args, context, info) => {
     });
     await user.save();
 
-    return user._doc;
+    return {
+      ...user._doc,
+      password: null,
+    };
   } catch (e) {
     throw e;
   }

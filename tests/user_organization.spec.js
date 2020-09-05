@@ -255,7 +255,6 @@ describe("User-Organization Resolvers", () => {
           firstName
           lastName
           email
-          password
         }
       }`,
       },
