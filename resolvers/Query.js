@@ -8,8 +8,17 @@ const Comment = require("../models/Comment");
 const Task = require("../models/Task");
 
 const authCheck = require("./functions/authCheck");
+const DirectChat = require("../models/DirectChat");
+const DirectChatMessages = require("../models/DirectChatMessage");
+
 
 const Query = {
+	directChats: async (parent, args, context, info) => {
+		return await DirectChat.find();
+	},
+	directChatMessages: async (parent, args, context, info) => {
+		return await DirectChatMessages.find();
+	},
 	users: async (parent, args, context, info) => {
 		try {
 			if (args.id) {

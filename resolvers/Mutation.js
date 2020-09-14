@@ -58,6 +58,10 @@ const addOrganizationImage = require("./organization_image_mutations/add_organiz
 const removeOrganizationImage = require("./organization_image_mutations/remove_organization_image");
 
 
+const createDirectChat = require("./directChatMutations/createDirectChat");
+const removeDirectChat = require("./directChatMutations/removeDirectChat");
+const sendMessageToDirectChat = require("./directChatMutations/sendMessageToDirectChat");
+
 const Mutation = {
   signUp,
   login,
@@ -108,7 +112,11 @@ const Mutation = {
   addUserImage,
   removeUserImage,
   addOrganizationImage,
-  removeOrganizationImage
+  removeOrganizationImage,
+
+  createDirectChat,
+  removeDirectChat,
+  sendMessageToDirectChat,
 };
 
 module.exports = Mutation;

@@ -19,6 +19,8 @@ module.exports = `
     commentsByPost(id: ID!): [Comment]
     post(id: ID): Post
     groups: [Group]
+    directChats: [DirectChat]
+    directChatMessages: [DirectChatMessage]
   }
 
 `

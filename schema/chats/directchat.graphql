@@ -1,0 +1,25 @@
+module.exports = `
+
+    type DirectChat {
+        _id: ID!
+        users: [User!]!
+        messages: [DirectChatMessage]
+        creator: User!
+        organization: Organization!
+    }
+
+    type DirectChatMessage {
+        _id: ID!
+        directChatMessageBelongsTo: DirectChat!
+        sender: User!
+        receiver: User!
+        createdAt: String!
+        messageContent: String!
+    }
+
+    input createDirectChatInput {
+        userIds: [ID!]!
+        organizationId: ID!
+    }
+
+`

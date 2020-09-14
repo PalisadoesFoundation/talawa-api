@@ -14,13 +14,18 @@ const cors = require("cors");
 const MembershipRequest = require("./resolvers/MembershipRequest");
 const app = express();
 const path = require("path")
+const DirectChat = require("./resolvers/DirectChat");
+const DirectChatMessage = require("./resolvers/DirectChatMessage");
+
 
 const resolvers = {
   Query,
   Mutation,
   User,
   Organization,
-  MembershipRequest
+  MembershipRequest,
+  DirectChat,
+  DirectChatMessage
 };
 
 const server = new ApolloServer({
