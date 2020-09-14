@@ -16,6 +16,7 @@ module.exports = `
     membershipRequests: [MembershipRequest]
     blockedUsers: [User]
     visibleInSearch: Boolean!
+    apiUrl:String!
   }
 
 
@@ -27,6 +28,7 @@ module.exports = `
     attendees: String
     isPublic: Boolean! 
     visibleInSearch: Boolean!
+    apiUrl:String!
   }
 
   

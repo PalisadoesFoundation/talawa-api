@@ -75,6 +75,10 @@ const userSchema = new Schema({
       ref: "Organization",
     },
   ],
+  organizationUserBelongsTo: {
+    type: Schema.Types.ObjectId,
+    ref:"Organization"
+  },
 });
 
 module.exports = mongoose.model("User", userSchema);

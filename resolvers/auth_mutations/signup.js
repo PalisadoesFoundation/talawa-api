@@ -1,3 +1,4 @@
+const Organization = require("../../models/Organization");
 
 const User = require("../../models/User");
 const bcrypt = require("bcryptjs");
@@ -14,6 +15,9 @@ module.exports = async (parent, args, context, info) => {
       throw new Error("Email address taken.");
     }
 
+    let org = await Organization.findOne({ _id: args.data.organizationUserBelongsToId });
+    if (!org) throw new Error("Organization not found");
+
     const hashedPassword = await bcrypt.hash(args.data.password, 12);
 
     // Upload file
@@ -24,6 +28,7 @@ module.exports = async (parent, args, context, info) => {
 
     let user = new User({
       ...args.data,
+      organizationUserBelongsTo: org,
       email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
       image: uploadImageObj ? uploadImageObj.imageAlreadyInDbPath ? uploadImageObj.imageAlreadyInDbPath : uploadImageObj.newImagePath : null,
       password: hashedPassword
