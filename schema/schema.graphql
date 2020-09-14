@@ -41,6 +41,10 @@ const typeDefs = gql`
   ${event}
   ${newsfeed}
   ${chats}
+
+  type Subscription {
+    messageSentToDirectChat: DirectChatMessage
+  }
 `
 
 
