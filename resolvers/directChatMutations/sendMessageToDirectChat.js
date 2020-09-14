@@ -5,37 +5,44 @@ const DirectChatMessage = require("../../models/DirectChatMessage");
 const userExists = require("../../helper_functions/userExists");
 
 module.exports = async (parent, args, context, info) => {
-    authCheck(context);
+  authCheck(context);
 
+  const chat = await DirectChat.findById(args.chatId);
+  if (!chat) throw new Error("Chat not found");
 
-    const chat = await DirectChat.findById(args.chatId);
-    if (!chat) throw new Error("Chat not found");
+  const sender = await userExists(context.userId);
 
-    const sender = await userExists(context.userId);
+  const receiver = chat.users.filter((u) => u != sender.id);
 
-    const receiver = chat.users.filter(u => u != sender.id);
+  const message = new DirectChatMessage({
+    directChatMessageBelongsTo: chat._doc,
+    sender: sender._id,
+    receiver: receiver,
+    createdAt: new Date(),
+    messageContent: args.messageContent,
+  });
+  //console.log(message._doc);
 
+  await message.save();
 
-    const message = new DirectChatMessage({
-        directChatMessageBelongsTo: chat._doc,
-        sender: sender._id,
-        receiver: receiver,
-        createdAt: new Date(),
-        messageContent: args.messageContent
-    });
-    //console.log(message._doc);
+  // add message to chat
+  await DirectChat.updateOne(
+    {
+      _id: args.chatId,
+    },
+    {
+      $set: {
+        messages: [...chat._doc.messages, message],
+      },
+    }
+  );
 
-    await message.save();
+  //calls subscription
+  context.pubsub.publish("MESSAGE_SENT_TO_DIRECT_CHAT", {
+    messageSentToDirectChat: {
+      ...message._doc,
+    },
+  });
 
-    // add message to chat
-    await DirectChat.updateOne({
-        _id: args.chatId
-    }, {
-        $set: {
-            messages: [...chat._doc.messages, message]
-        }
-    });
-
-    return message._doc;
-
-}
+  return message._doc;
+};
