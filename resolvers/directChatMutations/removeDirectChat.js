@@ -17,13 +17,14 @@ module.exports = async (parent, args, context, info) => {
   adminCheck(context, org);
 
   // delete all messages in the chat
+  console.log(chat.messages);
   await DirectChatMessage.deleteMany({
     _id: {
       $in: [...chat.messages],
     },
   });
 
-  // delete chat
+  delete chat
   await DirectChat.deleteOne({_id: args.chatId})
 
   return chat;
