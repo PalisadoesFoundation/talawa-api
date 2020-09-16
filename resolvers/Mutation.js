@@ -40,8 +40,6 @@ const likePost = require("./post_mutations/likePost")
 const unlikePost = require("./post_mutations/unlikePost")
 
 
-const createGroupChat = require("./group_chat_mutations/create_group_chat")
-
 const sendMembershipRequest = require("./membership_request_mutations/send_membership_request");
 const acceptMembershipRequest = require("./membership_request_mutations/accept_membership_request");
 const rejectMembershipRequest = require("./membership_request_mutations/reject_membership_request");
@@ -58,9 +56,17 @@ const addOrganizationImage = require("./organization_image_mutations/add_organiz
 const removeOrganizationImage = require("./organization_image_mutations/remove_organization_image");
 
 
-const createDirectChat = require("./directChatMutations/createDirectChat");
-const removeDirectChat = require("./directChatMutations/removeDirectChat");
-const sendMessageToDirectChat = require("./directChatMutations/sendMessageToDirectChat");
+const createDirectChat = require("./direct_chat_mutations/createDirectChat");
+const removeDirectChat = require("./direct_chat_mutations/removeDirectChat");
+const sendMessageToDirectChat = require("./direct_chat_mutations/sendMessageToDirectChat");
+
+const createGroupChat = require("./group_chat_mutations/createGroupChat");
+const removeGroupChat = require("./group_chat_mutations/removeGroupChat");
+const sendMessageToGroupChat = require("./group_chat_mutations/sendMessageToGroupChat");
+const addUserToGroupChat = require("./group_chat_mutations/addUserToGroupChat");
+const removeUserFromGroupChat = require("./group_chat_mutations/removeUserFromGroupChat");
+
+
 
 const Mutation = {
   signUp,
@@ -104,7 +110,7 @@ const Mutation = {
   blockUser,
   unblockUser,
 
-  createGroupChat,
+
   createComment,
   removeComment,
   
@@ -117,6 +123,13 @@ const Mutation = {
   createDirectChat,
   removeDirectChat,
   sendMessageToDirectChat,
+
+  createGroupChat,
+  removeGroupChat,
+  sendMessageToGroupChat,
+  addUserToGroupChat,
+  removeUserFromGroupChat
+
 };
 
 module.exports = Mutation;

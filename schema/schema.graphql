@@ -6,7 +6,7 @@ const auth = require("./user/auth.graphql");
 const organization = require("./organization/organization.graphql");
 const event = require("./event/event.graphql");
 const newsfeed = require("./newsfeed/newsfeed.graphql");
-const chats = require("./chats/directchat.graphql");
+const chats = require("./chats/chat.graphql");
 
 const typeDefs = gql`
   type Message {

@@ -21,6 +21,9 @@ module.exports = `
     groups: [Group]
     directChats: [DirectChat]
     directChatMessages: [DirectChatMessage]
+
+    groupChats: [GroupChat]
+    groupChatMessages: [GroupChatMessage]
   }
 
 `

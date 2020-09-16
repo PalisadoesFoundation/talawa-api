@@ -11,20 +11,21 @@ module.exports = async (parent, args, context, info) => {
   authCheck(context);
 
   const org = await organizationExists(args.organizationId);
+
+  
   const chat = await DirectChat.findById(args.chatId);
   if (!chat) throw new Error("Chat not found");
 
   adminCheck(context, org);
 
   // delete all messages in the chat
-  console.log(chat.messages);
   await DirectChatMessage.deleteMany({
     _id: {
       $in: [...chat.messages],
     },
   });
 
-  delete chat
+
   await DirectChat.deleteOne({_id: args.chatId})
 
   return chat;

@@ -15,6 +15,10 @@ const app = express();
 const path = require("path");
 const DirectChat = require("./resolvers/DirectChat");
 const DirectChatMessage = require("./resolvers/DirectChatMessage");
+
+const GroupChat = require("./resolvers/GroupChat");
+const GroupChatMessage = require("./resolvers/GroupChatMessage");
+
 const Subscription = require("./resolvers/Subscription");
 const jwt = require("jsonwebtoken");
 
@@ -30,6 +34,8 @@ const resolvers = {
   MembershipRequest,
   DirectChat,
   DirectChatMessage,
+  GroupChat,
+  GroupChatMessage
 };
 
 
