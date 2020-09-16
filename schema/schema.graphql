@@ -44,6 +44,7 @@ const typeDefs = gql`
 
   type Subscription {
     messageSentToDirectChat: DirectChatMessage
+    messageSentToGroupChat: GroupChatMessage
   }
 `
 
