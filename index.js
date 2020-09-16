@@ -57,6 +57,7 @@ const server = new ApolloServer({
           connection.authToken,
           process.env.ACCESS_TOKEN_SECRET
         );
+        console.log(decodedToken);
         userId = decodedToken.userId;
         //console.log(userId);
       }
