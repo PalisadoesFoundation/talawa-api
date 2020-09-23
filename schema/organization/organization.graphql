@@ -28,7 +28,7 @@ module.exports = `
     attendees: String
     isPublic: Boolean! 
     visibleInSearch: Boolean!
-    apiUrl:String!
+    apiUrl:String
   }
 
   
