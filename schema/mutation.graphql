@@ -53,12 +53,21 @@ module.exports = `
     blockUser(organizationId: ID!, userId: ID!) : User!
     unblockUser(organizationId: ID!, userId:ID!) : User!
 
-    createGroupChat(data: GroupInput!): Message!
-
     addUserImage(file: Upload!): User!
     removeUserImage: User!
     addOrganizationImage(file: Upload!, organizationId: String!): Organization!
     removeOrganizationImage(organizationId: String!): Organization!
+
+    createDirectChat(data: createChatInput): DirectChat!
+    removeDirectChat(chatId: ID!, organizationId: ID!) : DirectChat!
+    sendMessageToDirectChat(chatId: ID!, messageContent: String!): DirectChatMessage!
+
+    createGroupChat(data: createChatInput): GroupChat!
+    removeGroupChat(chatId: ID!): GroupChat!
+    sendMessageToGroupChat(chatId: ID!, messageContent: String!): GroupChatMessage!
+    addUserToGroupChat(userId: ID!, chatId: ID!): GroupChat!
+    removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat!
+    
   }
   
 `
