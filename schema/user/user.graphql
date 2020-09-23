@@ -17,6 +17,7 @@ module.exports = `
     membershipRequests: [MembershipRequest]
     organizationsBlockedBy: [Organization]
     image: String
+    organizationUserBelongsTo: Organization
   }
 
 
@@ -26,6 +27,7 @@ module.exports = `
     lastName: String!
     email: String!
     password: String!
+    organizationUserBelongsToId: ID
   }
 
 `

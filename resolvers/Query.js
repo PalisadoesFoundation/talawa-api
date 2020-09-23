@@ -8,8 +8,26 @@ const Comment = require("../models/Comment");
 const Task = require("../models/Task");
 
 const authCheck = require("./functions/authCheck");
+const DirectChat = require("../models/DirectChat");
+const DirectChatMessages = require("../models/DirectChatMessage");
+
+const GroupChat = require("../models/GroupChat");
+const GroupChatMessages = require("../models/GroupChatMessage");
+
 
 const Query = {
+	groupChats: async (parent, args, context, info) => {
+		return await GroupChat.find();
+	},
+	groupChatMessages: async (parent, args, context, info) => {
+		return await GroupChatMessages.find();
+	},
+	directChats: async (parent, args, context, info) => {
+		return await DirectChat.find();
+	},
+	directChatMessages: async (parent, args, context, info) => {
+		return await DirectChatMessages.find();
+	},
 	users: async (parent, args, context, info) => {
 		try {
 			if (args.id) {
