@@ -16,9 +16,7 @@ const Subscription = {
             },
             (payload, variables, context) => {
               const currentUserId = context.context.currentUserId;
-              const receiverOfMessageSentToADirectChat = payload.messageSentToDirectChat.receiver;
-              // Return the message if it was sent to the current user
-              return currentUserId == receiverOfMessageSentToADirectChat
+              return currentUserId == payload.messageSentToDirectChat.receiver || currentUserId == payload.messageSentToDirectChat.sender;
             
             }
           ),
@@ -40,12 +38,12 @@ const Subscription = {
 
           //console.log(sender)
           
-          const userIsNotSender = currentUserId != sender
+          //const userIsNotSender = currentUserId != sender
 
           const userIsInGroupChat = groupChat.users.includes(currentUserId);
           //console.log(groupChat.users.includes(currentUserId));
 
-          return userIsNotSender && userIsInGroupChat;
+          return userIsInGroupChat;
         
         }
       ),
