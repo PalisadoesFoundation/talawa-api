@@ -169,6 +169,7 @@ describe("chat resolvers", () => {
         query: `
       mutation{
           createGroupChat(data: {
+            title: "This is a group chat for testing"
             organizationId: "${createdOrgId}"
             userIds: ["${loggedInUserId}", "${newUserId}"]
           }){

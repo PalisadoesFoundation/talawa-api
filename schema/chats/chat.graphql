@@ -38,4 +38,11 @@ module.exports = `
         organizationId: ID!
     }
 
+    input createGroupChatInput {
+        userIds: [ID!]!
+        organizationId: ID!
+        title: String!
+    }
+
+
 `
