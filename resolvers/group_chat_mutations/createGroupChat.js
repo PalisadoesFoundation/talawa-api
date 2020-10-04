@@ -25,7 +25,8 @@ module.exports = async (parent, args, context, info) => {
   let groupChat = new GroupChat({
     creator: userFound,
     users: usersInChat,
-    organization: org
+    organization: org,
+    title: args.data.title
   });
 
   groupChat = await groupChat.save();
