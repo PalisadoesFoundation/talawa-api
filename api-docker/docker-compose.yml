@@ -1,0 +1,18 @@
+# docker-compose.yml
+
+version: "1.0.0"
+  addressbook:
+    build:
+      context: .
+    environment:
+      DB_SCHEMA: {put the required SCHEMA path}
+      DB_USER: {put the required SCHEMA path}
+      DB_PASSWORD: {put the required SCHEMA path}
+      DB_HOST: {put the required SCHEMA path}
+      depends_on:
+      - mongodb
+    ports:
+      - '27017:27017'
+        
+volumes:
+  addressbook-db:
