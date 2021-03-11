@@ -65,6 +65,8 @@ To run this api five environment variables need to be set in a .env file in the 
 4. ACCESS_TOKEN_SECRET  
 5. REFRESH_TOKEN_SECRET  
 
+If you are running mongodb locally only the MONGO_DB env var is necessary. MONGO_USER and MONGO_PASSWORD are only necessary if you are connecting to a hosted instance of mongodb using atlas and you replace the connection string currently being used in the db.js file.
+
 # Image Upload
 
 To enable image upload functionalities create an images folder in the root of the project
