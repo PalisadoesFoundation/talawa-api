@@ -68,3 +68,7 @@ To run this api five environment variables need to be set in a .env file in the 
 # Image Upload
 
 To enable image upload functionalities create an images folder in the root of the project
+
+# Configuration with Frontend
+
+View how to [configure backend with the flutter app](https://github.com/PalisadoesFoundation/talawa-api/blob/master/configuration.md)
