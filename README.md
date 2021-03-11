@@ -24,10 +24,6 @@ This has been a Calico Challenge project in 2019. It will be written in python w
  
 # Installation
 
-
-## Configuration
-View the ``configuration.md`` file for steps on how to setup this project. This includes instructions for both the API and the mobile application.
-
 ## Prerequesites
 Talawa API development prerequisites
 - [Node v12.14.1 (or later)][node]
