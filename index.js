@@ -78,6 +78,7 @@ const server = new ApolloServer({
 
 
 //makes folder available public
+//To Upload the image create images folder in the root of the project
 app.use("/images", express.static(path.join(__dirname, "./images")));
 
 app.use(cors());
