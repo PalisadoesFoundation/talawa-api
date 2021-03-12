@@ -34,7 +34,7 @@ const apiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 15 minutes
   max: 500,// this can be edited in between
   message:
-  "Too many accounts created from this IP, please try again after an hour"
+  "Too many requests from this IP, please try again after 15 minutes"
 });
 
 const resolvers = {
