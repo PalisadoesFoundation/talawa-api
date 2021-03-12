@@ -29,7 +29,7 @@
     "cross-env": "^7.0.2",
     "dotenv": "^8.2.0",
     "express-mongo-sanitize": "^2.0.2",
-    "express-rate-limiter": "^1.3.1",
+    "express-rate-limit": "^5.2.6",
     "graphql": "^15.0.0",
     "helmet": "^4.4.1",
     "image-hash": "^4.0.1",
