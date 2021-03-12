@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const config = require('config');
 
 let mongoURI = "";
 
@@ -17,7 +16,7 @@ else {
 const connect = async () => {
   try{
       await mongoose.connect(
-          config.get('mongoURI'),
+          mongoURI,
           {
               useCreateIndex: true,
               useUnifiedTopology: true,
@@ -30,5 +29,5 @@ const connect = async () => {
       console.log(error);
       process.exit(1);
  }
-
+}
 module.exports = connect
