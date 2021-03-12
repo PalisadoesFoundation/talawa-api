@@ -20,12 +20,9 @@
   },
   "homepage": "https://github.com/Laurell876/tenten-api-rework#readme",
   "dependencies": {
-    "apollo-server": "^2.14.2",
     "apollo-server-express": "^2.14.2",
     "axios": "^0.21.1",
-    "babel-jest": "^26.0.1",
     "bcryptjs": "^2.4.3",
-    "config": "^3.3.6",
     "cors": "^2.8.5",
     "cross-env": "^7.0.2",
     "dotenv": "^8.2.0",
