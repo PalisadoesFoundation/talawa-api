@@ -12,7 +12,7 @@ module.exports = {
   rules: {
     'prettier/prettier': 'error',
     indent: ['error', 2],
-    'linebreak-style': 0,
+    'linebreak-style': [2, 'windows'],
     quotes: ['error', 'single', 'avoid-escape'],
     semi: ['error', 'always'],
     eqeqeq: 'error',
@@ -25,5 +25,5 @@ module.exports = {
     'jest/prefer-to-have-length': 'warn',
     'jest/valid-expect': 'error',
   },
-  plugins: ['prettier', 'jest'],
+  plugins: ['jest'],
 };

@@ -7,7 +7,7 @@
     "test": "jest",
     "start": "nodemon index.js --ext js,graphql,json",
     "test-server": "cross-env NODE_ENV=test TEST_DB=talawa-test-db nodemon index.js --ext js,graphql",
-    "lint": "eslint . --fix && echo 'Lint complete.'"
+    "lint": "eslint --fix --ext .js && echo 'Lint complete.'"
   },
   "repository": {
     "type": "git",
