@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest",
     "start": "nodemon index.js --ext js,graphql,json",
-    "test-server": "cross-env NODE_ENV=test TEST_DB=talawa-test-db nodemon index.js --ext js,graphql"
+    "test-server": "cross-env NODE_ENV=test TEST_DB=talawa-test-db nodemon index.js --ext js,graphql",
+    "lint": "eslint . --fix && echo 'Lint complete.'"
   },
   "repository": {
     "type": "git",
@@ -43,6 +44,13 @@
     "xss-clean": "^0.1.1"
   },
   "devDependencies": {
-    "easygraphql-tester": "^5.1.6"
+    "easygraphql-tester": "^5.1.6",
+    "eslint": "^7.21.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jest": "^24.2.1",
+    "eslint-plugin-prettier": "^3.3.1",
+    "prettier": "^2.2.1"
   }
 }
