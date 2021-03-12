@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
+//this is the Structure of the Direct chats 
 const directChatMessageSchema = new Schema({
   directChatMessageBelongsTo: {
     type: Schema.Types.ObjectId,

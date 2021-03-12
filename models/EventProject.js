@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
+//this is the Structure of the event project
 const eventProjectSchema = new Schema({
   title: {
     type: String,

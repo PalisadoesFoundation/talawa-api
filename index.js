@@ -107,16 +107,16 @@ app.use(mongoSanitize()); // safety against NoSql Injections
 // makes folder available public
 app.use('/images', express.static(path.join(__dirname, './images')));
 
-app.use(cors());
+app.use(cors());//to apply cors
 
 // app.use(express.static("doc"));'
 
-server.applyMiddleware({ app });
+server.applyMiddleware({ app });//this is about applying middleware for the api
 
 const httpServer = http.createServer(app);
 server.installSubscriptionHandlers(httpServer);
 
-connect
+connect()
   .then(() => {
     // app.listen({ port: process.env.PORT || 4000 }, () =>
     //   console.log(

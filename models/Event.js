@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
+
+//this is the Structure of the event 
 const eventSchema = new Schema({
   title: {
     type: String,

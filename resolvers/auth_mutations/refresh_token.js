@@ -1,14 +1,12 @@
+
 const jwt = require('jsonwebtoken');
 const User = require('../../models/User');
-const {
-  createAccessToken,
-  createRefreshToken,
-} = require('../../helper_functions/auth');
+const { createAccessToken, createRefreshToken } = require('../../helper_functions/auth');
+
 
 module.exports = async (parent, args) => {
   // This route should not be protected because the access token will be expired
-
-  const { refreshToken } = args;
+  const refreshToken = args.refreshToken;
   if (!refreshToken) {
     throw new Error('Invalid refresh Token');
   }
@@ -27,12 +25,13 @@ module.exports = async (parent, args) => {
     throw new Error('Invalid refresh Token');
   }
 
+
   // send new access and refresh token to user
   const newAccessToken = await createAccessToken(user);
   const newRefreshToken = await createRefreshToken(user);
 
   return {
     accessToken: newAccessToken,
-    refreshToken: newRefreshToken,
+    refreshToken: newRefreshToken
   };
 };
