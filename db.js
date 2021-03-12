@@ -1,15 +1,17 @@
 const mongoose = require("mongoose");
 
-//const mongoURL = `${process.env.MONGO_PREFIX}://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_URL}/${process.env.TEST_DB || process.env.MONGO_DB}?retryWrites=true&w=majority`;
+let mongoURI = "";
 
-// const mongoURL = `${process.env.MONGO_PREFIX}://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_URL}/${process.env.TEST_DB || process.env.MONGO_DB}?retryWrites=true&w=majority`;
+// choose appropriate db based on the NODE_ENV
+const mongo_db = process.env.NODE_ENV === "test" ? process.env.TEST_DB : process.env.MONGO_DB;
 
-// Use this connection string if you are using a hosted instance of mongodb using atlas
-// const mongoURL = `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@127.0.0.1:27017/${process.env.MONGO_DB}`
+if(process.env.MONGO_LOCAL_INSTANCE === "true"){
+   mongoURI = `mongodb://127.0.0.1:27017/${mongo_db}`
+}
+else {
+  mongoURI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_URL}/${mongo_db}?retryWrites=true&w=majority`
+}
 
-// Use this connection string if you are running mongodb locally
-
-const mongoURL = `mongodb://127.0.0.1:27017/${process.env.MONGO_DB}`
 
 const connect = async () => {
   try{
@@ -26,7 +28,6 @@ const connect = async () => {
   } catch(error){
       console.log(error);
       process.exit(1);
-  }
-}
+ }
 
-module.exports = connect;
+module.exports = connect
