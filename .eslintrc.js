@@ -10,7 +10,6 @@ module.exports = {
     ecmaVersion: 12,
   },
   rules: {
-    'prettier/prettier': 'error',
     indent: ['error', 2],
     'linebreak-style': [2, 'windows'],
     quotes: ['error', 'single', 'avoid-escape'],
