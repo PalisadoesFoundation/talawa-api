@@ -129,13 +129,11 @@ connect
     // ⚠️ Pay attention to the fact that we are calling `listen` on the http server variable, and not on `app`.
     httpServer.listen(process.env.PORT || 4000, () => {
       console.log(
-        `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
-          server.graphqlPath
+        `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${server.graphqlPath
         }`
       );
       console.log(
-        `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${
-          server.subscriptionsPath
+        `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${server.subscriptionsPath
         }`
       );
     });
