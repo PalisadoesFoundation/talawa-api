@@ -1,14 +1,15 @@
-const mongoose = require("mongoose");
-const { isEmail } = require("validator");
-const Schema = mongoose.Schema;
+const mongoose = require('mongoose');
+const { isEmail } = require('validator');
+
+const { Schema } = mongoose;
 
 const userSchema = new Schema({
   image: {
-    type: String
+    type: String,
   },
   tokenVersion: {
     type: Number,
-    default:0
+    default: 0,
   },
   firstName: {
     type: String,
@@ -20,7 +21,7 @@ const userSchema = new Schema({
   },
   email: {
     type: String,
-    validate: [isEmail, "invalid email"],
+    validate: [isEmail, 'invalid email'],
     required: true,
   },
   password: {
@@ -30,55 +31,55 @@ const userSchema = new Schema({
   createdOrganizations: [
     {
       type: Schema.Types.ObjectId,
-      ref: "Organization",
+      ref: 'Organization',
     },
   ],
   createdEvents: [
     {
       type: Schema.Types.ObjectId,
-      ref: "Event",
+      ref: 'Event',
     },
   ],
   joinedOrganizations: [
     {
       type: Schema.Types.ObjectId,
-      ref: "Organization",
+      ref: 'Organization',
     },
   ],
   registeredEvents: [
     {
       type: Schema.Types.ObjectId,
-      ref: "Event",
+      ref: 'Event',
     },
   ],
   eventAdmin: [
     {
       type: Schema.Types.ObjectId,
-      ref: "Event",
+      ref: 'Event',
     },
   ],
   adminFor: [
     {
       type: Schema.Types.ObjectId,
-      ref: "Organization",
+      ref: 'Organization',
     },
   ],
   membershipRequests: [
     {
       type: Schema.Types.ObjectId,
-      ref: "MembershipRequest",
+      ref: 'MembershipRequest',
     },
   ],
   organizationsBlockedBy: [
     {
       type: Schema.Types.ObjectId,
-      ref: "Organization",
+      ref: 'Organization',
     },
   ],
   organizationUserBelongsTo: {
     type: Schema.Types.ObjectId,
-    ref:"Organization"
+    ref: 'Organization',
   },
 });
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model('User', userSchema);

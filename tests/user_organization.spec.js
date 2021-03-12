@@ -1,19 +1,19 @@
-const axios = require("axios");
-const { URL } = require("../constants");
-const getToken = require("./functions/getToken");
-const shortid = require("shortid");
+const axios = require('axios');
+const shortid = require('shortid');
+const { URL } = require('../constants');
+const getToken = require('./functions/getToken');
 
 let token;
 beforeAll(async () => {
   token = await getToken();
 });
 
-let createdOrgId = "test";
+let createdOrgId = 'test';
 
-describe("User-Organization Resolvers", () => {
-  //ORGANIZATION IS CREATED
+describe('User-Organization Resolvers', () => {
+  // ORGANIZATION IS CREATED
 
-  test("createOrganization", async () => {
+  test('createOrganization', async () => {
     const response = await axios.post(
       URL,
       {
@@ -37,26 +37,24 @@ describe("User-Organization Resolvers", () => {
       }
     );
     const { data } = response;
-    if(!data.data) console.log("Data not present")
-    console.log(data)
+    if (!data.data) console.log('Data not present');
+    console.log(data);
     createdOrgId = data.data.createOrganization._id;
     console.log(createdOrgId);
     expect(data.data.createOrganization).toEqual(
       expect.objectContaining({
-        _id: expect.any(String)
+        _id: expect.any(String),
       })
     );
   });
 
-
-
-  //NEW USER IS CREATED
+  // NEW USER IS CREATED
 
   let newUserToken;
   let newUserId;
-  test("signUp", async () => {
-    var id = shortid.generate();
-    var email = `${id}@test.com`;
+  test('signUp', async () => {
+    const id = shortid.generate();
+    const email = `${id}@test.com`;
     const response = await axios.post(URL, {
       query: `
             mutation {
@@ -84,8 +82,8 @@ describe("User-Organization Resolvers", () => {
     );
   });
 
-  //NEW USER JOINS ORGANIZATION
-  test("Join Public Organization", async () => {
+  // NEW USER JOINS ORGANIZATION
+  test('Join Public Organization', async () => {
     const response = await axios.post(
       URL,
       {
@@ -116,7 +114,7 @@ describe("User-Organization Resolvers", () => {
     );
   });
 
-  //NEW USER CREATES AN EVENT
+  // NEW USER CREATES AN EVENT
   // let createdEventId;
   // test("User Creates Event", async () => {
   //   try {
@@ -163,11 +161,10 @@ describe("User-Organization Resolvers", () => {
   //   }
   // });
 
-  //NEW USER CREATES A GROUP
+  // NEW USER CREATES A GROUP
 
-
-  //USER IS MADE ADMIN
-  test("User is made admin", async () => {
+  // USER IS MADE ADMIN
+  test('User is made admin', async () => {
     const response = await axios.post(
       URL,
       {
@@ -201,14 +198,9 @@ describe("User-Organization Resolvers", () => {
     );
   });
 
+  // ADMIN REMOVES GROUP
 
-    //ADMIN REMOVES GROUP
-
-  
-
-
-
-  //ADMIN REMOVES EVENT
+  // ADMIN REMOVES EVENT
 
   // test("Admin Removes Event", async () => {
   //   const response = await axios.post(
@@ -237,12 +229,9 @@ describe("User-Organization Resolvers", () => {
   //   );
   // });
 
+  // ADMIN IS REMOVED
 
-
-
-  //ADMIN IS REMOVED
-
-  test("Admin is removed", async () => {
+  test('Admin is removed', async () => {
     const response = await axios.post(
       URL,
       {
@@ -276,9 +265,9 @@ describe("User-Organization Resolvers", () => {
     );
   });
 
-  //USER LEAVES ORGANIZATION
+  // USER LEAVES ORGANIZATION
 
-  test("Leave Organization", async () => {
+  test('Leave Organization', async () => {
     const response = await axios.post(
       URL,
       {
@@ -310,13 +299,13 @@ describe("User-Organization Resolvers", () => {
     );
   });
 
-  //ADMIN REMOVES USER FROM ORGANIZATION
+  // ADMIN REMOVES USER FROM ORGANIZATION
 
-  //A NEW USER HAS TO BE CREATED THEN ADDED TO THE ORGANIZATION THEN REMOVED
-  test("Remove Member from organization", async () => {
-    //new user is created
-    var id = shortid.generate();
-    var email = `${id}@test.com`;
+  // A NEW USER HAS TO BE CREATED THEN ADDED TO THE ORGANIZATION THEN REMOVED
+  test('Remove Member from organization', async () => {
+    // new user is created
+    const id = shortid.generate();
+    const email = `${id}@test.com`;
 
     const signUpResponse = await axios.post(URL, {
       query: `
@@ -339,8 +328,8 @@ describe("User-Organization Resolvers", () => {
     const userToken = data.data.signUp.accessToken;
     const createdUserId = data.data.signUp.user._id;
 
-    //user joins organizations
-    const joinOrgRes = await axios.post(
+    // user joins organizations
+    await axios.post(
       URL,
       {
         query: `
@@ -359,9 +348,9 @@ describe("User-Organization Resolvers", () => {
         },
       }
     );
-    //console.log(joinOrgRes.data)
+    // console.log(joinOrgRes.data)
 
-    //Admin removes user from organization
+    // Admin removes user from organization
     const removeMemberResponse = await axios.post(
       URL,
       {
@@ -381,17 +370,17 @@ describe("User-Organization Resolvers", () => {
       }
     );
     const removeMemberData = removeMemberResponse.data;
-    //console.log(removeMemberResponse.data.errors[0])
+    // console.log(removeMemberResponse.data.errors[0])
     expect(removeMemberData.data.removeMember).toEqual(
       expect.objectContaining({
-        _id: expect.any(String)
+        _id: expect.any(String),
       })
     );
   });
 
-  //ORGANIZATION IS DELETED
+  // ORGANIZATION IS DELETED
 
-  test("deleteOrganization", async () => {
+  test('deleteOrganization', async () => {
     const deletedResponse = await axios.post(
       URL,
       {
@@ -411,14 +400,9 @@ describe("User-Organization Resolvers", () => {
     );
 
     expect(deletedResponse.data.data.removeOrganization).toEqual(
-			expect.objectContaining({
-				_id: expect.any(String)
-			})
-		);
-
-
+      expect.objectContaining({
+        _id: expect.any(String),
+      })
+    );
   });
-
-
-
 });

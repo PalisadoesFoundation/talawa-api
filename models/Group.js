@@ -1,28 +1,28 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const Schema = mongoose.Schema;
+const { Schema } = mongoose;
 
 const groupSchema = new Schema({
-	title: {
-		type: String,
-		required: true,
-	},
-	description: {
-		type: String,
-	},
-	createdAt: { type: Date, default: Date.now },
-	organization: {
-		type: Schema.Types.ObjectId,
-		ref: "Organization",
-		required: true,
+  title: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+  },
+  createdAt: { type: Date, default: Date.now },
+  organization: {
+    type: Schema.Types.ObjectId,
+    ref: 'Organization',
+    required: true,
+  },
+  admins: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
     },
-    admins: [
-		{
-			type: Schema.Types.ObjectId,
-			ref: "User",
-			required: true,
-		},
-	],
+  ],
 });
 
-module.exports = mongoose.model("Group", groupSchema);
+module.exports = mongoose.model('Group', groupSchema);

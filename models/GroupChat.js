@@ -1,35 +1,35 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const Schema = mongoose.Schema;
+const { Schema } = mongoose;
 
 const groupChatSchema = new Schema({
-	title: {
-		type: String,
-		required: true,
-	},
+  title: {
+    type: String,
+    required: true,
+  },
   users: [
     {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
   ],
   messages: [
     {
       type: Schema.Types.ObjectId,
-      ref: "GroupChatMessage",
+      ref: 'GroupChatMessage',
     },
   ],
   creator: {
     type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true
+    ref: 'User',
+    required: true,
   },
   organization: {
     type: Schema.Types.ObjectId,
-    ref: "Organization",
-    required: true
-  }
+    ref: 'Organization',
+    required: true,
+  },
 });
 
-module.exports = mongoose.model("GroupChat", groupChatSchema);
+module.exports = mongoose.model('GroupChat', groupChatSchema);

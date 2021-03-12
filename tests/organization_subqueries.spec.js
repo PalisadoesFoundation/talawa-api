@@ -1,10 +1,8 @@
-const axios = require("axios");
-const {URL} = require("../constants")
-const getToken = require("./functions/getToken")
+const axios = require('axios');
+const { URL } = require('../constants');
 
-describe("organization resolvers", () => {
-
-  test("organization-subqueries", async () => {
+describe('organization resolvers', () => {
+  test('organization-subqueries', async () => {
     const response = await axios.post(URL, {
       query: `
       {
@@ -30,7 +28,6 @@ describe("organization resolvers", () => {
 
     const { data } = response;
 
-    expect(Array.isArray(data.data.organizations)).toBeTruthy()
-
+    expect(Array.isArray(data.data.organizations)).toBeTruthy();
   });
 });
