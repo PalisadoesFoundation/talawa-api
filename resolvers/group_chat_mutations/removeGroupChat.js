@@ -8,6 +8,7 @@ const GroupChatMessage = require("../../models/GroupChatMessage");
 // admins of the organization can remove chats -- may change in the future
 
 module.exports = async (parent, args, context, info) => {
+  try{
   authCheck(context);
 
   const chat = await GroupChat.findById(args.chatId);
@@ -28,4 +29,7 @@ module.exports = async (parent, args, context, info) => {
   await GroupChat.deleteOne({_id: args.chatId})
 
   return chat;
+  }catch(e){
+    throw e;
+  }
 };

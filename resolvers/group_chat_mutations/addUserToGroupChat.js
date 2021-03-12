@@ -7,8 +7,11 @@ const GroupChatMessage = require("../../models/GroupChatMessage");
 
 
 module.exports = async (parent, args, context, info) => {
-
+    
     authCheck(context);
+    
+    try{
+    
 
     let chat = await GroupChat.findById(args.chatId);
     if (!chat) throw new Error("Chat not found");
@@ -34,6 +37,9 @@ module.exports = async (parent, args, context, info) => {
         {
             new: true
         }
-    )
+    );
+    }catch(e){
+        throw e;
+    }
 
 }

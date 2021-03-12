@@ -11,15 +11,22 @@ const mongoose = require("mongoose");
 
 const mongoURL = `mongodb://127.0.0.1:27017/${process.env.MONGO_DB}`
 
-const connect = mongoose
-.connect(
-  mongoURL,
-  
-  {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false
+const connect = async () => {
+  try{
+      await mongoose.connect(
+          config.get('mongoURI'),
+          {
+              useCreateIndex: true,
+              useUnifiedTopology: true,
+              useFindAndModify: true,
+              useNewUrlParser: true
+          }
+      )
+      console.log("MongoDB is connected");
+  } catch(error){
+      console.log(error);
+      process.exit(1);
   }
-)
+}
 
 module.exports = connect;

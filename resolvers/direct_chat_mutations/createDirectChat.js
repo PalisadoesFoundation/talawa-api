@@ -4,6 +4,7 @@ const authCheck = require("../functions/authCheck");
 const Organization = require("../../models/Organization");
 
 module.exports = async (parent, args, context, info) => {
+  try{
   authCheck(context);
 
   let userFound = await User.findOne({ _id: context.userId });
@@ -31,4 +32,7 @@ module.exports = async (parent, args, context, info) => {
   directChat = await directChat.save();
 
   return directChat._doc;
+  }catch(e){
+    throw e;
+  }
 };

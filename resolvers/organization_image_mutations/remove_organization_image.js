@@ -8,7 +8,7 @@ const deleteImage = require("../../helper_functions/deleteImage")
 
 module.exports = async (parent, args, context, info) => {
     authCheck(context);
-
+    try{
     const user = await User.findById(context.userId);
     if (!user) throw new Error("User not found")
 
@@ -31,5 +31,8 @@ module.exports = async (parent, args, context, info) => {
         new: true
     })
     return newOrganization;
+    }catch(e){
+        throw e;
+    }
 
 }

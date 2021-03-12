@@ -5,6 +5,7 @@ const DirectChatMessage = require("../../models/DirectChatMessage");
 const userExists = require("../../helper_functions/userExists");
 
 module.exports = async (parent, args, context, info) => {
+  try{
   authCheck(context);
 
   const chat = await DirectChat.findById(args.chatId);
@@ -45,4 +46,7 @@ module.exports = async (parent, args, context, info) => {
   });
 
   return message._doc;
+}catch(e){
+  throw e;
+}
 };
