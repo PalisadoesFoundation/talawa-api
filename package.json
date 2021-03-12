@@ -28,7 +28,10 @@
     "cors": "^2.8.5",
     "cross-env": "^7.0.2",
     "dotenv": "^8.2.0",
+    "express-mongo-sanitize": "^2.0.2",
+    "express-rate-limit": "^5.2.6",
     "graphql": "^15.0.0",
+    "helmet": "^4.4.1",
     "image-hash": "^4.0.1",
     "jest": "^26.0.1",
     "jsonwebtoken": "^8.5.1",
@@ -36,7 +39,8 @@
     "mongoose": "^5.11.20",
     "nodemon": "^2.0.4",
     "shortid": "^2.2.15",
-    "validator": "^13.0.0"
+    "validator": "^13.0.0",
+    "xss-clean": "^0.1.1"
   },
   "devDependencies": {
     "easygraphql-tester": "^5.1.6"

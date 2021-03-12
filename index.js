@@ -25,6 +25,18 @@ const jwt = require("jsonwebtoken");
 const pubsub = new PubSub();
 const http = require("http");
 
+const rateLimit = require("express-rate-limit");
+const xss  = require("xss-clean");
+const helmet = require("helmet");
+const mongoSanitize = require("express-mongo-sanitize");
+
+const apiLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 15 minutes
+  max: 500,// this can be edited in between
+  message:
+  "Too many requests from this IP, please try again after 15 minutes"
+});
+
 const resolvers = {
   Subscription,
   Query,
@@ -76,6 +88,13 @@ const server = new ApolloServer({
   },
 });
 
+app.use(apiLimiter);//safety against DOS attack
+
+app.use(xss());//safety against XSS attack or Cross Site Scripting attacks
+
+app.use(helmet());//safety against XSS attack
+
+app.use(mongoSanitize());//safety against NoSql Injections
 
 //makes folder available public
 app.use("/images", express.static(path.join(__dirname, "./images")));
