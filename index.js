@@ -97,6 +97,7 @@ app.use(helmet());//safety against XSS attack
 app.use(mongoSanitize());//safety against NoSql Injections
 
 //makes folder available public
+//To Upload the image create images folder in the root of the project
 app.use("/images", express.static(path.join(__dirname, "./images")));
 
 app.use(cors());//to apply cors 
