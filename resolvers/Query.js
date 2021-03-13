@@ -272,31 +272,31 @@ const Query = {
 					sort = { _id: 1 }
 				}
 
-				if(args.orderBy == "id_DESC"){
+				else if(args.orderBy == "id_DESC"){
 					sort = { _id: -1 }
 				}
 
-				if(args.orderBy == "firstName_ASC"){
+				else if(args.orderBy == "firstName_ASC"){
 					sort = { firstName: 1 }
 				}
 
-				if(args.orderBy == "firstName_DESC"){
+				else if(args.orderBy == "firstName_DESC"){
 					sort = { firstName: -1 }
 				}
 
-				if(args.orderBy == "lastName_ASC"){
+				else if(args.orderBy == "lastName_ASC"){
 					sort = { lastName: 1 }
 				}
 
-				if(args.orderBy == "lastName_DESC"){
+				else if(args.orderBy == "lastName_DESC"){
 					sort = { lastName: -1 }
 				}
 
-				if(args.orderBy == "email_ASC"){
+				else if(args.orderBy == "email_ASC"){
 					sort = { email: 1 }
 				}
 
-				if(args.orderBy == "email_DESC"){
+				else {
 					sort = {email: -1}
 				}
 			}
