@@ -4,6 +4,7 @@ module.exports = `
 
   type Query {
     users(id: ID): [User],
+    usersConnection(where: UserWhereInput, first: Int, skip: Int, orderBy: UserOrderByInput): [User]!
     organizations(id: ID): [Organization]
     events(id: ID): [Event]
     eventsByOrganization(id: ID): [Event]
