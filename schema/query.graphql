@@ -6,6 +6,7 @@ module.exports = `
     users(id: ID): [User],
     usersConnection(where: UserWhereInput, first: Int, skip: Int, orderBy: UserOrderByInput): [User]!
     organizations(id: ID): [Organization]
+    organizationsConnection(where: OrganizationWhereInput, first: Int, skip: Int, orderBy: OrganizationOrderByInput): [Organization]!
     events(id: ID): [Event]
     eventsByOrganization(id: ID): [Event]
     registeredEventsByUser(id: ID): [Event]
