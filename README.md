@@ -75,8 +75,10 @@ To run this api five environment variables need to be set in a .env file in the 
 5. MONGO_LOCAL_INSTANCE
 6. ACCESS_TOKEN_SECRET  
 7. REFRESH_TOKEN_SECRET  
+8. LOCAL_DB_REQUIRES_AUTH
 
 If you are running mongodb locally only the MONGO_DB and MONGO_LOCAL_INSTANCE env vars are necessary. MONGO_USER and MONGO_PASSWORD are only necessary if you are connecting to a hosted instance of mongodb using atlas.
+If your local mongodbb required auth set the LOCAL_DB_REQUIRES_AUTH var to true and ensure the MONGO_PASSWORD and MONGO_USER vars are set
 
 ### Image Upload
 
