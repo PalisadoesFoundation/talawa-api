@@ -16,8 +16,6 @@ if (process.env.MONGO_LOCAL_INSTANCE === "true") {
   mongoURI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_URL}/${mongo_db}?retryWrites=true&w=majority`;
 }
 
-// const mongoURL = `mongodb://127.0.0.1:27017/${process.env.MONGO_DB}`
-
 const connect = async () => {
   try {
     await mongoose.connect(mongoURI, {
