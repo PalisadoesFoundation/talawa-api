@@ -3,6 +3,8 @@ const moment = require("moment");
 
 const Schema = mongoose.Schema;
 
+
+//this is the Structure of the event 
 const eventSchema = new Schema({
 	title: {
 		type: String,

@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
+
+//this is the Structure of the direct chat
 const directChatSchema = new Schema({
   users: [
     {

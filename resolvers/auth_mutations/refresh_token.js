@@ -7,7 +7,7 @@ const {createAccessToken, createRefreshToken} = require("../../helper_functions/
 
 module.exports = async(parent, args, context,info) =>{
     // This route should not be protected because the access token will be expired
-
+    try{
     const refreshToken = args.refreshToken;
     if(!refreshToken) {
         throw new Error("Invalid refresh Token");
@@ -39,6 +39,9 @@ module.exports = async(parent, args, context,info) =>{
     return {
         accessToken: newAccessToken,
         refreshToken: newRefreshToken
+    }
+    }catch(e){
+        throw e;
     }
 
 }

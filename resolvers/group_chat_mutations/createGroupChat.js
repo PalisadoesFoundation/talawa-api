@@ -4,7 +4,11 @@ const authCheck = require("../functions/authCheck");
 const Organization = require("../../models/Organization");
 
 module.exports = async (parent, args, context, info) => {
+  
   authCheck(context);
+  
+  try{
+  
 
   let userFound = await User.findOne({ _id: context.userId });
   if (!userFound) throw new Error("User does not exist");
@@ -32,4 +36,7 @@ module.exports = async (parent, args, context, info) => {
   groupChat = await groupChat.save();
 
   return groupChat._doc;
+}catch(e){
+  throw e;
+}
 };

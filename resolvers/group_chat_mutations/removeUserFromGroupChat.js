@@ -8,6 +8,8 @@ const GroupChatMessage = require("../../models/GroupChatMessage");
 
 module.exports = async (parent, args, context, info) => {
 
+    try{
+
     authCheck(context);
 
 
@@ -35,5 +37,7 @@ module.exports = async (parent, args, context, info) => {
     }, {
         new: true
     })
-
+    }catch(e){
+        throw e;
+    }
 }

@@ -5,6 +5,7 @@ const GroupChatMessage = require("../../models/GroupChatMessage");
 const userExists = require("../../helper_functions/userExists");
 
 module.exports = async (parent, args, context, info) => {
+  try{
   authCheck(context);
 
   const chat = await GroupChat.findById(args.chatId);
@@ -49,4 +50,7 @@ module.exports = async (parent, args, context, info) => {
   });
 
   return message._doc;
+  }catch(e){
+    throw e;
+  }
 };
