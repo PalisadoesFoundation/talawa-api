@@ -19,6 +19,9 @@ If you are running MongoDB locally on your system then these env variables are n
 
 NB: You may have username and password for local instance too, in that case set the username ans password in env file.
 
+NB: If your local mongodbb required auth set the LOCAL_DB_REQUIRES_AUTH var to true and ensure the MONGO_PASSWORD and MONGO_USER vars are set
+
+
 ### Hosted Instance
 
 You can also use the hosted instance of mongodb using atlas by
