@@ -2,6 +2,9 @@ const axios = require("axios");
 const shortid = require("shortid");
 const { URL } = require("../constants");
 
+let id = shortid.generate();
+let email = `${id}@test.com`;
+
 describe("user resolvers", () => {
   test("allUsers", async () => {
     const response = await axios.post(URL, {
@@ -19,8 +22,6 @@ describe("user resolvers", () => {
   });
 
   test("signUp", async () => {
-    var id = shortid.generate();
-    var email = `${id}@test.com`;
     const response = await axios.post(URL, {
       query: `
             mutation {
@@ -51,7 +52,7 @@ describe("user resolvers", () => {
       query: `
             mutation{
                 login(data: {
-                  email:"testdb2@test.com",
+                  email:"${email}",
                   password:"password"
                 }) {
                   user{
