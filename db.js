@@ -9,17 +9,16 @@ const mongoose = require("mongoose");
 
 // Use this connection string if you are running mongodb locally
 
-const mongoURL = `mongodb://127.0.0.1:27017/${process.env.MONGO_DB}`
-
-const connect = mongoose
-.connect(
+// const mongoURL = `mongodb://127.0.0.1:27017/${process.env.MONGO_DB}`
+const mongoURL = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.sqytt.mongodb.net/${process.env.MONGO_DB}?retryWrites=true&w=majority`;
+const connect = mongoose.connect(
   mongoURL,
-  
+
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    useFindAndModify: false
+    useFindAndModify: false,
   }
-)
+);
 
 module.exports = connect;

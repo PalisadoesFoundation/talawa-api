@@ -26,15 +26,14 @@ const pubsub = new PubSub();
 const http = require("http");
 
 const rateLimit = require("express-rate-limit");
-const xss  = require("xss-clean");
+const xss = require("xss-clean");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 15 minutes
-  max: 500,// this can be edited in between
-  message:
-  "Too many requests from this IP, please try again after 15 minutes"
+  max: 500, // this can be edited in between
+  message: "Too many requests from this IP, please try again after 15 minutes",
 });
 
 const resolvers = {
@@ -47,10 +46,8 @@ const resolvers = {
   DirectChat,
   DirectChatMessage,
   GroupChat,
-  GroupChatMessage
+  GroupChatMessage,
 };
-
-
 
 const server = new ApolloServer({
   typeDefs,
@@ -59,7 +56,8 @@ const server = new ApolloServer({
   //   return isAuth(req);
   // },
   context: ({ req, res, connection }) => {
-    if (connection) { // if its connected using subscriptions
+    if (connection) {
+      // if its connected using subscriptions
       return { ...connection, pubsub, res, req };
     } else {
       return { ...isAuth(req), pubsub, res, req };
@@ -88,13 +86,13 @@ const server = new ApolloServer({
   },
 });
 
-app.use(apiLimiter);//safety against DOS attack
+app.use(apiLimiter); //safety against DOS attack
 
-app.use(xss());//safety against XSS attack or Cross Site Scripting attacks
+app.use(xss()); //safety against XSS attack or Cross Site Scripting attacks
 
-app.use(helmet());//safety against XSS attack
+// app.use(helmet());//safety against XSS attack
 
-app.use(mongoSanitize());//safety against NoSql Injections
+app.use(mongoSanitize()); //safety against NoSql Injections
 
 //makes folder available public
 app.use("/images", express.static(path.join(__dirname, "./images")));
@@ -103,10 +101,7 @@ app.use(cors());
 
 //app.use(express.static("doc"));'
 
-
 server.applyMiddleware({ app });
-
-
 
 const httpServer = http.createServer(app);
 server.installSubscriptionHandlers(httpServer);
@@ -122,14 +117,14 @@ connect
     //THIS SERVER ALLOWS US TO USE SUBSCRIPTIONS
 
     // ⚠️ Pay attention to the fact that we are calling `listen` on the http server variable, and not on `app`.
-    httpServer.listen(process.env.PORT || 4000, () => {
+    httpServer.listen(process.env.PORT || 8000, () => {
       console.log(
-        `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
+        `🚀 Server ready at http://localhost:${process.env.PORT || 8000}${
           server.graphqlPath
         }`
       );
       console.log(
-        `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${
+        `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 8000}${
           server.subscriptionsPath
         }`
       );
