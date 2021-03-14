@@ -41,7 +41,9 @@ The different types of branches we may use are:
 Detailed document containing how GitFlow works: https://nvie.com/posts/a-successful-git-branching-model/
 
 ### Contributing Code
-Code contributions to Talawa come in the form of pull requests. These are done by forking the repo and making changes locally. 
+Code contributions to Talawa come in the form of pull requests. These are done by forking the repo and making changes locally.
+
+Make sure you read [Documentation for Setting up the Project](https://github.com/PalisadoesFoundation/talawa-api/blob/master/configuration.md)
 
 The process of proposing a change to Talawa can be summarized as:
 1. Fork the Talawa API repository and branch off `master`
