@@ -38,6 +38,8 @@ module.exports = `
 
     createComment(postId:ID!, data: CommentInput!): Comment
     removeComment(id:ID!): Comment
+    likeComment(id:ID!): Comment
+    unlikeComment(id:ID!): Comment
 
     createTask(data: TaskInput, eventId: ID!): Task!
     updateTask(id:ID!, data: UpdateTaskInput) : Task

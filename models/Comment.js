@@ -20,6 +20,16 @@ const commentSchema = new Schema({
         ref: "Post",
         required:true
     },
+    likedBy: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "User",
+        }
+    ],
+    likeCount: {
+        type:Number,
+        default: 0
+    }
 })
 
 module.exports = mongoose.model("Comment", commentSchema);

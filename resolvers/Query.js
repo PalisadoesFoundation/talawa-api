@@ -202,18 +202,28 @@ const Query = {
 	},
 	comments: async (parent, args, context, info) => {
 		try {
-			return await Comment.find()
+			const commentFound = await Comment.find()
 				.populate("creator", "-password")
-				.populate("post");
+				.populate("post")
+				.populate("likedBy");
+			if(!commentFound){
+				throw new Error("Comment not Found")
+			}
+			return commentFound;	
 		} catch (e) {
 			throw e;
 		}
 	},
 	commentsByPost: async (parent, args, context, info) => {
 		try {
-			return await Comment.find({ post: args.id })
+			const commentFound = await Comment.find({ post: args.id })
 				.populate("creator", "-password")
-				.populate("post");
+				.populate("post")
+				.populate("likedBy");
+			if(!commentFound){
+				throw new Error("Comment not Found")
+			}
+			return commentFound;	
 		} catch (e) {
 			throw e;
 		}
