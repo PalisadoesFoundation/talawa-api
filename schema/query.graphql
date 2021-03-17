@@ -3,7 +3,7 @@
 module.exports = `
 
   type Query {
-    users(id: ID): [User],
+    users(id: ID, orderBy: UserOrderByInput): [User],
     organizations(id: ID, orderBy: OrganizationOrderByInput): [Organization]
     events(id: ID): [Event]
     eventsByOrganization(id: ID): [Event]

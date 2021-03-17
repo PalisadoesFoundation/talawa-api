@@ -29,9 +29,48 @@ const Query = {
 		return await DirectChatMessages.find();
 	},
 	users: async (parent, args, context, info) => {
+
+		var sort = {}
+		var isSortingExecuted = args.orderBy != null;
+
+        if(isSortingExecuted){
+            if(args.orderBy == "id_ASC"){
+                sort = { _id: 1 }
+            }
+
+            else if(args.orderBy == "id_DESC"){
+                sort = { _id: -1 }
+            }
+
+            else if(args.orderBy == "firstName_ASC"){
+                sort = { firstName: 1 }
+            }
+
+            else if(args.orderBy == "firstName_DESC"){
+                sort = { firstName: -1 }
+            }
+
+            else if(args.orderBy == "lastName_ASC"){
+                sort = { lastName: 1 }
+            }
+
+            else if(args.orderBy == "lastName_DESC"){
+                sort = { lastName: -1 }
+            }
+
+            else if(args.orderBy == "email_ASC"){
+                sort = { email: 1 }
+            }
+
+            else {
+                sort = {email: -1}
+            }
+		}
+
 		try {
 			if (args.id) {
 				const users = await User.find({ _id: args.id })
+					.sort(sort)
 					.populate("createdOrganizations")
 					.populate("createdEvents")
 					.populate("joinedOrganizations")
@@ -48,6 +87,7 @@ const Query = {
 					});
 			} else {
 				const users = await User.find()
+					.sort(sort)
 					.populate("createdOrganizations")
 					.populate("createdEvents")
 					.populate("joinedOrganizations")
