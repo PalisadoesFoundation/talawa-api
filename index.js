@@ -92,7 +92,7 @@ app.use(apiLimiter);//safety against DOS attack
 
 app.use(xss());//safety against XSS attack or Cross Site Scripting attacks
 
-app.use(helmet());//safety against XSS attack
+app.use(helmet({ contentSecurityPolicy: false }));//safety against XSS attack
 
 app.use(mongoSanitize());//safety against NoSql Injections
 
