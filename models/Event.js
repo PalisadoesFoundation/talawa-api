@@ -65,10 +65,10 @@ const eventSchema = new Schema({
 			return this.recurring;
 		},
 	},
-	description: {
-		type: String,
-		required: true,
-	},
+	// description: {
+	// 	type: String,
+	// 	required: true,
+	// },
 	isPublic: {
 		type: Boolean,
 		required: true,
