@@ -11,7 +11,7 @@ module.exports = `
     event(id: ID): Event
     registrantsByEvent(id: ID): [User]
     me:User!
-    posts: [Post]
+    posts(orderBy: PostOrderByInput): [Post]
     postsByOrganization(id: ID!): [Post]
     tasksByEvent(id: ID!): [Task]
     tasksByUser(id: ID!): [Task]
