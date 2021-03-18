@@ -32,7 +32,7 @@ const mongoSanitize = require("express-mongo-sanitize");
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 15 minutes
-  max: 5000,// this can be edited in between
+  max: 50000,// this can be edited in between
   message:
   "Too many requests from this IP, please try again after 15 minutes"
 });
