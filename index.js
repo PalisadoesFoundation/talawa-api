@@ -32,8 +32,9 @@ const mongoSanitize = require("express-mongo-sanitize");
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 15 minutes
-  max: 500, // this can be edited in between
-  message: "Too many requests from this IP, please try again after 15 minutes",
+  max: 5000,// this can be edited in between
+  message:
+  "Too many requests from this IP, please try again after 15 minutes"
 });
 
 const resolvers = {
@@ -90,7 +91,7 @@ app.use(apiLimiter); //safety against DOS attack
 
 app.use(xss()); //safety against XSS attack or Cross Site Scripting attacks
 
-app.use(helmet()); //safety against XSS attack
+app.use(helmet({ contentSecurityPolicy: (process.env.NODE_ENV === 'production') ? undefined : false }));//safety against XSS attack
 
 app.use(mongoSanitize()); //safety against NoSql Injections
 
