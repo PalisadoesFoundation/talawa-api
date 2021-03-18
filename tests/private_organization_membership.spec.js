@@ -12,7 +12,6 @@ describe("Private Organization Membership Tests", () => {
   let newRequestId;
   let createdOrganizationId;
   let newUserToken;
-  let newUserId;
 
   //New user sends membership request to join organization
   test("User sends private organization membership request", async () => {
@@ -68,7 +67,6 @@ describe("Private Organization Membership Tests", () => {
     });
     const signUpData = response.data;
     newUserToken = signUpData.data.signUp.accessToken;
-    newUserId = signUpData.data.signUp.user._id;
 
     //console.log("created org id", createdOrganizationId);
 

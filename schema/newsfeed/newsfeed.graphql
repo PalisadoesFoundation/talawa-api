@@ -28,6 +28,8 @@ module.exports = `
     createdAt: String
     creator: User!
     post: Post!
+    likedBy: [User]
+    likeCount: Int
   }
   
   input CommentInput {

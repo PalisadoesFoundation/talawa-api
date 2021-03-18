@@ -1,5 +1,5 @@
 
-const authCheck = require("../functions/authCheck");
+const authCheck = require("./functions/authCheck");
 
 
 module.exports = async(parent,args,context,info) => {

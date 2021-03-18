@@ -36,6 +36,8 @@ const createPost = require("./post_mutations/createPost")
 const removePost = require("./post_mutations/removePost")
 const createComment = require("./post_mutations/createComment")
 const removeComment = require("./post_mutations/removeComment")
+const likeComment = require("./post_mutations/likeComment")
+const unlikeComment = require("./post_mutations/unlikeComment")
 const likePost = require("./post_mutations/likePost")
 const unlikePost = require("./post_mutations/unlikePost")
 
@@ -113,7 +115,8 @@ const Mutation = {
 
   createComment,
   removeComment,
-  
+  likeComment,
+  unlikeComment,
 
   addUserImage,
   removeUserImage,

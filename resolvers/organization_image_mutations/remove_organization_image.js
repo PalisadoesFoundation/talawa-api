@@ -2,7 +2,6 @@
 const authCheck = require("../functions/authCheck");
 const Organization = require("../../models/Organization");
 const User = require("../../models/User");
-const { unlink } = require("fs");
 const adminCheck = require("../functions/adminCheck");
 const deleteImage = require("../../helper_functions/deleteImage")
 

@@ -3,7 +3,6 @@ const { createWriteStream } = require("fs");
 const path = require("path");
 const imageAlreadyInDbCheck = require("./imageAlreadyInDbCheck");
 const deleteImage = require("./deleteImage");
-const { imageHash } = require("image-hash");
 const imageExtensionCheck = require("./imageExtensionCheck");
 
 

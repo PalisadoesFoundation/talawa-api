@@ -7,7 +7,6 @@ const {
   createRefreshToken,
 } = require("../../helper_functions/auth");
 
-const imageAlreadyInDbCheck = require("../../helper_functions/imageAlreadyInDbCheck");
 const uploadImage = require("../../helper_functions/uploadImage");
 
 module.exports = async (parent, args, context, info) => {

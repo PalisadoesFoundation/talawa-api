@@ -42,7 +42,6 @@ describe("chat resolvers", () => {
         },
       }
     );
-    let { data } = createdOrgResponse;
     createdOrgId = createdOrgResponse.data.data.createOrganization._id;
 
     // CREATE A NEW USER
