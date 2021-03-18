@@ -13,6 +13,8 @@ const DirectChatMessages = require("../models/DirectChatMessage");
 
 const GroupChat = require("../models/GroupChat");
 const GroupChatMessages = require("../models/GroupChatMessage");
+const usersConnection = require("../resolvers/user_query/users_pagination")
+const organizationsConnection = require("./organization_query/organizations_pagination")
 
 
 const Query = {
@@ -29,9 +31,48 @@ const Query = {
 		return await DirectChatMessages.find();
 	},
 	users: async (parent, args, context, info) => {
+
+		var sort = {}
+		var isSortingExecuted = args.orderBy != null;
+
+        if(isSortingExecuted){
+            if(args.orderBy == "id_ASC"){
+                sort = { _id: 1 }
+            }
+
+            else if(args.orderBy == "id_DESC"){
+                sort = { _id: -1 }
+            }
+
+            else if(args.orderBy == "firstName_ASC"){
+                sort = { firstName: 1 }
+            }
+
+            else if(args.orderBy == "firstName_DESC"){
+                sort = { firstName: -1 }
+            }
+
+            else if(args.orderBy == "lastName_ASC"){
+                sort = { lastName: 1 }
+            }
+
+            else if(args.orderBy == "lastName_DESC"){
+                sort = { lastName: -1 }
+            }
+
+            else if(args.orderBy == "email_ASC"){
+                sort = { email: 1 }
+            }
+
+            else {
+                sort = {email: -1}
+            }
+		}
+
 		try {
 			if (args.id) {
 				const users = await User.find({ _id: args.id })
+					.sort(sort)
 					.populate("createdOrganizations")
 					.populate("createdEvents")
 					.populate("joinedOrganizations")
@@ -48,6 +89,7 @@ const Query = {
 					});
 			} else {
 				const users = await User.find()
+					.sort(sort)
 					.populate("createdOrganizations")
 					.populate("createdEvents")
 					.populate("joinedOrganizations")
@@ -62,6 +104,7 @@ const Query = {
 			throw e;
 		}
 	},
+	usersConnection,
 	me: async (parent, args, context, info) => {
 		authCheck(context);
 		try {
@@ -79,22 +122,61 @@ const Query = {
 		}
 	},
 	organizations: async (parent, args, context, info) => {
+		var sort = {}
+		var isSortingExecuted = args.orderBy != null;
+
+		//Sorting List
+		if(isSortingExecuted){
+			if(args.orderBy == "id_ASC"){
+				sort = { _id: 1 }
+			}
+
+			else if(args.orderBy == "id_DESC"){
+				sort = { _id: -1 }
+			}
+
+			else if(args.orderBy == "name_ASC"){
+				sort = { name: 1 }
+			}
+
+			else if(args.orderBy == "name_DESC"){
+				sort = { name: -1 }
+			}
+
+			else if(args.orderBy == "description_ASC"){
+				sort = { description: 1 }
+			}
+
+			else if(args.orderBy == "description_DESC"){
+				sort = { description: -1 }
+			}
+
+			else if(args.orderBy == "apiUrl_ASC"){
+				sort = { apiUrl: 1 }
+			}
+			else {
+				sort = {apiUrl: -1}
+			}
+		}
+
 		try {
 			if (args.id) {
 				const organizationFound = await Organization.find({
 					_id: args.id,
-				});
+				}).sort(sort);
 				if (!organizationFound[0]) {
 					throw new Error("Organization not found");
 				}
+
 				return organizationFound;
 			} else {
-				return await Organization.find();
+				return await Organization.find().sort(sort);
 			}
 		} catch (e) {
 			throw e;
 		}
 	},
+	organizationsConnection,
 	event: async (parent, args, context, info) => {
 		try {
 			const eventFound = await Event.findOne({ _id: args.id })
@@ -134,8 +216,76 @@ const Query = {
 		}
 	},
 	events: async (parent, args, context, info) => {
+		var sort = {}
+		var isSortingExecuted = args.orderBy != null;
+
+		//Sorting List
+		if(isSortingExecuted){
+			if(args.orderBy == "id_ASC"){
+				sort = { _id: 1 }
+			}
+			else if(args.orderBy == "id_DESC"){
+				sort = { _id: -1 }
+			}
+			else if(args.orderBy == "title_ASC"){
+				sort = { title: 1 }
+			}
+			else if(args.orderBy == "title_DESC"){
+				sort = { title: -1 }
+			}
+			else if(args.orderBy == "description_ASC"){
+				sort = { description: 1 }
+			}
+			else if(args.orderBy == "description_DESC"){
+				sort = { description: -1 }
+			}
+			else if(args.orderBy == "startDate_ASC"){
+				sort = { startDate: 1 }
+			}
+			else if(args.orderBy == "startDate_DESC"){
+				sort = { startDate: -1 }
+			}
+			else if(args.orderBy == "endDate_ASC"){
+				sort = { endDate: 1 }
+			}
+			else if(args.orderBy == "endDate_DESC"){
+				sort = { endDate: -1 }
+			}
+			else if(args.orderBy == "allDay_ASC"){
+				sort = { allDay: 1 }
+			}
+			else if(args.orderBy == "allDay_DESC"){
+				sort = { allDay: -1 }
+			}
+			else if(args.orderBy == "startTime_ASC"){
+				sort = { startTime: 1 }
+			}
+			else if(args.orderBy == "startTime_DESC"){
+				sort = { startTime: -1 }
+			}
+			else if(args.orderBy == "endTime_ASC"){
+				sort = { endTime: 1 }
+			}
+			else if(args.orderBy == "endTime_DESC"){
+				sort = { endTime: -1 }
+			}
+			else if(args.orderBy == "recurrance_ASC"){
+				sort = { recurrance: 1 }
+			}
+			else if(args.orderBy == "recurrance_DESC"){
+				sort = { recurrance: -1 }
+			}
+			else if(args.orderBy == "location_ASC"){
+				sort = { location: 1 }
+			}
+			else {
+				sort = { location: -1}
+			}
+		}
+
 		try {
 			const e = await Event.find()
+				.sort(sort)
 				// .populate("registrants")
 				.populate("creator", "-password")
 				.populate("tasks")
@@ -153,8 +303,76 @@ const Query = {
 		}
 	},
 	eventsByOrganization: async (parent, args, context, info) => {
+		var sort = {}
+		var isSortingExecuted = args.orderBy != null;
+
+		//Sorting List
+		if(isSortingExecuted){
+			if(args.orderBy == "id_ASC"){
+				sort = { _id: 1 }
+			}
+			else if(args.orderBy == "id_DESC"){
+				sort = { _id: -1 }
+			}
+			else if(args.orderBy == "title_ASC"){
+				sort = { title: 1 }
+			}
+			else if(args.orderBy == "title_DESC"){
+				sort = { title: -1 }
+			}
+			else if(args.orderBy == "description_ASC"){
+				sort = { description: 1 }
+			}
+			else if(args.orderBy == "description_DESC"){
+				sort = { description: -1 }
+			}
+			else if(args.orderBy == "startDate_ASC"){
+				sort = { startDate: 1 }
+			}
+			else if(args.orderBy == "startDate_DESC"){
+				sort = { startDate: -1 }
+			}
+			else if(args.orderBy == "endDate_ASC"){
+				sort = { endDate: 1 }
+			}
+			else if(args.orderBy == "endDate_DESC"){
+				sort = { endDate: -1 }
+			}
+			else if(args.orderBy == "allDay_ASC"){
+				sort = { allDay: 1 }
+			}
+			else if(args.orderBy == "allDay_DESC"){
+				sort = { allDay: -1 }
+			}
+			else if(args.orderBy == "startTime_ASC"){
+				sort = { startTime: 1 }
+			}
+			else if(args.orderBy == "startTime_DESC"){
+				sort = { startTime: -1 }
+			}
+			else if(args.orderBy == "endTime_ASC"){
+				sort = { endTime: 1 }
+			}
+			else if(args.orderBy == "endTime_DESC"){
+				sort = { endTime: -1 }
+			}
+			else if(args.orderBy == "recurrance_ASC"){
+				sort = { recurrance: 1 }
+			}
+			else if(args.orderBy == "recurrance_DESC"){
+				sort = { recurrance: -1 }
+			}
+			else if(args.orderBy == "location_ASC"){
+				sort = { location: 1 }
+			}
+			else {
+				sort = { location: -1}
+			}
+		}
+
 		try {
 			const e = await Event.find({ organization: args.id })
+				.sort(sort)
 				// .populate("registrants")
 				.populate("creator", "-password")
 				.populate("tasks")
@@ -172,8 +390,75 @@ const Query = {
 		}
 	},
 	registeredEventsByUser: async (parent, args, context, info) => {
+		var sort = {}
+		var isSortingExecuted = args.orderBy != null;
+
+		//Sorting List
+		if(isSortingExecuted){
+			if(args.orderBy == "id_ASC"){
+				sort = { _id: 1 }
+			}
+			else if(args.orderBy == "id_DESC"){
+				sort = { _id: -1 }
+			}
+			else if(args.orderBy == "title_ASC"){
+				sort = { title: 1 }
+			}
+			else if(args.orderBy == "title_DESC"){
+				sort = { title: -1 }
+			}
+			else if(args.orderBy == "description_ASC"){
+				sort = { description: 1 }
+			}
+			else if(args.orderBy == "description_DESC"){
+				sort = { description: -1 }
+			}
+			else if(args.orderBy == "startDate_ASC"){
+				sort = { startDate: 1 }
+			}
+			else if(args.orderBy == "startDate_DESC"){
+				sort = { startDate: -1 }
+			}
+			else if(args.orderBy == "endDate_ASC"){
+				sort = { endDate: 1 }
+			}
+			else if(args.orderBy == "endDate_DESC"){
+				sort = { endDate: -1 }
+			}
+			else if(args.orderBy == "allDay_ASC"){
+				sort = { allDay: 1 }
+			}
+			else if(args.orderBy == "allDay_DESC"){
+				sort = { allDay: -1 }
+			}
+			else if(args.orderBy == "startTime_ASC"){
+				sort = { startTime: 1 }
+			}
+			else if(args.orderBy == "startTime_DESC"){
+				sort = { startTime: -1 }
+			}
+			else if(args.orderBy == "endTime_ASC"){
+				sort = { endTime: 1 }
+			}
+			else if(args.orderBy == "endTime_DESC"){
+				sort = { endTime: -1 }
+			}
+			else if(args.orderBy == "recurrance_ASC"){
+				sort = { recurrance: 1 }
+			}
+			else if(args.orderBy == "recurrance_DESC"){
+				sort = { recurrance: -1 }
+			}
+			else if(args.orderBy == "location_ASC"){
+				sort = { location: 1 }
+			}
+			else {
+				sort = { location: -1}
+			}
+		}
 		try {
 			return await Event.find({ registrants: args.id })
+				.sort(sort)
 				.populate("registrants")
 				.populate("creator", "-password")
 				.populate("tasks")
@@ -183,8 +468,46 @@ const Query = {
 		}
 	},
 	tasksByEvent: async (parent, args, context, info) => {
+		var sort = {}
+		var isSortingExecuted = args.orderBy != null;
+
+		//Sorting List
+		if(isSortingExecuted){
+			if(args.orderBy == "id_ASC"){
+				sort = { _id: 1 }
+			}
+			else if(args.orderBy == "id_DESC"){
+				sort = { _id: -1 }
+			}
+			else if(args.orderBy == "title_ASC"){
+				sort = { title: 1 }
+			}
+			else if(args.orderBy == "title_DESC"){
+				sort = { title: -1 }
+			}
+			else if(args.orderBy == "description_ASC"){
+				sort = { description: 1 }
+			}
+			else if(args.orderBy == "description_DESC"){
+				sort = { description: -1 }
+			}
+			else if(args.orderBy == "createdAt_ASC"){
+				sort = { createdAt: 1 }
+			}
+			else if(args.orderBy == "createdAt_DESC"){
+				sort = { createdAt: -1 }
+			}
+			else if(args.orderBy == "deadline_ASC"){
+				sort = { deadline: 1 }
+			}
+			else {
+				sort = { deadline: -1}
+			}
+		}
+
 		try {
 			return await Task.find({ event: args.id })
+				.sort(sort)
 				.populate("event")
 				.populate("creator", "-password");
 		} catch (e) {
@@ -192,8 +515,46 @@ const Query = {
 		}
 	},
 	tasksByUser: async (parent, args, context, info) => {
+		var sort = {}
+		var isSortingExecuted = args.orderBy != null;
+
+		//Sorting List
+		if(isSortingExecuted){
+			if(args.orderBy == "id_ASC"){
+				sort = { _id: 1 }
+			}
+			else if(args.orderBy == "id_DESC"){
+				sort = { _id: -1 }
+			}
+			else if(args.orderBy == "title_ASC"){
+				sort = { title: 1 }
+			}
+			else if(args.orderBy == "title_DESC"){
+				sort = { title: -1 }
+			}
+			else if(args.orderBy == "description_ASC"){
+				sort = { description: 1 }
+			}
+			else if(args.orderBy == "description_DESC"){
+				sort = { description: -1 }
+			}
+			else if(args.orderBy == "createdAt_ASC"){
+				sort = { createdAt: 1 }
+			}
+			else if(args.orderBy == "createdAt_DESC"){
+				sort = { createdAt: -1 }
+			}
+			else if(args.orderBy == "deadline_ASC"){
+				sort = { deadline: 1 }
+			}
+			else {
+				sort = { deadline: -1}
+			}
+		}
+
 		try {
 			return await Task.find({ creator: args.id })
+				.sort(sort)
 				.populate("event")
 				.populate("creator", "-password");
 		} catch (e) {
@@ -253,8 +614,63 @@ const Query = {
 		}
 	},
 	posts: async (parent, args, context, info) => {
+		var sort = {}
+		var isSortingExecuted = args.orderBy != null;
+
+		//Sorting List
+		if(isSortingExecuted){
+			if(args.orderBy == "id_ASC"){
+				sort = { _id: 1 }
+			}
+			else if(args.orderBy == "id_DESC"){
+				sort = { _id: -1 }
+			}
+			else if(args.orderBy == "text_ASC"){
+				sort = { text: 1 }
+			}
+			else if(args.orderBy == "text_DESC"){
+				sort = { text: -1 }
+			}
+			else if(args.orderBy == "title_ASC"){
+				sort = { title: 1 }
+			}
+			else if(args.orderBy == "title_DESC"){
+				sort = { title: -1 }
+			}
+			else if(args.orderBy == "createdAt_ASC"){
+				sort = { createdAt: 1 }
+			}
+			else if(args.orderBy == "createdAt_DESC"){
+				sort = { createdAt: -1 }
+			}
+			else if(args.orderBy == "imageUrl_ASC"){
+				sort = { imageUrl: 1 }
+			}
+			else if(args.orderBy == "imageUrl_DESC"){
+				sort = { imageUrl: -1 }
+			}
+			else if(args.orderBy == "videoUrl_ASC"){
+				sort = { videoUrl: 1 }
+			}
+			else if(args.orderBy == "videoUrl_DESC"){
+				sort = { videoUrl: -1 }
+			}
+			else if(args.orderBy == "likeCount_ASC"){
+				sort = { likeCount: 1 }
+			}
+			else if(args.orderBy == "likeCount_DESC"){
+				sort = { likeCount: -1 }
+			}
+			else if(args.orderBy == "commentCount_ASC"){
+				sort = { commentCount: 1 }
+			}
+			else{
+				sort = { commentCount: -1 }
+			}
+		}
 		try {
 			const p = await Post.find()
+				.sort(sort)
 				.populate("organization")
 				.populate("likedBy")
 				.populate({
@@ -275,8 +691,64 @@ const Query = {
 		}
 	},
 	postsByOrganization: async (parent, args, context, info) => {
+		var sort = {}
+		var isSortingExecuted = args.orderBy != null;
+
+		//Sorting List
+		if(isSortingExecuted){
+			if(args.orderBy == "id_ASC"){
+				sort = { _id: 1 }
+			}
+			else if(args.orderBy == "id_DESC"){
+				sort = { _id: -1 }
+			}
+			else if(args.orderBy == "text_ASC"){
+				sort = { text: 1 }
+			}
+			else if(args.orderBy == "text_DESC"){
+				sort = { text: -1 }
+			}
+			else if(args.orderBy == "title_ASC"){
+				sort = { title: 1 }
+			}
+			else if(args.orderBy == "title_DESC"){
+				sort = { title: -1 }
+			}
+			else if(args.orderBy == "createdAt_ASC"){
+				sort = { createdAt: 1 }
+			}
+			else if(args.orderBy == "createdAt_DESC"){
+				sort = { createdAt: -1 }
+			}
+			else if(args.orderBy == "imageUrl_ASC"){
+				sort = { imageUrl: 1 }
+			}
+			else if(args.orderBy == "imageUrl_DESC"){
+				sort = { imageUrl: -1 }
+			}
+			else if(args.orderBy == "videoUrl_ASC"){
+				sort = { videoUrl: 1 }
+			}
+			else if(args.orderBy == "videoUrl_DESC"){
+				sort = { videoUrl: -1 }
+			}
+			else if(args.orderBy == "likeCount_ASC"){
+				sort = { likeCount: 1 }
+			}
+			else if(args.orderBy == "likeCount_DESC"){
+				sort = { likeCount: -1 }
+			}
+			else if(args.orderBy == "commentCount_ASC"){
+				sort = { commentCount: 1 }
+			}
+			else{
+				sort = { commentCount: -1 }
+			}
+		}
+
 		try {
 			const p = await Post.find({ organization: args.id })
+				.sort(sort)
 				.populate("organization")
 				.populate("likedBy")
 				.populate({

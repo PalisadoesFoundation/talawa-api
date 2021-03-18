@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
-
 //this is the Structure of the Comments
 const commentSchema = new Schema({
     text: {

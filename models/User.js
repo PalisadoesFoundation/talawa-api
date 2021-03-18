@@ -4,11 +4,11 @@ const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
   image: {
-    type: String
+    type: String,
   },
   tokenVersion: {
     type: Number,
-    default:0
+    default: 0,
   },
   firstName: {
     type: String,
@@ -77,7 +77,7 @@ const userSchema = new Schema({
   ],
   organizationUserBelongsTo: {
     type: Schema.Types.ObjectId,
-    ref:"Organization"
+    ref: "Organization",
   },
 });
 

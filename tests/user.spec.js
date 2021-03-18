@@ -2,9 +2,6 @@ const axios = require("axios");
 const shortid = require("shortid");
 const { URL } = require("../constants");
 
-
-
-
 describe("user resolvers", () => {
   test("allUsers", async () => {
     const response = await axios.post(URL, {
