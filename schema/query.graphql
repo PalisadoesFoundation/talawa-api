@@ -12,7 +12,7 @@ module.exports = `
     registrantsByEvent(id: ID): [User]
     me:User!
     posts(orderBy: PostOrderByInput): [Post]
-    postsByOrganization(id: ID!): [Post]
+    postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
     tasksByEvent(id: ID!): [Task]
     tasksByUser(id: ID!): [Task]
     comments: [Comment]
