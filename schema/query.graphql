@@ -3,13 +3,13 @@
 module.exports = `
 
   type Query {
-    users(id: ID): [User],
+    users(id: ID, orderBy: UserOrderByInput): [User]
     usersConnection(where: UserWhereInput, first: Int, skip: Int, orderBy: UserOrderByInput): [User]!
-    organizations(id: ID): [Organization]
+    organizations(id: ID, orderBy: OrganizationOrderByInput): [Organization]
     organizationsConnection(where: OrganizationWhereInput, first: Int, skip: Int, orderBy: OrganizationOrderByInput): [Organization]!
-    events(id: ID): [Event]
-    eventsByOrganization(id: ID): [Event]
-    registeredEventsByUser(id: ID): [Event]
+    events(id: ID, orderBy: EventOrderByInput): [Event]
+    eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
+    registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
     event(id: ID): Event
     registrantsByEvent(id: ID): [User]
     me:User!
