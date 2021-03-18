@@ -5,7 +5,7 @@ module.exports = `
   type Query {
     users(id: ID, orderBy: UserOrderByInput): [User],
     organizations(id: ID, orderBy: OrganizationOrderByInput): [Organization]
-    events(id: ID): [Event]
+    events(id: ID, orderBy: EventOrderByInput): [Event]
     eventsByOrganization(id: ID): [Event]
     registeredEventsByUser(id: ID): [Event]
     event(id: ID): Event
