@@ -58,15 +58,15 @@ module.exports = `
      email_starts_with: String
    }
 
-   enum UserOrderByInput {
-     id_ASC
-     id_DESC
-     firstName_ASC
-     firstName_DESC
-     lastName_ASC
-     lastName_DESC
-     email_ASC
-     email_DESC
-   }
+  enum UserOrderByInput {
+    id_ASC
+    id_DESC
+    firstName_ASC
+    firstName_DESC
+    lastName_ASC
+    lastName_DESC
+    email_ASC
+    email_DESC
+  }
 
 `

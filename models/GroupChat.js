@@ -3,10 +3,10 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const groupChatSchema = new Schema({
-	title: {
-		type: String,
-		required: true,
-	},
+  title: {
+    type: String,
+    required: true,
+  },
   users: [
     {
       type: Schema.Types.ObjectId,
@@ -23,13 +23,13 @@ const groupChatSchema = new Schema({
   creator: {
     type: Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    required: true,
   },
   organization: {
     type: Schema.Types.ObjectId,
     ref: "Organization",
-    required: true
-  }
+    required: true,
+  },
 });
 
 module.exports = mongoose.model("GroupChat", groupChatSchema);

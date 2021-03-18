@@ -102,5 +102,4 @@ module.exports = `
     apiUrl_DESC
    }
 
-
 `
