@@ -6,7 +6,7 @@ module.exports = `
     users(id: ID, orderBy: UserOrderByInput): [User],
     organizations(id: ID, orderBy: OrganizationOrderByInput): [Organization]
     events(id: ID, orderBy: EventOrderByInput): [Event]
-    eventsByOrganization(id: ID): [Event]
+    eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
     registeredEventsByUser(id: ID): [Event]
     event(id: ID): Event
     registrantsByEvent(id: ID): [User]
