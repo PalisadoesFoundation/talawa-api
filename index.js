@@ -26,7 +26,7 @@ const pubsub = new PubSub();
 const http = require("http");
 
 const rateLimit = require("express-rate-limit");
-const xss  = require("xss-clean");
+const xss = require("xss-clean");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 
@@ -34,7 +34,7 @@ const apiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 15 minutes
   max: 50000,// this can be edited in between
   message:
-  "Too many requests from this IP, please try again after 15 minutes"
+    "Too many requests from this IP, please try again after 15 minutes"
 });
 
 const resolvers = {
@@ -47,10 +47,8 @@ const resolvers = {
   DirectChat,
   DirectChatMessage,
   GroupChat,
-  GroupChatMessage
+  GroupChatMessage,
 };
-
-
 
 const server = new ApolloServer({
   typeDefs,
@@ -59,7 +57,8 @@ const server = new ApolloServer({
   //   return isAuth(req);
   // },
   context: ({ req, res, connection }) => {
-    if (connection) { // if its connected using subscriptions
+    if (connection) {
+      // if its connected using subscriptions
       return { ...connection, pubsub, res, req };
     } else {
       return { ...isAuth(req), pubsub, res, req };
@@ -88,27 +87,24 @@ const server = new ApolloServer({
   },
 });
 
-app.use(apiLimiter);//safety against DOS attack
+app.use(apiLimiter); //safety against DOS attack
 
-app.use(xss());//safety against XSS attack or Cross Site Scripting attacks
+app.use(xss()); //safety against XSS attack or Cross Site Scripting attacks
 
-app.use(helmet({ contentSecurityPolicy: (process.env.NODE_ENV === 'production') ? undefined : false }));//safety against XSS attack
+app.use(helmet({ contentSecurityPolicy: (process.env.NODE_ENV === 'production') ? undefined : false })); //safety against XSS attack
 
-app.use(mongoSanitize());//safety against NoSql Injections
+app.use(mongoSanitize()); //safety against NoSql Injections
 
 //makes folder available public
 app.use("/images", express.static(path.join(__dirname, "./images")));
 
-app.use(cors());//to apply cors 
+app.use(cors()); //to apply cors
 
 //app.use(express.static("doc"));'
 
+server.applyMiddleware({ app }); //this is about applying middleware for the api
 
-server.applyMiddleware({ app });//this is about applying middleware for the api
-
-
-
-const httpServer = http.createServer(app);//creating http server 
+const httpServer = http.createServer(app); //creating http server
 server.installSubscriptionHandlers(httpServer);
 
 connect()
@@ -124,13 +120,11 @@ connect()
     // ⚠️ Pay attention to the fact that we are calling `listen` on the http server variable, and not on `app`.
     httpServer.listen(process.env.PORT || 4000, () => {
       console.log(
-        `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
-          server.graphqlPath
+        `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${server.graphqlPath
         }`
       );
       console.log(
-        `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${
-          server.subscriptionsPath
+        `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${server.subscriptionsPath
         }`
       );
     });

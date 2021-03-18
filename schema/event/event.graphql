@@ -86,6 +86,42 @@ module.exports = `
         deadline: String
     }
 
+    enum EventOrderByInput {
+        id_ASC
+        id_DESC
+        title_ASC
+        title_DESC
+        description_ASC
+        description_DESC
+        startDate_ASC 
+        startDate_DESC 
+        endDate_ASC 
+        endDate_DESC 
+        allDay_ASC
+        allDay_DESC
+        startTime_ASC
+        startTime_DESC
+        endTime_ASC
+        endTime_DESC
+        recurrance_ASC
+        recurrance_DESC
+        location_ASC
+        location_DESC
+    }
+
+    enum TaskOrderByInput {
+        id_ASC
+        id_DESC
+        title_ASC
+        title_DESC
+        description_ASC
+        description_DESC
+        createdAt_ASC 
+        createdAt_DESC
+        deadline_ASC
+        deadline_DESC
+    }
+
 #     input EventProjectInput {
 #         title:String!
 #         description: String!

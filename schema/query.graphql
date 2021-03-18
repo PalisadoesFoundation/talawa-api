@@ -4,17 +4,19 @@ module.exports = `
 
   type Query {
     users(id: ID): [User],
+    usersConnection(where: UserWhereInput, first: Int, skip: Int, orderBy: UserOrderByInput): [User]!
     organizations(id: ID): [Organization]
+    organizationsConnection(where: OrganizationWhereInput, first: Int, skip: Int, orderBy: OrganizationOrderByInput): [Organization]!
     events(id: ID): [Event]
     eventsByOrganization(id: ID): [Event]
     registeredEventsByUser(id: ID): [Event]
     event(id: ID): Event
     registrantsByEvent(id: ID): [User]
     me:User!
-    posts: [Post]
-    postsByOrganization(id: ID!): [Post]
-    tasksByEvent(id: ID!): [Task]
-    tasksByUser(id: ID!): [Task]
+    posts(orderBy: PostOrderByInput): [Post]
+    postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
+    tasksByEvent(id: ID!, orderBy: TaskOrderByInput): [Task]
+    tasksByUser(id: ID!, orderBy: TaskOrderByInput): [Task]
     comments: [Comment]
     commentsByPost(id: ID!): [Comment]
     post(id: ID): Post
