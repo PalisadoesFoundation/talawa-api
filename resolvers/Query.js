@@ -13,6 +13,8 @@ const DirectChatMessages = require("../models/DirectChatMessage");
 
 const GroupChat = require("../models/GroupChat");
 const GroupChatMessages = require("../models/GroupChatMessage");
+const usersConnection = require("../resolvers/user_query/users_pagination")
+const organizationsConnection = require("./organization_query/organizations_pagination")
 
 
 const Query = {
@@ -102,6 +104,7 @@ const Query = {
 			throw e;
 		}
 	},
+	usersConnection,
 	me: async (parent, args, context, info) => {
 		authCheck(context);
 		try {
@@ -173,6 +176,7 @@ const Query = {
 			throw e;
 		}
 	},
+	organizationsConnection,
 	event: async (parent, args, context, info) => {
 		try {
 			const eventFound = await Event.findOne({ _id: args.id })
