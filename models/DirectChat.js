@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
-
 //this is the Structure of the direct chat
 const directChatSchema = new Schema({
   users: [
@@ -21,13 +20,13 @@ const directChatSchema = new Schema({
   creator: {
     type: Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    required: true,
   },
   organization: {
     type: Schema.Types.ObjectId,
     ref: "Organization",
-    required: true
-  }
+    required: true,
+  },
 });
 
 module.exports = mongoose.model("DirectChat", directChatSchema);

@@ -57,5 +57,16 @@ module.exports = `
     organization: Organization!
   }
 
+  enum OrganizationOrderByInput {
+    id_ASC
+    id_DESC
+    name_ASC
+    name_DESC
+    description_ASC
+    description_DESC
+    apiUrl_ASC
+    apiUrl_DESC
+  }
+
 
 `
