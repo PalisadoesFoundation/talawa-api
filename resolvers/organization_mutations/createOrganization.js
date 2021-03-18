@@ -1,12 +1,9 @@
-const mongoose = require("mongoose");
-
 const User = require("../../models/User");
 const Organization = require("../../models/Organization");
 const authCheck = require("../functions/authCheck");
 const userExists = require("../../helper_functions/userExists");
 
 
-const imageAlreadyInDbCheck = require("../../helper_functions/imageAlreadyInDbCheck")
 const uploadImage = require("../../helper_functions/uploadImage");
 
 

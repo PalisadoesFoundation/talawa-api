@@ -1,4 +1,4 @@
-const { createWriteStream, unlink } = require("fs");
+const { unlink } = require("fs");
 const ImageHash = require("../models/ImageHash");
 
 const reuploadDuplicateCheck = require("./ReuploadDuplicateCheck");
@@ -34,7 +34,7 @@ async function deleteImage(imageToBeDeleted, imageBelongingToItem) {
       });
     }
 
-    let decrementedhash = await ImageHash.findOneAndUpdate(
+    await ImageHash.findOneAndUpdate(
       {
         // decrement number of uses of hashed image
         fileName: imageToBeDeleted,

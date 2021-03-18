@@ -1,4 +1,3 @@
-const User = require("../../models/User");
 const GroupChat = require("../../models/GroupChat");
 const authCheck = require("../functions/authCheck");
 const adminCheck = require("../functions/adminCheck");

@@ -1,5 +1,5 @@
 
-const { createWriteStream, unlink } = require("fs");
+const { unlink } = require("fs");
 
 module.exports = function deleteDuplicatedImage(imagePath) {
     

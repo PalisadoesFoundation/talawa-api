@@ -1,6 +1,5 @@
 const ImageHash = require("../models/ImageHash");
 const { imageHash } = require("image-hash");
-const deleteImage = require("./deleteImage");
 const deleteDuplicatedImage = require("./deleteDuplicatedImage");
 const reuploadDuplicateCheck = require("./ReuploadDuplicateCheck");
 
@@ -12,7 +11,7 @@ module.exports = function imageAlreadyInDbCheck(imageJustUploadedPath, itemImage
   return new Promise((resolve, reject) => {
     imageHash(`./${imageJustUploadedPath}`, 16, true, async (error, data) => {
       //if (error) throw error;
-      hash = data;
+      const hash = data;
 
       // Finds an entry with the same hash
       const imageAlreadyExistsInDb = await ImageHash.findOne({

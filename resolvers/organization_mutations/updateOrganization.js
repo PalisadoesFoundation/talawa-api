@@ -1,4 +1,3 @@
-const User = require("../../models/User");
 const Organization = require("../../models/Organization");
 const authCheck = require("../functions/authCheck");
 const adminCheck = require("../functions/adminCheck");

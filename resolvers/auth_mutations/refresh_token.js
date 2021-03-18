@@ -1,7 +1,6 @@
 
 const jwt = require("jsonwebtoken");
 const User = require("../../models/User");
-const authCheck = require("../functions/authCheck");
 const {createAccessToken, createRefreshToken} = require("../../helper_functions/auth");
 
 

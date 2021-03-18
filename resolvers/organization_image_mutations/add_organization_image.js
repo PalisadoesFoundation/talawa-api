@@ -3,7 +3,6 @@ const User = require("../../models/User");
 
 const authCheck = require("../functions/authCheck");
 const adminCheck = require("../functions/adminCheck");
-const imageAlreadyInDbCheck = require("../../helper_functions/imageAlreadyInDbCheck")
 const uploadImage = require("../../helper_functions/uploadImage");
 
 
