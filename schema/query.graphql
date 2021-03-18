@@ -13,8 +13,8 @@ module.exports = `
     me:User!
     posts(orderBy: PostOrderByInput): [Post]
     postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
-    tasksByEvent(id: ID!): [Task]
-    tasksByUser(id: ID!): [Task]
+    tasksByEvent(id: ID!, orderBy: TaskOrderByInput): [Task]
+    tasksByUser(id: ID!, orderBy: TaskOrderByInput): [Task]
     comments: [Comment]
     commentsByPost(id: ID!): [Comment]
     post(id: ID): Post

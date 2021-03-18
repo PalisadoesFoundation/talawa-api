@@ -109,6 +109,19 @@ module.exports = `
         location_DESC
     }
 
+    enum TaskOrderByInput {
+        id_ASC
+        id_DESC
+        title_ASC
+        title_DESC
+        description_ASC
+        description_DESC
+        createdAt_ASC 
+        createdAt_DESC
+        deadline_ASC
+        deadline_DESC
+    }
+
 #     input EventProjectInput {
 #         title:String!
 #         description: String!
