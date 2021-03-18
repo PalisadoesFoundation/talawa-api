@@ -677,7 +677,7 @@ const Query = {
 			});
 			return posts;
 		} catch (error) {
-			throw e;
+			throw error;
 		}
 	},
 	postsByOrganization: async (parent, args, context, info) => {

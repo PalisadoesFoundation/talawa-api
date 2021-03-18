@@ -1,6 +1,4 @@
 const User = require("../models/User");
-const GroupChatMessage = require("../models/GroupChatMessage");
-const Organization = require("../models/Organization");
 const GroupChat = require("../models/GroupChat");
 
 module.exports = {

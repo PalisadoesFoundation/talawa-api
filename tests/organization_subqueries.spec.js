@@ -1,6 +1,5 @@
 const axios = require("axios");
 const {URL} = require("../constants")
-const getToken = require("./functions/getToken")
 
 describe("organization resolvers", () => {
 

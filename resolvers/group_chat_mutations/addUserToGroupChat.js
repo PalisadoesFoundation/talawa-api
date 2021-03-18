@@ -3,7 +3,6 @@ const GroupChat = require("../../models/GroupChat");
 const authCheck = require("../functions/authCheck");
 const adminCheck = require("../functions/adminCheck");
 const organizationExists = require("../../helper_functions/organizationExists");
-const GroupChatMessage = require("../../models/GroupChatMessage");
 
 
 module.exports = async (parent, args, context, info) => {

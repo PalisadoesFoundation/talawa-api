@@ -1,4 +1,3 @@
-const User = require("../../models/User");
 const DirectChat = require("../../models/DirectChat");
 const authCheck = require("../functions/authCheck");
 const DirectChatMessage = require("../../models/DirectChatMessage");

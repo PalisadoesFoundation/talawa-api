@@ -12,7 +12,6 @@ describe("Block user functionality tests", () => {
   let createdOrganizationId;
   // A new user signs up
   let newUserId;
-  let newUserToken;
   let id = shortid.generate();
   let email = `${id}@test.com`;
 
@@ -64,7 +63,6 @@ describe("Block user functionality tests", () => {
     });
 
     const signUpData = signUpResponse.data;
-    newUserToken = signUpData.data.signUp.accessToken;
     newUserId = signUpData.data.signUp.user._id;
 
     const blockUserResponse = await axios.post(
