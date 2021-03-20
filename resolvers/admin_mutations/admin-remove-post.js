@@ -26,7 +26,7 @@ module.exports = async (parent, args, context) => {
   //remove post from organization
   org.overwrite({
     ...org._doc,
-    posts: org._doc.posts.filter((post) => post != args.postId),
+    posts: org._doc.posts.filter((post) => post !== args.postId),
   });
   await org.save();
 

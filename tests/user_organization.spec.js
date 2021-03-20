@@ -155,33 +155,6 @@ describe('User-Organization Resolvers', () => {
 
   // ADMIN REMOVES EVENT
 
-  // test("Admin Removes Event", async () => {
-  //   const response = await axios.post(
-  //     URL,
-  //     {
-  //       query: `
-  //       mutation{
-  //         adminRemoveEvent(eventId:"${createdEventId}") {
-  //           _id
-  //         }
-  //       }
-  //         `,
-  //     },
-  //     {
-  //       headers: {
-  //         Authorization: `Bearer ${newUserToken}`,
-  //       },
-  //     }
-  //   );
-
-  //   const { data } = response;
-  //   expect(data.data.adminRemoveEvent).toEqual(
-  //     expect.objectContaining({
-  //       _id: createdEventId,
-  //     })
-  //   );
-  // });
-
   // ADMIN IS REMOVED
 
   test('Admin is removed', async () => {
