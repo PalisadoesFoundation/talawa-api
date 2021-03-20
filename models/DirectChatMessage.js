@@ -20,7 +20,7 @@ const directChatMessageSchema = new Schema({
     required: true,
   },
   createdAt: {
-    type: String,
+    type: Date,
     required: true,
   },
   messageContent: {
