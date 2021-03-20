@@ -1,13 +1,13 @@
-const Organization = require("../../models/Organization");
+const Organization = require('../../models/Organization');
 
-const User = require("../../models/User");
-const bcrypt = require("bcryptjs");
+const User = require('../../models/User');
+const bcrypt = require('bcryptjs');
 const {
   createAccessToken,
   createRefreshToken,
-} = require("../../helper_functions/auth");
+} = require('../../helper_functions/auth');
 
-const uploadImage = require("../../helper_functions/uploadImage");
+const uploadImage = require('../../helper_functions/uploadImage');
 
 module.exports = async (parent, args, context, info) => {
   try {
@@ -15,7 +15,7 @@ module.exports = async (parent, args, context, info) => {
       email: args.data.email.toLowerCase(),
     });
     if (emailTaken) {
-      throw new Error("Email address taken.");
+      throw new Error('Email address taken.');
     }
 
     // TODO: this check is to be removed
@@ -24,7 +24,7 @@ module.exports = async (parent, args, context, info) => {
       org = await Organization.findOne({
         _id: args.data.organizationUserBelongsToId,
       });
-      if (!org) throw new Error("Organization not found");
+      if (!org) throw new Error('Organization not found');
     }
 
     const hashedPassword = await bcrypt.hash(args.data.password, 12);

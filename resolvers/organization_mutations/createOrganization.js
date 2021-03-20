@@ -1,12 +1,9 @@
-const User = require("../../models/User");
-const Organization = require("../../models/Organization");
-const authCheck = require("../functions/authCheck");
-const userExists = require("../../helper_functions/userExists");
+const User = require('../../models/User');
+const Organization = require('../../models/Organization');
+const authCheck = require('../functions/authCheck');
+const userExists = require('../../helper_functions/userExists');
 
-
-const uploadImage = require("../../helper_functions/uploadImage");
-
-
+const uploadImage = require('../../helper_functions/uploadImage');
 
 const createOrganization = async (parent, args, context, info) => {
   //authentication check
@@ -24,7 +21,11 @@ const createOrganization = async (parent, args, context, info) => {
 
     let newOrganization = new Organization({
       ...args.data,
-      image: uploadImageObj ? uploadImageObj.imageAlreadyInDbPath ? uploadImageObj.imageAlreadyInDbPath : uploadImageObj.newImagePath : null,
+      image: uploadImageObj
+        ? uploadImageObj.imageAlreadyInDbPath
+          ? uploadImageObj.imageAlreadyInDbPath
+          : uploadImageObj.newImagePath
+        : null,
       creator: userFound,
       admins: [userFound],
       members: [userFound],

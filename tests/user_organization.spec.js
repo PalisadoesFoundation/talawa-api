@@ -114,53 +114,6 @@ describe('User-Organization Resolvers', () => {
     );
   });
 
-  // NEW USER CREATES AN EVENT
-  // let createdEventId;
-  // test("User Creates Event", async () => {
-  //   try {
-  //     const response = await axios.post(
-  //       URL,
-  //       {
-  //         query: `
-  //           mutation{
-  //             createEvent(data:{
-  //                 title:"to be deleted"
-  //                 date: "3/8/2020"
-  //                 allDay: false
-  //                 description: "to be deleted"
-  //                 recurring: false
-  //                 attendees: "to be deleted"
-  //                 isPublic: false
-  //                 isRegisterable:false
-  //                 organizationId: "${createdOrgId}"
-  //                 endTime:"1/1/2001"
-  //                 startTime:"1/1/2000"
-  //               }){
-  //                 _id
-  //               }
-  //           }`,
-  //       },
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${newUserToken}`,
-  //         },
-  //       }
-  //     );
-
-  //     const { data } = response;
-  //     createdEventId = data.data.createEvent._id;
-
-  //     expect(data.data.createEvent).toEqual(
-  //       expect.objectContaining({
-  //         _id: createdEventId,
-  //       })
-  //     );
-  //   } catch (e) {
-  //     console.log("an error has occurred");
-  //     throw e;
-  //   }
-  // });
-
   // NEW USER CREATES A GROUP
 
   // USER IS MADE ADMIN
