@@ -1,7 +1,7 @@
 {
-  "name": "talawa-api-rework",
+  "name": "talawa-api",
   "version": "1.0.0",
-  "description": "\"# tenten-api-rework\"",
+  "description": "talawa-api is a backend repository written using Node.js and graphql for generating APIs for the talawa flutter app.",
   "main": "index.js",
   "scripts": {
     "test": "jest",
@@ -11,25 +11,28 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Laurell876/tenten-api-rework.git"
+    "url": "https://github.com/PalisadoesFoundation/talawa-api"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "chats",
+    "events",
+    "organization",
+    "community"
+  ],
+  "author": "Palisadoes Foundation",
+  "license": "GNU General Public License v3.0",
   "bugs": {
-    "url": "https://github.com/Laurell876/tenten-api-rework/issues"
+    "url": "https://github.com/PalisadoesFoundation/talawa-api/issues"
   },
-  "homepage": "https://github.com/Laurell876/tenten-api-rework#readme",
+  "homepage": "https://github.com/PalisadoesFoundation/talawa-api#readme",
   "dependencies": {
-    "apollo-server": "^2.14.2",
     "apollo-server-express": "^2.14.2",
     "axios": "^0.21.1",
-    "babel-jest": "^26.0.1",
     "bcryptjs": "^2.4.3",
-    "config": "^3.3.6",
     "cors": "^2.8.5",
     "cross-env": "^7.0.2",
     "dotenv": "^8.2.0",
+    "express": "^4.17.1",
     "express-mongo-sanitize": "^2.0.2",
     "express-rate-limit": "^5.2.6",
     "graphql": "^15.0.0",

@@ -1,25 +1,23 @@
-const GroupChat = require('../../models/GroupChat');
-const authCheck = require('../functions/authCheck');
-const GroupChatMessage = require('../../models/GroupChatMessage');
-const userExists = require('../../helper_functions/userExists');
+const GroupChat = require("../../models/GroupChat");
+const authCheck = require("../functions/authCheck");
+const GroupChatMessage = require("../../models/GroupChatMessage");
+const userExists = require("../../helper_functions/userExists");
 
-module.exports = async (parent, args, context) => {
+module.exports = async (parent, args, context, info) => {
+  try{
   authCheck(context);
 
   const chat = await GroupChat.findById(args.chatId);
-  if (!chat) throw new Error('Chat not found');
+  if (!chat) throw new Error("Chat not found");
 
   const sender = await userExists(context.userId);
 
   // ensure the user is a member of the group chat
-  const userIsAMemberOfGroupChat = chat.users.filter(
-    (user) => user === context.userId
-  );
-  // console.log(userIsAMemberOfGroupChat)
-  if (!(userIsAMemberOfGroupChat.length > 0))
-    throw new Error('User is not a member of this gorup chat');
+  const userIsAMemberOfGroupChat = chat.users.filter(user => user == context.userId);
+  //console.log(userIsAMemberOfGroupChat)
+  if (!(userIsAMemberOfGroupChat.length > 0)) throw new Error("User is not a member of this gorup chat");
 
-  // const receiver = chat.users.filter((u) => u != sender.id);
+  //const receiver = chat.users.filter((u) => u != sender.id);
 
   const message = new GroupChatMessage({
     groupChatMessageBelongsTo: chat._doc,
@@ -27,7 +25,7 @@ module.exports = async (parent, args, context) => {
     createdAt: new Date(),
     messageContent: args.messageContent,
   });
-  // console.log(message._doc);
+  //console.log(message._doc);
 
   await message.save();
 
@@ -43,12 +41,15 @@ module.exports = async (parent, args, context) => {
     }
   );
 
-  // calls subscription
-  context.pubsub.publish('MESSAGE_SENT_TO_GROUP_CHAT', {
+  //calls subscription
+  context.pubsub.publish("MESSAGE_SENT_TO_GROUP_CHAT", {
     messageSentToGroupChat: {
       ...message._doc,
     },
   });
 
   return message._doc;
+  }catch(e){
+    throw e;
+  }
 };

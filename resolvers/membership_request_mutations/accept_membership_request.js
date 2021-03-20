@@ -1,63 +1,66 @@
-const MembershipRequest = require('../../models/MembershipRequest');
-const authCheck = require('../functions/authCheck');
-const adminCheck = require('../functions/adminCheck');
-const organizationExists = require('../../helper_functions/organizationExists');
-const userExists = require('../../helper_functions/userExists');
+const MembershipRequest = require("../../models/MembershipRequest");
+const authCheck = require("../functions/authCheck");
+const adminCheck = require("../functions/adminCheck");
+const organizationExists = require("../../helper_functions/organizationExists");
+const userExists = require("../../helper_functions/userExists")
 
-module.exports = async (parent, args, context) => {
+
+module.exports = async (parent, args, context, info) => {
   authCheck(context);
-  // ensure membership request exists
-  const membershipRequest = await MembershipRequest.findOne({
-    _id: args.membershipRequestId,
-  });
-  if (!membershipRequest) throw new Error('Membership request not found');
+  try {
+    //ensure membership request exists
+    const membershipRequest = await MembershipRequest.findOne({
+      _id: args.membershipRequestId,
+    });
+    if (!membershipRequest) throw new Error("Membership request not found");
 
-  // ensure org exists
-  const org = await organizationExists(membershipRequest.organization);
+    //ensure org exists
+    let org = await organizationExists(membershipRequest.organization);
 
-  // ensure user exists
-  const user = await userExists(membershipRequest.user);
 
-  // ensure user is admin
-  adminCheck(context, org);
+    //ensure user exists
+    let user = await userExists(membershipRequest.user);
 
-  // check to see if user is already a member
-  org._doc.members.forEach((member) => {
-    if (member._id === user.id) {
-      throw new Error('User is already a member');
-    }
-  });
 
-  // add user in membership request as a member to the organization
-  org.overwrite({
-    ...org._doc,
-    members: [...org._doc.members, user],
-  });
+    //ensure user is admin
+    adminCheck(context, org);
+    
+    //check to see if user is already a member
+    org._doc.members.forEach(member=>{
+        if(member._id == user.id){
+            throw new Error("User is already a member")
+        }
+    })
 
-  // delete membership request
-  await MembershipRequest.deleteOne({ _id: args.membershipRequestId });
+    //add user in membership request as a member to the organization
+    org.overwrite({
+      ...org._doc,
+      members: [...org._doc.members, user],
+    });
 
-  // remove membership request from organization
-  org.overwrite({
-    ...org._doc,
-    membershipRequests: org._doc.membershipRequests.filter(
-      (request) => request._id !== membershipRequest.id
-    ),
-  });
+    //delete membership request
+    await MembershipRequest.deleteOne({_id: args.membershipRequestId});
 
-  await org.save();
+    //remove membership request from organization
+    org.overwrite({
+        ...org._doc,
+        membershipRequests: org._doc.membershipRequests.filter(request => request._id !== membershipRequest.id)
+    })
 
-  // remove membership request from user
-  user.overwrite({
-    ...user._doc,
-    joinedOrganizations: [...user._doc.joinedOrganizations, org],
-    membershipRequests: user._doc.membershipRequests.filter(
-      (request) => request._id !== membershipRequest.id
-    ),
-  });
+    await org.save();
 
-  await user.save();
+    //remove membership request from user
+    user.overwrite({
+        ...user._doc,
+        joinedOrganizations: [...user._doc.joinedOrganizations, org],
+        membershipRequests: user._doc.membershipRequests.filter(request => request._id !== membershipRequest.id)
+    })
 
-  // return membershipship request
-  return membershipRequest._doc;
+    await user.save();
+
+    //return membershipship request
+    return membershipRequest._doc
+  } catch (e) {
+    throw e;
+  }
 };

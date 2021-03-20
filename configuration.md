@@ -19,6 +19,9 @@ If you are running MongoDB locally on your system then these env variables are n
 
 NB: You may have username and password for local instance too, in that case set the username ans password in env file.
 
+NB: If your local mongodbb required auth set the LOCAL_DB_REQUIRES_AUTH var to true and ensure the MONGO_PASSWORD and MONGO_USER vars are set
+
+
 ### Hosted Instance
 
 You can also use the hosted instance of mongodb using atlas by
@@ -84,7 +87,7 @@ Now `Run` the app.
 
 As the app opens, enter the url:
 
-* Remeber you only need to enter `local host` and `Port Number`.
+* Remember you only need to enter `local host` and `Port Number`.
 The [Graphql Client](https://github.com/PalisadoesFoundation/talawa/blob/master/lib/utils/GQLClient.dart)
 is itself configured with `graphql` string at the end to form the uri.
 * If you are running app on emulator use `10.0.2.2` inplace of `localhost`. This is done because the local host of the emulator is within the device itself.

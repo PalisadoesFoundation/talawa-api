@@ -1,37 +1,40 @@
-const Organization = require('../../models/Organization');
-const User = require('../../models/User');
+const Organization = require("../../models/Organization");
+const User = require("../../models/User");
 
-const authCheck = require('../functions/authCheck');
-const adminCheck = require('../functions/adminCheck');
-const uploadImage = require('../../helper_functions/uploadImage');
+const authCheck = require("../functions/authCheck");
+const adminCheck = require("../functions/adminCheck");
+const uploadImage = require("../../helper_functions/uploadImage");
 
-module.exports = async (parent, args, context) => {
-  authCheck(context);
 
-  const user = await User.findById(context.userId);
-  if (!user) throw new Error('User not found');
+module.exports = async (parent, args, context, info) => {
+    authCheck(context);
 
-  const org = await Organization.findById(args.organizationId);
-  if (!org) throw new Error('Organization not found');
+    try {
+        const user = await User.findById(context.userId);
+        if (!user) throw new Error("User not found")
 
-  adminCheck(context, org); // Ensures user is an administrator of the organization
+        const org = await Organization.findById(args.organizationId);
+        if (!org) throw new Error("Organization not found");
 
-  // Upload Image
-  const uploadImageObj = await uploadImage(args.file, org.image);
+        adminCheck(context, org) // Ensures user is an administrator of the organization
 
-  const newOrganization = await Organization.findOneAndUpdate(
-    { _id: org.id },
-    {
-      $set: {
-        image: uploadImageObj.imageAlreadyInDbPath
-          ? uploadImageObj.imageAlreadyInDbPath
-          : uploadImageObj.newImagePath,
-      },
-    },
-    {
-      new: true,
+        // Upload Image
+        let uploadImageObj = await uploadImage(args.file, org.image)
+
+        const newOrganization = await Organization.findOneAndUpdate(
+            { _id: org.id },
+            {
+                $set: {
+                    image: uploadImageObj.imageAlreadyInDbPath ? uploadImageObj.imageAlreadyInDbPath : uploadImageObj.newImagePath
+                }
+            },
+            {
+                new: true
+            })
+
+        return newOrganization;
+
+    } catch (e) {
+        throw e;
     }
-  );
-
-  return newOrganization;
 };

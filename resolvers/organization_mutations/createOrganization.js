@@ -1,53 +1,57 @@
-const User = require('../../models/User');
-const Organization = require('../../models/Organization');
-const authCheck = require('../functions/authCheck');
-const userExists = require('../../helper_functions/userExists');
-const uploadImage = require('../../helper_functions/uploadImage');
+const User = require("../../models/User");
+const Organization = require("../../models/Organization");
+const authCheck = require("../functions/authCheck");
+const userExists = require("../../helper_functions/userExists");
 
-const createOrganization = async (parent, args, context) => {
-  // authentication check
+
+const uploadImage = require("../../helper_functions/uploadImage");
+
+
+
+const createOrganization = async (parent, args, context, info) => {
+  //authentication check
   authCheck(context);
 
-  // gets user in token - to be used later on
-  const userFound = await userExists(context.userId);
+  try {
+    //gets user in token - to be used later on
+    let userFound = await userExists(context.userId);
 
-  // Upload file
-  let uploadImageObj;
-  if (args.file) {
-    uploadImageObj = await uploadImage(args.file, null);
-  }
-
-  const newOrganization = new Organization({
-    ...args.data,
-    image: uploadImageObj
-      ? uploadImageObj.imageAlreadyInDbPath
-        ? uploadImageObj.imageAlreadyInDbPath
-        : uploadImageObj.newImagePath
-      : null,
-    creator: userFound,
-    admins: [userFound],
-    members: [userFound],
-  });
-  await newOrganization.save();
-
-  await User.findOneAndUpdate(
-    { _id: userFound.id },
-    {
-      $set: {
-        joinedOrganizations: [
-          ...userFound._doc.joinedOrganizations,
-          newOrganization,
-        ],
-        createdOrganizations: [
-          ...userFound._doc.createdOrganizations,
-          newOrganization,
-        ],
-        adminFor: [...userFound._doc.adminFor, newOrganization],
-      },
+    //Upload file
+    let uploadImageObj;
+    if (args.file) {
+      uploadImageObj = await uploadImage(args.file, null);
     }
-  );
 
-  return newOrganization._doc;
+    let newOrganization = new Organization({
+      ...args.data,
+      image: uploadImageObj ? uploadImageObj.imageAlreadyInDbPath ? uploadImageObj.imageAlreadyInDbPath : uploadImageObj.newImagePath : null,
+      creator: userFound,
+      admins: [userFound],
+      members: [userFound],
+    });
+    await newOrganization.save();
+
+    await User.findOneAndUpdate(
+      { _id: userFound.id },
+      {
+        $set: {
+          joinedOrganizations: [
+            ...userFound._doc.joinedOrganizations,
+            newOrganization,
+          ],
+          createdOrganizations: [
+            ...userFound._doc.createdOrganizations,
+            newOrganization,
+          ],
+          adminFor: [...userFound._doc.adminFor, newOrganization],
+        },
+      }
+    );
+
+    return newOrganization._doc;
+  } catch (e) {
+    throw e;
+  }
 };
 
 module.exports = createOrganization;

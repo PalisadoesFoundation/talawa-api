@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const { Schema } = mongoose;
+const Schema = mongoose.Schema;
 
 const groupSchema = new Schema({
   title: {
@@ -13,16 +13,16 @@ const groupSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
   organization: {
     type: Schema.Types.ObjectId,
-    ref: 'Organization',
+    ref: "Organization",
     required: true,
   },
   admins: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
   ],
 });
 
-module.exports = mongoose.model('Group', groupSchema);
+module.exports = mongoose.model("Group", groupSchema);

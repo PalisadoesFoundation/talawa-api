@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const { Schema } = mongoose;
+const Schema = mongoose.Schema;
 
 const taskSchema = new Schema({
   title: {
@@ -14,14 +14,14 @@ const taskSchema = new Schema({
   deadline: { type: Date },
   event: {
     type: Schema.Types.ObjectId,
-    ref: 'Event',
+    ref: "Event",
     required: true,
   },
   creator: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
 });
 
-module.exports = mongoose.model('Task', taskSchema);
+module.exports = mongoose.model("Task", taskSchema);

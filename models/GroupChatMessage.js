@@ -1,16 +1,16 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const { Schema } = mongoose;
+const Schema = mongoose.Schema;
 
 const groupChatMessageSchema = new Schema({
   groupChatMessageBelongsTo: {
     type: Schema.Types.ObjectId,
-    ref: 'GroupChat',
+    ref: "GroupChat",
     required: true,
   },
   sender: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
   createdAt: {
@@ -23,4 +23,4 @@ const groupChatMessageSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model('GroupChatMessage', groupChatMessageSchema);
+module.exports = mongoose.model("GroupChatMessage", groupChatMessageSchema);

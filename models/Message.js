@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const { Schema } = mongoose;
+const Schema = mongoose.Schema;
 
 const messageSchema = new Schema({
   text: {
@@ -18,14 +18,14 @@ const messageSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
   creator: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
   group: {
     type: Schema.Types.ObjectId,
-    ref: 'Group',
+    ref: "Group",
     required: true,
   },
 });
 
-module.exports = mongoose.model('Message', messageSchema);
+module.exports = mongoose.model("Message", messageSchema);

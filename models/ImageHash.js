@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const { Schema } = mongoose;
+const Schema = mongoose.Schema;
 
 const imageHashSchema = new Schema({
   hashValue: {
@@ -18,4 +18,4 @@ const imageHashSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model('ImageHash', imageHashSchema);
+module.exports = mongoose.model("ImageHash", imageHashSchema);

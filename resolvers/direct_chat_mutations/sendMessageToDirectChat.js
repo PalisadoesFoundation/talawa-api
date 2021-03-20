@@ -1,26 +1,27 @@
-const DirectChat = require('../../models/DirectChat');
-const authCheck = require('../functions/authCheck');
-const DirectChatMessage = require('../../models/DirectChatMessage');
-const userExists = require('../../helper_functions/userExists');
+const DirectChat = require("../../models/DirectChat");
+const authCheck = require("../functions/authCheck");
+const DirectChatMessage = require("../../models/DirectChatMessage");
+const userExists = require("../../helper_functions/userExists");
 
-module.exports = async (parent, args, context) => {
+module.exports = async (parent, args, context, info) => {
+  try{
   authCheck(context);
 
   const chat = await DirectChat.findById(args.chatId);
-  if (!chat) throw new Error('Chat not found');
+  if (!chat) throw new Error("Chat not found");
 
   const sender = await userExists(context.userId);
 
-  const receiver = chat.users.filter((u) => u !== sender.id);
+  const receiver = chat.users.filter((u) => u != sender.id);
 
   const message = new DirectChatMessage({
     directChatMessageBelongsTo: chat._doc,
     sender: sender._id,
-    receiver,
+    receiver: receiver,
     createdAt: new Date(),
     messageContent: args.messageContent,
   });
-  // console.log(message._doc);
+  //console.log(message._doc);
 
   await message.save();
 
@@ -36,12 +37,15 @@ module.exports = async (parent, args, context) => {
     }
   );
 
-  // calls subscription
-  context.pubsub.publish('MESSAGE_SENT_TO_DIRECT_CHAT', {
+  //calls subscription
+  context.pubsub.publish("MESSAGE_SENT_TO_DIRECT_CHAT", {
     messageSentToDirectChat: {
       ...message._doc,
     },
   });
 
   return message._doc;
+}catch(e){
+  throw e;
+}
 };
