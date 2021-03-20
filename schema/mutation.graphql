@@ -6,6 +6,7 @@ module.exports = `
     refreshToken(refreshToken: String!) : ExtendSession!
     revokeRefreshTokenForUser(userId: String!) : Boolean!
 
+    updateUserProfile(data: UpdateUserInput): User!
     createEvent(data: EventInput): Event!
     removeEvent(id: ID!): Event!
     registerForEvent(id: ID!): Event!
