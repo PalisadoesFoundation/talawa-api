@@ -5,13 +5,17 @@ module.exports = {
     node: true,
     'jest/globals': true,
   },
-  extends: ['eslint:recommended', 'plugin:jest/recommended'],
+  extends: [
+    'eslint:recommended',
+    'plugin:prettier/recommended',
+    'plugin:jest/recommended',
+  ],
   parserOptions: {
     ecmaVersion: 12,
   },
   rules: {
     indent: ['error', 2],
-    'linebreak-style': [2, 'windows'],
+    'linebreak-style': 0,
     quotes: ['error', 'single', 'avoid-escape'],
     semi: ['error', 'always'],
     eqeqeq: 'error',
