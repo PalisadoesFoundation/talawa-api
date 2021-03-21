@@ -1,6 +1,7 @@
 const authCheck = require("../functions/authCheck");
 const userExists = require("../../helper_functions/userExists");
 const User = require("../../models/User");
+const uploadImage = require("../../helper_functions/uploadImage");
 
 const updateUserProfile = async (parent, args, context, info) => {
 
@@ -22,15 +23,32 @@ const updateUserProfile = async (parent, args, context, info) => {
             }
         }
 
-        //UPDATE USER
-        userFound.overwrite({
-        ...userFound._doc,
-        ...args.data
-        })
+        // Upload file
+        let uploadImageObj;
+        if (args.file) {
+        uploadImageObj = await uploadImage(args.file, null);
+        }
+
+        if(uploadImageObj){
+            //UPDATE USER
+            userFound.overwrite({
+                ...userFound._doc,
+                ...args.data,
+                image: uploadImageObj.imageAlreadyInDbPath
+                        ? uploadImageObj.imageAlreadyInDbPath
+                        : uploadImageObj.newImagePath,
+            })
+        } else{
+            //UPDATE USER
+            userFound.overwrite({
+                ...userFound._doc,
+                ...args.data,
+            })
+        }
         
         await userFound.save();
-  
         return userFound;
+        
     } catch (error) {
         throw error;
     }
