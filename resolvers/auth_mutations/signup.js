@@ -15,7 +15,7 @@ module.exports = async (parent, args, context, info) => {
       email: args.data.email.toLowerCase(),
     });
     if (emailTaken) {
-      throw new Error("Email address taken.");
+      throw Apperror("Email address taken.");
     }
 
     // TODO: this check is to be removed
@@ -24,7 +24,7 @@ module.exports = async (parent, args, context, info) => {
       org = await Organization.findOne({
         _id: args.data.organizationUserBelongsToId,
       });
-      if (!org) throw new Error("Organization not found");
+      if (!org) throw Apperror("Organization not found");
     }
 
     const hashedPassword = await bcrypt.hash(args.data.password, 12);
@@ -60,6 +60,6 @@ module.exports = async (parent, args, context, info) => {
       refreshToken,
     };
   } catch (e) {
-    throw e;
+    throw Apperror("Server error" + e, 500);
   }
 };

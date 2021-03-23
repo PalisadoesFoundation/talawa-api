@@ -7,13 +7,13 @@ const removeEvent = async (parent, args, context, info) => {
 	authCheck(context);
 	try {
 		const user = await User.findOne({ _id: context.userId });
-		if (!user) throw new Error("User does not exist");
+		if (!user) throw Apperror("User does not exist");
 
 		let event = await Event.findOne({ _id: args.id });
-		if (!event) throw new Error("Event not found");
+		if (!event) throw Apperror("Event not found");
 
 		if (!(event.creator !== context.userId)) {
-			throw new Error("User cannot delete event they didn't create");
+			throw Apperror("User cannot delete event they didn't create");
 		}
 
 		await User.updateMany(
@@ -37,7 +37,7 @@ const removeEvent = async (parent, args, context, info) => {
 		await Event.deleteOne({ _id: args.id });
 		return event;
 	} catch (e) {
-		throw e;
+		throw Apperror("Server error" + e, 500);
 	}
 };
 

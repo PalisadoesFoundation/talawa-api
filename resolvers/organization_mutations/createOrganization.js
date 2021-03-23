@@ -50,7 +50,7 @@ const createOrganization = async (parent, args, context, info) => {
 
     return newOrganization._doc;
   } catch (e) {
-    throw e;
+    throw Apperror("Server error" + e, 500);
   }
 };
 

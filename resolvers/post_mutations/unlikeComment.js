@@ -7,11 +7,11 @@ const unlikeComment = async (parent, args, context, info) => {
   authCheck(context);
   try {
     const user = await User.findById(context.userId);
-    if (!user) throw new Error("User does not exist");
+    if (!user) throw Apperror("User does not exist");
 
     let comment = await Comment.findById(args.id);
     if (!comment) {
-      throw new Error("Comment not found");
+      throw Apperror("Comment not found");
     }
     if (comment.likedBy.includes(context.userId)) {
       let newComment = await Comment.findByIdAndUpdate(
@@ -23,7 +23,7 @@ const unlikeComment = async (parent, args, context, info) => {
     }
     return comment;
   } catch (e) {
-    throw e;
+    throw Apperror("Server error" + e, 500);
   }
 };
 

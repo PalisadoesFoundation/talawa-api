@@ -9,17 +9,17 @@ module.exports = async (parent, args, context, info) => {
     const membershipRequest = await MembershipRequest.findOne({
       _id: args.membershipRequestId,
     });
-    if (!membershipRequest) throw new Error("Membership request not found");
+    if (!membershipRequest) throw Apperror("Membership request not found");
 
     //ensure org exists
     let org = await Organization.findOne({
       _id: membershipRequest.organization,
     });
-    if (!org) throw new Error("Organization not found");
+    if (!org) throw Apperror("Organization not found");
 
     //ensure user exists
     const user = await User.findOne({ _id: membershipRequest.user });
-    if (!user) throw new Error("User does not exist");
+    if (!user) throw Apperror("User does not exist");
 
     //ensure user is admin
     adminCheck(context, org);

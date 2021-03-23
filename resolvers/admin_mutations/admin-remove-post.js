@@ -9,7 +9,7 @@ module.exports = async (parent, args, context, info) => {
   try {
     //ensure organization exists
     let org = await Organization.findOne({ _id: args.organizationId });
-    if (!org) throw new Error("Organization not found");
+    if (!org) throw Apperror("Organization not found");
 
     //ensure user is an admin
     adminCheck(context, org);
@@ -17,12 +17,12 @@ module.exports = async (parent, args, context, info) => {
     //gets user in token - to be used later on
     let user = await User.findOne({ _id: context.userId });
     if (!user) {
-      throw new Error("User does not exist");
+      throw Apperror("User does not exist" , 404);
     }
 
     //find post
     let post = await Post.findOne({ _id: args.postId });
-    if (!post) throw new Error("Post does not exist");
+    if (!post) throw Apperror("Post does not exist" , 404);
 
     //remove post from organization
     org.overwrite({
@@ -46,6 +46,6 @@ module.exports = async (parent, args, context, info) => {
       ...post._doc,
     };
   } catch (e) {
-    throw e;
+    throw Apperror("Server error" + e, 500);
   }
 };

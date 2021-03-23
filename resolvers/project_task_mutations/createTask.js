@@ -1,23 +1,25 @@
 const User = require("../../models/User");
 const Task = require("../../models/Task");
 const Event = require("../../models/Event");
-
+const Apperror = require('../../error_middleware/error_handler');
 const createTask = async (parent, args, context, info) => {
 	//authentication check
-	if (!context.isAuth) throw new Error("User is not authenticated");
+	if (!context.isAuth) throw Apperror("User is not authenticated", 401);
 
 	try {
 		//gets user in token - to be used later on
-		let userFound = await User.findOne({ _id: context.userId });
+		let userFound = await User.findOne({
+			_id: context.userId
+		});
 		if (!userFound) {
-			throw new Error("User does not exist");
+			throw Apperror("User does not exist", 404);
 		}
 
 		let eventFound = await Event.findOne({
 			_id: args.eventId,
 		});
 		if (!eventFound) {
-			throw new Error("Event does not exist");
+			throw Apperror("Event does not exist", 404);
 		}
 
 		let task = new Task({
@@ -27,20 +29,20 @@ const createTask = async (parent, args, context, info) => {
 		});
 		await task.save();
 
-		await Event.findOneAndUpdate(
-			{ _id: args.eventId },
-			{
-				$push: {
-					tasks: task,
-				},
+		await Event.findOneAndUpdate({
+			_id: args.eventId
+		}, {
+			$push: {
+				tasks: task,
 			},
-			{ new: true }
-		);
+		}, {
+			new: true
+		});
 		return {
 			...task._doc,
 		};
 	} catch (e) {
-		throw e;
+		throw Apperror("server error" + e, 500);
 	}
 };
 

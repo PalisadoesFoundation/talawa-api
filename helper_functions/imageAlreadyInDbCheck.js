@@ -69,5 +69,5 @@ module.exports = function imageAlreadyInDbCheck(imageJustUploadedPath, itemImage
     .then(() => {
       return fileName;
     })
-    .catch((e) => { throw new Error("Invalid file type")});
+    .catch((e) => { throw Apperror("Invalid file type")});
 };

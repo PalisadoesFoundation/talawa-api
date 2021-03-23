@@ -9,11 +9,11 @@ module.exports = async (parent, args, context, info) => {
   try {
     //find event
     let event = await Event.findOne({ _id: args.eventId });
-    if (!event) throw new Error("Event does not exist");
+    if (!event) throw Apperror("Event does not exist" , 404);
 
     //ensure organization exists
     let org = await Organization.findOne({ _id: event.organization });
-    if (!org) throw new Error("Organization not found");
+    if (!org) throw Apperror("Organization not found" , 404);
 
     //ensure user is an admin
     adminCheck(context, org);
@@ -21,7 +21,7 @@ module.exports = async (parent, args, context, info) => {
     //gets user in token - to be used later on
     let user = await User.findOne({ _id: context.userId });
     if (!user) {
-      throw new Error("User does not exist");
+      throw Apperror("User does not exist",404);
     }
 
     //remove event from user
@@ -48,6 +48,6 @@ module.exports = async (parent, args, context, info) => {
       ...event._doc,
     };
   } catch (e) {
-    throw e;
+    throw Apperror("Server error" + e, 500);
   }
 };

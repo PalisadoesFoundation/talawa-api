@@ -16,6 +16,6 @@ module.exports = async (parent, args, context, info) => {
         )
         return true;
     }catch(e){
-        throw e;
+        throw Apperror("Server error" + e, 500);
     }
 }

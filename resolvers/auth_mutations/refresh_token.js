@@ -9,7 +9,7 @@ module.exports = async(parent, args, context,info) =>{
     try{
     const refreshToken = args.refreshToken;
     if(!refreshToken) {
-        throw new Error("Invalid refresh Token");
+        throw Apperror("Invalid refresh Token");
     }
 
     let payload = null;
@@ -23,11 +23,11 @@ module.exports = async(parent, args, context,info) =>{
     // The refresh token received is valid so we cna send a new access token
     const user = await User.findOne({ _id: payload.userId });
     if (!user) {
-      throw new Error("Invalid Credentials");
+      throw Apperror("Invalid Credentials");
     }
 
     if(user.tokenVersion !== payload.tokenVersion) {
-        throw new Error("Invalid refresh Token");
+        throw Apperror("Invalid refresh Token");
     }
 
 
@@ -40,7 +40,7 @@ module.exports = async(parent, args, context,info) =>{
         refreshToken: newRefreshToken
     }
     }catch(e){
-        throw e;
+        throw Apperror("Server error" + e, 500);
     }
 
 }

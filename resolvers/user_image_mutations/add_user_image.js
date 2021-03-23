@@ -1,7 +1,7 @@
 const User = require("../../models/User");
 const authCheck = require("../functions/authCheck");
 const uploadImage = require("../../helper_functions/uploadImage");
-
+const Apperror = require('../../error_middleware/error_handler');
 
 
 const addUserImage = async (parent, args, context, info) => {
@@ -9,7 +9,7 @@ const addUserImage = async (parent, args, context, info) => {
 
     try {
         const user = await User.findById(context.userId);
-        if (!user) throw new Error("User not found")
+        if (!user) throw new Apperror("User not found" ,404)
 
 
         // Upload New Image
@@ -30,7 +30,7 @@ const addUserImage = async (parent, args, context, info) => {
 
 
     } catch (e) {
-        throw e;
+        throw Apperror("server error" + e, 500);
     }
 };
 

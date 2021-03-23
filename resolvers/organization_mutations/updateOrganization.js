@@ -1,3 +1,4 @@
+
 const Organization = require("../../models/Organization");
 const authCheck = require("../functions/authCheck");
 const adminCheck = require("../functions/adminCheck");
@@ -8,7 +9,7 @@ const updateOrganization = async (parent, args, context, info) => {
   try {
     //checks to see if organization exists
     let org = await Organization.findOne({ _id: args.id });
-    if (!org) throw new Error("Organization not found");
+    if (!org) throw Apperror("Organization not found");
 
     //check if the user is an admin
     adminCheck(context, org)
@@ -23,7 +24,7 @@ const updateOrganization = async (parent, args, context, info) => {
 
     return org;
   } catch (e) {
-    throw e;
+    throw Apperror("Server error" + e, 500);
   }
 };
 

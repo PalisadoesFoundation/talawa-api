@@ -7,18 +7,18 @@ module.exports = async (parent, args, context, info) => {
   try {
     //ensure organization exists
     let org = await Organization.findOne({ _id: args.organizationId });
-    if (!org) throw new Error("Organization not found");
+    if (!org) throw Apperror("Organization not found");
 
     //ensures organization is public
-    if(!org._doc.isPublic) throw new Error("Organization is not public")
+    if(!org._doc.isPublic) throw Apperror("Organization is not public")
 
     //ensure user exists
     const user = await User.findOne({ _id: context.userId });
-    if (!user) throw new Error("User does not exist");
+    if (!user) throw Apperror("User does not exist");
 
     //check to see if user is already a member
     const members = org._doc.members.filter(member=> member == user.id)
-    if(members.length!=0) throw new Error("User is already a member")
+    if(members.length!=0) throw Apperror("User is already a member")
 
     //add user to organization's members field
     org.overwrite({
@@ -40,6 +40,6 @@ module.exports = async (parent, args, context, info) => {
         password:null
     }
   } catch (e) {
-    throw e;
+    throw Apperror("Server error" + e, 500);
   }
 };

@@ -8,19 +8,19 @@ module.exports = async (parent, args, context, info) => {
   try {
     //checks to see if organization exists
     let org = await Organization.findOne({ _id: args.data.organizationId });
-    if (!org) throw new Error("Organization not found");
+    if (!org) throw Apperror("Organization not found");
 
     //check if the user adding the admin is the creator of the organization
     creatorCheck(context, org);
 
     //ensures user to be made admin exists
     const user = await User.findOne({ _id: args.data.userId });
-    if (!user) throw new Error("User does not exist");
+    if (!user) throw Apperror("User does not exist");
 
     //ensures user is a member of the organization
     const member = org._doc.members.filter((member) => member == user.id);
     if (member.length==0)
-      throw new Error("Only members can be made admins of an organization");
+      throw Apperror("Only members can be made admins of an organization");
 
     //ADDS ADMIN TO ORGANIZATION
     org.overwrite({
@@ -41,6 +41,6 @@ module.exports = async (parent, args, context, info) => {
         password:null
     }
   } catch (e) {
-    throw e;
+    throw Apperror("Server error" + e, 500);
   }
 };

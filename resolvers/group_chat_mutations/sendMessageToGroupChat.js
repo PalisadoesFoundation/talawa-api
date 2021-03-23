@@ -8,14 +8,14 @@ module.exports = async (parent, args, context, info) => {
   authCheck(context);
 
   const chat = await GroupChat.findById(args.chatId);
-  if (!chat) throw new Error("Chat not found");
+  if (!chat) throw Apperror("Chat not found");
 
   const sender = await userExists(context.userId);
 
   // ensure the user is a member of the group chat
   const userIsAMemberOfGroupChat = chat.users.filter(user => user == context.userId);
   //console.log(userIsAMemberOfGroupChat)
-  if (!(userIsAMemberOfGroupChat.length > 0)) throw new Error("User is not a member of this gorup chat");
+  if (!(userIsAMemberOfGroupChat.length > 0)) throw Apperror("User is not a member of this gorup chat");
 
   //const receiver = chat.users.filter((u) => u != sender.id);
 
@@ -50,6 +50,6 @@ module.exports = async (parent, args, context, info) => {
 
   return message._doc;
   }catch(e){
-    throw e;
+    throw Apperror("Server error" + e, 500);
   }
 };

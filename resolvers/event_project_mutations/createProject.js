@@ -4,22 +4,22 @@ const Event = require("../../models/Event");
 
 const createEventProject = async (parent, args, context, info) => {
 	//authentication check
-	if (!context.isAuth) throw new Error("User is not authenticated");
+	if (!context.isAuth) throw Apperror("User is not authenticated");
 
 	try {
 		//gets user in token - to be used later on
 		let userFound = await User.findOne({ _id: context.userId });
 		if (!userFound) {
-			throw new Error("User does not exist");
+			throw Apperror("User does not exist");
 		}
 
 		let eventFound = await Event.findOne({ _id: args.data.eventId });
 		if (!eventFound) {
-			throw new Error("Event does not exist");
+			throw Apperror("Event does not exist");
 		}
 
 		if (!eventFound.admins.includes(context.userId)) {
-			throw new Error("User cannot create an event project for an event they didn't create");
+			throw Apperror("User cannot create an event project for an event they didn't create");
 		}
 
 		let newEventProject = new EventProject({
@@ -36,7 +36,7 @@ const createEventProject = async (parent, args, context, info) => {
 			...newEventProject._doc,
 		};
 	} catch (e) {
-		throw e;
+		throw Apperror("Server error" + e, 500);
 	}
 };
 

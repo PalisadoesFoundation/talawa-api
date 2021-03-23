@@ -12,7 +12,7 @@ module.exports = async (parent, args, context, info) => {
     const membershipRequest = await MembershipRequest.findOne({
       _id: args.membershipRequestId,
     });
-    if (!membershipRequest) throw new Error("Membership request not found");
+    if (!membershipRequest) throw Apperror("Membership request not found");
 
     //ensure org exists
     let org = await organizationExists(membershipRequest.organization);
@@ -28,7 +28,7 @@ module.exports = async (parent, args, context, info) => {
     //check to see if user is already a member
     org._doc.members.forEach(member=>{
         if(member._id == user.id){
-            throw new Error("User is already a member")
+            throw Apperror("User is already a member")
         }
     })
 

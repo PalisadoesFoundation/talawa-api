@@ -1,6 +1,10 @@
 require("dotenv").config(); // pull env variables from .env file
 
-const { ApolloServer, gql, PubSub } = require("apollo-server-express");
+const {
+  ApolloServer,
+  gql,
+  PubSub
+} = require("apollo-server-express");
 const Query = require("./resolvers/Query");
 const Mutation = require("./resolvers/Mutation");
 const typeDefs = require("./schema/schema.graphql");
@@ -29,12 +33,12 @@ const rateLimit = require("express-rate-limit");
 const xss = require("xss-clean");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
+const AppError = require("./error_middleware/error_handler");
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 15 minutes
-  max: 50000,// this can be edited in between
-  message:
-    "Too many requests from this IP, please try again after 15 minutes"
+  max: 50000, // this can be edited in between
+  message: "Too many requests from this IP, please try again after 15 minutes"
 });
 
 const resolvers = {
@@ -56,17 +60,31 @@ const server = new ApolloServer({
   // context: ({ req }) => {
   //   return isAuth(req);
   // },
-  context: ({ req, res, connection }) => {
+  context: ({
+    req,
+    res,
+    connection
+  }) => {
     if (connection) {
       // if its connected using subscriptions
-      return { ...connection, pubsub, res, req };
+      return {
+        ...connection,
+        pubsub,
+        res,
+        req
+      };
     } else {
-      return { ...isAuth(req), pubsub, res, req };
+      return {
+        ...isAuth(req),
+        pubsub,
+        res,
+        req
+      };
     }
   },
   subscriptions: {
     onConnect: (connection, webSocket) => {
-      if (!connection.authToken) throw new Error("User is not authenticated");
+      if (!connection.authToken) throw new AppError("User is not authenticated", 401);
 
       let userId = null;
       if (connection.authToken) {
@@ -91,7 +109,9 @@ app.use(apiLimiter); //safety against DOS attack
 
 app.use(xss()); //safety against XSS attack or Cross Site Scripting attacks
 
-app.use(helmet({ contentSecurityPolicy: (process.env.NODE_ENV === 'production') ? undefined : false })); //safety against XSS attack
+app.use(helmet({
+  contentSecurityPolicy: (process.env.NODE_ENV === 'production') ? undefined : false
+})); //safety against XSS attack
 
 app.use(mongoSanitize()); //safety against NoSql Injections
 
@@ -102,7 +122,9 @@ app.use(cors()); //to apply cors
 
 //app.use(express.static("doc"));'
 
-server.applyMiddleware({ app }); //this is about applying middleware for the api
+server.applyMiddleware({
+  app
+}); //this is about applying middleware for the api
 
 const httpServer = http.createServer(app); //creating http server
 server.installSubscriptionHandlers(httpServer);

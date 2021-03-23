@@ -8,11 +8,11 @@ module.exports = async (parent, args, context, info) => {
   try {
     //ensure user exists
     const user = await User.findOne({ _id: context.userId });
-    if (!user) throw new Error("User does not exist");
+    if (!user) throw Apperror("User does not exist");
 
     //ensure organization exists
     let org = await Organization.findOne({ _id: args.organizationId });
-    if (!org) throw new Error("Organization not found");
+    if (!org) throw Apperror("Organization not found");
 
     //create membership request
     let exists = await MembershipRequest.find(
@@ -22,7 +22,7 @@ module.exports = async (parent, args, context, info) => {
       }
     )
     console.log(exists)
-    if(exists.length>0)throw new Error("This user has already sent a membership request to this organization") 
+    if(exists.length>0)throw Apperror("This user has already sent a membership request to this organization") 
 
     let newMembershipRequest = new MembershipRequest({
       user,

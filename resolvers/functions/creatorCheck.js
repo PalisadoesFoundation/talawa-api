@@ -4,10 +4,10 @@ const creatorCheck = (context,org) => {
   try{
     const isCreator = org.creator == context.userId
     if (!isCreator) {
-      throw new Error("Users cannot delete organizations they didn't create");
+      throw Apperror("Users cannot delete organizations they didn't create");
     }
   }catch(e){
-    throw e;
+    throw Apperror("Server error" + e, 500);
   }
 }
 

@@ -11,7 +11,7 @@ module.exports = async (parent, args, context, info) => {
   authCheck(context);
 
   const chat = await GroupChat.findById(args.chatId);
-  if (!chat) throw new Error("Chat not found");
+  if (!chat) throw Apperror("Chat not found");
 
   const org = await organizationExists(chat.organization);
 
@@ -29,6 +29,6 @@ module.exports = async (parent, args, context, info) => {
 
   return chat;
   }catch(e){
-    throw e;
+    throw Apperror("Server error" + e, 500);
   }
 };

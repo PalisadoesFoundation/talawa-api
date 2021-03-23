@@ -8,7 +8,7 @@ module.exports = async (parent, args, context, info) => {
   authCheck(context);
 
   const chat = await DirectChat.findById(args.chatId);
-  if (!chat) throw new Error("Chat not found");
+  if (!chat) throw Apperror("Chat not found");
 
   const sender = await userExists(context.userId);
 
@@ -46,6 +46,6 @@ module.exports = async (parent, args, context, info) => {
 
   return message._doc;
 }catch(e){
-  throw e;
+  throw Apperror("Server error" + e, 500);
 }
 };

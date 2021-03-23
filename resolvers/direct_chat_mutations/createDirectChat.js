@@ -8,10 +8,10 @@ module.exports = async (parent, args, context, info) => {
   authCheck(context);
 
   let userFound = await User.findOne({ _id: context.userId });
-  if (!userFound) throw new Error("User does not exist");
+  if (!userFound) throw Apperror("User does not exist");
 
   let org = await Organization.findOne({ _id: args.data.organizationId });
-  if (!org) throw new Error("Organization not found");
+  if (!org) throw Apperror("Organization not found");
 
   let usersInChat = [];
 
@@ -19,7 +19,7 @@ module.exports = async (parent, args, context, info) => {
   for await (const userId of args.data.userIds) {
     //console.log(userId);
     let user = await await User.findOne({ _id: userId });
-    if (!user) throw new Error("User does not exist");
+    if (!user) throw Apperror("User does not exist");
     usersInChat.push(user);
   }
 
@@ -33,6 +33,6 @@ module.exports = async (parent, args, context, info) => {
 
   return directChat._doc;
   }catch(e){
-    throw e;
+    throw Apperror("Server error" + e, 500);
   }
 };

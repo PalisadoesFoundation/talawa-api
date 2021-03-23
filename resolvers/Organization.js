@@ -1,12 +1,13 @@
 const User = require("../models/User");
 const MembershipRequest = require("../models/MembershipRequest");
+const AppError = require("../error_middleware/error_handler");
 
 
 
 const Organization = {
   creator: async (parent, args, context, info) => {
     const user = await User.findById(parent.creator._id);
-    if (!user) throw new Error("Creator not found");
+    if (!user) throw  AppError("Creator not found" , 404);
     return user;
   },
   admins: async (parent, args, context, info) => {

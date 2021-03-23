@@ -10,16 +10,16 @@ module.exports = async (parent, args, context, info) => {
   try {
     //ensure organization exists
     let org = await Organization.findOne({ _id: args.data.organizationId });
-    if (!org) throw new Error("Organization not found");
+    if (!org) throw Apperror("Organization not found");
 
     //ensure user exists
     const user = await User.findOne({ _id: args.data.userId });
-    if (!user) throw new Error("User does not exist");
+    if (!user) throw Apperror("User does not exist");
 
     //ensure user is an admin
     const admin = org._doc.admins.filter((admin) => admin == user.id);
     if (admin.length==0)
-      throw new Error("User is not an admin");
+      throw Apperror("User is not an admin");
 
     //ensure user trying to remove admin is the creator
     creatorCheck(context, org);
@@ -44,6 +44,6 @@ module.exports = async (parent, args, context, info) => {
         password:null
     }
   } catch (e) {
-    throw e;
+    throw Apperror("Server error" + e, 500);
   }
 };

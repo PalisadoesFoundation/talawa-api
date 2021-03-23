@@ -11,21 +11,21 @@ module.exports = async (parent, args, context, info) => {
     const membershipRequest = await MembershipRequest.findOne({
       _id: args.membershipRequestId,
     });
-    if (!membershipRequest) throw new Error("Membership request not found");
+    if (!membershipRequest) throw Apperror("Membership request not found");
 
     //ensure org exists
     let org = await Organization.findOne({
       _id: membershipRequest.organization,
     });
-    if (!org) throw new Error("Organization not found");
+    if (!org) throw Apperror("Organization not found");
 
     //ensure user exists
     const user = await User.findOne({ _id: context.userId });
-    if (!user) throw new Error("User does not exist");
+    if (!user) throw Apperror("User does not exist");
 
     //ensure user in context created membership request
     const owner = user.id == membershipRequest.user;
-    if (!owner) throw new Error("User cannot cancel a request he did not send");
+    if (!owner) throw Apperror("User cannot cancel a request he did not send");
 
     //delete membership request
     await MembershipRequest.deleteOne({ _id: args.membershipRequestId });

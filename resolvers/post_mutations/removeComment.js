@@ -8,13 +8,13 @@ const removeComment = async (parent, args, context, info) => {
 	authCheck(context);
 	try {
 		const user = await User.findOne({ _id: context.userId });
-		if (!user) throw new Error("User does not exist");
+		if (!user) throw Apperror("User does not exist");
 
 		let comment = await Comment.findOne({ _id: args.id });
-		if (!comment) throw new Error("Comment not found");
+		if (!comment) throw Apperror("Comment not found");
 
 		if (!(comment.creator !== context.userId)) {
-			throw new Error("User cannot delete comment they didn't create");
+			throw Apperror("User cannot delete comment they didn't create");
 		}
 
 		await Post.updateOne(
@@ -29,7 +29,7 @@ const removeComment = async (parent, args, context, info) => {
 		await Comment.deleteOne({ _id: args.id });
 		return comment;
 	} catch (e) {
-		throw e;
+		throw Apperror("Server error" + e, 500);
 	}
 };
 

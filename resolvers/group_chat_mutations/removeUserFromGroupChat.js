@@ -12,7 +12,7 @@ module.exports = async (parent, args, context, info) => {
 
 
     const chat = await GroupChat.findById(args.chatId);
-    if (!chat) throw new Error("Chat not found");
+    if (!chat) throw Apperror("Chat not found");
 
     const org = await organizationExists(chat.organization);
 
@@ -21,7 +21,7 @@ module.exports = async (parent, args, context, info) => {
 
     // ensure user is already a member
     const userAlreadyAMember = chat._doc.users.filter(user => user == args.userId);
-    if (!(userAlreadyAMember.length > 0)) throw new Error("User is not a member of this Group Chat")
+    if (!(userAlreadyAMember.length > 0)) throw Apperror("User is not a member of this Group Chat")
 
 
 
@@ -35,6 +35,6 @@ module.exports = async (parent, args, context, info) => {
         new: true
     })
     }catch(e){
-        throw e;
+        throw Apperror("Server error" + e, 500);
     }
 }

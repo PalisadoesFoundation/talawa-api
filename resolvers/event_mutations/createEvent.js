@@ -4,18 +4,18 @@ const Organization = require("../../models/Organization");
 
 const createEvent = async (parent, args, context, info) => {
   //authentication check
-  if (!context.isAuth) throw new Error("User is not authenticated");
+  if (!context.isAuth) throw Apperror("User is not authenticated");
 
   try {
     //gets user in token - to be used later on
     let userFound = await User.findOne({ _id: context.userId });
     if (!userFound) {
-      throw new Error("User does not exist");
+      throw Apperror("User does not exist");
     }
 
     //ensure organization exists
     let org = await Organization.findOne({ _id: args.data.organizationId });
-	if (!org) throw new Error("Organization not found");
+	if (!org) throw Apperror("Organization not found");
 	
 
     let newEvent = new Event({
@@ -43,7 +43,7 @@ const createEvent = async (parent, args, context, info) => {
       ...newEvent._doc,
     };
   } catch (e) {
-    throw e;
+    throw Apperror("Server error" + e, 500);
   }
 };
 

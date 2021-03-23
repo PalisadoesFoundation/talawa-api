@@ -8,7 +8,7 @@ module.exports = async (parent, args, context, info) => {
   try {
     //ensure organization exists
     let org = await Organization.findOne({ _id: args.data.organizationId });
-    if (!org) throw new Error("Organization not found");
+    if (!org) throw Apperror("Organization not found");
 
     //ensure user is an admin
     adminCheck(context, org);
@@ -74,10 +74,10 @@ module.exports = async (parent, args, context, info) => {
       );
     }
 
-    if (errors.length > 0) throw new Error(errors.join());
+    if (errors.length > 0) throw Apperror(errors.join());
 
     return org;
   } catch (e) {
-    throw e;
+    throw Apperror("Server error" + e, 500);
   }
 };

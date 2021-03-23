@@ -12,7 +12,7 @@ module.exports = async (parent, args, context, info) => {
 		//gets user in token - to be used later on
 		let userFound = await User.findOne({ _id: context.userId });
 		if (!userFound) {
-			throw new Error("User does not exist");
+			throw Apperror("User does not exist");
 		}
 		let uploadImageObj;
 		if (args.file) {
@@ -34,6 +34,6 @@ module.exports = async (parent, args, context, info) => {
 			...newPost._doc,
 		};
 	} catch (e) {
-		throw e;
+		throw Apperror("Server error" + e, 500);
 	}
 };

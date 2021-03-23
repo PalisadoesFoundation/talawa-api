@@ -10,11 +10,11 @@ module.exports = async (parent, args, context, info) => {
   try {
     //find message
     let group = await Group.findOne({ _id: args.groupId });
-    if (!group) throw new Error("Group does not exist");
+    if (!group) throw Apperror("Group does not exist" , 404);
 
     //ensure organization exists
     let org = await Organization.findOne({ _id: group._doc.organization._id });
-    if (!org) throw new Error("Organization not found");
+    if (!org) throw Apperror("Organization not found" , 404);
 
     //ensure user is an admin
     adminCheck(context, org);
@@ -22,7 +22,7 @@ module.exports = async (parent, args, context, info) => {
     //gets user in token - to be used later on
     let user = await User.findOne({ _id: context.userId });
     if (!user) {
-      throw new Error("User does not exist");
+      throw Apperror("User does not exist" , 404);
     }
 
     //remove message from organization
@@ -47,6 +47,6 @@ module.exports = async (parent, args, context, info) => {
       ...group._doc,
     };
   } catch (e) {
-    throw e;
+    throw Apperror("Server error" + e, 500);
   }
 };

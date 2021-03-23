@@ -20,7 +20,7 @@ module.exports = async (parent, args, context, info) => {
     const blocked = org._doc.blockedUsers.filter(
       (blockedUser) => blockedUser == user.id
     );
-    if (blocked[0]) throw new Error("User is already blocked");
+    if (blocked[0]) throw Apperror("User is already blocked");
 
     //add user to organizations blocked users field
     org.overwrite({
@@ -41,6 +41,6 @@ module.exports = async (parent, args, context, info) => {
       password: null,
     };
   } catch (e) {
-    throw e;
+    throw Apperror("Server error" + e, 500);
   }
 };

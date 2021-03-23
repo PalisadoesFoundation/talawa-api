@@ -3,18 +3,18 @@ const Event = require("../../models/Event");
 
 const registerForEvent = async (parent, args, context, info) => {
   //authentication check
-  if (!context.isAuth) throw new Error("User is not authenticated");
+  if (!context.isAuth) throw Apperror("User is not authenticated");
 
   try {
     //gets user in token - to be used later on
     let userFound = await User.findOne({ _id: context.userId });
     if (!userFound) {
-      throw new Error("User does not exist");
+      throw Apperror("User does not exist");
     }
 
     let eventFound = await Event.findOne({ _id: args.id });
     if (!eventFound) {
-      throw new Error("Event does not exist");
+      throw Apperror("Event does not exist");
     }
 
     //add event to the user record
@@ -40,7 +40,7 @@ const registerForEvent = async (parent, args, context, info) => {
 
     return newEvent;
   } catch (e) {
-    throw e;
+    throw Apperror("Server error" + e, 500);
   }
 };
 

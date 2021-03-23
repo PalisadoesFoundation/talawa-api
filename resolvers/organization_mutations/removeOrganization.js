@@ -7,11 +7,11 @@ const removeOrganizaiton = async (parent, args, context, info) => {
   authCheck(context);
   try {
     const user = await User.findOne({ _id: context.userId });
-    if (!user) throw new Error("User does not exist");
+    if (!user) throw Apperror("User does not exist");
 
     //checks to see if organization exists
     let org = await Organization.findOne({ _id: args.id });
-    if (!org) throw new Error("Organization not found");
+    if (!org) throw Apperror("Organization not found");
 
     //check if the user is the creator
     creatorCheck(context, org);
@@ -57,7 +57,7 @@ const removeOrganizaiton = async (parent, args, context, info) => {
       password: null
     };
   } catch (e) {
-    throw e;
+    throw Apperror("Server error" + e, 500);
   }
 };
 

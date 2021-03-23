@@ -8,18 +8,18 @@ module.exports = async (parent, args, context, info) => {
   try {
     //ensure organization exists
     let org = await Organization.findOne({ _id: args.organizationId });
-    if (!org) throw new Error("Organization not found");
+    if (!org) throw Apperror("Organization not found");
 
     //ensure user exists
     const user = await User.findOne({ _id: context.userId });
-    if (!user) throw new Error("User does not exist");
+    if (!user) throw Apperror("User does not exist");
 
     //checks to see if the user trying to leave is the owner of the organization
-    if(user.id == org._doc.creator) throw new Error("Creator of organization cannot leave")
+    if(user.id == org._doc.creator) throw Apperror("Creator of organization cannot leave")
 
     //check to see if user is already a member
     const members = org._doc.members.filter((member) => member == user.id);
-    if (members.length == 0) throw new Error("User is not a member");
+    if (members.length == 0) throw Apperror("User is not a member");
 
 
     //if the user is an admin he is removed from the organization's admin field
@@ -51,6 +51,6 @@ module.exports = async (parent, args, context, info) => {
       password: null,
     };
   } catch (e) {
-    throw e;
+    throw Apperror("Server error" + e, 500);
   }
 };

@@ -11,10 +11,11 @@ module.exports = async (parent, args, context, info) => {
 
     try {
         const user = await User.findById(context.userId);
-        if (!user) throw new Error("User not found")
+        if (!user) throw Apperror("User not found")
 
+        
         const org = await Organization.findById(args.organizationId);
-        if (!org) throw new Error("Organization not found");
+        if (!org) throw Apperror("Organization not found");
 
         adminCheck(context, org) // Ensures user is an administrator of the organization
 
@@ -35,6 +36,6 @@ module.exports = async (parent, args, context, info) => {
         return newOrganization;
 
     } catch (e) {
-        throw e;
+        throw Apperror("Server error" + e, 500);
     }
 };

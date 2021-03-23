@@ -263,7 +263,7 @@ const organizationsConnection = async (parent, args, context, info) => {
 
         return organizationFound;
     } catch (e) {
-        throw e;
+        throw Apperror("Server error" + e, 500);
     }
 }
 
