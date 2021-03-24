@@ -8,7 +8,6 @@ const connect = async () => {
       useFindAndModify: false,
       useNewUrlParser: true,
     });
-    console.log('MongoDB is connected');
   } catch (error) {
     console.log(error);
     process.exit(1);
