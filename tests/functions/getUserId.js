@@ -3,7 +3,7 @@ const axios = require('axios');
 const { URL } = require('../../constants');
 
 module.exports = async () => {
-  const response = await axios.post(URL, {
+  const response = await axios.post('/login', {
     query: `
     mutation{
       login(data:{
