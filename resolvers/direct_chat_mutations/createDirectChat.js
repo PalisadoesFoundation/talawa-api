@@ -1,38 +1,34 @@
-const User = require("../../models/User");
-const DirectChat = require("../../models/DirectChat");
-const authCheck = require("../functions/authCheck");
-const Organization = require("../../models/Organization");
+const User = require('../../models/User');
+const DirectChat = require('../../models/DirectChat');
+const authCheck = require('../functions/authCheck');
+const Organization = require('../../models/Organization');
 
-module.exports = async (parent, args, context, info) => {
-  try{
+module.exports = async (parent, args, context) => {
   authCheck(context);
 
-  let userFound = await User.findOne({ _id: context.userId });
-  if (!userFound) throw new Error("User does not exist");
+  const userFound = await User.findOne({ _id: context.userId });
+  if (!userFound) throw new Error('User does not exist');
 
-  let org = await Organization.findOne({ _id: args.data.organizationId });
-  if (!org) throw new Error("Organization not found");
+  const org = await Organization.findOne({ _id: args.data.organizationId });
+  if (!org) throw new Error('Organization not found');
 
-  let usersInChat = [];
+  const usersInChat = [];
 
   // add users to cat
   for await (const userId of args.data.userIds) {
-    //console.log(userId);
-    let user = await await User.findOne({ _id: userId });
-    if (!user) throw new Error("User does not exist");
+    // console.log(userId);
+    const user = await await User.findOne({ _id: userId });
+    if (!user) throw new Error('User does not exist');
     usersInChat.push(user);
   }
 
   let directChat = new DirectChat({
     creator: userFound,
     users: usersInChat,
-    organization: org
+    organization: org,
   });
 
   directChat = await directChat.save();
 
   return directChat._doc;
-  }catch(e){
-    throw e;
-  }
 };

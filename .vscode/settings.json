@@ -1,4 +1,7 @@
 {
     "editor.fontFamily": "Consolas,'OperatorMono-Book', monospace",
-    "editor.fontLigatures": 
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+      },
+      "eslint.validate": ["javascript"]    
 }

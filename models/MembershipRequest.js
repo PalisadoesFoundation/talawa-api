@@ -1,17 +1,17 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const Schema = mongoose.Schema;
+const { Schema } = mongoose;
 
 const membershipRequestSchema = new Schema({
   organization: {
     type: Schema.Types.ObjectId,
-    ref: "Organization",
+    ref: 'Organization',
     required: true,
   },
   user: {
     type: Schema.Types.ObjectId,
-    ref: "User",
+    ref: 'User',
   },
 });
 
-module.exports = mongoose.model("MembershipRequest", membershipRequestSchema);
+module.exports = mongoose.model('MembershipRequest', membershipRequestSchema);

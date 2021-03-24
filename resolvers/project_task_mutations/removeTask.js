@@ -1,37 +1,32 @@
-const User = require("../../models/User");
-const Event = require("../../models/Event");
-const Task = require("../../models/Task");
+const User = require('../../models/User');
+const Event = require('../../models/Event');
+const Task = require('../../models/Task');
 
-const authCheck = require("../functions/authCheck");
+const authCheck = require('../functions/authCheck');
 
-const removeTask = async (parent, args, context, info) => {
-	authCheck(context);
-	try {
-		const user = await User.findOne({ _id: context.userId });
-		if (!user) throw new Error("User does not exist");
+const removeTask = async (parent, args, context) => {
+  authCheck(context);
+  const user = await User.findOne({ _id: context.userId });
+  if (!user) throw new Error('User does not exist');
 
-		let foundTask = await Task.findOne({ _id: args.id });
-		if (!foundTask) throw new Error("Task not found");
+  const foundTask = await Task.findOne({ _id: args.id });
+  if (!foundTask) throw new Error('Task not found');
 
-		if (!(foundTask.creator !== context.userId)) {
-			throw new Error("User cannot delete task they didn't create");
-		}
+  if (!(foundTask.creator !== context.userId)) {
+    throw new Error("User cannot delete task they didn't create");
+  }
 
-		await Event.updateMany(
-			{ id: foundTask.event },
-			{
-				$pull: {
-					tasks: args.id,
-				},
-			}
-		);
+  await Event.updateMany(
+    { id: foundTask.event },
+    {
+      $pull: {
+        tasks: args.id,
+      },
+    }
+  );
 
-
-		await Task.deleteOne({ _id: args.id });
-		return foundTask;
-	} catch (e) {
-		throw e;
-	}
+  await Task.deleteOne({ _id: args.id });
+  return foundTask;
 };
 
 module.exports = removeTask;
