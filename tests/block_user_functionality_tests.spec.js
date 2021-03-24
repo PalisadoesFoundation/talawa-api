@@ -1,14 +1,14 @@
-const axios = require("axios");
-const { URL } = require("../constants");
-const getToken = require("./functions/getToken");
-const shortid = require("shortid");
+const axios = require('axios');
+const { URL } = require('../constants');
+const getToken = require('./functions/getToken');
+const shortid = require('shortid');
 
 let token;
 beforeAll(async () => {
   token = await getToken();
 });
 
-describe("Block user functionality tests", () => {
+describe('Block user functionality tests', () => {
   let createdOrganizationId;
   // A new user signs up
   let newUserId;
@@ -16,7 +16,7 @@ describe("Block user functionality tests", () => {
   let email = `${id}@test.com`;
 
   // TEST: ORGANIZATION BLOCKS USER
-  test("Organization Blocks User", async () => {
+  test('Organization Blocks User', async () => {
     // An organization is created
     const createdOrganizationResponse = await axios.post(
       URL,
@@ -85,7 +85,6 @@ describe("Block user functionality tests", () => {
 
     const blockUserData = blockUserResponse.data;
 
-
     expect(blockUserData.data.blockUser).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
@@ -94,7 +93,7 @@ describe("Block user functionality tests", () => {
   });
 
   // TEST: ORGANIZATION UNBLOCKS USER
-  test("Organization unblocks user", async () => {
+  test('Organization unblocks user', async () => {
     const unblockUserResponse = await axios.post(
       URL,
       {
@@ -115,11 +114,10 @@ describe("Block user functionality tests", () => {
 
     const unblockUserData = unblockUserResponse.data;
 
-
     expect(unblockUserData.data.unblockUser).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
       })
     );
-  })
+  });
 });
