@@ -1,4 +1,4 @@
-name: Heroku Deployment
+name: Talawa Pipeline
 on:
   push:
     branches:
