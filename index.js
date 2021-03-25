@@ -101,14 +101,14 @@ database
   .connect()
   .then(() => {
     // Use native http server to allow subscriptions
-    httpServer.listen(process.env.PORT || 4000, '0.0.0.0', () => {
+    httpServer.listen(process.env.PORT || 4000, () => {
       console.log(
-        `🚀 Server ready at http://0.0.0.0:${process.env.PORT || 4000}${
+        `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
           apolloServer.graphqlPath
         }`
       );
       console.log(
-        `🚀 Subscriptions ready at ws://0.0.0.0:${process.env.PORT || 4000}${
+        `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${
           apolloServer.subscriptionsPath
         }`
       );
