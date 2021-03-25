@@ -25,7 +25,23 @@ This has been a Calico Challenge project in 2019. It will be written in python w
 
 ## Installation
 
-### Prerequesites
+### Environment Variables
+
+To run this api five environment variables need to be set in a .env file in the root of the api:  
+
+1. ACCESS_TOKEN_SECRET  
+2. REFRESH_TOKEN_SECRET  
+3. MONGO_DB_URL  
+
+Please note when running the api using docker the MONGO_DB_URL is in the format of mongodb://${CONTAINER_NAME}:{PORT}/${DB_NAME}
+
+### Docker Development
+
+Steps:
+ 1. docker-compose build
+ 2. docker-compose up
+
+### Local Development Prerequesites
 
 Talawa API development prerequisites
 
@@ -64,16 +80,6 @@ Start developing!
 [node]: <https://nodejs.org/en/>
 [yarn]: <https://yarnpkg.com/>
 
-### Environment Variables
-
-To run this api five environment variables need to be set in a .env file in the root of the api:  
-
-1. ACCESS_TOKEN_SECRET  
-2. REFRESH_TOKEN_SECRET  
-3. MONGO_DB_URL  
-
-Please note when running the api using docker the MONGO_DB_URL is in the format of mongodb://${CONTAINER_NAME}:{PORT}/${DB_NAME}
-
 ### Image Upload
 
 To enable image upload functionalities create an images folder in the root of the project
@@ -81,9 +87,3 @@ To enable image upload functionalities create an images folder in the root of th
 ### Configuration with Frontend
 
 View how to [configure backend with the flutter app](https://github.com/PalisadoesFoundation/talawa-api/blob/master/configuration.md)
-
-### Running the project via docker
-
-Steps:
- 1. docker-compose build
- 2. docker-compose up
