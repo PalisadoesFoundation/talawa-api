@@ -66,6 +66,7 @@ const httpServer = http.createServer(app);
 const apolloServer = new ApolloServer({
   typeDefs,
   resolvers,
+  playground: true,
   context: ({ req, res, connection }) => {
     if (connection) {
       return { ...connection, pubsub, res, req };
