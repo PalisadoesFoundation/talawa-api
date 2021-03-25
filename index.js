@@ -50,7 +50,7 @@ const resolvers = {
 };
 
 app.use(apiLimiter);
-app.use(xss()); 
+app.use(xss());
 app.use(
   helmet({
     contentSecurityPolicy:
@@ -59,7 +59,7 @@ app.use(
 );
 app.use(mongoSanitize());
 app.use('/images', express.static(path.join(__dirname, './images')));
-app.use(cors()); 
+app.use(cors());
 
 const httpServer = http.createServer(app);
 
@@ -94,14 +94,14 @@ const apolloServer = new ApolloServer({
   },
 });
 
-apolloServer.applyMiddleware({ app }); 
+apolloServer.applyMiddleware({ app });
 apolloServer.installSubscriptionHandlers(httpServer);
 
-
-database.connect()
+database
+  .connect()
   .then(() => {
     // Use native http server to allow subscriptions
-    httpServer.listen(process.env.PORT || 4000, "0.0.0.0", () => {
+    httpServer.listen(process.env.PORT || 4000, '0.0.0.0', () => {
       console.log(
         `🚀 Server ready at http://0.0.0.0:${process.env.PORT || 4000}${
           apolloServer.graphqlPath

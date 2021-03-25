@@ -65,7 +65,6 @@ module.exports = function imageAlreadyInDbCheck(
         //   "number of uses of hash (new image) : " + hashObj._doc.numberOfUses
         // );
       }
-
       resolve();
     });
   })
