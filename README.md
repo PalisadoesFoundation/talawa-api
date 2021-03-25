@@ -16,8 +16,8 @@ This has been a Calico Challenge project in 2019. It will be written in python w
 
 ## Documentation
 
-- The talawa documentation can be found [here][readthedocs].
-- Visit the [talawa GitHub site][repo] to see the code.
+- The talawa documentation can be found [here](https://palisadoesfoundation.github.io/talawa-docs/).
+- Want to contribute? Look at [CONTRIBUTING.md](https://github.com/PalisadoesFoundation/talawa-api/blob/master/CONTRIBUTING.md) to get started.
 
 ## About Talawa
 
