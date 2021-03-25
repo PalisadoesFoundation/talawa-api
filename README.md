@@ -47,7 +47,7 @@ npm install
 To run the project in development mode, run the following command
 
 ```sh
-npm run start
+npm run dev
 ```
 
 For testing, run the following command
@@ -68,17 +68,11 @@ Start developing!
 
 To run this api five environment variables need to be set in a .env file in the root of the api:  
 
-1. MONGO_USER  
-2. MONGO_PASSWORD  
-3. MONGO_DB  
-4. MONGO_URL
-5. MONGO_LOCAL_INSTANCE
-6. ACCESS_TOKEN_SECRET  
-7. REFRESH_TOKEN_SECRET  
-8. LOCAL_DB_REQUIRES_AUTH
+1. ACCESS_TOKEN_SECRET  
+2. REFRESH_TOKEN_SECRET  
+3. MONGO_DB_URL  
 
-If you are running mongodb locally only the MONGO_DB and MONGO_LOCAL_INSTANCE env vars are necessary. MONGO_USER and MONGO_PASSWORD are only necessary if you are connecting to a hosted instance of mongodb using atlas.
-If your local mongodbb required auth set the LOCAL_DB_REQUIRES_AUTH var to true and ensure the MONGO_PASSWORD and MONGO_USER vars are set
+Please note when running the api using docker the MONGO_DB_URL is in the format of mongodb://${CONTAINER_NAME}:{PORT}/${DB_NAME}
 
 ### Image Upload
 
@@ -87,3 +81,9 @@ To enable image upload functionalities create an images folder in the root of th
 ### Configuration with Frontend
 
 View how to [configure backend with the flutter app](https://github.com/PalisadoesFoundation/talawa-api/blob/master/configuration.md)
+
+### Running the project via docker
+
+Steps:
+ 1. docker-compose build
+ 2. docker-compose up

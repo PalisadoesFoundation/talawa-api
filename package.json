@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "start": "nodemon index.js --ext js,graphql,json",
+    "dev": "nodemon index.js --ext js,graphql,json",
+    "start": "pm2-runtime start ecosystem.config.js --env production",
     "test-server": "cross-env NODE_ENV=test TEST_DB=talawa-test-db nodemon index.js --ext js,graphql",
     "lint": "eslint . --fix && echo 'Lint complete.'"
   },
@@ -43,6 +44,7 @@
     "moment": "^2.27.0",
     "mongoose": "^5.11.20",
     "nodemon": "^2.0.4",
+    "pm2": "^4.5.5",
     "shortid": "^2.2.15",
     "validator": "^13.0.0",
     "xss-clean": "^0.1.1"
