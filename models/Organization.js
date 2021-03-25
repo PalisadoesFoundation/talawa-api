@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 
@@ -23,47 +23,47 @@ const organizationSchema = new Schema({
   },
   creator: {
     type: Schema.Types.ObjectId,
-    ref: "User",
+    ref: 'User',
     required: true,
   },
   members: [
     {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
     },
   ],
   admins: [
     {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
   ],
   groupChats: [
     {
       type: Schema.Types.ObjectId,
-      ref: "Message",
+      ref: 'Message',
     },
   ],
   posts: [
     {
       type: Schema.Types.ObjectId,
-      ref: "Post",
+      ref: 'Post',
     },
   ],
   membershipRequests: [
     {
       type: Schema.Types.ObjectId,
-      ref: "MembershipRequest",
+      ref: 'MembershipRequest',
     },
   ],
   blockedUsers: [
     {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
     },
   ],
   visibleInSearch: Boolean,
 });
 
-module.exports = mongoose.model("Organization", organizationSchema);
+module.exports = mongoose.model('Organization', organizationSchema);

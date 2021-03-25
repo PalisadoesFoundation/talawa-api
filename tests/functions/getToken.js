@@ -1,12 +1,10 @@
-const axios = require("axios");
+const axios = require('axios');
 
-const { URL } = require("../../constants")
+const { URL } = require('../../constants');
 
-
-
-//sets token before every test
+// sets token before every test
 module.exports = async () => {
-  console.log("TOKEN SET")
+  console.log('TOKEN SET');
   const response = await axios.post(URL, {
     query: `
     mutation{
@@ -24,8 +22,6 @@ module.exports = async () => {
     `,
   });
 
-
   const { data } = response;
   return data.data.login.accessToken;
-
-}
+};

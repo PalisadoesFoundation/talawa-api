@@ -1,12 +1,8 @@
-const axios = require("axios");
+const axios = require('axios');
 
-const { URL } = require("../../constants")
-
-
-
+const { URL } = require('../../constants');
 
 module.exports = async () => {
-
   const response = await axios.post(URL, {
     query: `
     mutation{
@@ -24,8 +20,6 @@ module.exports = async () => {
     `,
   });
 
-
   const { data } = response;
   return data.data.login.user._id;
-
-}
+};
