@@ -1,6 +1,6 @@
 # Talawa API
 
-[![N|Solid](image/talawa-rtd.png)](https://github.com/PalisadoesFoundation/talawa-api)
+[![N|Solid](image/talawa-logo-lite-200x200.png)](https://github.com/PalisadoesFoundation/talawa-api)
 
 Talawa is a modular open source project to manage group activities of both non-profit organizations and businesses.
 
