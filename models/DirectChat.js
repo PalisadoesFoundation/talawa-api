@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 
@@ -7,26 +7,26 @@ const directChatSchema = new Schema({
   users: [
     {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
   ],
   messages: [
     {
       type: Schema.Types.ObjectId,
-      ref: "DirectChatMessage",
+      ref: 'DirectChatMessage',
     },
   ],
   creator: {
     type: Schema.Types.ObjectId,
-    ref: "User",
+    ref: 'User',
     required: true,
   },
   organization: {
     type: Schema.Types.ObjectId,
-    ref: "Organization",
+    ref: 'Organization',
     required: true,
   },
 });
 
-module.exports = mongoose.model("DirectChat", directChatSchema);
+module.exports = mongoose.model('DirectChat', directChatSchema);

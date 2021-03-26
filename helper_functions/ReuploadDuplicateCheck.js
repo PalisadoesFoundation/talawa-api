@@ -1,37 +1,36 @@
-
-const { imageHash } = require("image-hash");
+const { imageHash } = require('image-hash');
 
 module.exports = async (imageJustUploadedPath, itemImage) => {
   // This function checks whether a user is trying to re=upload the same profile picture or an org is trying to re-upload the same org image
   if (itemImage) {
     let oldImageHash;
     let newImageHash;
-    await new Promise((resolve, reject) => {
+    await new Promise((resolve) => {
       imageHash(itemImage, 16, true, (error, data) => {
-        if (error) oldImageHash=""
+        if (error) oldImageHash = '';
         oldImageHash = data;
         resolve();
       });
-    }).then(() => {
-      return oldImageHash;
-    }).catch((e)=>{
-      throw new Error("Invalid file type")
-    });
+    })
+      .then(() => oldImageHash)
+      .catch(() => {
+        throw new Error('Invalid file type');
+      });
 
-    await new Promise((resolve, reject) => {
+    await new Promise((resolve) => {
       imageHash(imageJustUploadedPath, 16, true, (error, data) => {
-        if (error) newImageHash=""
+        if (error) newImageHash = '';
         newImageHash = data;
         resolve();
       });
-    }).then(() => {
-      return newImageHash;
-    }).catch((e)=>{
-      throw new Error("Invalid file type")
-    });
-    //console.log("old image hash: " + oldImageHash);
-    //console.log("new image hash: " + newImageHash);
-    return oldImageHash == newImageHash;
+    })
+      .then(() => newImageHash)
+      .catch(() => {
+        throw new Error('Invalid file type');
+      });
+    // console.log("old image hash: " + oldImageHash);
+    // console.log("new image hash: " + newImageHash);
+    return oldImageHash === newImageHash;
   }
   return false;
 };

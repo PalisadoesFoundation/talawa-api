@@ -1,15 +1,16 @@
-const axios = require("axios");
-const { URL } = require("../constants");
-const getToken = require("./functions/getToken");
+const axios = require('axios');
+const { URL } = require('../constants');
+const getToken = require('./functions/getToken');
+
 let token;
 beforeAll(async () => {
-	token = await getToken();
+  token = await getToken();
 });
 
-describe("newsfeed resolvers", () => {
-	test("posts", async () => {
-		const response = await axios.post(URL, {
-			query: `query {
+describe('newsfeed resolvers', () => {
+  test('posts', async () => {
+    const response = await axios.post(URL, {
+      query: `query {
                 posts {
 					_id
 					text
@@ -28,18 +29,18 @@ describe("newsfeed resolvers", () => {
 					}
                 }
             }`,
-		});
-		const { data } = response;
-		expect(Array.isArray(data.data.posts)).toBeTruthy();
-	});
+    });
+    const { data } = response;
+    expect(Array.isArray(data.data.posts)).toBeTruthy();
+  });
 
-	let createdPostId;
-	let createdOrgId;
-	test("Create Post", async () => {
-		const newOrg = await axios.post(
-			URL,
-			{
-				query: `
+  let createdPostId;
+  let createdOrgId;
+  test('Create Post', async () => {
+    const newOrg = await axios.post(
+      URL,
+      {
+        query: `
 					mutation {
 						createOrganization(data: {
 							name:"test org"
@@ -52,20 +53,20 @@ describe("newsfeed resolvers", () => {
 							}
 					}
               `,
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			}
-		);
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-		createdOrgId = newOrg.data.data.createOrganization._id;
+    createdOrgId = newOrg.data.data.createOrganization._id;
 
-		const response = await axios.post(
-			URL,
-			{
-				query: `
+    const response = await axios.post(
+      URL,
+      {
+        query: `
 					mutation {
 						createPost(
 							data: {
@@ -77,26 +78,26 @@ describe("newsfeed resolvers", () => {
 						}
 					}
               	`,
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			}
-		);
-		const { data } = response;
-		createdPostId = data.data.createPost._id;
-		expect(data.data.createPost).toEqual(
-			expect.objectContaining({
-				_id: expect.any(String),
-				text: expect.any(String),
-			})
-		);
-	});
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const { data } = response;
+    createdPostId = data.data.createPost._id;
+    expect(data.data.createPost).toEqual(
+      expect.objectContaining({
+        _id: expect.any(String),
+        text: expect.any(String),
+      })
+    );
+  });
 
-	test("Posts by Organization", async () => {
-		const response = await axios.post(URL, {
-			query: `query {
+  test('Posts by Organization', async () => {
+    const response = await axios.post(URL, {
+      query: `query {
                 postsByOrganization (id: "${createdOrgId}") {
 					_id
 					text
@@ -109,17 +110,17 @@ describe("newsfeed resolvers", () => {
 					}
                 }
             }`,
-		});
-		const { data } = response;
-		expect(Array.isArray(data.data.postsByOrganization)).toBeTruthy();
-	});
+    });
+    const { data } = response;
+    expect(Array.isArray(data.data.postsByOrganization)).toBeTruthy();
+  });
 
-	test("Remove Post", async () => {
-		//a new organization is created then deleted
-		const response = await axios.post(
-			URL,
-			{
-				query: `
+  test('Remove Post', async () => {
+    // a new organization is created then deleted
+    const response = await axios.post(
+      URL,
+      {
+        query: `
 				mutation {
 					createPost(
 						data: {
@@ -131,20 +132,20 @@ describe("newsfeed resolvers", () => {
 					}
 				}
 	              `,
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			}
-		);
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-		const newPostId = response.data.data.createPost._id;
+    const newPostId = response.data.data.createPost._id;
 
-		const deletedResponse = await axios.post(
-			URL,
-			{
-				query: `
+    const deletedResponse = await axios.post(
+      URL,
+      {
+        query: `
 	            mutation {
 	                removePost(id: "${newPostId}") {
 	                    _id
@@ -152,30 +153,29 @@ describe("newsfeed resolvers", () => {
 	                }
 	            }
 	            `,
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			}
-		);
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-		expect(deletedResponse.data).toMatchObject({
-			data: {
-				removePost: {
-					_id: `${newPostId}`,
-					text: "Test",
-				},
-			},
-		});
-	});
+    expect(deletedResponse.data).toMatchObject({
+      data: {
+        removePost: {
+          _id: `${newPostId}`,
+          text: 'Test',
+        },
+      },
+    });
+  });
 
-
-	test("Like Post", async () => {
-		const response = await axios.post(
-			URL,
-			{
-				query: `
+  test('Like Post', async () => {
+    const response = await axios.post(
+      URL,
+      {
+        query: `
 				mutation {
 					likePost(
 						id: "${createdPostId}"
@@ -185,27 +185,27 @@ describe("newsfeed resolvers", () => {
 					}
 				}				
 	              `,
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			}
-		);
-		const { data } = response;
-		expect(data.data.likePost).toEqual(
-			expect.objectContaining({
-				_id: expect.any(String),
-				text: expect.any(String),
-			})
-		);
-	});
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const { data } = response;
+    expect(data.data.likePost).toEqual(
+      expect.objectContaining({
+        _id: expect.any(String),
+        text: expect.any(String),
+      })
+    );
+  });
 
-	test("Unlike Post", async () => {
-		const response = await axios.post(
-			URL,
-			{
-				query: `
+  test('Unlike Post', async () => {
+    const response = await axios.post(
+      URL,
+      {
+        query: `
 				mutation {
 					unlikePost(
 						id: "${createdPostId}"
@@ -215,43 +215,41 @@ describe("newsfeed resolvers", () => {
 					}
 				}				
 	              `,
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			}
-		);
-		const { data } = response;
-		expect(data.data.unlikePost).toEqual(
-			expect.objectContaining({
-				_id: expect.any(String),
-				text: expect.any(String),
-			})
-		);
-	});
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const { data } = response;
+    expect(data.data.unlikePost).toEqual(
+      expect.objectContaining({
+        _id: expect.any(String),
+        text: expect.any(String),
+      })
+    );
+  });
 
+  // Comments
 
-	//Comments
-
-	test("Comments by Post", async () => {
-		const response = await axios.post(URL, {
-			query: `query {
+  test('Comments by Post', async () => {
+    const response = await axios.post(URL, {
+      query: `query {
 					commentsByPost (id: "${createdPostId}"){
 						text
 					}
 	            }`,
-		});
-		const { data } = response;
-		expect(Array.isArray(data.data.commentsByPost)).toBeTruthy();
-	});
+    });
+    const { data } = response;
+    expect(Array.isArray(data.data.commentsByPost)).toBeTruthy();
+  });
 
-	let createdCommentId;
-	test("Create Comment", async () => {
-		const response = await axios.post(
-			URL,
-			{
-				query: `
+  test('Create Comment', async () => {
+    const response = await axios.post(
+      URL,
+      {
+        query: `
 				mutation {
 					createComment(
 						postId: "${createdPostId}",
@@ -264,29 +262,27 @@ describe("newsfeed resolvers", () => {
 				}
 				
 	              `,
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			}
-		);
-		const { data } = response;
-		createdCommentId = data.data.createComment._id;
-		expect(data.data.createComment).toEqual(
-			expect.objectContaining({
-				_id: expect.any(String),
-				text: expect.any(String),
-			})
-		);
-	});
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const { data } = response;
+    expect(data.data.createComment).toEqual(
+      expect.objectContaining({
+        _id: expect.any(String),
+        text: expect.any(String),
+      })
+    );
+  });
 
-	
-	test("Remove Comment", async () => {
-		const response = await axios.post(
-			URL,
-			{
-				query: `
+  test('Remove Comment', async () => {
+    const response = await axios.post(
+      URL,
+      {
+        query: `
 				mutation {
 					createComment(
 						postId: "${createdPostId}",
@@ -298,20 +294,20 @@ describe("newsfeed resolvers", () => {
 					}
 				}
 	              `,
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			}
-		);
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-		const newCommentId = response.data.data.createComment._id;
+    const newCommentId = response.data.data.createComment._id;
 
-		const deletedResponse = await axios.post(
-			URL,
-			{
-				query: `
+    const deletedResponse = await axios.post(
+      URL,
+      {
+        query: `
 	            mutation {
 					removeComment(id: "${newCommentId}") {
 	                    _id
@@ -319,23 +315,21 @@ describe("newsfeed resolvers", () => {
 	                }
 	            }
 	            `,
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			}
-		);
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-		expect(deletedResponse.data).toMatchObject({
-			data: {
-				removeComment: {
-					_id: `${newCommentId}`,
-					text: "Comment to be deleted",
-				},
-			},
-		});
-	});
+    expect(deletedResponse.data).toMatchObject({
+      data: {
+        removeComment: {
+          _id: `${newCommentId}`,
+          text: 'Comment to be deleted',
+        },
+      },
+    });
+  });
 });
-
-module.exports.token = token;

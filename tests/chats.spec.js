@@ -1,8 +1,8 @@
-const axios = require("axios");
-const { URL } = require("../constants");
-const getToken = require("./functions/getToken");
-const shortid = require("shortid");
-const getUserId = require("./functions/getUserId");
+const axios = require('axios');
+const shortid = require('shortid');
+const { URL } = require('../constants');
+const getToken = require('./functions/getToken');
+const getUserId = require('./functions/getUserId');
 
 let token;
 let loggedInUserId;
@@ -12,15 +12,15 @@ beforeAll(async () => {
   loggedInUserId = await getUserId();
 });
 
-describe("chat resolvers", () => {
+describe('chat resolvers', () => {
   let createdGroupChatId;
   let createdDirectChatId;
   let createdOrgId;
 
-  test("create direct chat", async () => {
+  test('create direct chat', async () => {
     // CREATE AN ORGANIZATION
 
-    let createdOrgResponse = await axios.post(
+    const createdOrgResponse = await axios.post(
       URL,
       {
         query: `
@@ -45,8 +45,8 @@ describe("chat resolvers", () => {
     createdOrgId = createdOrgResponse.data.data.createOrganization._id;
 
     // CREATE A NEW USER
-    let nameForNewUser = shortid.generate();
-    let email = `${nameForNewUser}@test.com`;
+    const nameForNewUser = shortid.generate();
+    const email = `${nameForNewUser}@test.com`;
 
     const createNewUserResponse = await axios.post(URL, {
       query: `
@@ -66,8 +66,7 @@ describe("chat resolvers", () => {
               `,
     });
     const signUpData = createNewUserResponse.data;
-    newUserToken = signUpData.data.signUp.accessToken;
-    newUserId = signUpData.data.signUp.user._id;
+    const newUserId = signUpData.data.signUp.user._id;
 
     // CREATE DIRECT CHAT
 
@@ -103,7 +102,7 @@ describe("chat resolvers", () => {
 
   // SEND A MESSAGE TO A DIRECT CHAT
 
-  test("send message to direct chat", async () => {
+  test('send message to direct chat', async () => {
     const sendMessageToDirectChatResponse = await axios.post(
       URL,
       {
@@ -132,7 +131,7 @@ describe("chat resolvers", () => {
 
   // REMOVE DIRECT CHAT
 
-  test("remove direct chat", async () => {
+  test('remove direct chat', async () => {
     const removeDirectChatResponse = await axios.post(
       URL,
       {
@@ -161,7 +160,29 @@ describe("chat resolvers", () => {
 
   // CREATE GROUP CHAT
 
-  test("create group chat", async () => {
+  test('create group chat', async () => {
+    const nameForNewUser = shortid.generate();
+    const email = `${nameForNewUser}@test.com`;
+    const createNewUserResponse = await axios.post(URL, {
+      query: `
+              mutation {
+                  signUp(data: {
+                  firstName:"${nameForNewUser}",
+                  lastName:"${nameForNewUser}"
+                  email: "${email}"
+                  password:"password"
+                  }) {
+                  user{
+                    _id
+                  }
+                  accessToken
+                  }
+              }
+              `,
+    });
+    const signUpData = createNewUserResponse.data;
+    const newUserId = signUpData.data.signUp.user._id;
+
     const createGroupChatResponse = await axios.post(
       URL,
       {
@@ -194,13 +215,9 @@ describe("chat resolvers", () => {
     );
   });
 
-
   // SEND MESSAGE TO GROUP CHAT
 
-  
-  test("send message to group chat", async () => {
-
-
+  test('send message to group chat', async () => {
     const sendMessageToGroupChatResponse = await axios.post(
       URL,
       {
@@ -225,13 +242,11 @@ describe("chat resolvers", () => {
         _id: expect.any(String),
       })
     );
-
-    
   });
 
   // REMOVE GROUP CHAT
 
-  test("remove group chat", async () => {
+  test('remove group chat', async () => {
     const removeGroupChatResponse = await axios.post(
       URL,
       {

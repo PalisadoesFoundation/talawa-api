@@ -1,9 +1,8 @@
-const axios = require("axios");
-const {URL} = require("../constants")
+const axios = require('axios');
+const { URL } = require('../constants');
 
-
-describe("user resolvers", () => {
-  test("users-subqueries", async () => {
+describe('user resolvers', () => {
+  test('users-subqueries', async () => {
     const response = await axios.post(URL, {
       query: `
       {
@@ -31,7 +30,6 @@ describe("user resolvers", () => {
 
     const { data } = response;
 
-    expect(Array.isArray(data.data.users)).toBeTruthy()
-
+    expect(Array.isArray(data.data.users)).toBeTruthy();
   });
 });

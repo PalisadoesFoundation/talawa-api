@@ -1,13 +1,13 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-let mongoURI = "";
+let mongoURI = '';
 
 // choose appropriate db based on the NODE_ENV
 const mongo_db =
-  process.env.NODE_ENV === "test" ? process.env.TEST_DB : process.env.MONGO_DB;
+  process.env.NODE_ENV === 'test' ? process.env.TEST_DB : process.env.MONGO_DB;
 
-if (process.env.MONGO_LOCAL_INSTANCE === "true") {
-  if (process.env.LOCAL_DB_REQUIRES_AUTH === "true") {
+if (process.env.MONGO_LOCAL_INSTANCE === 'true') {
+  if (process.env.LOCAL_DB_REQUIRES_AUTH === 'true') {
     mongoURI = `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@127.0.0.1:27017/${process.env.MONGO_DB}`;
   } else {
     mongoURI = `mongodb://127.0.0.1:27017/${mongo_db}`;
@@ -24,7 +24,7 @@ const connect = async () => {
       useFindAndModify: false,
       useNewUrlParser: true,
     });
-    console.log("MongoDB is connected");
+    console.log('MongoDB is connected');
   } catch (error) {
     console.log(error);
     process.exit(1);
