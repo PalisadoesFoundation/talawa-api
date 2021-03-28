@@ -1,15 +1,13 @@
-const User = require("../models/User");
-const MembershipRequest = require("../models/MembershipRequest");
-
-
+const User = require('../models/User');
+const MembershipRequest = require('../models/MembershipRequest');
 
 const Organization = {
-  creator: async (parent, args, context, info) => {
+  creator: async (parent) => {
     const user = await User.findById(parent.creator._id);
-    if (!user) throw new Error("Creator not found");
+    if (!user) throw new Error('Creator not found');
     return user;
   },
-  admins: async (parent, args, context, info) => {
+  admins: async (parent) => {
     const admins = await User.find({
       _id: {
         $in: [...parent.admins],
@@ -17,7 +15,7 @@ const Organization = {
     });
     return admins;
   },
-  members: async (parent, args, context, info) => {
+  members: async (parent) => {
     const members = await User.find({
       _id: {
         $in: [...parent.members],
@@ -25,22 +23,22 @@ const Organization = {
     });
     return members;
   },
-  membershipRequests: async(parent,args,context,info)=>{
+  membershipRequests: async (parent) => {
     const membershipRequests = await MembershipRequest.find({
       _id: {
-        $in: [...parent.membershipRequests]
-      }
-    })
+        $in: [...parent.membershipRequests],
+      },
+    });
     return membershipRequests;
   },
-  blockedUsers: async(parent,args,context,info)=> {
+  blockedUsers: async (parent) => {
     const users = await User.find({
       _id: {
-       $in: [...parent.blockedUsers]
-      }
-    })
+        $in: [...parent.blockedUsers],
+      },
+    });
     return users;
-  }
+  },
 };
 
 module.exports = Organization;

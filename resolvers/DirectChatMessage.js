@@ -1,16 +1,14 @@
-const User = require("../models/User");
-const DirectChatMessage = require("../models/DirectChatMessage");
-const Organization = require("../models/Organization");
-const DirectChat = require("../models/DirectChat");
+const User = require('../models/User');
+const DirectChat = require('../models/DirectChat');
 
 module.exports = {
-  directChatMessageBelongsTo: async (parent, args, context, info) => {
+  directChatMessageBelongsTo: async (parent) => {
     return await DirectChat.findById(parent.directChatMessageBelongsTo);
   },
-  sender: async (parent, args, context, info) => {
+  sender: async (parent) => {
     return await User.findById(parent.sender);
   },
-  receiver: async (parent, args, context, info) => {
+  receiver: async (parent) => {
     return await User.findById(parent.receiver);
-  }
+  },
 };

@@ -1,21 +1,20 @@
-const axios = require("axios");
-const { URL } = require("../constants");
-const getToken = require("./functions/getToken");
-const shortid = require("shortid");
+const axios = require('axios');
+const shortid = require('shortid');
+const { URL } = require('../constants');
+const getToken = require('./functions/getToken');
 
 let token;
 beforeAll(async () => {
   token = await getToken();
 });
 
-describe("Private Organization Membership Tests", () => {
+describe('Private Organization Membership Tests', () => {
   let newRequestId;
   let createdOrganizationId;
   let newUserToken;
-  let newUserId;
 
-  //New user sends membership request to join organization
-  test("User sends private organization membership request", async () => {
+  // New user sends membership request to join organization
+  test('User sends private organization membership request', async () => {
     // Private Organization is created - by default user
     const createdOrganizationResponse = await axios.post(
       URL,
@@ -40,15 +39,15 @@ describe("Private Organization Membership Tests", () => {
       }
     );
 
-    //console.log(createdOrganizationResponse.data)
+    // console.log(createdOrganizationResponse.data)
 
     createdOrganizationId =
       createdOrganizationResponse.data.data.createOrganization._id;
 
-    //New user is created
+    // New user is created
 
-    let id = shortid.generate();
-    let email = `${id}@test.com`;
+    const id = shortid.generate();
+    const email = `${id}@test.com`;
     const response = await axios.post(URL, {
       query: `
         mutation {
@@ -68,9 +67,8 @@ describe("Private Organization Membership Tests", () => {
     });
     const signUpData = response.data;
     newUserToken = signUpData.data.signUp.accessToken;
-    newUserId = signUpData.data.signUp.user._id;
 
-    //console.log("created org id", createdOrganizationId);
+    // console.log("created org id", createdOrganizationId);
 
     const sendRequestResponse = await axios.post(
       URL,
@@ -89,12 +87,11 @@ describe("Private Organization Membership Tests", () => {
       }
     );
 
-    //console.log("send request response data", sendRequestResponse.data)
-
+    // console.log("send request response data", sendRequestResponse.data)
 
     const sendRequestData = sendRequestResponse.data;
     newRequestId = sendRequestData.data.sendMembershipRequest._id;
-    //console.log("new request id",newRequestId)
+    // console.log("new request id",newRequestId)
 
     expect(sendRequestData.data.sendMembershipRequest).toEqual(
       expect.objectContaining({
@@ -103,11 +100,8 @@ describe("Private Organization Membership Tests", () => {
     );
   });
 
-
-
-
-  //admin rejects membership request
-  test("Admin rejects membership request", async () => {
+  // admin rejects membership request
+  test('Admin rejects membership request', async () => {
     const rejectRequestResponse = await axios.post(
       URL,
       {
@@ -127,24 +121,17 @@ describe("Private Organization Membership Tests", () => {
     );
 
     const rejectRequestData = rejectRequestResponse.data;
-    //console.log("reject response data", rejectRequestData);
+    // console.log("reject response data", rejectRequestData);
 
     expect(rejectRequestData.data.rejectMembershipRequest).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
       })
     );
-
-
   });
 
-
-
   // USER SENDS REQUEST THEN CANCELS IT
-  test("User sends membership requests then cancels it", async () => {
-
-
-
+  test('User sends membership requests then cancels it', async () => {
     let requestId;
     const sendRequestResponse = await axios.post(
       URL,
@@ -165,9 +152,6 @@ describe("Private Organization Membership Tests", () => {
     const sendRequestData = sendRequestResponse.data;
     requestId = sendRequestData.data.sendMembershipRequest._id;
 
-
-
-
     const cancelRequestResponse = await axios.post(
       URL,
       {
@@ -187,25 +171,18 @@ describe("Private Organization Membership Tests", () => {
     );
 
     const cancelRequestData = cancelRequestResponse.data;
-    //console.log("reject response data", acceptRequestData);
+    // console.log("reject response data", acceptRequestData);
 
     expect(cancelRequestData.data.cancelMembershipRequest).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
       })
     );
-
-
-  })
-
-
-
-
+  });
 
   // A NEW REQUEST IS SENT AND ACCEPTED
 
-  test("User sends membership request and admin accepts it", async () => {
-
+  test('User sends membership request and admin accepts it', async () => {
     // SEND REQUEST
 
     let requestId;
@@ -228,10 +205,7 @@ describe("Private Organization Membership Tests", () => {
     const sendRequestData = sendRequestResponse.data;
     requestId = sendRequestData.data.sendMembershipRequest._id;
 
-
-
     // ACCEPT REQUEST
-
 
     const acceptRequestResponse = await axios.post(
       URL,
@@ -252,16 +226,12 @@ describe("Private Organization Membership Tests", () => {
     );
 
     const acceptRequestData = acceptRequestResponse.data;
-    //console.log("reject response data", acceptRequestData);
+    // console.log("reject response data", acceptRequestData);
 
     expect(acceptRequestData.data.acceptMembershipRequest).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
       })
     );
-
-  })
-
-
-
+  });
 });

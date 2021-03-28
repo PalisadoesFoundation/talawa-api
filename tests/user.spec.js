@@ -1,9 +1,9 @@
-const axios = require("axios");
-const shortid = require("shortid");
-const { URL } = require("../constants");
+const axios = require('axios');
+const shortid = require('shortid');
+const { URL } = require('../constants');
 
-describe("user resolvers", () => {
-  test("allUsers", async () => {
+describe('user resolvers', () => {
+  test('allUsers', async () => {
     const response = await axios.post(URL, {
       query: `query {
                 users {
@@ -18,7 +18,7 @@ describe("user resolvers", () => {
     expect(Array.isArray(data.data.users)).toBeTruthy();
   });
 
-  test("signUp", async () => {
+  test('signUp', async () => {
     var id = shortid.generate();
     var email = `${id}@test.com`;
     const response = await axios.post(URL, {
@@ -46,7 +46,7 @@ describe("user resolvers", () => {
     );
   });
 
-  test("login", async () => {
+  test('login', async () => {
     const response = await axios.post(URL, {
       query: `
             mutation{

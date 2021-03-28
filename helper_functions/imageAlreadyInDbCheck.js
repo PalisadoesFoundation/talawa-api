@@ -1,18 +1,20 @@
-const ImageHash = require("../models/ImageHash");
-const { imageHash } = require("image-hash");
-const deleteImage = require("./deleteImage");
-const deleteDuplicatedImage = require("./deleteDuplicatedImage");
-const reuploadDuplicateCheck = require("./ReuploadDuplicateCheck");
+const ImageHash = require('../models/ImageHash');
+const { imageHash } = require('image-hash');
+const deleteDuplicatedImage = require('./deleteDuplicatedImage');
+const reuploadDuplicateCheck = require('./ReuploadDuplicateCheck');
 
 // Check to see if image already exists in db using hash
 // if its there point to that image and remove the image just uploaded
 // if its not there allow the file to remain uploaded
-module.exports = function imageAlreadyInDbCheck(imageJustUploadedPath, itemImage) {
+module.exports = function imageAlreadyInDbCheck(
+  imageJustUploadedPath,
+  itemImage
+) {
   let fileName;
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     imageHash(`./${imageJustUploadedPath}`, 16, true, async (error, data) => {
       //if (error) throw error;
-      hash = data;
+      const hash = data;
 
       // Finds an entry with the same hash
       const imageAlreadyExistsInDb = await ImageHash.findOne({
@@ -21,13 +23,13 @@ module.exports = function imageAlreadyInDbCheck(imageJustUploadedPath, itemImage
 
       if (imageAlreadyExistsInDb) {
         let tryingToReUploadADuplicate;
-          tryingToReUploadADuplicate = await reuploadDuplicateCheck(
-            imageJustUploadedPath,
-            itemImage
-          );
+        tryingToReUploadADuplicate = await reuploadDuplicateCheck(
+          imageJustUploadedPath,
+          itemImage
+        );
         if (!tryingToReUploadADuplicate) {
           // dont increment if the same user/org is using the same image multiple times for the same use case
-          let imageHashObj = await ImageHash.findOneAndUpdate(
+          await ImageHash.findOneAndUpdate(
             {
               // Increase the number of places this image is used
               hashValue: hash,
@@ -58,7 +60,7 @@ module.exports = function imageAlreadyInDbCheck(imageJustUploadedPath, itemImage
           fileName: imageJustUploadedPath,
           numberOfUses: 1,
         });
-        hashObj = await hashObj.save();
+        await hashObj.save();
         // console.log(
         //   "number of uses of hash (new image) : " + hashObj._doc.numberOfUses
         // );
@@ -70,5 +72,7 @@ module.exports = function imageAlreadyInDbCheck(imageJustUploadedPath, itemImage
     .then(() => {
       return fileName;
     })
-    .catch((e) => { throw new Error("Invalid file type")});
+    .catch(() => {
+      throw new Error('Invalid file type');
+    });
 };

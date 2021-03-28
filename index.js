@@ -1,40 +1,39 @@
-require("dotenv").config(); // pull env variables from .env file
+require('dotenv').config(); // pull env variables from .env file
 
-const { ApolloServer, gql, PubSub } = require("apollo-server-express");
-const Query = require("./resolvers/Query");
-const Mutation = require("./resolvers/Mutation");
-const typeDefs = require("./schema/schema.graphql");
-const isAuth = require("./middleware/is-auth");
-const User = require("./resolvers/User");
-const express = require("express");
-const connect = require("./db.js");
-const Organization = require("./resolvers/Organization");
-const cors = require("cors");
-const MembershipRequest = require("./resolvers/MembershipRequest");
+const { ApolloServer, PubSub } = require('apollo-server-express');
+const Query = require('./resolvers/Query');
+const Mutation = require('./resolvers/Mutation');
+const typeDefs = require('./schema/schema.graphql');
+const isAuth = require('./middleware/is-auth');
+const User = require('./resolvers/User');
+const express = require('express');
+const connect = require('./db.js');
+const Organization = require('./resolvers/Organization');
+const cors = require('cors');
+const MembershipRequest = require('./resolvers/MembershipRequest');
 const app = express();
-const path = require("path");
-const DirectChat = require("./resolvers/DirectChat");
-const DirectChatMessage = require("./resolvers/DirectChatMessage");
+const path = require('path');
+const DirectChat = require('./resolvers/DirectChat');
+const DirectChatMessage = require('./resolvers/DirectChatMessage');
 
-const GroupChat = require("./resolvers/GroupChat");
-const GroupChatMessage = require("./resolvers/GroupChatMessage");
+const GroupChat = require('./resolvers/GroupChat');
+const GroupChatMessage = require('./resolvers/GroupChatMessage');
 
-const Subscription = require("./resolvers/Subscription");
-const jwt = require("jsonwebtoken");
+const Subscription = require('./resolvers/Subscription');
+const jwt = require('jsonwebtoken');
 
 const pubsub = new PubSub();
-const http = require("http");
+const http = require('http');
 
-const rateLimit = require("express-rate-limit");
-const xss = require("xss-clean");
-const helmet = require("helmet");
-const mongoSanitize = require("express-mongo-sanitize");
+const rateLimit = require('express-rate-limit');
+const xss = require('xss-clean');
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 15 minutes
-  max: 5000,// this can be edited in between
-  message:
-    "Too many requests from this IP, please try again after 15 minutes"
+  max: 50000, // this can be edited in between
+  message: 'Too many requests from this IP, please try again after 15 minutes',
 });
 
 const resolvers = {
@@ -65,8 +64,8 @@ const server = new ApolloServer({
     }
   },
   subscriptions: {
-    onConnect: (connection, webSocket) => {
-      if (!connection.authToken) throw new Error("User is not authenticated");
+    onConnect: (connection) => {
+      if (!connection.authToken) throw new Error('User is not authenticated');
 
       let userId = null;
       if (connection.authToken) {
@@ -91,12 +90,17 @@ app.use(apiLimiter); //safety against DOS attack
 
 app.use(xss()); //safety against XSS attack or Cross Site Scripting attacks
 
-app.use(helmet({ contentSecurityPolicy: (process.env.NODE_ENV === 'production') ? undefined : false })); //safety against XSS attack
+app.use(
+  helmet({
+    contentSecurityPolicy:
+      process.env.NODE_ENV === 'production' ? undefined : false,
+  })
+); //safety against XSS attack
 
 app.use(mongoSanitize()); //safety against NoSql Injections
 
 //makes folder available public
-app.use("/images", express.static(path.join(__dirname, "./images")));
+app.use('/images', express.static(path.join(__dirname, './images')));
 
 app.use(cors()); //to apply cors
 
@@ -120,11 +124,13 @@ connect()
     // ⚠️ Pay attention to the fact that we are calling `listen` on the http server variable, and not on `app`.
     httpServer.listen(process.env.PORT || 4000, () => {
       console.log(
-        `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${server.graphqlPath
+        `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
+          server.graphqlPath
         }`
       );
       console.log(
-        `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${server.subscriptionsPath
+        `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${
+          server.subscriptionsPath
         }`
       );
     });

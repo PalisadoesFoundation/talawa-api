@@ -1,6 +1,6 @@
-const axios = require("axios");
-const { URL } = require("../constants");
-const getToken = require("./functions/getToken");
+const axios = require('axios');
+const { URL } = require('../constants');
+const getToken = require('./functions/getToken');
 
 let token;
 let createdOrgId;
@@ -9,9 +9,9 @@ beforeAll(async () => {
   token = await getToken();
 });
 
-describe("organization resolvers", () => {
-  test("allOrganizations", async () => {
-    let response = await axios.post(URL, {
+describe('organization resolvers', () => {
+  test('allOrganizations', async () => {
+    const response = await axios.post(URL, {
       query: `{
                 organizations {
                     _id
@@ -20,12 +20,12 @@ describe("organization resolvers", () => {
             }
             `,
     });
-    let { data } = response;
+    const { data } = response;
     expect(Array.isArray(data.data.organizations)).toBeTruthy();
   });
 
-  test("createOrganization", async () => {
-    let createdOrgResponse = await axios.post(
+  test('createOrganization', async () => {
+    const createdOrgResponse = await axios.post(
       URL,
       {
         query: `
@@ -47,20 +47,20 @@ describe("organization resolvers", () => {
         },
       }
     );
-    let { data } = createdOrgResponse;
+    const { data } = createdOrgResponse;
     createdOrgId = createdOrgResponse.data.data.createOrganization._id;
-    //console.log(createdOrgId);
+    // console.log(createdOrgId);
     expect(data.data.createOrganization).toEqual(
       expect.objectContaining({
-        _id: expect.any(String)
+        _id: expect.any(String),
       })
     );
   });
 
   // console.log(createdOrgId)
 
-  test("updateOrganization", async () => {
-    let updateOrgRes = await axios.post(
+  test('updateOrganization', async () => {
+    const updateOrgRes = await axios.post(
       URL,
       {
         query: `
@@ -83,22 +83,20 @@ describe("organization resolvers", () => {
       }
     );
 
-    let{ data } = updateOrgRes;
+    const { data } = updateOrgRes;
 
     expect(data).toMatchObject({
       data: {
         updateOrganization: {
           _id: `${createdOrgId}`,
-          description: "new description",
+          description: 'new description',
           isPublic: false,
         },
       },
     });
   });
 
-  test("removeOrganization", async () => {
-    
-
+  test('removeOrganization', async () => {
     const deletedResponse = await axios.post(
       URL,
       {
@@ -117,15 +115,10 @@ describe("organization resolvers", () => {
       }
     );
 
-
     expect(deletedResponse.data.data.removeOrganization).toEqual(
-			expect.objectContaining({
-				_id: expect.any(String)
-			})
-		);
-
-
+      expect.objectContaining({
+        _id: expect.any(String),
+      })
+    );
   });
 });
-
-module.exports.token = token;

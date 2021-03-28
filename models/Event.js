@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const moment = require("moment");
+const mongoose = require('mongoose');
+// const moment = require("moment");
 
 const Schema = mongoose.Schema;
 
@@ -59,15 +59,15 @@ const eventSchema = new Schema({
   },
   recurrance: {
     type: String,
-    enum: ["DAILY", "WEEKLY", "MONTHLY", "YEARLY", "ONCE"],
+    enum: ['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY', 'ONCE'],
     required: function () {
       return this.recurring;
     },
   },
-  description: {
-    type: String,
-    required: true,
-  },
+  // description: {
+  // 	type: String,
+  // 	required: true,
+  // },
   isPublic: {
     type: Boolean,
     required: true,
@@ -78,33 +78,33 @@ const eventSchema = new Schema({
   },
   creator: {
     type: Schema.Types.ObjectId,
-    ref: "User",
+    ref: 'User',
     required: true,
   },
   registrants: [
     {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
     },
   ],
   admins: [
     {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
   ],
   organization: {
     type: Schema.Types.ObjectId,
-    ref: "Organization",
+    ref: 'Organization',
     required: true,
   },
   tasks: [
     {
       type: Schema.Types.ObjectId,
-      ref: "Task",
+      ref: 'Task',
     },
   ],
 });
 
-module.exports = mongoose.model("Event", eventSchema);
+module.exports = mongoose.model('Event', eventSchema);
