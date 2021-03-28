@@ -244,7 +244,7 @@ describe('newsfeed resolvers', () => {
     const { data } = response;
     expect(Array.isArray(data.data.commentsByPost)).toBeTruthy();
   });
-
+  let createdCommentId;
   test('Create Comment', async () => {
     const response = await axios.post(
       URL,
@@ -270,6 +270,7 @@ describe('newsfeed resolvers', () => {
       }
     );
     const { data } = response;
+    createdCommentId = data.data.createComment._id;
     expect(data.data.createComment).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
