@@ -8,20 +8,6 @@
 
 Go to [Talawa-Api Backend](https://github.com/PalisadoesFoundation/talawa-api) and follow the procedure to configure it on your system.
 
-### Local Instance
-
-If you are running MongoDB locally on your system then these env variables are necessary for connection with MongoDB.
-
-    1. MONGO_DB
-        Database name
-    2. MONGO_LOCAL_INSTANCE
-        Set it to true
-
-NB: You may have username and password for local instance too, in that case set the username ans password in env file.
-
-NB: If your local mongodbb required auth set the LOCAL_DB_REQUIRES_AUTH var to true and ensure the MONGO_PASSWORD and MONGO_USER vars are set
-
-
 ### Hosted Instance
 
 You can also use the hosted instance of mongodb using atlas by
@@ -37,16 +23,8 @@ mongodb+srv://<username>:<password>@<cluster_url>/<dbName>?retryWrites=true&w=ma
 
 In [Talawa-Api Backend](https://github.com/PalisadoesFoundation/talawa-api), create an env file with the following environment variables:
 
-    1. MONGO_USER
-        Username to access the cluster
-    2. MONGO_PASSWORD
-        Password
-    3. MONGO_URL
-        Cluster url
-    4. MONGO_DB
-        Database name
-    5. MONGO_LOCAL_INSTANCE
-        Intialize to false
+    1. MONGO_DB_URL
+        Database connection string
 
 ### Tokens
 

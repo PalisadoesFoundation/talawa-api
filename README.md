@@ -1,6 +1,6 @@
 # Talawa API
 
-[![N|Solid](image/talawa-rtd.png)](https://github.com/PalisadoesFoundation/talawa-api)
+[![N|Solid](image/talawa-logo-lite-200x200.png)](https://github.com/PalisadoesFoundation/talawa-api)
 
 Talawa is a modular open source project to manage group activities of both non-profit organizations and businesses.
 
@@ -16,8 +16,8 @@ This has been a Calico Challenge project in 2019. It will be written in python w
 
 ## Documentation
 
-- The talawa documentation can be found [here][readthedocs].
-- Visit the [talawa GitHub site][repo] to see the code.
+- The talawa documentation can be found [here](https://palisadoesfoundation.github.io/talawa-docs/).
+- Want to contribute? Look at [CONTRIBUTING.md](https://github.com/PalisadoesFoundation/talawa-api/blob/master/CONTRIBUTING.md) to get started.
 
 ## About Talawa
 
@@ -25,7 +25,23 @@ This has been a Calico Challenge project in 2019. It will be written in python w
 
 ## Installation
 
-### Prerequesites
+### Environment Variables
+
+To run this api five environment variables need to be set in a .env file in the root of the api:  
+
+1. ACCESS_TOKEN_SECRET  
+2. REFRESH_TOKEN_SECRET  
+3. MONGO_DB_URL  
+
+Please note when running the api using docker the MONGO_DB_URL is in the format of mongodb://${CONTAINER_NAME}:{PORT}/${DB_NAME}
+
+### Docker Development
+
+Steps:
+ 1. docker-compose build
+ 2. docker-compose up
+
+### Local Development Prerequesites
 
 Talawa API development prerequisites
 
@@ -47,7 +63,7 @@ npm install
 To run the project in development mode, run the following command
 
 ```sh
-npm run start
+npm run dev
 ```
 
 For testing, run the following command
@@ -63,22 +79,6 @@ Start developing!
 [pfd]: <http://www.palisadoes.org>
 [node]: <https://nodejs.org/en/>
 [yarn]: <https://yarnpkg.com/>
-
-### Environment Variables
-
-To run this api five environment variables need to be set in a .env file in the root of the api:  
-
-1. MONGO_USER  
-2. MONGO_PASSWORD  
-3. MONGO_DB  
-4. MONGO_URL
-5. MONGO_LOCAL_INSTANCE
-6. ACCESS_TOKEN_SECRET  
-7. REFRESH_TOKEN_SECRET  
-8. LOCAL_DB_REQUIRES_AUTH
-
-If you are running mongodb locally only the MONGO_DB and MONGO_LOCAL_INSTANCE env vars are necessary. MONGO_USER and MONGO_PASSWORD are only necessary if you are connecting to a hosted instance of mongodb using atlas.
-If your local mongodbb required auth set the LOCAL_DB_REQUIRES_AUTH var to true and ensure the MONGO_PASSWORD and MONGO_USER vars are set
 
 ### Image Upload
 
