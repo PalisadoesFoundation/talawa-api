@@ -107,7 +107,7 @@ database
   .then(() => {
     // Use native http server to allow subscriptions
     httpServer.listen(process.env.PORTs || 4000, () => {
-      console.log(Chalk.hex("#fab95b").bold(
+      console.log(chalk.hex("#fab95b").bold(
         `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
           apolloServer.graphqlPath
         }`)
