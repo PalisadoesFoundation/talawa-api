@@ -1,10 +1,9 @@
-const { createWriteStream, unlink } = require("fs");
-const ImageHash = require("../models/ImageHash");
+const { unlink } = require('fs');
+const ImageHash = require('../models/ImageHash');
 
-const reuploadDuplicateCheck = require("./ReuploadDuplicateCheck");
+const reuploadDuplicateCheck = require('./ReuploadDuplicateCheck');
 
 async function deleteImage(imageToBeDeleted, imageBelongingToItem) {
-
   let tryingToReUploadADuplicate;
   if (imageBelongingToItem) {
     tryingToReUploadADuplicate = await reuploadDuplicateCheck(
@@ -21,20 +20,19 @@ async function deleteImage(imageToBeDeleted, imageBelongingToItem) {
       fileName: imageToBeDeleted,
     });
 
-
     if (hash && hash.numberOfUses > 1) {
       // image is only deleted if it is only used once
-      console.log("Image cannot be deleted");
+      console.log('Image cannot be deleted');
     } else {
-      console.log("Image is only used once and therefore can be deleted");
+      console.log('Image is only used once and therefore can be deleted');
       unlink(imageToBeDeleted, function (err) {
         if (err) throw err;
         // if no error, file has been deleted successfully
-        console.log("File deleted!");
+        console.log('File deleted!');
       });
     }
 
-    let decrementedhash = await ImageHash.findOneAndUpdate(
+    await ImageHash.findOneAndUpdate(
       {
         // decrement number of uses of hashed image
         fileName: imageToBeDeleted,

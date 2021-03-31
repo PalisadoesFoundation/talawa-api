@@ -1,34 +1,39 @@
 {
-  "name": "talawa-api-rework",
+  "name": "talawa-api",
   "version": "1.0.0",
-  "description": "\"# tenten-api-rework\"",
+  "description": "talawa-api is a backend repository written using Node.js and graphql for generating APIs for the talawa flutter app.",
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "start": "nodemon index.js --ext js,graphql,json",
-    "test-server": "cross-env NODE_ENV=test TEST_DB=talawa-test-db nodemon index.js --ext js,graphql"
+    "dev": "nodemon index.js --ext js,graphql,json",
+    "start": "cross-env NODE_ENV=production pm2-runtime start index.js",
+    "test-server": "cross-env NODE_ENV=test TEST_DB=talawa-test-db nodemon index.js --ext js,graphql",
+    "lint": "eslint . --fix && echo 'Lint complete.'"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Laurell876/tenten-api-rework.git"
+    "url": "https://github.com/PalisadoesFoundation/talawa-api"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "chats",
+    "events",
+    "organization",
+    "community"
+  ],
+  "author": "Palisadoes Foundation",
+  "license": "GNU General Public License v3.0",
   "bugs": {
-    "url": "https://github.com/Laurell876/tenten-api-rework/issues"
+    "url": "https://github.com/PalisadoesFoundation/talawa-api/issues"
   },
-  "homepage": "https://github.com/Laurell876/tenten-api-rework#readme",
+  "homepage": "https://github.com/PalisadoesFoundation/talawa-api#readme",
   "dependencies": {
-    "apollo-server": "^2.14.2",
     "apollo-server-express": "^2.14.2",
     "axios": "^0.21.1",
-    "babel-jest": "^26.0.1",
     "bcryptjs": "^2.4.3",
-    "config": "^3.3.6",
     "cors": "^2.8.5",
     "cross-env": "^7.0.2",
     "dotenv": "^8.2.0",
+    "express": "^4.17.1",
     "express-mongo-sanitize": "^2.0.2",
     "express-rate-limit": "^5.2.6",
     "graphql": "^15.0.0",
@@ -39,11 +44,19 @@
     "moment": "^2.27.0",
     "mongoose": "^5.11.20",
     "nodemon": "^2.0.4",
+    "pm2": "^4.5.5",
     "shortid": "^2.2.15",
     "validator": "^13.0.0",
     "xss-clean": "^0.1.1"
   },
   "devDependencies": {
-    "easygraphql-tester": "^5.1.6"
+    "easygraphql-tester": "^5.1.6",
+    "eslint": "^7.21.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jest": "^24.2.1",
+    "eslint-plugin-prettier": "^3.3.1",
+    "prettier": "^2.2.1"
   }
 }

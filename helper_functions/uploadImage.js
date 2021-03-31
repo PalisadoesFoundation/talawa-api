@@ -1,11 +1,9 @@
-const shortid = require("shortid");
-const { createWriteStream } = require("fs");
-const path = require("path");
-const imageAlreadyInDbCheck = require("./imageAlreadyInDbCheck");
-const deleteImage = require("./deleteImage");
-const { imageHash } = require("image-hash");
-const imageExtensionCheck = require("./imageExtensionCheck");
-
+const shortid = require('shortid');
+const { createWriteStream } = require('fs');
+const path = require('path');
+const imageAlreadyInDbCheck = require('./imageAlreadyInDbCheck');
+const deleteImage = require('./deleteImage');
+const imageExtensionCheck = require('./imageExtensionCheck');
 
 module.exports = async (file, itemImage) => {
   const id = shortid.generate();
@@ -16,10 +14,10 @@ module.exports = async (file, itemImage) => {
     createReadStream()
       .pipe(
         createWriteStream(
-          path.join(__dirname, "../images", `/${id}-${filename}`)
+          path.join(__dirname, '../images', `/${id}-${filename}`)
         )
       )
-      .on("close", res)
+      .on('close', res)
   );
   let imageJustUploadedPath = `images/${id}-${filename}`;
 
@@ -29,7 +27,7 @@ module.exports = async (file, itemImage) => {
   //return imagePath;
 
   if (itemImage) {
-    console.log("old image should be deleted: " )
+    console.log('old image should be deleted: ');
     // If user/org already has an image delete it from the API
     await deleteImage(itemImage, imageJustUploadedPath);
   }
