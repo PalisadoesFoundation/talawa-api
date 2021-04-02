@@ -1,6 +1,7 @@
 require('dotenv').config(); // pull env variables from .env file
 
 const { ApolloServer, PubSub } = require('apollo-server-express');
+const chalk =require("chalk")
 const Query = require('./resolvers/Query');
 const Mutation = require('./resolvers/Mutation');
 const typeDefs = require('./schema/schema.graphql');
@@ -106,16 +107,17 @@ database
   .then(() => {
     // Use native http server to allow subscriptions
     httpServer.listen(process.env.PORT || 4000, () => {
-      console.log(
+      console.log(chalk.hex("#fab95b").bold(
         `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
           apolloServer.graphqlPath
-        }`
+        }`)
       );
       console.log(
-        `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${
+        chalk.hex('#fab95b').bold(`🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${
           apolloServer.subscriptionsPath
-        }`
+        }`)
       );
     });
   })
-  .catch((e) => console.log(e));
+  .catch((e) => console.log(chalk.red(e)));
+
