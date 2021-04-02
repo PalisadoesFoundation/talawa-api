@@ -83,6 +83,20 @@ const Query = {
       });
     }
   },
+  usersByName: async (parent, args, context) => {
+    let users = await User.find();
+    if (!users) throw new Error('Currently no users');
+
+    users = users.filter((user) => {
+      if (
+        user.firstName.includes(args.query) ||
+        user.lastName.includes(args.query)
+      ) {
+        return { ...user._doc, password: null };
+      }
+    });
+    return users;
+  },
   usersConnection,
   me: async (parent, args, context) => {
     authCheck(context);

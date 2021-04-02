@@ -15,7 +15,7 @@ const app = express();
 const path = require('path');
 const DirectChat = require('./resolvers/DirectChat');
 const DirectChatMessage = require('./resolvers/DirectChatMessage');
-
+const chalk = require('chalk');
 const GroupChat = require('./resolvers/GroupChat');
 const GroupChatMessage = require('./resolvers/GroupChatMessage');
 
@@ -105,17 +105,25 @@ database
   .connect()
   .then(() => {
     // Use native http server to allow subscriptions
-    httpServer.listen(process.env.PORT || 4000, () => {
+    httpServer.listen(process.env.PORTs || 4000, () => {
       console.log(
-        `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
-          apolloServer.graphqlPath
-        }`
+        chalk
+          .hex('#fab95b')
+          .bold(
+            `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
+              apolloServer.graphqlPath
+            }`
+          )
       );
       console.log(
-        `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${
-          apolloServer.subscriptionsPath
-        }`
+        chalk
+          .hex('#fab95b')
+          .bold(
+            `🚀 Subscriptions ready at ws://localhost:${
+              process.env.PORT || 4000
+            }${apolloServer.subscriptionsPath}`
+          )
       );
     });
   })
-  .catch((e) => console.log(e));
+  .catch((e) => console.log(chalk.red(e)));
