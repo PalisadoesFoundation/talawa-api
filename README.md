@@ -14,7 +14,7 @@ Core features include:
 
  ``talawa`` is based on the original ``quito`` code created by the [Palisadoes Foundation][pfd] as part of its annual Calico Challenge program. Calico provides paid summer internships for  Jamaican university students to work on selected open source projects. They are mentored by software professionals and receive stipends based on the completion of predefined milestones. Calico was started in 2015. Visit [The Palisadoes Foundation's website](http://www.palisadoes.org/) for more details on its origin and activities.
 
-## Talawa Components
+# Talawa Components
 
 `talawa` has these major software components:
 
@@ -22,14 +22,14 @@ Core features include:
 1. **talawa-api**: [An API providing access to user data and features](https://github.com/PalisadoesFoundation/talawa-api)
 1. **talawa-admin**: [A web based administrative portal](https://github.com/PalisadoesFoundation/talawa-admin)
 
-## Documentation
+# Documentation
 
 - The talawa documentation can be found [here](https://palisadoesfoundation.github.io/talawa-docs/).
 - Want to contribute? Look at [CONTRIBUTING.md](https://github.com/PalisadoesFoundation/talawa-api/blob/master/CONTRIBUTING.md) to get started.
 
-## Installation
+# Installation
 
-### Environment Variables
+## Environment Variables
 
 To run this api five environment variables need to be set in a .env file in the root of the api:  
 
@@ -39,13 +39,13 @@ To run this api five environment variables need to be set in a .env file in the 
 
 Please note when running the api using docker the MONGO_DB_URL is in the format of mongodb://${CONTAINER_NAME}:{PORT}/${DB_NAME}
 
-### Docker Development
+## Docker Development
 
 Steps:
  1. docker-compose build
  2. docker-compose up
 
-### Local Development Prerequesites
+## Local Development Prerequesites
 
 Talawa API development prerequisites
 
@@ -84,10 +84,10 @@ Start developing!
 [node]: <https://nodejs.org/en/>
 [yarn]: <https://yarnpkg.com/>
 
-### Image Upload
+## Image Upload
 
 To enable image upload functionalities create an images folder in the root of the project
 
-### Configuration with Frontend
+## Configuration with Frontend
 
 View how to [configure backend with the flutter app](https://github.com/PalisadoesFoundation/talawa-api/blob/master/configuration.md)
