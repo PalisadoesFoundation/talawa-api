@@ -83,7 +83,7 @@ const Query = {
       });
     }
   },
-  usersByName: async (parent, args, context) => {
+  usersByName: async (parent, args) => {
     let users = await User.find();
     if (!users) throw new Error('Currently no users');
 

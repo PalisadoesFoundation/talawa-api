@@ -39,6 +39,7 @@ const likeComment = require('./post_mutations/likeComment');
 const unlikeComment = require('./post_mutations/unlikeComment');
 const likePost = require('./post_mutations/likePost');
 const unlikePost = require('./post_mutations/unlikePost');
+const savePost = require('./post_mutations/savePost');
 
 const sendMembershipRequest = require('./membership_request_mutations/send_membership_request');
 const acceptMembershipRequest = require('./membership_request_mutations/accept_membership_request');
@@ -95,6 +96,7 @@ const Mutation = {
   removePost,
   likePost,
   unlikePost,
+  savePost,
   createTask,
   removeTask,
   updateTask,

@@ -35,6 +35,8 @@ module.exports = `
     removePost(id:ID!): Post
     likePost(id:ID!): Post
     unlikePost(id:ID!): Post
+    savePost(id:ID!) : String
+
 
     createComment(postId:ID!, data: CommentInput!): Comment
     removeComment(id:ID!): Comment
