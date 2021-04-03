@@ -1,10 +1,10 @@
 const axios = require('axios');
-
+const chalk = require('chalk');
 const { URL } = require('../../constants');
 
 // sets token before every test
 module.exports = async () => {
-  console.log('TOKEN SET');
+  console.log(chalk.green('TOKEN SET'));
   const response = await axios.post(URL, {
     query: `
     mutation{

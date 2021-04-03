@@ -2,6 +2,7 @@ const axios = require('axios');
 const shortid = require('shortid');
 const { URL } = require('../constants');
 const getToken = require('./functions/getToken');
+const chalk = require('chalk');
 
 let token;
 beforeAll(async () => {
@@ -37,7 +38,7 @@ describe('User-Organization Resolvers', () => {
       }
     );
     const { data } = response;
-    if (!data.data) console.log('Data not present');
+    if (!data.data) console.log(chalk.red('Data not present'));
     console.log(data);
     createdOrgId = data.data.createOrganization._id;
     console.log(createdOrgId);

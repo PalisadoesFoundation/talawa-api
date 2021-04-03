@@ -4,6 +4,7 @@ const path = require('path');
 const imageAlreadyInDbCheck = require('./imageAlreadyInDbCheck');
 const deleteImage = require('./deleteImage');
 const imageExtensionCheck = require('./imageExtensionCheck');
+const chalk = require('chalk');
 
 module.exports = async (file, itemImage) => {
   const id = shortid.generate();
@@ -27,7 +28,7 @@ module.exports = async (file, itemImage) => {
   //return imagePath;
 
   if (itemImage) {
-    console.log('old image should be deleted: ');
+    console.log(chalk.bgBlueBright('old image should be deleted: '));
     // If user/org already has an image delete it from the API
     await deleteImage(itemImage, imageJustUploadedPath);
   }

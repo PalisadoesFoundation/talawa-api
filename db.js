@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const chalk = require('chalk');
 
 const connect = async () => {
   try {
@@ -9,7 +10,7 @@ const connect = async () => {
       useNewUrlParser: true,
     });
   } catch (error) {
-    console.log(error);
+    console.log(chalk.red(error));
     process.exit(1);
   }
 };
