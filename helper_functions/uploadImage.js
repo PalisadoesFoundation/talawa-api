@@ -9,6 +9,9 @@ module.exports = async (file, itemImage) => {
   const id = shortid.generate();
   const { createReadStream, filename } = await file;
 
+  // throw an error if file is not png or jpg
+  await imageExtensionCheck(filename);
+
   // upload new image
   await new Promise((res) =>
     createReadStream()
@@ -19,10 +22,8 @@ module.exports = async (file, itemImage) => {
       )
       .on('close', res)
   );
-  let imageJustUploadedPath = `images/${id}-${filename}`;
 
-  // throw an error if file is not png or jpg
-  await imageExtensionCheck(imageJustUploadedPath);
+  let imageJustUploadedPath = `images/${id}-${filename}`;
 
   //return imagePath;
 
