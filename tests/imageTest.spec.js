@@ -42,8 +42,8 @@ describe('image upload', () => {
         1: ['variables.file'],
       })
     );
-    body.append('1', fs.createReadStream(path.join(__dirname, `./test_image/${file_name}`)));
-    const json = await uploadBody(body);
-    expect(json.data.data).notEqual(null);
+    body.append('1', fs.createReadStream(path.resolve(__dirname, `./test_image/${file_name}`)));
+    const { data } = await uploadBody(body);
+    expect(data.errors).toBe(null);
   });
 });
