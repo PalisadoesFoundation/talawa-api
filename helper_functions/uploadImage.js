@@ -8,15 +8,10 @@ const imageExtensionCheck = require('./imageExtensionCheck');
 module.exports = async (file, itemImage) => {
   const id = shortid.generate();
   const { createReadStream, filename } = await file;
-
   // upload new image
   await new Promise((res) =>
     createReadStream()
-      .pipe(
-        createWriteStream(
-          path.join(__dirname, '../images', `/${id}-${filename}`)
-        )
-      )
+      .pipe(createWriteStream(path.join(__dirname, '../images', `/${id}-${filename}`)))
       .on('close', res)
   );
   let imageJustUploadedPath = `images/${id}-${filename}`;
@@ -32,10 +27,7 @@ module.exports = async (file, itemImage) => {
     await deleteImage(itemImage, imageJustUploadedPath);
   }
 
-  let imageAlreadyInDbPath = await imageAlreadyInDbCheck(
-    imageJustUploadedPath,
-    itemImage
-  );
+  let imageAlreadyInDbPath = await imageAlreadyInDbCheck(imageJustUploadedPath, itemImage);
 
   return {
     newImagePath: imageJustUploadedPath,

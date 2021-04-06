@@ -2,3 +2,4 @@ node_modules/
 nodemon.json
 .env
 images/
+.editorconfig

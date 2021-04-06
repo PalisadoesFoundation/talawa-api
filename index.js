@@ -1,7 +1,7 @@
 require('dotenv').config(); // pull env variables from .env file
 
 const { ApolloServer, PubSub } = require('apollo-server-express');
-const chalk =require("chalk")
+const chalk = require('chalk');
 const Query = require('./resolvers/Query');
 const Mutation = require('./resolvers/Mutation');
 const typeDefs = require('./schema/schema.graphql');
@@ -54,17 +54,14 @@ app.use(apiLimiter);
 app.use(xss());
 app.use(
   helmet({
-    contentSecurityPolicy:
-      process.env.NODE_ENV === 'production' ? undefined : false,
+    contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
   })
 );
 app.use(mongoSanitize());
 app.use(cors());
 app.use('/images', express.static(path.join(__dirname, './images')));
 
-app.get('/', (req, res) =>
-  res.json({ 'talawa-version': 'v1', status: 'healthy' })
-);
+app.get('/', (req, res) => res.json({ 'talawa-version': 'v1', status: 'healthy' }));
 
 const httpServer = http.createServer(app);
 
@@ -84,10 +81,7 @@ const apolloServer = new ApolloServer({
 
       let userId = null;
       if (connection.authToken) {
-        let decodedToken = jwt.verify(
-          connection.authToken,
-          process.env.ACCESS_TOKEN_SECRET
-        );
+        let decodedToken = jwt.verify(connection.authToken, process.env.ACCESS_TOKEN_SECRET);
         userId = decodedToken.userId;
       }
 
@@ -107,17 +101,24 @@ database
   .then(() => {
     // Use native http server to allow subscriptions
     httpServer.listen(process.env.PORT || 4000, () => {
-      console.log(chalk.hex("#fab95b").bold(
-        `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
-          apolloServer.graphqlPath
-        }`)
+      console.log(
+        chalk
+          .hex('#fab95b')
+          .bold(
+            `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
+              apolloServer.graphqlPath
+            }`
+          )
       );
       console.log(
-        chalk.hex('#fab95b').bold(`🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${
-          apolloServer.subscriptionsPath
-        }`)
+        chalk
+          .hex('#fab95b')
+          .bold(
+            `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${
+              apolloServer.subscriptionsPath
+            }`
+          )
       );
     });
   })
   .catch((e) => console.log(chalk.red(e)));
-

@@ -2,10 +2,7 @@ const Organization = require('../../models/Organization');
 
 const User = require('../../models/User');
 const bcrypt = require('bcryptjs');
-const {
-  createAccessToken,
-  createRefreshToken,
-} = require('../../helper_functions/auth');
+const { createAccessToken, createRefreshToken } = require('../../helper_functions/auth');
 
 const uploadImage = require('../../helper_functions/uploadImage');
 
