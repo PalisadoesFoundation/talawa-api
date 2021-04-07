@@ -1,10 +1,8 @@
 # Installation
 
-## Local Development
-
 Talawa API can be setup to run via `Docker` or default node package manager `Npm`.
 
-### Docker
+## Docker
 
 1. Install these dependencies if you don't already have them
    - [Docker](https://docs.docker.com/engine/install/)
@@ -37,7 +35,7 @@ Talawa API can be setup to run via `Docker` or default node package manager `Npm
    sudo docker-compose up
    ```
 
-### Standard Installation
+## Standard Installation
 
 1. Install these dependencies if you don't already have them
    - [MongoDB](https://docs.mongodb.com/manual/administration/install-community/)
@@ -70,7 +68,7 @@ Talawa API can be setup to run via `Docker` or default node package manager `Npm
    npm run start
    ```
 
-### Testing
+## Testing
 
 ```sh
 npm run test
