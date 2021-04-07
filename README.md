@@ -10,15 +10,15 @@ Talawa is a modular open source project to manage group activities of both non-p
 
 Core features include:
 
- 1. Membership management
- 2. Groups management
- 3. Event registrations
- 4. Recurring meetings
- 5. Facilities registrations
+1.  Membership management
+2.  Groups management
+3.  Event registrations
+4.  Recurring meetings
+5.  Facilities registrations
 
- ``talawa`` is based on the original ``quito`` code created by the [Palisadoes Foundation][pfd] as part of its annual Calico Challenge program. Calico provides paid summer internships for  Jamaican university students to work on selected open source projects. They are mentored by software professionals and receive stipends based on the completion of predefined milestones. Calico was started in 2015. Visit [The Palisadoes Foundation's website](http://www.palisadoes.org/) for more details on its origin and activities.
+`talawa` is based on the original `quito` code created by the [Palisadoes Foundation][pfd] as part of its annual Calico Challenge program. Calico provides paid summer internships for Jamaican university students to work on selected open source projects. They are mentored by software professionals and receive stipends based on the completion of predefined milestones. Calico was started in 2015. Visit [The Palisadoes Foundation's website](http://www.palisadoes.org/) for more details on its origin and activities.
 
-# Talawa Components
+## Talawa Components
 
 `talawa` has these major software components:
 
@@ -27,67 +27,22 @@ Core features include:
 1. **talawa-admin**: [A web based administrative portal](https://github.com/PalisadoesFoundation/talawa-admin)
 1. **talawa-docs**: [The online documentation website](https://github.com/PalisadoesFoundation/talawa-docs)
 
-# Documentation
+## Documentation
 
 - The talawa documentation can be found [here](https://palisadoesfoundation.github.io/talawa-docs/).
 - Want to contribute? Look at [CONTRIBUTING.md](https://github.com/PalisadoesFoundation/talawa-api/blob/master/CONTRIBUTING.md) to get started.
 
-# Installation
+## Installation
 
-## Environment Variables
+[Follow this guide](./INSTALLATION.md)
 
-To run this api five environment variables need to be set in a .env file in the root of the api:  
+## Link to useful resources
 
-1. ACCESS_TOKEN_SECRET  
-2. REFRESH_TOKEN_SECRET  
-3. MONGO_DB_URL  
-
-Please note when running the api using docker the MONGO_DB_URL is in the format of mongodb://${CONTAINER_NAME}:{PORT}/${DB_NAME}
-
-## Docker Development
-
-Steps:
- 1. docker-compose build
- 2. docker-compose up
-
-## Local Development Prerequesites
-
-Talawa API development prerequisites
-
-- [Node v12.14.1 (or later)][node]
-
-Clone and change into the project
-
-```sh
-git clone https://github.com/PalisadoesFoundation/talawa-api.git
-cd talawa-api
-```
-
-Install packages
-
-```sh
-npm install
-```
-
-To run the project in development mode, run the following command
-
-```sh
-npm run dev
-```
-
-For testing, run the following command
-
-```sh
-npm run test
-```
-
-Start developing!
-
-[readthedocs]: <https://talawa.readthedocs.io/>
-[repo]: <https://github.com/PalisadoesFoundation/talawa>
-[pfd]: <http://www.palisadoes.org>
-[node]: <https://nodejs.org/en/>
-[yarn]: <https://yarnpkg.com/>
+[readthedocs]: https://talawa.readthedocs.io/
+[repo]: https://github.com/PalisadoesFoundation/talawa
+[pfd]: http://www.palisadoes.org
+[node]: https://nodejs.org/en/
+[yarn]: https://yarnpkg.com/
 
 ## Image Upload
 
