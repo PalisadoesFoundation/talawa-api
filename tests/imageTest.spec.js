@@ -6,6 +6,7 @@ const fetch = require('node-fetch');
 
 const uploadBody = async (body) => {
   const response = await fetch(URL, { method: 'POST', body });
+  console.log(response);
   return response;
 };
 
@@ -34,7 +35,19 @@ describe('image upload', () => {
         },
       })
     );
-
+    const file_name = 'test_image.jpg';
+    body.append(
+      'map',
+      JSON.stringify({
+        1: ['variables.file'],
+      })
+    );
+    body.append(
+      '1',
+      fs.createReadStream(path.resolve(__dirname, `./test_image/${file_name}`))
+    );
+    const data = await uploadBody(body);
+    console.log(data);
     expect(data.body.error).toBe(null || undefined);
   });
 });
