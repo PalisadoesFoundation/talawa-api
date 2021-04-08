@@ -1,8 +1,10 @@
 # Installation
 
-Talawa API can be setup to run via `Docker` or default node package manager `Npm`.
+Talawa API can be setup to run via `Docker` or node's default package manager `Npm`.
 
 ## Docker
+
+Follow these steps to get the api running using docker
 
 1. Install these dependencies if you don't already have them
    - [Docker](https://docs.docker.com/engine/install/)
@@ -23,19 +25,31 @@ Talawa API can be setup to run via `Docker` or default node package manager `Npm
 
 4. Copy the `.env.sample` to `.env`
 
-5. Fill out the following fields:
+5. You will have to set these variables in `.env` to provide the necessary secrets and connection url.
+
+   Please follow instructions in the comments at the top of `.env`.
+
    - ACCESS_TOKEN_SECRET
    - REFRESH_TOKEN_SECRET
    - MONGO_DB_URL
-     Follow instructions in the comments at the top of `.env`
-6. Run the following commands
+
+6. Now that the enviornment variables are setup. Run the following commands in the terminal.
+
+   This command will build the docker image.
 
    ```sh
    sudo docker-compose build
+   ```
+
+   This command will run the container, just use the following command to run the server in future.
+
+   ```sh
    sudo docker-compose up
    ```
 
 ## Standard Installation
+
+Follow these steps to get the api running using npm
 
 1. Install these dependencies if you don't already have them
    - [MongoDB](https://docs.mongodb.com/manual/administration/install-community/)
@@ -58,11 +72,22 @@ Talawa API can be setup to run via `Docker` or default node package manager `Npm
 4. Copy the `.env.sample` to `.env`
 
 5. Fill out the following fields:
+
    - ACCESS_TOKEN_SECRET
    - REFRESH_TOKEN_SECRET
    - MONGO_DB_URL
+
      Follow instructions in the comments at the top of `.env`
-6. Run the following commands
+
+6. Install required node packages
+
+   ```sh
+   npm install
+   ```
+
+7. Now that we have all the packages, execute the following command to run the server.
+
+   NB: You only have to execute the following command to run the server in future.
 
    ```sh
    npm run start
