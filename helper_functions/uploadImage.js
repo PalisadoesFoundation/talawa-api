@@ -12,7 +12,7 @@ module.exports = async (file, itemImage) => {
   const save_path = path.join(__dirname, '../images', `/${id}-${filename}`);
 
   // throw an error if file is not png or jpg
-  await imageExtensionCheck(imageJustUploadedPath);
+  await imageExtensionCheck(filename);
   // upload new image
   await new Promise((resolve, reject) =>
     createReadStream()
