@@ -1,9 +1,8 @@
 const signUp = require('./auth_mutations/signup');
 const login = require('./auth_mutations/login');
-const refreshToken = require("./auth_mutations/refresh_token");
-const revokeRefreshTokenForUser = require("./auth_mutations/revoke_refresh_token_for_user");
+const refreshToken = require('./auth_mutations/refresh_token');
+const revokeRefreshTokenForUser = require('./auth_mutations/revoke_refresh_token_for_user');
 
-const updateUserProfile = require("./user_mutations/updateUserProfile");
 const createEvent = require('./event_mutations/createEvent');
 const removeEvent = require('./event_mutations/removeEvent');
 const updateEvent = require('./event_mutations/updateEvent');
@@ -16,6 +15,9 @@ const joinPublicOrganization = require('./member_mutations/join_public_organizat
 const leaveOrganization = require('./member_mutations/leave_organization');
 
 const removeMember = require('./member_mutations/removeMember');
+
+const updateUserProfile = require('./user_mutations/updateUserProfile');
+
 //const removeMultipleMembers = require("./member_mutations/removeMultipleMembers");
 
 const registerForEvent = require('./event_mutations/registerForEvent');
