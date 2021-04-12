@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "dev": "nodemon index.js --ext js,graphql,json",
-    "start": "cross-env NODE_ENV=production pm2-runtime start index.js",
+    "start": "cross-env pm2-runtime start index.js --watch",
+    "prod": "cross-env NODE_ENV=production pm2-runtime start index.js",
     "test-server": "cross-env NODE_ENV=test TEST_DB=talawa-test-db nodemon index.js --ext js,graphql",
     "lint": "eslint . --fix && echo 'Lint complete.'"
   },
@@ -36,6 +36,7 @@
     "express": "^4.17.1",
     "express-mongo-sanitize": "^2.0.2",
     "express-rate-limit": "^5.2.6",
+    "form-data": "^4.0.0",
     "graphql": "^15.0.0",
     "helmet": "^4.4.1",
     "image-hash": "^4.0.1",
@@ -43,7 +44,7 @@
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.27.0",
     "mongoose": "^5.11.20",
-    "nodemon": "^2.0.4",
+    "node-fetch": "^2.6.1",
     "pm2": "^4.5.5",
     "shortid": "^2.2.15",
     "validator": "^13.0.0",
