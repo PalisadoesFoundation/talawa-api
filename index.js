@@ -72,7 +72,11 @@ const httpServer = http.createServer(app);
 
 const apolloServer = new ApolloServer({
   typeDefs,
-  resolvers,
+  uploads: false,
+  resolvers: {
+    ...resolvers,
+    Upload: GraphQLUpload,
+  },
   context: ({ req, res, connection }) => {
     if (connection) {
       return { ...connection, pubsub, res, req };
