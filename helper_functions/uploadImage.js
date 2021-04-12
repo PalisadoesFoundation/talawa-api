@@ -1,5 +1,5 @@
 const shortid = require('shortid');
-const { createWriteStream } = require('fs');
+const { createWriteStream, unlinkSync } = require('fs');
 const path = require('path');
 const imageAlreadyInDbCheck = require('./imageAlreadyInDbCheck');
 const deleteImage = require('./deleteImage');
@@ -9,15 +9,19 @@ module.exports = async (file, itemImage) => {
   const id = shortid.generate();
   const { createReadStream, filename } = await file;
 
+  const save_path = path.join(__dirname, '../images', `/${id}-${filename}`);
   // upload new image
-  await new Promise((res) =>
+  await new Promise((resolve, reject) =>
     createReadStream()
-      .pipe(
-        createWriteStream(
-          path.join(__dirname, '../images', `/${id}-${filename}`)
-        )
-      )
-      .on('close', res)
+      .on('error', (error) => {
+        if (createReadStream().truncated)
+          // delete the truncated file
+          unlinkSync(path);
+        reject(error);
+      })
+      .pipe(createWriteStream(save_path))
+      .on('error', (error) => reject(error))
+      .on('finish', () => resolve({ path }))
   );
   let imageJustUploadedPath = `images/${id}-${filename}`;
 
