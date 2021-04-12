@@ -46,7 +46,6 @@ describe('image upload', () => {
       fs.createReadStream(path.resolve(__dirname, `./test_image/${file_name}`))
     );
     const data = await uploadBody(body);
-    console.log(data);
     expect(data.body.error).toBe(null || undefined);
   });
 });
