@@ -20,7 +20,6 @@ module.exports = async (file, itemImage) => {
       .on('close', res)
   );
   let imageJustUploadedPath = `images/${id}-${filename}`;
-
   // throw an error if file is not png or jpg
   await imageExtensionCheck(imageJustUploadedPath);
 
