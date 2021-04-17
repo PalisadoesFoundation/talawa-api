@@ -6,7 +6,6 @@ let token;
 beforeAll(async () => {
   token = await getToken();
 });
-
 describe('event resolvers', () => {
   test('allEvents', async () => {
     const response = await axios.post(URL, {
