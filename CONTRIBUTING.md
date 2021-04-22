@@ -56,8 +56,15 @@ The process of proposing a change to Talawa API can be summarized as:
 10. Ensure the test suite passes, either locally or on CI once a PR has been created. 
 11. Review and address comments on your pull request if requested.
 
-### GSoC
-If you are participating in the 2021 Summer of Code, please read more about us and our processes [here](http://www.palisadoes.org/gsoc/)
+### Internships
+
+We have internship partnerships with a number of organizations. See below for more details.
+
+#### GSoC
+If you are participating in the 2021 Summer of Code, please read more about us and our processes [here](https://palisadoesfoundation.github.io/talawa-docs/docs/internships/gsoc/gsoc-introduction)
+
+#### GithHub Externship
+If you are participating in the 2021 GitHub Externship, please read more about us and our processes [here](https://palisadoesfoundation.github.io/talawa-docs/docs/internships/github/github-introduction)
 
 ### Community
 The Palisadoes Foundation has a Slack channel where members can assist with support and clarification. Click [here](https://join.slack.com/t/thepalisadoes-dyb6419/shared_invite/zt-nk79xxlg-OxTdlrD7RLaswu8EO_Q5rg) to join our slack channel.
