@@ -22,12 +22,10 @@ If you are ready to start contributing code right away, we have a list of [good 
 We utilize GitHub issues and pull requests to keep track of issues and contributions from the community. 
 
 #### Issues 
-Feel free to open an issue if you spot any bugs or improvements you see in Talawa. Once an issue has been created, it will be triaged by the members of the Palisadoes Foundation. If passed, the issue will be open for assignment. 
-
-As you work through these issues, you will start to get a better understanding of the type of problems that get reported. You may even start noticing the same issue gets reported. In these cases, you can close the issue and add a comment that says “Duplicate of #issue”.
+Make sure you are following [issue report guidelines](https://github.com/PalisadoesFoundation/talawa/blob/master/issue-guidelines.md) available here before creating any new issues on Talawa API project.
 
 #### Pull Requests
-Every pull request should be linked to an existing issue. A pull request should consist of a summary, to help us understand the motivation behind the changes. 
+[Pull Request guidelines](https://github.com/PalisadoesFoundation/talawa/blob/master/PR-guidelines.md) is best resource to follow to start working on open issues.
 
 #### Git Flow
 For Talawa API, we utilize the GitFlow branching model. GitFlow is geared towards efficiently tracking development and managing releases. The model makes parallel development efforts easy and safe by isolating new development efforts from completed work. 
@@ -58,8 +56,15 @@ The process of proposing a change to Talawa API can be summarized as:
 10. Ensure the test suite passes, either locally or on CI once a PR has been created. 
 11. Review and address comments on your pull request if requested.
 
-### GSoC
-If you are participating in the 2021 Summer of Code, please read more about us and our processes [here](http://www.palisadoes.org/gsoc/)
+### Internships
+
+We have internship partnerships with a number of organizations. See below for more details.
+
+#### GSoC
+If you are participating in the 2021 Summer of Code, please read more about us and our processes [here](https://palisadoesfoundation.github.io/talawa-docs/docs/internships/gsoc/gsoc-introduction)
+
+#### GitHub Externship
+If you are participating in the 2021 GitHub Externship, please read more about us and our processes [here](https://palisadoesfoundation.github.io/talawa-docs/docs/internships/github/github-introduction)
 
 ### Community
 The Palisadoes Foundation has a Slack channel where members can assist with support and clarification. Click [here](https://join.slack.com/t/thepalisadoes-dyb6419/shared_invite/zt-nk79xxlg-OxTdlrD7RLaswu8EO_Q5rg) to join our slack channel.

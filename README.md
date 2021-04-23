@@ -1,89 +1,53 @@
 # Talawa API
 
-[![N|Solid](image/talawa-rtd.png)](https://github.com/PalisadoesFoundation/talawa-api)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![GitHub stars](https://img.shields.io/github/stars/PalisadoesFoundation/talawa-api.svg?style=social&label=Star&maxAge=2592000)](https://github.com/PalisadoesFoundation/talawa-api)
+[![GitHub forks](https://img.shields.io/github/forks/PalisadoesFoundation/talawa-api.svg?style=social&label=Fork&maxAge=2592000)](https://github.com/PalisadoesFoundation/talawa-api)
+
+[![N|Solid](image/talawa-logo-lite-200x200.png)](https://github.com/PalisadoesFoundation/talawa-api)
 
 Talawa is a modular open source project to manage group activities of both non-profit organizations and businesses.
 
-Core features to be developed include:
+Core features include:
 
- 1. Membership management
- 2. Groups management
- 3. Event registrations
- 4. Recurring meetings
- 5. Facilities registrations
+1.  Membership management
+2.  Groups management
+3.  Event registrations
+4.  Recurring meetings
+5.  Facilities registrations
 
-This has been a Calico Challenge project in 2019. It will be written in python with close integrations with the Plone open source content management system.
+`talawa` is based on the original `quito` code created by the [Palisadoes Foundation][pfd] as part of its annual Calico Challenge program. Calico provides paid summer internships for Jamaican university students to work on selected open source projects. They are mentored by software professionals and receive stipends based on the completion of predefined milestones. Calico was started in 2015. Visit [The Palisadoes Foundation's website](http://www.palisadoes.org/) for more details on its origin and activities.
+
+## Talawa Components
+
+`talawa` has these major software components:
+
+1. **talawa**: [A mobile application with social media features](https://github.com/PalisadoesFoundation/talawa)
+1. **talawa-api**: [An API providing access to user data and features](https://github.com/PalisadoesFoundation/talawa-api)
+1. **talawa-admin**: [A web based administrative portal](https://github.com/PalisadoesFoundation/talawa-admin)
+1. **talawa-docs**: [The online documentation website](https://github.com/PalisadoesFoundation/talawa-docs)
 
 ## Documentation
 
-- The talawa documentation can be found [here][readthedocs].
-- Visit the [talawa GitHub site][repo] to see the code.
-
-## About Talawa
-
- ``talawa`` is based on the original ``quito`` code created by the [Palisadoes Foundation][pfd] as part of its annual Calico Challenge program. Calico provides paid summer internships for  Jamaican university students to work on selected open source projects. They are mentored by software professionals and receive stipends based on the completion of predefined milestones. Calico was started in 2015.
+- The talawa documentation can be found [here](https://palisadoesfoundation.github.io/talawa-docs/).
+- Want to contribute? Look at [CONTRIBUTING.md](https://github.com/PalisadoesFoundation/talawa-api/blob/master/CONTRIBUTING.md) to get started.
 
 ## Installation
 
-### Prerequesites
+[Follow this guide](./INSTALLATION.md)
 
-Talawa API development prerequisites
+## Link to useful resources
 
-- [Node v12.14.1 (or later)][node]
+[readthedocs]: https://talawa.readthedocs.io/
+[repo]: https://github.com/PalisadoesFoundation/talawa
+[pfd]: http://www.palisadoes.org
+[node]: https://nodejs.org/en/
+[yarn]: https://yarnpkg.com/
 
-Clone and change into the project
-
-```sh
-git clone https://github.com/PalisadoesFoundation/talawa-api.git
-cd talawa-api
-```
-
-Install packages
-
-```sh
-npm install
-```
-
-To run the project in development mode, run the following command
-
-```sh
-npm run start
-```
-
-For testing, run the following command
-
-```sh
-npm run test
-```
-
-Start developing!
-
-[readthedocs]: <https://talawa.readthedocs.io/>
-[repo]: <https://github.com/PalisadoesFoundation/talawa>
-[pfd]: <http://www.palisadoes.org>
-[node]: <https://nodejs.org/en/>
-[yarn]: <https://yarnpkg.com/>
-
-### Environment Variables
-
-To run this api five environment variables need to be set in a .env file in the root of the api:  
-
-1. MONGO_USER  
-2. MONGO_PASSWORD  
-3. MONGO_DB  
-4. MONGO_URL
-5. MONGO_LOCAL_INSTANCE
-6. ACCESS_TOKEN_SECRET  
-7. REFRESH_TOKEN_SECRET  
-8. LOCAL_DB_REQUIRES_AUTH
-
-If you are running mongodb locally only the MONGO_DB and MONGO_LOCAL_INSTANCE env vars are necessary. MONGO_USER and MONGO_PASSWORD are only necessary if you are connecting to a hosted instance of mongodb using atlas.
-If your local mongodbb required auth set the LOCAL_DB_REQUIRES_AUTH var to true and ensure the MONGO_PASSWORD and MONGO_USER vars are set
-
-### Image Upload
+## Image Upload
 
 To enable image upload functionalities create an images folder in the root of the project
 
-### Configuration with Frontend
+## Configuration with Frontend
 
 View how to [configure backend with the flutter app](https://github.com/PalisadoesFoundation/talawa-api/blob/master/configuration.md)
