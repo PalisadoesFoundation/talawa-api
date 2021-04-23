@@ -10,4 +10,4 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           ignore-comments: true
-          default-labels: '["PR-Unapproved"]'
+          default-labels: '["unapproved"]'
