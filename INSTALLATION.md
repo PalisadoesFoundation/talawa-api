@@ -6,9 +6,7 @@ Talawa API can be setup to run via `Docker` or node's default package manager `N
 
 Follow these steps to get the api running using docker
 
-1. Install these dependencies if you don't already have them
-   - [Docker](https://docs.docker.com/engine/install/)
-   - [Nodejs](https://nodejs.org/en/)
+1. Install <strong>Docker</strong> if you have not installed it.
 2. Clone this repo to your local machine
 
    ```sh
@@ -53,7 +51,8 @@ Follow these steps to get the api running using npm
 
 1. Install these dependencies if you don't already have them
    - [MongoDB](https://docs.mongodb.com/manual/administration/install-community/)
-   - [Nodejs](https://nodejs.org/en/)
+   - [Nodejs](https://nodejs.org/en/)<br>
+   <strong>Note:</strong><em>If you do not have MongoDB on your own system, you can proceed with the connection string. Please ensure the right access permissions and firewall openings for the VM/server where the MongoDB is hosted.</em>
 2. Clone this repo to your local machine
 
    ```sh
