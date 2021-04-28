@@ -13,14 +13,16 @@ module.exports = async (file, itemImage) => {
   await imageExtensionCheck(filename);
 
   // upload new image
-  await new Promise((res) =>
+  await new Promise((resolve, reject) =>
     createReadStream()
       .pipe(
         createWriteStream(
           path.join(__dirname, '../images', `/${id}-${filename}`)
         )
       )
-      .on('close', res)
+      .on('close', resolve)
+      .on('error', (error) => reject(error))
+      .on('finish', () => resolve({ path }))
   );
 
   let imageJustUploadedPath = `images/${id}-${filename}`;
