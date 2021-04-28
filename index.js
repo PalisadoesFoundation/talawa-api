@@ -1,7 +1,8 @@
 require('dotenv').config(); // pull env variables from .env file
 
 const { ApolloServer, PubSub } = require('apollo-server-express');
-const chalk =require("chalk")
+const chalk = require('chalk');
+const { graphqlUploadExpress, GraphQLUpload } = require('graphql-upload');
 const Query = require('./resolvers/Query');
 const Mutation = require('./resolvers/Mutation');
 const typeDefs = require('./schema/schema.graphql');
@@ -60,6 +61,7 @@ app.use(
 );
 app.use(mongoSanitize());
 app.use(cors());
+app.use(graphqlUploadExpress());
 app.use('/images', express.static(path.join(__dirname, './images')));
 
 app.get('/', (req, res) =>
@@ -70,7 +72,11 @@ const httpServer = http.createServer(app);
 
 const apolloServer = new ApolloServer({
   typeDefs,
-  resolvers,
+  uploads: false,
+  resolvers: {
+    ...resolvers,
+    Upload: GraphQLUpload,
+  },
   context: ({ req, res, connection }) => {
     if (connection) {
       return { ...connection, pubsub, res, req };
@@ -107,17 +113,24 @@ database
   .then(() => {
     // Use native http server to allow subscriptions
     httpServer.listen(process.env.PORT || 4000, () => {
-      console.log(chalk.hex("#fab95b").bold(
-        `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
-          apolloServer.graphqlPath
-        }`)
+      console.log(
+        chalk
+          .hex('#fab95b')
+          .bold(
+            `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
+              apolloServer.graphqlPath
+            }`
+          )
       );
       console.log(
-        chalk.hex('#fab95b').bold(`🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${
-          apolloServer.subscriptionsPath
-        }`)
+        chalk
+          .hex('#fab95b')
+          .bold(
+            `🚀 Subscriptions ready at ws://localhost:${
+              process.env.PORT || 4000
+            }${apolloServer.subscriptionsPath}`
+          )
       );
     });
   })
   .catch((e) => console.log(chalk.red(e)));
-
