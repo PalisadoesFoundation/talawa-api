@@ -31,8 +31,7 @@ describe('Block user functionality tests', () => {
               }) {
                   _id
               }
-      }
-              `,
+        }`,
       },
       {
         headers: {
