@@ -1,1 +1,1 @@
- var test;
+ var test=0
