@@ -18,7 +18,10 @@ jobs:
     needs: PR-Greeting
     steps:
     - uses: actions/checkout@v2
-    - uses: stefanoeb/eslint-action@1.0.2
+
+    - name: Run ESLint
+      uses: stefanoeb/eslint-action@1.0.2
+
 
     - name: Install modules
       run: yarn
