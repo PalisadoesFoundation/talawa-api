@@ -1,4 +1,6 @@
-name: Lint Code Base
+
+name: PR workflow
+
 
 #
 # Documentation:
@@ -6,7 +8,9 @@ name: Lint Code Base
 #
 
 #############################
-# Start the job on all push #
+
+# Start the job on all Pull Requests #
+
 #############################
 on:
   pull_request:
