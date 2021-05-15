@@ -1,10 +1,11 @@
-name: Lint
-
-on: [pull_request]
-
+name: PR workflow
+on: push
 jobs:
-  eslint:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: stefanoeb/eslint-action@1.0.2
+    - uses: actions/checkout@v2
+    - name: Install modules
+      run: yarn
+    - name: Run ESLint
+      run: eslint --fix
