@@ -9,6 +9,7 @@ const newsfeed = require("./newsfeed/newsfeed.graphql");
 const chats = require("./chats/chat.graphql");
 
 const typeDefs = gql`
+
   type Message {
     _id: ID!
     text: String
