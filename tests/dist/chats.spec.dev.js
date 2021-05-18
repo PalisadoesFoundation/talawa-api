@@ -1,3 +1,6 @@
+/* eslint-disable jest/no-conditional-expect */
+/* eslint-disable no-fallthrough */
+/* eslint-disable no-undef */
 'use strict';
 
 var axios = require('axios');
@@ -15,7 +18,8 @@ var token;
 var loggedInUserId;
 beforeAll(function _callee() {
   return regeneratorRuntime.async(function _callee$(_context) {
-    while (1) {
+    const condition = 1;
+    while (condition) {
       switch ((_context.prev = _context.next)) {
         case 0:
           _context.next = 2;
@@ -50,24 +54,25 @@ describe('chat resolvers', function () {
       createDirectChatResponse,
       createDirectChatData;
     return regeneratorRuntime.async(function _callee2$(_context2) {
-      while (1) {
+      const condition = 1;
+      while (condition) {
         switch ((_context2.prev = _context2.next)) {
           case 0:
             _context2.next = 2;
             return regeneratorRuntime.awrap(
-            axios.post(
-              URL,
-              {
-                query:
+              axios.post(
+                URL,
+                {
+                  query:
                     '\n                mutation {\n                    createOrganization(data: {\n                        name:"test org"\n                        description:"test description"\n                        isPublic: true\n                        visibleInSearch: true\n                        }) {\n                            _id\n                        }\n                }\n                  ',
-              },
-              {
-                headers: {
-                  Authorization: 'Bearer '.concat(token),
                 },
-              }
-            )
-          );
+                {
+                  headers: {
+                    Authorization: 'Bearer '.concat(token),
+                  },
+                }
+              )
+            );
 
           case 2:
             createdOrgResponse = _context2.sent;
@@ -77,16 +82,16 @@ describe('chat resolvers', function () {
             email = ''.concat(nameForNewUser, '@test.com');
             _context2.next = 8;
             return regeneratorRuntime.awrap(
-            axios.post(URL, {
-              query: '\n              mutation {\n                  signUp(data: {\n                  firstName:"'
-                .concat(nameForNewUser, '",\n                  lastName:"')
-                .concat(nameForNewUser, '"\n                  email: "')
-                .concat(
-                  email,
-                  '"\n                  password:"password"\n                  }) {\n                  user{\n                    _id\n                  }\n                  accessToken\n                  }\n              }\n              '
-                ),
-            })
-          );
+              axios.post(URL, {
+                query: '\n              mutation {\n                  signUp(data: {\n                  firstName:"'
+                  .concat(nameForNewUser, '",\n                  lastName:"')
+                  .concat(nameForNewUser, '"\n                  email: "')
+                  .concat(
+                    email,
+                    '"\n                  password:"password"\n                  }) {\n                  user{\n                    _id\n                  }\n                  accessToken\n                  }\n              }\n              '
+                  ),
+              })
+            );
 
           case 8:
             createNewUserResponse = _context2.sent;
@@ -95,24 +100,24 @@ describe('chat resolvers', function () {
 
             _context2.next = 13;
             return regeneratorRuntime.awrap(
-            axios.post(
-              URL,
-              {
-                query: '\n        mutation{\n            createDirectChat(data: {\n              organizationId: "'
-                  .concat(createdOrgId, '"\n              userIds: ["')
-                  .concat(loggedInUserId, '", "')
-                  .concat(
-                    newUserId,
-                    '"]\n            }){\n              _id\n            }\n          }\n                '
-                  ),
-              },
-              {
-                headers: {
-                  Authorization: 'Bearer '.concat(token),
+              axios.post(
+                URL,
+                {
+                  query: '\n        mutation{\n            createDirectChat(data: {\n              organizationId: "'
+                    .concat(createdOrgId, '"\n              userIds: ["')
+                    .concat(loggedInUserId, '", "')
+                    .concat(
+                      newUserId,
+                      '"]\n            }){\n              _id\n            }\n          }\n                '
+                    ),
                 },
-              }
-            )
-          );
+                {
+                  headers: {
+                    Authorization: 'Bearer '.concat(token),
+                  },
+                }
+              )
+            );
 
           case 13:
             createDirectChatResponse = _context2.sent;
@@ -120,10 +125,10 @@ describe('chat resolvers', function () {
             createdDirectChatId =
               createDirectChatData.data.createDirectChat._id;
             expect(createDirectChatData.data.createDirectChat).toEqual(
-            expect.objectContaining({
-              _id: expect.any(String),
-            })
-          );
+              expect.objectContaining({
+                _id: expect.any(String),
+              })
+            );
 
           case 17:
           case 'end':
@@ -136,38 +141,40 @@ describe('chat resolvers', function () {
   test('send message to direct chat', function _callee3() {
     var sendMessageToDirectChatResponse, sendMessageToADirectChatData;
     return regeneratorRuntime.async(function _callee3$(_context3) {
-      while (1) {
+      const condition = 1;
+      while (condition) {
         switch ((_context3.prev = _context3.next)) {
           case 0:
             _context3.next = 2;
             return regeneratorRuntime.awrap(
-            axios.post(
-              URL,
-              {
-                query: '\n        mutation{\n          sendMessageToDirectChat(chatId: "'.concat(
-                  createdDirectChatId,
-                  '", messageContent: "this is a test message"){\n            _id\n          }\n        }\n            '
-                ),
-              },
-              {
-                headers: {
-                  Authorization: 'Bearer '.concat(token),
+              axios.post(
+                URL,
+                {
+                  query: '\n        mutation{\n          sendMessageToDirectChat(chatId: "'.concat(
+                    createdDirectChatId,
+                    '", messageContent: "this is a test message"){\n            _id\n          }\n        }\n            '
+                  ),
                 },
-              }
-            )
-          );
+                {
+                  headers: {
+                    Authorization: 'Bearer '.concat(token),
+                  },
+                }
+              )
+            );
 
           case 2:
             sendMessageToDirectChatResponse = _context3.sent;
             sendMessageToADirectChatData = sendMessageToDirectChatResponse.data;
             console.log(sendMessageToADirectChatData);
+            // eslint-disable-next-line jest/no-conditional-expect
             expect(
-            sendMessageToADirectChatData.data.sendMessageToDirectChat
-          ).toEqual(
-            expect.objectContaining({
-              _id: expect.any(String),
-            })
-          );
+              sendMessageToADirectChatData.data.sendMessageToDirectChat
+            ).toEqual(
+              expect.objectContaining({
+                _id: expect.any(String),
+              })
+            );
 
           case 6:
           case 'end':
@@ -180,37 +187,38 @@ describe('chat resolvers', function () {
   test('remove direct chat', function _callee4() {
     var removeDirectChatResponse, removeDirectChatData;
     return regeneratorRuntime.async(function _callee4$(_context4) {
-      while (1) {
+      const condition = 1;
+      while (condition) {
         switch ((_context4.prev = _context4.next)) {
           case 0:
             _context4.next = 2;
             return regeneratorRuntime.awrap(
-            axios.post(
-              URL,
-              {
-                query: '\n    mutation{\n      removeDirectChat(chatId:"'
-                  .concat(createdDirectChatId, '", organizationId:"')
-                  .concat(
-                    createdOrgId,
-                    '") {\n        _id\n    }\n    }\n            '
-                  ),
-              },
-              {
-                headers: {
-                  Authorization: 'Bearer '.concat(token),
+              axios.post(
+                URL,
+                {
+                  query: '\n    mutation{\n      removeDirectChat(chatId:"'
+                    .concat(createdDirectChatId, '", organizationId:"')
+                    .concat(
+                      createdOrgId,
+                      '") {\n        _id\n    }\n    }\n            '
+                    ),
                 },
-              }
-            )
-          );
+                {
+                  headers: {
+                    Authorization: 'Bearer '.concat(token),
+                  },
+                }
+              )
+            );
 
           case 2:
             removeDirectChatResponse = _context4.sent;
             removeDirectChatData = removeDirectChatResponse.data;
             expect(removeDirectChatData.data.removeDirectChat).toEqual(
-            expect.objectContaining({
-              _id: expect.any(String),
-            })
-          );
+              expect.objectContaining({
+                _id: expect.any(String),
+              })
+            );
 
           case 5:
           case 'end':
@@ -229,23 +237,24 @@ describe('chat resolvers', function () {
       createGroupChatResponse,
       createGroupChatData;
     return regeneratorRuntime.async(function _callee5$(_context5) {
-      while (1) {
+      const condition = 1;
+      while (condition) {
         switch ((_context5.prev = _context5.next)) {
           case 0:
             nameForNewUser = shortid.generate();
             email = ''.concat(nameForNewUser, '@test.com');
             _context5.next = 4;
             return regeneratorRuntime.awrap(
-            axios.post(URL, {
-              query: '\n              mutation {\n                  signUp(data: {\n                  firstName:"'
-                .concat(nameForNewUser, '",\n                  lastName:"')
-                .concat(nameForNewUser, '"\n                  email: "')
-                .concat(
-                  email,
-                  '"\n                  password:"password"\n                  }) {\n                  user{\n                    _id\n                  }\n                  accessToken\n                  }\n              }\n              '
-                ),
-            })
-          );
+              axios.post(URL, {
+                query: '\n              mutation {\n                  signUp(data: {\n                  firstName:"'
+                  .concat(nameForNewUser, '",\n                  lastName:"')
+                  .concat(nameForNewUser, '"\n                  email: "')
+                  .concat(
+                    email,
+                    '"\n                  password:"password"\n                  }) {\n                  user{\n                    _id\n                  }\n                  accessToken\n                  }\n              }\n              '
+                  ),
+              })
+            );
 
           case 4:
             createNewUserResponse = _context5.sent;
@@ -253,34 +262,34 @@ describe('chat resolvers', function () {
             newUserId = signUpData.data.signUp.user._id;
             _context5.next = 9;
             return regeneratorRuntime.awrap(
-            axios.post(
-              URL,
-              {
-                query: '\n      mutation{\n          createGroupChat(data: {\n            title: "This is a group chat for testing"\n            organizationId: "'
-                  .concat(createdOrgId, '"\n            userIds: ["')
-                  .concat(loggedInUserId, '", "')
-                  .concat(
-                    newUserId,
-                    '"]\n          }){\n            _id\n          }\n        }\n              '
-                  ),
-              },
-              {
-                headers: {
-                  Authorization: 'Bearer '.concat(token),
+              axios.post(
+                URL,
+                {
+                  query: '\n      mutation{\n          createGroupChat(data: {\n            title: "This is a group chat for testing"\n            organizationId: "'
+                    .concat(createdOrgId, '"\n            userIds: ["')
+                    .concat(loggedInUserId, '", "')
+                    .concat(
+                      newUserId,
+                      '"]\n          }){\n            _id\n          }\n        }\n              '
+                    ),
                 },
-              }
-            )
-          );
+                {
+                  headers: {
+                    Authorization: 'Bearer '.concat(token),
+                  },
+                }
+              )
+            );
 
           case 9:
             createGroupChatResponse = _context5.sent;
             createGroupChatData = createGroupChatResponse.data;
             createdGroupChatId = createGroupChatData.data.createGroupChat._id;
             expect(createGroupChatData.data.createGroupChat).toEqual(
-            expect.objectContaining({
-              _id: expect.any(String),
-            })
-          );
+              expect.objectContaining({
+                _id: expect.any(String),
+              })
+            );
 
           case 13:
           case 'end':
@@ -293,37 +302,38 @@ describe('chat resolvers', function () {
   test('send message to group chat', function _callee6() {
     var sendMessageToGroupChatResponse, sendMessageToAGroupChatData;
     return regeneratorRuntime.async(function _callee6$(_context6) {
-      while (1) {
+      const condition = 1;
+      while (condition) {
         switch ((_context6.prev = _context6.next)) {
           case 0:
             _context6.next = 2;
             return regeneratorRuntime.awrap(
-            axios.post(
-              URL,
-              {
-                query: '\n        mutation{\n          sendMessageToGroupChat(chatId: "'.concat(
-                  createdGroupChatId,
-                  '", messageContent: "this is a test message"){\n            _id\n          }\n        }\n            '
-                ),
-              },
-              {
-                headers: {
-                  Authorization: 'Bearer '.concat(token),
+              axios.post(
+                URL,
+                {
+                  query: '\n        mutation{\n          sendMessageToGroupChat(chatId: "'.concat(
+                    createdGroupChatId,
+                    '", messageContent: "this is a test message"){\n            _id\n          }\n        }\n            '
+                  ),
                 },
-              }
-            )
-          );
+                {
+                  headers: {
+                    Authorization: 'Bearer '.concat(token),
+                  },
+                }
+              )
+            );
 
           case 2:
             sendMessageToGroupChatResponse = _context6.sent;
             sendMessageToAGroupChatData = sendMessageToGroupChatResponse.data;
             expect(
-            sendMessageToAGroupChatData.data.sendMessageToGroupChat
-          ).toEqual(
-            expect.objectContaining({
-              _id: expect.any(String),
-            })
-          );
+              sendMessageToAGroupChatData.data.sendMessageToGroupChat
+            ).toEqual(
+              expect.objectContaining({
+                _id: expect.any(String),
+              })
+            );
 
           case 5:
           case 'end':
@@ -336,35 +346,36 @@ describe('chat resolvers', function () {
   test('remove group chat', function _callee7() {
     var removeGroupChatResponse, removeGroupChatData;
     return regeneratorRuntime.async(function _callee7$(_context7) {
-      while (1) {
+      const condition = 1;
+      while (condition) {
         switch ((_context7.prev = _context7.next)) {
           case 0:
             _context7.next = 2;
             return regeneratorRuntime.awrap(
-            axios.post(
-              URL,
-              {
-                query: '\n    mutation{\n      removeGroupChat(chatId:"'.concat(
-                  createdGroupChatId,
-                  '") {\n        _id\n    }\n    }\n            '
-                ),
-              },
-              {
-                headers: {
-                  Authorization: 'Bearer '.concat(token),
+              axios.post(
+                URL,
+                {
+                  query: '\n    mutation{\n      removeGroupChat(chatId:"'.concat(
+                    createdGroupChatId,
+                    '") {\n        _id\n    }\n    }\n            '
+                  ),
                 },
-              }
-            )
-          );
+                {
+                  headers: {
+                    Authorization: 'Bearer '.concat(token),
+                  },
+                }
+              )
+            );
 
           case 2:
             removeGroupChatResponse = _context7.sent;
             removeGroupChatData = removeGroupChatResponse.data;
             expect(removeGroupChatData.data.removeGroupChat).toEqual(
-            expect.objectContaining({
-              _id: expect.any(String),
-            })
-          );
+              expect.objectContaining({
+                _id: expect.any(String),
+              })
+            );
 
           case 5:
           case 'end':

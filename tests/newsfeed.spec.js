@@ -279,11 +279,11 @@ describe('newsfeed resolvers', () => {
     );
   });
 
-	test('Like Comment', async () => {
-		const response = await axios.post(
-			URL,
-			{
-				query: `
+  test('Like Comment', async () => {
+    const response = await axios.post(
+      URL,
+      {
+        query: `
 							mutation {
 								likeComment(
 									id: "${createdCommentId}"
@@ -294,28 +294,28 @@ describe('newsfeed resolvers', () => {
 								}
 							}				
 							`,
-			},
-			{
-				headers: {
-				Authorization: `Bearer ${token}`,
-				},
-			}
-     	);
-		const { data } = response;
-		expect(data.data.likeComment).toEqual(
-			expect.objectContaining({
-				_id: expect.any(String),
-				text: expect.any(String),
-				likeCount: expect.any(Number),
-			})
-		);
-	})
-	
-	test('Unlike Comment', async () => {
-		const response = await axios.post(
-			URL,
-			{
-				query: `
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const { data } = response;
+    expect(data.data.likeComment).toEqual(
+      expect.objectContaining({
+        _id: expect.any(String),
+        text: expect.any(String),
+        likeCount: expect.any(Number),
+      })
+    );
+  });
+
+  test('Unlike Comment', async () => {
+    const response = await axios.post(
+      URL,
+      {
+        query: `
 							mutation {
 								unlikeComment(
 									id: "${createdCommentId}"
@@ -326,24 +326,22 @@ describe('newsfeed resolvers', () => {
 								}
 							}				
 							`,
-			},
-			{
-				headers: {
-				Authorization: `Bearer ${token}`,
-				},
-			}
-     	);
-		const { data } = response;
-		expect(data.data.unlikeComment).toEqual(
-			expect.objectContaining({
-				_id: expect.any(String),
-				text: expect.any(String),
-				likeCount: expect.any(Number),
-			})
-		);
-	})
-	
-	
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const { data } = response;
+    expect(data.data.unlikeComment).toEqual(
+      expect.objectContaining({
+        _id: expect.any(String),
+        text: expect.any(String),
+        likeCount: expect.any(Number),
+      })
+    );
+  });
 
   test('Remove Comment', async () => {
     const response = await axios.post(

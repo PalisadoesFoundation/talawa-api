@@ -14,7 +14,12 @@ module.exports = {
     ecmaVersion: 12,
   },
   rules: {
-    indent: ['error', 2],
+    strict: 0,
+    'comma-dangle': 0,
+    'no-console': 'off',
+    'arrow-body-style': 0,
+    'function-paren-newline': 'off',
+    'no-underscore-dangle': 'off',
     'linebreak-style': 0,
     quotes: ['error', 'single', 'avoid-escape'],
     semi: ['error', 'always'],
