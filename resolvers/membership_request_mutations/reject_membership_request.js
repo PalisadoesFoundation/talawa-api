@@ -5,7 +5,7 @@ const adminCheck = require('../functions/adminCheck');
 const authCheck = require('../functions/authCheck');
 
 module.exports = async (parent, args, context) => {
-  authCheck(context)
+  authCheck(context);
   //ensure membership request exists
   const membershipRequest = await MembershipRequest.findOne({
     _id: args.membershipRequestId,

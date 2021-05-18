@@ -1,57 +1,51 @@
-const authCheck = require("../functions/authCheck");
- const userExists = require("../../helper_functions/userExists");
- const User = require("../../models/User");
- const uploadImage = require("../../helper_functions/uploadImage");
+const authCheck = require('../functions/authCheck');
+const userExists = require('../../helper_functions/userExists');
+const User = require('../../models/User');
+const uploadImage = require('../../helper_functions/uploadImage');
 
- const updateUserProfile = async (parent, args, context, info) => {
+// eslint-disable-next-line no-unused-vars
+const updateUserProfile = async (parent, args, context, info) => {
+  //authentication check
+  authCheck(context);
+  //gets user in token - to be used later on
+  let userFound = await userExists(context.userId);
+  if (!userFound) throw new Error('User not found');
 
-     //authentication check
-     authCheck(context);
+  if (args.data.email !== null) {
+    const emailTaken = await User.findOne({
+      email: args.data.email.toLowerCase(),
+    });
 
-     try {
-         //gets user in token - to be used later on
-         let userFound = await userExists(context.userId);
-         if (!userFound) throw new Error("User not found");
+    if (emailTaken) {
+      throw new Error('Email address taken.');
+    }
+  }
 
-         if(args.data.email != null){
-             const emailTaken = await User.findOne({
-                 email: args.data.email.toLowerCase(),
-             });
+  // Upload file
+  let uploadImageObj;
+  if (args.file) {
+    uploadImageObj = await uploadImage(args.file, null);
+  }
 
-             if (emailTaken) {
-                 throw new Error("Email address taken.");
-             }
-         }
+  if (uploadImageObj) {
+    //UPDATE USER
+    userFound.overwrite({
+      ...userFound._doc,
+      ...args.data,
+      image: uploadImageObj.imageAlreadyInDbPath
+        ? uploadImageObj.imageAlreadyInDbPath
+        : uploadImageObj.newImagePath,
+    });
+  } else {
+    //UPDATE USER
+    userFound.overwrite({
+      ...userFound._doc,
+      ...args.data,
+    });
+  }
 
-         // Upload file
-         let uploadImageObj;
-         if (args.file) {
-         uploadImageObj = await uploadImage(args.file, null);
-         }
+  await userFound.save();
+  return userFound;
+};
 
-         if(uploadImageObj){
-             //UPDATE USER
-             userFound.overwrite({
-                 ...userFound._doc,
-                 ...args.data,
-                 image: uploadImageObj.imageAlreadyInDbPath
-                         ? uploadImageObj.imageAlreadyInDbPath
-                         : uploadImageObj.newImagePath,
-             })
-         } else{
-             //UPDATE USER
-             userFound.overwrite({
-                 ...userFound._doc,
-                 ...args.data,
-             })
-         }
-
-         await userFound.save();
-         return userFound;
-
-     } catch (error) {
-         throw error;
-     }
- }
-
- module.exports = updateUserProfile; 
+module.exports = updateUserProfile;
