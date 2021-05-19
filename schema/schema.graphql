@@ -18,7 +18,7 @@ const typeDefs = gql`
     creator: User
   }
 
-    scalar Upload
+  scalar Upload
 
   input GroupInput {
     title: String

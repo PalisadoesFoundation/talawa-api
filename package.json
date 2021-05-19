@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/PalisadoesFoundation/talawa-api#readme",
   "dependencies": {
+    "@sendgrid/mail": "^7.4.4",
     "apollo-server-express": "^2.14.2",
     "axios": "^0.21.1",
     "bcryptjs": "^2.4.3",
@@ -45,7 +46,9 @@
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.27.0",
     "mongoose": "^5.11.20",
+    "nodemailer": "^6.6.0",
     "nodemon": "^2.0.4",
+    "otp-generator": "^2.0.0",
     "pm2": "^4.5.6",
     "shortid": "^2.2.15",
     "validator": "^13.0.0",
