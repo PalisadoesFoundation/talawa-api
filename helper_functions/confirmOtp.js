@@ -16,7 +16,7 @@ const confirmOtp = async (email, otp) => {
     throw new Error('Incorrect Otp');
   }
 
-  return true;
+  return otp_object._id;
 };
 
 module.exports = { confirmOtp };
