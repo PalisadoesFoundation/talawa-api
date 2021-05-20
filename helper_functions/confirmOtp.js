@@ -3,6 +3,8 @@ const Otp = require('../models/Otp');
 const confirmOtp = async (email, otp) => {
   let otp_object;
 
+  //finding otp with given fields
+
   try {
     otp_object = await Otp.findOne({
       email,
@@ -16,7 +18,7 @@ const confirmOtp = async (email, otp) => {
     throw new Error('Incorrect Otp');
   }
 
-  return otp_object._id;
+  return otp_object;
 };
 
 module.exports = { confirmOtp };

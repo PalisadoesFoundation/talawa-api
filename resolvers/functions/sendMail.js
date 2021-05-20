@@ -8,6 +8,8 @@ sgMail.setApiKey(gridKey);
 let required_otp;
 
 const sendConfirmationEmail = async (email) => {
+  //generating otp
+
   try {
     required_otp = otp.generate(6, {
       alphabets: false,

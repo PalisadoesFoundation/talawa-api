@@ -14,6 +14,8 @@ const sendOtp = async (parent, args) => {
 
   const otp_text = await sendConfirmationEmail(email);
 
+  //If the otp is already sent and the user has clicked resend otp in frontend then the existing object will get updated
+
   const otp_already_sent_previously = await Otp.findOne({ email });
 
   if (otp_already_sent_previously) {

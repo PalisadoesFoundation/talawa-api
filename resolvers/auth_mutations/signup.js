@@ -13,7 +13,7 @@ const { confirmOtp } = require('../../helper_functions/confirmOtp');
 module.exports = async (parent, args) => {
   //Checking if Otp is valid
 
-  const otp_id = confirmOtp(args.data.email, args.otp); // otp_id = id of the saved otp in database resembling the email entered
+  const otp_object = confirmOtp(args.data.email, args.otp); // the saved otp in database resembling the email entered
 
   // TODO: this check is to be removed
   let org;
@@ -49,7 +49,9 @@ module.exports = async (parent, args) => {
   const refreshToken = await createRefreshToken(user);
 
   try {
-    await Otp.findByIdAndDelete(otp_id);
+    await Otp.remove({
+      ...otp_object,
+    });
   } catch (e) {
     throw new Error(e);
   }
