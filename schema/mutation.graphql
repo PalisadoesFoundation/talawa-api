@@ -70,6 +70,8 @@ module.exports = `
     sendMessageToGroupChat(chatId: ID!, messageContent: String!): GroupChatMessage!
     addUserToGroupChat(userId: ID!, chatId: ID!): GroupChat!
     removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat!
+
+    sendOtp(email:String!): returnId!
     
   }
   
