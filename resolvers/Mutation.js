@@ -67,6 +67,8 @@ const sendMessageToGroupChat = require('./group_chat_mutations/sendMessageToGrou
 const addUserToGroupChat = require('./group_chat_mutations/addUserToGroupChat');
 const removeUserFromGroupChat = require('./group_chat_mutations/removeUserFromGroupChat');
 
+const sendOtp = require('./otp_mutation/sendOp_mutation');
+
 const Mutation = {
   signUp,
   login,
@@ -129,7 +131,8 @@ const Mutation = {
   sendMessageToGroupChat,
   addUserToGroupChat,
   removeUserFromGroupChat,
-};
 
+  sendOtp,
+};
 
 module.exports = Mutation;
