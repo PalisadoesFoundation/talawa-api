@@ -10,13 +10,6 @@ const {
 const uploadImage = require('../../helper_functions/uploadImage');
 
 module.exports = async (parent, args) => {
-  const emailTaken = await User.findOne({
-    email: args.data.email.toLowerCase(),
-  });
-  if (emailTaken) {
-    throw new Error('Email address taken.');
-  }
-
   // TODO: this check is to be removed
   let org;
   if (args.data.organizationUserBelongsToId) {

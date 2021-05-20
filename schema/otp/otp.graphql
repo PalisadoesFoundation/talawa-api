@@ -1,7 +1,7 @@
 module.exports = `
 
-type returnId {
-    otpId : ID!
+type return_message {
+    message : String!
 }
 
 `

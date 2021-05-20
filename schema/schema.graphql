@@ -7,6 +7,7 @@ const organization = require("./organization/organization.graphql");
 const event = require("./event/event.graphql");
 const newsfeed = require("./newsfeed/newsfeed.graphql");
 const chats = require("./chats/chat.graphql");
+const otp = require("./otp/otp.graphql")
 
 const typeDefs = gql`
 
@@ -44,6 +45,7 @@ const typeDefs = gql`
   ${event}
   ${newsfeed}
   ${chats}
+  ${otp}
 
   type Subscription {
     messageSentToDirectChat: DirectChatMessage

@@ -71,7 +71,7 @@ module.exports = `
     addUserToGroupChat(userId: ID!, chatId: ID!): GroupChat!
     removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat!
 
-    sendOtp(email:String!): returnId!
+    sendOtp(email:String!): return_message!
     
   }
   
