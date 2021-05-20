@@ -79,9 +79,6 @@ const userSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Organization',
   },
-  otp: {
-    type: String,
-  },
 });
 
 module.exports = mongoose.model('User', userSchema);
