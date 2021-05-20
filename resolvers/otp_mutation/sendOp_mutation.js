@@ -20,8 +20,10 @@ const sendOtp = async (parent, args) => {
     try {
       await otp_already_sent_previously.overwrite({
         text: otp_text,
+        email,
       });
-      return 'Otp sent successfully';
+      otp_already_sent_previously.save();
+      return { message: 'Otp sent successfully' };
     } catch (e) {
       throw new Error(e);
     }
@@ -30,12 +32,12 @@ const sendOtp = async (parent, args) => {
   try {
     const otp = new Otp({
       text: otp_text,
+      email,
     });
 
-    const return_id = otp._id;
-    console.log(return_id);
+    await otp.save();
 
-    return 'Otp sent successfully';
+    return { message: 'Otp sent successfully' };
   } catch (e) {
     throw new Error(email);
   }
