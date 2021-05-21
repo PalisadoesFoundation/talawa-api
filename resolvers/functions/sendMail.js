@@ -5,9 +5,8 @@ const gridKey = process.env.GRID_KEY;
 
 sgMail.setApiKey(gridKey);
 
-let required_otp;
-
 const sendConfirmationEmail = async (email) => {
+  let required_otp;
   //generating otp
 
   try {
