@@ -30,6 +30,8 @@ Follow these steps to get the api running using docker
    - ACCESS_TOKEN_SECRET
    - REFRESH_TOKEN_SECRET
    - MONGO_DB_URL
+   - GRID_KEY
+   - EMAIL
 
 6. Now that the enviornment variables are setup. Run the following commands in the terminal.
 
@@ -52,7 +54,7 @@ Follow these steps to get the api running using npm
 1. Install these dependencies if you don't already have them
    - [MongoDB](https://docs.mongodb.com/manual/administration/install-community/)
    - [Nodejs](https://nodejs.org/en/)<br>
-   <strong>Note:</strong><em>If you do not have MongoDB on your own system, you can proceed with the connection string. Please ensure the right access permissions and firewall openings for the VM/server where the MongoDB is hosted.</em>
+     <strong>Note:</strong><em>If you do not have MongoDB on your own system, you can proceed with the connection string. Please ensure the right access permissions and firewall openings for the VM/server where the MongoDB is hosted.</em>
 2. Clone this repo to your local machine
 
    ```sh
@@ -75,6 +77,8 @@ Follow these steps to get the api running using npm
    - ACCESS_TOKEN_SECRET
    - REFRESH_TOKEN_SECRET
    - MONGO_DB_URL
+   - GRID_KEY
+   - EMAIL
 
      Follow instructions in the comments at the top of `.env`
 
