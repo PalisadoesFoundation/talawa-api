@@ -19,10 +19,12 @@ const sendOtp = async (parent, args) => {
   const otp_already_sent_previously = await Otp.findOne({ email });
 
   if (otp_already_sent_previously) {
+    const password = otp_already_sent_previously.password;
     try {
       await otp_already_sent_previously.overwrite({
         text: otp_text,
         email,
+        password,
       });
       otp_already_sent_previously.save();
       return { message: 'Otp sent successfully' };
@@ -35,6 +37,7 @@ const sendOtp = async (parent, args) => {
     const otp = new Otp({
       text: otp_text,
       email,
+      password: args.password,
     });
 
     await otp.save();

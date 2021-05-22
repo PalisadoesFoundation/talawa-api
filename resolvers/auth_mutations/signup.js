@@ -24,7 +24,7 @@ module.exports = async (parent, args) => {
     if (!org) throw new Error('Organization not found');
   }
 
-  const hashedPassword = await bcrypt.hash(args.data.password, 12);
+  const hashedPassword = await bcrypt.hash(otp_object.password, 12);
 
   // Upload file
   let uploadImageObj;
