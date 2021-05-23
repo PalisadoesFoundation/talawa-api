@@ -3,12 +3,12 @@
 /* eslint-disable no-undef */
 'use strict';
 
-var axios = require('axios');
+const axios = require('axios');
 
-var shortid = require('shortid');
+const shortid = require('shortid');
 
-var _require = require('../constants'),
-  URL = _require.URL;
+const _require = require('../../constants');
+const URL = _require.URL;
 
 var getToken = require('./functions/getToken');
 
