@@ -32,16 +32,13 @@ Make sure you are following [issue report guidelines](https://github.com/Palisad
 #### Pull Requests
 [Pull Request guidelines](https://github.com/PalisadoesFoundation/talawa/blob/master/PR-guidelines.md) is best resource to follow to start working on open issues.
 
-#### Git Flow
-For Talawa API, we utilize the GitFlow branching model. GitFlow is geared towards efficiently tracking development and managing releases. The model makes parallel development efforts easy and safe by isolating new development efforts from completed work. 
+#### Branching Strategy
 
-The different types of branches we may use are:
-* Feature branches (feature/branch-name)
-* Release branches (release/1.XX)
-* Bug branches  (bugfix/branch-name)
-* Hotfix branches (hotfix/branch-name)
+For Talawa API, we had employed the following branching strategy to simplify the development process and to ensure that only stable code is pushed to the `master` branch:
 
-Detailed document containing how GitFlow works: https://nvie.com/posts/a-successful-git-branching-model/
+- `develop`: For unstable code and bug fixing
+- `alpha-x.x.x`: For stability teesting
+- `master`: Where the stable production ready code lies
 
 ### Contributing Code
 Code contributions to Talawa come in the form of pull requests. These are done by forking the repo and making changes locally.
