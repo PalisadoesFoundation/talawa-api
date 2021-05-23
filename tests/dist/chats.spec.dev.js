@@ -16,9 +16,11 @@ var getUserId = require('./functions/getUserId');
 
 var token;
 var loggedInUserId;
+
+const condition = 1;
+
 beforeAll(function _callee() {
   return regeneratorRuntime.async(function _callee$(_context) {
-    const condition = 1;
     while (condition) {
       switch ((_context.prev = _context.next)) {
         case 0:
@@ -54,7 +56,6 @@ describe('chat resolvers', function () {
       createDirectChatResponse,
       createDirectChatData;
     return regeneratorRuntime.async(function _callee2$(_context2) {
-      const condition = 1;
       while (condition) {
         switch ((_context2.prev = _context2.next)) {
           case 0:
@@ -63,12 +64,23 @@ describe('chat resolvers', function () {
               axios.post(
                 URL,
                 {
-                  query:
-                    '\n                mutation {\n                    createOrganization(data: {\n                        name:"test org"\n                        description:"test description"\n                        isPublic: true\n                        visibleInSearch: true\n                        }) {\n                            _id\n                        }\n                }\n                  ',
+                  query: `
+                    mutation {
+                      createOrganization(
+                        data: {
+                          name:"test org"
+                          description:"test description"
+                          isPublic: true
+                          visibleInSearch: true
+                        }) {
+                          _id
+                        }
+                      }
+                    `,
                 },
                 {
                   headers: {
-                    Authorization: 'Bearer '.concat(token),
+                    Authorization: `Bearer ${token}`,
                   },
                 }
               )
@@ -79,17 +91,23 @@ describe('chat resolvers', function () {
             createdOrgId = createdOrgResponse.data.data.createOrganization._id; // CREATE A NEW USER
 
             nameForNewUser = shortid.generate();
-            email = ''.concat(nameForNewUser, '@test.com');
+            email = `${nameForNewUser}@test.com`;
             _context2.next = 8;
             return regeneratorRuntime.awrap(
               axios.post(URL, {
-                query: '\n              mutation {\n                  signUp(data: {\n                  firstName:"'
-                  .concat(nameForNewUser, '",\n                  lastName:"')
-                  .concat(nameForNewUser, '"\n                  email: "')
-                  .concat(
-                    email,
-                    '"\n                  password:"password"\n                  }) {\n                  user{\n                    _id\n                  }\n                  accessToken\n                  }\n              }\n              '
-                  ),
+                query: `mutation {
+                  signUp(data: {
+                    firstName: ${nameForNewUser}
+                    lastName: ${nameForNewUser}
+                    email: ${email}
+                    password:"password"
+                  }) {
+                    user{
+                      _id
+                    }
+                    accessToken
+                  }
+                }`,
               })
             );
 
@@ -103,17 +121,23 @@ describe('chat resolvers', function () {
               axios.post(
                 URL,
                 {
-                  query: '\n        mutation{\n            createDirectChat(data: {\n              organizationId: "'
-                    .concat(createdOrgId, '"\n              userIds: ["')
-                    .concat(loggedInUserId, '", "')
-                    .concat(
-                      newUserId,
-                      '"]\n            }){\n              _id\n            }\n          }\n                '
-                    ),
+                  query: `
+                  mutation{
+                    createDirectChat(
+                      data: {
+                        organizationId:${createdOrgId}"
+                        userIds:  [
+                          ${loggedInUserId}
+                          ${newUserId}
+                        ]
+                      }) {
+                        _id
+                      }
+                    }`,
                 },
                 {
                   headers: {
-                    Authorization: 'Bearer '.concat(token),
+                    Authorization: `Bearer ${token}`,
                   },
                 }
               )
@@ -141,7 +165,6 @@ describe('chat resolvers', function () {
   test('send message to direct chat', function _callee3() {
     var sendMessageToDirectChatResponse, sendMessageToADirectChatData;
     return regeneratorRuntime.async(function _callee3$(_context3) {
-      const condition = 1;
       while (condition) {
         switch ((_context3.prev = _context3.next)) {
           case 0:
@@ -150,14 +173,19 @@ describe('chat resolvers', function () {
               axios.post(
                 URL,
                 {
-                  query: '\n        mutation{\n          sendMessageToDirectChat(chatId: "'.concat(
-                    createdDirectChatId,
-                    '", messageContent: "this is a test message"){\n            _id\n          }\n        }\n            '
-                  ),
+                  query: `
+                  mutation{
+                    sendMessageToDirectChat(
+                      chatId: ${createdDirectChatId}"
+                      messageContent: "this is a test message"
+                    ) {
+                      _id
+                    }
+                  }`,
                 },
                 {
                   headers: {
-                    Authorization: 'Bearer '.concat(token),
+                    Authorization: `Bearer ${token}`,
                   },
                 }
               )
@@ -187,7 +215,6 @@ describe('chat resolvers', function () {
   test('remove direct chat', function _callee4() {
     var removeDirectChatResponse, removeDirectChatData;
     return regeneratorRuntime.async(function _callee4$(_context4) {
-      const condition = 1;
       while (condition) {
         switch ((_context4.prev = _context4.next)) {
           case 0:
@@ -196,16 +223,19 @@ describe('chat resolvers', function () {
               axios.post(
                 URL,
                 {
-                  query: '\n    mutation{\n      removeDirectChat(chatId:"'
-                    .concat(createdDirectChatId, '", organizationId:"')
-                    .concat(
-                      createdOrgId,
-                      '") {\n        _id\n    }\n    }\n            '
-                    ),
+                  query: `
+                    mutation {
+                    removeDirectChat(
+                      chatId:${createdDirectChatId}
+                      organizationId: ${createdOrgId}
+                    ) {
+                      _id
+                    }
+                  }`,
                 },
                 {
                   headers: {
-                    Authorization: 'Bearer '.concat(token),
+                    Authorization: `Bearer ${token}`,
                   },
                 }
               )
@@ -237,7 +267,6 @@ describe('chat resolvers', function () {
       createGroupChatResponse,
       createGroupChatData;
     return regeneratorRuntime.async(function _callee5$(_context5) {
-      const condition = 1;
       while (condition) {
         switch ((_context5.prev = _context5.next)) {
           case 0:
@@ -246,13 +275,20 @@ describe('chat resolvers', function () {
             _context5.next = 4;
             return regeneratorRuntime.awrap(
               axios.post(URL, {
-                query: '\n              mutation {\n                  signUp(data: {\n                  firstName:"'
-                  .concat(nameForNewUser, '",\n                  lastName:"')
-                  .concat(nameForNewUser, '"\n                  email: "')
-                  .concat(
-                    email,
-                    '"\n                  password:"password"\n                  }) {\n                  user{\n                    _id\n                  }\n                  accessToken\n                  }\n              }\n              '
-                  ),
+                query: `
+                mutation {
+                  signUp(data: {
+                    firstName: ${nameForNewUser}
+                    lastName: ${nameForNewUser}
+                    email: ${email}
+                    password:"password"
+                   }) {
+                     user{
+                        _id
+                      }
+                      accessToken
+                    }
+                }`,
               })
             );
 
@@ -265,17 +301,23 @@ describe('chat resolvers', function () {
               axios.post(
                 URL,
                 {
-                  query: '\n      mutation{\n          createGroupChat(data: {\n            title: "This is a group chat for testing"\n            organizationId: "'
-                    .concat(createdOrgId, '"\n            userIds: ["')
-                    .concat(loggedInUserId, '", "')
-                    .concat(
-                      newUserId,
-                      '"]\n          }){\n            _id\n          }\n        }\n              '
-                    ),
+                  query: `
+                  mutation{
+                    createGroupChat(data: {
+                      title: "This is a group chat for testing"
+                      organizationId: {createdOrgId}
+                      userIds: [
+                        ${loggedInUserId}
+                        ${newUserId}
+                      ]
+                    }) {
+                      _id
+                    }
+                  }`,
                 },
                 {
                   headers: {
-                    Authorization: 'Bearer '.concat(token),
+                    Authorization: `Bearer ${token}`,
                   },
                 }
               )
@@ -302,7 +344,6 @@ describe('chat resolvers', function () {
   test('send message to group chat', function _callee6() {
     var sendMessageToGroupChatResponse, sendMessageToAGroupChatData;
     return regeneratorRuntime.async(function _callee6$(_context6) {
-      const condition = 1;
       while (condition) {
         switch ((_context6.prev = _context6.next)) {
           case 0:
@@ -311,14 +352,19 @@ describe('chat resolvers', function () {
               axios.post(
                 URL,
                 {
-                  query: '\n        mutation{\n          sendMessageToGroupChat(chatId: "'.concat(
-                    createdGroupChatId,
-                    '", messageContent: "this is a test message"){\n            _id\n          }\n        }\n            '
-                  ),
+                  query: `
+                  mutation{
+                    sendMessageToGroupChat(
+                      chatId: $createdGroupChatId}
+                      messageContent:  "this is a test message"
+                    ) {
+                      _id
+                    }
+                  }`,
                 },
                 {
                   headers: {
-                    Authorization: 'Bearer '.concat(token),
+                    Authorization: `Bearer ${token}`,
                   },
                 }
               )
@@ -346,7 +392,6 @@ describe('chat resolvers', function () {
   test('remove group chat', function _callee7() {
     var removeGroupChatResponse, removeGroupChatData;
     return regeneratorRuntime.async(function _callee7$(_context7) {
-      const condition = 1;
       while (condition) {
         switch ((_context7.prev = _context7.next)) {
           case 0:
@@ -355,14 +400,19 @@ describe('chat resolvers', function () {
               axios.post(
                 URL,
                 {
-                  query: '\n    mutation{\n      removeGroupChat(chatId:"'.concat(
-                    createdGroupChatId,
-                    '") {\n        _id\n    }\n    }\n            '
-                  ),
+                  query: `
+                  mutation{
+                    removeGroupChat(
+                      chatId:${createdGroupChatId}"
+                    ) {
+                      _id
+                    }
+                  }
+                `,
                 },
                 {
                   headers: {
-                    Authorization: 'Bearer '.concat(token),
+                    Authorization: `Bearer ${token}`,
                   },
                 }
               )
