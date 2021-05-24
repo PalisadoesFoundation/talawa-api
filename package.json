@@ -43,13 +43,15 @@
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.27.0",
     "mongoose": "^5.11.20",
-    "pm2": "^4.5.5",
+    "pm2": "^4.5.6",
     "shortid": "^2.2.15",
     "validator": "^13.0.0",
-    "xss-clean": "^0.1.1"
+    "xss-clean": "^0.1.1",
+    "netmask": ">=2.0.1"
   },
   "devDependencies": {
-    "easygraphql-tester": "^5.1.6",
+    "netmask": ">=2.0.1",
+    "easygraphql-tester": "^6.0.1",
     "eslint": "^7.21.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-prettier": "^8.1.0",
