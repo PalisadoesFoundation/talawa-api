@@ -1,3 +1,5 @@
+const logger = require('logger');
+
 const User = require('../models/User');
 const Organization = require('../models/Organization');
 const Event = require('../models/Event');
@@ -88,9 +90,9 @@ const Query = {
     authCheck(context);
     //Ensure user exists
     const user = await User.findOne({ _id: context.userId });
-    if (!user) throw new Error('User does not exist');
-    //console.log(user._doc)
-
+    if (!user) {
+      throw new Error('User does not exist');
+    }
     return {
       ...user._doc,
       password: null,
@@ -148,7 +150,7 @@ const Query = {
     if (eventFound.registrants.includes(context.userId)) {
       eventFound.isRegistered = true;
     }
-    console.log(eventFound.isRegistered);
+    logger.info(eventFound.isRegistered);
     return eventFound;
   },
   registrantsByEvent: async (parent, args) => {

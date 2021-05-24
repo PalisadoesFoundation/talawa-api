@@ -68,8 +68,5 @@ describe('user resolvers', () => {
         accessToken: expect.any(String),
       })
     );
-
-    //token = data.data.login.token;
-    //console.log(token)
   });
 });

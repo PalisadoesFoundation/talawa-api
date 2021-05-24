@@ -15,11 +15,8 @@ module.exports = async (parent, args, context) => {
   const userIsAMemberOfGroupChat = chat.users.filter(
     (user) => user === context.userId
   );
-  //console.log(userIsAMemberOfGroupChat)
   if (!(userIsAMemberOfGroupChat.length > 0))
     throw new Error('User is not a member of this gorup chat');
-
-  //const receiver = chat.users.filter((u) => u != sender.id);
 
   const message = new GroupChatMessage({
     groupChatMessageBelongsTo: chat._doc,
@@ -27,7 +24,6 @@ module.exports = async (parent, args, context) => {
     createdAt: new Date(),
     messageContent: args.messageContent,
   });
-  //console.log(message._doc);
 
   await message.save();
 

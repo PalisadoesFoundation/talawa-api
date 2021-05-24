@@ -28,8 +28,6 @@ module.exports = async (imageJustUploadedPath, itemImage) => {
       .catch(() => {
         throw new Error('Invalid file type');
       });
-    // console.log("old image hash: " + oldImageHash);
-    // console.log("new image hash: " + newImageHash);
     return oldImageHash === newImageHash;
   }
   return false;

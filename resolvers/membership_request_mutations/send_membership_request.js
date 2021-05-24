@@ -1,3 +1,4 @@
+const logger = require('logger');
 const User = require('../../models/User');
 const Organization = require('../../models/Organization');
 const MembershipRequest = require('../../models/MembershipRequest');
@@ -18,7 +19,7 @@ module.exports = async (parent, args, context) => {
     user: user.id,
     organization: org.id,
   });
-  console.log(exists);
+  logger.info(exists);
   if (exists.length > 0)
     throw new Error(
       'This user has already sent a membership request to this organization'
