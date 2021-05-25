@@ -47,9 +47,11 @@
     "pm2": "^4.5.5",
     "shortid": "^2.2.15",
     "validator": "^13.0.0",
-    "xss-clean": "^0.1.1"
+    "xss-clean": "^0.1.1",
+    "netmask": ">=2.0.1"
   },
   "devDependencies": {
+    "netmask": ">=2.0.1",
     "easygraphql-tester": "^5.1.6",
     "eslint": "^7.21.0",
     "eslint-config-airbnb-base": "^14.2.1",
