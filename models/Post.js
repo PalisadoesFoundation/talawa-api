@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate-v2');
 
@@ -13,7 +14,7 @@ const postSchema = new Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   imageUrl: {
     type: String,
@@ -33,14 +34,18 @@ const postSchema = new Schema({
     ref: 'Organization',
     required: true,
   },
-  likedBy: [{
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-  }, ],
-  comments: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Comment',
-  }, ],
+  likedBy: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+    },
+  ],
+  comments: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'Comment',
+    },
+  ],
 });
 
 postSchema.plugin(mongoosePaginate);
