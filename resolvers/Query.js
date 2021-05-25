@@ -15,6 +15,7 @@ const GroupChat = require('../models/GroupChat');
 const GroupChatMessages = require('../models/GroupChatMessage');
 const usersConnection = require('../resolvers/user_query/users_pagination');
 const organizationsConnection = require('./organization_query/organizations_pagination');
+const postsByOrganizationConnection = require('../resolvers/post_organization_query/organization_post_pagination');
 
 const Query = {
   groupChats: async () => {
@@ -579,6 +580,7 @@ const Query = {
     });
     return posts;
   },
+  postsByOrganizationConnection,
   groups: async () => {
     return await Group.find();
   },
