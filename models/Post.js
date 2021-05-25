@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2');
 
 const Schema = mongoose.Schema;
 
@@ -10,7 +11,10 @@ const postSchema = new Schema({
   title: {
     type: String,
   },
-  createdAt: { type: Date, default: Date.now },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
   imageUrl: {
     type: String,
     required: false,
@@ -29,18 +33,16 @@ const postSchema = new Schema({
     ref: 'Organization',
     required: true,
   },
-  likedBy: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-    },
-  ],
-  comments: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'Comment',
-    },
-  ],
+  likedBy: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+  }, ],
+  comments: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Comment',
+  }, ],
 });
+
+postSchema.plugin(mongoosePaginate);
 
 module.exports = mongoose.model('Post', postSchema);
