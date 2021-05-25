@@ -11,8 +11,21 @@ const removeEvent = async (parent, args, context) => {
   const event = await Event.findOne({ _id: args.id });
   if (!event) throw new Error('Event not found');
 
-  if (!(event.creator !== context.userId)) {
-    throw new Error("User cannot delete event they didn't create");
+  const isUserOrganisationAdmin =
+    user.adminFor.filter(
+      (organisationId) =>
+        organisationId.toString() === event.organization.toString()
+    ).length > 0;
+
+  const isUserEventAdmin =
+    event.admins.filter(
+      (userId) => userId.toString() === context.userId.toString()
+    ).length > 0;
+
+  const userCanDeleteThisEvent = isUserOrganisationAdmin || isUserEventAdmin;
+
+  if (!userCanDeleteThisEvent) {
+    throw new Error("Non-Admin User cannot delete event they didn't create");
   }
 
   await User.updateMany(
