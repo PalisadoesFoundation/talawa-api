@@ -1,7 +1,11 @@
 const User = require('../../models/User');
 const Organization = require('../../models/Organization');
 const authCheck = require('../functions/authCheck');
-const { NotFoundError, UnauthorizedError, ConflictError } = require('../../core/errors');
+const {
+  NotFoundError,
+  UnauthorizedError,
+  ConflictError,
+} = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 module.exports = async (parent, args, context) => {
