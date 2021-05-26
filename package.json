@@ -49,7 +49,6 @@
     "morgan": "^1.10.0",
     "netmask": ">=2.0.1",
     "pm2": "^4.5.5",
-    "request-tracing": "file:lib/request-tracing",
     "shortid": "^2.2.15",
     "validator": "^13.0.0",
     "winston": "^3.3.3",

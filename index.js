@@ -12,7 +12,6 @@ const cors = require('cors');
 const logger = require('logger');
 const requestLogger = require('morgan');
 const path = require('path');
-const requestTracing = require('request-tracing');
 
 const Query = require('./resolvers/Query');
 const Mutation = require('./resolvers/Mutation');
@@ -61,7 +60,6 @@ app.use(
 );
 app.use(mongoSanitize());
 app.use(cors());
-app.use(requestTracing.middleware());
 app.use(
   requestLogger(
     ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms',
