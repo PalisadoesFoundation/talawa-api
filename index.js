@@ -18,9 +18,12 @@ const DirectChatMessage = require('./resolvers/DirectChatMessage');
 
 const GroupChat = require('./resolvers/GroupChat');
 const GroupChatMessage = require('./resolvers/GroupChatMessage');
+const requestContext = require('./core/libs/talawa-request-context');
+const { Unauthenticated } = require('./core/errors');
 
 const Subscription = require('./resolvers/Subscription');
 const jwt = require('jsonwebtoken');
+const i18n = require('i18n');
 
 const pubsub = new PubSub();
 const http = require('http');
@@ -29,12 +32,6 @@ const rateLimit = require('express-rate-limit');
 const xss = require('xss-clean');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
-
-const apiLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 50000,
-  message: 'Too many requests from this IP, please try again after 15 minutes',
-});
 
 const resolvers = {
   Subscription,
@@ -49,6 +46,22 @@ const resolvers = {
   GroupChatMessage,
 };
 
+const apiLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 50000,
+  message: 'Too many requests from this IP, please try again after 15 minutes',
+});
+
+i18n.configure({
+  directory: `${__dirname}/locales`,
+  queryParameter: 'lang',
+  defaultLocale: 'en',
+  autoReload: process.env.NODE_ENV !== 'production',
+  updateFiles: process.env.NODE_ENV !== 'production',
+  syncFiles: process.env.NODE_ENV !== 'production',
+});
+
+app.use(i18n.init);
 app.use(apiLimiter);
 app.use(xss());
 app.use(
@@ -60,6 +73,7 @@ app.use(
 app.use(mongoSanitize());
 app.use(cors());
 app.use('/images', express.static(path.join(__dirname, './images')));
+app.use(requestContext.middleware());
 
 app.get('/', (req, res) =>
   res.json({ 'talawa-version': 'v1', status: 'healthy' })
@@ -79,8 +93,15 @@ const apolloServer = new ApolloServer({
   },
   subscriptions: {
     onConnect: (connection) => {
-      if (!connection.authToken) throw new Error('User is not authenticated');
-
+      if (!connection.authToken) {
+        throw new Unauthenticated([
+          {
+            message: requestContext.translate('user.notAuthenticated'),
+            code: 'user.notAuthenticated',
+            param: 'userAuthentication',
+          },
+        ]);
+      }
       let userId = null;
       if (connection.authToken) {
         let decodedToken = jwt.verify(

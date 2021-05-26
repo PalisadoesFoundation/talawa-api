@@ -1,7 +1,16 @@
+const { Unauthorized } = require('../../core/errors');
+const requestContext = require('../../core/libs/talawa-request-context');
+
 const creatorCheck = (context, org) => {
   const isCreator = String(org.creator) === context.userId;
   if (!isCreator) {
-    throw new Error("Users cannot delete organizations they didn't create");
+    throw new Unauthorized([
+      {
+        message: requestContext.translate('user.notAuthorized'),
+        code: 'user.notAuthorized',
+        param: 'userAuthorization',
+      },
+    ]);
   }
 };
 

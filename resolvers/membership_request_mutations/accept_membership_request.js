@@ -3,6 +3,8 @@ const authCheck = require('../functions/authCheck');
 const adminCheck = require('../functions/adminCheck');
 const organizationExists = require('../../helper_functions/organizationExists');
 const userExists = require('../../helper_functions/userExists');
+const { NotFound, ConflictError } = require('../../core/errors');
+const requestContext = require('../../core/libs/talawa-request-context');
 
 module.exports = async (parent, args, context) => {
   authCheck(context);
@@ -10,7 +12,15 @@ module.exports = async (parent, args, context) => {
   const membershipRequest = await MembershipRequest.findOne({
     _id: args.membershipRequestId,
   });
-  if (!membershipRequest) throw new Error('Membership request not found');
+  if (!membershipRequest) {
+    throw new NotFound([
+      {
+        message: requestContext.translate('membershipRequest.notFound'),
+        code: 'membershipRequest.notFound',
+        param: 'membershipRequest',
+      },
+    ]);
+  }
 
   //ensure org exists
   let org = await organizationExists(membershipRequest.organization);
@@ -24,7 +34,13 @@ module.exports = async (parent, args, context) => {
   //check to see if user is already a member
   org._doc.members.forEach((member) => {
     if (member._id === user.id) {
-      throw new Error('User is already a member');
+      throw new ConflictError([
+        {
+          message: requestContext.translate('user.alreadyMember'),
+          code: 'user.alreadyMember',
+          param: 'userAlreadyMember',
+        },
+      ]);
     }
   });
 

@@ -1,20 +1,36 @@
 const User = require('../../models/User');
 const Event = require('../../models/Event');
 const Organization = require('../../models/Organization');
+const { NotFound } = require('../../core/errors');
+const requestContext = require('../../core/libs/talawa-request-context');
+const authCheck = require('../functions/authCheck');
 
 const createEvent = async (parent, args, context) => {
   // authentication check
-  if (!context.isAuth) throw new Error('User is not authenticated');
-
+  authCheck(context);
   // gets user in token - to be used later on
-  const userFound = await User.findOne({ _id: context.userId });
-  if (!userFound) {
-    throw new Error('User does not exist');
+  const user = await User.findOne({ _id: context.userId });
+  if (!user) {
+    throw new NotFound([
+      {
+        message: requestContext.translate('event.notFound'),
+        code: 'user.notFound',
+        param: 'user',
+      },
+    ]);
   }
 
   // ensure organization exists
   const org = await Organization.findOne({ _id: args.data.organizationId });
-  if (!org) throw new Error('Organization not found');
+  if (!org) {
+    throw new NotFound([
+      {
+        message: requestContext.translate('chat.notFound'),
+        code: 'chat.notFound',
+        param: 'chat',
+      },
+    ]);
+  }
 
   const newEvent = new Event({
     ...args.data,
@@ -27,7 +43,7 @@ const createEvent = async (parent, args, context) => {
 
   // add event to the user record
   await User.updateOne(
-    { _id: userFound.id },
+    { _id: user.id },
     {
       $push: {
         eventAdmin: newEvent,

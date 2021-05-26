@@ -3,16 +3,34 @@ const Organization = require('../../models/Organization');
 const authCheck = require('../functions/authCheck');
 const adminCheck = require('../functions/adminCheck');
 const Event = require('../../models/Event');
+const { NotFound } = require('../../core/errors');
+const requestContext = require('../../core/libs/talawa-request-context');
 
 module.exports = async (parent, args, context) => {
   authCheck(context);
   //find event
   let event = await Event.findOne({ _id: args.eventId });
-  if (!event) throw new Error('Event does not exist');
+  if (!event) {
+    throw new NotFound([
+      {
+        message: requestContext.translate('event.notFound'),
+        code: 'event.notFound',
+        param: 'event',
+      },
+    ]);
+  }
 
   //ensure organization exists
   let org = await Organization.findOne({ _id: event.organization });
-  if (!org) throw new Error('Organization not found');
+  if (!org) {
+    throw new NotFound([
+      {
+        message: requestContext.translate('organization.notFound'),
+        code: 'organization.notFound',
+        param: 'organization',
+      },
+    ]);
+  }
 
   //ensure user is an admin
   adminCheck(context, org);
@@ -20,7 +38,13 @@ module.exports = async (parent, args, context) => {
   //gets user in token - to be used later on
   let user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new Error('User does not exist');
+    throw new NotFound([
+      {
+        message: requestContext.translate('user.notFound'),
+        code: 'user.notFound',
+        param: 'user',
+      },
+    ]);
   }
 
   //remove event from user

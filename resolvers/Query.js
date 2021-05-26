@@ -4,6 +4,8 @@ const Event = require('../models/Event');
 const Post = require('../models/Post');
 const Group = require('../models/Group');
 const Comment = require('../models/Comment');
+const { NotFound } = require('../core/errors');
+const requestContext = require('../core/libs/talawa-request-context');
 
 const Task = require('../models/Task');
 
@@ -61,8 +63,15 @@ const Query = {
         .populate('registeredEvents')
         .populate('eventAdmin')
         .populate('adminFor');
-      if (!users[0]) throw new Error('User not found');
-      else
+      if (!users[0]) {
+        throw new NotFound([
+          {
+            message: requestContext.translate('user.notFound'),
+            code: 'user.notFound',
+            param: 'user',
+          },
+        ]);
+      } else
         return users.map((user) => {
           return {
             ...user._doc,
@@ -88,7 +97,15 @@ const Query = {
     authCheck(context);
     //Ensure user exists
     const user = await User.findOne({ _id: context.userId });
-    if (!user) throw new Error('User does not exist');
+    if (!user) {
+      throw new NotFound([
+        {
+          message: requestContext.translate('user.notFound'),
+          code: 'user.notFound',
+          param: 'user',
+        },
+      ]);
+    }
     //console.log(user._doc)
 
     return {
@@ -126,7 +143,13 @@ const Query = {
         _id: args.id,
       }).sort(sort);
       if (!organizationFound[0]) {
-        throw new Error('Organization not found');
+        throw new NotFound([
+          {
+            message: requestContext.translate('organization.notFound'),
+            code: 'organization.notFound',
+            param: 'organization',
+          },
+        ]);
       }
 
       return organizationFound;
@@ -142,7 +165,13 @@ const Query = {
       .populate('tasks')
       .populate('admins', '-password');
     if (!eventFound) {
-      throw new Error('Event not found');
+      throw new NotFound([
+        {
+          message: requestContext.translate('event.notFound'),
+          code: 'event.notFound',
+          param: 'event',
+        },
+      ]);
     }
     eventFound.isRegistered = false;
     if (eventFound.registrants.includes(context.userId)) {
@@ -157,7 +186,13 @@ const Query = {
       '-password'
     );
     if (!eventFound) {
-      throw new Error('Event not found');
+      throw new NotFound([
+        {
+          message: requestContext.translate('event.notFound'),
+          code: 'event.notFound',
+          param: 'event',
+        },
+      ]);
     }
     //return eventFound.registrants || [];
     if (eventFound.registrants) {
@@ -428,7 +463,13 @@ const Query = {
       .populate('post')
       .populate('likedBy');
     if (!commentFound) {
-      throw new Error('Comment not Found');
+      throw new NotFound([
+        {
+          message: requestContext.translate('comment.notFound'),
+          code: 'comment.notFound',
+          param: 'comment',
+        },
+      ]);
     }
     return commentFound;
   },
@@ -438,7 +479,13 @@ const Query = {
       .populate('post')
       .populate('likedBy');
     if (!commentFound) {
-      throw new Error('Comment not Found');
+      throw new NotFound([
+        {
+          message: requestContext.translate('comment.notFound'),
+          code: 'comment.notFound',
+          param: 'comment',
+        },
+      ]);
     }
     return commentFound;
   },
@@ -456,7 +503,13 @@ const Query = {
       .populate('likedBy')
       .populate('creator', '-password');
     if (!postFound) {
-      throw new Error('Post not found');
+      throw new NotFound([
+        {
+          message: requestContext.translate('post.notFound'),
+          code: 'post.notFound',
+          param: 'post',
+        },
+      ]);
     }
     postFound.likeCount = postFound.likedBy.length || 0;
     postFound.commentCount = postFound.comments.length || 0;

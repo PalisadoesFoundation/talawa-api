@@ -1,22 +1,31 @@
 const User = require('../../models/User');
 const authCheck = require('../functions/authCheck');
-const uploadImage = require('../../helper_functions/uploadImage');
+const uploadImageHelper = require('../../helper_functions/uploadImage');
+const { NotFound } = require('../../core/errors');
+const requestContext = require('../../core/libs/talawa-request-context');
 
 const addUserImage = async (parent, args, context) => {
   authCheck(context);
   const user = await User.findById(context.userId);
-  if (!user) throw new Error('User not found');
+  if (!user) {
+    throw new NotFound([
+      {
+        message: requestContext.translate('user.notFound'),
+        code: 'user.notFound',
+        param: 'user',
+      },
+    ]);
+  }
 
-  // Upload New Image
-  const uploadImageObj = await uploadImage(args.file, user.image);
+  const uploadImage = await uploadImageHelper(args.file, user.image);
 
   return await User.findOneAndUpdate(
     { _id: user.id },
     {
       $set: {
-        image: uploadImageObj.imageAlreadyInDbPath
-          ? uploadImageObj.imageAlreadyInDbPath
-          : uploadImageObj.newImagePath, // if the image already exists use that image other wise use the image just uploaded
+        image: uploadImage.imageAlreadyInDbPath
+          ? uploadImage.imageAlreadyInDbPath
+          : uploadImage.newImagePath,
       },
     },
     {

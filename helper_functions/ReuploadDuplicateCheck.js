@@ -1,4 +1,6 @@
 const { imageHash } = require('image-hash');
+const { ValidationError } = require('../core/errors');
+const requestContext = require('../core/libs/talawa-request-context');
 
 module.exports = async (imageJustUploadedPath, itemImage) => {
   // This function checks whether a user is trying to re=upload the same profile picture or an org is trying to re-upload the same org image
@@ -14,7 +16,13 @@ module.exports = async (imageJustUploadedPath, itemImage) => {
     })
       .then(() => oldImageHash)
       .catch(() => {
-        throw new Error('Invalid file type');
+        throw new ValidationError([
+          {
+            message: requestContext.translate('invalid.fileType'),
+            code: 'invalid.fileType',
+            param: 'fileType',
+          },
+        ]);
       });
 
     await new Promise((resolve) => {
@@ -26,7 +34,13 @@ module.exports = async (imageJustUploadedPath, itemImage) => {
     })
       .then(() => newImageHash)
       .catch(() => {
-        throw new Error('Invalid file type');
+        throw new ValidationError([
+          {
+            message: requestContext.translate('invalid.fileType'),
+            code: 'invalid.fileType',
+            param: 'fileType',
+          },
+        ]);
       });
     // console.log("old image hash: " + oldImageHash);
     // console.log("new image hash: " + newImageHash);

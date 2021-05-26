@@ -30,6 +30,8 @@
     "apollo-server-express": "^2.14.2",
     "axios": "^0.21.1",
     "bcryptjs": "^2.4.3",
+    "cls-bluebird": "^2.1.0",
+    "cls-hooked": "^4.2.2",
     "cors": "^2.8.5",
     "cross-env": "^7.0.2",
     "dotenv": "^8.2.0",
@@ -38,16 +40,17 @@
     "express-rate-limit": "^5.2.6",
     "graphql": "^15.0.0",
     "helmet": "^4.4.1",
+    "i18n": "^0.13.3",
     "image-hash": "^4.0.1",
     "jest": "^26.0.1",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.27.0",
     "mongoose": "^5.11.20",
+    "netmask": ">=2.0.1",
     "pm2": "^4.5.5",
     "shortid": "^2.2.15",
     "validator": "^13.0.0",
-    "xss-clean": "^0.1.1",
-    "netmask": ">=2.0.1"
+    "xss-clean": "^0.1.1"
   },
   "devDependencies": {
     "netmask": ">=2.0.1",

@@ -4,17 +4,31 @@ const {
   createAccessToken,
   createRefreshToken,
 } = require('../../helper_functions/auth');
+const { NotFound, ValidationError } = require('../../core/errors');
+const requestContext = require('../../core/libs/talawa-request-context');
 
 module.exports = async (parent, args) => {
   const user = await User.findOne({ email: args.data.email.toLowerCase() });
   if (!user) {
-    throw new Error('Invalid Credentials');
+    throw new NotFound([
+      {
+        message: requestContext.translate('user.notFound'),
+        code: 'user.notFound',
+        param: 'user',
+      },
+    ]);
   }
 
   const isEqual = await bcrypt.compare(args.data.password, user._doc.password);
 
   if (!isEqual) {
-    throw new Error('Invalid Credentials');
+    throw new ValidationError([
+      {
+        message: requestContext.translate('invalid.credentials'),
+        code: 'invalid.credentials',
+        param: 'credentials',
+      },
+    ]);
   }
 
   const accessToken = await createAccessToken(user);

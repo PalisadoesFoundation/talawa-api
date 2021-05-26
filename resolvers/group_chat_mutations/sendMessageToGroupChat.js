@@ -2,12 +2,22 @@ const GroupChat = require('../../models/GroupChat');
 const authCheck = require('../functions/authCheck');
 const GroupChatMessage = require('../../models/GroupChatMessage');
 const userExists = require('../../helper_functions/userExists');
+const { NotFound, Unauthorized } = require('../../core/errors');
+const requestContext = require('../../core/libs/talawa-request-context');
 
 module.exports = async (parent, args, context) => {
   authCheck(context);
 
   const chat = await GroupChat.findById(args.chatId);
-  if (!chat) throw new Error('Chat not found');
+  if (!chat) {
+    throw new NotFound([
+      {
+        message: requestContext.translate('chat.notFound'),
+        code: 'chat.notFound',
+        param: 'chat',
+      },
+    ]);
+  }
 
   const sender = await userExists(context.userId);
 
@@ -16,8 +26,15 @@ module.exports = async (parent, args, context) => {
     (user) => user === context.userId
   );
   //console.log(userIsAMemberOfGroupChat)
-  if (!(userIsAMemberOfGroupChat.length > 0))
-    throw new Error('User is not a member of this gorup chat');
+  if (!(userIsAMemberOfGroupChat.length > 0)) {
+    throw new Unauthorized([
+      {
+        message: requestContext.translate('user.notAuthorized'),
+        code: 'user.notAuthorized',
+        param: 'userAuthorization',
+      },
+    ]);
+  }
 
   //const receiver = chat.users.filter((u) => u != sender.id);
 

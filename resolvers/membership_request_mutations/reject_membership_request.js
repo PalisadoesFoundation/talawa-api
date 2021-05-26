@@ -2,23 +2,48 @@ const User = require('../../models/User');
 const Organization = require('../../models/Organization');
 const MembershipRequest = require('../../models/MembershipRequest');
 const adminCheck = require('../functions/adminCheck');
+const { NotFound } = require('../../core/errors');
+const requestContext = require('../../core/libs/talawa-request-context');
 
 module.exports = async (parent, args, context) => {
   //ensure membership request exists
   const membershipRequest = await MembershipRequest.findOne({
     _id: args.membershipRequestId,
   });
-  if (!membershipRequest) throw new Error('Membership request not found');
+  if (!membershipRequest) {
+    throw new NotFound([
+      {
+        message: requestContext.translate('membershipRequest.notFound'),
+        code: 'membershipRequest.notFound',
+        param: 'membershipRequest',
+      },
+    ]);
+  }
 
   //ensure org exists
   let org = await Organization.findOne({
     _id: membershipRequest.organization,
   });
-  if (!org) throw new Error('Organization not found');
+  if (!org) {
+    throw new NotFound([
+      {
+        message: requestContext.translate('organization.notFound'),
+        code: 'organization.notFound',
+        param: 'organization',
+      },
+    ]);
+  }
 
-  //ensure user exists
   const user = await User.findOne({ _id: membershipRequest.user });
-  if (!user) throw new Error('User does not exist');
+  if (!user) {
+    throw new NotFound([
+      {
+        message: requestContext.translate('user.notFound'),
+        code: 'user.notFound',
+        param: 'user',
+      },
+    ]);
+  }
 
   //ensure user is admin
   adminCheck(context, org);
