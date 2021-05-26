@@ -27,6 +27,12 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
+  appLanguage: {
+    type: String,
+    default: 'ENGLISH',
+    enum: ['ENGLISH', 'HINDI', 'CHINESE', 'SPANISH', 'FRENCH'],
+    required: true,
+  },
   createdOrganizations: [
     {
       type: Schema.Types.ObjectId,
