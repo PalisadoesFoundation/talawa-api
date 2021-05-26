@@ -39,15 +39,15 @@
     "graphql": "^15.0.0",
     "helmet": "^4.4.1",
     "image-hash": "^4.0.1",
-    "jest": "^26.0.1",
+    "jest": "^26.6.3",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.27.0",
     "mongoose": "^5.11.20",
+    "netmask": ">=2.0.1",
     "pm2": "^4.5.5",
     "shortid": "^2.2.15",
     "validator": "^13.0.0",
-    "xss-clean": "^0.1.1",
-    "netmask": ">=2.0.1"
+    "xss-clean": "^0.1.1"
   },
   "devDependencies": {
     "netmask": ">=2.0.1",
