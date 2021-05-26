@@ -8,23 +8,19 @@ module.exports = async (parent, args, context) => {
   authCheck(context);
   const user = await User.findById(context.userId);
   if (!user) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('user.notFound'),
-        code: 'user.notFound',
-        param: 'user',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
   }
 
   if (!user.image) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('user.profileImage.notFound'),
-        code: 'user.profileImage.notFound',
-        param: 'userProfileImage',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('user.profileImage.notFound'),
+      'user.profileImage.notFound',
+      'userProfileImage'
+    );
   }
 
   await deleteImage(user.image);

@@ -10,25 +10,21 @@ module.exports = async (parent, args, context) => {
   // ensure user exists
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('user.notFound'),
-        code: 'user.notFound',
-        param: 'user',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
   }
 
   // ensure organization exists
   const org = await Organization.findOne({ _id: args.organizationId });
   if (!org) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('organization.notFound'),
-        code: 'organization.notFound',
-        param: 'organization',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('organization.notFound'),
+      'organization.notFound',
+      'organization'
+    );
   }
 
   // create membership request
@@ -37,14 +33,13 @@ module.exports = async (parent, args, context) => {
     organization: org.id,
   });
   console.log(exists);
-  if (exists.length > 0)
-    throw new ConflictError([
-      {
-        message: requestContext.translate('membershipRequest.alreadyExists'),
-        code: 'membershipRequest.alreadyExists',
-        param: 'membershipRequest',
-      },
-    ]);
+  if (exists.length > 0) {
+    throw new ConflictError(
+      requestContext.translate('membershipRequest.alreadyExists'),
+      'membershipRequest.alreadyExists',
+      'membershipRequest'
+    );
+  }
 
   let newMembershipRequest = new MembershipRequest({
     user,

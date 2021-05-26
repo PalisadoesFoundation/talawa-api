@@ -7,13 +7,11 @@ module.exports = async (id) => {
     _id: id,
   });
   if (!organization) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('organization.notFound'),
-        code: 'organization.notFound',
-        param: 'organization',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('organization.notFound'),
+      'organization.notFound',
+      'organization'
+    );
   }
   return organization;
 };

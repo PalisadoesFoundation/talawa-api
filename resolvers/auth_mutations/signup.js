@@ -16,13 +16,11 @@ module.exports = async (parent, args) => {
     email: args.data.email.toLowerCase(),
   });
   if (emailTaken) {
-    throw new ConflictError([
-      {
-        message: requestContext.translate('email.alreadyExists'),
-        code: 'email.alreadyExists',
-        param: 'email',
-      },
-    ]);
+    throw new ConflictError(
+      requestContext.translate('email.alreadyExists'),
+      'email.alreadyExists',
+      'email'
+    );
   }
 
   // TODO: this check is to be removed
@@ -32,13 +30,11 @@ module.exports = async (parent, args) => {
       _id: args.data.organizationUserBelongsToId,
     });
     if (!org) {
-      throw new NotFound([
-        {
-          message: requestContext.translate('organization.notFound'),
-          code: 'organization.notFound',
-          param: 'organization',
-        },
-      ]);
+      throw new NotFound(
+        requestContext.translate('organization.notFound'),
+        'organization.notFound',
+        'organization'
+      );
     }
   }
 

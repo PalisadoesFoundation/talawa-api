@@ -12,37 +12,31 @@ module.exports = async (parent, args, context) => {
   // ensure organization exists
   const org = await Organization.findOne({ _id: args.data.organizationId });
   if (!org) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('organization.notFound'),
-        code: 'organization.notFound',
-        param: 'organization',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('organization.notFound'),
+      'organization.notFound',
+      'organization'
+    );
   }
 
   // ensure user exists
   const user = await User.findOne({ _id: args.data.userId });
   if (!user) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('user.notFound'),
-        code: 'user.notFound',
-        param: 'user',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
   }
 
   // ensure user is an admin
   const admin = org._doc.admins.filter((admin) => admin === user.id);
   if (admin.length === 0) {
-    throw new Unauthorized([
-      {
-        message: requestContext.translate('user.notAuthorized'),
-        code: 'user.notAuthorized',
-        param: 'userAuthorization',
-      },
-    ]);
+    throw new Unauthorized(
+      requestContext.translate('user.notAuthorized'),
+      'user.notAuthorized',
+      'userAuthorization'
+    );
   }
 
   // ensure user trying to remove admin is the creator

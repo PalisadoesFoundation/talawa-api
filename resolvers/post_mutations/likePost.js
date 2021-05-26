@@ -9,24 +9,20 @@ const likePost = async (parent, args, context) => {
   authCheck(context);
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('user.notFound'),
-        code: 'user.notFound',
-        param: 'user',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
   }
 
   const post = await Post.findOne({ _id: args.id });
   if (!post) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('post.notFound'),
-        code: 'post.notFound',
-        param: 'post',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('post.notFound'),
+      'post.notFound',
+      'post'
+    );
   }
 
   if (!post.likedBy.includes(context.userId)) {

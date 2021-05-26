@@ -64,13 +64,11 @@ const Query = {
         .populate('eventAdmin')
         .populate('adminFor');
       if (!users[0]) {
-        throw new NotFound([
-          {
-            message: requestContext.translate('user.notFound'),
-            code: 'user.notFound',
-            param: 'user',
-          },
-        ]);
+        throw new NotFound(
+          requestContext.translate('user.notFound'),
+          'user.notFound',
+          'user'
+        );
       } else
         return users.map((user) => {
           return {
@@ -98,13 +96,11 @@ const Query = {
     //Ensure user exists
     const user = await User.findOne({ _id: context.userId });
     if (!user) {
-      throw new NotFound([
-        {
-          message: requestContext.translate('user.notFound'),
-          code: 'user.notFound',
-          param: 'user',
-        },
-      ]);
+      throw new NotFound(
+        requestContext.translate('user.notFound'),
+        'user.notFound',
+        'user'
+      );
     }
     //console.log(user._doc)
 
@@ -143,13 +139,11 @@ const Query = {
         _id: args.id,
       }).sort(sort);
       if (!organizationFound[0]) {
-        throw new NotFound([
-          {
-            message: requestContext.translate('organization.notFound'),
-            code: 'organization.notFound',
-            param: 'organization',
-          },
-        ]);
+        throw new NotFound(
+          requestContext.translate('organization.notFound'),
+          'organization.notFound',
+          'organization'
+        );
       }
 
       return organizationFound;
@@ -165,13 +159,11 @@ const Query = {
       .populate('tasks')
       .populate('admins', '-password');
     if (!eventFound) {
-      throw new NotFound([
-        {
-          message: requestContext.translate('event.notFound'),
-          code: 'event.notFound',
-          param: 'event',
-        },
-      ]);
+      throw new NotFound(
+        requestContext.translate('event.notFound'),
+        'event.notFound',
+        'event'
+      );
     }
     eventFound.isRegistered = false;
     if (eventFound.registrants.includes(context.userId)) {
@@ -186,13 +178,11 @@ const Query = {
       '-password'
     );
     if (!eventFound) {
-      throw new NotFound([
-        {
-          message: requestContext.translate('event.notFound'),
-          code: 'event.notFound',
-          param: 'event',
-        },
-      ]);
+      throw new NotFound(
+        requestContext.translate('event.notFound'),
+        'event.notFound',
+        'event'
+      );
     }
     //return eventFound.registrants || [];
     if (eventFound.registrants) {
@@ -463,13 +453,11 @@ const Query = {
       .populate('post')
       .populate('likedBy');
     if (!commentFound) {
-      throw new NotFound([
-        {
-          message: requestContext.translate('comment.notFound'),
-          code: 'comment.notFound',
-          param: 'comment',
-        },
-      ]);
+      throw new NotFound(
+        requestContext.translate('comment.notFound'),
+        'comment.notFound',
+        'comment'
+      );
     }
     return commentFound;
   },
@@ -479,13 +467,11 @@ const Query = {
       .populate('post')
       .populate('likedBy');
     if (!commentFound) {
-      throw new NotFound([
-        {
-          message: requestContext.translate('comment.notFound'),
-          code: 'comment.notFound',
-          param: 'comment',
-        },
-      ]);
+      throw new NotFound(
+        requestContext.translate('comment.notFound'),
+        'comment.notFound',
+        'comment'
+      );
     }
     return commentFound;
   },
@@ -503,13 +489,11 @@ const Query = {
       .populate('likedBy')
       .populate('creator', '-password');
     if (!postFound) {
-      throw new NotFound([
-        {
-          message: requestContext.translate('post.notFound'),
-          code: 'post.notFound',
-          param: 'post',
-        },
-      ]);
+      throw new NotFound(
+        requestContext.translate('post.notFound'),
+        'post.notFound',
+        'post'
+      );
     }
     postFound.likeCount = postFound.likedBy.length || 0;
     postFound.commentCount = postFound.comments.length || 0;

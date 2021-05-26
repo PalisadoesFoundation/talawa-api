@@ -11,25 +11,21 @@ module.exports = async (parent, args, context) => {
   //find event
   let event = await Event.findOne({ _id: args.eventId });
   if (!event) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('event.notFound'),
-        code: 'event.notFound',
-        param: 'event',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('event.notFound'),
+      'event.notFound',
+      'event'
+    );
   }
 
   //ensure organization exists
   let org = await Organization.findOne({ _id: event.organization });
   if (!org) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('organization.notFound'),
-        code: 'organization.notFound',
-        param: 'organization',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('organization.notFound'),
+      'organization.notFound',
+      'organization'
+    );
   }
 
   //ensure user is an admin
@@ -38,13 +34,11 @@ module.exports = async (parent, args, context) => {
   //gets user in token - to be used later on
   let user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('user.notFound'),
-        code: 'user.notFound',
-        param: 'user',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
   }
 
   //remove event from user

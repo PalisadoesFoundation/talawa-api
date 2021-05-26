@@ -22,13 +22,11 @@ module.exports = async (parent, args, context) => {
     (blockedUser) => blockedUser === user.id
   );
   if (blocked[0]) {
-    throw new Unauthorized([
-      {
-        message: requestContext.translate('user.notAuthorized'),
-        code: 'user.notAuthorized',
-        param: 'userAuthorization',
-      },
-    ]);
+    throw new Unauthorized(
+      requestContext.translate('user.notAuthorized'),
+      'user.notAuthorized',
+      'userAuthorization'
+    );
   }
 
   // add user to organizations blocked users field

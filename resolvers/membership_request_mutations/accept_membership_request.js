@@ -13,13 +13,11 @@ module.exports = async (parent, args, context) => {
     _id: args.membershipRequestId,
   });
   if (!membershipRequest) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('membershipRequest.notFound'),
-        code: 'membershipRequest.notFound',
-        param: 'membershipRequest',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('membershipRequest.notFound'),
+      'membershipRequest.notFound',
+      'membershipRequest'
+    );
   }
 
   //ensure org exists
@@ -34,13 +32,11 @@ module.exports = async (parent, args, context) => {
   //check to see if user is already a member
   org._doc.members.forEach((member) => {
     if (member._id === user.id) {
-      throw new ConflictError([
-        {
-          message: requestContext.translate('user.alreadyMember'),
-          code: 'user.alreadyMember',
-          param: 'userAlreadyMember',
-        },
-      ]);
+      throw new ConflictError(
+        requestContext.translate('user.alreadyMember'),
+        'user.alreadyMember',
+        'userAlreadyMember'
+      );
     }
   });
 

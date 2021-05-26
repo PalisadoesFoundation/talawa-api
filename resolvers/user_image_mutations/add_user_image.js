@@ -8,13 +8,11 @@ const addUserImage = async (parent, args, context) => {
   authCheck(context);
   const user = await User.findById(context.userId);
   if (!user) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('user.notFound'),
-        code: 'user.notFound',
-        param: 'user',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
   }
 
   const uploadImage = await uploadImageHelper(args.file, user.image);

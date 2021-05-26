@@ -11,13 +11,11 @@ module.exports = async (parent, args, context) => {
   //ensure organization exists
   let org = await Organization.findOne({ _id: args.organizationId });
   if (!org) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('organization.notFound'),
-        code: 'organization.notFound',
-        param: 'organization',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('organization.notFound'),
+      'organization.notFound',
+      'organization'
+    );
   }
 
   //ensure user is an admin
@@ -26,25 +24,21 @@ module.exports = async (parent, args, context) => {
   //gets user in token - to be used later on
   let user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('user.notFound'),
-        code: 'user.notFound',
-        param: 'user',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
   }
 
   //find post
   let post = await Post.findOne({ _id: args.postId });
   if (!post) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('post.notFound'),
-        code: 'post.notFound',
-        param: 'post',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('post.notFound'),
+      'post.notFound',
+      'post'
+    );
   }
 
   //remove post from organization

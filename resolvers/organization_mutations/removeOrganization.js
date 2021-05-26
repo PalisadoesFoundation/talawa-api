@@ -9,25 +9,21 @@ const removeOrganizaiton = async (parent, args, context) => {
   authCheck(context);
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('user.notFound'),
-        code: 'user.notFound',
-        param: 'user',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
   }
 
   // checks to see if organization exists
   const org = await Organization.findOne({ _id: args.id });
   if (!org) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('organization.notFound'),
-        code: 'organization.notFound',
-        param: 'organization',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('organization.notFound'),
+      'organization.notFound',
+      'organization'
+    );
   }
 
   // check if the user is the creator

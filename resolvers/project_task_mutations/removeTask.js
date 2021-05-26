@@ -10,34 +10,28 @@ const removeTask = async (parent, args, context) => {
   authCheck(context);
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('user.notFound'),
-        code: 'user.notFound',
-        param: 'user',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
   }
 
   const foundTask = await Task.findOne({ _id: args.id });
   if (!foundTask) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('task.notFound'),
-        code: 'task.notFound',
-        param: 'task',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('task.notFound'),
+      'task.notFound',
+      'task'
+    );
   }
 
   if (!(foundTask.creator !== context.userId)) {
-    throw new Unauthorized([
-      {
-        message: requestContext.translate('user.notAuthorized'),
-        code: 'user.notAuthorized',
-        param: 'userAuthorization',
-      },
-    ]);
+    throw new Unauthorized(
+      requestContext.translate('user.notAuthorized'),
+      'user.notAuthorized',
+      'userAuthorization'
+    );
   }
 
   await Event.updateMany(

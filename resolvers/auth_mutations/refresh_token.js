@@ -27,13 +27,11 @@ module.exports = async (parent, args) => {
   // The refresh token received is valid so we cna send a new access token
   const user = await User.findOne({ _id: payload.userId });
   if (!user) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('user.notFound'),
-        code: 'user.notFound',
-        param: 'user',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
   }
 
   if (user.tokenVersion !== payload.tokenVersion) {

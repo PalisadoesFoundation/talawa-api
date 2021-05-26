@@ -11,25 +11,21 @@ const createEvent = async (parent, args, context) => {
   // gets user in token - to be used later on
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('event.notFound'),
-        code: 'user.notFound',
-        param: 'user',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('event.notFound'),
+      'user.notFound',
+      'user'
+    );
   }
 
   // ensure organization exists
   const org = await Organization.findOne({ _id: args.data.organizationId });
   if (!org) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('chat.notFound'),
-        code: 'chat.notFound',
-        param: 'chat',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('chat.notFound'),
+      'chat.notFound',
+      'chat'
+    );
   }
 
   const newEvent = new Event({

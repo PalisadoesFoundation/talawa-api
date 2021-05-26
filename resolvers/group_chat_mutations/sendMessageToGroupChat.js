@@ -10,13 +10,11 @@ module.exports = async (parent, args, context) => {
 
   const chat = await GroupChat.findById(args.chatId);
   if (!chat) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('chat.notFound'),
-        code: 'chat.notFound',
-        param: 'chat',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('chat.notFound'),
+      'chat.notFound',
+      'chat'
+    );
   }
 
   const sender = await userExists(context.userId);
@@ -27,13 +25,11 @@ module.exports = async (parent, args, context) => {
   );
   //console.log(userIsAMemberOfGroupChat)
   if (!(userIsAMemberOfGroupChat.length > 0)) {
-    throw new Unauthorized([
-      {
-        message: requestContext.translate('user.notAuthorized'),
-        code: 'user.notAuthorized',
-        param: 'userAuthorization',
-      },
-    ]);
+    throw new Unauthorized(
+      requestContext.translate('user.notAuthorized'),
+      'user.notAuthorized',
+      'userAuthorization'
+    );
   }
 
   //const receiver = chat.users.filter((u) => u != sender.id);

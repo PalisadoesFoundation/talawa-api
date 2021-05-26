@@ -11,26 +11,22 @@ const createTask = async (parent, args, context) => {
   // gets user in token - to be used later on
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('user.notFound'),
-        code: 'user.notFound',
-        param: 'user',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
   }
 
   const eventFound = await Event.findOne({
     _id: args.eventId,
   });
   if (!eventFound) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('event.notFound'),
-        code: 'event.notFound',
-        param: 'event',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('event.notFound'),
+      'event.notFound',
+      'event'
+    );
   }
 
   const task = new Task({

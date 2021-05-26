@@ -10,13 +10,11 @@ module.exports = async (parent, args, context) => {
   //ensure organization exists
   let org = await Organization.findOne({ _id: args.data.organizationId });
   if (!org) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('organization.notFound'),
-        code: 'organization.notFound',
-        param: 'organization',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('organization.notFound'),
+      'organization.notFound',
+      'organization'
+    );
   }
 
   //ensure user is an admin

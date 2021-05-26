@@ -9,34 +9,28 @@ const updateEvent = async (parent, args, context) => {
   authCheck(context);
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('user.notFound'),
-        code: 'user.notFound',
-        param: 'user',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
   }
 
   const event = await Event.findOne({ _id: args.id });
   if (!event) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('event.notFound'),
-        code: 'event.notFound',
-        param: 'event',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('event.notFound'),
+      'event.notFound',
+      'event'
+    );
   }
 
   if (!event.admins.includes(context.userId)) {
-    throw new Unauthorized([
-      {
-        message: requestContext.translate('user.notAuthorized'),
-        code: 'user.notAuthorized',
-        param: 'userAuthorization',
-      },
-    ]);
+    throw new Unauthorized(
+      requestContext.translate('user.notAuthorized'),
+      'user.notAuthorized',
+      'userAuthorization'
+    );
   }
 
   const newEvent = await Event.findOneAndUpdate(

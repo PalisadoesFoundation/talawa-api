@@ -10,24 +10,20 @@ module.exports = async (parent, args, context) => {
 
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('user.notFound'),
-        code: 'user.notFound',
-        param: 'user',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
   }
 
   const org = await Organization.findOne({ _id: args.data.organizationId });
   if (!org) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('organization.notFound'),
-        code: 'organization.notFound',
-        param: 'organization',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('organization.notFound'),
+      'organization.notFound',
+      'organization'
+    );
   }
 
   const usersInChat = [];
@@ -37,13 +33,11 @@ module.exports = async (parent, args, context) => {
     // console.log(userId);
     const user = await await User.findOne({ _id: userId });
     if (!user) {
-      throw new NotFound([
-        {
-          message: requestContext.translate('user.notFound'),
-          code: 'user.notFound',
-          param: 'user',
-        },
-      ]);
+      throw new NotFound(
+        requestContext.translate('user.notFound'),
+        'user.notFound',
+        'user'
+      );
     }
     usersInChat.push(user);
   }

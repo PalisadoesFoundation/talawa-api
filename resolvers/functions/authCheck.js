@@ -3,21 +3,17 @@ const requestContext = require('../../core/libs/talawa-request-context');
 
 const authCheck = (context) => {
   if (context.expired)
-    throw new Unauthenticated([
-      {
-        message: requestContext.translate('user.notAuthenticated'),
-        code: 'user.notAuthenticated',
-        param: 'userAuthentication',
-      },
-    ]);
+    throw new Unauthenticated(
+      requestContext.translate('user.notAuthenticated'),
+      'user.notAuthenticated',
+      'userAuthentication'
+    );
   if (!context.isAuth) {
-    throw new Unauthenticated([
-      {
-        message: requestContext.translate('user.notAuthenticated'),
-        code: 'user.notAuthenticated',
-        param: 'userAuthentication',
-      },
-    ]);
+    throw new Unauthenticated(
+      requestContext.translate('user.notAuthenticated'),
+      'user.notAuthenticated',
+      'userAuthentication'
+    );
   }
 };
 

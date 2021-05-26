@@ -12,34 +12,28 @@ const createEventProject = async (parent, args, context) => {
   // gets user in token - to be used later on
   const userFound = await User.findOne({ _id: context.userId });
   if (!userFound) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('user.notFound'),
-        code: 'user.notFound',
-        param: 'user',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
   }
 
   const eventFound = await Event.findOne({ _id: args.data.eventId });
   if (!eventFound) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('event.notFound'),
-        code: 'event.notFound',
-        param: 'event',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('event.notFound'),
+      'event.notFound',
+      'event'
+    );
   }
 
   if (!eventFound.admins.includes(context.userId)) {
-    throw new Unauthorized([
-      {
-        message: requestContext.translate('user.notAuthorized'),
-        code: 'user.notAuthorized',
-        param: 'userAuthorization',
-      },
-    ]);
+    throw new Unauthorized(
+      requestContext.translate('user.notAuthorized'),
+      'user.notAuthorized',
+      'userAuthorization'
+    );
   }
 
   const newEventProject = new EventProject({

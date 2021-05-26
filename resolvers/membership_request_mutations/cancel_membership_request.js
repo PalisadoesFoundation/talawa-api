@@ -13,13 +13,11 @@ module.exports = async (parent, args, context) => {
     _id: args.membershipRequestId,
   });
   if (!membershipRequest) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('membershipRequest.notFound'),
-        code: 'membershipRequest.notFound',
-        param: 'membershipRequest',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('membershipRequest.notFound'),
+      'membershipRequest.notFound',
+      'membershipRequest'
+    );
   }
 
   //ensure org exists
@@ -27,37 +25,31 @@ module.exports = async (parent, args, context) => {
     _id: membershipRequest.organization,
   });
   if (!org) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('organization.notFound'),
-        code: 'organization.notFound',
-        param: 'organization',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('organization.notFound'),
+      'organization.notFound',
+      'organization'
+    );
   }
 
   //ensure user exists
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('user.notFound'),
-        code: 'user.notFound',
-        param: 'user',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
   }
 
   //ensure user in context created membership request
   const owner = user.id === membershipRequest.user;
   if (!owner) {
-    throw new Unauthorized([
-      {
-        message: requestContext.translate('user.notAuthorized'),
-        code: 'user.notAuthorized',
-        param: 'userAuthorization',
-      },
-    ]);
+    throw new Unauthorized(
+      requestContext.translate('user.notAuthorized'),
+      'user.notAuthorized',
+      'userAuthorization'
+    );
   }
 
   //delete membership request

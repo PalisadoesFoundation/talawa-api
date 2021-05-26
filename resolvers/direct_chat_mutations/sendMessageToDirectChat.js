@@ -10,13 +10,11 @@ module.exports = async (parent, args, context) => {
 
   const chat = await DirectChat.findById(args.chatId);
   if (!chat) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('chat.notFound'),
-        code: 'chat.notFound',
-        param: 'chat',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('chat.notFound'),
+      'chat.notFound',
+      'chat'
+    );
   }
 
   const sender = await userExists(context.userId);

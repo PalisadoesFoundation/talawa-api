@@ -10,24 +10,20 @@ const registerForEvent = async (parent, args, context) => {
   // gets user in token - to be used later on
   const userFound = await User.findOne({ _id: context.userId });
   if (!userFound) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('user.notFound'),
-        code: 'user.notFound',
-        param: 'user',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
   }
 
   const eventFound = await Event.findOne({ _id: args.id });
   if (!eventFound) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('event.notFound'),
-        code: 'event.notFound',
-        param: 'event',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('event.notFound'),
+      'event.notFound',
+      'event'
+    );
   }
 
   // add event to the user record

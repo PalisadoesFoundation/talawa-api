@@ -9,13 +9,11 @@ const updateOrganization = async (parent, args, context) => {
   //checks to see if organization exists
   let org = await Organization.findOne({ _id: args.id });
   if (!org) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('organization.notFound'),
-        code: 'organization.notFound',
-        param: 'organization',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('organization.notFound'),
+      'organization.notFound',
+      'organization'
+    );
   }
 
   //check if the user is an admin

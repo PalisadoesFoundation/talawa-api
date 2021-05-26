@@ -94,13 +94,11 @@ const apolloServer = new ApolloServer({
   subscriptions: {
     onConnect: (connection) => {
       if (!connection.authToken) {
-        throw new Unauthenticated([
-          {
-            message: requestContext.translate('user.notAuthenticated'),
-            code: 'user.notAuthenticated',
-            param: 'userAuthentication',
-          },
-        ]);
+        throw new Unauthenticated(
+          requestContext.translate('user.notAuthenticated'),
+          'user.notAuthenticated',
+          'userAuthentication'
+        );
       }
       let userId = null;
       if (connection.authToken) {

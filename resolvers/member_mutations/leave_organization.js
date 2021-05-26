@@ -9,47 +9,40 @@ module.exports = async (parent, args, context) => {
   //ensure organization exists
   let org = await Organization.findOne({ _id: args.organizationId });
   if (!org) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('organization.notFound'),
-        code: 'organization.notFound',
-        param: 'organization',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('organization.notFound'),
+      'organization.notFound',
+      'organization'
+    );
   }
 
   //ensure user exists
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('user.notFound'),
-        code: 'user.notFound',
-        param: 'user',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
   }
 
   //checks to see if the user trying to leave is the owner of the organization
-  if (user.id === org._doc.creator)
-    throw new Unauthorized([
-      {
-        message: requestContext.translate('user.notAuthorized'),
-        code: 'user.notAuthorized',
-        param: 'userAuthorization',
-      },
-    ]);
+  if (user.id === org._doc.creator) {
+    throw new Unauthorized(
+      requestContext.translate('user.notAuthorized'),
+      'user.notAuthorized',
+      'userAuthorization'
+    );
+  }
 
   //check to see if user is already a member
   const members = org._doc.members.filter((member) => member === user.id);
   if (members.length === 0) {
-    throw new ConflictError([
-      {
-        message: requestContext.translate('user.alreadyMember'),
-        code: 'user.alreadyMember',
-        param: 'userAlreadyMember',
-      },
-    ]);
+    throw new ConflictError(
+      requestContext.translate('user.alreadyMember'),
+      'user.alreadyMember',
+      'userAlreadyMember'
+    );
   }
 
   //if the user is an admin he is removed from the organization's admin field

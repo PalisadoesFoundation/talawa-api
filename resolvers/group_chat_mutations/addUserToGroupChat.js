@@ -11,13 +11,11 @@ module.exports = async (parent, args, context) => {
 
   let chat = await GroupChat.findById(args.chatId);
   if (!chat) {
-    throw new NotFound([
-      {
-        message: requestContext.translate('chat.notFound'),
-        code: 'chat.notFound',
-        param: 'chat',
-      },
-    ]);
+    throw new NotFound(
+      requestContext.translate('chat.notFound'),
+      'chat.notFound',
+      'chat'
+    );
   }
 
   const org = await organizationExists(chat.organization);
@@ -31,13 +29,11 @@ module.exports = async (parent, args, context) => {
     (user) => user === args.userId
   );
   if (userAlreadyAMember.length > 0) {
-    throw new ConflictError([
-      {
-        message: requestContext.translate('user.alreadyMember'),
-        code: 'user.alreadyMember',
-        param: 'userAlreadyMember',
-      },
-    ]);
+    throw new ConflictError(
+      requestContext.translate('user.alreadyMember'),
+      'user.alreadyMember',
+      'userAlreadyMember'
+    );
   }
 
   return await GroupChat.findOneAndUpdate(
