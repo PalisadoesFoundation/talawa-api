@@ -101,10 +101,9 @@ const apolloServer = new ApolloServer({
 apolloServer.applyMiddleware({ app });
 apolloServer.installSubscriptionHandlers(httpServer);
 
-database
-  .connect()
-  .then(() => {
-    // Use native http server to allow subscriptions
+const serverStart = async () => {
+  try {
+    await database.connect();
     httpServer.listen(process.env.PORT || 4000, () => {
       console.log(
         `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
@@ -117,5 +116,9 @@ database
         }`
       );
     });
-  })
-  .catch((e) => console.log(e));
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+serverStart();
