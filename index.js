@@ -19,7 +19,7 @@ const DirectChatMessage = require('./resolvers/DirectChatMessage');
 const GroupChat = require('./resolvers/GroupChat');
 const GroupChatMessage = require('./resolvers/GroupChatMessage');
 const requestContext = require('./core/libs/talawa-request-context');
-const { Unauthenticated } = require('./core/errors');
+const { UnauthenticatedError } = require('./core/errors');
 
 const Subscription = require('./resolvers/Subscription');
 const jwt = require('jsonwebtoken');
@@ -94,7 +94,7 @@ const apolloServer = new ApolloServer({
   subscriptions: {
     onConnect: (connection) => {
       if (!connection.authToken) {
-        throw new Unauthenticated(
+        throw new UnauthenticatedError(
           requestContext.translate('user.notAuthenticated'),
           'user.notAuthenticated',
           'userAuthentication'

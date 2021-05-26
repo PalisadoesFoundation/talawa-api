@@ -1,7 +1,7 @@
 const User = require('../../models/User');
 const Task = require('../../models/Task');
 const Event = require('../../models/Event');
-const { NotFound } = require('../../core/errors');
+const { NotFoundError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 const authCheck = require('../functions/authCheck');
 
@@ -11,7 +11,7 @@ const createTask = async (parent, args, context) => {
   // gets user in token - to be used later on
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('user.notFound'),
       'user.notFound',
       'user'
@@ -22,7 +22,7 @@ const createTask = async (parent, args, context) => {
     _id: args.eventId,
   });
   if (!eventFound) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('event.notFound'),
       'event.notFound',
       'event'

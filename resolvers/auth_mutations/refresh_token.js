@@ -4,7 +4,7 @@ const {
   createAccessToken,
   createRefreshToken,
 } = require('../../helper_functions/auth');
-const { ValidationError, NotFound } = require('../../core/errors');
+const { ValidationError, NotFoundError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 module.exports = async (parent, args) => {
@@ -27,7 +27,7 @@ module.exports = async (parent, args) => {
   // The refresh token received is valid so we cna send a new access token
   const user = await User.findOne({ _id: payload.userId });
   if (!user) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('user.notFound'),
       'user.notFound',
       'user'

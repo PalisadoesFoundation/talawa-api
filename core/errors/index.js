@@ -2,10 +2,10 @@ const errors = {};
 
 errors.ApplicationError = require('./application-error');
 errors.InternalServerError = require('./internal-server-error');
-errors.NotFound = require('./not-found');
-errors.Unauthorized = require('./unauthorized');
+errors.NotFoundError = require('./not-found-error');
+errors.UnauthorizedError = require('./unauthorized-error');
 errors.ValidationError = require('./validation-error');
-errors.Unauthenticated = require('./unauthenticated');
+errors.UnauthenticatedError = require('./unauthenticated-error');
 errors.ConflictError = require('./conflict-error');
 
 module.exports = errors;

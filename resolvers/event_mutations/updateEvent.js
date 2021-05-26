@@ -2,14 +2,14 @@ const User = require('../../models/User');
 const Event = require('../../models/Event');
 
 const authCheck = require('../functions/authCheck');
-const { NotFound, Unauthorized } = require('../../core/errors');
+const { NotFoundError, UnauthorizedError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 const updateEvent = async (parent, args, context) => {
   authCheck(context);
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('user.notFound'),
       'user.notFound',
       'user'
@@ -18,7 +18,7 @@ const updateEvent = async (parent, args, context) => {
 
   const event = await Event.findOne({ _id: args.id });
   if (!event) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('event.notFound'),
       'event.notFound',
       'event'
@@ -26,7 +26,7 @@ const updateEvent = async (parent, args, context) => {
   }
 
   if (!event.admins.includes(context.userId)) {
-    throw new Unauthorized(
+    throw new UnauthorizedError(
       requestContext.translate('user.notAuthorized'),
       'user.notAuthorized',
       'userAuthorization'

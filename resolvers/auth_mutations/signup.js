@@ -1,5 +1,5 @@
 const Organization = require('../../models/Organization');
-const { NotFound, ConflictError } = require('../../core/errors');
+const { NotFoundError, ConflictError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 const User = require('../../models/User');
@@ -30,7 +30,7 @@ module.exports = async (parent, args) => {
       _id: args.data.organizationUserBelongsToId,
     });
     if (!org) {
-      throw new NotFound(
+      throw new NotFoundError(
         requestContext.translate('organization.notFound'),
         'organization.notFound',
         'organization'

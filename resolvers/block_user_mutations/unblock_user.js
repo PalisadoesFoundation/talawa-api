@@ -2,7 +2,7 @@ const authCheck = require('../functions/authCheck');
 const adminCheck = require('../functions/adminCheck');
 const organizationExists = require('../../helper_functions/organizationExists');
 const userExists = require('../../helper_functions/userExists');
-const { Unauthorized } = require('../../core/errors');
+const { UnauthorizedError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 module.exports = async (parent, args, context) => {
@@ -22,7 +22,7 @@ module.exports = async (parent, args, context) => {
     (blockedUser) => blockedUser === user.id
   );
   if (!blocked[0]) {
-    throw new Unauthorized(
+    throw new UnauthorizedError(
       requestContext.translate('user.notAuthorized'),
       'user.notAuthorized',
       'userAuthorization'

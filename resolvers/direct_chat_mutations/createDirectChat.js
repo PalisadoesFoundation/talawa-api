@@ -2,7 +2,7 @@ const User = require('../../models/User');
 const DirectChat = require('../../models/DirectChat');
 const authCheck = require('../functions/authCheck');
 const Organization = require('../../models/Organization');
-const { NotFound } = require('../../core/errors');
+const { NotFoundError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 module.exports = async (parent, args, context) => {
@@ -10,7 +10,7 @@ module.exports = async (parent, args, context) => {
 
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('user.notFound'),
       'user.notFound',
       'user'
@@ -19,7 +19,7 @@ module.exports = async (parent, args, context) => {
 
   const org = await Organization.findOne({ _id: args.data.organizationId });
   if (!org) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('organization.notFound'),
       'organization.notFound',
       'organization'
@@ -33,7 +33,7 @@ module.exports = async (parent, args, context) => {
     // console.log(userId);
     const user = await await User.findOne({ _id: userId });
     if (!user) {
-      throw new NotFound(
+      throw new NotFoundError(
         requestContext.translate('user.notFound'),
         'user.notFound',
         'user'

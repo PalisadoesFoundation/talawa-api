@@ -1,7 +1,7 @@
 const Organization = require('../../models/Organization');
 const authCheck = require('../functions/authCheck');
 const adminCheck = require('../functions/adminCheck');
-const { NotFound } = require('../../core/errors');
+const { NotFoundError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 const updateOrganization = async (parent, args, context) => {
@@ -9,7 +9,7 @@ const updateOrganization = async (parent, args, context) => {
   //checks to see if organization exists
   let org = await Organization.findOne({ _id: args.id });
   if (!org) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('organization.notFound'),
       'organization.notFound',
       'organization'

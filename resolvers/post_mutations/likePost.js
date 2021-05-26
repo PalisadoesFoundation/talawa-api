@@ -2,14 +2,14 @@ const User = require('../../models/User');
 const Post = require('../../models/Post');
 
 const authCheck = require('../functions/authCheck');
-const { NotFound } = require('../../core/errors');
+const { NotFoundError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 const likePost = async (parent, args, context) => {
   authCheck(context);
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('user.notFound'),
       'user.notFound',
       'user'
@@ -18,7 +18,7 @@ const likePost = async (parent, args, context) => {
 
   const post = await Post.findOne({ _id: args.id });
   if (!post) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('post.notFound'),
       'post.notFound',
       'post'

@@ -1,7 +1,7 @@
 const User = require('../../models/User');
 const Event = require('../../models/Event');
 const Task = require('../../models/Task');
-const { NotFound, Unauthorized } = require('../../core/errors');
+const { NotFoundError, UnauthorizedError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 const authCheck = require('../functions/authCheck');
@@ -10,7 +10,7 @@ const removeTask = async (parent, args, context) => {
   authCheck(context);
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('user.notFound'),
       'user.notFound',
       'user'
@@ -19,7 +19,7 @@ const removeTask = async (parent, args, context) => {
 
   const foundTask = await Task.findOne({ _id: args.id });
   if (!foundTask) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('task.notFound'),
       'task.notFound',
       'task'
@@ -27,7 +27,7 @@ const removeTask = async (parent, args, context) => {
   }
 
   if (!(foundTask.creator !== context.userId)) {
-    throw new Unauthorized(
+    throw new UnauthorizedError(
       requestContext.translate('user.notAuthorized'),
       'user.notAuthorized',
       'userAuthorization'

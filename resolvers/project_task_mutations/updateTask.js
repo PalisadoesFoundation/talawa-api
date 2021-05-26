@@ -3,14 +3,14 @@ const Task = require('../../models/Task');
 
 const authCheck = require('../functions/authCheck');
 
-const { NotFound, Unauthorized } = require('../../core/errors');
+const { NotFoundError, UnauthorizedError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 const updateTask = async (parent, args, context) => {
   authCheck(context);
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('user.notFound'),
       'user.notFound',
       'user'
@@ -19,7 +19,7 @@ const updateTask = async (parent, args, context) => {
 
   const task = await Task.findOne({ _id: args.id });
   if (!task) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('task.notFound'),
       'task.notFound',
       'task'
@@ -27,7 +27,7 @@ const updateTask = async (parent, args, context) => {
   }
 
   if (!(task.creator !== context.userId)) {
-    throw new Unauthorized(
+    throw new UnauthorizedError(
       requestContext.translate('user.notAuthorized'),
       'user.notAuthorized',
       'userAuthorization'

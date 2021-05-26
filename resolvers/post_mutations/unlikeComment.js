@@ -2,14 +2,14 @@ const User = require('../../models/User');
 const Comment = require('../../models/Comment');
 
 const authCheck = require('../functions/authCheck');
-const { NotFound } = require('../../core/errors');
+const { NotFoundError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 const unlikeComment = async (parent, args, context) => {
   authCheck(context);
   const user = await User.findById(context.userId);
   if (!user) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('user.notFound'),
       'user.notFound',
       'user'
@@ -18,7 +18,7 @@ const unlikeComment = async (parent, args, context) => {
 
   let comment = await Comment.findById(args.id);
   if (!comment) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('comment.notFound'),
       'comment.notFound',
       'comment'

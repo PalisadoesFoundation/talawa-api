@@ -2,7 +2,7 @@ const User = require('../../models/User');
 const Organization = require('../../models/Organization');
 const authCheck = require('../functions/authCheck');
 const creatorCheck = require('../functions/creatorCheck');
-const { NotFound } = require('../../core/errors');
+const { NotFoundError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 module.exports = async (parent, args, context) => {
@@ -10,7 +10,7 @@ module.exports = async (parent, args, context) => {
   // checks to see if organization exists
   const org = await Organization.findOne({ _id: args.data.organizationId });
   if (!org) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('organization.notFound'),
       'organization.notFound',
       'organization'
@@ -23,7 +23,7 @@ module.exports = async (parent, args, context) => {
   // ensures user to be made admin exists
   const user = await User.findOne({ _id: args.data.userId });
   if (!user) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('user.notFound'),
       'user.notFound',
       'user'
@@ -33,7 +33,7 @@ module.exports = async (parent, args, context) => {
   // ensures user is a member of the organization
   const member = org._doc.members.filter((member) => member === user.id);
   if (member.length === 0) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('organization.member.notFound'),
       'organization.member.notFound',
       'organizationMember'

@@ -2,14 +2,14 @@ const User = require('../../models/User');
 const Organization = require('../../models/Organization');
 const authCheck = require('../functions/authCheck');
 const creatorCheck = require('../functions/creatorCheck');
-const { NotFound } = require('../../core/errors');
+const { NotFoundError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 const removeOrganizaiton = async (parent, args, context) => {
   authCheck(context);
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('user.notFound'),
       'user.notFound',
       'user'
@@ -19,7 +19,7 @@ const removeOrganizaiton = async (parent, args, context) => {
   // checks to see if organization exists
   const org = await Organization.findOne({ _id: args.id });
   if (!org) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('organization.notFound'),
       'organization.notFound',
       'organization'

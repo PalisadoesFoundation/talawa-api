@@ -3,14 +3,14 @@ const Comment = require('../../models/Comment');
 const Post = require('../../models/Post');
 
 const authCheck = require('../functions/authCheck');
-const { NotFound, Unauthorized } = require('../../core/errors');
+const { NotFoundError, UnauthorizedError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 const removeComment = async (parent, args, context) => {
   authCheck(context);
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('user.notFound'),
       'user.notFound',
       'user'
@@ -19,7 +19,7 @@ const removeComment = async (parent, args, context) => {
 
   const comment = await Comment.findOne({ _id: args.id });
   if (!comment) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('comment.notFound'),
       'comment.notFound',
       'comment'
@@ -27,7 +27,7 @@ const removeComment = async (parent, args, context) => {
   }
 
   if (!(comment.creator !== context.userId)) {
-    throw new Unauthorized(
+    throw new UnauthorizedError(
       requestContext.translate('user.notAuthorized'),
       'user.notAuthorized',
       'userAuthorization'

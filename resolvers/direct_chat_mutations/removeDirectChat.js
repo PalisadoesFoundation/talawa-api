@@ -3,7 +3,7 @@ const authCheck = require('../functions/authCheck');
 const adminCheck = require('../functions/adminCheck');
 const organizationExists = require('../../helper_functions/organizationExists');
 const DirectChatMessage = require('../../models/DirectChatMessage');
-const { NotFound } = require('../../core/errors');
+const { NotFoundError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 // admins of the organization can remove chats -- may change in the future
@@ -15,7 +15,7 @@ module.exports = async (parent, args, context) => {
 
   const chat = await DirectChat.findById(args.chatId);
   if (!chat) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('chat.notFound'),
       'chat.notFound',
       'chat'

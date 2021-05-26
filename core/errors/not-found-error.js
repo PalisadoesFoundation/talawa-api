@@ -1,8 +1,8 @@
 const ApplicationError = require('./application-error');
 
-class Unauthenticated extends ApplicationError {
+class NotFoundError extends ApplicationError {
   constructor(message, code = null, param = null, metadata = {}) {
-    const errorMessage = message || 'Unauthenticated';
+    const errorMessage = message || 'Not Found';
     const errorJson = [
       {
         message: errorMessage,
@@ -11,8 +11,8 @@ class Unauthenticated extends ApplicationError {
         metadata,
       },
     ];
-    super(errorJson, 401, errorMessage);
+    super(errorJson, 404, errorMessage);
   }
 }
 
-module.exports = Unauthenticated;
+module.exports = NotFoundError;

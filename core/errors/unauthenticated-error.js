@@ -1,8 +1,8 @@
 const ApplicationError = require('./application-error');
 
-class Unauthorized extends ApplicationError {
+class UnauthenticatedError extends ApplicationError {
   constructor(message, code = null, param = null, metadata = {}) {
-    const errorMessage = message || 'Unauthorized';
+    const errorMessage = message || 'UnauthenticatedError';
     const errorJson = [
       {
         message: errorMessage,
@@ -11,8 +11,8 @@ class Unauthorized extends ApplicationError {
         metadata,
       },
     ];
-    super(errorJson, 403, errorMessage);
+    super(errorJson, 401, errorMessage);
   }
 }
 
-module.exports = Unauthorized;
+module.exports = UnauthenticatedError;

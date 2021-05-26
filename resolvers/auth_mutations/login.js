@@ -4,13 +4,13 @@ const {
   createAccessToken,
   createRefreshToken,
 } = require('../../helper_functions/auth');
-const { NotFound, ValidationError } = require('../../core/errors');
+const { NotFoundError, ValidationError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 module.exports = async (parent, args) => {
   const user = await User.findOne({ email: args.data.email.toLowerCase() });
   if (!user) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('user.notFound'),
       'user.notFound',
       'user'

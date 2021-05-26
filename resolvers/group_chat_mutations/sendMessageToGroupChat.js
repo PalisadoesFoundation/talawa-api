@@ -2,7 +2,7 @@ const GroupChat = require('../../models/GroupChat');
 const authCheck = require('../functions/authCheck');
 const GroupChatMessage = require('../../models/GroupChatMessage');
 const userExists = require('../../helper_functions/userExists');
-const { NotFound, Unauthorized } = require('../../core/errors');
+const { NotFoundError, UnauthorizedError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 module.exports = async (parent, args, context) => {
@@ -10,7 +10,7 @@ module.exports = async (parent, args, context) => {
 
   const chat = await GroupChat.findById(args.chatId);
   if (!chat) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('chat.notFound'),
       'chat.notFound',
       'chat'
@@ -25,7 +25,7 @@ module.exports = async (parent, args, context) => {
   );
   //console.log(userIsAMemberOfGroupChat)
   if (!(userIsAMemberOfGroupChat.length > 0)) {
-    throw new Unauthorized(
+    throw new UnauthorizedError(
       requestContext.translate('user.notAuthorized'),
       'user.notAuthorized',
       'userAuthorization'

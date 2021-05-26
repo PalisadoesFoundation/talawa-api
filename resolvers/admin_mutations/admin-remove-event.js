@@ -3,7 +3,7 @@ const Organization = require('../../models/Organization');
 const authCheck = require('../functions/authCheck');
 const adminCheck = require('../functions/adminCheck');
 const Event = require('../../models/Event');
-const { NotFound } = require('../../core/errors');
+const { NotFoundError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 module.exports = async (parent, args, context) => {
@@ -11,7 +11,7 @@ module.exports = async (parent, args, context) => {
   //find event
   let event = await Event.findOne({ _id: args.eventId });
   if (!event) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('event.notFound'),
       'event.notFound',
       'event'
@@ -21,7 +21,7 @@ module.exports = async (parent, args, context) => {
   //ensure organization exists
   let org = await Organization.findOne({ _id: event.organization });
   if (!org) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('organization.notFound'),
       'organization.notFound',
       'organization'
@@ -34,7 +34,7 @@ module.exports = async (parent, args, context) => {
   //gets user in token - to be used later on
   let user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('user.notFound'),
       'user.notFound',
       'user'

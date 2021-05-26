@@ -1,5 +1,5 @@
 const Organization = require('../models/Organization');
-const { NotFound } = require('../core/errors');
+const { NotFoundError } = require('../core/errors');
 const requestContext = require('../core/libs/talawa-request-context');
 
 module.exports = async (id) => {
@@ -7,7 +7,7 @@ module.exports = async (id) => {
     _id: id,
   });
   if (!organization) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('organization.notFound'),
       'organization.notFound',
       'organization'

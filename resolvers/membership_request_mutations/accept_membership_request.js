@@ -3,7 +3,7 @@ const authCheck = require('../functions/authCheck');
 const adminCheck = require('../functions/adminCheck');
 const organizationExists = require('../../helper_functions/organizationExists');
 const userExists = require('../../helper_functions/userExists');
-const { NotFound, ConflictError } = require('../../core/errors');
+const { NotFoundError, ConflictError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 module.exports = async (parent, args, context) => {
@@ -13,7 +13,7 @@ module.exports = async (parent, args, context) => {
     _id: args.membershipRequestId,
   });
   if (!membershipRequest) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('membershipRequest.notFound'),
       'membershipRequest.notFound',
       'membershipRequest'

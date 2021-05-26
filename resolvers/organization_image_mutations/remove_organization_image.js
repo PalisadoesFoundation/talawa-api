@@ -3,14 +3,14 @@ const Organization = require('../../models/Organization');
 const User = require('../../models/User');
 const adminCheck = require('../functions/adminCheck');
 const deleteImage = require('../../helper_functions/deleteImage');
-const { NotFound } = require('../../core/errors');
+const { NotFoundError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 module.exports = async (parent, args, context) => {
   authCheck(context);
   const user = await User.findById(context.userId);
   if (!user) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('user.notFound'),
       'user.notFound',
       'user'
@@ -19,7 +19,7 @@ module.exports = async (parent, args, context) => {
 
   const org = await Organization.findById(args.organizationId);
   if (!org) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('organization.notFound'),
       'organization.notFound',
       'organization'
@@ -29,7 +29,7 @@ module.exports = async (parent, args, context) => {
   adminCheck(context, org); // Ensures user is an administrator of the organization
 
   if (!org.image) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('organization.profile.notFound'),
       'organization.notFound',
       'organization'

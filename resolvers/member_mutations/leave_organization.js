@@ -1,7 +1,7 @@
 const User = require('../../models/User');
 const Organization = require('../../models/Organization');
 const authCheck = require('../functions/authCheck');
-const { NotFound, Unauthorized, ConflictError } = require('../../core/errors');
+const { NotFoundError, UnauthorizedError, ConflictError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
 
 module.exports = async (parent, args, context) => {
@@ -9,7 +9,7 @@ module.exports = async (parent, args, context) => {
   //ensure organization exists
   let org = await Organization.findOne({ _id: args.organizationId });
   if (!org) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('organization.notFound'),
       'organization.notFound',
       'organization'
@@ -19,7 +19,7 @@ module.exports = async (parent, args, context) => {
   //ensure user exists
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
-    throw new NotFound(
+    throw new NotFoundError(
       requestContext.translate('user.notFound'),
       'user.notFound',
       'user'
@@ -28,7 +28,7 @@ module.exports = async (parent, args, context) => {
 
   //checks to see if the user trying to leave is the owner of the organization
   if (user.id === org._doc.creator) {
-    throw new Unauthorized(
+    throw new UnauthorizedError(
       requestContext.translate('user.notAuthorized'),
       'user.notAuthorized',
       'userAuthorization'
