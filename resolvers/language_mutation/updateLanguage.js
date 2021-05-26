@@ -15,7 +15,7 @@ const updateLanguage = async (parent, args, context) => {
   //UPDATE LANGUAGE
   userFound.overwrite({
     ...userFound._doc,
-    appLanguage: args.language,
+    appLanguageCode: args.languageCode,
   });
 
   await userFound.save();

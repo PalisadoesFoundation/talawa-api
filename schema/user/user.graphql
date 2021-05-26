@@ -8,7 +8,7 @@ module.exports = `
     firstName: String!
     lastName: String!
     email: String!
-    appLanguage: String!
+    appLanguageCode: String!
     createdOrganizations: [Organization]
     joinedOrganizations: [Organization]
     createdEvents: [Event]
@@ -26,7 +26,7 @@ module.exports = `
     lastName: String!
     email: String!
     password: String!
-    appLanguage: String
+    appLanguageCode: String
     organizationUserBelongsToId: ID
   }
 

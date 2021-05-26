@@ -27,10 +27,10 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
-  appLanguage: {
+  appLanguageCode: {
     type: String,
-    default: 'ENGLISH',
-    enum: ['ENGLISH', 'HINDI', 'CHINESE', 'SPANISH', 'FRENCH'],
+    default: 'en',
+    enum: ['en', 'hi', 'zh', 'es', 'fr'],
     required: true,
   },
   createdOrganizations: [
