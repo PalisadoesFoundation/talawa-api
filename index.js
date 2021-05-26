@@ -12,6 +12,7 @@ const cors = require('cors');
 const logger = require('logger');
 const requestLogger = require('morgan');
 const path = require('path');
+const requestTracing = require('request-tracing');
 
 const Query = require('./resolvers/Query');
 const Mutation = require('./resolvers/Mutation');
@@ -21,7 +22,6 @@ const User = require('./resolvers/User');
 const database = require('./db.js');
 const Organization = require('./resolvers/Organization');
 const MembershipRequest = require('./resolvers/MembershipRequest');
-const requestTracing = require('./core/libs/request-tracing');
 const DirectChat = require('./resolvers/DirectChat');
 const DirectChatMessage = require('./resolvers/DirectChatMessage');
 const GroupChat = require('./resolvers/GroupChat');
