@@ -4,7 +4,7 @@ const Event = require('../models/Event');
 const Post = require('../models/Post');
 const Group = require('../models/Group');
 const Comment = require('../models/Comment');
-const { NotFoundError } = require('.errors');
+const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 const Task = require('../models/Task');

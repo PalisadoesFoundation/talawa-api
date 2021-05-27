@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const MembershipRequest = require('../models/MembershipRequest');
-const { NotFoundError } = require('.errors');
+const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 const Organization = {

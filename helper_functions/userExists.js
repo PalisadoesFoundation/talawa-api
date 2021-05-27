@@ -1,5 +1,5 @@
 const User = require('../models/User');
-const { NotFoundError } = require('.errors');
+const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 module.exports = async (id) => {

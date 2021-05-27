@@ -1,5 +1,5 @@
 const Organization = require('../models/Organization');
-const { NotFoundError } = require('.errors');
+const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 module.exports = async (id) => {

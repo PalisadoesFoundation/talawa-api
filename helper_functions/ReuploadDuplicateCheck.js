@@ -1,5 +1,5 @@
 const { imageHash } = require('image-hash');
-const { ValidationError } = require('.errors');
+const { ValidationError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 module.exports = async (imageJustUploadedPath, itemImage) => {
