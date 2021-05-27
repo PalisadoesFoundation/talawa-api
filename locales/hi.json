@@ -1,7 +1,24 @@
 {
+    "user.notAuthenticated": "उपयोगकर्ता प्रमाणित नहीं है",
+    "user.notAuthorized": "उपयोगकर्ता इस ऑपरेशन को करने के लिए अधिकृत नहीं है",
+    "user.notFound": "उपयोगकर्ता नहीं मिला",
+    "user.alreadyMember": "उपयोगकर्ता पहले से ही एक सदस्य है",
+    "user.profileImage.notFound": "उपयोगकर्ता प्रोफ़ाइल छवि नहीं मिली",
+    "task.notFound": "कार्य नहीं मिला",
+    "event.notFound": "घटना नहीं मिली",
+    "eventProject.notFound": "इवेंट प्रोजेक्ट नहीं मिला",
+    "organization.notFound":  "संगठन नहीं मिला",
+    "organization.profileImage.notFound": "संगठन की प्रोफ़ाइल छवि नहीं मिली",
+    "organization.member.notFound": "संगठन का उपयोगकर्ता सदस्य नहीं है",
+    "organization.notAuthorized": "संगठन अधिकृत नहीं है",
+    "membershipRequest.notFound": "सदस्यता अनुरोध नहीं मिला",
     "membershipRequest.alreadyExists": "सदस्यता अनुरोध पहले से मौजूद है",
     "chat.notFound": "चैट नहीं मिली",
+    "email.alreadyExists": "ईमेल पहले से मौजूद है",
     "comment.notFound": "टिप्पणी नहीं मिली",
     "post.notFound": "पोस्ट नहीं मिली",
-    "email.alreadyExists": "ईमेल पहले से मौजूद है"
+    "group.notFound": "समूह नहीं मिला",
+    "invalid.fileType": "अमान्य फ़ाइल प्रकार",
+    "invalid.refreshToken": "अमान्य रीफ़्रेश टोकन",
+    "invalid.credentials": "अवैध प्रत्यय पत्र"   
 }

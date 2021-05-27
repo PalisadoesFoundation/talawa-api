@@ -15,7 +15,7 @@ const app = express();
 const path = require('path');
 const DirectChat = require('./resolvers/DirectChat');
 const DirectChatMessage = require('./resolvers/DirectChatMessage');
-const AppConfig = require('./config/app');
+const { defaultLocale, supportedLocales } = require('./config/app');
 
 const GroupChat = require('./resolvers/GroupChat');
 const GroupChatMessage = require('./resolvers/GroupChatMessage');
@@ -58,10 +58,13 @@ i18n.configure({
   staticCatalog: {
     en: require('./locales/en.json'),
     hi: require('./locales/hi.json'),
+    zh: require('./locales/zh.json'),
+    sp: require('./locales/sp.json'),
+    fr: require('./locales/fr.json'),
   },
   queryParameter: 'lang',
-  defaultLocale: AppConfig.defaultLocale,
-  locales: ['hi', 'en'],
+  defaultLocale: defaultLocale,
+  locales: supportedLocales,
   autoReload: process.env.NODE_ENV !== 'production',
   updateFiles: process.env.NODE_ENV !== 'production',
   syncFiles: process.env.NODE_ENV !== 'production',
