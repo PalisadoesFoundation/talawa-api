@@ -13,7 +13,6 @@
    "organization.notAuthorized": "Organization is not authorized",
    "membershipRequest.notFound": "Membership Request not found",
    "membershipRequest.alreadyExists": "Membership Request already exists",
-   "email.alreadyExists": "Email already exists", 
    "chat.notFound": "Chat not found",
    "comment.notFound": "Comment not found",
    "post.notFound": "Post not found",

@@ -1,6 +1,7 @@
 const Organization = require('../../models/Organization');
 const { NotFoundError, ConflictError } = require('../../core/errors');
 const requestContext = require('../../core/libs/talawa-request-context');
+const translate = require('../../core/translate');
 
 const User = require('../../models/User');
 const bcrypt = require('bcryptjs');
@@ -17,7 +18,7 @@ module.exports = async (parent, args) => {
   });
   if (emailTaken) {
     throw new ConflictError(
-      requestContext.translate('email.alreadyExists'),
+      translate('email.alreadyExists', 'li'),
       'email.alreadyExists',
       'email'
     );
