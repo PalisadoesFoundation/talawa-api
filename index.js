@@ -91,6 +91,15 @@ const apolloServer = new ApolloServer({
       return { ...isAuth(req), pubsub, res, req };
     }
   },
+  formatError: (err) => {
+    if (!err.originalError) {
+      return err;
+    }
+    const message = err.message || 'Something went wrong !';
+    const data = err.originalError.errors || [];
+    const code = err.originalError.code || 422;
+    return { message, status: code, data };
+  },
   subscriptions: {
     onConnect: (connection) => {
       if (!connection.authToken) {
