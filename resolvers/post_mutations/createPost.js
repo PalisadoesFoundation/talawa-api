@@ -4,8 +4,8 @@ const Post = require('../../models/Post');
 const authCheck = require('../functions/authCheck');
 
 const uploadImage = require('../../helper_functions/uploadImage');
-const { NotFoundError } = require('../../core/errors');
-const requestContext = require('../../core/libs/talawa-request-context');
+const { NotFoundError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args, context) => {
   // ensure user is authenticated

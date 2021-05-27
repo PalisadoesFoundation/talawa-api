@@ -3,8 +3,8 @@ const authCheck = require('../functions/authCheck');
 const adminCheck = require('../functions/adminCheck');
 const organizationExists = require('../../helper_functions/organizationExists');
 const DirectChatMessage = require('../../models/DirectChatMessage');
-const { NotFoundError } = require('../../core/errors');
-const requestContext = require('../../core/libs/talawa-request-context');
+const { NotFoundError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 // admins of the organization can remove chats -- may change in the future
 

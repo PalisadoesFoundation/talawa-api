@@ -1,5 +1,5 @@
-const { UnauthenticatedError } = require('../../core/errors');
-const requestContext = require('../../core/libs/talawa-request-context');
+const { UnauthenticatedError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 const authCheck = (context) => {
   if (context.expired)

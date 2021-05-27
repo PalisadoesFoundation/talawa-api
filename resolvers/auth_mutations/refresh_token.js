@@ -4,8 +4,8 @@ const {
   createAccessToken,
   createRefreshToken,
 } = require('../../helper_functions/auth');
-const { ValidationError, NotFoundError } = require('../../core/errors');
-const requestContext = require('../../core/libs/talawa-request-context');
+const { ValidationError, NotFoundError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args) => {
   // This route should not be protected because the access token will be expired

@@ -19,8 +19,8 @@ const { defaultLocale, supportedLocales } = require('./config/app');
 
 const GroupChat = require('./resolvers/GroupChat');
 const GroupChatMessage = require('./resolvers/GroupChatMessage');
-const requestContext = require('./core/libs/talawa-request-context');
-const { UnauthenticatedError } = require('./core/errors');
+const requestContext = require('talawa-request-context');
+const { UnauthenticatedError } = require('errors');
 
 const Subscription = require('./resolvers/Subscription');
 const jwt = require('jsonwebtoken');

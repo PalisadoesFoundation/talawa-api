@@ -1,6 +1,6 @@
 const Organization = require('../models/Organization');
-const { NotFoundError } = require('../core/errors');
-const requestContext = require('../core/libs/talawa-request-context');
+const { NotFoundError } = require('.errors');
+const requestContext = require('talawa-request-context');
 
 module.exports = async (id) => {
   const organization = await Organization.findOne({

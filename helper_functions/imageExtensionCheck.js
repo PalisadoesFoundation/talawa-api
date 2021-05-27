@@ -1,6 +1,6 @@
 const deleteImage = require('./deleteImage');
-const { ValidationError } = require('../core/errors');
-const requestContext = require('../core/libs/talawa-request-context');
+const { ValidationError } = require('.errors');
+const requestContext = require('talawa-request-context');
 
 module.exports = async (filename) => {
   const extension = filename.split('.').pop();

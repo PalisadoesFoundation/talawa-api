@@ -1,7 +1,7 @@
 const Organization = require('../../models/Organization');
 const User = require('../../models/User');
-const { NotFoundError } = require('../../core/errors');
-const requestContext = require('../../core/libs/talawa-request-context');
+const { NotFoundError } = require('errors');
+const requestContext = require('talawa-request-context');
 const authCheck = require('../functions/authCheck');
 const adminCheck = require('../functions/adminCheck');
 const uploadImage = require('../../helper_functions/uploadImage');

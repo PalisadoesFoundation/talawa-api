@@ -3,8 +3,8 @@ const Organization = require('../../models/Organization');
 const User = require('../../models/User');
 const adminCheck = require('../functions/adminCheck');
 const deleteImage = require('../../helper_functions/deleteImage');
-const { NotFoundError } = require('../../core/errors');
-const requestContext = require('../../core/libs/talawa-request-context');
+const { NotFoundError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args, context) => {
   authCheck(context);

@@ -2,8 +2,8 @@ const ImageHash = require('../models/ImageHash');
 const { imageHash } = require('image-hash');
 const deleteDuplicatedImage = require('./deleteDuplicatedImage');
 const reuploadDuplicateCheck = require('./ReuploadDuplicateCheck');
-const { ValidationError } = require('../core/errors');
-const requestContext = require('../core/libs/talawa-request-context');
+const { ValidationError } = require('.errors');
+const requestContext = require('talawa-request-context');
 
 // Check to see if image already exists in db using hash
 // if its there point to that image and remove the image just uploaded

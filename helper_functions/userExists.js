@@ -1,6 +1,6 @@
 const User = require('../models/User');
-const { NotFoundError } = require('../core/errors');
-const requestContext = require('../core/libs/talawa-request-context');
+const { NotFoundError } = require('.errors');
+const requestContext = require('talawa-request-context');
 
 module.exports = async (id) => {
   const user = await User.findOne({ _id: id });

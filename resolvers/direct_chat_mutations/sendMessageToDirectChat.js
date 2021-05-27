@@ -2,8 +2,8 @@ const DirectChat = require('../../models/DirectChat');
 const authCheck = require('../functions/authCheck');
 const DirectChatMessage = require('../../models/DirectChatMessage');
 const userExists = require('../../helper_functions/userExists');
-const { NotFoundError } = require('../../core/errors');
-const requestContext = require('../../core/libs/talawa-request-context');
+const { NotFoundError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args, context) => {
   authCheck(context);

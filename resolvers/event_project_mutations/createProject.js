@@ -1,8 +1,8 @@
 const User = require('../../models/User');
 const EventProject = require('../../models/EventProject');
 const Event = require('../../models/Event');
-const { NotFoundError, UnauthorizedError } = require('../../core/errors');
-const requestContext = require('../../core/libs/talawa-request-context');
+const { NotFoundError, UnauthorizedError } = require('errors');
+const requestContext = require('talawa-request-context');
 const authCheck = require('../functions/authCheck');
 
 const createEventProject = async (parent, args, context) => {

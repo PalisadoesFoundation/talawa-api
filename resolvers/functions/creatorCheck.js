@@ -1,5 +1,5 @@
-const { UnauthorizedError } = require('../../core/errors');
-const requestContext = require('../../core/libs/talawa-request-context');
+const { UnauthorizedError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 const creatorCheck = (context, org) => {
   const isCreator = String(org.creator) === context.userId;

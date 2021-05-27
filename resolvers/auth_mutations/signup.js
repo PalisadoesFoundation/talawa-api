@@ -1,6 +1,6 @@
 const Organization = require('../../models/Organization');
-const { NotFoundError, ConflictError } = require('../../core/errors');
-const requestContext = require('../../core/libs/talawa-request-context');
+const { NotFoundError, ConflictError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 const User = require('../../models/User');
 const bcrypt = require('bcryptjs');

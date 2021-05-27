@@ -3,8 +3,8 @@ const Task = require('../../models/Task');
 
 const authCheck = require('../functions/authCheck');
 
-const { NotFoundError, UnauthorizedError } = require('../../core/errors');
-const requestContext = require('../../core/libs/talawa-request-context');
+const { NotFoundError, UnauthorizedError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 const updateTask = async (parent, args, context) => {
   authCheck(context);

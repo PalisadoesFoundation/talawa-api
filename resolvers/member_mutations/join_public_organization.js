@@ -5,8 +5,8 @@ const {
   NotFoundError,
   ConflictError,
   UnauthorizedError,
-} = require('../../core/errors');
-const requestContext = require('../../core/libs/talawa-request-context');
+} = require('errors');
+const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args, context) => {
   authCheck(context);

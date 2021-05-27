@@ -1,8 +1,8 @@
 const Organization = require('../../models/Organization');
 const authCheck = require('../functions/authCheck');
 const adminCheck = require('../functions/adminCheck');
-const { NotFoundError } = require('../../core/errors');
-const requestContext = require('../../core/libs/talawa-request-context');
+const { NotFoundError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 const updateOrganization = async (parent, args, context) => {
   authCheck(context);

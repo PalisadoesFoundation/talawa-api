@@ -2,8 +2,8 @@ const User = require('../../models/User');
 const Post = require('../../models/Post');
 
 const authCheck = require('../functions/authCheck');
-const { NotFoundError, UnauthorizedError } = require('../../core/errors');
-const requestContext = require('../../core/libs/talawa-request-context');
+const { NotFoundError, UnauthorizedError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 const removePost = async (parent, args, context) => {
   authCheck(context);
