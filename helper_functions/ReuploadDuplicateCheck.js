@@ -16,13 +16,16 @@ module.exports = async (imageJustUploadedPath, itemImage) => {
     })
       .then(() => oldImageHash)
       .catch(() => {
-        throw new ValidationError([
-          {
-            message: requestContext.translate('invalid.fileType'),
-            code: 'invalid.fileType',
-            param: 'fileType',
-          },
-        ]);
+        throw new ValidationError(
+          [
+            {
+              message: requestContext.translate('invalid.fileType'),
+              code: 'invalid.fileType',
+              param: 'fileType',
+            },
+          ],
+          requestContext.translate('invalid.fileType')
+        );
       });
 
     await new Promise((resolve) => {
@@ -34,13 +37,16 @@ module.exports = async (imageJustUploadedPath, itemImage) => {
     })
       .then(() => newImageHash)
       .catch(() => {
-        throw new ValidationError([
-          {
-            message: requestContext.translate('invalid.fileType'),
-            code: 'invalid.fileType',
-            param: 'fileType',
-          },
-        ]);
+        throw new ValidationError(
+          [
+            {
+              message: requestContext.translate('invalid.fileType'),
+              code: 'invalid.fileType',
+              param: 'fileType',
+            },
+          ],
+          requestContext.translate('invalid.fileType')
+        );
       });
     // console.log("old image hash: " + oldImageHash);
     // console.log("new image hash: " + newImageHash);

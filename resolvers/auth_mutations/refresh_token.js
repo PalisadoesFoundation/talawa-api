@@ -11,13 +11,16 @@ module.exports = async (parent, args) => {
   // This route should not be protected because the access token will be expired
   const refreshToken = args.refreshToken;
   if (!refreshToken) {
-    throw new ValidationError([
-      {
-        message: requestContext.translate('invalid.refreshToken'),
-        code: 'invalid.refreshToken',
-        param: 'refreshToken',
-      },
-    ]);
+    throw new ValidationError(
+      [
+        {
+          message: requestContext.translate('invalid.refreshToken'),
+          code: 'invalid.refreshToken',
+          param: 'refreshToken',
+        },
+      ],
+      requestContext.translate('invalid.refreshToken')
+    );
   }
 
   let payload = null;
@@ -35,13 +38,16 @@ module.exports = async (parent, args) => {
   }
 
   if (user.tokenVersion !== payload.tokenVersion) {
-    throw new ValidationError([
-      {
-        message: requestContext.translate('invalid.refreshToken'),
-        code: 'invalid.refreshToken',
-        param: 'refreshToken',
-      },
-    ]);
+    throw new ValidationError(
+      [
+        {
+          message: requestContext.translate('invalid.refreshToken'),
+          code: 'invalid.refreshToken',
+          param: 'refreshToken',
+        },
+      ],
+      requestContext.translate('invalid.refreshToken')
+    );
   }
 
   // send new access and refresh token to user

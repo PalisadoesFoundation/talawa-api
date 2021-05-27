@@ -20,13 +20,16 @@ module.exports = async (parent, args) => {
   const isEqual = await bcrypt.compare(args.data.password, user._doc.password);
 
   if (!isEqual) {
-    throw new ValidationError([
-      {
-        message: requestContext.translate('invalid.credentials'),
-        code: 'invalid.credentials',
-        param: 'credentials',
-      },
-    ]);
+    throw new ValidationError(
+      [
+        {
+          message: requestContext.translate('invalid.credentials'),
+          code: 'invalid.credentials',
+          param: 'credentials',
+        },
+      ],
+      requestContext.translate('invalid.credentials')
+    );
   }
 
   const accessToken = await createAccessToken(user);
