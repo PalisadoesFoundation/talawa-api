@@ -14,6 +14,7 @@
     "membershipRequest.notFound": "Membership Request not found",
     "membershipRequest.alreadyExists": "Membership Request already exists",
     "chat.notFound": "Chat not found",
+    "email.alreadyExists": "Email address already exists",
     "comment.notFound": "Comment not found",
     "post.notFound": "Post not found",
     "group.notFound": "Group not found",

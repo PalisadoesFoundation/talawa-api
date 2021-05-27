@@ -15,7 +15,7 @@ const app = express();
 const path = require('path');
 const DirectChat = require('./resolvers/DirectChat');
 const DirectChatMessage = require('./resolvers/DirectChatMessage');
-const AppConfig = require('./config/app'); 
+const AppConfig = require('./config/app');
 
 const GroupChat = require('./resolvers/GroupChat');
 const GroupChatMessage = require('./resolvers/GroupChatMessage');
@@ -24,7 +24,7 @@ const { UnauthenticatedError } = require('./core/errors');
 
 const Subscription = require('./resolvers/Subscription');
 const jwt = require('jsonwebtoken');
-const { I18n } = require('i18n');
+const i18n = require('i18n');
 
 const pubsub = new PubSub();
 const http = require('http');
@@ -53,10 +53,13 @@ const apiLimiter = rateLimit({
   message: 'Too many requests from this IP, please try again after 15 minutes',
 });
 
-const i18n = new I18n({
-  directory: path.join(__dirname, 'locales'),
+i18n.configure({
+  directory: `${__dirname}/locales`,
+  staticCatalog: {
+    en: require('./locales/en.json'),
+    hi: require('./locales/hi.json'),
+  },
   queryParameter: 'lang',
-  retryInDefaultLocale: true,
   defaultLocale: AppConfig.defaultLocale,
   locales: ['hi', 'en'],
   autoReload: process.env.NODE_ENV !== 'production',
