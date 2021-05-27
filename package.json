@@ -39,7 +39,7 @@
     "graphql": "^15.0.0",
     "helmet": "^4.4.1",
     "image-hash": "^4.0.1",
-    "jest": "^26.0.1",
+    "jest": "^26.6.3",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.27.0",
     "mongoose": "^5.11.20",
