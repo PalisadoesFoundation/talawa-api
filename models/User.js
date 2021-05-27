@@ -30,7 +30,6 @@ const userSchema = new Schema({
   appLanguageCode: {
     type: String,
     default: 'en',
-    enum: ['en', 'hi', 'zh', 'es', 'fr'],
     required: true,
   },
   createdOrganizations: [
