@@ -3,12 +3,20 @@ const GroupChat = require('../../models/GroupChat');
 const authCheck = require('../functions/authCheck');
 const adminCheck = require('../functions/adminCheck');
 const organizationExists = require('../../helper_functions/organizationExists');
+const { NotFoundError, ConflictError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args, context) => {
   authCheck(context);
 
   let chat = await GroupChat.findById(args.chatId);
-  if (!chat) throw new Error('Chat not found');
+  if (!chat) {
+    throw new NotFoundError(
+      requestContext.translate('chat.notFound'),
+      'chat.notFound',
+      'chat'
+    );
+  }
 
   const org = await organizationExists(chat.organization);
 
@@ -20,8 +28,13 @@ module.exports = async (parent, args, context) => {
   const userAlreadyAMember = chat._doc.users.filter(
     (user) => user === args.userId
   );
-  if (userAlreadyAMember.length > 0)
-    throw new Error('User Already A Member of This Group Chat');
+  if (userAlreadyAMember.length > 0) {
+    throw new ConflictError(
+      requestContext.translate('user.alreadyMember'),
+      'user.alreadyMember',
+      'userAlreadyMember'
+    );
+  }
 
   return await GroupChat.findOneAndUpdate(
     { _id: args.chatId },

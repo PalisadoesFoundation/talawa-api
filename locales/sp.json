@@ -1,0 +1,25 @@
+{
+    "user.notAuthenticated": "El usuario no está autenticado",
+    "user.notAuthorized": "El usuario no está autorizado para realizar esta operación",
+    "user.notFound": "Usuario no encontrado",
+    "user.alreadyMember": "El usuario ya es miembro",
+    "user.profileImage.notFound": "No se encontró la imagen de perfil de usuario",
+    "task.notFound": "Tarea no encontrada",
+    "event.notFound": "Evento no encontrado",
+    "eventProject.notFound": "Proyecto de evento no encontrado",
+    "organization.notFound":  "Organización no encontrada",
+    "organization.profileImage.notFound": "No se encontró la imagen del perfil de la organización",
+    "organization.member.notFound": "El usuario de la organización no es miembro",
+    "organization.notAuthorized": "La organización no está autorizada",
+    "membershipRequest.notFound": "Solicitud de membresía no encontrada",
+    "membershipRequest.alreadyExists": "La solicitud de membresía ya existe",
+    "chat.notFound": "Chat no encontrado",
+    "email.alreadyExists": "La dirección de correo electrónico ya existe",
+    "comment.notFound": "Comentario no encontrado",
+    "post.notFound": "Publicación no encontrada",
+    "group.notFound": "Grupo no encontrado",
+    "invalid.fileType": "Tipo de archivo no válido",
+    "invalid.refreshToken": "Token de actualización no válido",
+    "invalid.credentials": "Credenciales no válidas"
+}
+
