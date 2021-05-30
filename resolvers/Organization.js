@@ -1,10 +1,18 @@
 const User = require('../models/User');
 const MembershipRequest = require('../models/MembershipRequest');
+const { NotFoundError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 const Organization = {
   creator: async (parent) => {
     const user = await User.findById(parent.creator._id);
-    if (!user) throw new Error('Creator not found');
+    if (!user) {
+      throw new NotFoundError(
+        requestContext.translate('user.notFound'),
+        'user.notFound',
+        'user'
+      );
+    }
     return user;
   },
   admins: async (parent) => {

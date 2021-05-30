@@ -2,14 +2,28 @@ const User = require('../../models/User');
 const Event = require('../../models/Event');
 
 const authCheck = require('../functions/authCheck');
+const { NotFoundError, UnauthorizedError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 const removeEvent = async (parent, args, context) => {
   authCheck(context);
   const user = await User.findOne({ _id: context.userId });
-  if (!user) throw new Error('User does not exist');
+  if (!user) {
+    throw new NotFoundError(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
+  }
 
   const event = await Event.findOne({ _id: args.id });
-  if (!event) throw new Error('Event not found');
+  if (!event) {
+    throw new NotFoundError(
+      requestContext.translate('event.notFound'),
+      'event.notFound',
+      'event'
+    );
+  }
 
   const isUserOrganisationAdmin =
     user.adminFor.filter(
