@@ -2,6 +2,8 @@ const authCheck = require('../functions/authCheck');
 const adminCheck = require('../functions/adminCheck');
 const organizationExists = require('../../helper_functions/organizationExists');
 const userExists = require('../../helper_functions/userExists');
+const { UnauthorizedError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args, context) => {
   authCheck(context);
@@ -19,8 +21,13 @@ module.exports = async (parent, args, context) => {
   const blocked = org._doc.blockedUsers.filter(
     (blockedUser) => blockedUser === user.id
   );
-  if (!blocked[0])
-    throw new Error('Cannot unblock a user that isnt currently blocked');
+  if (!blocked[0]) {
+    throw new UnauthorizedError(
+      requestContext.translate('user.notAuthorized'),
+      'user.notAuthorized',
+      'userAuthorization'
+    );
+  }
 
   // remove user from organizations blocked users field
   org.overwrite({

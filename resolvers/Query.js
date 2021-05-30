@@ -4,6 +4,8 @@ const Event = require('../models/Event');
 const Post = require('../models/Post');
 const Group = require('../models/Group');
 const Comment = require('../models/Comment');
+const { NotFoundError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 const Task = require('../models/Task');
 
@@ -13,8 +15,11 @@ const DirectChatMessages = require('../models/DirectChatMessage');
 
 const GroupChat = require('../models/GroupChat');
 const GroupChatMessages = require('../models/GroupChatMessage');
-const usersConnection = require('../resolvers/user_query/users_pagination');
 const organizationsConnection = require('./organization_query/organizations_pagination');
+const {
+  usersConnection,
+  organizationsMemberConnection,
+} = require('../resolvers/user_query/users_pagination');
 
 const Query = {
   groupChats: async () => {
@@ -61,8 +66,13 @@ const Query = {
         .populate('registeredEvents')
         .populate('eventAdmin')
         .populate('adminFor');
-      if (!users[0]) throw new Error('User not found');
-      else
+      if (!users[0]) {
+        throw new NotFoundError(
+          requestContext.translate('user.notFound'),
+          'user.notFound',
+          'user'
+        );
+      } else
         return users.map((user) => {
           return {
             ...user._doc,
@@ -88,7 +98,13 @@ const Query = {
     authCheck(context);
     //Ensure user exists
     const user = await User.findOne({ _id: context.userId });
-    if (!user) throw new Error('User does not exist');
+    if (!user) {
+      throw new NotFoundError(
+        requestContext.translate('user.notFound'),
+        'user.notFound',
+        'user'
+      );
+    }
     //console.log(user._doc)
 
     return {
@@ -126,7 +142,11 @@ const Query = {
         _id: args.id,
       }).sort(sort);
       if (!organizationFound[0]) {
-        throw new Error('Organization not found');
+        throw new NotFoundError(
+          requestContext.translate('organization.notFound'),
+          'organization.notFound',
+          'organization'
+        );
       }
 
       return organizationFound;
@@ -142,7 +162,11 @@ const Query = {
       .populate('tasks')
       .populate('admins', '-password');
     if (!eventFound) {
-      throw new Error('Event not found');
+      throw new NotFoundError(
+        requestContext.translate('event.notFound'),
+        'event.notFound',
+        'event'
+      );
     }
     eventFound.isRegistered = false;
     if (eventFound.registrants.includes(context.userId)) {
@@ -157,7 +181,11 @@ const Query = {
       '-password'
     );
     if (!eventFound) {
-      throw new Error('Event not found');
+      throw new NotFoundError(
+        requestContext.translate('event.notFound'),
+        'event.notFound',
+        'event'
+      );
     }
     //return eventFound.registrants || [];
     if (eventFound.registrants) {
@@ -428,7 +456,11 @@ const Query = {
       .populate('post')
       .populate('likedBy');
     if (!commentFound) {
-      throw new Error('Comment not Found');
+      throw new NotFoundError(
+        requestContext.translate('comment.notFound'),
+        'comment.notFound',
+        'comment'
+      );
     }
     return commentFound;
   },
@@ -438,7 +470,11 @@ const Query = {
       .populate('post')
       .populate('likedBy');
     if (!commentFound) {
-      throw new Error('Comment not Found');
+      throw new NotFoundError(
+        requestContext.translate('comment.notFound'),
+        'comment.notFound',
+        'comment'
+      );
     }
     return commentFound;
   },
@@ -456,7 +492,11 @@ const Query = {
       .populate('likedBy')
       .populate('creator', '-password');
     if (!postFound) {
-      throw new Error('Post not found');
+      throw new NotFoundError(
+        requestContext.translate('post.notFound'),
+        'post.notFound',
+        'post'
+      );
     }
     postFound.likeCount = postFound.likedBy.length || 0;
     postFound.commentCount = postFound.comments.length || 0;
@@ -579,6 +619,7 @@ const Query = {
     });
     return posts;
   },
+  organizationsMemberConnection,
   groups: async () => {
     return await Group.find();
   },
