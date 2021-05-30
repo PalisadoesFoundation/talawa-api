@@ -2,6 +2,8 @@ const ImageHash = require('../models/ImageHash');
 const { imageHash } = require('image-hash');
 const deleteDuplicatedImage = require('./deleteDuplicatedImage');
 const reuploadDuplicateCheck = require('./ReuploadDuplicateCheck');
+const { ValidationError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 // Check to see if image already exists in db using hash
 // if its there point to that image and remove the image just uploaded
@@ -68,6 +70,15 @@ module.exports = async function imageAlreadyInDbCheck(
     }
     return fileName;
   } catch (e) {
-    throw new Error('Invalid file type');
+    throw new ValidationError(
+      [
+        {
+          message: requestContext.translate('invalid.fileType'),
+          code: 'invalid.fileType',
+          param: 'fileType',
+        },
+      ],
+      requestContext.translate('invalid.fileType')
+    );
   }
 };

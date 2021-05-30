@@ -20,6 +20,16 @@ module.exports = `
     organizationUserBelongsTo: Organization
   }
 
+  type UserConnection {
+    pageInfo: PageInfo!
+    edges: [User]!
+    aggregate: AggregateUser!
+  }
+
+  type AggregateUser {
+    count: Int!
+  }
+
   input UserInput {
     firstName: String!
     lastName: String!
