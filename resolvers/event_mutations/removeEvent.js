@@ -12,16 +12,11 @@ const removeEvent = async (parent, args, context) => {
   if (!event) throw new Error('Event not found');
 
   const isUserOrganisationAdmin =
-    user.adminFor.filter(
-      (organisationId) =>
-        organisationId.toString() === event.organization.toString()
-    ).length > 0;
+    user.adminFor.includes(event.organization.toString());
 
   const isUserEventAdmin =
-    event.admins.filter(
-      (userId) => userId.toString() === context.userId.toString()
-    ).length > 0;
-
+    event.admins.includes(context.userId.toString());
+    
   const userCanDeleteThisEvent = isUserOrganisationAdmin || isUserEventAdmin;
 
   if (!userCanDeleteThisEvent) {
