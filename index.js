@@ -15,6 +15,7 @@ const path = require('path');
 const i18n = require('i18n');
 const requestContext = require('talawa-request-context');
 const { UnauthenticatedError } = require('errors');
+const requestTracing = require('request-tracing');
 
 const Query = require('./resolvers/Query');
 const Mutation = require('./resolvers/Mutation');
@@ -32,6 +33,8 @@ const GroupChatMessage = require('./resolvers/GroupChatMessage');
 const Subscription = require('./resolvers/Subscription');
 
 const app = express();
+
+app.use(requestTracing.middleware());
 
 const pubsub = new PubSub();
 
