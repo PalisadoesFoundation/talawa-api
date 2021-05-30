@@ -117,6 +117,7 @@ const apolloServer = new ApolloServer({
     const message = err.message || 'Something went wrong !';
     const data = err.originalError.errors || [];
     const code = err.originalError.code || 422;
+    logger.error(message, err);
     return { message, status: code, data };
   },
   subscriptions: {
