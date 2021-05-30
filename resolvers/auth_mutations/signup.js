@@ -1,4 +1,6 @@
 const Organization = require('../../models/Organization');
+const { NotFoundError, ConflictError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 const User = require('../../models/User');
 const bcrypt = require('bcryptjs');
@@ -14,7 +16,11 @@ module.exports = async (parent, args) => {
     email: args.data.email.toLowerCase(),
   });
   if (emailTaken) {
-    throw new Error('Email address taken.');
+    throw new ConflictError(
+      requestContext.translate('email.alreadyExists'),
+      'email.alreadyExists',
+      'email'
+    );
   }
 
   // TODO: this check is to be removed
@@ -23,7 +29,13 @@ module.exports = async (parent, args) => {
     org = await Organization.findOne({
       _id: args.data.organizationUserBelongsToId,
     });
-    if (!org) throw new Error('Organization not found');
+    if (!org) {
+      throw new NotFoundError(
+        requestContext.translate('organization.notFound'),
+        'organization.notFound',
+        'organization'
+      );
+    }
   }
 
   const hashedPassword = await bcrypt.hash(args.data.password, 12);

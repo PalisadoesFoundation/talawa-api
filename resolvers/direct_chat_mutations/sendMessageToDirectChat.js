@@ -2,12 +2,20 @@ const DirectChat = require('../../models/DirectChat');
 const authCheck = require('../functions/authCheck');
 const DirectChatMessage = require('../../models/DirectChatMessage');
 const userExists = require('../../helper_functions/userExists');
+const { NotFoundError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args, context) => {
   authCheck(context);
 
   const chat = await DirectChat.findById(args.chatId);
-  if (!chat) throw new Error('Chat not found');
+  if (!chat) {
+    throw new NotFoundError(
+      requestContext.translate('chat.notFound'),
+      'chat.notFound',
+      'chat'
+    );
+  }
 
   const sender = await userExists(context.userId);
 
