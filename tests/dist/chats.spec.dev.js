@@ -78,14 +78,13 @@ describe('chat resolvers', function () {
             _context2.next = 8;
             return regeneratorRuntime.awrap(
             axios.post(URL, {
-              query:
-                  '\n              mutation {\n                  signUp(data: {\n                  firstName:"'
-                    .concat(nameForNewUser, '",\n                  lastName:"')
-                    .concat(nameForNewUser, '"\n                  email: "')
-                    .concat(
-                      email,
-                      '"\n                  password:"password"\n                  }) {\n                  user{\n                    _id\n                  }\n                  accessToken\n                  }\n              }\n              '
-                    ),
+              query: '\n              mutation {\n                  signUp(data: {\n                  firstName:"'
+                .concat(nameForNewUser, '",\n                  lastName:"')
+                .concat(nameForNewUser, '"\n                  email: "')
+                .concat(
+                  email,
+                  '"\n                  password:"password"\n                  }) {\n                  user{\n                    _id\n                  }\n                  accessToken\n                  }\n              }\n              '
+                ),
             })
           );
 
@@ -99,14 +98,13 @@ describe('chat resolvers', function () {
             axios.post(
               URL,
               {
-                query:
-                    '\n        mutation{\n            createDirectChat(data: {\n              organizationId: "'
-                      .concat(createdOrgId, '"\n              userIds: ["')
-                      .concat(loggedInUserId, '", "')
-                      .concat(
-                        newUserId,
-                        '"]\n            }){\n              _id\n            }\n          }\n                '
-                      ),
+                query: '\n        mutation{\n            createDirectChat(data: {\n              organizationId: "'
+                  .concat(createdOrgId, '"\n              userIds: ["')
+                  .concat(loggedInUserId, '", "')
+                  .concat(
+                    newUserId,
+                    '"]\n            }){\n              _id\n            }\n          }\n                '
+                  ),
               },
               {
                 headers: {
@@ -146,11 +144,10 @@ describe('chat resolvers', function () {
             axios.post(
               URL,
               {
-                query:
-                    '\n        mutation{\n          sendMessageToDirectChat(chatId: "'.concat(
-                      createdDirectChatId,
-                      '", messageContent: "this is a test message"){\n            _id\n          }\n        }\n            '
-                    ),
+                query: '\n        mutation{\n          sendMessageToDirectChat(chatId: "'.concat(
+                  createdDirectChatId,
+                  '", messageContent: "this is a test message"){\n            _id\n          }\n        }\n            '
+                ),
               },
               {
                 headers: {
@@ -240,14 +237,13 @@ describe('chat resolvers', function () {
             _context5.next = 4;
             return regeneratorRuntime.awrap(
             axios.post(URL, {
-              query:
-                  '\n              mutation {\n                  signUp(data: {\n                  firstName:"'
-                    .concat(nameForNewUser, '",\n                  lastName:"')
-                    .concat(nameForNewUser, '"\n                  email: "')
-                    .concat(
-                      email,
-                      '"\n                  password:"password"\n                  }) {\n                  user{\n                    _id\n                  }\n                  accessToken\n                  }\n              }\n              '
-                    ),
+              query: '\n              mutation {\n                  signUp(data: {\n                  firstName:"'
+                .concat(nameForNewUser, '",\n                  lastName:"')
+                .concat(nameForNewUser, '"\n                  email: "')
+                .concat(
+                  email,
+                  '"\n                  password:"password"\n                  }) {\n                  user{\n                    _id\n                  }\n                  accessToken\n                  }\n              }\n              '
+                ),
             })
           );
 
@@ -260,14 +256,13 @@ describe('chat resolvers', function () {
             axios.post(
               URL,
               {
-                query:
-                    '\n      mutation{\n          createGroupChat(data: {\n            title: "This is a group chat for testing"\n            organizationId: "'
-                      .concat(createdOrgId, '"\n            userIds: ["')
-                      .concat(loggedInUserId, '", "')
-                      .concat(
-                        newUserId,
-                        '"]\n          }){\n            _id\n          }\n        }\n              '
-                      ),
+                query: '\n      mutation{\n          createGroupChat(data: {\n            title: "This is a group chat for testing"\n            organizationId: "'
+                  .concat(createdOrgId, '"\n            userIds: ["')
+                  .concat(loggedInUserId, '", "')
+                  .concat(
+                    newUserId,
+                    '"]\n          }){\n            _id\n          }\n        }\n              '
+                  ),
               },
               {
                 headers: {
@@ -306,11 +301,10 @@ describe('chat resolvers', function () {
             axios.post(
               URL,
               {
-                query:
-                    '\n        mutation{\n          sendMessageToGroupChat(chatId: "'.concat(
-                      createdGroupChatId,
-                      '", messageContent: "this is a test message"){\n            _id\n          }\n        }\n            '
-                    ),
+                query: '\n        mutation{\n          sendMessageToGroupChat(chatId: "'.concat(
+                  createdGroupChatId,
+                  '", messageContent: "this is a test message"){\n            _id\n          }\n        }\n            '
+                ),
               },
               {
                 headers: {
@@ -350,11 +344,10 @@ describe('chat resolvers', function () {
             axios.post(
               URL,
               {
-                query:
-                    '\n    mutation{\n      removeGroupChat(chatId:"'.concat(
-                      createdGroupChatId,
-                      '") {\n        _id\n    }\n    }\n            '
-                    ),
+                query: '\n    mutation{\n      removeGroupChat(chatId:"'.concat(
+                  createdGroupChatId,
+                  '") {\n        _id\n    }\n    }\n            '
+                ),
               },
               {
                 headers: {
