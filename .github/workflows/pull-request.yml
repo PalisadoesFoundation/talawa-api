@@ -11,26 +11,10 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           pr-message: "Congratulations on making your first PR! :confetti_ball: If you haven't already, check out our [Contributing Guidelines](https://github.com/PalisadoesFoundation/talawa/blob/master/CONTRIBUTING.md) and [PR Reporting Guidelines](https://github.com/PalisadoesFoundation/talawa/blob/master/PR-guidelines.md) to ensure that you are following our guidelines for contributing and creating PR."
   
-  Code-Formatter:
-    name: Styles the code
-    runs-on: ubuntu-latest
-    needs: PR-Greeting
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        # Make sure the actual branch is checked out when running on pull requests
-        ref: ${{ github.head_ref }}
-
-    - name: Prettify code
-      uses: creyD/prettier_action@v3.3
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   Linter:
     name: Lints the code
     runs-on: ubuntu-latest
-    needs: Code-Formatter
+    needs: PR-Greeting
     steps:
       - uses: actions/checkout@v2
       - name: Install Dependencies
@@ -40,7 +24,7 @@ jobs:
 
   Count-lines-of-code:
     name: Total number of lines in every file should not be more than 400
-    needs: Code-Formatter
+    needs: PR-Greeting
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
