@@ -25,7 +25,15 @@ const removeEvent = async (parent, args, context) => {
     );
   }
 
-  if (!(event.creator !== context.userId)) {
+  const isUserOrganisationAdmin = user.adminFor.includes(
+    event.organization.toString()
+  );
+
+  const isUserEventAdmin = event.admins.includes(context.userId.toString());
+
+  const userCanDeleteThisEvent = isUserOrganisationAdmin || isUserEventAdmin;
+
+  if (!userCanDeleteThisEvent) {
     throw new UnauthorizedError(
       requestContext.translate('user.notAuthorized'),
       'user.notAuthorized',
