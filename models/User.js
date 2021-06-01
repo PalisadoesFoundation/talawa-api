@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { isEmail } = require('validator');
+const mongoosePaginate = require('mongoose-paginate-v2');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
@@ -25,6 +26,11 @@ const userSchema = new Schema({
   },
   password: {
     type: String,
+    required: true,
+  },
+  appLanguageCode: {
+    type: String,
+    default: 'en',
     required: true,
   },
   createdOrganizations: [
@@ -80,5 +86,7 @@ const userSchema = new Schema({
     ref: 'Organization',
   },
 });
+
+userSchema.plugin(mongoosePaginate);
 
 module.exports = mongoose.model('User', userSchema);

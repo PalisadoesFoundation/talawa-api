@@ -12,7 +12,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           ignore-comments: true
           default-labels: '["unapproved"]'
-  
+          
   Issue-Greeting:
     name: Greeting Message to User
     runs-on: ubuntu-latest

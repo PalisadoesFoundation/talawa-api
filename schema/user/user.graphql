@@ -8,6 +8,7 @@ module.exports = `
     firstName: String!
     lastName: String!
     email: String!
+    appLanguageCode: String!
     createdOrganizations: [Organization]
     joinedOrganizations: [Organization]
     createdEvents: [Event]
@@ -20,11 +21,22 @@ module.exports = `
     organizationUserBelongsTo: Organization
   }
 
+  type UserConnection {
+    pageInfo: PageInfo!
+    edges: [User]!
+    aggregate: AggregateUser!
+  }
+
+  type AggregateUser {
+    count: Int!
+  }
+
   input UserInput {
     firstName: String!
     lastName: String!
     email: String!
     password: String!
+    appLanguageCode: String
     organizationUserBelongsToId: ID
   }
 

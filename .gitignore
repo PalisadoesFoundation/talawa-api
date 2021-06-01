@@ -3,3 +3,4 @@ nodemon.json
 .idea/
 .env
 images/
+.vscode

@@ -2,17 +2,42 @@ const User = require('../../models/User');
 const Event = require('../../models/Event');
 
 const authCheck = require('../functions/authCheck');
+const { NotFoundError, UnauthorizedError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 const removeEvent = async (parent, args, context) => {
   authCheck(context);
   const user = await User.findOne({ _id: context.userId });
-  if (!user) throw new Error('User does not exist');
+  if (!user) {
+    throw new NotFoundError(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
+  }
 
   const event = await Event.findOne({ _id: args.id });
-  if (!event) throw new Error('Event not found');
+  if (!event) {
+    throw new NotFoundError(
+      requestContext.translate('event.notFound'),
+      'event.notFound',
+      'event'
+    );
+  }
+  const isUserOrganisationAdmin = user.adminFor.includes(
+    event.organization.toString()
+  );
 
-  if (!(event.creator !== context.userId)) {
-    throw new Error("User cannot delete event they didn't create");
+  const isUserEventAdmin = event.admins.includes(context.userId.toString());
+
+  const userCanDeleteThisEvent = isUserOrganisationAdmin || isUserEventAdmin;
+
+  if (!userCanDeleteThisEvent) {
+    throw new UnauthorizedError(
+      requestContext.translate('user.notAuthorized'),
+      'user.notAuthorized',
+      'userAuthorization'
+    );
   }
 
   await User.updateMany(

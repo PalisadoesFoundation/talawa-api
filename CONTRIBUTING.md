@@ -3,6 +3,11 @@ Thank you for your interest in contributing to Talawa API. Regardless of the siz
 
 If you are new to contributing to open source, please read the Open Source Guides on [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/).
 
+## Code of Conduct
+A safe environment is required for everyone to contribute. Read our [Code of Conduct Guide](https://github.com/PalisadoesFoundation/talawa-api/blob/master/CODE_OF_CONDUCT.md) to understand what this means. Let us know immediately if you have unacceptable experiences in this area.
+
+No one should fear voicing their opinion. Respones must be respectful.
+
 ## Ways to Contribute
 If you are ready to start contributing code right away, we have a list of [good first issues](https://github.com/PalisadoesFoundation/talawa-api/labels/good%20first%20issue) that contain issues with a limited scope. 
 
@@ -27,16 +32,13 @@ Make sure you are following [issue report guidelines](https://github.com/Palisad
 #### Pull Requests
 [Pull Request guidelines](https://github.com/PalisadoesFoundation/talawa/blob/master/PR-guidelines.md) is best resource to follow to start working on open issues.
 
-#### Git Flow
-For Talawa API, we utilize the GitFlow branching model. GitFlow is geared towards efficiently tracking development and managing releases. The model makes parallel development efforts easy and safe by isolating new development efforts from completed work. 
+#### Branching Strategy
 
-The different types of branches we may use are:
-* Feature branches (feature/branch-name)
-* Release branches (release/1.XX)
-* Bug branches  (bugfix/branch-name)
-* Hotfix branches (hotfix/branch-name)
+For Talawa API, we had employed the following branching strategy to simplify the development process and to ensure that only stable code is pushed to the `master` branch:
 
-Detailed document containing how GitFlow works: https://nvie.com/posts/a-successful-git-branching-model/
+- `develop`: For unstable code and bug fixing
+- `alpha-x.x.x`: For stability teesting
+- `master`: Where the stable production ready code lies
 
 ### Contributing Code
 Code contributions to Talawa come in the form of pull requests. These are done by forking the repo and making changes locally.
@@ -56,8 +58,15 @@ The process of proposing a change to Talawa API can be summarized as:
 10. Ensure the test suite passes, either locally or on CI once a PR has been created. 
 11. Review and address comments on your pull request if requested.
 
-### GSoC
-If you are participating in the 2021 Summer of Code, please read more about us and our processes [here](http://www.palisadoes.org/gsoc/)
+### Internships
+
+We have internship partnerships with a number of organizations. See below for more details.
+
+#### GSoC
+If you are participating in the 2021 Summer of Code, please read more about us and our processes [here](https://palisadoesfoundation.github.io/talawa-docs/docs/internships/gsoc/gsoc-introduction)
+
+#### GitHub Externship
+If you are participating in the 2021 GitHub Externship, please read more about us and our processes [here](https://palisadoesfoundation.github.io/talawa-docs/docs/internships/github/github-introduction)
 
 ### Community
 The Palisadoes Foundation has a Slack channel where members can assist with support and clarification. Click [here](https://join.slack.com/t/thepalisadoes-dyb6419/shared_invite/zt-nk79xxlg-OxTdlrD7RLaswu8EO_Q5rg) to join our slack channel.
