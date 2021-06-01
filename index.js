@@ -170,10 +170,9 @@ apolloServer.applyMiddleware({
 });
 apolloServer.installSubscriptionHandlers(httpServer);
 
-database
-  .connect()
-  .then(() => {
-    // Use native http server to allow subscriptions
+const serverStart = async () => {
+  try {
+    await database.connect();
     httpServer.listen(process.env.PORT || 4000, () => {
       logger.info(
         `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
@@ -186,5 +185,9 @@ database
         }`
       );
     });
-  })
-  .catch((e) => logger.error('Error while connecting to database', e));
+  } catch (e) {
+    logger.error('Error while connecting to database', e);
+  }
+};
+
+serverStart();
