@@ -1,0 +1,65 @@
+name: PR Workflow
+on: [pull_request]
+
+jobs:
+  PR-Greeting:
+    name: Greeting Message to user
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/first-interaction@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          pr-message: "Congratulations on making your first PR! :confetti_ball: If you haven't already, check out our [Contributing Guidelines](https://github.com/PalisadoesFoundation/talawa/blob/master/CONTRIBUTING.md) and [PR Reporting Guidelines](https://github.com/PalisadoesFoundation/talawa/blob/master/PR-guidelines.md) to ensure that you are following our guidelines for contributing and creating PR."
+  
+  Styler:
+    name: Styles the code
+    runs-on: ubuntu-latest
+    needs: PR-Greeting
+    steps:
+    - name: Prettify code
+      uses: creyD/prettier_action@v3.3
+      with:
+        # This part is also where you can pass other options, for example:
+        prettier_options: --write **/*.{js}
+        dry: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  Linter:
+    name: Lints the code
+    runs-on: ubuntu-latest
+    needs: Styler
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Dependencies
+        run: yarn
+      - name: Run ESLint and Prettier
+        run: yarn lint
+
+  Count-lines-of-code:
+    name: Total number of lines in every file should not be more than 400
+    needs: PR-Greeting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: chmod +x ./.github/workflows/countline.py
+      - run: ./.github/workflows/countline.py
+
+  Code-Analysis:
+    name: Analyze the code
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript' ]
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: ${{ matrix.language }}
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v1
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
