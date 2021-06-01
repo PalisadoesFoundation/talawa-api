@@ -21,11 +21,11 @@ Follow these steps to get the api running using docker
    touch .env
    ```
 
-4. Copy the `.env.sample` to `.env`
+4. Copy (ACCESS_TOKEN_SECRET= , REFRESH_TOKEN_SECRET= , MONGO_DB_URL= ) from the `.env.sample` to your local `.env` and fillup these credentials with your own randomly generated secrets. 
 
 5. You will have to set these variables in `.env` to provide the necessary secrets and connection url.
 
-   Please follow instructions in the comments at the top of `.env`.
+   Please go through the .env.sample documentation  accordingly and configure your `.env`.
 
    - ACCESS_TOKEN_SECRET
    - REFRESH_TOKEN_SECRET
@@ -68,7 +68,7 @@ Follow these steps to get the api running using npm
    touch .env
    ```
 
-4. Copy the `.env.sample` to `.env`
+4. Copy (ACCESS_TOKEN_SECRET= , REFRESH_TOKEN_SECRET= , MONGO_DB_URL= ) from the `.env.sample` to your local `.env` and fillup these credentials with your own randomly generated secrets. 
 
 5. Fill out the following fields:
 
@@ -76,7 +76,7 @@ Follow these steps to get the api running using npm
    - REFRESH_TOKEN_SECRET
    - MONGO_DB_URL
 
-     Follow instructions in the comments at the top of `.env`
+     Please go through the .env.sample documentation  accordingly and configure your `.env`.
 
 6. Install required node packages
 

@@ -30,7 +30,6 @@ module.exports = async (parent, args, context) => {
 
   // add users to cat
   for await (const userId of args.data.userIds) {
-    // console.log(userId);
     const user = await await User.findOne({ _id: userId });
     if (!user) {
       throw new NotFoundError(

@@ -48,8 +48,6 @@ module.exports = async (imageJustUploadedPath, itemImage) => {
           requestContext.translate('invalid.fileType')
         );
       });
-    // console.log("old image hash: " + oldImageHash);
-    // console.log("new image hash: " + newImageHash);
     return oldImageHash === newImageHash;
   }
   return false;

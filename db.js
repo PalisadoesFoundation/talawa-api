@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const logger = require('logger');
 
 const connect = async () => {
   try {
@@ -9,7 +10,7 @@ const connect = async () => {
       useNewUrlParser: true,
     });
   } catch (error) {
-    console.log(error);
+    logger.error('Error while connecting to mongo database', error);
     process.exit(1);
   }
 };
