@@ -15,6 +15,9 @@ const joinPublicOrganization = require('./member_mutations/join_public_organizat
 const leaveOrganization = require('./member_mutations/leave_organization');
 
 const removeMember = require('./member_mutations/removeMember');
+
+const updateUserProfile = require('./user_mutations/updateUserProfile');
+
 //const removeMultipleMembers = require("./member_mutations/removeMultipleMembers");
 
 const registerForEvent = require('./event_mutations/registerForEvent');
@@ -72,6 +75,7 @@ const Mutation = {
   revokeRefreshTokenForUser,
   updateLanguage,
 
+  updateUserProfile,
   createOrganization,
   createEvent,
   removeEvent,

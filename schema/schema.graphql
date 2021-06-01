@@ -10,6 +10,7 @@ const chats = require("./chats/chat.graphql");
 const utils = require("./utils.graphql");
 
 const typeDefs = gql`
+
   type Message {
     _id: ID!
     text: String
