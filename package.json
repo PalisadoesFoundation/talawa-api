@@ -56,6 +56,7 @@
     "shortid": "^2.2.15",
     "talawa-request-context": "file:lib/talawa-request-context",
     "validator": "^13.0.0",
+    "ws": ">=7.4.6",
     "winston": "^3.3.3",
     "xss-clean": "^0.1.1"
   },
