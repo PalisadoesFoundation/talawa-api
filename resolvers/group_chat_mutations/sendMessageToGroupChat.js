@@ -32,15 +32,12 @@ module.exports = async (parent, args, context) => {
     );
   }
 
-  //const receiver = chat.users.filter((u) => u != sender.id);
-
   const message = new GroupChatMessage({
     groupChatMessageBelongsTo: chat._doc,
     sender: sender._id,
     createdAt: new Date(),
     messageContent: args.messageContent,
   });
-  //console.log(message._doc);
 
   await message.save();
 

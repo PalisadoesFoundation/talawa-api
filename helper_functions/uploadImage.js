@@ -1,4 +1,5 @@
 const shortid = require('shortid');
+const logger = require('logger');
 const { createWriteStream } = require('fs');
 const path = require('path');
 const imageAlreadyInDbCheck = require('./imageAlreadyInDbCheck');
@@ -27,7 +28,7 @@ module.exports = async (file, itemImage) => {
   //return imagePath;
 
   if (itemImage) {
-    console.log('old image should be deleted: ');
+    logger.info('old image should be deleted');
     // If user/org already has an image delete it from the API
     await deleteImage(itemImage, imageJustUploadedPath);
   }
