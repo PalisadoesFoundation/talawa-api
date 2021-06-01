@@ -1,6 +1,20 @@
+const deleteImage = require('./deleteImage');
+const { ValidationError } = require('errors');
+const requestContext = require('talawa-request-context');
+
 module.exports = async (filename) => {
   const extension = filename.split('.').pop();
   if (extension !== 'png' && extension !== 'jpg' && extension !== 'jpeg') {
-    throw new Error('Invalid file Type. Only .jpg and .png files are accepted');
+    await deleteImage(filename);
+    throw new ValidationError(
+      [
+        {
+          message: requestContext.translate('invalid.fileType'),
+          code: 'invalid.fileType',
+          param: 'fileType',
+        },
+      ],
+      requestContext.translate('invalid.fileType')
+    );
   }
 };

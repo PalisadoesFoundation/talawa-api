@@ -4,12 +4,23 @@ const {
   createAccessToken,
   createRefreshToken,
 } = require('../../helper_functions/auth');
+const { ValidationError, NotFoundError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args) => {
   // This route should not be protected because the access token will be expired
   const refreshToken = args.refreshToken;
   if (!refreshToken) {
-    throw new Error('Invalid refresh Token');
+    throw new ValidationError(
+      [
+        {
+          message: requestContext.translate('invalid.refreshToken'),
+          code: 'invalid.refreshToken',
+          param: 'refreshToken',
+        },
+      ],
+      requestContext.translate('invalid.refreshToken')
+    );
   }
 
   let payload = null;
@@ -19,11 +30,24 @@ module.exports = async (parent, args) => {
   // The refresh token received is valid so we cna send a new access token
   const user = await User.findOne({ _id: payload.userId });
   if (!user) {
-    throw new Error('Invalid Credentials');
+    throw new NotFoundError(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
   }
 
   if (user.tokenVersion !== payload.tokenVersion) {
-    throw new Error('Invalid refresh Token');
+    throw new ValidationError(
+      [
+        {
+          message: requestContext.translate('invalid.refreshToken'),
+          code: 'invalid.refreshToken',
+          param: 'refreshToken',
+        },
+      ],
+      requestContext.translate('invalid.refreshToken')
+    );
   }
 
   // send new access and refresh token to user

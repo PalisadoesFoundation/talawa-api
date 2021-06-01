@@ -2,12 +2,20 @@ const GroupChat = require('../../models/GroupChat');
 const authCheck = require('../functions/authCheck');
 const GroupChatMessage = require('../../models/GroupChatMessage');
 const userExists = require('../../helper_functions/userExists');
+const { NotFoundError, UnauthorizedError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args, context) => {
   authCheck(context);
 
   const chat = await GroupChat.findById(args.chatId);
-  if (!chat) throw new Error('Chat not found');
+  if (!chat) {
+    throw new NotFoundError(
+      requestContext.translate('chat.notFound'),
+      'chat.notFound',
+      'chat'
+    );
+  }
 
   const sender = await userExists(context.userId);
 
@@ -16,10 +24,13 @@ module.exports = async (parent, args, context) => {
     (user) => user === context.userId
   );
   //console.log(userIsAMemberOfGroupChat)
-  if (!(userIsAMemberOfGroupChat.length > 0))
-    throw new Error('User is not a member of this gorup chat');
-
-  //const receiver = chat.users.filter((u) => u != sender.id);
+  if (!(userIsAMemberOfGroupChat.length > 0)) {
+    throw new UnauthorizedError(
+      requestContext.translate('user.notAuthorized'),
+      'user.notAuthorized',
+      'userAuthorization'
+    );
+  }
 
   const message = new GroupChatMessage({
     groupChatMessageBelongsTo: chat._doc,
@@ -27,7 +38,6 @@ module.exports = async (parent, args, context) => {
     createdAt: new Date(),
     messageContent: args.messageContent,
   });
-  //console.log(message._doc);
 
   await message.save();
 

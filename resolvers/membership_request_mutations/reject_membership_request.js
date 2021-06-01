@@ -2,31 +2,52 @@ const User = require('../../models/User');
 const Organization = require('../../models/Organization');
 const MembershipRequest = require('../../models/MembershipRequest');
 const adminCheck = require('../functions/adminCheck');
-const authCheck = require('../functions/authCheck');
+const { NotFoundError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args, context) => {
-  authCheck(context)
   //ensure membership request exists
   const membershipRequest = await MembershipRequest.findOne({
     _id: args.membershipRequestId,
   });
-  if (!membershipRequest) throw new Error('Membership request not found');
+  if (!membershipRequest) {
+    throw new NotFoundError(
+      requestContext.translate('membershipRequest.notFound'),
+      'membershipRequest.notFound',
+      'membershipRequest'
+    );
+  }
 
   //ensure org exists
   let org = await Organization.findOne({
     _id: membershipRequest.organization,
   });
-  if (!org) throw new Error('Organization not found');
+  if (!org) {
+    throw new NotFoundError(
+      requestContext.translate('organization.notFound'),
+      'organization.notFound',
+      'organization'
+    );
+  }
 
-  //ensure user exists
-  const user = await User.findOne({ _id: membershipRequest.user });
-  if (!user) throw new Error('User does not exist');
+  const user = await User.findOne({
+    _id: membershipRequest.user,
+  });
+  if (!user) {
+    throw new NotFoundError(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
+  }
 
   //ensure user is admin
   adminCheck(context, org);
 
   //delete membership request
-  await MembershipRequest.deleteOne({ _id: args.membershipRequestId });
+  await MembershipRequest.deleteOne({
+    _id: args.membershipRequestId,
+  });
 
   //remove membership request from organization
   org.overwrite({

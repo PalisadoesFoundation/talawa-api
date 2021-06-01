@@ -1,13 +1,27 @@
 const authCheck = require('../functions/authCheck');
 const User = require('../../models/User');
 const deleteImage = require('../../helper_functions/deleteImage');
+const { NotFoundError } = require('errors');
+const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args, context) => {
   authCheck(context);
   const user = await User.findById(context.userId);
-  if (!user) throw new Error('User not found');
+  if (!user) {
+    throw new NotFoundError(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
+  }
 
-  if (!user.image) throw new Error('User does not have a profile image');
+  if (!user.image) {
+    throw new NotFoundError(
+      requestContext.translate('user.profileImage.notFound'),
+      'user.profileImage.notFound',
+      'userProfileImage'
+    );
+  }
 
   await deleteImage(user.image);
 

@@ -7,6 +7,7 @@ module.exports = `
     usersConnection(where: UserWhereInput, first: Int, skip: Int, orderBy: UserOrderByInput): [User]!
     organizations(id: ID, orderBy: OrganizationOrderByInput): [Organization]
     organizationsConnection(where: OrganizationWhereInput, first: Int, skip: Int, orderBy: OrganizationOrderByInput): [Organization]!
+    organizationsMemberConnection(orgId:ID!, where: UserWhereInput, first: Int, skip: Int, orderBy: UserOrderByInput): UserConnection!
     events(id: ID, orderBy: EventOrderByInput): [Event]
     eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
     registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
@@ -15,6 +16,7 @@ module.exports = `
     me:User!
     posts(orderBy: PostOrderByInput): [Post]
     postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
+    postsByOrganizationConnection(id: ID!, where: PostWhereInput, first: Int, skip: Int, orderBy: PostOrderByInput): PostConnection
     tasksByEvent(id: ID!, orderBy: TaskOrderByInput): [Task]
     tasksByUser(id: ID!, orderBy: TaskOrderByInput): [Task]
     comments: [Comment]
