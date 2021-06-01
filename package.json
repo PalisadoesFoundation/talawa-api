@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/PalisadoesFoundation/talawa-api#readme",
   "dependencies": {
-    "apollo-server-express": "^2.14.2",
+    "apollo-server-express": "^2.25.0",
     "axios": "^0.21.1",
     "bcryptjs": "^2.4.3",
     "cls-bluebird": "^2.1.0",
@@ -56,8 +56,8 @@
     "shortid": "^2.2.15",
     "talawa-request-context": "file:lib/talawa-request-context",
     "validator": "^13.0.0",
-    "ws": ">=7.4.6",
     "winston": "^3.3.3",
+    "ws": ">=7.4.6",
     "xss-clean": "^0.1.1"
   },
   "devDependencies": {
