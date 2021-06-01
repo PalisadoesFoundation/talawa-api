@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const logger = require('logger');
 
 const isAuth = (req) => {
   // This checks to see if there is an authorization field within the incoming request
@@ -23,8 +24,6 @@ const isAuth = (req) => {
       isAuth,
     };
   }
-  // console.log(token);
-
   // uses key created in the auth resolver
   // to be changed in production
   // only tokens created with this key will be valid tokens
@@ -38,7 +37,6 @@ const isAuth = (req) => {
         if (err) {
           return err;
         }
-        // console.log("decoded")
         return decoded;
       }
     ); // If there is an error decoded token would contain it
@@ -62,7 +60,7 @@ const isAuth = (req) => {
 
   // if the decoded token is not set
   if (!decodedToken) {
-    console.log('decoded token is not present');
+    logger.info('decoded token is not present');
     const isAuth = false;
     return {
       isAuth,

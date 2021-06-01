@@ -44,13 +44,7 @@ module.exports = function imageAlreadyInDbCheck(
               new: true,
             }
           );
-          // console.log(
-          //   "num of uses of hash (old image): " + imageHashObj._doc.numberOfUses
-          // );
         }
-
-        //console.log("Image already exists in db");
-
         // remove the image that was just uploaded
         deleteDuplicatedImage(imageJustUploadedPath);
 
@@ -62,9 +56,6 @@ module.exports = function imageAlreadyInDbCheck(
           numberOfUses: 1,
         });
         await hashObj.save();
-        // console.log(
-        //   "number of uses of hash (new image) : " + hashObj._doc.numberOfUses
-        // );
       }
       resolve();
     });

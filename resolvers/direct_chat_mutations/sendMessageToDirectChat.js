@@ -28,7 +28,6 @@ module.exports = async (parent, args, context) => {
     createdAt: new Date(),
     messageContent: args.messageContent,
   });
-  //console.log(message._doc);
 
   await message.save();
 

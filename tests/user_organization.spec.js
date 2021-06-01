@@ -1,4 +1,5 @@
 const axios = require('axios');
+const logger = require('logger');
 const shortid = require('shortid');
 const { URL } = require('../constants');
 const getToken = require('./functions/getToken');
@@ -37,10 +38,10 @@ describe('User-Organization Resolvers', () => {
       }
     );
     const { data } = response;
-    if (!data.data) console.log('Data not present');
-    console.log(data);
+    if (!data.data) {
+      logger.info('Data not present');
+    }
     createdOrgId = data.data.createOrganization._id;
-    console.log(createdOrgId);
     expect(data.data.createOrganization).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
@@ -274,8 +275,6 @@ describe('User-Organization Resolvers', () => {
         },
       }
     );
-    // console.log(joinOrgRes.data)
-
     // Admin removes user from organization
     const removeMemberResponse = await axios.post(
       URL,
@@ -296,7 +295,6 @@ describe('User-Organization Resolvers', () => {
       }
     );
     const removeMemberData = removeMemberResponse.data;
-    // console.log(removeMemberResponse.data.errors[0])
     expect(removeMemberData.data.removeMember).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
