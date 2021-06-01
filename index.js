@@ -1,38 +1,42 @@
 require('dotenv').config(); // pull env variables from .env file
 
 const { ApolloServer, PubSub } = require('apollo-server-express');
+const http = require('http');
+const rateLimit = require('express-rate-limit');
+const xss = require('xss-clean');
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const jwt = require('jsonwebtoken');
+const express = require('express');
+const cors = require('cors');
+const logger = require('logger');
+const requestLogger = require('morgan');
+const path = require('path');
+const i18n = require('i18n');
+const requestContext = require('talawa-request-context');
+const { UnauthenticatedError } = require('errors');
+const requestTracing = require('request-tracing');
+
 const Query = require('./resolvers/Query');
 const Mutation = require('./resolvers/Mutation');
 const typeDefs = require('./schema/schema.graphql');
 const isAuth = require('./middleware/is-auth');
 const User = require('./resolvers/User');
-const express = require('express');
 const database = require('./db.js');
 const Organization = require('./resolvers/Organization');
-const cors = require('cors');
 const MembershipRequest = require('./resolvers/MembershipRequest');
-const app = express();
-const path = require('path');
 const DirectChat = require('./resolvers/DirectChat');
 const DirectChatMessage = require('./resolvers/DirectChatMessage');
 const { defaultLocale, supportedLocales } = require('./config/app');
-
 const GroupChat = require('./resolvers/GroupChat');
 const GroupChatMessage = require('./resolvers/GroupChatMessage');
-const requestContext = require('talawa-request-context');
-const { UnauthenticatedError } = require('errors');
-
 const Subscription = require('./resolvers/Subscription');
-const jwt = require('jsonwebtoken');
-const i18n = require('i18n');
+
+const app = express();
+
+app.use(requestTracing.middleware());
 
 const pubsub = new PubSub();
-const http = require('http');
-
-const rateLimit = require('express-rate-limit');
-const xss = require('xss-clean');
-const helmet = require('helmet');
-const mongoSanitize = require('express-mongo-sanitize');
 
 const resolvers = {
   Subscription,
@@ -81,6 +85,12 @@ app.use(
 );
 app.use(mongoSanitize());
 app.use(cors());
+app.use(
+  requestLogger(
+    ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms',
+    { stream: logger.stream }
+  )
+);
 app.use('/images', express.static(path.join(__dirname, './images')));
 app.use(requestContext.middleware());
 
@@ -107,6 +117,7 @@ const apolloServer = new ApolloServer({
     const message = err.message || 'Something went wrong !';
     const data = err.originalError.errors || [];
     const code = err.originalError.code || 422;
+    logger.error(message, err);
     return { message, status: code, data };
   },
   subscriptions: {
@@ -143,16 +154,16 @@ database
   .then(() => {
     // Use native http server to allow subscriptions
     httpServer.listen(process.env.PORT || 4000, () => {
-      console.log(
+      logger.info(
         `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
           apolloServer.graphqlPath
         }`
       );
-      console.log(
+      logger.info(
         `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${
           apolloServer.subscriptionsPath
         }`
       );
     });
   })
-  .catch((e) => console.log(e));
+  .catch((e) => logger.error('Error while connecting to database', e));

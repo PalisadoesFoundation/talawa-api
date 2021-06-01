@@ -13,6 +13,57 @@ module.exports = `
     likeCount: Int
     commentCount: Int 
   }
+
+  input PostWhereInput {
+    id: ID
+    id_not: ID
+    id_in: [ID!]
+    id_not_in: [ID!]
+    id_contains: ID
+    id_starts_with: ID
+
+    text: String
+    text_not: String
+    text_in: [String!]
+    text_not_in: [String!]
+    text_contains: String
+    text_starts_with: String
+
+    title: String
+    title_not: String
+    title_in: [String!]
+    title_not_in: [String!]
+    title_contains: String
+    title_starts_with: String
+  }
+
+  """A connection to a list of items."""
+  type PostConnection {
+    """Information to aid in pagination."""
+    pageInfo: PageInfo!
+
+    """A list of edges."""
+    edges: [Post]!
+    
+    aggregate: AggregatePost!
+  }
+
+  """Information about pagination in a connection."""
+  type PageInfo {
+    """When paginating forwards, are there more items?"""
+    hasNextPage: Boolean!
+
+    """When paginating backwards, are there more items?"""
+    hasPreviousPage: Boolean!
+    totalPages: Int
+    nextPageNo: Int
+    prevPageNo: Int
+    currPageNo: Int
+  }
+  type AggregatePost {
+    count: Int!
+  }
+
   input PostInput {
     _id: ID
     text: String!

@@ -39,8 +39,6 @@ describe('Private Organization Membership Tests', () => {
       }
     );
 
-    // console.log(createdOrganizationResponse.data)
-
     createdOrganizationId =
       createdOrganizationResponse.data.data.createOrganization._id;
 
@@ -68,8 +66,6 @@ describe('Private Organization Membership Tests', () => {
     const signUpData = response.data;
     newUserToken = signUpData.data.signUp.accessToken;
 
-    // console.log("created org id", createdOrganizationId);
-
     const sendRequestResponse = await axios.post(
       URL,
       {
@@ -87,11 +83,8 @@ describe('Private Organization Membership Tests', () => {
       }
     );
 
-    // console.log("send request response data", sendRequestResponse.data)
-
     const sendRequestData = sendRequestResponse.data;
     newRequestId = sendRequestData.data.sendMembershipRequest._id;
-    // console.log("new request id",newRequestId)
 
     expect(sendRequestData.data.sendMembershipRequest).toEqual(
       expect.objectContaining({
@@ -121,7 +114,6 @@ describe('Private Organization Membership Tests', () => {
     );
 
     const rejectRequestData = rejectRequestResponse.data;
-    // console.log("reject response data", rejectRequestData);
 
     expect(rejectRequestData.data.rejectMembershipRequest).toEqual(
       expect.objectContaining({
@@ -171,7 +163,6 @@ describe('Private Organization Membership Tests', () => {
     );
 
     const cancelRequestData = cancelRequestResponse.data;
-    // console.log("reject response data", acceptRequestData);
 
     expect(cancelRequestData.data.cancelMembershipRequest).toEqual(
       expect.objectContaining({
@@ -226,7 +217,6 @@ describe('Private Organization Membership Tests', () => {
     );
 
     const acceptRequestData = acceptRequestResponse.data;
-    // console.log("reject response data", acceptRequestData);
 
     expect(acceptRequestData.data.acceptMembershipRequest).toEqual(
       expect.objectContaining({

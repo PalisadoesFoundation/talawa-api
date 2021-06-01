@@ -49,15 +49,12 @@ describe('organization resolvers', () => {
     );
     const { data } = createdOrgResponse;
     createdOrgId = createdOrgResponse.data.data.createOrganization._id;
-    // console.log(createdOrgId);
     expect(data.data.createOrganization).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
       })
     );
   });
-
-  // console.log(createdOrgId)
 
   test('updateOrganization', async () => {
     const updateOrgRes = await axios.post(

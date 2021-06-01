@@ -1,3 +1,5 @@
+const logger = require('logger');
+
 const User = require('../models/User');
 const Organization = require('../models/Organization');
 const Event = require('../models/Event');
@@ -16,6 +18,7 @@ const DirectChatMessages = require('../models/DirectChatMessage');
 const GroupChat = require('../models/GroupChat');
 const GroupChatMessages = require('../models/GroupChatMessage');
 const organizationsConnection = require('./organization_query/organizations_pagination');
+const postsByOrganizationConnection = require('../resolvers/post_organization_query/organization_post_pagination');
 const {
   usersConnection,
   organizationsMemberConnection,
@@ -172,7 +175,7 @@ const Query = {
     if (eventFound.registrants.includes(context.userId)) {
       eventFound.isRegistered = true;
     }
-    console.log(eventFound.isRegistered);
+    logger.info(eventFound.isRegistered);
     return eventFound;
   },
   registrantsByEvent: async (parent, args) => {
@@ -619,6 +622,7 @@ const Query = {
     });
     return posts;
   },
+  postsByOrganizationConnection,
   organizationsMemberConnection,
   groups: async () => {
     return await Group.find();
