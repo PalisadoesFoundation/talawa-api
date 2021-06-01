@@ -25,8 +25,6 @@ const updateEvent = async (parent, args, context) => {
     );
   }
 
-  console.log(eventProject.creator !== context.userId);
-
   if (!(eventProject.creator !== context.userId)) {
     throw new UnauthorizedError(
       requestContext.translate('user.notAuthorized'),

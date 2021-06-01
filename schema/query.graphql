@@ -16,6 +16,7 @@ module.exports = `
     me:User!
     posts(orderBy: PostOrderByInput): [Post]
     postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
+    postsByOrganizationConnection(id: ID!, where: PostWhereInput, first: Int, skip: Int, orderBy: PostOrderByInput): PostConnection
     tasksByEvent(id: ID!, orderBy: TaskOrderByInput): [Task]
     tasksByUser(id: ID!, orderBy: TaskOrderByInput): [Task]
     comments: [Comment]
