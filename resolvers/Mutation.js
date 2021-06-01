@@ -63,12 +63,14 @@ const removeGroupChat = require('./group_chat_mutations/removeGroupChat');
 const sendMessageToGroupChat = require('./group_chat_mutations/sendMessageToGroupChat');
 const addUserToGroupChat = require('./group_chat_mutations/addUserToGroupChat');
 const removeUserFromGroupChat = require('./group_chat_mutations/removeUserFromGroupChat');
+const updateLanguage = require('./language_mutation/updateLanguage');
 
 const Mutation = {
   signUp,
   login,
   refreshToken,
   revokeRefreshTokenForUser,
+  updateLanguage,
 
   createOrganization,
   createEvent,

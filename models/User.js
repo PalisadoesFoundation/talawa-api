@@ -28,6 +28,11 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
+  appLanguageCode: {
+    type: String,
+    default: 'en',
+    required: true,
+  },
   createdOrganizations: [
     {
       type: Schema.Types.ObjectId,
