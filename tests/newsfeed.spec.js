@@ -244,7 +244,7 @@ describe('newsfeed resolvers', () => {
     const { data } = response;
     expect(Array.isArray(data.data.commentsByPost)).toBeTruthy();
   });
-
+  let createdCommentId;
   test('Create Comment', async () => {
     const response = await axios.post(
       URL,
@@ -270,6 +270,7 @@ describe('newsfeed resolvers', () => {
       }
     );
     const { data } = response;
+    createdCommentId = data.data.createComment._id;
     expect(data.data.createComment).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
@@ -277,6 +278,72 @@ describe('newsfeed resolvers', () => {
       })
     );
   });
+
+	test('Like Comment', async () => {
+		const response = await axios.post(
+			URL,
+			{
+				query: `
+							mutation {
+								likeComment(
+									id: "${createdCommentId}"
+								) {
+									_id
+									text
+									likeCount
+								}
+							}				
+							`,
+			},
+			{
+				headers: {
+				Authorization: `Bearer ${token}`,
+				},
+			}
+     	);
+		const { data } = response;
+		expect(data.data.likeComment).toEqual(
+			expect.objectContaining({
+				_id: expect.any(String),
+				text: expect.any(String),
+				likeCount: expect.any(Number),
+			})
+		);
+	})
+	
+	test('Unlike Comment', async () => {
+		const response = await axios.post(
+			URL,
+			{
+				query: `
+							mutation {
+								unlikeComment(
+									id: "${createdCommentId}"
+								) {
+									_id
+									text
+									likeCount
+								}
+							}				
+							`,
+			},
+			{
+				headers: {
+				Authorization: `Bearer ${token}`,
+				},
+			}
+     	);
+		const { data } = response;
+		expect(data.data.unlikeComment).toEqual(
+			expect.objectContaining({
+				_id: expect.any(String),
+				text: expect.any(String),
+				likeCount: expect.any(Number),
+			})
+		);
+	})
+	
+	
 
   test('Remove Comment', async () => {
     const response = await axios.post(

@@ -7,6 +7,7 @@ module.exports = `
     revokeRefreshTokenForUser(userId: String!) : Boolean!
     updateLanguage(languageCode: String!) : User!
 
+    updateUserProfile(data: UpdateUserInput, file:Upload): User!
     createEvent(data: EventInput): Event!
     removeEvent(id: ID!): Event!
     registerForEvent(id: ID!): Event!

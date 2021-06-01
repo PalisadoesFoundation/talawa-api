@@ -40,6 +40,12 @@ module.exports = `
     organizationUserBelongsToId: ID
   }
 
+  input UpdateUserInput {
+    firstName: String
+    lastName: String
+    email: String
+  }
+
   input UserWhereInput {
      id: ID
      id_not: ID
