@@ -69,5 +69,8 @@
     "eslint-plugin-prettier": "^3.3.1",
     "netmask": ">=2.0.1",
     "prettier": "^2.2.1"
+  },
+  "scripts": {
+    "format": "prettier --write"
   }
 }
