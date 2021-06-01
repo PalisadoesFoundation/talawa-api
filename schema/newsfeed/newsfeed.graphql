@@ -48,18 +48,6 @@ module.exports = `
     aggregate: AggregatePost!
   }
 
-  """Information about pagination in a connection."""
-  type PageInfo {
-    """When paginating forwards, are there more items?"""
-    hasNextPage: Boolean!
-
-    """When paginating backwards, are there more items?"""
-    hasPreviousPage: Boolean!
-    totalPages: Int
-    nextPageNo: Int
-    prevPageNo: Int
-    currPageNo: Int
-  }
   type AggregatePost {
     count: Int!
   }
