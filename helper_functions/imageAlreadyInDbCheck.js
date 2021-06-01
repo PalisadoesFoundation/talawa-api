@@ -11,7 +11,7 @@ const requestContext = require('talawa-request-context');
 module.exports = async function imageAlreadyInDbCheck(
   imageJustUploadedPath,
   itemImage
-){  
+) {
   try {
     let fileName;
     const getImageHash = () =>

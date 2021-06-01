@@ -24,7 +24,6 @@ const removeEvent = async (parent, args, context) => {
       'event'
     );
   }
-  
   const isUserOrganisationAdmin = user.adminFor.includes(
     event.organization.toString()
   );

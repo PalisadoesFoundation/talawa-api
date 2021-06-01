@@ -56,13 +56,8 @@
     "shortid": "^2.2.15",
     "talawa-request-context": "file:lib/talawa-request-context",
     "validator": "^13.0.0",
-<<<<<<< HEAD
-    "ws": ">=7.4.6",
-    "winston": "^3.3.3",
-=======
     "winston": "^3.3.3",
     "ws": ">=7.4.6",
->>>>>>> 2b49016784713380f6ecea5152006a0d0d08862e
     "xss-clean": "^0.1.1"
   },
   "devDependencies": {
