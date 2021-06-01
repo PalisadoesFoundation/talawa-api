@@ -11,7 +11,6 @@ const requestContext = require('talawa-request-context');
 
 const Task = require('../models/Task');
 
-const authCheck = require('./functions/authCheck');
 const DirectChat = require('../models/DirectChat');
 const DirectChatMessages = require('../models/DirectChatMessage');
 
@@ -98,7 +97,6 @@ const Query = {
   },
   usersConnection,
   me: async (parent, args, context) => {
-    authCheck(context);
     //Ensure user exists
     const user = await User.findOne({ _id: context.userId });
     if (!user) {

@@ -1,13 +1,10 @@
 const User = require('../../models/User');
 const Task = require('../../models/Task');
 
-const authCheck = require('../functions/authCheck');
-
 const { NotFoundError, UnauthorizedError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 const updateTask = async (parent, args, context) => {
-  authCheck(context);
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
     throw new NotFoundError(

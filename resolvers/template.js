@@ -1,5 +1,2 @@
-const authCheck = require('./functions/authCheck');
-
-module.exports = async (parent, args, context) => {
-  authCheck(context);
-};
+/* eslint-disable no-unused-vars */
+module.exports = async (parent, args, context) => {};

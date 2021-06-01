@@ -1,13 +1,11 @@
 const User = require('../../models/User');
 const Organization = require('../../models/Organization');
-const authCheck = require('../functions/authCheck');
 const adminCheck = require('../functions/adminCheck');
 const Event = require('../../models/Event');
 const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args, context) => {
-  authCheck(context);
   //find event
   let event = await Event.findOne({ _id: args.eventId });
   if (!event) {
