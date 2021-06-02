@@ -89,14 +89,19 @@ app.use(cors());
 app.use(
   requestLogger(
     ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms',
-    { stream: logger.stream }
+    {
+      stream: logger.stream,
+    }
   )
 );
 app.use('/images', express.static(path.join(__dirname, './images')));
 app.use(requestContext.middleware());
 
 app.get('/', (req, res) =>
-  res.json({ 'talawa-version': 'v1', status: 'healthy' })
+  res.json({
+    'talawa-version': 'v1',
+    status: 'healthy',
+  })
 );
 
 const httpServer = http.createServer(app);
@@ -109,9 +114,19 @@ const apolloServer = new ApolloServer({
   },
   context: ({ req, res, connection }) => {
     if (connection) {
-      return { ...connection, pubsub, res, req };
+      return {
+        ...connection,
+        pubsub,
+        res,
+        req,
+      };
     } else {
-      return { ...isAuth(req), pubsub, res, req };
+      return {
+        ...isAuth(req),
+        pubsub,
+        res,
+        req,
+      };
     }
   },
   formatError: (err) => {
@@ -122,7 +137,11 @@ const apolloServer = new ApolloServer({
     const data = err.originalError.errors || [];
     const code = err.originalError.code || 422;
     logger.error(message, err);
-    return { message, status: code, data };
+    return {
+      message,
+      status: code,
+      data,
+    };
   },
   subscriptions: {
     onConnect: (connection) => {
@@ -150,13 +169,14 @@ const apolloServer = new ApolloServer({
   },
 });
 
-apolloServer.applyMiddleware({ app });
+apolloServer.applyMiddleware({
+  app,
+});
 apolloServer.installSubscriptionHandlers(httpServer);
 
-database
-  .connect()
-  .then(() => {
-    // Use native http server to allow subscriptions
+const serverStart = async () => {
+  try {
+    await database.connect();
     httpServer.listen(process.env.PORT || 4000, () => {
       logger.info(
         `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
@@ -169,5 +189,9 @@ database
         }`
       );
     });
-  })
-  .catch((e) => logger.error('Error while connecting to database', e));
+  } catch (e) {
+    logger.error('Error while connecting to database', e);
+  }
+};
+
+serverStart();

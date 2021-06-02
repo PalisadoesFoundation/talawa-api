@@ -30,7 +30,9 @@ module.exports = async (parent, args, context) => {
     );
   }
 
-  const user = await User.findOne({ _id: membershipRequest.user });
+  const user = await User.findOne({
+    _id: membershipRequest.user,
+  });
   if (!user) {
     throw new NotFoundError(
       requestContext.translate('user.notFound'),
@@ -43,7 +45,9 @@ module.exports = async (parent, args, context) => {
   adminCheck(context, org);
 
   //delete membership request
-  await MembershipRequest.deleteOne({ _id: args.membershipRequestId });
+  await MembershipRequest.deleteOne({
+    _id: args.membershipRequestId,
+  });
 
   //remove membership request from organization
   org.overwrite({
