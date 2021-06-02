@@ -1,14 +1,9 @@
 const User = require('../../models/User');
 const GroupChat = require('../../models/GroupChat');
-const authCheck = require('../functions/authCheck');
-const adminCheck = require('../functions/adminCheck');
-const organizationExists = require('../../helper_functions/organizationExists');
 const { NotFoundError, ConflictError } = require('errors');
 const requestContext = require('talawa-request-context');
 
-module.exports = async (parent, args, context) => {
-  authCheck(context);
-
+module.exports = async (parent, args) => {
   let chat = await GroupChat.findById(args.chatId);
   if (!chat) {
     throw new NotFoundError(
@@ -17,10 +12,6 @@ module.exports = async (parent, args, context) => {
       'chat'
     );
   }
-
-  const org = await organizationExists(chat.organization);
-
-  adminCheck(context, org); // only an admin can add new users to the group chat -- may change in the future
 
   const userBeingAdded = await User.findById(args.userId);
 

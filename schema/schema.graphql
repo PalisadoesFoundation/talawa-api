@@ -10,6 +10,12 @@ const chats = require("./chats/chat.graphql");
 const utils = require("./utils.graphql");
 
 const typeDefs = gql`
+  directive @auth(requires: Role = User) on FIELD_DEFINITION
+
+  enum Role {
+    User
+    Admin
+  }
 
   type Message {
     _id: ID!

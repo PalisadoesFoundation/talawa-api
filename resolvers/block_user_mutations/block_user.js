@@ -1,21 +1,12 @@
-const authCheck = require('../functions/authCheck');
-const adminCheck = require('../functions/adminCheck');
-const organizationExists = require('../../helper_functions/organizationExists');
 const userExists = require('../../helper_functions/userExists');
 const { UnauthorizedError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args, context) => {
-  authCheck(context);
-
-  // ensure org exists
-  const org = await organizationExists(args.organizationId);
+  const { org } = context;
 
   // ensure user exists
   const user = await userExists(args.userId);
-
-  // ensure user is admin
-  adminCheck(context, org);
 
   // ensure user isnt already blocked
   const blocked = org._doc.blockedUsers.filter(

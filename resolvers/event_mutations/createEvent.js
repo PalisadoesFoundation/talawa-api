@@ -3,11 +3,8 @@ const Event = require('../../models/Event');
 const Organization = require('../../models/Organization');
 const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
-const authCheck = require('../functions/authCheck');
 
 const createEvent = async (parent, args, context) => {
-  // authentication check
-  authCheck(context);
   // gets user in token - to be used later on
   const user = await User.findOne({ _id: context.userId });
   if (!user) {

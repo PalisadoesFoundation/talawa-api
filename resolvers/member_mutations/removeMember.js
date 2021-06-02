@@ -1,12 +1,9 @@
 const User = require('../../models/User');
 const Organization = require('../../models/Organization');
-const authCheck = require('../functions/authCheck');
-const adminCheck = require('../functions/adminCheck');
 const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
 
-module.exports = async (parent, args, context) => {
-  authCheck(context);
+module.exports = async (parent, args) => {
   //ensure organization exists
   let org = await Organization.findOne({ _id: args.data.organizationId });
   if (!org) {
@@ -16,9 +13,6 @@ module.exports = async (parent, args, context) => {
       'organization'
     );
   }
-
-  //ensure user is an admin
-  adminCheck(context, org);
 
   let errors = [];
 

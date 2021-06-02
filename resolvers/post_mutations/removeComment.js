@@ -2,12 +2,10 @@ const User = require('../../models/User');
 const Comment = require('../../models/Comment');
 const Post = require('../../models/Post');
 
-const authCheck = require('../functions/authCheck');
 const { NotFoundError, UnauthorizedError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 const removeComment = async (parent, args, context) => {
-  authCheck(context);
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
     throw new NotFoundError(

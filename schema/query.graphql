@@ -13,7 +13,7 @@ module.exports = `
     registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
     event(id: ID): Event
     registrantsByEvent(id: ID): [User]
-    me:User!
+    me:User! @auth
     posts(orderBy: PostOrderByInput): [Post]
     postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
     postsByOrganizationConnection(id: ID!, where: PostWhereInput, first: Int, skip: Int, orderBy: PostOrderByInput): PostConnection
