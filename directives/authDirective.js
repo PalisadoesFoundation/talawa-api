@@ -19,19 +19,13 @@ class AuthenticationDirective extends SchemaDirectiveVisitor {
     field.resolve = async (root, args, context, info) => {
       const { requires } = this.args;
 
-      if (context.expired)
+      if (context.expired || !context.isAuth)
         throw new UnauthenticatedError(
           requestContext.translate('user.notAuthenticated'),
           'user.notAuthenticated',
           'userAuthentication'
         );
-      if (!context.isAuth) {
-        throw new UnauthenticatedError(
-          requestContext.translate('user.notAuthenticated'),
-          'user.notAuthenticated',
-          'userAuthentication'
-        );
-      }
+
       if (requires === 'Admin' && args.eventId) {
         const event = await Event.findOne({ _id: args.eventId });
         if (!event) {
