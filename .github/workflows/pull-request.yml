@@ -21,3 +21,12 @@ jobs:
         run: yarn
       - name: Run ESLint and Prettier
         run: yarn lint
+
+  Count-lines-of-code:
+    name: Total number of lines in every file should not be more than 400
+    needs: PR-Greeting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: chmod +x ./.github/workflows/countline.py
+      - run: ./.github/workflows/countline.py
