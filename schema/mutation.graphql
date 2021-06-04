@@ -17,7 +17,7 @@ module.exports = `
     # updateEventProject(id:ID!, data: UpdateEventProjectInput) : EventProject!
 
     createOrganization(data: OrganizationInput, file:Upload): Organization! @auth
-    updateOrganization(id:ID!, data: UpdateOrganizationInput) : Organization! @auth(requires: Admin)
+    updateOrganization(id:ID!, data: UpdateOrganizationInput) : Organization! @auth
 
     removeOrganization(id: ID!) : User! @auth
     
@@ -29,9 +29,9 @@ module.exports = `
     removeMember (data: MultipleUsersAndOrganizationInput!) : Organization! @auth
     # removeMultipleMembers(data: MultipleUsersAndOrganizationInput!) : Organization!
 
-    adminRemovePost(organizationId: ID!, postId:ID!):Post! @auth(requires: Admin)
-    adminRemoveEvent(eventId: ID!): Event! @auth(requires: Admin)
-    adminRemoveGroup(groupId:ID!):Message! @auth(requires: Admin)
+    adminRemovePost(organizationId: ID!, postId:ID!):Post! @auth
+    adminRemoveEvent(eventId: ID!): Event! @auth
+    adminRemoveGroup(groupId:ID!):Message! @auth
 
     createPost(data: PostInput!, file: Upload): Post @auth
     removePost(id:ID!): Post @auth
@@ -50,27 +50,27 @@ module.exports = `
     createGroup(data: GroupInput!): Group! @auth
 
     sendMembershipRequest(organizationId: ID!) : MembershipRequest! @auth
-    acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth(requires: Admin)
-    rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth(requires: Admin)
-    cancelMembershipRequest(membershipRequestId: ID!) : MembershipRequest! @auth(requires: Admin)
+    acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
+    rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
+    cancelMembershipRequest(membershipRequestId: ID!) : MembershipRequest! @auth
 
-    blockUser(organizationId: ID!, userId: ID!) : User! @auth(requires: Admin)
-    unblockUser(organizationId: ID!, userId:ID!) : User! @auth(requires: Admin)
+    blockUser(organizationId: ID!, userId: ID!) : User! @auth
+    unblockUser(organizationId: ID!, userId:ID!) : User! @auth
 
     addUserImage(file: Upload!): User! @auth
     removeUserImage: User! @auth
-    addOrganizationImage(file: Upload!, organizationId: String!): Organization! @auth(requires: Admin)
-    removeOrganizationImage(organizationId: String!): Organization! @auth(requires: Admin)
+    addOrganizationImage(file: Upload!, organizationId: String!): Organization! @auth
+    removeOrganizationImage(organizationId: String!): Organization! @auth
 
     createDirectChat(data: createChatInput): DirectChat! @auth
-    removeDirectChat(chatId: ID!, organizationId: ID!) : DirectChat! @auth(requires: Admin)
+    removeDirectChat(chatId: ID!, organizationId: ID!) : DirectChat! @auth
     sendMessageToDirectChat(chatId: ID!, messageContent: String!): DirectChatMessage! @auth
 
     createGroupChat(data: createGroupChatInput): GroupChat! @auth
-    removeGroupChat(chatId: ID!): GroupChat! @auth(requires: Admin)
+    removeGroupChat(chatId: ID!): GroupChat! @auth
     sendMessageToGroupChat(chatId: ID!, messageContent: String!): GroupChatMessage! @auth
-    addUserToGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth(requires: Admin)
-    removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth(requires: Admin)
+    addUserToGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
+    removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
     
   }
   

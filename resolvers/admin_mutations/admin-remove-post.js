@@ -1,10 +1,23 @@
 const User = require('../../models/User');
+const Organization = require('../../models/Organization');
 const Post = require('../../models/Post');
+const adminCheck = require('../functions/adminCheck');
 const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args, context) => {
-  const { org } = context;
+  //ensure organization exists
+  let org = await Organization.findOne({ _id: args.organizationId });
+  if (!org) {
+    throw new NotFoundError(
+      requestContext.translate('organization.notFound'),
+      'organization.notFound',
+      'organization'
+    );
+  }
+
+  //ensure user is an admin
+  adminCheck(context, org);
 
   //gets user in token - to be used later on
   let user = await User.findOne({ _id: context.userId });

@@ -1,5 +1,7 @@
 const User = require('../../models/User');
+const Organization = require('../../models/Organization');
 const Event = require('../../models/Event');
+const adminCheck = require('../functions/adminCheck');
 const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
 
@@ -14,6 +16,16 @@ module.exports = async (parent, args, context) => {
     );
   }
 
+  //ensure organization exists
+  let org = await Organization.findOne({ _id: event.organization });
+  if (!org) {
+    throw new NotFoundError(
+      requestContext.translate('organization.notFound'),
+      'organization.notFound',
+      'organization'
+    );
+  }
+
   //gets user in token - to be used later on
   let user = await User.findOne({ _id: context.userId });
   if (!user) {
@@ -23,6 +35,9 @@ module.exports = async (parent, args, context) => {
       'user'
     );
   }
+
+  //ensure user is an admin
+  adminCheck(context, org);
 
   //remove event from user
   user.overwrite({

@@ -1,10 +1,10 @@
 const User = require('../../models/User');
+const Organization = require('../../models/Organization');
 const MembershipRequest = require('../../models/MembershipRequest');
 const { NotFoundError, UnauthorizedError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args, context) => {
-  const { org } = context;
   //ensure request exists
   const membershipRequest = await MembershipRequest.findOne({
     _id: args.membershipRequestId,
@@ -14,6 +14,18 @@ module.exports = async (parent, args, context) => {
       requestContext.translate('membershipRequest.notFound'),
       'membershipRequest.notFound',
       'membershipRequest'
+    );
+  }
+
+  //ensure org exists
+  let org = await Organization.findOne({
+    _id: membershipRequest.organization,
+  });
+  if (!org) {
+    throw new NotFoundError(
+      requestContext.translate('organization.notFound'),
+      'organization.notFound',
+      'organization'
     );
   }
 
