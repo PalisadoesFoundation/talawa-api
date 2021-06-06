@@ -1,13 +1,11 @@
 const User = require('../../models/User');
 const Organization = require('../../models/Organization');
-const authCheck = require('../functions/authCheck');
-const adminCheck = require('../functions/adminCheck');
 const Event = require('../../models/Event');
+const adminCheck = require('../functions/adminCheck');
 const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args, context) => {
-  authCheck(context);
   //find event
   let event = await Event.findOne({ _id: args.eventId });
   if (!event) {
@@ -28,9 +26,6 @@ module.exports = async (parent, args, context) => {
     );
   }
 
-  //ensure user is an admin
-  adminCheck(context, org);
-
   //gets user in token - to be used later on
   let user = await User.findOne({ _id: context.userId });
   if (!user) {
@@ -40,6 +35,9 @@ module.exports = async (parent, args, context) => {
       'user'
     );
   }
+
+  //ensure user is an admin
+  adminCheck(context, org);
 
   //remove event from user
   user.overwrite({

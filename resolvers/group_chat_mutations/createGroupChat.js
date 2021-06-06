@@ -1,12 +1,10 @@
 const User = require('../../models/User');
 const GroupChat = require('../../models/GroupChat');
-const authCheck = require('../functions/authCheck');
 const Organization = require('../../models/Organization');
 const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args, context) => {
-  authCheck(context);
   const userFound = await User.findOne({ _id: context.userId });
   if (!userFound) {
     throw new NotFoundError(

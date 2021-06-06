@@ -1,11 +1,9 @@
 const Organization = require('../../models/Organization');
-const authCheck = require('../functions/authCheck');
 const adminCheck = require('../functions/adminCheck');
 const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 const updateOrganization = async (parent, args, context) => {
-  authCheck(context);
   //checks to see if organization exists
   let org = await Organization.findOne({ _id: args.id });
   if (!org) {

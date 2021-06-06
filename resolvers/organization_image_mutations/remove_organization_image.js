@@ -1,4 +1,3 @@
-const authCheck = require('../functions/authCheck');
 const Organization = require('../../models/Organization');
 const User = require('../../models/User');
 const adminCheck = require('../functions/adminCheck');
@@ -7,7 +6,6 @@ const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args, context) => {
-  authCheck(context);
   const user = await User.findById(context.userId);
   if (!user) {
     throw new NotFoundError(

@@ -1,16 +1,13 @@
 const GroupChat = require('../../models/GroupChat');
-const authCheck = require('../functions/authCheck');
+const GroupChatMessage = require('../../models/GroupChatMessage');
 const adminCheck = require('../functions/adminCheck');
 const organizationExists = require('../../helper_functions/organizationExists');
-const GroupChatMessage = require('../../models/GroupChatMessage');
 const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 // admins of the organization can remove chats -- may change in the future
 
 module.exports = async (parent, args, context) => {
-  authCheck(context);
-
   const chat = await GroupChat.findById(args.chatId);
   if (!chat) {
     throw new NotFoundError(

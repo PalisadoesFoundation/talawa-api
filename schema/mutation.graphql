@@ -5,72 +5,72 @@ module.exports = `
     login(data: LoginInput!): AuthData!
     refreshToken(refreshToken: String!) : ExtendSession!
     revokeRefreshTokenForUser(userId: String!) : Boolean!
-    updateLanguage(languageCode: String!) : User!
+    updateLanguage(languageCode: String!) : User! @auth
 
-    updateUserProfile(data: UpdateUserInput, file:Upload): User!
-    createEvent(data: EventInput): Event!
-    removeEvent(id: ID!): Event!
-    registerForEvent(id: ID!): Event!
-    updateEvent(id:ID!, data: UpdateEventInput) : Event!
+    updateUserProfile(data: UpdateUserInput, file:Upload): User! @auth
+    createEvent(data: EventInput): Event! @auth
+    removeEvent(id: ID!): Event! @auth
+    registerForEvent(id: ID!): Event! @auth
+    updateEvent(id:ID!, data: UpdateEventInput) : Event! @auth
     # createEventProject(data: EventProjectInput): EventProject!
     # removeEventProject(id: ID!): EventProject!
     # updateEventProject(id:ID!, data: UpdateEventProjectInput) : EventProject!
 
-    createOrganization(data: OrganizationInput, file:Upload): Organization!
-    updateOrganization(id:ID!, data: UpdateOrganizationInput) : Organization!
+    createOrganization(data: OrganizationInput, file:Upload): Organization! @auth
+    updateOrganization(id:ID!, data: UpdateOrganizationInput) : Organization! @auth
 
-    removeOrganization(id: ID!) : User!
+    removeOrganization(id: ID!) : User! @auth
     
-    createAdmin (data: UserAndOrganizationInput!) : User!
-    removeAdmin (data: UserAndOrganizationInput!) : User!
-    joinPublicOrganization (organizationId: ID!) : User!
-    leaveOrganization (organizationId: ID!) : User!
+    createAdmin (data: UserAndOrganizationInput!) : User! @auth
+    removeAdmin (data: UserAndOrganizationInput!) : User! @auth
+    joinPublicOrganization (organizationId: ID!) : User! @auth
+    leaveOrganization (organizationId: ID!) : User! @auth
 
-    removeMember (data: MultipleUsersAndOrganizationInput!) : Organization!
+    removeMember (data: MultipleUsersAndOrganizationInput!) : Organization! @auth
     # removeMultipleMembers(data: MultipleUsersAndOrganizationInput!) : Organization!
 
-    adminRemovePost(organizationId: ID!, postId:ID!):Post!
-    adminRemoveEvent(eventId: ID!): Event!
-    adminRemoveGroup(groupId:ID!):Message!
+    adminRemovePost(organizationId: ID!, postId:ID!):Post! @auth
+    adminRemoveEvent(eventId: ID!): Event! @auth
+    adminRemoveGroup(groupId:ID!):Message! @auth
 
-    createPost(data: PostInput!, file: Upload): Post
-    removePost(id:ID!): Post
-    likePost(id:ID!): Post
-    unlikePost(id:ID!): Post
+    createPost(data: PostInput!, file: Upload): Post @auth
+    removePost(id:ID!): Post @auth
+    likePost(id:ID!): Post @auth
+    unlikePost(id:ID!): Post @auth
 
-    createComment(postId:ID!, data: CommentInput!): Comment
-    removeComment(id:ID!): Comment
-    likeComment(id:ID!): Comment
-    unlikeComment(id:ID!): Comment
+    createComment(postId:ID!, data: CommentInput!): Comment @auth
+    removeComment(id:ID!): Comment @auth
+    likeComment(id:ID!): Comment @auth
+    unlikeComment(id:ID!): Comment @auth
 
-    createTask(data: TaskInput, eventId: ID!): Task!
-    updateTask(id:ID!, data: UpdateTaskInput) : Task
-    removeTask(id: ID!) : Task
+    createTask(data: TaskInput, eventId: ID!): Task! @auth
+    updateTask(id:ID!, data: UpdateTaskInput) : Task @auth
+    removeTask(id: ID!) : Task @auth
 
-    createGroup(data: GroupInput!): Group!
+    createGroup(data: GroupInput!): Group! @auth
 
-    sendMembershipRequest(organizationId: ID!) : MembershipRequest!
-    acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest!
-    rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
-    cancelMembershipRequest(membershipRequestId: ID!) : MembershipRequest!
+    sendMembershipRequest(organizationId: ID!) : MembershipRequest! @auth
+    acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
+    rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
+    cancelMembershipRequest(membershipRequestId: ID!) : MembershipRequest! @auth
 
-    blockUser(organizationId: ID!, userId: ID!) : User!
-    unblockUser(organizationId: ID!, userId:ID!) : User!
+    blockUser(organizationId: ID!, userId: ID!) : User! @auth
+    unblockUser(organizationId: ID!, userId:ID!) : User! @auth
 
-    addUserImage(file: Upload!): User!
-    removeUserImage: User!
-    addOrganizationImage(file: Upload!, organizationId: String!): Organization!
-    removeOrganizationImage(organizationId: String!): Organization!
+    addUserImage(file: Upload!): User! @auth
+    removeUserImage: User! @auth
+    addOrganizationImage(file: Upload!, organizationId: String!): Organization! @auth
+    removeOrganizationImage(organizationId: String!): Organization! @auth
 
-    createDirectChat(data: createChatInput): DirectChat!
-    removeDirectChat(chatId: ID!, organizationId: ID!) : DirectChat!
-    sendMessageToDirectChat(chatId: ID!, messageContent: String!): DirectChatMessage!
+    createDirectChat(data: createChatInput): DirectChat! @auth
+    removeDirectChat(chatId: ID!, organizationId: ID!) : DirectChat! @auth
+    sendMessageToDirectChat(chatId: ID!, messageContent: String!): DirectChatMessage! @auth
 
-    createGroupChat(data: createGroupChatInput): GroupChat!
-    removeGroupChat(chatId: ID!): GroupChat!
-    sendMessageToGroupChat(chatId: ID!, messageContent: String!): GroupChatMessage!
-    addUserToGroupChat(userId: ID!, chatId: ID!): GroupChat!
-    removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat!
+    createGroupChat(data: createGroupChatInput): GroupChat! @auth
+    removeGroupChat(chatId: ID!): GroupChat! @auth
+    sendMessageToGroupChat(chatId: ID!, messageContent: String!): GroupChatMessage! @auth
+    addUserToGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
+    removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
     
   }
   

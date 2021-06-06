@@ -1,14 +1,11 @@
 const Organization = require('../../models/Organization');
 const User = require('../../models/User');
+const adminCheck = require('../functions/adminCheck');
 const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
-const authCheck = require('../functions/authCheck');
-const adminCheck = require('../functions/adminCheck');
 const uploadImage = require('../../helper_functions/uploadImage');
 
 module.exports = async (parent, args, context) => {
-  authCheck(context);
-
   const user = await User.findById(context.userId);
   if (!user) {
     throw new NotFoundError(
