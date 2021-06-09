@@ -1,6 +1,5 @@
 const User = require('../../models/User');
 const Organization = require('../../models/Organization');
-const authCheck = require('../functions/authCheck');
 const adminCheck = require('../functions/adminCheck');
 const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
@@ -8,7 +7,6 @@ const requestContext = require('talawa-request-context');
 const Group = require('../../models/Group');
 
 module.exports = async (parent, args, context) => {
-  authCheck(context);
   //find message
   let group = await Group.findOne({ _id: args.groupId });
   if (!group) {

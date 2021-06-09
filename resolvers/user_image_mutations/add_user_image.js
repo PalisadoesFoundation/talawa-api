@@ -1,11 +1,9 @@
 const User = require('../../models/User');
-const authCheck = require('../functions/authCheck');
 const uploadImageHelper = require('../../helper_functions/uploadImage');
 const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 const addUserImage = async (parent, args, context) => {
-  authCheck(context);
   const user = await User.findById(context.userId);
   if (!user) {
     throw new NotFoundError(

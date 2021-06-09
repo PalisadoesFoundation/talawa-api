@@ -1,12 +1,10 @@
 const User = require('../../models/User');
 const Comment = require('../../models/Comment');
 
-const authCheck = require('../functions/authCheck');
 const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 const likeComment = async (parent, args, context) => {
-  authCheck(context);
   const user = await User.findById(context.userId);
   if (!user) {
     throw new NotFoundError(

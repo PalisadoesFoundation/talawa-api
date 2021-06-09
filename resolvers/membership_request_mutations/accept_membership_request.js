@@ -1,13 +1,11 @@
-const MembershipRequest = require('../../models/MembershipRequest');
-const authCheck = require('../functions/authCheck');
 const adminCheck = require('../functions/adminCheck');
-const organizationExists = require('../../helper_functions/organizationExists');
+const MembershipRequest = require('../../models/MembershipRequest');
 const userExists = require('../../helper_functions/userExists');
+const organizationExists = require('../../helper_functions/organizationExists');
 const { NotFoundError, ConflictError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args, context) => {
-  authCheck(context);
   //ensure membership request exists
   const membershipRequest = await MembershipRequest.findOne({
     _id: args.membershipRequestId,

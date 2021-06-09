@@ -1,13 +1,10 @@
 const User = require('../../models/User');
 const Organization = require('../../models/Organization');
-const authCheck = require('../functions/authCheck');
 const userExists = require('../../helper_functions/userExists');
 
 const uploadImage = require('../../helper_functions/uploadImage');
 
 const createOrganization = async (parent, args, context) => {
-  //authentication check
-  authCheck(context);
   //gets user in token - to be used later on
   let userFound = await userExists(context.userId);
 

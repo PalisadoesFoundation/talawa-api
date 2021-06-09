@@ -31,6 +31,7 @@ const { defaultLocale, supportedLocales } = require('./config/app');
 const GroupChat = require('./resolvers/GroupChat');
 const GroupChatMessage = require('./resolvers/GroupChatMessage');
 const Subscription = require('./resolvers/Subscription');
+const AuthenticationDirective = require('./directives/authDirective');
 
 const app = express();
 
@@ -108,6 +109,9 @@ const httpServer = http.createServer(app);
 const apolloServer = new ApolloServer({
   typeDefs,
   resolvers,
+  schemaDirectives: {
+    auth: AuthenticationDirective,
+  },
   context: ({ req, res, connection }) => {
     if (connection) {
       return {
