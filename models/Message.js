@@ -15,7 +15,10 @@ const messageSchema = new Schema({
     type: String,
     required: false,
   },
-  createdAt: { type: Date, default: Date.now },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
   creator: {
     type: Schema.Types.ObjectId,
     ref: 'User',
@@ -25,6 +28,12 @@ const messageSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Group',
     required: true,
+  },
+  status: {
+    type: String,
+    required: true,
+    default: 'ACTIVE',
+    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
   },
 });
 
