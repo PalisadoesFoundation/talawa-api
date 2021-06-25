@@ -59,7 +59,8 @@
     "validator": "^13.0.0",
     "winston": "^3.3.3",
     "ws": ">=7.4.6",
-    "xss-clean": "^0.1.1"
+    "xss-clean": "^0.1.1",
+    "yarn": "^1.22.10"
   },
   "devDependencies": {
     "easygraphql-tester": "^5.1.6",
