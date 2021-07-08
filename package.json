@@ -58,6 +58,7 @@
     "request-tracing": "file:lib/request-tracing",
     "shortid": "^2.2.16",
     "talawa-request-context": "file:lib/talawa-request-context",
+    "uuid": "^3.4.0",
     "validator": "^13.6.0",
     "winston": "^3.3.3",
     "ws": "^7.5.1",
