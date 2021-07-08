@@ -30,6 +30,12 @@ const groupChatSchema = new Schema({
     ref: 'Organization',
     required: true,
   },
+  status: {
+    type: String,
+    required: true,
+    default: 'ACTIVE',
+    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
+  },
 });
 
 module.exports = mongoose.model('GroupChat', groupChatSchema);

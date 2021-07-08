@@ -21,6 +21,12 @@ const groupChatMessageSchema = new Schema({
     type: String,
     required: true,
   },
+  status: {
+    type: String,
+    required: true,
+    default: 'ACTIVE',
+    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
+  },
 });
 
 module.exports = mongoose.model('GroupChatMessage', groupChatMessageSchema);

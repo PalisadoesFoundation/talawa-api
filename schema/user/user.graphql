@@ -1,5 +1,3 @@
-
-
 module.exports = `
 
   type User {
@@ -8,6 +6,7 @@ module.exports = `
     firstName: String!
     lastName: String!
     email: String!
+    userType: String
     appLanguageCode: String!
     createdOrganizations: [Organization]
     joinedOrganizations: [Organization]
@@ -36,8 +35,15 @@ module.exports = `
     lastName: String!
     email: String!
     password: String!
+    userType: UserType
     appLanguageCode: String
     organizationUserBelongsToId: ID
+  }
+
+  enum UserType{
+    USER
+    ADMIN
+    SUPERADMIN
   }
 
   input UpdateUserInput {
@@ -74,6 +80,13 @@ module.exports = `
      email_not_in: [String!]
      email_contains: String
      email_starts_with: String
+
+     appLanguageCode: String
+     appLanguageCode_not: String
+     appLanguageCode_in: [String!]
+     appLanguageCode_not_in: [String!]
+     appLanguageCode_contains: String
+     appLanguageCode_starts_with: String
    }
 
   enum UserOrderByInput {
@@ -85,6 +98,8 @@ module.exports = `
     lastName_DESC
     email_ASC
     email_DESC
+    appLanguageCode_ASC
+    appLanguageCode_DESC
   }
 
 `

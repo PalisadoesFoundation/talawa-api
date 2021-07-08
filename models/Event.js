@@ -25,8 +25,14 @@ const eventSchema = new Schema({
     required: true,
     default: false,
   },
-  allDay: { type: Boolean, required: true },
-  startDate: { type: String, required: true },
+  allDay: {
+    type: Boolean,
+    required: true,
+  },
+  startDate: {
+    type: String,
+    required: true,
+  },
   endDate: {
     type: String,
     required: function () {
@@ -105,6 +111,12 @@ const eventSchema = new Schema({
       ref: 'Task',
     },
   ],
+  status: {
+    type: String,
+    required: true,
+    default: 'ACTIVE',
+    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
+  },
 });
 
 module.exports = mongoose.model('Event', eventSchema);

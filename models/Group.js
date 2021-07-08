@@ -10,11 +10,20 @@ const groupSchema = new Schema({
   description: {
     type: String,
   },
-  createdAt: { type: Date, default: Date.now },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
   organization: {
     type: Schema.Types.ObjectId,
     ref: 'Organization',
     required: true,
+  },
+  status: {
+    type: String,
+    required: true,
+    default: 'ACTIVE',
+    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
   },
   admins: [
     {

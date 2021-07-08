@@ -1,5 +1,6 @@
 require('dotenv').config(); // pull env variables from .env file
 
+const depthLimit = require('graphql-depth-limit');
 const { ApolloServer, PubSub } = require('apollo-server-express');
 const http = require('http');
 const rateLimit = require('express-rate-limit');
@@ -109,6 +110,7 @@ const httpServer = http.createServer(app);
 const apolloServer = new ApolloServer({
   typeDefs,
   resolvers,
+  validationRules: [depthLimit(2)],
   schemaDirectives: {
     auth: AuthenticationDirective,
   },

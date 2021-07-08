@@ -16,6 +16,12 @@ const imageHashSchema = new Schema({
     default: 0,
     required: true,
   },
+  status: {
+    type: String,
+    required: true,
+    default: 'ACTIVE',
+    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
+  },
 });
 
 module.exports = mongoose.model('ImageHash', imageHashSchema);

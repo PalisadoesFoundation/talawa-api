@@ -1,19 +1,22 @@
 
 
 module.exports = `
-
   type Query {
-    users(id: ID, orderBy: UserOrderByInput): [User]
-    usersConnection(where: UserWhereInput, first: Int, skip: Int, orderBy: UserOrderByInput): [User]!
+    me: User! @auth
+    user(id: ID!): User! @auth
+    users(where: UserWhereInput, orderBy: UserOrderByInput): [User] @auth
+    usersConnection(where: UserWhereInput, first: Int, skip: Int, orderBy: UserOrderByInput): [User]! @auth
+    
     organizations(id: ID, orderBy: OrganizationOrderByInput): [Organization]
     organizationsConnection(where: OrganizationWhereInput, first: Int, skip: Int, orderBy: OrganizationOrderByInput): [Organization]!
     organizationsMemberConnection(orgId:ID!, where: UserWhereInput, first: Int, skip: Int, orderBy: UserOrderByInput): UserConnection!
+    
     events(id: ID, orderBy: EventOrderByInput): [Event]
     eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
     registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
     event(id: ID): Event
     registrantsByEvent(id: ID): [User]
-    me:User! @auth
+    
     posts(orderBy: PostOrderByInput): [Post]
     postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
     postsByOrganizationConnection(id: ID!, where: PostWhereInput, first: Int, skip: Int, orderBy: PostOrderByInput): PostConnection
