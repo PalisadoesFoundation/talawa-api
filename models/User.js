@@ -45,6 +45,12 @@ const userSchema = new Schema({
       ref: 'Event',
     },
   ],
+  userType: {
+    type: String,
+    enum: ['USER', 'ADMIN', 'SUPERADMIN'],
+    default: 'USER',
+    required: true,
+  },
   joinedOrganizations: [
     {
       type: Schema.Types.ObjectId,
@@ -88,5 +94,4 @@ const userSchema = new Schema({
 });
 
 userSchema.plugin(mongoosePaginate);
-
 module.exports = mongoose.model('User', userSchema);

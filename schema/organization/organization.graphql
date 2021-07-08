@@ -19,8 +19,16 @@ module.exports = `
     apiUrl:String!
   }
 
-
-
+  type OrganizationInfoNode {
+    image:String
+    _id: ID!
+    name:String!
+    description: String!
+    isPublic: Boolean! 
+    creator: User!
+    visibleInSearch: Boolean!
+    apiUrl:String!
+  }
 
   input OrganizationInput {
     name:String!
