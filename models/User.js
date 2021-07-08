@@ -87,6 +87,12 @@ const userSchema = new Schema({
       ref: 'Organization',
     },
   ],
+  status: {
+    type: String,
+    required: true,
+    default: 'ACTIVE',
+    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
+  },
   organizationUserBelongsTo: {
     type: Schema.Types.ObjectId,
     ref: 'Organization',

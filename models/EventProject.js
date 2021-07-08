@@ -12,7 +12,10 @@ const eventProjectSchema = new Schema({
     type: String,
     required: true,
   },
-  createdAt: { type: Date, default: Date.now },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
   event: {
     type: Schema.Types.ObjectId,
     ref: 'Event',
@@ -29,6 +32,12 @@ const eventProjectSchema = new Schema({
       ref: 'Task',
     },
   ],
+  status: {
+    type: String,
+    required: true,
+    default: 'ACTIVE',
+    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
+  },
 });
 
 module.exports = mongoose.model('EventProject', eventProjectSchema);

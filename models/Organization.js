@@ -26,6 +26,12 @@ const organizationSchema = new Schema({
     ref: 'User',
     required: true,
   },
+  status: {
+    type: String,
+    required: true,
+    default: 'ACTIVE',
+    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
+  },
   members: [
     {
       type: Schema.Types.ObjectId,

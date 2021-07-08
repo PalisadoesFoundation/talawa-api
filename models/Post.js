@@ -12,6 +12,12 @@ const postSchema = new Schema({
   title: {
     type: String,
   },
+  status: {
+    type: String,
+    required: true,
+    default: 'ACTIVE',
+    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
+  },
   createdAt: {
     type: Date,
     default: Date.now,
