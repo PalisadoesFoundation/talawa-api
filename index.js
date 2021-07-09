@@ -33,6 +33,7 @@ const GroupChat = require('./resolvers/GroupChat');
 const GroupChatMessage = require('./resolvers/GroupChatMessage');
 const Subscription = require('./resolvers/Subscription');
 const AuthenticationDirective = require('./directives/authDirective');
+const RoleAuthorizationDirective = require('./directives/roleDirective');
 
 const app = express();
 
@@ -113,6 +114,7 @@ const apolloServer = new ApolloServer({
   validationRules: [depthLimit(2)],
   schemaDirectives: {
     auth: AuthenticationDirective,
+    role: RoleAuthorizationDirective,
   },
   context: ({ req, res, connection }) => {
     if (connection) {

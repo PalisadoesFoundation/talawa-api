@@ -11,7 +11,14 @@ const utils = require("./utils.graphql");
 
 const typeDefs = gql`
   directive @auth on FIELD_DEFINITION
+  directive @role(requires: Role) on FIELD_DEFINITION
 
+  enum Role {
+    USER
+    ADMIN
+    SUPERADMIN
+  }
+  
   type Message {
     _id: ID!
     text: String
