@@ -10,7 +10,7 @@ class RoleAuthorizationDirective extends SchemaDirectiveVisitor {
     const { requires } = this.args;
     field.resolve = async (root, args, context, info) => {
       const user = await userExists(context.userId);
-      console.log(user.userType);
+
       if (user.userType !== requires) {
         throw new UnauthenticatedError(
           requestContext.translate('user.notAuthenticated'),
