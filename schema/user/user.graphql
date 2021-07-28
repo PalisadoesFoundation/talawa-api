@@ -40,12 +40,6 @@ module.exports = `
     organizationUserBelongsToId: ID
   }
 
-  enum UserType{
-    USER
-    ADMIN
-    SUPERADMIN
-  }
-
   input UpdateUserInput {
     firstName: String
     lastName: String

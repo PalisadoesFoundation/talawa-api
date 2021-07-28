@@ -1,0 +1,23 @@
+module.exports = `
+    type Plugin {
+        orgId: Organization!
+        pluginName: String!
+        pluginKey: String
+        pluginStatus: Status!
+        additionalInfo: [PluginField!]
+        createdAt: String
+    }
+
+    input PluginInput{
+        orgId: ID!
+        pluginName: String!
+        pluginKey: String
+        fields: [PluginFieldInput]
+    }
+
+    input PluginFieldInput{
+        key: String!
+        value: String!
+    }
+
+`
