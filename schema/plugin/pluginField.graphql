@@ -1,6 +1,6 @@
 module.exports = `
     type PluginField {
-        key: Organization!
+        key: String!
         value: String!
         status: Status!
         createdAt: String   
