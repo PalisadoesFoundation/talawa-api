@@ -1,24 +1,27 @@
 const Plugin = require('../../models/Plugins');
 const PluginField = require('../../models/PluginsField');
-const User = require('../../models/User');
+const Organization = require('../../models/Organization');
+const creatorCheck = require('../functions/creatorCheck');
 
 const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args, context) => {
-  // gets user in token - to be used later on
-  const user = await User.findOne({
-    _id: context.userId,
+  let org = await Organization.findOne({
+    _id: args.plugin.orgId,
   });
-  if (!user) {
+
+  if (!org) {
     throw new NotFoundError(
-      requestContext.translate('user.notFound'),
-      'user.notFound',
-      'user'
+      requestContext.translate('organization.notFound'),
+      'organization.notFound',
+      'organization'
     );
   }
 
+  creatorCheck(context, org);
   let pluginAddnFields = [];
+
   if (args.plugin.fields.length > 0) {
     for (let i = 0; i < args.plugin.fields.length; i++) {
       let pluginField = new PluginField({
