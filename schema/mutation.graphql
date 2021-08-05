@@ -18,14 +18,12 @@ module.exports = `
 
     createOrganization(data: OrganizationInput, file:Upload): Organization! @auth
     updateOrganization(id:ID!, data: UpdateOrganizationInput) : Organization! @auth
-
     removeOrganization(id: ID!) : User! @auth
     
     createAdmin (data: UserAndOrganizationInput!) : User! @auth
     removeAdmin (data: UserAndOrganizationInput!) : User! @auth
     joinPublicOrganization (organizationId: ID!) : User! @auth
     leaveOrganization (organizationId: ID!) : User! @auth
-
     removeMember (data: MultipleUsersAndOrganizationInput!) : Organization! @auth
     # removeMultipleMembers(data: MultipleUsersAndOrganizationInput!) : Organization!
 

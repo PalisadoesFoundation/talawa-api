@@ -72,23 +72,24 @@ const Mutation = {
 
   updateUserProfile,
   createOrganization,
+
   createEvent,
+  registerForEvent,
   removeEvent,
   updateEvent,
-  updateOrganization,
-  removeOrganization,
+
   createAdmin,
   removeAdmin,
+  updateOrganization,
+  removeOrganization,
   joinPublicOrganization,
   leaveOrganization,
-
   removeMember,
   //removeMultipleMembers,
 
   adminRemovePost,
   adminRemoveGroup,
   adminRemoveEvent,
-  registerForEvent,
   // createEventProject,
   // removeEventProject,
   // updateEventProject,

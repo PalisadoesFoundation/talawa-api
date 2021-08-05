@@ -1,6 +1,5 @@
 const User = require('../../models/User');
 const Event = require('../../models/Event');
-
 const { NotFoundError, UnauthorizedError } = require('errors');
 const requestContext = require('talawa-request-context');
 

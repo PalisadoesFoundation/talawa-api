@@ -6,6 +6,7 @@ const organizations = require('./organization_query/organizations');
 const event = require('./event_query/event');
 const registrantsByEvent = require('./event_query/registrantsByEvent');
 const events = require('./event_query/events');
+const isUserRegister = require('./event_query/isUserRegister');
 const eventsByOrganization = require('./event_query/eventsByOrganization');
 const registeredEventsByUser = require('./event_query/registeredEventsByUser');
 const tasksByEvent = require('./event_query/tasksByEvent');
@@ -31,14 +32,18 @@ const Query = {
   user,
   users,
   usersConnection,
+
   organizations,
   organizationsConnection,
   organizationsMemberConnection,
+
+  isUserRegister,
   event,
   events,
   registrantsByEvent,
   eventsByOrganization,
   registeredEventsByUser,
+
   groupChats,
   groupChatMessages,
   directChats,

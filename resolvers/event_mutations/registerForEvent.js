@@ -37,7 +37,10 @@ const registerForEvent = async (parent, args, context) => {
     { _id: args.id },
     {
       $push: {
-        registrants: userFound,
+        registrants: {
+          userId: userFound.id,
+          user: userFound,
+        },
       },
     },
     { new: true }
