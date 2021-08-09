@@ -47,23 +47,9 @@ jobs:
         same_commit: True
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-name: "CodeQL"
-
-on:
-  push:
-    branches-ignore:
-    - master
-    - alpha-0.0.1
-  pull_request:
-    branches-ignore:
-    - master
-    - alpha-0.0.1
-  schedule:
-    - cron: '17 14 * * 0'
-
-jobs:
-  analyze:
-    name: Analyze
+        
+  CodeQL:
+    name: "CodeQL"
     runs-on: ubuntu-latest
     permissions:
       actions: read
