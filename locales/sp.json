@@ -20,6 +20,7 @@
     "group.notFound": "Grupo no encontrado",
     "invalid.fileType": "Tipo de archivo no válido",
     "invalid.refreshToken": "Token de actualización no válido",
-    "invalid.credentials": "Credenciales no válidas"
+    "invalid.credentials": "Credenciales no válidas",
+    "registrant.alreadyExist": "Ya inscrito para el evento"
 }
 

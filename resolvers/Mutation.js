@@ -18,6 +18,7 @@ const updateUserProfile = require('./user_mutations/updateUserProfile');
 
 //const removeMultipleMembers = require("./member_mutations/removeMultipleMembers");
 const registerForEvent = require('./event_mutations/registerForEvent');
+const unregisterForEventByUser = require('./event_mutations/unregisterForEvent');
 // const createEventProject = require("./event_project_mutations/createProject")
 // const removeEventProject = require("./event_project_mutations/removeProject")
 // const updateEventProject = require("./event_project_mutations/updateProject")
@@ -77,6 +78,7 @@ const Mutation = {
   registerForEvent,
   removeEvent,
   updateEvent,
+  unregisterForEventByUser,
 
   createAdmin,
   removeAdmin,

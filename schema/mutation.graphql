@@ -11,6 +11,7 @@ module.exports = `
     createEvent(data: EventInput): Event! @auth
     removeEvent(id: ID!): Event! @auth
     registerForEvent(id: ID!): Event! @auth
+    unregisterForEventByUser(id: ID!): Event! @auth
     updateEvent(id:ID!, data: UpdateEventInput) : Event! @auth
     # createEventProject(data: EventProjectInput): EventProject!
     # removeEventProject(id: ID!): EventProject!
