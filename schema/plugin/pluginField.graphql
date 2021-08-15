@@ -1,0 +1,8 @@
+module.exports = `
+    type PluginField {
+        key: String!
+        value: String!
+        status: Status!
+        createdAt: String   
+    }
+`
