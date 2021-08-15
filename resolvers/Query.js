@@ -25,6 +25,8 @@ const {
   usersConnection,
   organizationsMemberConnection,
 } = require('./user_query/users');
+const myLanguage = require('../resolvers/user_query/myLanguage');
+const userLanguage = require('../resolvers/user_query/userLanguage');
 
 const Query = {
   me,
@@ -52,6 +54,9 @@ const Query = {
   postsByOrganization,
   postsByOrganizationConnection,
   groups,
+
+  myLanguage,
+  userLanguage,
 };
 
 module.exports = Query;
