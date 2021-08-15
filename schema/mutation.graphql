@@ -71,7 +71,7 @@ module.exports = `
     sendMessageToGroupChat(chatId: ID!, messageContent: String!): GroupChatMessage! @auth
     addUserToGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
     removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
-    
+    createPlugin(plugin: PluginInput!): Plugin! @auth
   }
   
 `

@@ -1,13 +1,15 @@
 const { gql } = require("apollo-server-express");
 const mutation = require("./mutation.graphql");
 const query = require("./query.graphql");
+const utils = require("./utils.graphql");
 const user = require("./user/user.graphql");
 const auth = require("./user/auth.graphql");
 const organization = require("./organization/organization.graphql");
 const event = require("./event/event.graphql");
 const newsfeed = require("./newsfeed/newsfeed.graphql");
 const chats = require("./chats/chat.graphql");
-const utils = require("./utils.graphql");
+const plugins = require("./plugin/plugin.graphql");
+const pluginfields = require("./plugin/pluginField.graphql");
 
 const typeDefs = gql`
   directive @auth on FIELD_DEFINITION
@@ -46,6 +48,8 @@ const typeDefs = gql`
   ${newsfeed}
   ${chats}
   ${utils}
+  ${plugins}
+  ${pluginfields}
 
   type Subscription {
     messageSentToDirectChat: DirectChatMessage
