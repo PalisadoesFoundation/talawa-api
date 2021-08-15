@@ -18,7 +18,6 @@ module.exports = `
 
     createOrganization(data: OrganizationInput, file:Upload): Organization! @auth
     updateOrganization(id:ID!, data: UpdateOrganizationInput) : Organization! @auth
-
     removeOrganization(id: ID!) : User! @auth
     
     createAdmin (data: UserAndOrganizationInput!) : User! @auth
@@ -71,6 +70,7 @@ module.exports = `
     sendMessageToGroupChat(chatId: ID!, messageContent: String!): GroupChatMessage! @auth
     addUserToGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
     removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
+    
     createPlugin(plugin: PluginInput!): Plugin! @auth
   }
   

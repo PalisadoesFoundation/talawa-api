@@ -18,13 +18,11 @@ const postsByOrganization = require('./post_query/postsByOrganization');
 const groups = require('./group_query/groups');
 const organizationsConnection = require('./organization_query/organizations_pagination');
 const postsByOrganizationConnection = require('../resolvers/post_organization_query/organization_post_pagination');
-const {
-  users,
-  user,
-  me,
-  usersConnection,
-  organizationsMemberConnection,
-} = require('./user_query/users');
+const { users, user, me } = require('./user_query/users');
+const { usersConnection } = require('./user_query/users');
+const { organizationsMemberConnection } = require('./user_query/users');
+const plugin = require('./plugin_query/super-admin-plugin-query');
+const adminPlugin = require('./plugin_query/admin-plugin-query');
 
 const Query = {
   me,
@@ -52,6 +50,8 @@ const Query = {
   postsByOrganization,
   postsByOrganizationConnection,
   groups,
+  plugin,
+  adminPlugin,
 };
 
 module.exports = Query;
