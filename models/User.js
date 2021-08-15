@@ -97,6 +97,11 @@ const userSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Organization',
   },
+  pluginCreationAllowed: {
+    type: Boolean,
+    required: true,
+    default: true,
+  },
 });
 
 userSchema.plugin(mongoosePaginate);

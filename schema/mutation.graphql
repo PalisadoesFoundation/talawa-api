@@ -72,6 +72,7 @@ module.exports = `
     addUserToGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
     removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
     
+    blockPluginCreationBySuperadmin(userId: ID!, blockUser: Boolean!): User! @auth
   }
   
 `
