@@ -27,7 +27,7 @@ module.exports = `
     removeMember (data: MultipleUsersAndOrganizationInput!) : Organization! @auth
     # removeMultipleMembers(data: MultipleUsersAndOrganizationInput!) : Organization!
 
-    adminRemovePost(organizationId: ID!, postId:ID!):Post! @auth
+    adminRemovePost(organizationId: ID!, postId:ID!):Post! @auth 
     adminRemoveEvent(eventId: ID!): Event! @auth
     adminRemoveGroup(groupId:ID!):Message! @auth
 
