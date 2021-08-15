@@ -1,5 +1,3 @@
-
-
 module.exports = `
 
   """Information about pagination in a connection."""
@@ -13,6 +11,18 @@ module.exports = `
     nextPageNo: Int
     prevPageNo: Int
     currPageNo: Int
+  }
+
+  enum Status{
+    ACTIVE
+    BLOCKED
+    DELETED
+  }
+
+  enum UserType{
+    USER
+    ADMIN
+    SUPERADMIN
   }
 
 `
