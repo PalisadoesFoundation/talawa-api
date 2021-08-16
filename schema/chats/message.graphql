@@ -4,6 +4,7 @@ module.exports = `
         sender: User!
         receiver: User!
         message: String!
+        languageBarrier: Boolean
         createdAt: String!
     }
 

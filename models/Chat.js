@@ -6,6 +6,11 @@ const chatSchema = new Schema({
     type: String,
     required: true,
   },
+  languageBarrier: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
   sender: {
     type: Schema.Types.ObjectId,
     ref: 'User',

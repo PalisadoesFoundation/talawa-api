@@ -8,6 +8,12 @@ module.exports = async (parent, args, context) => {
     _id: args.data.receiver,
   });
 
+  const senderUser = await User.findOne({
+    _id: context.userId,
+  });
+
+  const isLangSame = user.appLanguageCode === senderUser.appLanguageCode;
+
   if (!user) {
     throw new NotFoundError(
       requestContext.translate('user.notFound'),
@@ -20,6 +26,7 @@ module.exports = async (parent, args, context) => {
     sender: context.userId,
     receiver: user.id,
     message: args.data.message,
+    languageBarrier: !isLangSame,
   });
 
   messageChat = await messageChat.save();
