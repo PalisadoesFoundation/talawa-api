@@ -24,5 +24,11 @@ module.exports = async (parent, args, context) => {
 
   messageChat = await messageChat.save();
 
+  context.pubsub.publish('CHAT_CHANNEL', {
+    directMessageChat: {
+      ...messageChat._doc,
+    },
+  });
+
   return messageChat._doc;
 };
