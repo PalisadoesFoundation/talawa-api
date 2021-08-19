@@ -25,4 +25,9 @@ module.exports = `
     SUPERADMIN
   }
 
+  enum Type{
+    UNIVERSAL
+    PRIVATE
+  }
+
 `

@@ -31,6 +31,8 @@ module.exports = `
 
     groupChats: [GroupChat]
     groupChatMessages: [GroupChatMessage]
-  }
 
+    plugin(orgId: ID!): [Plugin]
+    adminPlugin(orgId: ID!): [Plugin]
+  }
 `
