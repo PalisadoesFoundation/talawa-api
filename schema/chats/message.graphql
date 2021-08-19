@@ -1,0 +1,15 @@
+module.exports = `
+    type MessageChat {
+        _id: ID!
+        sender: User!
+        receiver: User!
+        message: String!
+        languageBarrier: Boolean
+        createdAt: String!
+    }
+
+    input MessageChatInput {
+        message: String!
+        receiver: ID!
+    }
+`

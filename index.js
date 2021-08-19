@@ -15,7 +15,6 @@ const requestLogger = require('morgan');
 const path = require('path');
 const i18n = require('i18n');
 const requestContext = require('talawa-request-context');
-const { UnauthenticatedError } = require('errors');
 const requestTracing = require('request-tracing');
 
 const Query = require('./resolvers/Query');
@@ -31,7 +30,7 @@ const DirectChatMessage = require('./resolvers/DirectChatMessage');
 const { defaultLocale, supportedLocales } = require('./config/app');
 const GroupChat = require('./resolvers/GroupChat');
 const GroupChatMessage = require('./resolvers/GroupChatMessage');
-const Subscription = require('./resolvers/Subscription');
+//const Subscription = require('./resolvers/Subscription');
 const AuthenticationDirective = require('./directives/authDirective');
 const RoleAuthorizationDirective = require('./directives/roleDirective');
 
@@ -42,7 +41,15 @@ app.use(requestTracing.middleware());
 const pubsub = new PubSub();
 
 const resolvers = {
-  Subscription,
+  //Subscription,
+  Subscription: {
+    directMessageChat: {
+      resolve: (payload) => {
+        return payload.directMessageChat;
+      },
+      subscribe: () => pubsub.asyncIterator('CHAT_CHANNEL'),
+    },
+  },
   Query,
   Mutation,
   User,
@@ -111,7 +118,7 @@ const httpServer = http.createServer(app);
 const apolloServer = new ApolloServer({
   typeDefs,
   resolvers,
-  validationRules: [depthLimit(2)],
+  validationRules: [depthLimit(3)],
   schemaDirectives: {
     auth: AuthenticationDirective,
     role: RoleAuthorizationDirective,
@@ -149,12 +156,8 @@ const apolloServer = new ApolloServer({
   },
   subscriptions: {
     onConnect: (connection) => {
-      if (!connection.authToken) {
-        throw new UnauthenticatedError(
-          requestContext.translate('user.notAuthenticated'),
-          'user.notAuthenticated',
-          'userAuthentication'
-        );
+      if (!connection.authorization) {
+        throw new Error('userAuthentication');
       }
       let userId = null;
       if (connection.authToken) {

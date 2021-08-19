@@ -32,4 +32,9 @@ module.exports = `
     YEARLY
     ONCE
   }
+  enum Type{
+    UNIVERSAL
+    PRIVATE
+  }
+
 `

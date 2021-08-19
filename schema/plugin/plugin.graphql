@@ -4,6 +4,7 @@ module.exports = `
         pluginName: String!
         pluginKey: String
         pluginStatus: Status!
+        pluginType: Type!
         additionalInfo: [PluginField!]
         createdAt: String
     }
@@ -12,6 +13,7 @@ module.exports = `
         orgId: ID!
         pluginName: String!
         pluginKey: String
+        pluginType: Type
         fields: [PluginFieldInput]
     }
 
