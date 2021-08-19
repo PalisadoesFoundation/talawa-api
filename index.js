@@ -118,7 +118,7 @@ const httpServer = http.createServer(app);
 const apolloServer = new ApolloServer({
   typeDefs,
   resolvers,
-  validationRules: [depthLimit(2)],
+  validationRules: [depthLimit(3)],
   schemaDirectives: {
     auth: AuthenticationDirective,
     role: RoleAuthorizationDirective,
