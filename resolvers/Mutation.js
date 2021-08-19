@@ -15,12 +15,7 @@ const joinPublicOrganization = require('./member_mutations/join_public_organizat
 const leaveOrganization = require('./member_mutations/leave_organization');
 const removeMember = require('./member_mutations/removeMember');
 const updateUserProfile = require('./user_mutations/updateUserProfile');
-
-//const removeMultipleMembers = require("./member_mutations/removeMultipleMembers");
 const registerForEvent = require('./event_mutations/registerForEvent');
-// const createEventProject = require("./event_project_mutations/createProject")
-// const removeEventProject = require("./event_project_mutations/removeProject")
-// const updateEventProject = require("./event_project_mutations/updateProject")
 
 const createTask = require('./project_task_mutations/createTask');
 const removeTask = require('./project_task_mutations/removeTask');
@@ -60,8 +55,8 @@ const sendMessageToGroupChat = require('./group_chat_mutations/sendMessageToGrou
 const addUserToGroupChat = require('./group_chat_mutations/addUserToGroupChat');
 const removeUserFromGroupChat = require('./group_chat_mutations/removeUserFromGroupChat');
 const updateLanguage = require('./language_mutation/updateLanguage');
-
 const createPlugin = require('./plugin_mutations/createPlugin');
+const createMessageChat = require('./message_chat_mutation/createMessageChat');
 
 const Mutation = {
   signUp,
@@ -127,6 +122,8 @@ const Mutation = {
   addUserToGroupChat,
   removeUserFromGroupChat,
   createPlugin,
+
+  createMessageChat,
 };
 
 module.exports = Mutation;
