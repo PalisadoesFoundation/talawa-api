@@ -10,6 +10,7 @@ const newsfeed = require("./newsfeed/newsfeed.graphql");
 const chats = require("./chats/chat.graphql");
 const plugins = require("./plugin/plugin.graphql");
 const pluginfields = require("./plugin/pluginField.graphql");
+const message = require("./chats/message.graphql");
 
 const typeDefs = gql`
   directive @auth on FIELD_DEFINITION
@@ -50,10 +51,12 @@ const typeDefs = gql`
   ${utils}
   ${plugins}
   ${pluginfields}
+  ${message}
 
   type Subscription {
     messageSentToDirectChat: DirectChatMessage
     messageSentToGroupChat: GroupChatMessage
+    directMessageChat: MessageChat
   }
 `
 
