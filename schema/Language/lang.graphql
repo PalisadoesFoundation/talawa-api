@@ -1,0 +1,23 @@
+module.exports = `
+
+    type Language {
+        _id: ID!
+        en: String!
+        translation: [LanguageModel]
+        createdAt: String!
+    }
+
+    type LanguageModel {
+        _id: ID!
+        lang_code: String!
+        value: String!
+        createdAt: String!
+    }
+
+    input LanguageInput{
+        en_value: String!
+        translation_lang_code: String!
+        translation_value: String!
+    }
+
+`

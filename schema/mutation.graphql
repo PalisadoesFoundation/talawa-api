@@ -70,6 +70,7 @@ module.exports = `
     createPlugin(plugin: PluginInput!): Plugin! @auth
 
     createMessageChat(data:MessageChatInput!): MessageChat! @auth
+    addLanguageTranslation(data: LanguageInput!): Language! @auth
   }
   
 `
