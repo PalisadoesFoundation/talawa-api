@@ -32,6 +32,9 @@ module.exports = `
     groupChats: [GroupChat]
     groupChatMessages: [GroupChatMessage]
 
+    myLanguage: String @auth
+    userLanguage(userId: ID!): String @auth
+
     plugin(orgId: ID!): [Plugin]
     adminPlugin(orgId: ID!): [Plugin]
   }

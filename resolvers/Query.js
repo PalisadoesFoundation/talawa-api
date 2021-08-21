@@ -23,6 +23,8 @@ const { usersConnection } = require('./user_query/users');
 const { organizationsMemberConnection } = require('./user_query/users');
 const plugin = require('./plugin_query/super-admin-plugin-query');
 const adminPlugin = require('./plugin_query/admin-plugin-query');
+const myLanguage = require('../resolvers/user_query/myLanguage');
+const userLanguage = require('../resolvers/user_query/userLanguage');
 
 const Query = {
   me,
@@ -50,6 +52,9 @@ const Query = {
   postsByOrganization,
   postsByOrganizationConnection,
   groups,
+
+  myLanguage,
+  userLanguage,
   plugin,
   adminPlugin,
 };
