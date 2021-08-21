@@ -59,6 +59,8 @@ const sendMessageToGroupChat = require('./group_chat_mutations/sendMessageToGrou
 const addUserToGroupChat = require('./group_chat_mutations/addUserToGroupChat');
 const removeUserFromGroupChat = require('./group_chat_mutations/removeUserFromGroupChat');
 const updateLanguage = require('./language_mutation/updateLanguage');
+const blockPluginCreationBySuperadmin = require('../resolvers/user_mutations/blockForPlugin');
+
 const createPlugin = require('./plugin_mutations/createPlugin');
 const createMessageChat = require('./message_chat_mutation/createMessageChat');
 
@@ -127,6 +129,7 @@ const Mutation = {
   sendMessageToGroupChat,
   addUserToGroupChat,
   removeUserFromGroupChat,
+  blockPluginCreationBySuperadmin,
   createPlugin,
 
   createMessageChat,

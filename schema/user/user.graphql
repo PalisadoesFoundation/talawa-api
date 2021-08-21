@@ -18,6 +18,7 @@ module.exports = `
     organizationsBlockedBy: [Organization]
     image: String
     organizationUserBelongsTo: Organization
+    pluginCreationAllowed: Boolean
   }
 
   type UserConnection {

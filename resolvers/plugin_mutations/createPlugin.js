@@ -1,8 +1,9 @@
+const User = require('../../models/User');
 const Plugin = require('../../models/Plugins');
 const PluginField = require('../../models/PluginsField');
 const Organization = require('../../models/Organization');
-const creatorCheck = require('../functions/creatorCheck');
 
+const { UnauthorizedError } = require('errors');
 const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
 
@@ -19,9 +20,32 @@ module.exports = async (parent, args, context) => {
     );
   }
 
-  creatorCheck(context, org);
-  let pluginAddnFields = [];
+  const user = await User.findOne({
+    _id: context.userId,
+    pluginCreationAllowed: true,
+  });
 
+  if (!user) {
+    throw new NotFoundError(
+      requestContext.translate('user.notFound'),
+      'user.notFound',
+      'user'
+    );
+  }
+
+  const isSuperAdmin = user.userType === 'SUPERADMIN';
+  if (!isSuperAdmin) {
+    const isAdmin = org.admins.includes(user.id);
+    if (!isAdmin) {
+      throw new UnauthorizedError(
+        requestContext.translate('user.notAuthorized'),
+        'user.notAuthorized',
+        'userAuthorization'
+      );
+    }
+  }
+
+  let pluginAddnFields = [];
   if (args.plugin.fields.length > 0) {
     for (let i = 0; i < args.plugin.fields.length; i++) {
       let pluginField = new PluginField({
