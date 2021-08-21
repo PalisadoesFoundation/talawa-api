@@ -4,7 +4,6 @@ const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 const registerForEvent = async (parent, args, context) => {
-  // gets user in token - to be used later on
   const userFound = await User.findOne({ _id: context.userId });
   if (!userFound) {
     throw new NotFoundError(
@@ -23,25 +22,81 @@ const registerForEvent = async (parent, args, context) => {
     );
   }
 
-  // add event to the user record
-  await User.findOneAndUpdate(
-    { _id: userFound.id },
-    {
-      $push: {
-        registeredEvents: eventFound,
-      },
-    }
-  );
+  const index = eventFound.registrants.findIndex((element) => {
+    return String(element.userId) === String(context.userId);
+  });
 
-  const newEvent = await Event.findOneAndUpdate(
-    { _id: args.id },
-    {
-      $push: {
-        registrants: userFound,
+  let isAlreadyExists = false;
+  if (index !== -1) {
+    const isActive = eventFound.registrants[index].status === 'ACTIVE';
+    if (isActive) {
+      throw new NotFoundError(
+        requestContext.translate('registrant.alreadyExist'),
+        'event.notFound',
+        'event'
+      );
+    } else {
+      isAlreadyExists = true;
+    }
+  }
+
+  if (!isAlreadyExists) {
+    await User.findOneAndUpdate(
+      {
+        _id: userFound.id,
       },
-    },
-    { new: true }
-  );
+      {
+        $push: {
+          registeredEvents: eventFound,
+        },
+      }
+    );
+  }
+
+  let newEvent;
+  if (!isAlreadyExists) {
+    newEvent = await Event.findOneAndUpdate(
+      {
+        _id: args.id,
+        status: 'ACTIVE',
+      },
+      {
+        $push: {
+          registrants: {
+            userId: userFound.id,
+            user: userFound,
+          },
+        },
+      },
+      {
+        new: true,
+      }
+    );
+  } else {
+    let updatedRegistrants = eventFound.registrants;
+    updatedRegistrants[index] = {
+      id: updatedRegistrants[index].id,
+      userId: updatedRegistrants[index].userId,
+      user: updatedRegistrants[index].user,
+      status: 'ACTIVE',
+      createdAt: updatedRegistrants[index].createdAt,
+    };
+
+    newEvent = await Event.findOneAndUpdate(
+      {
+        _id: args.id,
+        status: 'ACTIVE',
+      },
+      {
+        $set: {
+          registrants: updatedRegistrants,
+        },
+      },
+      {
+        new: true,
+      }
+    );
+  }
 
   return newEvent;
 };

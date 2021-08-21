@@ -1,11 +1,10 @@
 const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
-
 const Event = require('../../models/Event');
 
-module.exports = async (parent, args) => {
+module.exports = async (parent, args, context) => {
   const eventFound = await Event.findOne({
-    _id: args.id,
+    _id: args.eventId,
     status: 'ACTIVE',
   })
     .populate('creator', '-password')
@@ -20,5 +19,15 @@ module.exports = async (parent, args) => {
     );
   }
 
-  return eventFound;
+  let isRegistered = false;
+  eventFound.registrants.forEach((registrant) => {
+    if (registrant.userId === context.userId) {
+      isRegistered = true;
+    }
+  });
+
+  return {
+    event: eventFound,
+    isRegistered: isRegistered,
+  };
 };

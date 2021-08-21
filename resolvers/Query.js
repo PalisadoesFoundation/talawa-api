@@ -6,6 +6,7 @@ const organizations = require('./organization_query/organizations');
 const event = require('./event_query/event');
 const registrantsByEvent = require('./event_query/registrantsByEvent');
 const events = require('./event_query/events');
+const isUserRegister = require('./event_query/isUserRegister');
 const eventsByOrganization = require('./event_query/eventsByOrganization');
 const registeredEventsByUser = require('./event_query/registeredEventsByUser');
 const tasksByEvent = require('./event_query/tasksByEvent');
@@ -18,27 +19,31 @@ const postsByOrganization = require('./post_query/postsByOrganization');
 const groups = require('./group_query/groups');
 const organizationsConnection = require('./organization_query/organizations_pagination');
 const postsByOrganizationConnection = require('../resolvers/post_organization_query/organization_post_pagination');
-const {
-  users,
-  user,
-  me,
-  usersConnection,
-  organizationsMemberConnection,
-} = require('./user_query/users');
+const { users, user, me } = require('./user_query/users');
+const { usersConnection } = require('./user_query/users');
+const { organizationsMemberConnection } = require('./user_query/users');
+const plugin = require('./plugin_query/super-admin-plugin-query');
+const adminPlugin = require('./plugin_query/admin-plugin-query');
+const myLanguage = require('../resolvers/user_query/myLanguage');
+const userLanguage = require('../resolvers/user_query/userLanguage');
 
 const Query = {
   me,
   user,
   users,
   usersConnection,
+
   organizations,
   organizationsConnection,
   organizationsMemberConnection,
+
+  isUserRegister,
   event,
   events,
   registrantsByEvent,
   eventsByOrganization,
   registeredEventsByUser,
+
   groupChats,
   groupChatMessages,
   directChats,
@@ -52,6 +57,11 @@ const Query = {
   postsByOrganization,
   postsByOrganizationConnection,
   groups,
+
+  myLanguage,
+  userLanguage,
+  plugin,
+  adminPlugin,
 };
 
 module.exports = Query;

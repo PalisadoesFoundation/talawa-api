@@ -22,6 +22,17 @@ const pluginSchema = new Schema({
     default: 'ACTIVE',
     enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
   },
+  pluginType: {
+    type: String,
+    required: true,
+    default: 'UNIVERSAL',
+    enum: ['UNIVERSAL', 'PRIVATE'],
+  },
+  adminAccessAllowed: {
+    type: Boolean,
+    required: true,
+    default: true,
+  },
   additionalInfo: [
     {
       type: Schema.Types.ObjectId,

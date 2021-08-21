@@ -1,6 +1,5 @@
 const User = require('../../models/User');
 const Event = require('../../models/Event');
-
 const { NotFoundError, UnauthorizedError } = require('errors');
 const requestContext = require('talawa-request-context');
 
@@ -27,7 +26,6 @@ const removeEvent = async (parent, args, context) => {
   );
 
   const isUserEventAdmin = event.admins.includes(context.userId.toString());
-
   const userCanDeleteThisEvent = isUserOrganisationAdmin || isUserEventAdmin;
 
   if (!userCanDeleteThisEvent) {
@@ -56,7 +54,7 @@ const removeEvent = async (parent, args, context) => {
     }
   );
 
-  await Event.deleteOne({ _id: args.id });
+  await Event.findOneAndUpdate({ _id: args.id }, { status: 'DELETED' });
   return event;
 };
 

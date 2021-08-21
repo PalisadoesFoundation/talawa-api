@@ -11,23 +11,18 @@ module.exports = `
     createEvent(data: EventInput): Event! @auth
     removeEvent(id: ID!): Event! @auth
     registerForEvent(id: ID!): Event! @auth
+    unregisterForEventByUser(id: ID!): Event! @auth
     updateEvent(id:ID!, data: UpdateEventInput) : Event! @auth
-    # createEventProject(data: EventProjectInput): EventProject!
-    # removeEventProject(id: ID!): EventProject!
-    # updateEventProject(id:ID!, data: UpdateEventProjectInput) : EventProject!
 
     createOrganization(data: OrganizationInput, file:Upload): Organization! @auth
     updateOrganization(id:ID!, data: UpdateOrganizationInput) : Organization! @auth
-
     removeOrganization(id: ID!) : User! @auth
     
     createAdmin (data: UserAndOrganizationInput!) : User! @auth
     removeAdmin (data: UserAndOrganizationInput!) : User! @auth
     joinPublicOrganization (organizationId: ID!) : User! @auth
     leaveOrganization (organizationId: ID!) : User! @auth
-
     removeMember (data: MultipleUsersAndOrganizationInput!) : Organization! @auth
-    # removeMultipleMembers(data: MultipleUsersAndOrganizationInput!) : Organization!
 
     adminRemovePost(organizationId: ID!, postId:ID!):Post! @auth 
     adminRemoveEvent(eventId: ID!): Event! @auth
@@ -73,6 +68,8 @@ module.exports = `
     removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
     blockPluginCreationBySuperadmin(userId: ID!, blockUser: Boolean!): User! @auth
     createPlugin(plugin: PluginInput!): Plugin! @auth
+
+    createMessageChat(data:MessageChatInput!): MessageChat! @auth
   }
   
 `

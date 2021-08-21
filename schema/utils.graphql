@@ -25,4 +25,16 @@ module.exports = `
     SUPERADMIN
   }
 
+  enum Recurrance{
+    DAILY
+    WEEKLY
+    MONTHLY
+    YEARLY
+    ONCE
+  }
+  enum Type{
+    UNIVERSAL
+    PRIVATE
+  }
+
 `

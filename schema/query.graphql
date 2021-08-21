@@ -11,10 +11,11 @@ module.exports = `
     organizationsConnection(where: OrganizationWhereInput, first: Int, skip: Int, orderBy: OrganizationOrderByInput): [Organization]!
     organizationsMemberConnection(orgId:ID!, where: UserWhereInput, first: Int, skip: Int, orderBy: UserOrderByInput): UserConnection!
     
+    isUserRegister(eventId: ID): EventRegistrants
+    event(id: ID): Event
     events(id: ID, orderBy: EventOrderByInput): [Event]
     eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
     registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
-    event(id: ID): Event
     registrantsByEvent(id: ID): [User]
     
     posts(orderBy: PostOrderByInput): [Post]
@@ -26,11 +27,16 @@ module.exports = `
     commentsByPost(id: ID!): [Comment]
     post(id: ID): Post
     groups: [Group]
+    
     directChats: [DirectChat]
     directChatMessages: [DirectChatMessage]
-
     groupChats: [GroupChat]
     groupChatMessages: [GroupChatMessage]
-  }
 
+    myLanguage: String @auth
+    userLanguage(userId: ID!): String @auth
+
+    plugin(orgId: ID!): [Plugin]
+    adminPlugin(orgId: ID!): [Plugin]
+  }
 `
