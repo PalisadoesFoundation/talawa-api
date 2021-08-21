@@ -16,6 +16,10 @@ const leaveOrganization = require('./member_mutations/leave_organization');
 const removeMember = require('./member_mutations/removeMember');
 const updateUserProfile = require('./user_mutations/updateUserProfile');
 const registerForEvent = require('./event_mutations/registerForEvent');
+const unregisterForEventByUser = require('./event_mutations/unregisterForEvent');
+// const createEventProject = require("./event_project_mutations/createProject")
+// const removeEventProject = require("./event_project_mutations/removeProject")
+// const updateEventProject = require("./event_project_mutations/updateProject")
 
 const createTask = require('./project_task_mutations/createTask');
 const removeTask = require('./project_task_mutations/removeTask');
@@ -67,23 +71,25 @@ const Mutation = {
 
   updateUserProfile,
   createOrganization,
+
   createEvent,
+  registerForEvent,
   removeEvent,
   updateEvent,
-  updateOrganization,
-  removeOrganization,
+  unregisterForEventByUser,
+
   createAdmin,
   removeAdmin,
+  updateOrganization,
+  removeOrganization,
   joinPublicOrganization,
   leaveOrganization,
-
   removeMember,
   //removeMultipleMembers,
 
   adminRemovePost,
   adminRemoveGroup,
   adminRemoveEvent,
-  registerForEvent,
   // createEventProject,
   // removeEventProject,
   // updateEventProject,

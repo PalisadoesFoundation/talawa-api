@@ -20,5 +20,6 @@
     "group.notFound": "समूह नहीं मिला",
     "invalid.fileType": "अमान्य फ़ाइल प्रकार",
     "invalid.refreshToken": "अमान्य रीफ़्रेश टोकन",
-    "invalid.credentials": "अवैध प्रत्यय पत्र"   
+    "invalid.credentials": "अवैध प्रत्यय पत्र",
+    "registrant.alreadyExist": "घटना के लिए पहले से पंजीकृत"
 }

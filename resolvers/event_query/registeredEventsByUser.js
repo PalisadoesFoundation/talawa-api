@@ -48,9 +48,17 @@ module.exports = async (parent, args) => {
       sort = { location: -1 };
     }
   }
-  return await Event.find({ registrants: args.id })
+
+  return await Event.find({
+    status: 'ACTIVE',
+    registrants: {
+      $elemMatch: {
+        userId: args.id,
+        status: 'ACTIVE',
+      },
+    },
+  })
     .sort(sort)
-    .populate('registrants')
     .populate('creator', '-password')
     .populate('tasks')
     .populate('admins', '-password');

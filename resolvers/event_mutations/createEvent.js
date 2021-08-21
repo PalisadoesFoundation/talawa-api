@@ -1,11 +1,10 @@
+const { NotFoundError } = require('errors');
 const User = require('../../models/User');
 const Event = require('../../models/Event');
 const Organization = require('../../models/Organization');
-const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 const createEvent = async (parent, args, context) => {
-  // gets user in token - to be used later on
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
     throw new NotFoundError(
@@ -14,7 +13,8 @@ const createEvent = async (parent, args, context) => {
       'user'
     );
   }
-  // ensure organization exists
+
+  // Ensure Organization Exists
   const org = await Organization.findOne({ _id: args.data.organizationId });
   if (!org) {
     throw new NotFoundError(
@@ -25,15 +25,34 @@ const createEvent = async (parent, args, context) => {
   }
 
   let flag = 0;
-  let JoinedOrg = user.joinedOrganizations;
   let CreatedOrg = user.createdOrganizations;
 
-  // Check if user has joined the org in which they are creating event
-  JoinedOrg.forEach((orgID) => {
-    if (orgID.equals(args.data.organizationId)) {
-      flag = 1;
-    }
+  const newEvent = new Event({
+    ...args.data,
+    organization: args.data.organizationId,
+    creator: context.userId,
+    registrants: [],
+    admins: [context.userId],
   });
+
+  newEvent.registrants.push({
+    userId: context.userId,
+    user: context.userId,
+  });
+
+  await newEvent.save();
+
+  // Add event to the user record
+  await User.updateOne(
+    { _id: user.id },
+    {
+      $push: {
+        eventAdmin: newEvent,
+        createdEvents: newEvent,
+        registeredEvents: newEvent,
+      },
+    }
+  );
 
   // If user hasn't joined the org then check if they have created the org
   if (!flag) {

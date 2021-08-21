@@ -20,5 +20,6 @@
     "group.notFound":"未找到組",
     "invalid.fileType":"無效的文件類型",
     "invalid.refreshToken":"無效的刷新令牌",
-    "invalid.credentials":"無效的憑據"
+    "invalid.credentials": "無效的憑據",
+    "registrant.alreadyExist": "已经报名参加活动"
 }

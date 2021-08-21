@@ -5,21 +5,49 @@ module.exports = `
         description: String!
         startDate: String!
         endDate: String!
-        allDay: Boolean!
         startTime: String
         endTime: String
+        allDay: Boolean!
         recurring: Boolean!
-        recurrance: String
-        attendees: String!
+        recurrance: Recurrance
         isPublic: Boolean! 
-        isRegisterable: Boolean! 
-        creator: User!
-        # registrants: [User]
-        admins(adminId: ID): [User]
-        organization: Organization
+        isRegisterable: Boolean!
         location: String
+        organization: Organization
+        creator: User!
+        registrants: [UserAttende]
+        admins(adminId: ID): [User]
         tasks: [Task]
-        isRegistered: Boolean
+        status: Status!
+    }
+
+    type EventRegistrants{
+        event: Event!
+        isRegistered: Boolean!
+    }
+
+    type UserAttende{
+        _id: ID!
+        userId: String!
+        user: User!
+        status: Status!
+        createdAt: String
+    }
+
+    input EventInput {
+        title:String!
+        description: String!
+        startDate: String!
+        endDate: String
+        startTime: String
+        endTime: String
+        allDay: Boolean!
+        recurring: Boolean!
+        recurrance: Recurrance
+        isPublic: Boolean! 
+        isRegisterable: Boolean!
+        location: String
+        organizationId: ID!
     }
 
     # type EventProject {
@@ -40,29 +68,11 @@ module.exports = `
         deadline: String
     }
 
-    input EventInput {
-        title:String!
-        description: String!
-        recurring: Boolean!
-        recurrance: String
-        attendees: String
-        isPublic: Boolean! 
-        isRegisterable: Boolean! 
-        organizationId: ID!
-        startDate: String!
-        endDate: String
-        allDay: Boolean!
-        startTime: String
-        endTime: String
-        location: String
-    }
-
     input UpdateEventInput {
         title:String
         description: String
         recurring: Boolean
-        recurrance: String
-        attendees: String
+        recurrance: Recurrance
         isPublic: Boolean
         isRegisterable: Boolean
         startDate: String
@@ -78,7 +88,6 @@ module.exports = `
         description: String
         deadline: String
     }
-
 
     input UpdateTaskInput {
         title: String

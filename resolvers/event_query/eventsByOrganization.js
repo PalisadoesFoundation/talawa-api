@@ -1,6 +1,6 @@
 const Event = require('../../models/Event');
 
-module.exports = async (parent, args, context) => {
+module.exports = async (parent, args) => {
   var sort = {};
   var isSortingExecuted = args.orderBy !== null;
 
@@ -49,18 +49,14 @@ module.exports = async (parent, args, context) => {
     }
   }
 
-  const e = await Event.find({ organization: args.id })
+  const eventResponse = await Event.find({
+    organization: args.id,
+    status: 'ACTIVE',
+  })
     .sort(sort)
-    // .populate("registrants")
     .populate('creator', '-password')
     .populate('tasks')
     .populate('admins', '-password');
-  const events = e.map((event) => {
-    event.isRegistered = false;
-    if (event.registrants.includes(context.userId)) {
-      event.isRegistered = true;
-    }
-    return event;
-  });
-  return events;
+
+  return eventResponse;
 };
