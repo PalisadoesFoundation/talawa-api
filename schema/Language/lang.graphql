@@ -25,6 +25,7 @@ module.exports = `
         lang_code: String
         en_value: String
         translation: String
+        verified: Boolean
     }
 
 `

@@ -22,6 +22,7 @@ const getLanguage = async (parent, args) => {
           lang_code: translated.lang_code,
           en_value: element.en,
           translation: translated.value,
+          verified: translated.verified,
         });
       }
     });
