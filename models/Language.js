@@ -5,7 +5,7 @@ const LangModel = new Schema({
   lang_code: {
     type: String,
     required: true,
-    unique: true,
+    unique: false,
     lowercase: true,
   },
   value: {

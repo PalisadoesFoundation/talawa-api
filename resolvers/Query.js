@@ -26,6 +26,7 @@ const plugin = require('./plugin_query/super-admin-plugin-query');
 const adminPlugin = require('./plugin_query/admin-plugin-query');
 const myLanguage = require('../resolvers/user_query/myLanguage');
 const userLanguage = require('../resolvers/user_query/userLanguage');
+const getlanguage = require('../resolvers/language_maintainer_query/getlanguage');
 
 const Query = {
   me,
@@ -62,6 +63,8 @@ const Query = {
   userLanguage,
   plugin,
   adminPlugin,
+
+  getlanguage,
 };
 
 module.exports = Query;

@@ -21,4 +21,10 @@ module.exports = `
         translation_value: String!
     }
 
+    type Translation{
+        lang_code: String
+        en_value: String
+        translation: String
+    }
+
 `
