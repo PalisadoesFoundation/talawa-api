@@ -5,11 +5,18 @@ const LangModel = new Schema({
   lang_code: {
     type: String,
     required: true,
+    unique: true,
+    lowercase: true,
   },
   value: {
-    type: Boolean,
+    type: String,
     required: true,
     lowercase: true,
+  },
+  verified: {
+    type: Boolean,
+    required: true,
+    default: false,
   },
   createdAt: {
     type: Date,

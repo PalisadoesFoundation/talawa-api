@@ -11,6 +11,7 @@ module.exports = `
         _id: ID!
         lang_code: String!
         value: String!
+        verified: Boolean!
         createdAt: String!
     }
 
