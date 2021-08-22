@@ -63,6 +63,7 @@ const blockPluginCreationBySuperadmin = require('../resolvers/user_mutations/blo
 
 const createPlugin = require('./plugin_mutations/createPlugin');
 const createMessageChat = require('./message_chat_mutation/createMessageChat');
+const addLanguageTranslation = require('./language_maintainer_mutation/addLanguageTranslation');
 
 const Mutation = {
   signUp,
@@ -133,6 +134,7 @@ const Mutation = {
   createPlugin,
 
   createMessageChat,
+  addLanguageTranslation,
 };
 
 module.exports = Mutation;
