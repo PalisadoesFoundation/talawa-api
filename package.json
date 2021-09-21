@@ -54,6 +54,7 @@
     "mongoose-paginate-v2": "^1.3.18",
     "morgan": "^1.10.0",
     "netmask": ">=2.0.1",
+    "pac-resolver": "^5.0.0",
     "pm2": "^4.5.5",
     "request-tracing": "file:lib/request-tracing",
     "shortid": "^2.2.16",
