@@ -28,7 +28,7 @@
   "homepage": "https://github.com/PalisadoesFoundation/talawa-api#readme",
   "dependencies": {
     "apollo-server-express": "^2.25.2",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "bcryptjs": "^2.4.3",
     "cls-bluebird": "^2.1.0",
     "cls-hooked": "^4.2.2",
