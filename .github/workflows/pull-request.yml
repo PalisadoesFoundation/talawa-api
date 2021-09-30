@@ -47,7 +47,7 @@ jobs:
         same_commit: True
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
+            
   CodeQL:
     name: "CodeQL"
     runs-on: ubuntu-latest
