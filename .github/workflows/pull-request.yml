@@ -82,10 +82,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v2
-      with:
-        node-version: '14'
-    - run: npm install jest
-    - run: npm run test
+    - run: npm run code-coverage
       continue-on-error: true
     - name: Report code coverage
       uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
