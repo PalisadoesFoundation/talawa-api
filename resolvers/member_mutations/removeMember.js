@@ -45,7 +45,7 @@ module.exports = async (parent, args, context) => {
     }
 
     //ensure the user the admin is trying to remove isn't the creator
-    if (org._doc.creator === user.id) {
+    if (org._doc.creator.equals(user.id)) {
       errors.push(
         'Administratos cannot remove the creator of the organization from the organization'
       );
