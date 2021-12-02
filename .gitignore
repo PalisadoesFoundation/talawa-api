@@ -7,3 +7,5 @@ images/
 coverage/lcov-report/
 coverage/clover.xml
 coverage/coverage-final.json
+__pycache__
+venv
