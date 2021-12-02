@@ -91,6 +91,23 @@ Follow these steps to get the api running using npm
    ```sh
    npm run start
    ```
+## Automated Installation
+
+This mode of installation helps to run all the installation steps automatically.
+
+You must have [Python 3](https://www.python.org/) or higher installed on your system.
+
+1. Clone this repo to your local machine
+
+   ```sh
+   git clone https://github.com/PalisadoesFoundation/talawa-api
+   cd talawa-api
+   ```
+2. Run the following command to start the installation process. 
+
+   ```sh
+   npm run setup
+   ```
 
 ## Testing
 
