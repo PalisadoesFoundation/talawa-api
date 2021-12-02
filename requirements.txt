@@ -1,0 +1,7 @@
+cffi==1.15.0
+colorama==0.4.4
+commonmark==0.9.1
+cryptography==36.0.0
+pycparser==2.21
+Pygments==2.10.0
+rich==10.15.2
