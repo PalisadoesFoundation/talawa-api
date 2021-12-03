@@ -1,15 +1,19 @@
-from subprocess import *
-from setup.utils import *
+"""Modules"""
+import subprocess
+from setup import utils
+
 
 def start():
-    process = Popen(['npm','start'],shell=True)
-    
-    if process.returncode != None:
-        exit_process("ERROR: Could not start the application")
-    else:
-        display_success("Successfully started the application :party_popper:")
+    """Begin the application"""
+    process = subprocess.Popen(['npm', 'start'], shell=True)
 
-    stdout,stderr = process.communicate()
+    if process.returncode is not None:
+        utils.exit_process("ERROR: Could not start the application")
+    else:
+        utils.display_success(
+            "Successfully started the application :party_popper:")
+
+    stdout, stderr = process.communicate()
     if stderr:
         print(stderr.decode())
     else:
