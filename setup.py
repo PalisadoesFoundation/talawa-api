@@ -1,18 +1,76 @@
-"""Modules"""
+"""Driver code for automated installation.
+
+This program will install Talawa API on the system.
+It executes the pre-defined commands on the shell and
+then logs the output of each step.The application runs
+on a virtual environment created using Python. Every
+installation process shows a message - whether the
+installation was successful or not.
+
+The installation process is divided into 7 (seven) stages:
+
+1. Displaying initial data
+
+This section shows teh following information about Talawa API:
+    - about the Talawa API
+    - core features in the application
+    - a link to The Palisadoes Foundation
+This content is available at "setup/data/About.md"
+in the form of a markdown file.
+
+2. Installing a virtual environment
+
+In this step, Python"s "virtualenv" is installed,
+and a virtual environment is created.
+The final result is displayed on the terminal.
+
+3. Activate the virtual environment
+
+The virtual environment is activated,
+and the current directory is now updated to the virtual environment.
+
+4. Installing Python packages
+
+In this step, all the Python packages, necessary for
+the automated installation, are installed inside the virtual
+environment. The list of packages is available within the
+"requirements.txt" file in root folder.
+
+5. User input
+
+While setting up the application, it is necessary for the administrator,
+to provide the secret tokens required to run the application.
+More details of the user input can be found inside "setup/installation.py".
+
+6. Install the JavaScript dependencies
+
+The JavaScript dependencies that are required to run the application
+are installed in this step. The program executes the "npm install" command,
+and all dependencies listed within the "package.json" are installed.
+
+7. Starting the application
+
+The application is then started with the "npm start" command,
+and the logs are simultaneously displayed on the console.
+
+More information about the setup functions can be found
+in "setup/README.md" file
+
+"""
 import asyncio
 from setup import installation, post_installation, utils
 
-"""Display initial data"""
-utils.display_markdown('# Talawa API')
-with open('./setup/data/About.md', encoding="utf-8") as about:
+# 1. Display initial data
+utils.display_markdown("# Talawa API")
+with open("./setup/data/About.md", encoding="utf-8") as about:
     utils.display_markdown(about.read(), "white")
 
-"""Set up virtual environment by installing virtualenv and creating it"""
-utils.display_markdown('# SETTING UP ENVIRONMENT', 'light_blue')
+# 2. Installing a virtual environment
+utils.display_markdown("# SETTING UP ENVIRONMENT", "light_blue")
 asyncio.run(
     installation.run(
         "pip install virtualenv",
-        "Successfully installed [bold cyan]virtualenv[/bold cyan] :party_popper:",
+        "Successfully installed [bold]virtualenv[/bold] :party_popper:",
         "Failed to install virtualenv :cross_mark:"))
 asyncio.run(
     installation.run(
@@ -20,35 +78,37 @@ asyncio.run(
         "Successfully created a virtual environment :party_popper:",
         "Failed to create a virtual environment :cross_mark:"))
 
-"""Activate virtual environment"""
+
+# 3. Activate virtual environment
 VIRTUAL_ENV_PATH = "venv\\Scripts\\activate_this.py"
 with open(VIRTUAL_ENV_PATH, encoding="utf-8") as f:
-    code = compile(f.read(), VIRTUAL_ENV_PATH, 'exec')
+    code = compile(f.read(), VIRTUAL_ENV_PATH, "exec")
     exec(code, dict(__file__=VIRTUAL_ENV_PATH))
 
-"""Insttall Python packages as in requirements.txt"""
-utils.display_markdown('# INSTALLING PYTHON PACKAGES', 'light_blue')
+# 4. Install Python packages
+utils.display_markdown("# INSTALLING PYTHON PACKAGES", "light_blue")
 asyncio.run(
     installation.run(
         "pip install -r requirements.txt",
         "Successfully installed Python packages :party_popper:",
         "Failed to install requirements :cross_mark:"))
 
-"""Take input of details from user"""
-with open('./setup/data/Input.md', encoding="utf-8") as user_input:
+# 5. Take input of details from user
+with open("./setup/data/Input.md", encoding="utf-8") as user_input:
     utils.display_markdown(user_input.read(), "white")
 installation.user_input()
 
-"""Install JavaSceipt dependencies as in package.json"""
+# 6. Install JavaScript dependencies
 utils.display_markdown("# INSTALLING JAVASCRIPT DEPENDENCIES", "white")
 utils.console.print(
-    "If you are installing the packages for the first time, it may take a while...")
+    "If you are installing the packages for the first time,\n" +
+    "it may take a while...")
 asyncio.run(
     installation.run(
         "npm install",
         "Successfully installed dependencies :party_popper:",
         "Failed to install dependencies :cross_mark:"))
 
-"""Start the application"""
+# 7. Start the application
 utils.display_markdown("# STARTING APPLICATION")
 post_installation.start()
