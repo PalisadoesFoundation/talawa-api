@@ -74,7 +74,7 @@ def user_input():
         access_token = f"ACCESS_TOKEN_SECRET={access_token}\n"
         refresh_token = f"REFRESH_TOKEN_SECRET={refresh_token}\n"
         mongodb_url = f"nMONGO_DB_URL={mongodb_url}\n"
-        data = name + username + password
+        data = name + username + password + decryption_key
         data += access_token + refresh_token + mongodb_url
         config.write(data)
 
@@ -115,9 +115,11 @@ async def run(cmd, success="Success", error="Error"):
         if stderr:
             print(f"[stderr]\n{stderr.decode()}")
 
-        if proc.returncode is None:
+        if proc.returncode is not None:
             display_success(success)
+            return
     except RuntimeError as err:
         print(err)
+        exit_process(err or error)
     else:
-        exit_process(error)
+        pass
