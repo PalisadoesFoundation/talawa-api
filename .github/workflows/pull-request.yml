@@ -89,3 +89,5 @@ jobs:
       with:
         path: "./coverage/lcov.info"
         min_coverage: 60
+    - name: Codecov
+      uses: codecov/codecov-action@v2.1.0
