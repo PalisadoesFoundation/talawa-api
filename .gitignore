@@ -4,6 +4,4 @@ nodemon.json
 .env
 images/
 .vscode
-coverage/lcov-report/
-coverage/clover.xml
-coverage/coverage-final.json
+coverage/
