@@ -82,12 +82,15 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v2
-    - run: npm run test
-      continue-on-error: true
+    - name: Install dependencies
+      run: npm install
+    - name: Run the tests
+      run: npm test --ci --coverage
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
     - name: Report code coverage
       uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
       with:
         path: "./coverage/lcov.info"
-        min_coverage: 60
-    - name: Codecov
-      uses: codecov/codecov-action@v2.1.0
+        min_coverage: 70
+
