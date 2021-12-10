@@ -10,11 +10,14 @@ filelock==3.4.0
 isort==5.10.1
 lazy-object-proxy==1.6.0
 mccabe==0.6.1
+parso==0.8.3
 platformdirs==2.4.0
 pycodestyle==2.8.0
 pycparser==2.21
+pydocstring==0.2.1
 Pygments==2.10.0
 pylint==2.12.1
+pylint-runner==0.6.0
 rich==10.15.2
 six==1.16.0
 toml==0.10.2
