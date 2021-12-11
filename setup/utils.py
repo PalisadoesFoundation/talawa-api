@@ -13,7 +13,6 @@ console = Console()
 
 
 def display_markdown(text, color="yellow"):
-
     """Display the text in markdown files
 
     Reads the content of markdown files and displays them
