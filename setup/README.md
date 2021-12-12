@@ -13,7 +13,7 @@ setup
 ├── installation.py
 ├── post_installation.py
 ├── utils.py
-└── data
+└── markdown
     ├── About.md
     └── Input.md
 
@@ -27,7 +27,7 @@ A brief explanation of each of the contents of this file is given below :
 
 - utils.py : This file contains some helper functions that are necessary in the above two programs
 
-- data : This subdirectory contains the data displayed during installation of the Talawa API
+- markdown : This subdirectory contains the data displayed during installation of the Talawa API
     - About.md - This is the information that is displayed when the installation of the Talawa API begins 
     - Input.md - This file contains the instructions that are shown when the user provides the program credentials as input. 
 
