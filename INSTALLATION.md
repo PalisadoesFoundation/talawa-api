@@ -95,7 +95,11 @@ Follow these steps to get the api running using npm
 
 This mode of installation helps to run all the installation steps automatically.
 
-You must have [Python 3](https://www.python.org/) or higher installed on your system.
+You must have the following installed on your system:
+- [NodeJS 14.0.0](https://www.nodejs.org) or higher 
+- [Python 3](https://www.python.org) or higher
+
+To start with the installation process,
 
 1. Clone this repo to your local machine
 
