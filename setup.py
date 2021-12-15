@@ -81,27 +81,30 @@ with open("./setup/markdown/About.md", encoding="utf-8") as about:
 utils.display_markdown("# SETTING UP ENVIRONMENT", "light_blue")
 asyncio.run(
     installation.run(
-        "pip install virtualenv",
+        "pip install virtualenv --user && python -m pip install -U pip",
         "Successfully installed [bold]virtualenv[/bold] :party_popper:",
         "Failed to install virtualenv :cross_mark:"))
 asyncio.run(
     installation.run(
-        "virtualenv venv",
+        "python -m venv ./venv",
         "Successfully created a virtual environment :party_popper:",
         "Failed to create a virtual environment :cross_mark:"))
 
 
 # 4. Activate virtual environment
-VIRTUAL_ENV_PATH = 'venv\\Scripts\\activate_this.py'
-with open(VIRTUAL_ENV_PATH, encoding="utf-8") as f:
-    code = compile(f.read(), VIRTUAL_ENV_PATH, "exec")
-    exec(code, dict(__file__=VIRTUAL_ENV_PATH))
+VIRTUAL_ENV_PATH = 'venv\\Scripts\\activate'
+asyncio.run(
+    installation.run(
+        VIRTUAL_ENV_PATH,
+        "Successfully activated virtual environment :party_popper:",
+        "Failed to activate virtual environment :cross_mark:"))
 
 # 5. Install Python packages
 utils.display_markdown("# INSTALLING PYTHON PACKAGES", "light_blue")
 asyncio.run(
     installation.run(
-        "pip install -r requirements.txt",
+        "pip install -r requirements.txt --user --ignore-installed" +
+        "--no-warn-script-location && pip install pylint-runner --user",
         "Successfully installed Python packages :party_popper:",
         "Failed to install requirements :cross_mark:"))
 
