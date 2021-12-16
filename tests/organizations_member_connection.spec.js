@@ -36,7 +36,6 @@ describe('organization member connection resolvers', () => {
     );
     const { data } = createdOrgResponse;
     createdOrgId = data?.data.createOrganization._id;
-    console.log(createdOrgId);
     expect(data.data.createOrganization).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
@@ -76,6 +75,7 @@ describe('organization member connection resolvers', () => {
       }
     );
 
+    // Method to assert the value with null or a type.
     expect.extend({
       toBeTypeOrNull(received, classTypeOrNull) {
         try {
@@ -107,8 +107,8 @@ describe('organization member connection resolvers', () => {
         hasNextPage: expect.any(Boolean),
         hasPreviousPage: expect.any(Boolean),
         totalPages: expect.any(Number),
-        nextPageNo: expect.toBeTypeOrNull(Number),
-        prevPageNo: expect.toBeTypeOrNull(Number),
+        nextPageNo: expect.toBeTypeOrNull(Number), // It may be null or a number
+        prevPageNo: expect.toBeTypeOrNull(Number), // It may be null or a number
         currPageNo: expect.any(Number),
       })
     );
