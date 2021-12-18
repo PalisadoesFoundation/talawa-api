@@ -64,7 +64,7 @@ def user_input():
     elif (not access_token) or (not refresh_token) or (not mongodb_url):
         exit_process("Token or Database URL is missing")
 
-    # Check MongoDB connection
+    # Check MongoDB connection with the provided URL
     client = MongoClient(mongodb_url)
     try:
         client.server_info()
@@ -84,7 +84,7 @@ def user_input():
         data += access_token + refresh_token + mongodb_url
         config.write(data)
 
-    display_success("User configured successfully :party_popper:")
+    display_success("User configured successfully and database connection verified :party_popper:")
 
 async def run(cmd, success="Success", error="Error"):
     """To run any command on the shell

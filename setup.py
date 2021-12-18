@@ -90,9 +90,11 @@ asyncio.run(
 VIRTUAL_ENV_PATH = 'venv\\Scripts\\Activate'
 if platform.system() != 'Windows':
     VIRTUAL_ENV_PATH = 'source venv/bin/activate'
-print(VIRTUAL_ENV_PATH)
 asyncio.run(
     installation.run(
         VIRTUAL_ENV_PATH,
         "Successfully activated virtual environment :party_popper:",
         "Failed to activate virtual environment :cross_mark:"))
+
+# 5. Installing Python packages
+utils.display_markdown("# INSTALLING PYTHON PACKAGES", "light_blue")

@@ -9,7 +9,8 @@
         "prod": "cross-env NODE_ENV=production pm2-runtime start index.js",
         "test-server": "cross-env NODE_ENV=test TEST_DB=talawa-test-db nodemon index.js --ext js,graphql",
         "lint": "eslint . --fix && pip install pylint_runner && pylint_runner --rcfile=.pylintrc -v && echo 'Lint complete.'",
-        "setup": "pip install rich pylint-runner cryptography pymongo --user && python setup.py && venv\\Scripts\\activate && pip install -r requirements.txt && python virtual_setup.py"
+        "setup-windows": "pip install rich pylint-runner cryptography pymongo --user && python setup.py && venv\\Scripts\\activate && pip install -r requirements.txt && python virtual_setup.py",
+        "setup-others": "sudo apt install python3-pip && pip install rich pylint-runner cryptography pymongo --user && python setup.py && source venv/bin/activate && pip install -r requirements.txt && python virtual_setup.py"
     },
     "repository": {
         "type": "git",

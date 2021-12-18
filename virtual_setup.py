@@ -6,8 +6,9 @@ exclusively inside the virtual environment.
 
 1. User input
 
-While setting up the application, it is necessary for the administrator,
-to provide the secret tokens required to run the application.
+While setting up the application, the administrator is asked if he/she
+wants to provide the secret tokens required to run the application. If yes,
+then a user configuration section opens up and asks for the user details.
 More details of the user input can be found inside "setup/installation.py".
 
 2. Install the JavaScript dependencies
@@ -31,13 +32,17 @@ import asyncio
 from setup import installation, utils
 
 # Display messagee on installng Python packages
-utils.display_markdown("# INSTALLING PYTHON PACKAGES", "light_blue")
 utils.display_success("Successfully installed Python packages :party_popper:")
 
 # 1. Take input of details from user
-with open("./setup/markdown/Input.md", encoding="utf-8") as user_input:
-    utils.display_markdown(user_input.read(), "white")
-installation.user_input()
+takeUserInput = input("\nDo you want to configure variables for the application?\n" +
+                        "This will override any existing variable.\n" + 
+                        "(Enter Y for Yes, any other key to ignore)\n" + 
+                        "-> ")
+if(takeUserInput in ["Y","y"]):
+    with open("./setup/markdown/Input.md", encoding="utf-8") as user_input:
+        utils.display_markdown(user_input.read(), "white")
+    installation.user_input()
 
 # 2. Install JavaScript dependencies
 utils.display_markdown("# INSTALLING JAVASCRIPT DEPENDENCIES", "white")

@@ -91,14 +91,16 @@ Follow these steps to get the api running using npm
    ```sh
    npm run start
    ```
-## Automated Installation
+## Express Installation
 
-This mode of installation helps to run all the installation steps automatically.
+This mode of installation helps to run all the installation steps automatically. It is also referred to as *Automated Installation*.
 
 You must have the following installed on your system:
 - [NodeJS 14.0.0](https://www.nodejs.org) or higher 
 - [Python 3](https://www.python.org) or higher
 - [MongoDB](https://www.mongodb.com/)
+
+> You can skip installing MongoDB on your local device by creating a MongoDB cluster using MongoDB Atlas and using the database URL in the configuration process. See [MongoDB Atlas](https://www.mongodb.com/atlas) for more information.
 
 To start with the installation process,
 
@@ -108,10 +110,17 @@ To start with the installation process,
    git clone https://github.com/PalisadoesFoundation/talawa-api
    cd talawa-api
    ```
-2. Run the following command to start the installation process. 
+2. Run the following command, based on your system, to start the installation process. 
+
+   For Windows:
 
    ```sh
-   npm run setup
+   npm run setup-windows
+   ```
+
+   For other users:
+   ```sh
+   npm run setup-others
    ```
 
 ## Testing
