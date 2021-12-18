@@ -35,38 +35,28 @@ The final result is displayed on the terminal.
 The virtual environment is activated,
 and the current directory is now updated to the virtual environment.
 
+
 5. Installing Python packages
 
 In this step, all the Python packages, necessary for
 the automated installation, are installed inside the virtual
-environment. The list of packages is available within the
-"requirements.txt" file in root folder.
+environment. The command to install these packages is executed
+within the 'setup' script of 'package.json' file. This is an
+intermediate step when the execution shifts from 'setup.py' to
+the 'virtual_setup.py' script. The list of packages is available
+within the "requirements.txt" file in root folder.
 
-6. User input
-
-While setting up the application, it is necessary for the administrator,
-to provide the secret tokens required to run the application.
-More details of the user input can be found inside "setup/installation.py".
-
-7. Install the JavaScript dependencies
-
-The JavaScript dependencies that are required to run the application
-are installed in this step. The program executes the "npm install" command,
-and all dependencies listed within the "package.json" are installed.
-
-8. Starting the application
-
-The application is then started with the "npm start" command,
-and the logs are simultaneously displayed on the console.
-
-More information about the setup functions can be found
-in "setup/README.md" file
+The control now shifts to the 'virtual_setup.py' script
+which is responsible for continuing the installation
+process within the virtual environment that was created
+above.
 
 """
 import os
 import asyncio
 import pathlib
-from setup import installation, post_installation, utils
+import platform
+from setup import installation, utils
 
 # 1. Shift to the Talawa API directory
 path = pathlib.Path(__file__).parent.resolve()
@@ -79,51 +69,30 @@ with open("./setup/markdown/About.md", encoding="utf-8") as about:
 
 # 3. Installing a virtual environment
 utils.display_markdown("# SETTING UP ENVIRONMENT", "light_blue")
+VIRTUAL_ENV_INSTALLATION_COMMAND = 'pip install virtualenv --user && python -m pip install -U pip'
+if platform.system() == "Debian":
+    VIRTUAL_ENV_INSTALLATION_COMMAND = 'sudo apt install virtualenv'
+elif platform.system() == "Linux":
+    VIRTUAL_ENV_INSTALLATION_COMMAND = 'apt-get install -y python3-venv'
 asyncio.run(
     installation.run(
-        "pip install virtualenv --user && python -m pip install -U pip",
+        VIRTUAL_ENV_INSTALLATION_COMMAND,
         "Successfully installed [bold]virtualenv[/bold] :party_popper:",
         "Failed to install virtualenv :cross_mark:"))
 asyncio.run(
     installation.run(
-        "python -m venv ./venv",
+        "virtualenv venv",
         "Successfully created a virtual environment :party_popper:",
         "Failed to create a virtual environment :cross_mark:"))
 
 
 # 4. Activate virtual environment
-VIRTUAL_ENV_PATH = 'venv\\Scripts\\activate'
+VIRTUAL_ENV_PATH = 'venv\\Scripts\\Activate'
+if platform.system() != 'Windows':
+    VIRTUAL_ENV_PATH = 'source venv/bin/activate'
+print(VIRTUAL_ENV_PATH)
 asyncio.run(
     installation.run(
         VIRTUAL_ENV_PATH,
         "Successfully activated virtual environment :party_popper:",
         "Failed to activate virtual environment :cross_mark:"))
-
-# 5. Install Python packages
-utils.display_markdown("# INSTALLING PYTHON PACKAGES", "light_blue")
-asyncio.run(
-    installation.run(
-        "pip install -r requirements.txt --user --ignore-installed" +
-        "--no-warn-script-location && pip install pylint-runner --user",
-        "Successfully installed Python packages :party_popper:",
-        "Failed to install requirements :cross_mark:"))
-
-# 6. Take input of details from user
-with open("./setup/markdown/Input.md", encoding="utf-8") as user_input:
-    utils.display_markdown(user_input.read(), "white")
-installation.user_input()
-
-# 7. Install JavaScript dependencies
-utils.display_markdown("# INSTALLING JAVASCRIPT DEPENDENCIES", "white")
-utils.console.print(
-    "If you are installing the packages for the first time,\n" +
-    "it may take a while...")
-asyncio.run(
-    installation.run(
-        "npm install",
-        "Successfully installed dependencies :party_popper:",
-        "Failed to install dependencies :cross_mark:"))
-
-# 8. Start the application
-utils.display_markdown("# STARTING APPLICATION")
-post_installation.start()
