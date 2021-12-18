@@ -9,3 +9,4 @@ coverage/clover.xml
 coverage/coverage-final.json
 __pycache__
 venv
+debug.log

@@ -98,6 +98,7 @@ This mode of installation helps to run all the installation steps automatically.
 You must have the following installed on your system:
 - [NodeJS 14.0.0](https://www.nodejs.org) or higher 
 - [Python 3](https://www.python.org) or higher
+- [MongoDB](https://www.mongodb.com/)
 
 To start with the installation process,
 
