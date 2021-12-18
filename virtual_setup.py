@@ -45,7 +45,7 @@ if(takeUserInput in ["Y","y"]):
     installation.user_input()
 
 # 2. Install JavaScript dependencies
-utils.display_markdown("# INSTALLING JAVASCRIPT DEPENDENCIES", "white")
+utils.display_markdown("# INSTALLING PROJECT DEPENDENCIES", "white")
 utils.console.print(
     "If you are installing the packages for the first time,\n" +
     "it may take a while...")

@@ -123,6 +123,8 @@ To start with the installation process,
    npm run setup-others
    ```
 
+   For more information on the installation process, visit [```setup/README.md```](./setup/README.md)
+
 ## Testing
 
 ```sh
