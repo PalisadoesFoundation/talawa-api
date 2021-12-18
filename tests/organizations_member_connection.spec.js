@@ -126,4 +126,91 @@ describe('organization member connection resolvers', () => {
       })
     );
   });
+
+  test('Organization Member Connection Without Skip Parameter', async () => {
+    const connectionResponse = await axios.post(
+      URL,
+      {
+        query: `
+                query {
+                    organizationsMemberConnection(orgId: "${createdOrgId}", first:1) {
+                        pageInfo {
+                        hasNextPage
+                        hasPreviousPage
+                        totalPages
+                        nextPageNo
+                        prevPageNo
+                        currPageNo
+                        }
+                        edges{
+                          _id
+                        }
+                        aggregate {
+                        count
+                        }
+                    }
+                    }
+            `,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    expect(connectionResponse.data.errors[0]).toEqual(
+      expect.objectContaining({
+        message: 'Skip parameter is missing',
+        status: 422,
+        data: [],
+      })
+    );
+
+    expect(connectionResponse.data.data).toEqual(null);
+  });
+
+  test('Organization Member Connection With Skip Parameter as Null', async () => {
+    const connectionResponse = await axios.post(
+      URL,
+      {
+        query: `
+                query {
+                    organizationsMemberConnection(orgId: "${createdOrgId}", first:1, skip:null) {
+                        pageInfo {
+                        hasNextPage
+                        hasPreviousPage
+                        totalPages
+                        nextPageNo
+                        prevPageNo
+                        currPageNo
+                        }
+                        edges{
+                          _id
+                        }
+                        aggregate {
+                        count
+                        }
+                    }
+                    }
+            `,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    expect(connectionResponse.data.errors[0]).toEqual(
+      expect.objectContaining({
+        message:
+          'Unexpected error value: "Missing Skip parameter. Set it to either 0 or some other value"',
+        status: 422,
+        data: [],
+      })
+    );
+
+    expect(connectionResponse.data.data).toEqual(null);
+  });
 });
