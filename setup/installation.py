@@ -8,6 +8,7 @@ was successful or not.
 import getpass
 import asyncio
 from cryptography.fernet import Fernet
+from pymongo import MongoClient
 from setup.utils import display_success, exit_process
 
 
@@ -62,8 +63,13 @@ def user_input():
         exit_process("All fields were not provided")
     elif (not access_token) or (not refresh_token) or (not mongodb_url):
         exit_process("Token or Database URL is missing")
-    else:
-        display_success("User configured successfully :party_popper:")
+
+    # Check MongoDB connection
+    client = MongoClient(mongodb_url)
+    try:
+        client.server_info()
+    except Exception as err:
+        exit_process(err)
 
     # Create a file for environment variables and save it
     with open(".env", "w+", encoding="utf-8") as config:
@@ -73,11 +79,12 @@ def user_input():
         decryption_key = f"DECRYPTION_KEY={decryption_key}\n"
         access_token = f"ACCESS_TOKEN_SECRET={access_token}\n"
         refresh_token = f"REFRESH_TOKEN_SECRET={refresh_token}\n"
-        mongodb_url = f"nMONGO_DB_URL={mongodb_url}\n"
+        mongodb_url = f"MONGO_DB_URL={mongodb_url}\n"
         data = name + username + password + decryption_key
         data += access_token + refresh_token + mongodb_url
         config.write(data)
 
+    display_success("User configured successfully :party_popper:")
 
 async def run(cmd, success="Success", error="Error"):
     """To run any command on the shell
