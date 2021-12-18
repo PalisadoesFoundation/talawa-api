@@ -85,7 +85,7 @@ jobs:
     - name: Install dependencies
       run: npm install
     - name: Run the tests
-      run: npm test --ci --coverage
+      run: npm run coverage
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
 
