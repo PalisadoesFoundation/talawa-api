@@ -213,4 +213,55 @@ describe('organization member connection resolvers', () => {
 
     expect(connectionResponse.data.data).toEqual(null);
   });
+
+  test('Organization Member Connection Without Authorization', async () => {
+    const connectionResponse = await axios.post(
+      URL,
+      {
+        query: `
+                query {
+                    organizationsMemberConnection(orgId: "${createdOrgId}") {
+                        pageInfo {
+                        hasNextPage
+                        hasPreviousPage
+                        totalPages
+                        nextPageNo
+                        prevPageNo
+                        currPageNo
+                        }
+                        edges{
+                          _id
+                        }
+                        aggregate {
+                        count
+                        }
+                    }
+                    }
+            `,
+      },
+      {
+        headers: {
+          Authorization: 'Bearer ', //Empty Token
+        },
+      }
+    );
+
+    expect(connectionResponse.data.errors[0]).toEqual(
+      expect.objectContaining({
+        message: 'User is not authenticated',
+        status: 422,
+      })
+    );
+
+    expect(connectionResponse.data.errors[0].data[0]).toEqual(
+      expect.objectContaining({
+        message: 'User is not authenticated',
+        code: 'user.notAuthenticated',
+        param: 'userAuthentication',
+        metadata: {},
+      })
+    );
+
+    expect(connectionResponse.data.data).toEqual(null);
+  });
 });
