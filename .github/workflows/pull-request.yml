@@ -3,19 +3,9 @@ on:
   pull_request:
 
 jobs:
-  PR-Greeting:
-    name: Greeting Message to user
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/first-interaction@v1
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          pr-message: "Congratulations on making your first PR! :confetti_ball: If you haven't already, check out our [Contributing Guidelines](https://github.com/PalisadoesFoundation/talawa/blob/master/CONTRIBUTING.md) and [PR Reporting Guidelines](https://github.com/PalisadoesFoundation/talawa/blob/master/PR-guidelines.md) to ensure that you are following our guidelines for contributing and creating PR."
-
   Linter:
     name: Lints the code
     runs-on: ubuntu-latest
-    needs: PR-Greeting
     steps:
       - uses: actions/checkout@v2
       - name: Install Dependencies
@@ -25,8 +15,8 @@ jobs:
 
   Count-lines-of-code:
     name: Total number of lines in every file should not be more than 400
-    needs: PR-Greeting
     runs-on: ubuntu-latest
+    needs: Linter
     steps:
       - uses: actions/checkout@v2
       - run: chmod +x ./.github/workflows/countline.py
@@ -34,8 +24,8 @@ jobs:
       
   Code-Formatter:
     name: Formats the code
-    needs: PR-Greeting
     runs-on: ubuntu-latest
+    needs: Linter
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -52,6 +42,7 @@ jobs:
   CodeQL:
     name: "CodeQL"
     runs-on: ubuntu-latest
+    needs: Code-Formatter
     permissions:
       actions: read
       contents: read
@@ -79,7 +70,7 @@ jobs:
   Code-Coverage:
     name: Shows code coverage
     runs-on: ubuntu-latest
-    needs: PR-Greeting
+    needs: CodeQL
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v2
