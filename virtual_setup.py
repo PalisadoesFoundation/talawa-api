@@ -36,8 +36,8 @@ utils.display_success("Successfully installed Python packages :party_popper:")
 
 # 1. Take input of details from user
 takeUserInput = input("\nDo you want to configure variables for the application?\n" +
-                        "This will override any existing variable.\n" + 
-                        "(Enter Y for Yes, any other key to ignore)\n" + 
+                        "This will override any existing variable.\n" +
+                        "(Enter Y for Yes, any other key to ignore)\n" +
                         "-> ")
 if(takeUserInput in ["Y","y"]):
     with open("./setup/markdown/Input.md", encoding="utf-8") as user_input:
@@ -51,7 +51,7 @@ utils.console.print(
     "it may take a while...")
 asyncio.run(
     installation.run(
-        "npm install",
+        "npm install -f",
         "Successfully installed dependencies :party_popper:",
         "Failed to install dependencies :cross_mark:"))
 
