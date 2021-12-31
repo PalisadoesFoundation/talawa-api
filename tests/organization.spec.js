@@ -35,6 +35,7 @@ describe('organization resolvers', () => {
                     description:"test description"
                     isPublic: true
                     visibleInSearch: true
+                    apiUrl:"test url"
                     }) {
                         _id
                     }
@@ -61,17 +62,52 @@ describe('organization resolvers', () => {
       URL,
       {
         query: `
-            mutation {
-                updateOrganization(id: "${createdOrgId}", data: {
-                    description: "new description",
-                    isPublic: false
-                    }) {
-                        _id
-                        description
-                        isPublic
-                    }
+          mutation {
+            updateOrganization(
+              id: "${createdOrgId}"
+              data: {
+                name: "test2 org"
+                description: "new description"
+                isPublic: false
+                visibleInSearch: false
+              }
+            ) {
+              _id
+              name
+              description
+              isPublic
+              visibleInSearch
+              apiUrl
+              image
+              creator {
+                _id
+                firstName
+              }
+              members {
+                _id
+                firstName
+              }
+              admins {
+                _id
+                firstName
+              }
+              membershipRequests {
+                _id
+                organization{
+                  _id
+                }
+                user {
+                  _id
+                  firstName
+                }
+              }
+              blockedUsers {
+                _id
+                firstName
+              }
             }
-              `,
+          }
+        `,
       },
       {
         headers: {
@@ -82,14 +118,64 @@ describe('organization resolvers', () => {
 
     const { data } = updateOrgRes;
 
-    expect(data).toMatchObject({
-      data: {
-        updateOrganization: {
-          _id: `${createdOrgId}`,
-          description: 'new description',
-          isPublic: false,
-        },
-      },
+    expect(data.data.updateOrganization).toEqual(
+      expect.objectContaining({
+        _id: createdOrgId,
+        name: 'test2 org',
+        description: 'new description',
+        isPublic: false,
+        visibleInSearch: false,
+        apiUrl: 'test url',
+        image: null,
+        creator: expect.objectContaining({
+          _id: expect.any(String),
+          firstName: expect.any(String),
+        }),
+      })
+    );
+
+    data.data.updateOrganization.members.map((member) => {
+      expect(member).toEqual(
+        expect.objectContaining({
+          _id: expect.any(String),
+          firstName: expect.any(String),
+        })
+      );
+    });
+
+    data.data.updateOrganization.admins.map((admin) => {
+      expect(admin).toEqual(
+        expect.objectContaining({
+          _id: expect.any(String),
+          firstName: expect.any(String),
+        })
+      );
+    });
+
+    data.data.updateOrganization.membershipRequests.map((membershipRequest) => {
+      expect(membershipRequest).toEqual(
+        expect.objectContaining({
+          _id: expect.any(String),
+          user: expect.objectContaining({
+            _id: expect.any(String),
+            firstName: expect.any(String),
+          }),
+          organization: expect.objectContaining({
+            _id: expect.any(String),
+            name: expect.any(String),
+            description: expect.any(String),
+          }),
+        })
+      );
+    });
+
+    data.data.updateOrganization.blockedUsers.map((blockedUser) => {
+      expect(blockedUser).toEqual(
+        expect.objectContaining({
+          _id: expect.any(String),
+          firstName: expect.any(String),
+        })
+      );
     });
   });
 
