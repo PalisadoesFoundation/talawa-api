@@ -95,6 +95,8 @@ describe('organization resolvers', () => {
                 _id
                 organization{
                   _id
+                  name
+                  description
                 }
                 user {
                   _id
@@ -156,14 +158,14 @@ describe('organization resolvers', () => {
       expect(membershipRequest).toEqual(
         expect.objectContaining({
           _id: expect.any(String),
-          user: expect.objectContaining({
-            _id: expect.any(String),
-            firstName: expect.any(String),
-          }),
           organization: expect.objectContaining({
             _id: expect.any(String),
             name: expect.any(String),
             description: expect.any(String),
+          }),
+          user: expect.objectContaining({
+            _id: expect.any(String),
+            firstName: expect.any(String),
           }),
         })
       );
