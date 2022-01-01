@@ -18,9 +18,10 @@ describe('user resolvers', () => {
     expect(Array.isArray(data.data.users)).toBeTruthy();
   });
 
+  const id = shortid.generate().toLowerCase();
+  const email = `${id}@test.com`;
+
   test('signUp', async () => {
-    var id = shortid.generate();
-    var email = `${id}@test.com`;
     const response = await axios.post(URL, {
       query: `
             mutation {
@@ -30,17 +31,32 @@ describe('user resolvers', () => {
                   email: "${email}"
                   password:"password"
                 }) {
-                  user{
-                    _id
+                    user {
+                      _id
+                      firstName
+                      lastName
+                      email
+                      userType
+                      appLanguageCode
+                      image
+                    }
+                    accessToken
                   }
-                  accessToken
                 }
-              }
               `,
     });
     const { data } = response;
     expect(data.data.signUp).toEqual(
       expect.objectContaining({
+        user: expect.objectContaining({
+          _id: expect.any(String),
+          firstName: 'testdb2',
+          lastName: 'testdb2',
+          email: `${email}`,
+          userType: 'USER',
+          appLanguageCode: 'en',
+          image: null,
+        }),
         accessToken: expect.any(String),
       })
     );
@@ -51,7 +67,7 @@ describe('user resolvers', () => {
       query: `
             mutation{
                 login(data: {
-                  email:"testdb2@test.com",
+                  email:"${email}",
                   password:"password"
                 }) {
                   user{
