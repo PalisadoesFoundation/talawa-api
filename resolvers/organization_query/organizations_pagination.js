@@ -189,7 +189,7 @@ const organizationsConnection = async (parent, args) => {
     }
 
     //Returns organizations with provided visibleInSearch condition
-    if (filterParam.visibleInSearch != undefined) {
+    if (filterParam.visibleInSearch !== undefined) {
       inputArg = {
         ...inputArg,
         visibleInSearch: filterParam.visibleInSearch,
@@ -197,7 +197,7 @@ const organizationsConnection = async (parent, args) => {
     }
 
     //Returns organizations with provided isPublic condition
-    if (filterParam.isPublic != undefined) {
+    if (filterParam.isPublic !== undefined) {
       inputArg = {
         ...inputArg,
         isPublic: filterParam.isPublic,
