@@ -7,3 +7,4 @@ images/
 coverage/lcov-report/
 coverage/clover.xml
 coverage/coverage-final.json
+package-lock.json
