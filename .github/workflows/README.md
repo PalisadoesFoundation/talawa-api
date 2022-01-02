@@ -15,7 +15,7 @@ Whenever possible you must ensure that:
 1. The sequence of the jobs in the workflows are maintained using [GitHub Action dependencies](https://docs.github.com/en/actions/learn-github-actions/managing-complex-workflows). 
 
 ### File Roles
-Follow these guidelines when creating new YAML defined GitHub actions.
+Follow these guidelines when creating new YAML defined GitHub actions. This is done to make troubleshooting easier.
 
 1. `Issue` Workflows:
    1. Place all actions related to issues in the `issues.yml` file.
