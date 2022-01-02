@@ -1,6 +1,10 @@
-# GitHub Workflows Guidelines
+# Talawa GitHub Workflows Guidelines
 
 Follow these guidelines when contributing to this directory.
+
+## General
+
+Any changes to files in this directory are flagged when pull requests are run. Make changes only on the advice of a contributor.
 
 ## YAML Workflow Files
 
