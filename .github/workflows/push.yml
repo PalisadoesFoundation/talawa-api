@@ -42,6 +42,7 @@ jobs:
       run: npm install
     - name: Run the tests    
       run: npm run test-dev
+      continue-on-error: true
     - name: Save Test Coverage Details
       uses: codecov/codecov-action@v2
       with:
