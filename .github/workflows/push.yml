@@ -41,7 +41,7 @@ jobs:
     - name: Install dependencies
       run: npm install
     - name: Run the tests    
-      run: npm run test
+      run: npm run test-dev
     - name: Save Test Coverage Details
       uses: codecov/codecov-action@v2
       with:
