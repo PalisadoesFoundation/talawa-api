@@ -46,7 +46,7 @@ jobs:
     - name: Save Test Coverage Details
       uses: codecov/codecov-action@v2
       with:
-        token: ${{secrets.CODECOV}} 
+        token: ${{secrets.CODECOV_TOKEN}} 
         file: ./coverage/lcov.info 
     - name: Report code coverage
       uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
