@@ -5,7 +5,7 @@ on:
     branches:
       - '**'   
 jobs:
-  code-scan:
+  CodeQL:
     name: Analyse code with codeQL on push
     runs-on: ubuntu-latest
     strategy:
