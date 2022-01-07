@@ -15,7 +15,6 @@ const requestLogger = require('morgan');
 const path = require('path');
 const i18n = require('i18n');
 const requestContext = require('talawa-request-context');
-const { UnauthenticatedError } = require('errors');
 const requestTracing = require('request-tracing');
 
 const Query = require('./resolvers/Query');
@@ -31,7 +30,9 @@ const DirectChatMessage = require('./resolvers/DirectChatMessage');
 const { defaultLocale, supportedLocales } = require('./config/app');
 const GroupChat = require('./resolvers/GroupChat');
 const GroupChatMessage = require('./resolvers/GroupChatMessage');
-const Subscription = require('./resolvers/Subscription');
+//const Subscription = require('./resolvers/Subscription');
+const AuthenticationDirective = require('./directives/authDirective');
+const RoleAuthorizationDirective = require('./directives/roleDirective');
 
 const app = express();
 
@@ -95,7 +96,9 @@ app.use(mongoSanitize());
 app.use(cors());
 app.use(
     requestLogger(
-        ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms', { stream: logger.stream }
+        ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms', {
+            stream: logger.stream,
+        }
     )
 );
 app.use('/images', express.static(path.join(__dirname, './images')));
@@ -149,24 +152,10 @@ const apolloServer = new ApolloServer({
             data,
         };
     },
-    formatError: (err) => {
-        if (!err.originalError) {
-            return err;
-        }
-        const message = err.message || 'Something went wrong !';
-        const data = err.originalError.errors || [];
-        const code = err.originalError.code || 422;
-        logger.error(message, err);
-        return { message, status: code, data };
-    },
     subscriptions: {
         onConnect: (connection) => {
-            if (!connection.authToken) {
-                throw new UnauthenticatedError(
-                    requestContext.translate('user.notAuthenticated'),
-                    'user.notAuthenticated',
-                    'userAuthentication'
-                );
+            if (!connection.authorization) {
+                throw new Error('userAuthentication');
             }
             let userId = null;
             if (connection.authToken) {
@@ -191,19 +180,23 @@ apolloServer.applyMiddleware({
 apolloServer.installSubscriptionHandlers(httpServer);
 
 const serverStart = async() => {
-        try {
-            await database.connect();
-            httpServer.listen(process.env.PORT || 4000, () => {
-                logger.info(
-                    `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
+    try {
+        await database.connect();
+        httpServer.listen(process.env.PORT || 4000, () => {
+            logger.info(
+                `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
           apolloServer.graphqlPath
         }`
-                );
-                logger.info(
-                    `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${
+            );
+            logger.info(
+                `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${
           apolloServer.subscriptionsPath
         }`
-                );
-            });
-        })
-    .catch((e) => logger.error('Error while connecting to database', e));
+            );
+        });
+    } catch (e) {
+        logger.error('Error while connecting to database', e);
+    }
+};
+
+serverStart();
