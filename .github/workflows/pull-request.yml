@@ -1,3 +1,14 @@
+##############################################################################
+##############################################################################
+#
+# NOTE!
+#
+# Please read the README.md file in this directory that defines what should 
+# be placed in this file
+#
+##############################################################################
+##############################################################################
+
 name: PR Workflow
 on: 
   pull_request:
@@ -61,6 +72,8 @@ jobs:
       uses: github/codeql-action/init@v1
       with:
         languages: ${{ matrix.language }}
+        debug: true
+        
     - name: Autobuild
       uses: github/codeql-action/autobuild@v1
 
@@ -71,13 +84,26 @@ jobs:
     name: Shows code coverage
     runs-on: ubuntu-latest
     needs: CodeQL
+    strategy:
+      matrix:
+        node-version: [14.x]
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v2
-    - run: npm run test
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+    - name: Install dependencies
+      run: npm install
+    - name: Run the tests    
+      run: npm run test-dev
       continue-on-error: true
+    - name: Save Test Coverage Details
+      uses: codecov/codecov-action@v2
+      with:
+        token: ${{secrets.CODECOV_TOKEN}} 
+        file: ./coverage/lcov.info 
     - name: Report code coverage
       uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
       with:
         path: "./coverage/lcov.info"
-        min_coverage: 60
+        min_coverage: 67
