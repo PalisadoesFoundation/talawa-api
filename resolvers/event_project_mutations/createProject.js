@@ -3,47 +3,51 @@ const EventProject = require('../../models/EventProject');
 const Event = require('../../models/Event');
 const { NotFoundError, UnauthorizedError } = require('errors');
 const requestContext = require('talawa-request-context');
+const authCheck = require('../functions/authCheck');
 
-const createEventProject = async (parent, args, context) => {
-  // gets user in token - to be used later on
-  const userFound = await User.findOne({ _id: context.userId });
-  if (!userFound) {
-    throw new NotFoundError(
-      requestContext.translate('user.notFound'),
-      'user.notFound',
-      'user'
-    );
-  }
+const createEventProject = async(parent, args, context) => {
+    // authentication check
+    authCheck(context);
 
-  const eventFound = await Event.findOne({ _id: args.data.eventId });
-  if (!eventFound) {
-    throw new NotFoundError(
-      requestContext.translate('event.notFound'),
-      'event.notFound',
-      'event'
-    );
-  }
+    // gets user in token - to be used later on
+    const userFound = await User.findOne({ _id: context.userId });
+    if (!userFound) {
+        throw new NotFoundError(
+            requestContext.translate('user.notFound'),
+            'user.notFound',
+            'user'
+        );
+    }
 
-  if (!eventFound.admins.includes(context.userId)) {
-    throw new UnauthorizedError(
-      requestContext.translate('user.notAuthorized'),
-      'user.notAuthorized',
-      'userAuthorization'
-    );
-  }
+    const eventFound = await Event.findOne({ _id: args.data.eventId });
+    if (!eventFound) {
+        throw new NotFoundError(
+            requestContext.translate('event.notFound'),
+            'event.notFound',
+            'event'
+        );
+    }
 
-  const newEventProject = new EventProject({
-    title: args.data.title,
-    description: args.data.description,
-    event: eventFound,
-    creator: userFound,
-  });
+    if (!eventFound.admins.includes(context.userId)) {
+        throw new UnauthorizedError(
+            requestContext.translate('user.notAuthorized'),
+            'user.notAuthorized',
+            'userAuthorization'
+        );
+    }
 
-  await newEventProject.save();
+    const newEventProject = new EventProject({
+        title: args.data.title,
+        description: args.data.description,
+        event: eventFound,
+        creator: userFound,
+    });
 
-  return {
-    ...newEventProject._doc,
-  };
+    await newEventProject.save();
+
+    return {
+        ...newEventProject._doc,
+    };
 };
 
 module.exports = createEventProject;

@@ -2,103 +2,96 @@ const User = require('../../models/User');
 const Event = require('../../models/Event');
 const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
+const authCheck = require('../functions/authCheck');
 
-const registerForEvent = async (parent, args, context) => {
-  const userFound = await User.findOne({ _id: context.userId });
-  if (!userFound) {
-    throw new NotFoundError(
-      requestContext.translate('user.notFound'),
-      'user.notFound',
-      'user'
-    );
-  }
-
-  const eventFound = await Event.findOne({ _id: args.id });
-  if (!eventFound) {
-    throw new NotFoundError(
-      requestContext.translate('event.notFound'),
-      'event.notFound',
-      'event'
-    );
-  }
-
-  const index = eventFound.registrants.findIndex((element) => {
-    return String(element.userId) === String(context.userId);
-  });
-
-  let isAlreadyExists = false;
-  if (index !== -1) {
-    const isActive = eventFound.registrants[index].status === 'ACTIVE';
-    if (isActive) {
-      throw new NotFoundError(
-        requestContext.translate('registrant.alreadyExist'),
-        'event.notFound',
-        'event'
-      );
-    } else {
-      isAlreadyExists = true;
+const registerForEvent = async(parent, args, context) => {
+    // authentication check
+    authCheck(context);
+    // gets user in token - to be used later on
+    const userFound = await User.findOne({ _id: context.userId });
+    if (!userFound) {
+        throw new NotFoundError(
+            requestContext.translate('user.notFound'),
+            'user.notFound',
+            'user'
+        );
     }
-  }
 
-  if (!isAlreadyExists) {
-    await User.findOneAndUpdate(
-      {
-        _id: userFound.id,
-      },
-      {
-        $push: {
-          registeredEvents: eventFound,
-        },
-      }
-    );
-  }
+    const eventFound = await Event.findOne({ _id: args.id });
+    if (!eventFound) {
+        throw new NotFoundError(
+            requestContext.translate('event.notFound'),
+            'event.notFound',
+            'event'
+        );
+    }
 
-  let newEvent;
-  if (!isAlreadyExists) {
-    newEvent = await Event.findOneAndUpdate(
-      {
-        _id: args.id,
-        status: 'ACTIVE',
-      },
-      {
-        $push: {
-          registrants: {
-            userId: userFound.id,
-            user: userFound,
-          },
-        },
-      },
-      {
-        new: true,
-      }
-    );
-  } else {
-    let updatedRegistrants = eventFound.registrants;
-    updatedRegistrants[index] = {
-      id: updatedRegistrants[index].id,
-      userId: updatedRegistrants[index].userId,
-      user: updatedRegistrants[index].user,
-      status: 'ACTIVE',
-      createdAt: updatedRegistrants[index].createdAt,
-    };
+    const index = eventFound.registrants.findIndex((element) => {
+        return String(element.userId) === String(context.userId);
+    });
 
-    newEvent = await Event.findOneAndUpdate(
-      {
-        _id: args.id,
-        status: 'ACTIVE',
-      },
-      {
-        $set: {
-          registrants: updatedRegistrants,
-        },
-      },
-      {
-        new: true,
-      }
-    );
-  }
+    let isAlreadyExists = false;
+    if (index !== -1) {
+        const isActive = eventFound.registrants[index].status === 'ACTIVE';
+        if (isActive) {
+            throw new NotFoundError(
+                requestContext.translate('registrant.alreadyExist'),
+                'event.notFound',
+                'event'
+            );
+        } else {
+            isAlreadyExists = true;
+        }
+    }
 
-  return newEvent;
+    if (!isAlreadyExists) {
+        await User.findOneAndUpdate({
+            _id: userFound.id,
+        }, {
+            $push: {
+                registeredEvents: eventFound,
+            },
+        });
+    }
+
+    let newEvent;
+    if (!isAlreadyExists) {
+        newEvent = await Event.findOneAndUpdate({
+            _id: args.id,
+            status: 'ACTIVE',
+        }, {
+            $push: {
+                registrants: {
+                    userId: userFound.id,
+                    user: userFound,
+                },
+            },
+        }, {
+            new: true,
+        });
+    } else {
+        let updatedRegistrants = eventFound.registrants;
+        updatedRegistrants[index] = {
+            id: updatedRegistrants[index].id,
+            userId: updatedRegistrants[index].userId,
+            user: updatedRegistrants[index].user,
+            status: 'ACTIVE',
+            createdAt: updatedRegistrants[index].createdAt,
+        };
+
+        newEvent = await Event.findOneAndUpdate({
+            _id: args.id,
+            status: 'ACTIVE',
+        }, {
+            $set: {
+                registrants: updatedRegistrants,
+            },
+        }, {
+            new: true,
+        });
+    }
+
+    return newEvent;
 };
 
 module.exports = registerForEvent;

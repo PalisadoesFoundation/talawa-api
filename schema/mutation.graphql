@@ -5,7 +5,7 @@ module.exports = `
     login(data: LoginInput!): AuthData!
     refreshToken(refreshToken: String!) : ExtendSession!
     revokeRefreshTokenForUser(userId: String!) : Boolean!
-    updateLanguage(languageCode: String!) : User! @auth
+    updateLanguage(languageCode: String!) : User!
 
     updateUserProfile(data: UpdateUserInput, file:Upload): User! @auth
     createEvent(data: EventInput): Event! @auth

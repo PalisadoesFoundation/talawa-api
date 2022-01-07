@@ -4,104 +4,88 @@ const mongoosePaginate = require('mongoose-paginate-v2');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-  image: {
-    type: String,
-  },
-  tokenVersion: {
-    type: Number,
-    default: 0,
-  },
-  firstName: {
-    type: String,
-    required: true,
-  },
-  lastName: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    validate: [isEmail, 'invalid email'],
-    required: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  appLanguageCode: {
-    type: String,
-    default: 'en',
-    required: true,
-  },
-  createdOrganizations: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'Organization',
+    image: {
+        type: String,
     },
-  ],
-  createdEvents: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'Event',
+    tokenVersion: {
+        type: Number,
+        default: 0,
     },
-  ],
-  userType: {
-    type: String,
-    enum: ['USER', 'ADMIN', 'SUPERADMIN'],
-    default: 'USER',
-    required: true,
-  },
-  joinedOrganizations: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'Organization',
+    firstName: {
+        type: String,
+        required: true,
     },
-  ],
-  registeredEvents: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'Event',
+    lastName: {
+        type: String,
+        required: true,
     },
-  ],
-  eventAdmin: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'Event',
+    email: {
+        type: String,
+        validate: [isEmail, 'invalid email'],
+        required: true,
     },
-  ],
-  adminFor: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'Organization',
+    password: {
+        type: String,
+        required: true,
     },
-  ],
-  membershipRequests: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'MembershipRequest',
+    appLanguageCode: {
+        type: String,
+        default: 'en',
+        required: true,
     },
-  ],
-  organizationsBlockedBy: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'Organization',
+    createdOrganizations: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Organization',
+    }, ],
+    createdEvents: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Event',
+    }, ],
+    userType: {
+        type: String,
+        enum: ['USER', 'ADMIN', 'SUPERADMIN'],
+        default: 'USER',
+        required: true,
     },
-  ],
-  status: {
-    type: String,
-    required: true,
-    default: 'ACTIVE',
-    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
-  },
-  organizationUserBelongsTo: {
-    type: Schema.Types.ObjectId,
-    ref: 'Organization',
-  },
-  pluginCreationAllowed: {
-    type: Boolean,
-    required: true,
-    default: true,
-  },
+    joinedOrganizations: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Organization',
+    }, ],
+    registeredEvents: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Event',
+    }, ],
+    eventAdmin: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Event',
+    }, ],
+    adminFor: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Organization',
+    }, ],
+    membershipRequests: [{
+        type: Schema.Types.ObjectId,
+        ref: 'MembershipRequest',
+    }, ],
+    organizationsBlockedBy: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Organization',
+    }, ],
+    status: {
+        type: String,
+        required: true,
+        default: 'ACTIVE',
+        enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
+    },
+    organizationUserBelongsTo: {
+        type: Schema.Types.ObjectId,
+        ref: 'Organization',
+    },
+    pluginCreationAllowed: {
+        type: Boolean,
+        required: true,
+        default: true,
+    },
 });
 
 userSchema.plugin(mongoosePaginate);

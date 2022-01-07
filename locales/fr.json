@@ -20,6 +20,5 @@
     "group.notFound": "Groupe introuvable",
     "invalid.fileType": "Type de fichier non valide",
     "invalid.refreshToken": "Jeton d'actualisation non valide",
-    "invalid.credentials": "Informations d'identification non valides",
-    "registrant.alreadyExist": "Déjà inscrit à l'événement"
+    "invalid.credentials": "Informations d'identification non valides"
 }
