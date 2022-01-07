@@ -40,6 +40,11 @@ jobs:
        - name: Perform CodeQL Analysis
          uses: github/codeql-action/analyze@v1
 
+##############################################################################
+# This section is added so that the most recent and valid level of 
+# code coverage (post PR merge) is reported 
+##############################################################################
+
   Code-Coverage:
     name: Shows code coverage
     runs-on: ubuntu-latest
