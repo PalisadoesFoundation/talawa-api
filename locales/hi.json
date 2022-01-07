@@ -7,7 +7,7 @@
     "task.notFound": "कार्य नहीं मिला",
     "event.notFound": "घटना नहीं मिली",
     "eventProject.notFound": "इवेंट प्रोजेक्ट नहीं मिला",
-    "organization.notFound":  "संगठन नहीं मिला",
+    "organization.notFound": "संगठन नहीं मिला",
     "organization.profileImage.notFound": "संगठन की प्रोफ़ाइल छवि नहीं मिली",
     "organization.member.notFound": "संगठन का उपयोगकर्ता सदस्य नहीं है",
     "organization.notAuthorized": "संगठन अधिकृत नहीं है",
@@ -20,10 +20,5 @@
     "group.notFound": "समूह नहीं मिला",
     "invalid.fileType": "अमान्य फ़ाइल प्रकार",
     "invalid.refreshToken": "अमान्य रीफ़्रेश टोकन",
-<<<<<<< HEAD
-    "invalid.credentials": "अवैध प्रत्यय पत्र",
-    "registrant.alreadyExist": "घटना के लिए पहले से पंजीकृत"
-=======
-    "invalid.credentials": "अवैध प्रत्यय पत्र"   
->>>>>>> d50ea6714312a777c728f99f37363fea568ed9e6
+    "invalid.credentials": "अवैध प्रत्यय पत्र"
 }

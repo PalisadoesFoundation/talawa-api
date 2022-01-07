@@ -7,7 +7,7 @@
     "task.notFound": "Tarea no encontrada",
     "event.notFound": "Evento no encontrado",
     "eventProject.notFound": "Proyecto de evento no encontrado",
-    "organization.notFound":  "Organización no encontrada",
+    "organization.notFound": "Organización no encontrada",
     "organization.profileImage.notFound": "No se encontró la imagen del perfil de la organización",
     "organization.member.notFound": "El usuario de la organización no es miembro",
     "organization.notAuthorized": "La organización no está autorizada",
@@ -20,11 +20,5 @@
     "group.notFound": "Grupo no encontrado",
     "invalid.fileType": "Tipo de archivo no válido",
     "invalid.refreshToken": "Token de actualización no válido",
-<<<<<<< HEAD
-    "invalid.credentials": "Credenciales no válidas",
-    "registrant.alreadyExist": "Ya inscrito para el evento"
-=======
     "invalid.credentials": "Credenciales no válidas"
->>>>>>> d50ea6714312a777c728f99f37363fea568ed9e6
 }
-
