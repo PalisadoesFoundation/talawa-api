@@ -71,8 +71,7 @@ jobs:
     - name: Start the Application
       run: npm run start-test-server-in-action
       env:
-        CI: true
-        MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
+        MONGO_DB_URL: mongodb://localhost:27017/talawa-api
       
     - name: Run the tests    
       run: npm run test
