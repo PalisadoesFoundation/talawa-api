@@ -59,18 +59,19 @@ jobs:
 
     - name: Set up Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v2
-
-    - name: Install dependencies
-      run: npm install
       
     - name: Start MongoDB
       uses: supercharge/mongodb-github-action@1.7.0
       with:
         mongodb-version: ${{ matrix.mongodb-version }}
 
+    - name: Install dependencies
+      run: npm install
+
     - name: Start the Application
       run: npm run start-test-server-in-action
       env:
+        CI: true
         MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
       
     - name: Run the tests    
