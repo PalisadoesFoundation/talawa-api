@@ -48,6 +48,8 @@ jobs:
   Code-Coverage:
     name: Shows code coverage
     runs-on: ubuntu-latest
+    env:
+      MONGO_DB_URL: mongodb://localhost:27017/talawa-api
     # needs: CodeQL
     strategy:
       matrix:
@@ -70,8 +72,6 @@ jobs:
 
     - name: Start the Application
       run: npm run start-test-server-in-action
-      env:
-        MONGO_DB_URL: mongodb://localhost:27017/talawa-api
       
     - name: Run the tests    
       run: npm run test
