@@ -4,7 +4,7 @@
   "description": "talawa-api is a backend repository written using Node.js and graphql for generating APIs for the talawa flutter app.",
   "main": "index.js",
   "scripts": {
-    "test": "jest --verbose --maxWorkers=2",
+    "test": "jest",
     "test-dev": "NODE_ENV=development jest",
     "start": "cross-env pm2-runtime start index.js --watch",
     "prod": "cross-env NODE_ENV=production pm2-runtime start index.js",
