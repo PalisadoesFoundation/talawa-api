@@ -48,13 +48,24 @@ jobs:
   Code-Coverage:
     name: Shows code coverage
     runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:4.4
+        env:
+          MONGO_INITDB_DATABASE: talawa-test-db
+        options:
+          --health-cmd mongo
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 27017:27017
     env:
       MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
     # needs: CodeQL
     strategy:
       matrix:
         node-version: [14.x]
-        mongodb-version: ['4.4']
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -62,13 +73,6 @@ jobs:
     - name: Set up Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v2
       
-    - name: Start MongoDB
-      uses: supercharge/mongodb-github-action@1.7.0
-      with:
-        mongodb-version: ${{ matrix.mongodb-version }}
-        mongodb-replica-set: test-rs
-        mongodb-db: talawa-test-db
-
     - name: Install dependencies
       run: npm install
 
