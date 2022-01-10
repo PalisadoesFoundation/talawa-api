@@ -4,7 +4,6 @@ const { URL } = require('../../constants');
 
 // sets token before every test
 module.exports = async () => {
-  console.log(process.env.MONGO_DB_URL);
   const response = await axios.post(URL, {
     query: `
     mutation{
@@ -23,8 +22,10 @@ module.exports = async () => {
   });
 
   const { data } = response;
-
-  if (data.errors && data.errors[0].message === 'User not found') {
+  if (data.data !== null) {
+    return data.data.login.accessToken;
+  }
+  else {
     const signUpResponse = await axios.post(URL, {
       query: `
             mutation {
@@ -51,5 +52,4 @@ module.exports = async () => {
     const { data } = signUpResponse;
     return data.data.signUp.accessToken;
   }
-  return data.data.login.accessToken;
 };
