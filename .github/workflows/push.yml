@@ -69,10 +69,10 @@ jobs:
         mongodb-version: ${{ matrix.mongodb-version }}
 
     - name: Start the Application
-      run: npm start
+      run: npm run test-server
       
     - name: Run the tests    
-      run: npm run test-server
+      run: npm run test
       continue-on-error: true
 
     - name: Save Test Coverage Details
