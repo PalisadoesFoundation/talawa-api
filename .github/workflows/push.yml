@@ -69,7 +69,7 @@ jobs:
         mongodb-version: ${{ matrix.mongodb-version }}
 
     - name: Start the Application
-      run: npm run test-server
+      run: npm run start-test-server-in-action
       env:
         MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
       
@@ -82,6 +82,9 @@ jobs:
       with:
         token: ${{secrets.CODECOV_TOKEN}} 
         file: ./coverage/lcov.info
+
+    - name: Stop the Application 
+      run: npm run stop-test-server-in-action
 
     - name: Report code coverage
       uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
