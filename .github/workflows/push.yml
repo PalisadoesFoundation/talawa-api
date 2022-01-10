@@ -72,7 +72,7 @@ jobs:
       run: npm start
       
     - name: Run the tests    
-      run: npm run test
+      run: npm run test-server
       continue-on-error: true
 
     - name: Save Test Coverage Details
@@ -80,7 +80,7 @@ jobs:
       with:
         token: ${{secrets.CODECOV_TOKEN}} 
         file: ./coverage/lcov.info
-        
+
     - name: Report code coverage
       uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
       with:
