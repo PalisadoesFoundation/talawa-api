@@ -4,6 +4,7 @@ const { URL } = require('../../constants');
 
 // sets token before every test
 module.exports = async () => {
+  console.log(process.env.NODE_ENV);
   const response = await axios.post(URL, {
     query: `
     mutation{
