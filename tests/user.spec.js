@@ -1,49 +1,10 @@
 const axios = require('axios');
-const shortid = require('shortid');
 const { URL } = require('../constants');
-const getToken = require('./functions/getToken');
 
 let token;
-beforeAll(async () => {
-  token = await getToken();
-});
 
 describe('user resolvers', () => {
-  test('allUsers', async () => {
-    const response = await axios.post(
-      URL,
-      {
-        query: `query {
-                users {
-                  _id
-                  firstName
-                  lastName
-                  email
-                }
-              }`,
-      },
-      {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    const { data } = response;
-    expect(Array.isArray(data.data.users)).toBeTruthy();
-
-    expect(data.data.users[0]).toEqual(
-      //Tested First Object in Array as others will be similar.
-      expect.objectContaining({
-        _id: expect.any(String),
-        firstName: expect.any(String),
-        lastName: expect.any(String),
-        email: expect.any(String),
-      })
-    );
-  });
-
-  const id = shortid.generate().toLowerCase();
-  const email = `${id}@test.com`;
+  const email = 'testdb2@test.com';
 
   test('signUp', async () => {
     const response = await axios.post(URL, {
@@ -97,7 +58,6 @@ describe('user resolvers', () => {
                   lastName
                   email
                   userType
-                  appLanguageCode
                   image
                 }
                 accessToken
@@ -106,6 +66,7 @@ describe('user resolvers', () => {
             `,
     });
     const { data } = response;
+    token = data.data.login.accessToken;
     expect(data.data.login).toEqual(
       expect.objectContaining({
         user: expect.objectContaining({
@@ -114,10 +75,42 @@ describe('user resolvers', () => {
           lastName: 'testdb2',
           email: `${email}`,
           userType: 'USER',
-          appLanguageCode: 'en',
           image: null,
         }),
         accessToken: expect.any(String),
+      })
+    );
+  });
+
+  test('allUsers', async () => {
+    const response = await axios.post(
+      URL,
+      {
+        query: `query {
+                users {
+                  _id
+                  firstName
+                  lastName
+                  email
+                }
+              }`,
+      },
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const { data } = response;
+    expect(Array.isArray(data.data.users)).toBeTruthy();
+
+    expect(data.data.users[0]).toEqual(
+      //Tested First Object in Array as others will be similar.
+      expect.objectContaining({
+        _id: expect.any(String),
+        firstName: expect.any(String),
+        lastName: expect.any(String),
+        email: expect.any(String),
       })
     );
   });
