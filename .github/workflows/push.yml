@@ -49,7 +49,7 @@ jobs:
     name: Shows code coverage
     runs-on: ubuntu-latest
     env:
-      MONGO_DB_URL: mongo://localhost:27017/talawa-test-db
+      MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
     # needs: CodeQL
     strategy:
       matrix:
