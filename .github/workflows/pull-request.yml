@@ -94,8 +94,10 @@ jobs:
       uses: actions/setup-node@v2
     - name: Install dependencies
       run: npm install
+    - name: Start the Application
+      run: npm start
     - name: Run the tests    
-      run: npm run test-dev
+      run: npm run test
       continue-on-error: true
     - name: Save Test Coverage Details
       uses: codecov/codecov-action@v2
@@ -106,4 +108,4 @@ jobs:
       uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
       with:
         path: "./coverage/lcov.info"
-        min_coverage: 67
+        min_coverage: 59
