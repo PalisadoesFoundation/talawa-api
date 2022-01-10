@@ -4,7 +4,6 @@ const { URL } = require('../../constants');
 
 // sets token before every test
 module.exports = async () => {
-  console.log(process.env.NODE_ENV);
   const response = await axios.post(URL, {
     query: `
     mutation{
@@ -49,7 +48,6 @@ module.exports = async () => {
                 `,
     });
     const { data } = signUpResponse;
-    console.log("data.data.signUp.accessToken", data.data.signUp.accessToken);
     return data.data.signUp.accessToken;
   }
   return data.data.login.accessToken;
