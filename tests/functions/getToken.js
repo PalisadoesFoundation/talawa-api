@@ -49,6 +49,7 @@ module.exports = async () => {
                 `,
     });
     const { data } = signUpResponse;
+    console.log("data.data.signUp.accessToken", data.data.signUp.accessToken);
     return data.data.signUp.accessToken;
   }
   return data.data.login.accessToken;
