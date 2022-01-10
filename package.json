@@ -8,7 +8,7 @@
     "test-dev": "NODE_ENV=development jest",
     "start": "cross-env pm2-runtime start index.js --watch",
     "prod": "cross-env NODE_ENV=production pm2-runtime start index.js",
-    "test-server": "cross-env NODE_ENV=test TEST_DB=talawa-test-db nodemon index.js --ext js,graphql",
+    "test-server": "cross-env NODE_ENV=test nodemon index.js --ext js,graphql",
     "lint": "eslint . --fix && echo 'Lint complete.'"
   },
   "repository": {

@@ -70,6 +70,8 @@ jobs:
 
     - name: Start the Application
       run: npm run test-server
+      env:
+        MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
       
     - name: Run the tests    
       run: npm run test
