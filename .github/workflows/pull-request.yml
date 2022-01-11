@@ -97,12 +97,12 @@ jobs:
     - name: Run the tests    
       run: npm run test-dev
       continue-on-error: true
-    - name: Save Test Coverage Details
-      uses: codecov/codecov-action@v2
+    - name: Present current coverage in PR
+      uses: codecov/codecov-action@v2.1.0
       with:
         token: ${{secrets.CODECOV_TOKEN}} 
         file: ./coverage/lcov.info 
-    - name: Report code coverage
+    - name: Test acceptable level of code coverage
       uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
       with:
         path: "./coverage/lcov.info"
