@@ -53,6 +53,8 @@ jobs:
         image: mongo:4.4
         env:
           MONGO_INITDB_DATABASE: talawa-test-db
+          ACCESS_TOKEN_SECRET= c4e6ffed7618324ca44163ed82af191b17a7f25026a3fa97e71369e6f4ac7e5e
+          REFRESH_TOKEN_SECRET= dad2f992e24de11640dbd2451a022747de0329d8049f6ba3cccf193451f186af
         options:
           --health-cmd mongo
           --health-interval 10s
