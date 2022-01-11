@@ -84,6 +84,8 @@ jobs:
       with:
         time: 10s
       
+    - name: Check Server Status
+      run: curl localhost:4000
     - name: Run the tests    
       run: npm run test
       continue-on-error: true
