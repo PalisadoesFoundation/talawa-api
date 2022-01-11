@@ -22,6 +22,8 @@ module.exports = async () => {
   });
 
   const { data } = response;
+  console.log("login data:", data);
+
   if (data.data !== null) {
     return data.data.login.accessToken;
   }
@@ -50,6 +52,7 @@ module.exports = async () => {
                 `,
     });
     const { data } = signUpResponse;
+    console.log("signup data:", data);
     return data.data.signUp.accessToken;
   }
 };
