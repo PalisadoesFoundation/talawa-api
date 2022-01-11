@@ -120,16 +120,16 @@ jobs:
       run: npm run test
       continue-on-error: true
 
-    - name: Save Test Coverage Details
-      uses: codecov/codecov-action@v2
+    - name: Present current coverage in PR
+      uses: codecov/codecov-action@v2.1.0
       with:
         token: ${{secrets.CODECOV_TOKEN}} 
-        file: ./coverage/lcov.info
+        file: ./coverage/lcov.info 
 
     - name: Stop the Application 
       run: npm run stop-test-server-in-action
 
-    - name: Report code coverage
+    - name: Test acceptable level of code coverage
       uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
       with:
         path: "./coverage/lcov.info"
