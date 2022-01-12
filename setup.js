@@ -13,6 +13,7 @@
  */
 const path = require('path');
 const display_about = require('./setup/Display_About');
+const install_dependencies = require('./setup/Install_Dependencies')
 const user_input = require('./setup/User_Input');
 const start_application = require('./setup/Start_Application');
 
