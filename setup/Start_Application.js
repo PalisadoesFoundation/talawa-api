@@ -1,14 +1,21 @@
+const chalk = require('chalk')
+const boxen = require('boxen')
 const display_heading = require('./utils/Display_Heading');
-const display_markdown = require('./utils/Display_Markdown');
 
-const start_application = async () => {
-  display_heading('START THE APPLICATION');
-  display_markdown(
-    'All the installation steps have been executed successfully 🎉. \nYou can start the application using the command below'
-  );
-  display_markdown('```npm start```');
+const start_application = async() => {
+    try {
+        display_heading('START THE APPLICATION');
+        console.log(chalk.green(
+            'All the installation steps have been executed successfully 🎉. \nYou can start the application using the command below'
+        ));
+        console.log(boxen("npm start", { float: 'center', textAlignment: 'center', borderColor: 'magenta', borderStyle: 'bold', padding: 1 }));
 
-  process.exit(0);
+        process.exit(0);
+    } catch (err) {
+        console.log(chalk.red("ERROR: Failed to start the application"))
+        console.log("REASON: ", err.message);
+        process.exit(1);
+    }
 };
 
 module.exports = start_application;

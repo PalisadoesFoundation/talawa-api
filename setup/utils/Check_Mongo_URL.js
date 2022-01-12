@@ -1,15 +1,18 @@
 const mongoose = require('mongoose');
-const display_markdown = require('./Display_Markdown');
+const chalk = require('chalk')
 
-const check_url = async (mongo_db_url) => {
-  await mongoose.connect(mongo_db_url).catch((err) => {
-    display_markdown('Error connecting to MongoDB :red_cross:');
-    console.log('Reason: ', err.message);
-    process.exit(1);
-  });
+const check_url = async(mongo_db_url) => {
 
-  display_markdown('MongoDB URL verified successfully 🎉');
-  return true;
+    const options = { useNewUrlParser: true, useUnifiedTopology: true };
+
+    await mongoose.connect(mongo_db_url, options).catch((err) => {
+        console.log(chalk.red('ERROR: Error connecting to MongoDB server ❌'));
+        console.log('REASON: ', err.message);
+        process.exit(1);
+    });
+
+    console.log(chalk.green('MongoDB URL verified successfully 🎉'));
+    return true;
 };
 
 module.exports = check_url;
