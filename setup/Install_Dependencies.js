@@ -1,3 +1,8 @@
+/**
+ * @brief Code to install the dependencies
+ * @description This code will install the dependencies
+ * listed in the `package.json` file.
+ */
 const fs = require('fs');
 const path = require('path');
 const cmd = require('node-cmd');
@@ -8,6 +13,8 @@ const chalk = require('chalk');
 const install_dependencies = async() => {
 
     try {
+
+        //Display a message
         display_heading('INSTALLING PROJECT DEPENDENCIES');
         const data = fs.readFileSync(
             path.join(__dirname, 'markdown/Install.md'),
@@ -15,8 +22,10 @@ const install_dependencies = async() => {
         );
         display_markdown(data);
 
+        //Install the dependencies
         cmd.runSync('npm install -f');
         console.log(chalk.green('Project dependencies installed successfully 🎉'));
+
     } catch (err) {
         console.log(chalk.red("ERROR: Failed to install project dependencies ❌"))
         console.log("REASON: ", err.message)
