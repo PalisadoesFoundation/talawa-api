@@ -92,6 +92,22 @@ Follow these steps to get the api running using npm
    npm run start
    ```
 
+## Automated Installation
+
+This method installs the Talawa API automatically. Follow these steps to get the API running using ```npm```.
+
+1. Install these dependencies if you don't already have them
+   - [MongoDB](https://docs.mongodb.com/manual/administration/install-community/)
+   - [NodeJS](https://nodejs.org/en/)<br>
+   <strong>Note:</strong><em>If you do not have MongoDB on your own system, you can proceed with the connection string. Please ensure the right access permissions and firewall openings for the VM/server where the MongoDB is hosted.</em>
+2. Clone this repo to your local machine
+
+   ```sh
+   git clone https://github.com/PalisadoesFoundation/talawa-api
+   cd talawa-api
+   npm run setup
+   ```
+
 ## Testing
 
 ```sh

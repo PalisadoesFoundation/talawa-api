@@ -26,7 +26,7 @@ const run_setup = async() => {
     display_about();
 
     //2. Install project dependencies
-    //. await install_dependencies()
+    await install_dependencies()
 
     //3. Set up user configuration
     await user_input(path.join(__dirname, '.env'));
