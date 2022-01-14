@@ -22,5 +22,33 @@ module.exports = async () => {
   });
 
   const { data } = response;
-  return data.data.login.accessToken;
+  if (data.data !== null) {
+    return data.data.login.accessToken;
+  } else {
+    const signUpResponse = await axios.post(URL, {
+      query: `
+            mutation {
+                signUp(data: {
+                  firstName:"testdb2",
+                  lastName:"testdb2"
+                  email: "testdb2@test.com"
+                  password:"password"
+                }) {
+                    user {
+                      _id
+                      firstName
+                      lastName
+                      email
+                      userType
+                      appLanguageCode
+                      image
+                    }
+                    accessToken
+                  }
+                }
+                `,
+    });
+    const { data } = signUpResponse;
+    return data.data.signUp.accessToken;
+  }
 };

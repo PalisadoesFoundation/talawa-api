@@ -8,6 +8,8 @@
     "start": "cross-env pm2-runtime start index.js --watch",
     "prod": "cross-env NODE_ENV=production pm2-runtime start index.js",
     "test-server": "cross-env NODE_ENV=test TEST_DB=talawa-test-db nodemon index.js --ext js,graphql",
+    "start-test-server-in-action": "cross-env NODE_ENV=test pm2 start index.js -f",
+    "stop-test-server-in-action": "pm2 delete all",
     "lint": "eslint . --fix && echo 'Lint complete.'"
   },
   "repository": {
@@ -46,7 +48,6 @@
     "helmet": "^4.6.0",
     "i18n": "^0.13.3",
     "image-hash": "^4.0.1",
-    "jest": "^26.6.3",
     "jsonwebtoken": "^8.5.1",
     "logger": "file:lib/logger",
     "moment": "^2.29.1",
@@ -73,7 +74,9 @@
     "eslint-plugin-import": "^2.23.4",
     "eslint-plugin-jest": "^24.3.6",
     "eslint-plugin-prettier": "^3.4.0",
+    "jest": "^27.4.7",
     "netmask": ">=2.0.1",
+    "nodemon": "^2.0.15",
     "prettier": "^2.3.2"
   }
 }
