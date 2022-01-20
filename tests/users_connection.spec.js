@@ -1,11 +1,14 @@
 const axios = require('axios');
 const { URL } = require('../constants');
 const getToken = require('./functions/getToken');
+const getUserId = require('./functions/getUserId');
 
 let token;
+let userId;
 
 beforeAll(async () => {
   token = await getToken();
+  userId = await getUserId();
 });
 
 describe('users connection query', () => {
@@ -21,7 +24,6 @@ describe('users connection query', () => {
                         lastName
                         email
                         userType
-                        appLanguageCode
                         createdOrganizations {
                         _id
                         }
@@ -64,7 +66,6 @@ describe('users connection query', () => {
     const { data } = usersConnectionResponse;
     const usersConnectionData = data.data.usersConnection;
     usersConnectionData.map((user) => {
-      console.log(user);
       expect(user).toEqual(
         expect.objectContaining({
           _id: expect.any(String),
@@ -142,5 +143,39 @@ describe('users connection query', () => {
 
       expect(user.organizationUserBelongsTo).toEqual(null);
     });
+  });
+
+  test('users connection with Id', async () => {
+    const usersConnectionResponse = await axios.post(
+      URL,
+      {
+        query: `
+                {
+                    usersConnection(where:{id:"${userId}"}) {
+                        _id
+                        firstName
+                        lastName
+                        email
+                    }
+                }
+              `,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const { data } = usersConnectionResponse;
+    expect(data.data.usersConnection).toHaveLength(1);
+
+    expect(data.data.usersConnection[0]).toEqual(
+      expect.objectContaining({
+        _id: expect.any(String),
+        firstName: expect.any(String),
+        lastName: expect.any(String),
+        email: expect.any(String),
+      })
+    );
   });
 });
