@@ -16,7 +16,7 @@ module.exports = async (parent, args, context) => {
 
   const sender = await userExists(context.userId);
 
-  const receiver = chat.users.filter((u) => u !== sender.id);
+  const receiver = chat.users.filter((u) => u.toString() !== sender.id);
 
   const message = new DirectChatMessage({
     directChatMessageBelongsTo: chat._doc,

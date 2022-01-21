@@ -18,7 +18,7 @@ module.exports = async (parent, args, context) => {
 
   // ensure the user is a member of the group chat
   const userIsAMemberOfGroupChat = chat.users.filter(
-    (user) => user === context.userId
+    (user) => user.toString() === context.userId
   );
   //console.log(userIsAMemberOfGroupChat)
   if (!(userIsAMemberOfGroupChat.length > 0)) {

@@ -1,26 +1,12 @@
 const axios = require('axios');
-const shortid = require('shortid');
 const { URL } = require('../constants');
 
+let token;
+
 describe('user resolvers', () => {
-  test('allUsers', async () => {
-    const response = await axios.post(URL, {
-      query: `query {
-                users {
-                  _id
-                  firstName
-                  lastName
-                  email
-                }
-              }`,
-    });
-    const { data } = response;
-    expect(Array.isArray(data.data.users)).toBeTruthy();
-  });
+  const email = 'testdb2@test.com';
 
   test('signUp', async () => {
-    var id = shortid.generate();
-    var email = `${id}@test.com`;
     const response = await axios.post(URL, {
       query: `
             mutation {
@@ -30,17 +16,32 @@ describe('user resolvers', () => {
                   email: "${email}"
                   password:"password"
                 }) {
-                  user{
-                    _id
+                    user {
+                      _id
+                      firstName
+                      lastName
+                      email
+                      userType
+                      appLanguageCode
+                      image
+                    }
+                    accessToken
                   }
-                  accessToken
                 }
-              }
               `,
     });
     const { data } = response;
     expect(data.data.signUp).toEqual(
       expect.objectContaining({
+        user: expect.objectContaining({
+          _id: expect.any(String),
+          firstName: 'testdb2',
+          lastName: 'testdb2',
+          email: `${email}`,
+          userType: 'USER',
+          appLanguageCode: 'en',
+          image: null,
+        }),
         accessToken: expect.any(String),
       })
     );
@@ -49,23 +50,67 @@ describe('user resolvers', () => {
   test('login', async () => {
     const response = await axios.post(URL, {
       query: `
-            mutation{
-                login(data: {
-                  email:"testdb2@test.com",
-                  password:"password"
-                }) {
-                  user{
-                    _id
-                  }
-                  accessToken
-                }  
+            mutation {
+              login(data: { email: "${email}", password: "password" }) {
+                user {
+                  _id
+                  firstName
+                  lastName
+                  email
+                  userType
+                  image
+                }
+                accessToken
               }
-              `,
+            }
+            `,
     });
     const { data } = response;
+    token = data.data.login.accessToken;
     expect(data.data.login).toEqual(
       expect.objectContaining({
+        user: expect.objectContaining({
+          _id: expect.any(String),
+          firstName: 'testdb2',
+          lastName: 'testdb2',
+          email: `${email}`,
+          userType: 'USER',
+          image: null,
+        }),
         accessToken: expect.any(String),
+      })
+    );
+  });
+
+  test('allUsers', async () => {
+    const response = await axios.post(
+      URL,
+      {
+        query: `query {
+                users {
+                  _id
+                  firstName
+                  lastName
+                  email
+                }
+              }`,
+      },
+      {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const { data } = response;
+    expect(Array.isArray(data.data.users)).toBeTruthy();
+
+    expect(data.data.users[0]).toEqual(
+      //Tested First Object in Array as others will be similar.
+      expect.objectContaining({
+        _id: expect.any(String),
+        firstName: expect.any(String),
+        lastName: expect.any(String),
+        email: expect.any(String),
       })
     );
   });
