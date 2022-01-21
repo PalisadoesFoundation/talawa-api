@@ -1,36 +1,18 @@
 const axios = require('axios');
 const { URL } = require('../constants');
 const getToken = require('./functions/getToken');
+const getUserId = require('./functions/getUserId');
 
 let token;
 let userId;
 
 beforeAll(async () => {
   token = await getToken();
+  userId = await getUserId();
 });
 
 describe('user query', () => {
-  test('Get User Details with ID', async () => {
-    const loggedInUserResponse = await axios.post(
-      URL,
-      {
-        query: `
-      {
-        me {
-          _id
-        }
-      }
-      `,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    userId = loggedInUserResponse.data.data.me._id;
-
+  test('Get Logged In User Details', async () => {
     const response = await axios.post(
       URL,
       {
@@ -57,7 +39,7 @@ describe('user query', () => {
               }
               members {
                 _id
-                ficorstName
+                firstName
               }
               admins {
                 _id
@@ -157,7 +139,7 @@ describe('user query', () => {
     const response = await axios.post(URL, {
       query: `
         {
-          user(id: "61d4676865721d2dde1f0b6c") {
+          user(id: "${userId}") {
             _id
             firstName
             lastName
