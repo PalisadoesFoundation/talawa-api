@@ -8,7 +8,7 @@ const createEvent = async (parent, args, context) => {
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
     throw new NotFoundError(
-      requestContext.translate('event.notFound'),
+      requestContext.translate('user.notFound'),
       'user.notFound',
       'user'
     );
@@ -18,59 +18,45 @@ const createEvent = async (parent, args, context) => {
   const org = await Organization.findOne({ _id: args.data.organizationId });
   if (!org) {
     throw new NotFoundError(
-      requestContext.translate('chat.notFound'),
-      'chat.notFound',
-      'chat'
+      requestContext.translate('organization.notFound'),
+      'organization.notFound',
+      'organization'
     );
   }
 
-  let flag = 0;
-  let CreatedOrg = user.createdOrganizations;
+  // Check if user created the Organization
+  let userCreatedOrg = false;
+  let createdOrganizations = user.createdOrganizations;
 
-  const newEvent = new Event({
-    ...args.data,
-    organization: args.data.organizationId,
-    creator: context.userId,
-    registrants: [],
-    admins: [context.userId],
-  });
-
-  newEvent.registrants.push({
-    userId: context.userId,
-    user: context.userId,
-  });
-
-  await newEvent.save();
-
-  // Add event to the user record
-  await User.updateOne(
-    { _id: user.id },
-    {
-      $push: {
-        eventAdmin: newEvent,
-        createdEvents: newEvent,
-        registeredEvents: newEvent,
-      },
+  for (let i = 0; i < createdOrganizations.length; i++) {
+    if (createdOrganizations[i]._id.equals(args.data.organizationId)) {
+      userCreatedOrg = true;
+      break;
     }
-  );
-
-  // If user hasn't joined the org then check if they have created the org
-  if (!flag) {
-    CreatedOrg.forEach((orgID) => {
-      if (orgID.equals(args.data.organizationId)) {
-        flag = 1;
-      }
-    });
   }
 
-  // If user have joined or created the org then proceed with creating the event
-  if (flag) {
-    console.log('FLAG: ', flag);
+  // Check if user joined the Organization
+  let userJoinedOrg = false;
+  let joinedOrganizations = user.joinedOrganizations;
 
+  for (let i = 0; i < joinedOrganizations.length; i++) {
+    if (joinedOrganizations[i]._id.equals(args.data.organizationId)) {
+      userJoinedOrg = true;
+      break;
+    }
+  }
+
+  // Create Event if User Joined or Created the Organization
+  if (userCreatedOrg || userJoinedOrg) {
     const newEvent = new Event({
       ...args.data,
       creator: context.userId,
-      registrants: [context.userId],
+      registrants: [
+        {
+          userId: context.userId,
+          user: context.userId,
+        },
+      ],
       admins: [context.userId],
       organization: args.data.organizationId,
     });
