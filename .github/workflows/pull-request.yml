@@ -12,7 +12,8 @@
 name: PR Workflow
 on: 
   pull_request:
-
+    branches:
+      - '**'
 jobs:
   Linter:
     name: Lints the code
