@@ -1,11 +1,14 @@
 const axios = require('axios');
 const { URL } = require('../constants');
 const getToken = require('./functions/getToken');
+const getUserId = require('./functions/getUserId');
 
 let token;
+let userId;
 
 beforeAll(async () => {
   token = await getToken();
+  userId = await getUserId();
 });
 
 describe('user resolvers', () => {
@@ -63,11 +66,11 @@ describe('user resolvers', () => {
 
     expect(data.data.me).toEqual(
       expect.objectContaining({
-        _id: expect.any(String),
-        firstName: expect.any(String),
-        lastName: expect.any(String),
-        email: expect.any(String),
-        userType: expect.any(String),
+        _id: userId,
+        firstName: "testdb2",
+        lastName: "testdb2",
+        email: "testdb2@test.com",
+        userType: "USER",
         appLanguageCode: expect.any(String),
       })
     );
