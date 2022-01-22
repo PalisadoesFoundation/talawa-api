@@ -8,8 +8,8 @@ beforeAll(async () => {
   token = await getToken();
 });
 
-describe('user resolvers', () => {
-  test('allUsers query', async () => {
+describe('users resolvers', () => {
+  test('users query', async () => {
     const response = await axios.post(
       URL,
       {
@@ -134,5 +134,48 @@ describe('user resolvers', () => {
         })
       );
     });
+  });
+
+  test('users query without Authorization', async () => {
+    const response = await axios.post(URL, {
+      query: `query {
+                  users {
+                    _id
+                    firstName
+                    lastName
+                    email
+                    createdOrganizations {
+                      _id
+                      name
+                    }
+                    joinedOrganizations {
+                      _id
+                      name
+                    }
+                  }
+                }
+              `,
+    });
+    const { data } = response;
+
+    expect(Array.isArray(data.errors)).toBeTruthy();
+
+    expect(data.errors[0]).toEqual(
+      expect.objectContaining({
+        message: 'User is not authenticated',
+        status: 422,
+      })
+    );
+
+    expect(data.errors[0].data[0]).toEqual(
+      expect.objectContaining({
+        message: 'User is not authenticated',
+        code: 'user.notAuthenticated',
+        param: 'userAuthentication',
+        metadata: {},
+      })
+    );
+
+    expect(data.data.users).toEqual(null);
   });
 });
