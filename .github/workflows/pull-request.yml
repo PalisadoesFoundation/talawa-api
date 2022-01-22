@@ -14,7 +14,10 @@ on:
   pull_request:
     branches:
       - '**'
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4f40b3e7d1b67321435b3b160d583b116619b255
 jobs:
   Linter:
     name: Lints the code

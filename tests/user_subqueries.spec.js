@@ -9,7 +9,7 @@ beforeAll(async () => {
 });
 
 describe('user resolvers', () => {
-  test('allUsers', async () => {
+  test('allUsers query', async () => {
     const response = await axios.post(
       URL,
       {
