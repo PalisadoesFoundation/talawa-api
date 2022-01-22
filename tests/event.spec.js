@@ -1,25 +1,15 @@
 const axios = require('axios');
 const { URL } = require('../constants');
 const getToken = require('./functions/getToken');
+const getUserId = require('./functions/getUserId');
 
 let token;
+let userId;
 beforeAll(async () => {
   token = await getToken();
+  userId = await getUserId();
 });
 describe('event resolvers', () => {
-  test('allEvents', async () => {
-    const response = await axios.post(URL, {
-      query: `query {
-                events {
-                    _id
-                    title
-                }
-            }`,
-    });
-    const { data } = response;
-    expect(Array.isArray(data.data.events)).toBeTruthy();
-  });
-
   let createdEventId;
   let createdOrgId;
   test('createEvent', async () => {
@@ -27,18 +17,19 @@ describe('event resolvers', () => {
       URL,
       {
         query: `
-            mutation {
-                createOrganization(data: {
-                    name:"test org"
-                    description:"test description"
-					isPublic: true
-					visibleInSearch: true
-                    }) {
-                        _id
-                        name
-                    }
+          mutation {
+            createOrganization(
+              data: {
+                name: "test org"
+                description: "test description2"
+                isPublic: true
+                visibleInSearch: true
+              }
+            ) {
+              _id
+              name
             }
-              `,
+          }`,
       },
       {
         headers: {
@@ -53,28 +44,47 @@ describe('event resolvers', () => {
       URL,
       {
         query: `
-        mutation {
-          createEvent(
+          mutation {
+            createEvent(
               data: {
-                  title: "Talawa Conference Test",
-                  description: "National conference that happens yearly",
-				  isPublic: true,
-                  isRegisterable: true,
-                  recurring: true,
-                  recurrance: "YEARLY",
-                  location: "Test",
-				  startDate: "2/2/2020",
-				  allDay: true,
-				  endTime:"2:00 PM"
-				  startTime:"1:00 PM"
-                  organizationId: "${createdOrgId}",
-          }) {
+                title: "Talawa Conference Test"
+                description: "National conference that happens yearly"
+                isPublic: true
+                isRegisterable: true
+                recurring: true
+                recurrance: YEARLY
+                location: "Test"
+                startDate: "2/2/2020"
+                allDay: true
+                endTime: "2:00 PM"
+                startTime: "1:00 PM"
+                organizationId: "${createdOrgId}"
+              }
+            ) {
               _id
               title
               description
-          }
-      }
-              `,
+              startDate
+              startTime
+              endTime
+              allDay
+              recurring
+              recurrance
+              isPublic
+              isRegisterable
+              location
+              status
+              organization {
+                _id
+              }
+              creator {
+                _id
+              }
+              admins {
+                _id
+              }
+            }
+          }`,
       },
       {
         headers: {
@@ -84,12 +94,106 @@ describe('event resolvers', () => {
     );
     const { data } = response;
     createdEventId = data.data.createEvent._id;
-    expect(data.data.createEvent).toEqual(
+    const createdEvent = data.data.createEvent;
+    expect(createdEvent).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
-        title: expect.any(String),
+        title: 'Talawa Conference Test',
+        description: 'National conference that happens yearly',
+        startDate: '2/2/2020',
+        startTime: '1:00 PM',
+        endTime: '2:00 PM',
+        allDay: true,
+        recurring: true,
+        recurrance: 'YEARLY',
+        isPublic: true,
+        isRegisterable: true,
+        location: 'Test',
+        status: 'ACTIVE',
       })
     );
+
+    expect(createdEvent.organization).toEqual(
+      expect.objectContaining({
+        _id: createdOrgId,
+      })
+    );
+
+    expect(createdEvent.creator).toEqual(
+      expect.objectContaining({
+        _id: userId,
+      })
+    );
+
+    createdEvent.admins.map((admin) => {
+      expect(admin).toEqual(
+        expect.objectContaining({
+          _id: expect.any(String),
+        })
+      );
+    });
+  });
+
+  test('allEvents', async () => {
+    const response = await axios.post(URL, {
+      query: `{
+        events {
+          _id
+          title
+          description
+          startDate
+          startTime
+          endTime
+          allDay
+          recurring
+          recurring
+          recurrance
+          isPublic
+          isRegisterable
+          location
+          status
+          registrants{
+            _id
+            user{
+              _id
+            }
+          }
+        }
+      }`,
+    });
+    const { data } = response;
+    const eventsData = data.data.events;
+    expect(Array.isArray(eventsData)).toBeTruthy();
+
+    eventsData.map((event) => {
+      expect(event).toEqual(
+        expect.objectContaining({
+          _id: expect.any(String),
+          title: expect.any(String),
+          description: expect.any(String),
+          startDate: expect.any(String),
+          startTime: expect.any(String),
+          endTime: expect.any(String),
+          allDay: expect.any(Boolean),
+          recurring: expect.any(Boolean),
+          recurrance: expect.any(String),
+          isPublic: expect.any(Boolean),
+          isRegisterable: expect.any(Boolean),
+          location: expect.any(String),
+          status: expect.any(String),
+        })
+      );
+      event.registrants.map((registrant) => {
+        expect(registrant).toEqual(
+          expect.objectContaining({
+            _id: expect.any(String),
+            user: expect.objectContaining({
+              _id: expect.any(String),
+            }),
+          })
+        );
+      });
+    });
   });
 
   test('eventsByOrganization', async () => {
@@ -155,12 +259,25 @@ describe('event resolvers', () => {
       }
     );
     const { data } = response;
-    expect(data.data.registerForEvent).toEqual(
+    expect(Array.isArray(data.errors)).toBeTruthy();
+
+    expect(data.errors[0]).toEqual(
       expect.objectContaining({
-        _id: expect.any(String),
-        title: expect.any(String),
+        message: 'Already registered for the event',
+        status: 422,
       })
     );
+
+    expect(data.errors[0].data[0]).toEqual(
+      expect.objectContaining({
+        message: 'Already registered for the event',
+        code: 'registrant.alreadyExist',
+        param: 'registrant',
+        metadata: {},
+      })
+    );
+
+    expect(data.data).toEqual(null);
   });
 
   test('registrantsByEvent', async () => {
@@ -354,28 +471,28 @@ describe('event resolvers', () => {
       URL,
       {
         query: `
-	        mutation {
-	          createEvent(
-	              data: {
-					title: "Test",
-					description: "National conference that happens yearly",
-					isPublic: true,
-					isRegisterable: true,
-					recurring: true,
-					recurrance: "YEARLY",
-					location: "Test",
-					startDate: "2/2/2020",
-					allDay: true,
-					endTime:"2:00 PM"
-					startTime:"1:00 PM"
-					organizationId: "${createdOrgId}",
-	          }) {
-	              _id
-	              title
-	              description
-	          }
-	      }
-	              `,
+          mutation {
+            createEvent(
+              data: {
+                title: "Talawa Conference Test"
+                description: "National conference that happens yearly"
+                isPublic: true
+                isRegisterable: true
+                recurring: true
+                recurrance: YEARLY
+                location: "Test"
+                startDate: "2/2/2020"
+                allDay: true
+                endTime: "2:00 PM"
+                startTime: "1:00 PM"
+                organizationId: "${createdOrgId}"
+              }
+            ) {
+              _id
+              title
+              description
+            }
+          }`,
       },
       {
         headers: {
@@ -409,7 +526,7 @@ describe('event resolvers', () => {
       data: {
         removeEvent: {
           _id: `${newEventId}`,
-          title: 'Test',
+          title: 'Talawa Conference Test',
         },
       },
     });
