@@ -239,6 +239,35 @@ describe('event resolvers', () => {
     );
   });
 
+  test('check if user is Registered for event', async () => {
+    const response = await axios.post(
+      URL,
+      {
+        query: `{
+          isUserRegister(eventId: "${createdEventId}") {
+            event {
+              _id
+            }
+            isRegistered
+          }
+        }`,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const { data } = response;
+    const isUserRegistered = data.data.isUserRegister;
+    expect(isUserRegistered.event).toEqual(
+      expect.objectContaining({
+        _id: createdEventId,
+      })
+    );
+    expect(isUserRegistered.isRegistered).toEqual(true);
+  });
+
   test('registerForEvent', async () => {
     const response = await axios.post(
       URL,
