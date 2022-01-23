@@ -11,12 +11,12 @@ module.exports = `
     organizationsConnection(where: OrganizationWhereInput, first: Int, skip: Int, orderBy: OrganizationOrderByInput): [Organization]!
     organizationsMemberConnection(orgId:ID!, where: UserWhereInput, first: Int, skip: Int, orderBy: UserOrderByInput): UserConnection! @auth
     
-    isUserRegister(eventId: ID): EventRegistrants
-    event(id: ID): Event
+    isUserRegister(eventId: ID!): EventRegistrants
+    event(id: ID!): Event
     events(id: ID, orderBy: EventOrderByInput): [Event]
     eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
     registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
-    registrantsByEvent(id: ID): [User]
+    registrantsByEvent(id: ID!): [User]
     
     posts(orderBy: PostOrderByInput): [Post]
     postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
@@ -25,7 +25,7 @@ module.exports = `
     tasksByUser(id: ID!, orderBy: TaskOrderByInput): [Task]
     comments: [Comment]
     commentsByPost(id: ID!): [Comment]
-    post(id: ID): Post
+    post(id: ID!): Post
     groups: [Group]
     
     directChats: [DirectChat]
