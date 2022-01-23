@@ -287,10 +287,10 @@ describe('event resolvers', () => {
       }
     );
     const { data } = response;
-    const registeredEventsByUser = data.data.registeredEventsByUser;
-    expect(Array.isArray(registeredEventsByUser)).toBeTruthy();
+    const registeredEventsByUserData = data.data.registeredEventsByUser;
+    expect(Array.isArray(registeredEventsByUserData)).toBeTruthy();
 
-    registeredEventsByUser.map((event) => {
+    registeredEventsByUserData.map((event) => {
       expect(event).toEqual(
         expect.objectContaining({
           _id: expect.any(String),
@@ -301,7 +301,7 @@ describe('event resolvers', () => {
     });
   });
 
-  test('registerForEvent', async () => {
+  test('registerForEvent if already registered', async () => {
     const response = await axios.post(
       URL,
       {
@@ -340,6 +340,68 @@ describe('event resolvers', () => {
     );
 
     expect(data.data).toEqual(null);
+  });
+
+  test('unregisterForEventByUser', async () => {
+    const response = await axios.post(
+      URL,
+      {
+        query: `
+        mutation{
+          unregisterForEventByUser(id:"${createdEventId}"){
+            _id
+            title
+            description
+            registrants{
+              _id
+            }
+          }
+        }`,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const { data } = response;
+
+    expect(data.data.unregisterForEventByUser).toEqual(
+      expect.objectContaining({
+        _id: createdEventId,
+        title: 'Talawa Conference Test',
+        description: 'National conference that happens yearly',
+      })
+    );
+  });
+
+  test('registerForEvent after unregistering', async () => {
+    const response = await axios.post(
+      URL,
+      {
+        query: `
+	        mutation {
+	          registerForEvent(id: "${createdEventId}") {
+	            _id
+	            title
+	        }
+	      }
+	              `,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const { data } = response;
+
+    expect(data.data.registerForEvent).toEqual(
+      expect.objectContaining({
+        _id: createdEventId,
+        title: 'Talawa Conference Test',
+      })
+    );
   });
 
   test('registrantsByEvent', async () => {
