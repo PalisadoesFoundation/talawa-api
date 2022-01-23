@@ -6,6 +6,7 @@ const {
 } = require('../../helper_functions/auth');
 const { NotFoundError, ValidationError } = require('errors');
 const requestContext = require('talawa-request-context');
+const copyToClipboard = require('../functions/copyToClipboard');
 
 module.exports = async (parent, args) => {
   const user = await User.findOne({ email: args.data.email.toLowerCase() });
@@ -34,6 +35,10 @@ module.exports = async (parent, args) => {
 
   const accessToken = await createAccessToken(user);
   const refreshToken = await createRefreshToken(user);
+
+  copyToClipboard(`{
+  "Authorization": "Bearer ${accessToken}"
+}`);
 
   return {
     user: {
