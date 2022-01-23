@@ -207,6 +207,7 @@ describe('event resolvers', () => {
     });
     const { data } = response;
     expect(Array.isArray(data.data.eventsByOrganization)).toBeTruthy();
+    expect(data.data.eventsByOrganization).toHaveLength(1);
   });
 
   test('eventByID', async () => {
