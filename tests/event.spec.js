@@ -268,6 +268,39 @@ describe('event resolvers', () => {
     expect(isUserRegistered.isRegistered).toEqual(true);
   });
 
+  test('check all registered events by user', async () => {
+    const response = await axios.post(
+      URL,
+      {
+        query: `{
+          registeredEventsByUser(id: "${userId}") {
+            _id
+            title
+            description
+          }
+        }`,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const { data } = response;
+    const registeredEventsByUser = data.data.registeredEventsByUser;
+    expect(Array.isArray(registeredEventsByUser)).toBeTruthy();
+
+    registeredEventsByUser.map((event) => {
+      expect(event).toEqual(
+        expect.objectContaining({
+          _id: expect.any(String),
+          title: expect.any(String),
+          description: expect.any(String),
+        })
+      );
+    });
+  });
+
   test('registerForEvent', async () => {
     const response = await axios.post(
       URL,
