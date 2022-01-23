@@ -20,11 +20,15 @@ module.exports = async (parent, args, context) => {
   }
 
   let isRegistered = false;
-  eventFound.registrants.forEach((registrant) => {
-    if (registrant.userId === context.userId) {
+  for (const registrant of eventFound.registrants) {
+    if (
+      registrant.userId === context.userId &&
+      registrant.status === 'ACTIVE'
+    ) {
       isRegistered = true;
+      break;
     }
-  });
+  }
 
   return {
     event: eventFound,
