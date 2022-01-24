@@ -1,7 +1,7 @@
 const User = require('../../models/User');
 const Organization = require('../../models/Organization');
 const creatorCheck = require('../functions/creatorCheck');
-const { NotFoundError } = require('errors');
+const { NotFoundError, UnauthorizedError } = require('errors');
 const requestContext = require('talawa-request-context');
 
 module.exports = async (parent, args, context) => {
@@ -29,12 +29,24 @@ module.exports = async (parent, args, context) => {
   }
 
   // ensures user is a member of the organization
-  const member = org._doc.members.filter((member) => member === user.id);
+  const member = org._doc.members.filter(
+    (member) => member.toString() === user.id
+  );
   if (member.length === 0) {
     throw new NotFoundError(
       requestContext.translate('organization.member.notFound'),
       'organization.member.notFound',
       'organizationMember'
+    );
+  }
+
+  // checks if user is already admin of the organization
+  const admin = org._doc.admins.filter((admin) => admin.toString() === user.id);
+  if (admin.length === 1) {
+    throw new UnauthorizedError(
+      requestContext.translate('user.notAuthorized'),
+      'user.notAuthorized',
+      'userAuthorization'
     );
   }
 
