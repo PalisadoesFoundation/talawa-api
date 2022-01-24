@@ -152,6 +152,50 @@ describe('User-Organization Resolvers', () => {
     );
   });
 
+  test('Attempt to make user as admin if already is an admin', async () => {
+    const response = await axios.post(
+      URL,
+      {
+        query: `
+          mutation {
+            createAdmin(data: {
+              organizationId: "${createdOrgId}"
+              userId: "${newUserId}"
+            }) {
+              _id
+              firstName
+              lastName
+              email
+            }
+          }`,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const { data } = response;
+    expect(data.errors[0]).toEqual(
+      expect.objectContaining({
+        message: 'User is not authorized for performing this operation',
+        status: 422,
+      })
+    );
+
+    expect(data.errors[0].data[0]).toEqual(
+      expect.objectContaining({
+        message: 'User is not authorized for performing this operation',
+        code: 'user.notAuthorized',
+        param: 'userAuthorization',
+        metadata: {},
+      })
+    );
+
+    expect(data.data).toEqual(null);
+  });
+
   // ADMIN REMOVES GROUP
 
   // ADMIN REMOVES EVENT
