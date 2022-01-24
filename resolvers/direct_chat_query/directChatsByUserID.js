@@ -1,3 +1,5 @@
+///Resolver to find direct chats by User ID.
+
 const { NotFoundError } = require('errors');
 const requestContext = require('talawa-request-context');
 
@@ -14,4 +16,3 @@ module.exports = async (parent, args) => {
   }
   return directChatsFound;
 };
-// 
