@@ -14,8 +14,10 @@ module.exports = async (parent, args, context) => {
   adminCheck(context, org);
   // ensure user isnt already blocked
   const blocked = org._doc.blockedUsers.filter(
-    (blockedUser) => blockedUser === user.id
+    (blockedUser) => blockedUser.toString() === user.id
   );
+  console.log(blocked);
+
   if (blocked[0]) {
     throw new UnauthorizedError(
       requestContext.translate('user.notAuthorized'),
