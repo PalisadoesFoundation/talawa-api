@@ -8,8 +8,7 @@ const updateUserProfile = async (parent, args, context) => {
     //gets user in token - to be used later on
     let userFound = await userExists(context.userId);
     if (!userFound) throw new Error('User not found');
-
-    if (args.data.email !== null) {
+    if (args.data.email !== undefined) {
       const emailTaken = await User.findOne({
         email: args.data.email.toLowerCase(),
       });
