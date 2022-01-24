@@ -27,7 +27,7 @@ const adminPlugin = require('./plugin_query/admin-plugin-query');
 const myLanguage = require('../resolvers/user_query/myLanguage');
 const userLanguage = require('../resolvers/user_query/userLanguage');
 const getlanguage = require('../resolvers/language_maintainer_query/getlanguage');
-
+const directChatsByUserID=require('./direct_chat_query/directChatsByUserID');
 const Query = {
   me,
   user,
@@ -49,6 +49,8 @@ const Query = {
   groupChatMessages,
   directChats,
   directChatMessages,
+  directChatsByUserID,
+
   tasksByEvent,
   tasksByUser,
   comments,
