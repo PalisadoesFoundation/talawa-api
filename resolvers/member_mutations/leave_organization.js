@@ -34,26 +34,29 @@ module.exports = async (parent, args, context) => {
   }
 
   //check to see if user is already a member
-  const members = org._doc.members.filter((member) => member === user.id);
+  const members = org._doc.members.filter(
+    (member) => member.toString() === user.id
+  );
+  console.log(members);
   if (members.length === 0) {
     throw new ConflictError(
-      requestContext.translate('user.alreadyMember'),
-      'user.alreadyMember',
-      'userAlreadyMember'
+      requestContext.translate('member.notFound'),
+      'member.notFound',
+      'member.notFound'
     );
   }
 
   //if the user is an admin he is removed from the organization's admin field
   org.overwrite({
     ...org._doc,
-    admins: org._doc.admins.filter((admin) => admin !== user.id),
+    admins: org._doc.admins.filter((admin) => admin.toString() !== user.id),
   });
   await org.save();
 
   //remove user from the organization's members field
   org.overwrite({
     ...org._doc,
-    members: org._doc.members.filter((member) => member !== user.id),
+    members: org._doc.members.filter((member) => member.toString() !== user.id),
   });
   await org.save();
 
@@ -61,7 +64,7 @@ module.exports = async (parent, args, context) => {
   user.overwrite({
     ...user._doc,
     joinedOrganizations: user._doc.joinedOrganizations.filter(
-      (organization) => organization !== org.id
+      (organization) => organization.toString() !== org.id
     ),
   });
   await user.save();
