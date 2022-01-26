@@ -52,12 +52,12 @@ Follow these steps to get the api running using Docker.
 Follow these steps to get the API running.
 
 1. Install these **mandatory** dependencies if you don't already have them:
-    1. [Nodejs](https://nodejs.org/en/)<br>
+    1. [Nodejs](https://nodejs.org/en/)
 1. Install these **optional** dependencies if you don't already have them:
-    1. Talawa-API requires a MongoDB database. This can be provided either as a hosted MongoDB cloud service or installed locally on your machine.
-        1. If you are going to install the database on a system you control, then follow these [MongoDB installation instructions](https://docs.mongodb.com/manual/administration/install-community/) 
-        1. If you are using a cloud service such as mongodb.com then you do not have to install the optional MongoDB software.
-        1. **Note:** If you are running MongoDB on a remote system, cloud or a system under your control, then ensure you have provided the correct access permissions and firewall openings for the VM/server/service where the MongoDB is hosted.
+    1. Talawa-API requires a `MongoDB` database. This can be provided either as a hosted `MongoDB` cloud service or installed locally on your machine.
+        1. If you are going to install the database on a **system you control**, then follow these [MongoDB installation instructions](https://docs.mongodb.com/manual/administration/install-community/) 
+        1. If you are using a **cloud service** such as `mongodb.com` then you do not have to install the optional MongoDB software.
+        1. **Note:** If you are running MongoDB on a remote system, either a cloud service or a system under your control, then ensure you have provided the correct access permissions and firewall openings for the VM/server/service where the MongoDB is hosted.
 1. Clone this repo to your local machine
 
         git clone https://github.com/PalisadoesFoundation/talawa-api
@@ -116,4 +116,5 @@ Follow these steps to get the API running.
 You can run `talawa-api` tests using this command
 
         npm run test
+
 
