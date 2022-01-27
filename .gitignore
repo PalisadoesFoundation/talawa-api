@@ -4,6 +4,7 @@ nodemon.json
 .env
 images/
 .vscode
-coverage/lcov-report/
-coverage/clover.xml
-coverage/coverage-final.json
+package-lock.json
+
+# We don't want to have code coverage data stored in the repo as it is dynamic
+coverage/

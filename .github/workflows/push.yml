@@ -1,0 +1,46 @@
+##############################################################################
+##############################################################################
+#
+# NOTE!
+#
+# Please read the README.md file in this directory that defines what should 
+# be placed in this file
+#
+##############################################################################
+##############################################################################
+
+name: Push Workflow
+
+on:
+  push:
+    branches:
+      - '**'   
+
+jobs:
+
+##############################################################################
+# This section is added so that the most recent and valid level of 
+# code coverage (post PR merge) is reported 
+##############################################################################
+
+  Code-Coverage:
+    name: Shows code coverage
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x]
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+    - name: Install dependencies
+      run: npm install
+    - name: Run the tests    
+      run: npm run test-dev
+      continue-on-error: true
+    - name: Save Test Coverage Details
+      uses: codecov/codecov-action@v2
+      with:
+        token: ${{secrets.CODECOV_TOKEN}} 
+        file: ./coverage/lcov.info
