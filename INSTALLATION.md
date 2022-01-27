@@ -93,14 +93,14 @@ Follow these steps to get the API running.
     - If MongoDB is running on your local system for data storage then the generic format of the URL would be:
 
         ```
-        mongodb://localhost:27017/`<DB_NAME>`?retryWrites=true&w=majority
+        mongodb://localhost:27017/<DB_NAME>?retryWrites=true&w=majority
         ```
         * Where `<DB_NAME>` is the name of the MongoDB database.
 
     - If you are using a MongoDB cloud service for data storage, then the generic format of the URL would be:
 
         ```
-        mongodb+srv://`<USERNAME>:<PASSWORD>@<SERVER_URL>/<DB_NAME>`?retryWrites=true&w=majority
+        mongodb+srv://<USERNAME>:<PASSWORD>@<SERVER_URL>/<DB_NAME>?retryWrites=true&w=majority
         ```
         
         * Where:
