@@ -46,15 +46,15 @@ Follow these steps to get the api running using Docker.
 
     Please review the contents of the `.env.sample` file for additional details.
 
-2. Build the `docker` image that will support `talawa-api`
+1. Build the `docker` image that will support `talawa-api`
 
         sudo docker-compose build
 
-3. Start the `docker` container. This is the command you will use to start the server after reboots.
+1. Start the `docker` container. This is the command you will use to start the server after reboots.
 
         sudo docker-compose up
 
-4. To stop the `docker` container, this is the command you can use.
+1. To stop the `docker` container, this is the command you can use.
 
         sudo docker-compose down
 
