@@ -67,10 +67,10 @@ describe('user resolvers', () => {
     expect(data.data.me).toEqual(
       expect.objectContaining({
         _id: userId,
-        firstName: "testdb2",
-        lastName: "testdb2",
-        email: "testdb2@test.com",
-        userType: "USER",
+        firstName: 'testdb2',
+        lastName: 'testdb2',
+        email: 'testdb2@test.com',
+        userType: 'USER',
         appLanguageCode: expect.any(String),
       })
     );
