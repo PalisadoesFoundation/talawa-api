@@ -38,23 +38,6 @@ const organizationsConnection = async (parent, args) => {
       };
     }
 
-    //Returns organizations with id having provided string
-    if (filterParam.id_contains) {
-      inputArg = {
-        ...inputArg,
-        _id: { $regex: filterParam.id_contains, $options: 'i' },
-      };
-    }
-
-    //Returns organizations with id starts with provided string
-    if (filterParam.id_starts_with) {
-      const regexp = new RegExp('^' + filterParam.id_starts_with);
-      inputArg = {
-        ...inputArg,
-        _id: regexp,
-      };
-    }
-
     //Returns provided name organization
     if (filterParam.name) {
       inputArg = {
@@ -206,7 +189,7 @@ const organizationsConnection = async (parent, args) => {
     }
 
     //Returns organizations with provided visibleInSearch condition
-    if (filterParam.visibleInSearch !== null) {
+    if (filterParam.visibleInSearch !== undefined) {
       inputArg = {
         ...inputArg,
         visibleInSearch: filterParam.visibleInSearch,
@@ -214,7 +197,7 @@ const organizationsConnection = async (parent, args) => {
     }
 
     //Returns organizations with provided isPublic condition
-    if (filterParam.isPublic !== null) {
+    if (filterParam.isPublic !== undefined) {
       inputArg = {
         ...inputArg,
         isPublic: filterParam.isPublic,

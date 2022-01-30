@@ -22,5 +22,6 @@
     "invalid.refreshToken": "Token de actualización no válido",
     "invalid.credentials": "Credenciales no válidas",
     "registrant.alreadyExist": "Ya inscrito para el evento",
-    "member.notFound": "Miembro no encontrado"
+    "member.notFound": "Miembro no encontrado",
+    "registrant.alreadyUnregistered": "Ya no está registrado para el evento"
 }

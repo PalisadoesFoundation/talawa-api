@@ -22,6 +22,31 @@ import os
 import sys
 import argparse
 
+def _excluded_filepaths(excludes):
+    """Create a list of full file paths to exclude from the analysis.
+    Args:
+        excludes: List of files to exclude
+    Returns:
+        result: A list of full file paths
+    """
+    # Initialize key variables
+    result = []
+
+    if bool(excludes) is True:
+        for filename in excludes:
+            # Ignore files that appear to be full paths because they start
+            # with a '/' or whatever the OS uses to distinguish directories
+            if filename.startswith(os.sep):
+                result.append(filename)
+                continue
+
+            # Create a file path
+            filepath = '{}{}{}'.format(os.getcwd(), os.sep, filename)
+            if os.path.isfile(filepath) is True:
+                result.append(filepath)
+    # Return
+    return result
+
 
 def arg_parser_resolver():
     """Resolve the CLI arguments provided by the user.
@@ -36,6 +61,12 @@ def arg_parser_resolver():
                         help='an integer for number of lines of code')
     parser.add_argument('--dir', type=str, required=False, default=os.getcwd(),
                         help='directory-location where files are present')
+    parser.add_argument('--exclude', type=str, required=False,
+                        nargs='*',
+                        default=None,
+                        const=None,
+                        help='''\
+An optional list of files to exclude from the analysis separated by spaces.''')
 
     # Return parser
     result = parser.parse_args()
@@ -55,6 +86,7 @@ def main():
     lookup = {}
     errors_found = False
     file_count = 0
+    excluded_filepaths = []
 
     # Get the CLI arguments
     args = arg_parser_resolver()
@@ -69,12 +101,21 @@ def main():
 
     ]
 
+    # Get a corrected list of filenames to exclude
+    excluded_filepaths = _excluded_filepaths(args.exclude)
+
     # Iterate and analyze each directory
     for directory in directories:
         for root, _, files in os.walk(directory, topdown=False):
             for name in files:
                 # Read each file and count the lines found
                 file_path = os.path.join(root, name)
+
+                # Skip excluded files
+                if bool(args.exclude) is True:
+                    if file_path in excluded_filepaths:
+                        continue
+
                 with open(file_path) as code:
                     line_count = sum(
                         1 for line in code

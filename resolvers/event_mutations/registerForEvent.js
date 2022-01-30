@@ -32,8 +32,8 @@ const registerForEvent = async (parent, args, context) => {
     if (isActive) {
       throw new NotFoundError(
         requestContext.translate('registrant.alreadyExist'),
-        'event.notFound',
-        'event'
+        'registrant.alreadyExist',
+        'registrant'
       );
     } else {
       isAlreadyExists = true;

@@ -38,26 +38,6 @@ const filterParamUtil = (filterParam) => {
     };
   }
 
-  //Returns users with id having provided string
-  if (filterParam.id_contains) {
-    inputArg = {
-      ...inputArg,
-      _id: {
-        $regex: filterParam.id_contains,
-        $options: 'i',
-      },
-    };
-  }
-
-  //Returns users with id starts with provided string
-  if (filterParam.id_starts_with) {
-    const regexp = new RegExp('^' + filterParam.id_starts_with);
-    inputArg = {
-      ...inputArg,
-      _id: regexp,
-    };
-  }
-
   //Returns provided firstName user
   if (filterParam.firstName) {
     inputArg = {
