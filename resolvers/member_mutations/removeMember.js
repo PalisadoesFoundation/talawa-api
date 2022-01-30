@@ -30,7 +30,9 @@ module.exports = async (parent, args, context) => {
       break;
     }
     //ensure member being removed by admin is already a member
-    const members = org._doc.members.filter((member) => member === user.id);
+    const members = org._doc.members.filter(
+      (member) => member.toString() === user.id
+    );
     if (members.length === 0) {
       errors.push('User is not a member');
       break;
@@ -57,7 +59,9 @@ module.exports = async (parent, args, context) => {
       { _id: org.id },
       {
         $set: {
-          members: org._doc.members.filter((member) => member !== user.id),
+          members: org._doc.members.filter(
+            (member) => member.toString() !== user.id
+          ),
         },
       },
       {
@@ -71,7 +75,7 @@ module.exports = async (parent, args, context) => {
       {
         $set: {
           joinedOrganizations: user._doc.joinedOrganizations.filter(
-            (organization) => organization !== org.id
+            (organization) => organization.toString() !== org.id
           ),
         },
       }

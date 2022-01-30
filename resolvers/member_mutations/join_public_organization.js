@@ -34,7 +34,9 @@ module.exports = async (parent, args, context) => {
   }
 
   // check to see if user is already a member
-  const members = org._doc.members.filter((member) => member === user.id);
+  const members = org._doc.members.filter(
+    (member) => member.toString() === user.id
+  );
   if (members.length !== 0) {
     throw new ConflictError(
       requestContext.translate('user.alreadyMember'),

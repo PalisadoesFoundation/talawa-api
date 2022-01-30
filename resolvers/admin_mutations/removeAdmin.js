@@ -26,7 +26,7 @@ module.exports = async (parent, args, context) => {
   }
 
   // ensure user is an admin
-  const admin = org._doc.admins.filter((admin) => admin === user.id);
+  const admin = org._doc.admins.filter((admin) => admin.toString() === user.id);
   if (admin.length === 0) {
     throw new UnauthorizedError(
       requestContext.translate('user.notAuthorized'),
@@ -41,7 +41,7 @@ module.exports = async (parent, args, context) => {
   // remove admin from organization
   org.overwrite({
     ...org._doc,
-    admins: org._doc.admins.filter((admin) => admin !== user.id),
+    admins: org._doc.admins.filter((admin) => admin.toString() !== user.id),
   });
   await org.save();
 
@@ -49,7 +49,7 @@ module.exports = async (parent, args, context) => {
   user.overwrite({
     ...user._doc,
     adminFor: user._doc.adminFor.filter(
-      (organization) => organization !== org.id
+      (organization) => organization.toString() !== org.id
     ),
   });
   await user.save();

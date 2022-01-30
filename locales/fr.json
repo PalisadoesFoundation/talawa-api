@@ -22,5 +22,6 @@
     "invalid.refreshToken": "Jeton d'actualisation non valide",
     "invalid.credentials": "Informations d'identification non valides",
     "registrant.alreadyExist": "Déjà inscrit à l'événement",
+    "member.notFound": "Membre introuvable",
     "registrant.alreadyUnregistered": "Déjà non inscrit à l'événement"
 }

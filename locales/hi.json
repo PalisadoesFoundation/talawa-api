@@ -22,5 +22,6 @@
     "invalid.refreshToken": "अमान्य रीफ़्रेश टोकन",
     "invalid.credentials": "अवैध प्रत्यय पत्र",
     "registrant.alreadyExist": "घटना के लिए पहले से पंजीकृत",
+    "member.notFound": "सदस्य अनुपस्थित",
     "registrant.alreadyUnregistered": "घटना के लिए पहले से ही अपंजीकृत"
 }
