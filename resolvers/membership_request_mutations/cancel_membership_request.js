@@ -40,7 +40,7 @@ module.exports = async (parent, args, context) => {
   }
 
   //ensure user in context created membership request
-  const owner = user.id === membershipRequest.user;
+  const owner = user.id === membershipRequest.user.toString();
   if (!owner) {
     throw new UnauthorizedError(
       requestContext.translate('user.notAuthorized'),
