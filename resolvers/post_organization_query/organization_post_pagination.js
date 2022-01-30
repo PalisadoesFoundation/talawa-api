@@ -80,7 +80,7 @@ const filteringData = (filterParam) => {
     };
   }
 
-  //Returns all user other than provided id
+  //Returns all Posts other than provided id
   if (filterParam.id_not) {
     inputArg = {
       ...inputArg,
@@ -90,7 +90,7 @@ const filteringData = (filterParam) => {
     };
   }
 
-  //Return users with id in the provided list
+  //Return Posts with id in the provided list
   if (filterParam.id_in) {
     inputArg = {
       ...inputArg,
@@ -100,7 +100,7 @@ const filteringData = (filterParam) => {
     };
   }
 
-  //Returns user not included in provided id list
+  //Returns Posts not included in provided id list
   if (filterParam.id_not_in) {
     inputArg = {
       ...inputArg,
@@ -110,27 +110,7 @@ const filteringData = (filterParam) => {
     };
   }
 
-  //Returns users with id having provided string
-  if (filterParam.id_contains) {
-    inputArg = {
-      ...inputArg,
-      _id: {
-        $regex: filterParam.id_contains,
-        $options: 'i',
-      },
-    };
-  }
-
-  //Returns users with id starts with provided string
-  if (filterParam.id_starts_with) {
-    const regexp = new RegExp('^' + filterParam.id_starts_with);
-    inputArg = {
-      ...inputArg,
-      _id: regexp,
-    };
-  }
-
-  //Returns provided firstName user
+  //Returns provided text Posts
   if (filterParam.text) {
     inputArg = {
       ...inputArg,
@@ -138,7 +118,7 @@ const filteringData = (filterParam) => {
     };
   }
 
-  //Returns user with not that firstName
+  //Returns Posts with not the provided text
   if (filterParam.text_not) {
     inputArg = {
       ...inputArg,
@@ -148,7 +128,7 @@ const filteringData = (filterParam) => {
     };
   }
 
-  //Return users with the given list firstName
+  //Return Posts with the given list text
   if (filterParam.text_in) {
     inputArg = {
       ...inputArg,
@@ -158,7 +138,7 @@ const filteringData = (filterParam) => {
     };
   }
 
-  //Returns users with firstName not in the provided list
+  //Returns Posts with text not in the provided list
   if (filterParam.text_not_in) {
     inputArg = {
       ...inputArg,
@@ -168,7 +148,7 @@ const filteringData = (filterParam) => {
     };
   }
 
-  //Returns users with first name containing provided string
+  //Returns Posts with text containing provided string
   if (filterParam.text_contains) {
     inputArg = {
       ...inputArg,
@@ -179,7 +159,7 @@ const filteringData = (filterParam) => {
     };
   }
 
-  //Returns users with firstName starts with that provided string
+  //Returns Posts with text starts with that provided string
   if (filterParam.text_starts_with) {
     const regexp = new RegExp('^' + filterParam.text_starts_with);
     inputArg = {
@@ -188,7 +168,7 @@ const filteringData = (filterParam) => {
     };
   }
 
-  //Returns provided firstName user
+  //Returns provided title Posts
   if (filterParam.title) {
     inputArg = {
       ...inputArg,
@@ -196,7 +176,7 @@ const filteringData = (filterParam) => {
     };
   }
 
-  //Returns user with not that firstName
+  //Returns Posts with not that title
   if (filterParam.title_not) {
     inputArg = {
       ...inputArg,
@@ -206,7 +186,7 @@ const filteringData = (filterParam) => {
     };
   }
 
-  //Return users with the given list firstName
+  //Return Posts with the given list title
   if (filterParam.title_in) {
     inputArg = {
       ...inputArg,
@@ -216,7 +196,7 @@ const filteringData = (filterParam) => {
     };
   }
 
-  //Returns users with firstName not in the provided list
+  //Returns Posts with title not in the provided list
   if (filterParam.title_not_in) {
     inputArg = {
       ...inputArg,
@@ -226,7 +206,7 @@ const filteringData = (filterParam) => {
     };
   }
 
-  //Returns users with first name containing provided string
+  //Returns Posts with title containing provided string
   if (filterParam.title_contains) {
     inputArg = {
       ...inputArg,
@@ -237,7 +217,7 @@ const filteringData = (filterParam) => {
     };
   }
 
-  //Returns users with firstName starts with that provided string
+  //Returns Posts with title starts with that provided string
   if (filterParam.title_starts_with) {
     const regexp = new RegExp('^' + filterParam.title_starts_with);
     inputArg = {
