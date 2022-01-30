@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: chmod +x ./.github/workflows/countline.py
-      - run: ./.github/workflows/countline.py
+      - run: ./.github/workflows/countline.py --exclude tests/newsfeed.spec.js
       
   Code-Formatter:
     name: Formats the code
