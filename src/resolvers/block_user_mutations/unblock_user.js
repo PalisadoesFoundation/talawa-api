@@ -16,7 +16,7 @@ module.exports = async (parent, args, context) => {
 
   // ensure user is blocked
   const blocked = org._doc.blockedUsers.filter(
-    (blockedUser) => blockedUser === user.id
+    (blockedUser) => blockedUser.toString() === user.id
   );
   if (!blocked[0]) {
     throw new UnauthorizedError(
@@ -30,7 +30,7 @@ module.exports = async (parent, args, context) => {
   org.overwrite({
     ...org._doc,
     blockedUsers: org._doc.blockedUsers.filter(
-      (blockedUser) => blockedUser !== user.id
+      (blockedUser) => blockedUser.toString() !== user.id
     ),
   });
   await org.save();
@@ -39,7 +39,7 @@ module.exports = async (parent, args, context) => {
   user.overwrite({
     ...user._doc,
     organizationsBlockedBy: user._doc.organizationsBlockedBy.filter(
-      (organization) => organization !== org.id
+      (organization) => organization.toString() !== org.id
     ),
   });
   await user.save();

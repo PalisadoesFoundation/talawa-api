@@ -40,31 +40,39 @@ const unregisterForEventByUser = async (parent, args, context) => {
     );
   }
 
-  let updatedRegistrants = eventFound.registrants;
-  updatedRegistrants[index] = {
-    id: updatedRegistrants[index].id,
-    userId: updatedRegistrants[index].userId,
-    user: updatedRegistrants[index].user,
-    status: 'DELETED',
-    createdAt: updatedRegistrants[index].createdAt,
-  };
+  if (eventFound.registrants[index].status === 'ACTIVE') {
+    let updatedRegistrants = eventFound.registrants;
+    updatedRegistrants[index] = {
+      id: updatedRegistrants[index].id,
+      userId: updatedRegistrants[index].userId,
+      user: updatedRegistrants[index].user,
+      status: 'DELETED',
+      createdAt: updatedRegistrants[index].createdAt,
+    };
 
-  const newEvent = await Event.findOneAndUpdate(
-    {
-      _id: args.id,
-      status: 'ACTIVE',
-    },
-    {
-      $set: {
-        registrants: updatedRegistrants,
+    const newEvent = await Event.findOneAndUpdate(
+      {
+        _id: args.id,
+        status: 'ACTIVE',
       },
-    },
-    {
-      new: true,
-    }
-  );
+      {
+        $set: {
+          registrants: updatedRegistrants,
+        },
+      },
+      {
+        new: true,
+      }
+    );
 
-  return newEvent;
+    return newEvent;
+  } else {
+    throw new NotFoundError(
+      requestContext.translate('registrant.alreadyUnregistered'),
+      'registrant.alreadyUnregistered',
+      'registrant.alreadyUnregistered'
+    );
+  }
 };
 
 module.exports = unregisterForEventByUser;

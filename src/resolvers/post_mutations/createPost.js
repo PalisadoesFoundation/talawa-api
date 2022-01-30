@@ -1,5 +1,6 @@
 const User = require('../../models/User');
 const Post = require('../../models/Post');
+const Organization = require('../../models/Organization');
 
 const uploadImage = require('../../helper_functions/uploadImage');
 const { NotFoundError } = require('errors');
@@ -15,6 +16,18 @@ module.exports = async (parent, args, context) => {
       'user'
     );
   }
+
+  const organization = await Organization.findOne({
+    _id: args.data.organizationId,
+  });
+  if (!organization) {
+    throw new NotFoundError(
+      requestContext.translate('organization.notFound'),
+      'organization.notFound',
+      'organization'
+    );
+  }
+
   let uploadImageObj;
   if (args.file) {
     uploadImageObj = await uploadImage(args.file, '');

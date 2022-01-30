@@ -10,6 +10,7 @@ const {
 } = require('../../helper_functions/auth');
 
 const uploadImage = require('../../helper_functions/uploadImage');
+const copyToClipboard = require('../functions/copyToClipboard.js');
 
 module.exports = async (parent, args) => {
   const emailTaken = await User.findOne({
@@ -61,6 +62,10 @@ module.exports = async (parent, args) => {
   user = await user.save();
   const accessToken = await createAccessToken(user);
   const refreshToken = await createRefreshToken(user);
+
+  copyToClipboard(`{
+  "Authorization": "Bearer ${accessToken}"
+}`);
 
   return {
     user: {
