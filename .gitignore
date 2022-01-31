@@ -5,6 +5,9 @@ nodemon.json
 images/
 .vscode
 
+# Ignore the original /lib/ directory which has been moved to /src
+/lib/
+
 # Added as the documentation only refers to npm, not yarn. 
 yarn.lock
 
