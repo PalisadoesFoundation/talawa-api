@@ -17,22 +17,22 @@ const i18n = require('i18n');
 const requestContext = require('talawa-request-context');
 const requestTracing = require('request-tracing');
 
-const Query = require('./resolvers/Query');
-const Mutation = require('./resolvers/Mutation');
-const typeDefs = require('./schema/schema.graphql');
-const isAuth = require('./middleware/is-auth');
-const User = require('./resolvers/User');
+const Query = require('./src/resolvers/Query');
+const Mutation = require('./src/resolvers/Mutation');
+const typeDefs = require('./src/schema/schema.graphql');
+const isAuth = require('./src/middleware/is-auth');
+const User = require('./src/resolvers/User');
 const database = require('./db.js');
-const Organization = require('./resolvers/Organization');
-const MembershipRequest = require('./resolvers/MembershipRequest');
-const DirectChat = require('./resolvers/DirectChat');
-const DirectChatMessage = require('./resolvers/DirectChatMessage');
-const { defaultLocale, supportedLocales } = require('./config/app');
-const GroupChat = require('./resolvers/GroupChat');
-const GroupChatMessage = require('./resolvers/GroupChatMessage');
-//const Subscription = require('./resolvers/Subscription');
-const AuthenticationDirective = require('./directives/authDirective');
-const RoleAuthorizationDirective = require('./directives/roleDirective');
+const Organization = require('./src/resolvers/Organization');
+const MembershipRequest = require('./src/resolvers/MembershipRequest');
+const DirectChat = require('./src/resolvers/DirectChat');
+const DirectChatMessage = require('./src/resolvers/DirectChatMessage');
+const { defaultLocale, supportedLocales } = require('./src/config/app');
+const GroupChat = require('./src/resolvers/GroupChat');
+const GroupChatMessage = require('./src/resolvers/GroupChatMessage');
+//const Subscription = require('./src/resolvers/Subscription');
+const AuthenticationDirective = require('./src/directives/authDirective');
+const RoleAuthorizationDirective = require('./src/directives/roleDirective');
 
 const app = express();
 

@@ -12,7 +12,8 @@
 name: PR Workflow
 on: 
   pull_request:
-
+    branches:
+      - '**'
 jobs:
   Linter:
     name: Lints the code
@@ -31,7 +32,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: chmod +x ./.github/workflows/countline.py
-      - run: ./.github/workflows/countline.py
+      - run: |
+          ./.github/workflows/countline.py --exclude \
+            tests/newsfeed.spec.js \
+            tests/event.spec.js \
+            tests/user_organization.spec.js
       
   Code-Formatter:
     name: Formats the code
