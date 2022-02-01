@@ -3,12 +3,12 @@ const axios = require('axios');
 const { URL } = require('../../constants');
 
 // sets token before every test
-module.exports = async () => {
+module.exports = async (email) => {
   const response = await axios.post(URL, {
     query: `
     mutation{
       login(data:{
-                email:"testdb2@test.com",
+                email:"${email}",
                 password:"password"
       }){
         user{
@@ -31,7 +31,7 @@ module.exports = async () => {
                 signUp(data: {
                   firstName:"testdb2",
                   lastName:"testdb2"
-                  email: "testdb2@test.com"
+                  email: "${email}"
                   password:"password"
                 }) {
                     user {

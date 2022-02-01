@@ -1,12 +1,13 @@
 const axios = require('axios');
 const { URL } = require('../constants');
+const shortid = require('shortid');
 
 let accessToken;
 let refreshToken;
 let userId;
 
 describe('userAuth resolvers', () => {
-  const email = 'testdb2@test.com';
+  let email = `${shortid.generate().toLowerCase()}@test.com`;
 
   test('signUp', async () => {
     const response = await axios.post(URL, {
