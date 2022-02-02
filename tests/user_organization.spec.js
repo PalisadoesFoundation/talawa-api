@@ -6,7 +6,8 @@ const getToken = require('./functions/getToken');
 
 let token;
 beforeAll(async () => {
-  token = await getToken();
+  let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
+  token = await getToken(generatedEmail);
 });
 
 let createdOrgId = 'test';

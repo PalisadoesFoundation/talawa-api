@@ -5,7 +5,8 @@ const shortid = require('shortid');
 
 let token;
 beforeAll(async () => {
-  token = await getToken();
+  let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
+  token = await getToken(generatedEmail);
 });
 
 describe('Block user functionality tests', () => {

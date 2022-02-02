@@ -2,13 +2,15 @@ const axios = require('axios');
 const { URL } = require('../constants');
 const getToken = require('./functions/getToken');
 const getUserId = require('./functions/getUserId');
+const shortid = require('shortid');
 
 let token;
 let userId;
-
+let generatedEmail;
 beforeAll(async () => {
-  token = await getToken();
-  userId = await getUserId();
+  generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
+  token = await getToken(generatedEmail);
+  userId = await getUserId(generatedEmail);
 });
 
 describe('user resolvers', () => {
@@ -69,7 +71,7 @@ describe('user resolvers', () => {
         _id: userId,
         firstName: 'testdb2',
         lastName: 'testdb2',
-        email: 'testdb2@test.com',
+        email: generatedEmail,
         userType: 'USER',
         appLanguageCode: expect.any(String),
       })
@@ -80,6 +82,9 @@ describe('user resolvers', () => {
 
     // Asserting each Organization by mapping
     userCreatedOrganizationsData.map((org) => {
+      if (!org) {
+        return;
+      }
       expect(org).toEqual(
         expect.objectContaining({
           _id: expect.any(String),

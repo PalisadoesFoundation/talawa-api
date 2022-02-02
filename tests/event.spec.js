@@ -2,12 +2,14 @@ const axios = require('axios');
 const { URL } = require('../constants');
 const getToken = require('./functions/getToken');
 const getUserId = require('./functions/getUserId');
+const shortid = require('shortid');
 
 let token;
 let userId;
 beforeAll(async () => {
-  token = await getToken();
-  userId = await getUserId();
+  let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
+  token = await getToken(generatedEmail);
+  userId = await getUserId(generatedEmail);
 });
 describe('event resolvers', () => {
   let createdEventId;
