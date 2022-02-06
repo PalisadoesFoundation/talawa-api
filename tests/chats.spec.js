@@ -5,11 +5,12 @@ const getToken = require('./functions/getToken');
 const getUserId = require('./functions/getUserId');
 
 let token;
-let loggedInUserId;
+let userId;
 
 beforeAll(async () => {
-  token = await getToken();
-  loggedInUserId = await getUserId();
+  let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
+  token = await getToken(generatedEmail);
+  userId = await getUserId(generatedEmail);
 });
 
 describe('chat resolvers', () => {
@@ -77,7 +78,7 @@ describe('chat resolvers', () => {
         mutation{
             createDirectChat(data: {
               organizationId: "${createdOrgId}"
-              userIds: ["${loggedInUserId}", "${newUserId}"]
+              userIds: ["${userId}", "${newUserId}"]
             }){
               _id
             }
@@ -191,7 +192,7 @@ describe('chat resolvers', () => {
           createGroupChat(data: {
             title: "This is a group chat for testing"
             organizationId: "${createdOrgId}"
-            userIds: ["${loggedInUserId}", "${newUserId}"]
+            userIds: ["${userId}", "${newUserId}"]
           }){
             _id
           }
