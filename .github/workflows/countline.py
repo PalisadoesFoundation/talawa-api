@@ -44,12 +44,14 @@ def _valid_exclusions(excludes):
     """
     # Initialize key variables
     result = []
+    filenames = []
+    more_filenames = []
 
     # Create a list of files to ignore
-    filenames = [_ for _ in excludes.files if bool(excludes.files)]
-    more_filenames = _filepaths_in_directories(
-        [_ for _ in excludes.directories if bool(excludes.directories)]
-    )
+    if bool(excludes.files):
+        filenames = excludes.files
+    if bool(excludes.directories):
+        more_filenames = _filepaths_in_directories(excludes.directories)
     filenames.extend(more_filenames)
 
     # Remove duplicates
