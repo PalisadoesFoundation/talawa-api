@@ -179,6 +179,10 @@ def main():
         if filepath in exclude_list:
             continue
 
+        # Skip /node_modules/ sub directories
+        if '{0}node_modules{0}'.format(os.sep) in filepath:
+            continue
+
         # Process the rest
         with open(filepath, encoding='latin-1') as code:
             line_count = sum(
