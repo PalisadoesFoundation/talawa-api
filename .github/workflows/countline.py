@@ -1,72 +1,132 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 """Script to encourage more efficient coding practices.
+
 Methodology:
+
     Analyses the `lib` and `test` directories to find files that exceed a
     pre-defined number of lines of code.
+
     This script was created to help improve code quality by encouraging
     contributors to create reusable code.
+
 NOTE:
+
     This script complies with our python3 coding and documentation standards
     and should be used as a reference guide. It complies with:
+
         1) Pylint
         2) Pydocstyle
         3) Pycodestyle
         4) Flake8
+
     Run these commands from the CLI to ensure the code is compliant for all
     your pull requests.
+
 """
 
 # Standard imports
 import os
 import sys
 import argparse
+from collections import namedtuple
 
-def _excluded_filepaths(excludes):
+
+def _valid_exclusions(excludes):
     """Create a list of full file paths to exclude from the analysis.
+
     Args:
-        excludes: List of files to exclude
+        excludes: Excludes object
+
     Returns:
         result: A list of full file paths
+
     """
     # Initialize key variables
     result = []
 
-    if bool(excludes) is True:
-        for filename in excludes:
-            # Ignore files that appear to be full paths because they start
-            # with a '/' or whatever the OS uses to distinguish directories
-            if filename.startswith(os.sep):
-                result.append(filename)
-                continue
+    # Create a list of files to ignore
+    filenames = [_ for _ in excludes.files if bool(excludes.files)]
+    more_filenames = _filepaths_in_directories(
+        [_ for _ in excludes.directories if bool(excludes.directories)]
+    )
+    filenames.extend(more_filenames)
 
-            # Create a file path
-            filepath = '{}{}{}'.format(os.getcwd(), os.sep, filename)
-            if os.path.isfile(filepath) is True:
-                result.append(filepath)
+    # Remove duplicates
+    filenames = list(set(filenames))
+
+    # Process files
+    for filename in filenames:
+        # Ignore files that appear to be full paths because they start
+        # with a '/' or whatever the OS uses to distinguish directories
+        if filename.startswith(os.sep):
+            continue
+
+        # Create a file path
+        filepath = '{}{}{}'.format(os.getcwd(), os.sep, filename)
+        if os.path.isfile(filepath) is True:
+            result.append(filepath)
+
     # Return
     return result
 
 
-def arg_parser_resolver():
+def _filepaths_in_directories(directories):
+    """Create a list of full file paths based on input directories.
+
+    Args:
+        directories: A list of directories
+
+    Returns:
+        result: A list of full file paths
+
+    """
+    # Initialize key variables
+    result = []
+
+    # Iterate and analyze each directory
+    for directory in directories:
+        for root, _, files in os.walk(directory, topdown=False):
+            for name in files:
+                # Read each file and count the lines found
+                result.append(os.path.join(root, name))
+    # Return
+    return result
+
+
+def _arg_parser_resolver():
     """Resolve the CLI arguments provided by the user.
+
     Args:
         None
+
     Returns:
         result: Parsed argument object
+
     """
     # Initialize parser and add the CLI options we should expect
     parser = argparse.ArgumentParser()
-    parser.add_argument('--line', type=int, required=False, default=400,
-                        help='an integer for number of lines of code')
-    parser.add_argument('--dir', type=str, required=False, default=os.getcwd(),
-                        help='directory-location where files are present')
-    parser.add_argument('--exclude', type=str, required=False,
-                        nargs='*',
-                        default=None,
-                        const=None,
-                        help='''\
-An optional list of files to exclude from the analysis separated by spaces.''')
+    parser.add_argument(
+        '--lines', type=int, required=False, default=300,
+        help='The maximum number of lines of code to accept.')
+    parser.add_argument(
+        '--directory', type=str, required=False,
+        default=os.getcwd(),
+        help='The parent directory of files to analyze.')
+    parser.add_argument(
+        '--exclude_files', type=str, required=False,
+        nargs='*',
+        default=None,
+        const=None,
+        help='''An optional space separated list of \
+files to exclude from the analysis.''')
+    parser.add_argument(
+        '--exclude_directories', type=str, required=False,
+        nargs='*',
+        default=None,
+        const=None,
+        help='''An optional space separated list of \
+directories to exclude from the analysis.''')
 
     # Return parser
     result = parser.parse_args()
@@ -75,71 +135,74 @@ An optional list of files to exclude from the analysis separated by spaces.''')
 
 def main():
     """Analyze dart files.
+
     This function finds, and prints the files that exceed the CLI
     defined defaults.
+
     Args:
         None
+
     Returns:
         None
+
     """
     # Initialize key variables
     lookup = {}
     errors_found = False
     file_count = 0
-    excluded_filepaths = []
+    Excludes = namedtuple('Excludes', 'files directories')
 
     # Get the CLI arguments
-    args = arg_parser_resolver()
+    args = _arg_parser_resolver()
 
     # Define the directories of interest
     directories = [
-        os.path.expanduser(os.path.join(args.dir, 'helper_functions')),
-        os.path.expanduser(os.path.join(args.dir, 'middleware')),
-        os.path.expanduser(os.path.join(args.dir, 'models')),
-        os.path.expanduser(os.path.join(args.dir, 'resolvers')),
-        os.path.expanduser(os.path.join(args.dir, 'tests')),
-
+        os.path.expanduser(os.path.join(args.directory, 'lib')),
+        os.path.expanduser(os.path.join(args.directory, 'src')),
+        os.path.expanduser(os.path.join(args.directory, 'test'))
     ]
 
     # Get a corrected list of filenames to exclude
-    excluded_filepaths = _excluded_filepaths(args.exclude)
+    exclude_list = _valid_exclusions(
+        Excludes(
+            files=args.exclude_files, directories=args.exclude_directories)
+    )
+
+    # Get interesting filepaths
+    repo_filepath_list = _filepaths_in_directories(directories)
 
     # Iterate and analyze each directory
-    for directory in directories:
-        for root, _, files in os.walk(directory, topdown=False):
-            for name in files:
-                # Read each file and count the lines found
-                file_path = os.path.join(root, name)
+    for filepath in repo_filepath_list:
+        # Skip excluded files
+        if filepath in exclude_list:
+            continue
 
-                # Skip excluded files
-                if bool(args.exclude) is True:
-                    if file_path in excluded_filepaths:
-                        continue
+        # Process the rest
+        with open(filepath, encoding='latin-1') as code:
+            line_count = sum(
+                1 for line in code
+                if line.strip() and not line.startswith('#')
+            )
+            lookup[filepath] = line_count
 
-                with open(file_path) as code:
-                    line_count = sum(
-                        1 for line in code
-                        if line.strip() and not line.startswith('#')
-                    )
-                    lookup[file_path] = line_count
-
-    # if the line rule is voilated then value is changed to 1
-    for file_path, line_count in lookup.items():
-        if line_count > args.line:
+    # If the line rule is voilated then the value is changed to 1
+    for filepath, line_count in lookup.items():
+        if line_count > args.lines:
             errors_found = True
             file_count += 1
             if file_count == 1:
                 print('''
 LINE COUNT ERROR: Files with excessive lines of code have been found\n''')
 
-            print('  Line count: {:>5} File: {}'.format(line_count, file_path))
+            print('  Line count: {:>5} File: {}'.format(line_count, filepath))
 
     # Evaluate and exit
     if bool(errors_found) is True:
         print('''
 The {} files listed above have more than {} lines of code.
+
 Please fix this. It is a pre-requisite for pull request approval.
-'''.format(file_count, args.line))
+'''.format(file_count, args.lines))
         sys.exit(1)
     else:
         sys.exit(0)
