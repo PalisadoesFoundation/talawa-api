@@ -3,12 +3,12 @@ const axios = require('axios');
 const { URL } = require('../../constants');
 
 // sets token before every test
-module.exports = async () => {
+module.exports = async (email) => {
   const response = await axios.post(URL, {
     query: `
     mutation{
       login(data:{
-                email:"testdb2@test.com",
+                email:"${email}",
                 password:"password"
       }){
         user{
@@ -22,15 +22,16 @@ module.exports = async () => {
   });
 
   const { data } = response;
-
-  if (data.errors && data.errors[0].message === 'User not found') {
+  if (data.data !== null) {
+    return data.data.login.accessToken;
+  } else {
     const signUpResponse = await axios.post(URL, {
       query: `
             mutation {
                 signUp(data: {
                   firstName:"testdb2",
                   lastName:"testdb2"
-                  email: "testdb2@test.com"
+                  email: "${email}"
                   password:"password"
                 }) {
                     user {
@@ -50,5 +51,4 @@ module.exports = async () => {
     const { data } = signUpResponse;
     return data.data.signUp.accessToken;
   }
-  return data.data.login.accessToken;
 };

@@ -5,7 +5,8 @@ const shortid = require('shortid');
 
 let token;
 beforeAll(async () => {
-  token = await getToken();
+  let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
+  token = await getToken(generatedEmail);
 });
 
 describe('Block user functionality tests', () => {
@@ -68,12 +69,11 @@ describe('Block user functionality tests', () => {
       URL,
       {
         query: `
-                    mutation{
-                      blockUser(organizationId: "${createdOrganizationId}", userId: "${newUserId}"){
-                        _id
-                      }
-                    }
-                    `,
+          mutation{
+            blockUser(organizationId: "${createdOrganizationId}", userId: "${newUserId}"){
+              _id
+            }
+          }`,
       },
       {
         headers: {
@@ -91,18 +91,56 @@ describe('Block user functionality tests', () => {
     );
   });
 
+  test('Organization Blocks User after being blocked already', async () => {
+    const blockUserResponse = await axios.post(
+      URL,
+      {
+        query: `
+          mutation{
+            blockUser(organizationId: "${createdOrganizationId}", userId: "${newUserId}"){
+              _id
+            }
+          }`,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const { data } = blockUserResponse;
+
+    expect(data.errors[0]).toEqual(
+      expect.objectContaining({
+        message: 'User is not authorized for performing this operation',
+        status: 422,
+      })
+    );
+
+    expect(data.errors[0].data[0]).toEqual(
+      expect.objectContaining({
+        message: 'User is not authorized for performing this operation',
+        code: 'user.notAuthorized',
+        param: 'userAuthorization',
+        metadata: {},
+      })
+    );
+
+    expect(data.data).toEqual(null);
+  });
+
   // TEST: ORGANIZATION UNBLOCKS USER
   test('Organization unblocks user', async () => {
     const unblockUserResponse = await axios.post(
       URL,
       {
         query: `
-                      mutation{
-                        unblockUser(organizationId: "${createdOrganizationId}", userId: "${newUserId}"){
-                          _id
-                        }
-                      }
-                      `,
+          mutation{
+            unblockUser(organizationId: "${createdOrganizationId}", userId: "${newUserId}"){
+              _id
+            }
+          }`,
       },
       {
         headers: {
@@ -118,5 +156,44 @@ describe('Block user functionality tests', () => {
         _id: expect.any(String),
       })
     );
+  });
+
+  test('Organization unblocks user after being unblocked already', async () => {
+    const unblockUserResponse = await axios.post(
+      URL,
+      {
+        query: `
+          mutation{
+            unblockUser(organizationId: "${createdOrganizationId}", userId: "${newUserId}"){
+              _id
+            }
+          }`,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const { data } = unblockUserResponse;
+
+    expect(data.errors[0]).toEqual(
+      expect.objectContaining({
+        message: 'User is not authorized for performing this operation',
+        status: 422,
+      })
+    );
+
+    expect(data.errors[0].data[0]).toEqual(
+      expect.objectContaining({
+        message: 'User is not authorized for performing this operation',
+        code: 'user.notAuthorized',
+        param: 'userAuthorization',
+        metadata: {},
+      })
+    );
+
+    expect(data.data).toEqual(null);
   });
 });

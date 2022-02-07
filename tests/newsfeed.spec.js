@@ -1,10 +1,13 @@
 const axios = require('axios');
 const { URL } = require('../constants');
 const getToken = require('./functions/getToken');
+const mongoose = require('mongoose');
+const shortid = require('shortid');
 
 let token;
 beforeAll(async () => {
-  token = await getToken();
+  let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
+  token = await getToken(generatedEmail);
 });
 
 describe('newsfeed resolvers', () => {
@@ -93,6 +96,50 @@ describe('newsfeed resolvers', () => {
         text: expect.any(String),
       })
     );
+  });
+
+  test('Create Post without existing Organization', async () => {
+    const dummyOrgId = new mongoose.Types.ObjectId();
+    const response = await axios.post(
+      URL,
+      {
+        query: `
+					mutation {
+						createPost(
+							data: {
+								text: "Test Post",
+								organizationId: "${dummyOrgId}",
+						}) {
+							_id
+							text
+						}
+					}
+              	`,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    expect(response.data.errors[0]).toEqual(
+      expect.objectContaining({
+        message: 'Organization not found',
+        status: 422,
+      })
+    );
+
+    expect(response.data.errors[0].data[0]).toEqual(
+      expect.objectContaining({
+        message: 'Organization not found',
+        code: 'organization.notFound',
+        param: 'organization',
+        metadata: {},
+      })
+    );
+
+    expect(response.data.data.createPost).toEqual(null);
   });
 
   test('Posts by Organization', async () => {

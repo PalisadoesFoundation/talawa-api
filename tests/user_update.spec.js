@@ -1,13 +1,18 @@
 const axios = require('axios');
 const { URL } = require('../constants');
 const getToken = require('./functions/getToken');
+const shortid = require('shortid');
 
 let token;
 beforeAll(async () => {
-  token = await getToken();
+  let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
+  token = await getToken(generatedEmail);
 });
 
 describe('Update-Profile Resolvers', () => {
+  let id = shortid.generate().toLowerCase();
+  let email = `${id}@test.com`;
+
   test('updateProfile', async () => {
     const response = await axios.post(
       URL,
@@ -17,9 +22,11 @@ describe('Update-Profile Resolvers', () => {
                 updateUserProfile(data:{
                   firstName:"Test"
                   lastName:"Name"
+                  email:"${email}"
                 }){
                   firstName
                   lastName
+                  email
                 }
               }
                   `,
@@ -32,11 +39,11 @@ describe('Update-Profile Resolvers', () => {
     );
 
     const { data } = response;
-    if (!data.data) console.log('Data not present');
     expect(data.data.updateUserProfile).toEqual(
       expect.objectContaining({
         firstName: 'Test',
         lastName: 'Name',
+        email: email,
       })
     );
   });
