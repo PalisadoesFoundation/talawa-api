@@ -25,5 +25,6 @@
     "member.notFound": "Membre introuvable",
     "registrant.alreadyUnregistered": "Déjà non inscrit à l'événement",
     "translation.alreadyPresent": "Traduction déjà présente",
-    "translation.notFound": "Traduction introuvable"
+    "translation.notFound": "Traduction introuvable",
+    "parameter.missing": "Paramètre de saut manquant. Réglez-le sur 0 ou sur une autre valeur"
 }
