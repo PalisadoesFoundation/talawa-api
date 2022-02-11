@@ -23,5 +23,7 @@
     "invalid.credentials": "अवैध प्रत्यय पत्र",
     "registrant.alreadyExist": "घटना के लिए पहले से पंजीकृत",
     "member.notFound": "सदस्य अनुपस्थित",
-    "registrant.alreadyUnregistered": "घटना के लिए पहले से ही अपंजीकृत"
+    "registrant.alreadyUnregistered": "घटना के लिए पहले से ही अपंजीकृत",
+    "translation.alreadyPresent": "अनुवाद पहले से मौजूद है",
+    "translation.notFound": "अनुवाद नहीं मिला"
 }

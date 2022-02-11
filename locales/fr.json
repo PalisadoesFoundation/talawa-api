@@ -23,5 +23,7 @@
     "invalid.credentials": "Informations d'identification non valides",
     "registrant.alreadyExist": "Déjà inscrit à l'événement",
     "member.notFound": "Membre introuvable",
-    "registrant.alreadyUnregistered": "Déjà non inscrit à l'événement"
+    "registrant.alreadyUnregistered": "Déjà non inscrit à l'événement",
+    "translation.alreadyPresent": "Traduction déjà présente",
+    "translation.notFound": "Traduction introuvable"
 }
