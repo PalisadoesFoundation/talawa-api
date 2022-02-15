@@ -28,6 +28,8 @@ const myLanguage = require('../resolvers/user_query/myLanguage');
 const userLanguage = require('../resolvers/user_query/userLanguage');
 const getlanguage = require('../resolvers/language_maintainer_query/getlanguage');
 const directChatsByUserID = require('./direct_chat_query/directChatsByUserID');
+const directChatsMessagesByChatID = require('./direct_chat_query/directChatsMessagesByChatID');
+
 const Query = {
   me,
   user,
@@ -50,7 +52,8 @@ const Query = {
   directChats,
   directChatMessages,
   directChatsByUserID,
-
+  directChatsMessagesByChatID,
+  
   tasksByEvent,
   tasksByUser,
   comments,

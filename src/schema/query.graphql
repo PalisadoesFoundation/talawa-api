@@ -33,6 +33,7 @@ module.exports = `
     groupChats: [GroupChat]
     groupChatMessages: [GroupChatMessage]
     directChatsByUserID(id:ID!): [DirectChat]
+    directChatsMessagesByChatID(id:ID!):[DirectChatMessage]
 
     myLanguage: String @auth
     userLanguage(userId: ID!): String @auth
