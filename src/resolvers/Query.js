@@ -53,7 +53,7 @@ const Query = {
   directChatMessages,
   directChatsByUserID,
   directChatsMessagesByChatID,
-  
+
   tasksByEvent,
   tasksByUser,
   comments,
