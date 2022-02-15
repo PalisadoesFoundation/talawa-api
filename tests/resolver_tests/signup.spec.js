@@ -23,8 +23,11 @@ describe('Block user functionality tests', () => {
 
     expect(await signup({}, args)).toEqual(
       expect.objectContaining({
-        message: 'User is not authorized for performing this operation',
-        status: 422,
+        accessToken: expect.any(String),
+        refreshToken: expect.any(String),
+        user: expect.objectContaining({
+          email: 'testdb2@test.com'
+        })
       })
     );
   });
