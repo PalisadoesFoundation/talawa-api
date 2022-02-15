@@ -7,9 +7,8 @@ beforeAll(async () => {
   await database.connect();
 });
 
-afterAll((done) => {
+afterAll(() => {
   database.disconnect();
-  done()
 });
 
 describe('Block user functionality tests', () => {
@@ -34,9 +33,8 @@ describe('Block user functionality tests', () => {
           firstName: nameForNewUser,
           lastName: nameForNewUser,
           email: email,
-        })
+        }),
       })
     );
-
   });
 });
