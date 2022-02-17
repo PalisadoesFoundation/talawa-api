@@ -23,5 +23,8 @@
     "invalid.credentials": "Invalid credentials",
     "registrant.alreadyExist": "Already registered for the event",
     "member.notFound": "Member not found",
-    "registrant.alreadyUnregistered": "Already unregistered for the event"
+    "registrant.alreadyUnregistered": "Already unregistered for the event",
+    "translation.alreadyPresent": "Translation Already Present",
+    "translation.notFound": "Translation not found",
+    "parameter.missing": "Missing Skip parameter. Set it to either 0 or some other value not found"
 }
