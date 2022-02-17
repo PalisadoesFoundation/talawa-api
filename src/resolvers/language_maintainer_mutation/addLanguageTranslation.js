@@ -1,4 +1,6 @@
+const { ConflictError } = require('errors');
 const Language = require('../../models/Language');
+const requestContext = require('talawa-request-context');
 
 const addLanguageTranslation = async (parent, args) => {
   const langValue = await Language.findOne({
@@ -8,7 +10,11 @@ const addLanguageTranslation = async (parent, args) => {
   if (langValue) {
     langValue.translation.forEach((element) => {
       if (element.lang_code === args.data.translation_lang_code) {
-        throw 'Translation Already Present';
+        throw new ConflictError(
+          requestContext.translate('translation.alreadyPresent'),
+          'translation.alreadyPresent',
+          'translationAlreadyPresent'
+        );
       }
     });
 
