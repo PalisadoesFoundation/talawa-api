@@ -11,8 +11,8 @@ afterAll(() => {
   database.disconnect();
 });
 
-describe('Block user functionality tests', () => {
-  test('Organization unblocks user after being unblocked already', async () => {
+describe('Unit testing', () => {
+  test('Signup Mutation', async () => {
     const nameForNewUser = shortid.generate().toLowerCase();
     const email = `${nameForNewUser}@test.com`;
     const args = {
