@@ -60,6 +60,20 @@ jobs:
       matrix:
         node-version: [14.x]
         mongodb-version: ['4.4']
+    services:
+      mongo:
+        image: mongo
+        env:
+          MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
+          ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+          REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
+        options: >-
+                --health-cmd mongo
+                --health-interval 10s
+                --health-timeout 5s
+                --health-retries 5
+        ports:
+          - 27017:27017
 
     steps:
     - name: Checkout repository
@@ -68,40 +82,31 @@ jobs:
     - name: Set up Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v2
 
-    - name: Docker build
-      run: docker-compose up -d --build
-      env:
-        MONGO_DB_URL: mongodb://mongo:27017/talawa-test-db
-        ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-        REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
-
     # - name: Start MongoDB
     #   uses: supercharge/mongodb-github-action@1.7.0
     #   with:
     #     mongodb-version: ${{ matrix.mongodb-version }}
+    #     mongodb-db: talawa-test-db
 
-    # - name: Install dependencies
-    #   run: npm install
+    - name: Install dependencies
+      run: npm install
 
-    # - name: Start the Application
-    #   run: npm run start-test-server-in-action
-    #   env:
-    #     MONGO_DB_URL: mongodb://mongo:27017/talawa-test-db
-    #     ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-    #     REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
+    - name: Start the Application
+      run: npm run start-test-server-in-action
+      env:
+        MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
+        ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+        REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
 
     - name: Sleep for 10s
       uses: juliangruber/sleep-action@v1
       with:
         time: 10s
 
-    - name: Install Jest NPM Package Globally
-      run : npm install -g jest
-
     - name: Run the tests
       run: npm run test
       env:
-        MONGO_DB_URL: mongodb://mongo:27017/talawa-test-db
+        MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
         ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
         REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
 
@@ -111,11 +116,8 @@ jobs:
         token: ${{secrets.CODECOV_TOKEN}}
         file: ./coverage/lcov.info
 
-    # - name: Stop the Application
-    #   run: npm run stop-test-server-in-action
-
-    - name: Stop and Remove Docker containers
-      run: docker-compose down -v
+    - name: Stop the Application
+      run: npm run stop-test-server-in-action
 
     - name: Test acceptable level of code coverage
       uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
