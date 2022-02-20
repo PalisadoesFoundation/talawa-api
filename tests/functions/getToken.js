@@ -22,7 +22,10 @@ module.exports = async (email) => {
   });
 
   const { data } = response;
-  console.log(process.env.ACCESS_TOKEN_SECRET, process.env.REFRESH_TOKEN_SECRET);
+  console.log(
+    process.env.ACCESS_TOKEN_SECRET,
+    process.env.REFRESH_TOKEN_SECRET
+  );
   if (data.data !== null) {
     return data.data.login.accessToken;
   } else {
