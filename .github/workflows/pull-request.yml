@@ -63,10 +63,6 @@ jobs:
     services:
       mongo:
         image: mongo
-        env:
-          MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
-          ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-          REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
         options: >-
                 --health-cmd mongo
                 --health-interval 10s
@@ -74,7 +70,11 @@ jobs:
                 --health-retries 5
         ports:
           - 27017:27017
-
+     env:
+        MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
+        ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+        REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
+        
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -82,21 +82,11 @@ jobs:
     - name: Set up Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v2
 
-    # - name: Start MongoDB
-    #   uses: supercharge/mongodb-github-action@1.7.0
-    #   with:
-    #     mongodb-version: ${{ matrix.mongodb-version }}
-    #     mongodb-db: talawa-test-db
-
     - name: Install dependencies
       run: npm install
 
     - name: Start the Application
       run: npm run start-test-server-in-action
-      env:
-        MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
-        ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-        REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
 
     - name: Sleep for 10s
       uses: juliangruber/sleep-action@v1
@@ -104,14 +94,7 @@ jobs:
         time: 10s
 
     - name: Run the tests
-      env:
-        MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
-        ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-        REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
-      run: |
-        echo ${{ secrets.ACCESS_TOKEN_SECRET }}
-        echo ${{ secrets.REFRESH_TOKEN_SECRET }}
-        npm run test
+      run: npm run test
 
     - name: Present current coverage in PR
       uses: codecov/codecov-action@v2.1.0
