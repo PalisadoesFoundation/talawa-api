@@ -92,7 +92,7 @@ jobs:
       run: npm install
 
     - name: Start the Application
-      run: npm run start-test-server-in-action
+      run: npm start
       env:
         MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
         ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
