@@ -71,9 +71,9 @@ jobs:
         ports:
           - 27017:27017
     env:
-      - MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
-      - ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-      - REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
+      MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
+      ACCESS_TOKEN_SECRET: 51ad2cf1b0f40ecd64a7a135c45271402fe683b9e5f1e92080f696638b0a10e8
+      REFRESH_TOKEN_SECRET: 7978a88c51be4e96911803f3d5f050d07fd6af77ba74063ada906993e0f00a26
         
     steps:
     - name: Checkout repository
@@ -92,6 +92,11 @@ jobs:
       uses: juliangruber/sleep-action@v1
       with:
         time: 10s
+
+    # - name: Generate Keys
+    #   run: |
+    #     export ACCESS_TOKEN_SECRET=`openssl rand -hex 32`
+    #     export REFRESH_TOKEN_SECRET=`openssl rand -hex 32`
 
     - name: Run the tests
       run: npm run test
