@@ -104,7 +104,10 @@ jobs:
         time: 10s
 
     - name: Run the tests
-      run: npm run test
+      run: |
+          echo $ACCESS_TOKEN_SECRET
+          echo $REFRESH_TOKEN_SECRET
+          npm run test
       env:
         MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
         ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
