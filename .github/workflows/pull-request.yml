@@ -90,7 +90,10 @@ jobs:
 
     - name: Run the tests
       run: npm run test
-      continue-on-error: true
+      env:
+        MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
+        ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+        REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
 
     - name: Present current coverage in PR
       uses: codecov/codecov-action@v2.1.0
