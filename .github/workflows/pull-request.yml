@@ -70,10 +70,10 @@ jobs:
                 --health-retries 5
         ports:
           - 27017:27017
-     env:
-        MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
-        ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-        REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
+    env:
+      MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
+      ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+      REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
         
     steps:
     - name: Checkout repository
