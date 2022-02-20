@@ -72,8 +72,8 @@ jobs:
           - 27017:27017
     env:
       MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
-      ACCESS_TOKEN_SECRET: 51ad2cf1b0f40ecd64a7a135c45271402fe683b9e5f1e92080f696638b0a10e8
-      REFRESH_TOKEN_SECRET: 7978a88c51be4e96911803f3d5f050d07fd6af77ba74063ada906993e0f00a26
+      # ACCESS_TOKEN_SECRET: 51ad2cf1b0f40ecd64a7a135c45271402fe683b9e5f1e92080f696638b0a10e8
+      # REFRESH_TOKEN_SECRET: 7978a88c51be4e96911803f3d5f050d07fd6af77ba74063ada906993e0f00a26
         
     steps:
     - name: Checkout repository
@@ -81,6 +81,11 @@ jobs:
 
     - name: Set up Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v2
+
+    - name: Generate Keys
+      run: |
+        export ACCESS_TOKEN_SECRET=`openssl rand -hex 32`
+        export REFRESH_TOKEN_SECRET=`openssl rand -hex 32`
 
     - name: Install dependencies
       run: npm install
@@ -93,10 +98,7 @@ jobs:
       with:
         time: 10s
 
-    # - name: Generate Keys
-    #   run: |
-    #     export ACCESS_TOKEN_SECRET=`openssl rand -hex 32`
-    #     export REFRESH_TOKEN_SECRET=`openssl rand -hex 32`
+
 
     - name: Run the tests
       run: npm run test
