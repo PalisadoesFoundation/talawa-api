@@ -91,6 +91,9 @@ jobs:
       with:
         time: 10s
 
+    - name: Install Jest NPM Package Globally
+      run : npm install -g jest
+
     - name: Run the tests
       run: npm run test
       env:
