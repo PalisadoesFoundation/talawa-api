@@ -53,6 +53,7 @@ module.exports = async (email) => {
                 `,
     });
     const { data } = signUpResponse;
+    console.log(data);
     return data.data.signUp.accessToken;
   }
 };
