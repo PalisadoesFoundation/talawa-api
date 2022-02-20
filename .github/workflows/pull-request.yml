@@ -109,4 +109,4 @@ jobs:
       uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
       with:
         path: "./coverage/lcov.info"
-        min_coverage: 55.38
+        min_coverage: 57.46
