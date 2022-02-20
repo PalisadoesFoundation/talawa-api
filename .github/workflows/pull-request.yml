@@ -72,8 +72,8 @@ jobs:
         ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
         REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
 
-    # - name: Set up Node.js ${{ matrix.node-version }}
-    #   uses: actions/setup-node@v2
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
 
     # - name: Start MongoDB
     #   uses: supercharge/mongodb-github-action@1.7.0
