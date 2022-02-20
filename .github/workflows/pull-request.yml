@@ -67,6 +67,10 @@ jobs:
     
     - name: Docker build
       run: docker-compose up -d --build
+      env:
+        MONGO_DB_URL: mongodb://mongo:27017/talawa-test-db
+        ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+        REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
 
     # - name: Set up Node.js ${{ matrix.node-version }}
     #   uses: actions/setup-node@v2
