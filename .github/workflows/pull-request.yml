@@ -64,24 +64,27 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+    
+    - name: Docker build
+      run: docker-compose up -d --build
 
-    - name: Set up Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
+    # - name: Set up Node.js ${{ matrix.node-version }}
+    #   uses: actions/setup-node@v2
 
-    - name: Start MongoDB
-      uses: supercharge/mongodb-github-action@1.7.0
-      with:
-        mongodb-version: ${{ matrix.mongodb-version }}
+    # - name: Start MongoDB
+    #   uses: supercharge/mongodb-github-action@1.7.0
+    #   with:
+    #     mongodb-version: ${{ matrix.mongodb-version }}
 
-    - name: Install dependencies
-      run: npm install
+    # - name: Install dependencies
+    #   run: npm install
 
-    - name: Start the Application
-      run: npm run start-test-server-in-action
-      env:
-        MONGO_DB_URL: mongodb://mongo:27017/talawa-test-db
-        ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-        REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
+    # - name: Start the Application
+    #   run: npm run start-test-server-in-action
+    #   env:
+    #     MONGO_DB_URL: mongodb://mongo:27017/talawa-test-db
+    #     ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+    #     REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
 
     - name: Sleep for 10s
       uses: juliangruber/sleep-action@v1
@@ -101,8 +104,11 @@ jobs:
         token: ${{secrets.CODECOV_TOKEN}}
         file: ./coverage/lcov.info
 
-    - name: Stop the Application
-      run: npm run stop-test-server-in-action
+    # - name: Stop the Application
+    #   run: npm run stop-test-server-in-action
+
+    - name: Stop and Remove Docker containers
+      run: docker-compose down -v
 
     - name: Test acceptable level of code coverage
       uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
