@@ -65,7 +65,8 @@
     "winston": "^3.3.3",
     "ws": "^7.5.1",
     "xss-clean": "^0.1.1",
-    "yarn": "^1.22.10"
+    "yarn": "^1.22.10",
+    "jest": "^27.4.7"
   },
   "devDependencies": {
     "easygraphql-tester": "^5.1.6",
