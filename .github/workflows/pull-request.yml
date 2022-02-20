@@ -79,7 +79,7 @@ jobs:
     - name: Start the Application
       run: npm run start-test-server-in-action
       env:
-        MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
+        MONGO_DB_URL: mongodb://mongo:27017/talawa-test-db
         ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
         REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
 
@@ -91,7 +91,7 @@ jobs:
     - name: Run the tests
       run: npm run test
       env:
-        MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
+        MONGO_DB_URL: mongodb://mongo:27017/talawa-test-db
         ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
         REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
 
