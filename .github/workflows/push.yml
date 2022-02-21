@@ -74,3 +74,4 @@ jobs:
       with:
         token: ${{secrets.CODECOV_TOKEN}} 
         file: ./coverage/lcov.info
+        disable_default_path_fixes: true
