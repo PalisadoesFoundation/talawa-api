@@ -24,7 +24,7 @@ jobs:
 ##############################################################################
 
   Code-Coverage:
-    name: Shows code coverage
+    name: Testing Application
     runs-on: ubuntu-latest
     strategy:
       matrix:
