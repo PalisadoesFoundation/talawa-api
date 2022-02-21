@@ -72,8 +72,8 @@ jobs:
           - 27017:27017
     env:
       MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
-      ACCESS_TOKEN_SECRET: eeb2137b1961a3da9e3736ea4a9ed1e77cb33a4fad8a153d364c2f04ec50eab7
-      REFRESH_TOKEN_SECRET: 96d41e144e63475f7f753735b50305cd2857cc41c2f2570babdb948c10b77bc5
+#       ACCESS_TOKEN_SECRET: eeb2137b1961a3da9e3736ea4a9ed1e77cb33a4fad8a153d364c2f04ec50eab7
+#       REFRESH_TOKEN_SECRET: 96d41e144e63475f7f753735b50305cd2857cc41c2f2570babdb948c10b77bc5
         
     steps:
     - name: Checkout repository
