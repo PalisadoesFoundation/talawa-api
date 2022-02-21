@@ -1,5 +1,5 @@
-const signup = require('../../../src/resolvers/auth_mutations/signup');
-const login = require('../../../src/resolvers/auth_mutations/login');
+const signup = require('../../../lib/resolvers/auth_mutations/signup');
+const login = require('../../../lib/resolvers/auth_mutations/login');
 const database = require('../../../db');
 const shortid = require('shortid');
 

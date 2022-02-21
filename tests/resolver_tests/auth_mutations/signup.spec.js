@@ -1,4 +1,4 @@
-const signup = require('../../../src/resolvers/auth_mutations/signup');
+const signup = require('../../../lib/resolvers/auth_mutations/signup');
 const database = require('../../../db');
 const shortid = require('shortid');
 
