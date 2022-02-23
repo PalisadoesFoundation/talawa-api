@@ -1,6 +1,5 @@
 const signup = require('../../../lib/resolvers/auth_mutations/signup');
 const revokeRefreshTokenForUser = require('../../../lib/resolvers/auth_mutations/revoke_refresh_token_for_user');
-const { me } = require('../../../lib/resolvers/user_query/users');
 const database = require('../../../db');
 const shortid = require('shortid');
 
@@ -27,7 +26,7 @@ describe('Unit testing', () => {
       },
     };
     const signupResponse = await signup({}, args);
-    userId = signupResponse.user._id
+    userId = signupResponse.user._id;
     args = {
       userId: userId,
     };
