@@ -103,7 +103,7 @@ jobs:
       run: npm run stop-test-server-in-action
 
     - name: Test acceptable level of code coverage
-      uses: VeryGoodOpenSource/very_good_coverage@v1.1.1
+      uses: codecov/codecov-action@v2
       with:
         path: "./coverage/lcov.info"
-        min_coverage: 50.00
+        flags: unittests
