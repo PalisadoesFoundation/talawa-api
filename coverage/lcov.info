@@ -14,7 +14,7 @@ BRF:2
 BRH:1
 end_of_record
 TN:
-SF:config/app.js
+SF:src/config/app.js
 FNF:0
 FNH:0
 DA:1,1
@@ -24,7 +24,7 @@ BRF:0
 BRH:0
 end_of_record
 TN:
-SF:lib/logger/index.js
+SF:src/lib/logger/index.js
 FNF:0
 FNH:0
 DA:1,1
@@ -34,7 +34,7 @@ BRF:0
 BRH:0
 end_of_record
 TN:
-SF:lib/logger/logger.js
+SF:src/lib/logger/logger.js
 FN:9,(anonymous_0)
 FN:52,(anonymous_1)
 FNF:2
@@ -76,7 +76,7 @@ BRF:14
 BRH:1
 end_of_record
 TN:
-SF:lib/request-tracing/index.js
+SF:src/lib/request-tracing/index.js
 FN:13,(anonymous_0)
 FN:15,(anonymous_1)
 FN:19,(anonymous_2)
@@ -144,8 +144,14 @@ DA:6,2
 DA:7,2
 DA:24,2
 DA:25,2
-LF:6
-LH:6
-BRF:0
-BRH:0
+DA:26,0
+DA:28,2
+DA:51,2
+DA:52,2
+LF:10
+LH:9
+BRDA:25,0,0,0
+BRDA:25,0,1,2
+BRF:2
+BRH:1
 end_of_record
