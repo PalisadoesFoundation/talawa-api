@@ -7,6 +7,8 @@ const getEvent = require('../../../lib/resolvers/event_query/event');
 const removeEvent = require('../../../lib/resolvers/event_mutations/removeEvent');
 require('../../../lib/models/Task');
 const shortid = require('shortid');
+const axios = require('axios');
+const { URL } = require('../../../constants');
 
 beforeAll(async () => {
   require('dotenv').config(); // pull env variables from .env file
@@ -18,9 +20,15 @@ afterAll(() => {
 });
 
 describe('Unit testing', () => {
-  test('Event query', async () => {
+  let context;
+  let organizationId;
+  let eventId;
+  let userId;
+  const name = shortid.generate().toLowerCase();
+  const startDateOfEvent = new Date().toLocaleDateString();
+
+  beforeAll(async () => {
     // signup and login to create an event
-    const name = shortid.generate().toLowerCase();
     const email = `${name}@test.com`;
     const signupArgs = {
       data: {
@@ -32,8 +40,8 @@ describe('Unit testing', () => {
     };
     const response = await signup({}, signupArgs);
     // this userId will be used to create a new event
-    const userId = response.user._id;
-    const context = {
+    userId = response.user._id;
+    context = {
       userId: String(userId),
     };
     // create an org
@@ -51,9 +59,8 @@ describe('Unit testing', () => {
       createOrganisationArgs,
       context
     );
-    const organizationId = createdOrganisation._id;
+    organizationId = createdOrganisation._id;
     // create an event
-    const startDateOfEvent = new Date().toLocaleDateString();
     const createEventArgs = {
       data: {
         title: name,
@@ -71,7 +78,18 @@ describe('Unit testing', () => {
       },
     };
     const createdEvent = await createEvent({}, createEventArgs, context);
-    const eventId = createdEvent._id;
+    eventId = createdEvent._id;
+  });
+
+  // finally delete that event ,org and user regardless of test passing or failing.
+  afterAll(async () => {
+    const removeOrganisationArgs = {
+      id: organizationId,
+    };
+    await removeOrganisation({}, removeOrganisationArgs, context);
+  });
+
+  test('should return the created event', async () => {
     // query that event
     const getEventArgs = {
       id: eventId,
@@ -101,14 +119,75 @@ describe('Unit testing', () => {
         status: 'ACTIVE',
       })
     );
-    // finally delete that event ,org and user regardless of test passing or failing.
     const removeEventArgs = {
       id: eventId,
     };
     await removeEvent({}, removeEventArgs, context);
-    const removeOrganisationArgs = {
-      id: organizationId,
-    };
-    await removeOrganisation({}, removeOrganisationArgs, context);
+  });
+
+  test('api call should return an error event not found', async () => {
+    // query that event
+    const response = await axios.post(URL, {
+      query: `
+        query {
+          event (id: "${eventId}"){
+            _id
+        }
+      }
+      `,
+    });
+    const { data } = response;
+    // check the event now.
+    expect(data).toEqual(
+      expect.objectContaining({
+        errors: expect.objectContaining([
+          {
+            message: 'Event not found',
+            status: 422,
+            data: [
+              {
+                message: 'Event not found',
+                code: 'event.notFound',
+                param: 'event',
+                metadata: {},
+              },
+            ],
+          },
+        ]),
+        data: expect.objectContaining({
+          event: null,
+        }),
+      })
+    );
+  });
+
+  test('api call should return a cast error', async () => {
+    // query that event
+    const invalidId = '1';
+    const response = await axios.post(URL, {
+      query: `
+        query {
+          event (id: ${invalidId}){
+            _id
+        }
+      }
+      `,
+    });
+    const { data } = response;
+    // check the event now.
+    expect(data).toEqual(
+      expect.objectContaining({
+        errors: expect.objectContaining([
+          {
+            message: `Cast to ObjectId failed for value "${invalidId}" (type string) at path "_id" for model "Event"`,
+            status: 422,
+            data: [],
+          },
+        ]),
+        data: expect.objectContaining({
+          event: null,
+        }),
+      })
+    );
   });
 });
