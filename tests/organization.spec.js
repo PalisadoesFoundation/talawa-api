@@ -40,6 +40,7 @@ describe('organization resolvers', () => {
                       description:"test description"
                       isPublic: true
                       visibleInSearch: true
+                      apiUrl : "test url"
                       }) {
                           _id,
                           name, 
