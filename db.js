@@ -14,4 +14,8 @@ const connect = async () => {
     process.exit(1);
   }
 };
-module.exports = { connect };
+
+const disconnect = async () => {
+  await mongoose.connection.close();
+};
+module.exports = { connect, disconnect };

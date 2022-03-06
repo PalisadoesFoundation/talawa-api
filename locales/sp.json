@@ -23,5 +23,8 @@
     "invalid.credentials": "Credenciales no válidas",
     "registrant.alreadyExist": "Ya inscrito para el evento",
     "member.notFound": "Miembro no encontrado",
-    "registrant.alreadyUnregistered": "Ya no está registrado para el evento"
+    "registrant.alreadyUnregistered": "Ya no está registrado para el evento",
+    "translation.alreadyPresent": "Traducción ya presente",
+    "translation.notFound": "Traducción no encontrada",
+    "parameter.missing": "Falta el parámetro Omitir. Establézcalo en 0 o en algún otro valor"
 }

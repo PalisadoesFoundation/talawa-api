@@ -4,4 +4,7 @@ module.exports = {
   testTimeout: 30000,
   collectCoverage: true,
   testEnvironment: 'node',
+  coverageDirectory: './coverage/',
+  collectCoverageFrom: ['lib/**/*.js*'],
+  coveragePathIgnorePatterns: ['/node_modules/', 'lib/helper_lib'],
 };
