@@ -39,6 +39,7 @@ describe('organization resolvers', () => {
                 data: {
                   name: "test org"
                   description: "test description"
+                  location:"Washington DC"
                   isPublic: ${isPublic_boolean}
                   visibleInSearch: ${visibleInSearch_boolean}
                   apiUrl: "test url"
@@ -47,6 +48,7 @@ describe('organization resolvers', () => {
                 _id
                 name
                 description
+                location
                 isPublic
                 visibleInSearch
                 apiUrl
@@ -72,6 +74,7 @@ describe('organization resolvers', () => {
         _id: expect.any(String),
         name: 'test org',
         description: 'test description',
+        location: 'Washington DC',
         isPublic: isPublic_boolean,
         visibleInSearch: visibleInSearch_boolean,
         apiUrl: 'test url',
@@ -215,7 +218,8 @@ describe('organization resolvers', () => {
         query: `
             mutation {
                 removeOrganization(id: "${createdOrgId}") {
-                    _id
+                    _id,
+                    email
                 }
             }
             `,
@@ -226,11 +230,35 @@ describe('organization resolvers', () => {
         },
       }
     );
+    const userInfoResponse = await axios.post(
+      URL,
+      {
+        query: `
+              query {
+                  me {
+                      _id,
+                      email
+                    }
+                  }
+                `,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const userDataFromQuery = userInfoResponse.data.data.me;
+    const userData = deletedResponse.data.data.removeOrganization;
 
-    expect(deletedResponse.data.data.removeOrganization).toEqual(
+    expect(userData).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
+        email: expect.any(String),
       })
     );
+
+    // check if both objects are same with values.
+    expect(userDataFromQuery).toMatchObject(userData);
   });
 });
