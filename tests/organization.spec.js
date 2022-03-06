@@ -39,6 +39,7 @@ describe('organization resolvers', () => {
                 data: {
                   name: "test org"
                   description: "test description"
+                  location:"Washington DC"
                   isPublic: ${isPublic_boolean}
                   visibleInSearch: ${visibleInSearch_boolean}
                   apiUrl: "test url"
@@ -47,6 +48,7 @@ describe('organization resolvers', () => {
                 _id
                 name
                 description
+                location
                 isPublic
                 visibleInSearch
                 apiUrl
@@ -72,6 +74,7 @@ describe('organization resolvers', () => {
         _id: expect.any(String),
         name: 'test org',
         description: 'test description',
+        location: 'Washington DC',
         isPublic: isPublic_boolean,
         visibleInSearch: visibleInSearch_boolean,
         apiUrl: 'test url',
