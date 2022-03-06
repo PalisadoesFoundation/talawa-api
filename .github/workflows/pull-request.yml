@@ -50,7 +50,7 @@ jobs:
       if: github.event_name == 'pull_request'
       uses: actions/checkout@v2
       with:
-        ref: ${{ github.event.pull_request.head.ref }}
+        ref: develop
         fetch-depth: 0
     - name: Prettify code
       uses: creyD/prettier_action@v3.3
