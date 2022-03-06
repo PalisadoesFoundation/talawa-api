@@ -7,7 +7,7 @@
     "task.notFound": "कार्य नहीं मिला",
     "event.notFound": "घटना नहीं मिली",
     "eventProject.notFound": "इवेंट प्रोजेक्ट नहीं मिला",
-    "organization.notFound":  "संगठन नहीं मिला",
+    "organization.notFound": "संगठन नहीं मिला",
     "organization.profileImage.notFound": "संगठन की प्रोफ़ाइल छवि नहीं मिली",
     "organization.member.notFound": "संगठन का उपयोगकर्ता सदस्य नहीं है",
     "organization.notAuthorized": "संगठन अधिकृत नहीं है",
@@ -21,5 +21,10 @@
     "invalid.fileType": "अमान्य फ़ाइल प्रकार",
     "invalid.refreshToken": "अमान्य रीफ़्रेश टोकन",
     "invalid.credentials": "अवैध प्रत्यय पत्र",
-    "registrant.alreadyExist": "घटना के लिए पहले से पंजीकृत"
+    "registrant.alreadyExist": "घटना के लिए पहले से पंजीकृत",
+    "member.notFound": "सदस्य अनुपस्थित",
+    "registrant.alreadyUnregistered": "घटना के लिए पहले से ही अपंजीकृत",
+    "translation.alreadyPresent": "अनुवाद पहले से मौजूद है",
+    "translation.notFound": "अनुवाद नहीं मिला",
+    "parameter.missing": "छोड़ें पैरामीटर मौजूद नहीं है. इसे 0 या किसी अन्य मान पर सेट करें"
 }

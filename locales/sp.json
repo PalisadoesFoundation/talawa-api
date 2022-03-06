@@ -7,7 +7,7 @@
     "task.notFound": "Tarea no encontrada",
     "event.notFound": "Evento no encontrado",
     "eventProject.notFound": "Proyecto de evento no encontrado",
-    "organization.notFound":  "Organización no encontrada",
+    "organization.notFound": "Organización no encontrada",
     "organization.profileImage.notFound": "No se encontró la imagen del perfil de la organización",
     "organization.member.notFound": "El usuario de la organización no es miembro",
     "organization.notAuthorized": "La organización no está autorizada",
@@ -21,6 +21,10 @@
     "invalid.fileType": "Tipo de archivo no válido",
     "invalid.refreshToken": "Token de actualización no válido",
     "invalid.credentials": "Credenciales no válidas",
-    "registrant.alreadyExist": "Ya inscrito para el evento"
+    "registrant.alreadyExist": "Ya inscrito para el evento",
+    "member.notFound": "Miembro no encontrado",
+    "registrant.alreadyUnregistered": "Ya no está registrado para el evento",
+    "translation.alreadyPresent": "Traducción ya presente",
+    "translation.notFound": "Traducción no encontrada",
+    "parameter.missing": "Falta el parámetro Omitir. Establézcalo en 0 o en algún otro valor"
 }
-

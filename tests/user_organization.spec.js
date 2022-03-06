@@ -6,10 +6,12 @@ const getToken = require('./functions/getToken');
 
 let token;
 beforeAll(async () => {
-  token = await getToken();
+  let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
+  token = await getToken(generatedEmail);
 });
 
 let createdOrgId = 'test';
+let createdUserId;
 
 describe('User-Organization Resolvers', () => {
   // ORGANIZATION IS CREATED
@@ -152,6 +154,50 @@ describe('User-Organization Resolvers', () => {
     );
   });
 
+  test('Attempt to make user as admin if already is an admin', async () => {
+    const response = await axios.post(
+      URL,
+      {
+        query: `
+          mutation {
+            createAdmin(data: {
+              organizationId: "${createdOrgId}"
+              userId: "${newUserId}"
+            }) {
+              _id
+              firstName
+              lastName
+              email
+            }
+          }`,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const { data } = response;
+    expect(data.errors[0]).toEqual(
+      expect.objectContaining({
+        message: 'User is not authorized for performing this operation',
+        status: 422,
+      })
+    );
+
+    expect(data.errors[0].data[0]).toEqual(
+      expect.objectContaining({
+        message: 'User is not authorized for performing this operation',
+        code: 'user.notAuthorized',
+        param: 'userAuthorization',
+        metadata: {},
+      })
+    );
+
+    expect(data.data).toEqual(null);
+  });
+
   // ADMIN REMOVES GROUP
 
   // ADMIN REMOVES EVENT
@@ -226,6 +272,50 @@ describe('User-Organization Resolvers', () => {
     );
   });
 
+  test('User Attempt to Leave Organization if already leaved', async () => {
+    const response = await axios.post(
+      URL,
+      {
+        query: `
+        mutation {
+            leaveOrganization(organizationId: "${createdOrgId}") {
+              _id
+              firstName
+              lastName
+              email
+            }
+          }`,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${newUserToken}`,
+        },
+      }
+    );
+
+    const { data } = response;
+
+    expect(Array.isArray(data.errors)).toBeTruthy();
+
+    expect(data.errors[0]).toEqual(
+      expect.objectContaining({
+        message: 'Member not found',
+        status: 422,
+      })
+    );
+
+    expect(data.errors[0].data[0]).toEqual(
+      expect.objectContaining({
+        message: 'Member not found',
+        code: 'member.notFound',
+        param: 'member.notFound',
+        metadata: {},
+      })
+    );
+
+    expect(data.data).toEqual(null);
+  });
+
   // ADMIN REMOVES USER FROM ORGANIZATION
 
   // A NEW USER HAS TO BE CREATED THEN ADDED TO THE ORGANIZATION THEN REMOVED
@@ -253,7 +343,7 @@ describe('User-Organization Resolvers', () => {
     });
     const { data } = signUpResponse;
     const userToken = data.data.signUp.accessToken;
-    const createdUserId = data.data.signUp.user._id;
+    createdUserId = data.data.signUp.user._id;
 
     // user joins organizations
     await axios.post(
@@ -300,6 +390,39 @@ describe('User-Organization Resolvers', () => {
         _id: expect.any(String),
       })
     );
+  });
+
+  test('Attempt to remove member if already removed', async () => {
+    const removeMemberResponse = await axios.post(
+      URL,
+      {
+        query: `mutation {
+          removeMember(data: {
+            organizationId: "${createdOrgId}",
+            userIds: ["${createdUserId}"]
+          }) {
+            _id
+          }
+        }`,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const { data } = removeMemberResponse;
+    expect(Array.isArray(data.errors)).toBeTruthy();
+
+    expect(data.errors[0]).toEqual(
+      expect.objectContaining({
+        message: 'User is not a member',
+        status: 422,
+        data: [],
+      })
+    );
+
+    expect(data.data).toEqual(null);
   });
 
   // ORGANIZATION IS DELETED

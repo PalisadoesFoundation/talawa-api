@@ -7,7 +7,7 @@
     "task.notFound": "Task not found",
     "event.notFound": "Event not found",
     "eventProject.notFound": "Event project not found",
-    "organization.notFound":  "Organization not found",
+    "organization.notFound": "Organization not found",
     "organization.profileImage.notFound": "Organization profile image not found",
     "organization.member.notFound": "Organization's user is not a member",
     "organization.notAuthorized": "Organization is not authorized",
@@ -21,5 +21,10 @@
     "invalid.fileType": "Invalid file type",
     "invalid.refreshToken": "Invalid refresh token",
     "invalid.credentials": "Invalid credentials",
-    "registrant.alreadyExist": "Already registered for the event"
+    "registrant.alreadyExist": "Already registered for the event",
+    "member.notFound": "Member not found",
+    "registrant.alreadyUnregistered": "Already unregistered for the event",
+    "translation.alreadyPresent": "Translation Already Present",
+    "translation.notFound": "Translation not found",
+    "parameter.missing": "Missing Skip parameter. Set it to either 0 or some other value not found"
 }

@@ -448,7 +448,7 @@ GraphQL queries can traverse related objects and their fields, letting clients f
     groups: [Group]
     directChats: [DirectChat]
     directChatMessages: [DirectChatMessage]
-
+    directChatsByUserID(id:ID) :[DirectChat]
     groupChats: [GroupChat]
     groupChatMessages: [GroupChatMessage]
   }
@@ -967,6 +967,32 @@ query{
     }
     createdAt
     messageContent
+  }
+}
+
+# 23
+directChatsByUserID: [DirectChat]
+
+Description: It fetches the list of direct chat by userID.
+
+Arguments:
+1. id: ID -lets you identify an object(user) uniquely.
+
+
+Returns: DirectChat
+
+Example-
+query{
+  directChats(
+        id: <id>
+    )
+    {
+    users{
+      firstName
+    }
+    messages{
+      messageContent
+    }
   }
 }
 

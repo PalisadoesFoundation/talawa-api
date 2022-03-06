@@ -21,5 +21,10 @@
     "invalid.fileType": "Type de fichier non valide",
     "invalid.refreshToken": "Jeton d'actualisation non valide",
     "invalid.credentials": "Informations d'identification non valides",
-    "registrant.alreadyExist": "Déjà inscrit à l'événement"
+    "registrant.alreadyExist": "Déjà inscrit à l'événement",
+    "member.notFound": "Membre introuvable",
+    "registrant.alreadyUnregistered": "Déjà non inscrit à l'événement",
+    "translation.alreadyPresent": "Traduction déjà présente",
+    "translation.notFound": "Traduction introuvable",
+    "parameter.missing": "Paramètre de saut manquant. Réglez-le sur 0 ou sur une autre valeur"
 }
