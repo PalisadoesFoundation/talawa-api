@@ -40,10 +40,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: Linter
     steps:
-    - name: Checkout
+    - name: Checkout 1
+      if: github.event_name != 'pull_request'
       uses: actions/checkout@v2
       with:
         # This is important to fetch the changes to the previous commit
+        fetch-depth: 0
+    - name: Checkout 2
+      if: github.event_name == 'pull_request'
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.ref }}
         fetch-depth: 0
     - name: Prettify code
       uses: creyD/prettier_action@v3.3
