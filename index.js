@@ -17,22 +17,22 @@ const i18n = require('i18n');
 const requestContext = require('talawa-request-context');
 const requestTracing = require('request-tracing');
 
-const Query = require('./src/resolvers/Query');
-const Mutation = require('./src/resolvers/Mutation');
-const typeDefs = require('./src/schema/schema.graphql');
-const isAuth = require('./src/middleware/is-auth');
-const User = require('./src/resolvers/User');
+const Query = require('./lib/resolvers/Query');
+const Mutation = require('./lib/resolvers/Mutation');
+const typeDefs = require('./lib/schema/schema.graphql');
+const isAuth = require('./lib/middleware/is-auth');
+const User = require('./lib/resolvers/User');
 const database = require('./db.js');
-const Organization = require('./src/resolvers/Organization');
-const MembershipRequest = require('./src/resolvers/MembershipRequest');
-const DirectChat = require('./src/resolvers/DirectChat');
-const DirectChatMessage = require('./src/resolvers/DirectChatMessage');
-const { defaultLocale, supportedLocales } = require('./src/config/app');
-const GroupChat = require('./src/resolvers/GroupChat');
-const GroupChatMessage = require('./src/resolvers/GroupChatMessage');
-//const Subscription = require('./src/resolvers/Subscription');
-const AuthenticationDirective = require('./src/directives/authDirective');
-const RoleAuthorizationDirective = require('./src/directives/roleDirective');
+const Organization = require('./lib/resolvers/Organization');
+const MembershipRequest = require('./lib/resolvers/MembershipRequest');
+const DirectChat = require('./lib/resolvers/DirectChat');
+const DirectChatMessage = require('./lib/resolvers/DirectChatMessage');
+const { defaultLocale, supportedLocales } = require('./lib/config/app');
+const GroupChat = require('./lib/resolvers/GroupChat');
+const GroupChatMessage = require('./lib/resolvers/GroupChatMessage');
+//const Subscription = require('./lib/resolvers/Subscription');
+const AuthenticationDirective = require('./lib/directives/authDirective');
+const RoleAuthorizationDirective = require('./lib/directives/roleDirective');
 
 const app = express();
 
