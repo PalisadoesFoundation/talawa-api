@@ -34,32 +34,29 @@ describe('organization resolvers', () => {
       URL,
       {
         query: `
-            mutation {
-              createOrganization(
-                data: {
-                  name: "test org"
-                  description: "test description"
-                  location:"Washington DC"
-                  isPublic: ${isPublic_boolean}
-                  visibleInSearch: ${visibleInSearch_boolean}
-                  apiUrl: "test url"
-                }
-              ) {
-                _id
-                name
-                description
-                location
-                isPublic
-                visibleInSearch
-                apiUrl
-                image
-                creator {
-                  _id
-                  firstName
-                }
+              mutation {
+                  createOrganization(data: {
+                      name:"test org"
+                      description:"test description"
+                      isPublic: true
+                      visibleInSearch: true
+                      apiUrl : "test url"
+                      }) {
+                          _id,
+                          name, 
+                          description,
+                          creator{
+                            email
+                          },
+                          admins{
+                            email
+                          },
+                          members{
+                            email
+                          }
+                      }
               }
-            }
-            `,
+                `,
       },
       {
         headers: {
@@ -72,17 +69,59 @@ describe('organization resolvers', () => {
     expect(data.data.createOrganization).toEqual(
       expect.objectContaining({
         _id: expect.any(String),
-        name: 'test org',
-        description: 'test description',
-        location: 'Washington DC',
-        isPublic: isPublic_boolean,
-        visibleInSearch: visibleInSearch_boolean,
-        apiUrl: 'test url',
-        image: null,
+        name: expect.any(String),
+        description: expect.any(String),
         creator: expect.objectContaining({
-          _id: expect.any(String),
-          firstName: expect.any(String),
+          email: expect.any(String),
         }),
+        admins: expect.any(Array),
+        members: expect.any(Array),
+      })
+    );
+    // test to check if userInfo has been updated
+    const userInfoResponse = await axios.post(
+      URL,
+      {
+        query: `
+              query {
+                  me {
+                     joinedOrganizations{
+                       _id
+                     },
+                     createdOrganizations{
+                       _id
+                     },
+                     adminFor{
+                       _id
+                     }, 
+                    }
+                  }
+                `,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    const userData = userInfoResponse.data.data.me;
+    expect(userData).toEqual(
+      expect.objectContaining({
+        joinedOrganizations: expect.arrayContaining([
+          expect.objectContaining({
+            _id: createdOrgId,
+          }),
+        ]),
+        createdOrganizations: expect.arrayContaining([
+          expect.objectContaining({
+            _id: createdOrgId,
+          }),
+        ]),
+        adminFor: expect.arrayContaining([
+          expect.objectContaining({
+            _id: createdOrgId,
+          }),
+        ]),
       })
     );
   });
