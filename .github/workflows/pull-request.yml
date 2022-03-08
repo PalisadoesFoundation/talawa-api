@@ -56,7 +56,7 @@ jobs:
       with:
         same_commit: True
         only_changed: True
-        ref: ${{ github.head_ref }}
+        commit_message: "Prettier Commit"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
