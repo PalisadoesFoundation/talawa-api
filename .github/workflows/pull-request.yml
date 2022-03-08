@@ -52,7 +52,7 @@ jobs:
       with:
         fetch-depth: 0
     - name: Prettify code
-      uses: creyD/prettier_action@v3.3
+      uses: creyD/prettier_action@v2
       with:
         same_commit: True
         only_changed: True
