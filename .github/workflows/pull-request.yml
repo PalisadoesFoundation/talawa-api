@@ -52,6 +52,20 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  JSDocs:
+    name : "JSDocs comments and pipeline"
+    runs-on : ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name : "Check whether comments exists for JSDocs"
+        run: |
+          chmod +x ./.github/workflows/check-jsdocs-comment.py
+          ./.github/workflows/check-jsdocs-comment.py
+
+      - name : "Run JSDocs"   
+        if: env.RUN_JSDOCS == 'True'
+        run: echo "Run JSdocs :${{ env.RUN_JSDOCS }}"
+
   Code-Coverage:
     name: Testing Application
     runs-on: ubuntu-latest
