@@ -12,7 +12,7 @@ def main():
     # The regex checks if the content of files contain a comment of form => /** {charachters | newline} */ ,
     # file may also contain any number of newlines or charachters before or after the comment. 
     # To analyse the regex visit https://regex101.com/ and paste the regex
-    pattern = re.compile("^(.|\n)*(\/\*\*(.|\n)*\*\/)+(.|\n)*$");
+    pattern = re.compile('^(.|\n)*(\/\*\*(.|\n)*\*\/)+(.|\n)*$');
     # list of dir to look in repo for files
     directories = [
         directory,
@@ -26,7 +26,7 @@ def main():
         for root, _, files in os.walk(d, topdown=False):
             for name in files:
                 # only append files with .js extension
-                if(name.endswith(".js")):
+                if(name.endswith('.js')):
                     result.append(os.path.join(root, name))
     
     # boolean to check if docs are to be generated
@@ -43,13 +43,13 @@ def main():
                 break
     # setting github env variable to decide to run jsdoc pipeline
     try:
-        with open(env_file, "a") as myfile:
+        with open(env_file, 'a') as myfile:
             if comments_for_jsdoc_exists == True:
-                myfile.write("RUN_JSDOCS=True")
+                myfile.write('RUN_JSDOCS=True')
             else:
-                myfile.write("RUN_JSDOCS=False")
+                myfile.write('RUN_JSDOCS=False')
     except TypeError:
-        print("no env file found")
+        print('no env file found')
 
 if __name__ == '__main__':
     main()
