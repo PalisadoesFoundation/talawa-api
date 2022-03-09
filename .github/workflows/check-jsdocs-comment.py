@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
+
 """Script to check whether JSDocs command is required to run or not.
+
 Methodology:
+
     Analyses the `.js`files to find
-    whether comments compliant to JSDocs 
+    whether comments compliant to JSDocs
     are present or not.
-    This script was created to help improve documentation of codebase 
+    This script was created to help improve documentation of codebase
     and only updating docs if required.
 NOTE:
     This script complies with our python3 coding and documentation standards
@@ -20,29 +23,38 @@ NOTE:
 
 # standard imports
 import os
-from collections import namedtuple
 import re
 
+
 def get_regex_pattern():
-    """Returns the regex pattern against which files are analysed 
+    """Return the regex pattern against which files are analysed.
+
     Args:
         None
+
     Returns:
         pattern: An regex Pattern object
+
     """
-    # The regex checks if the content of files contain a comment of form => /** {charachters | newline} */ ,
-    # file may also contain any number of newlines or charachters before or after the comment. 
+    # The regex checks if the content of files contain a comment of
+    # form => /** {charachters | newline} */ ,
+    # file may also contain any number of 
+    # newlines or charachters before or after the comment.
     # To analyse the regex visit https://regex101.com/ and paste the regex
-    regex = '^(.|\n)*(\/\*\*(.|\n)*\*\/)+(.|\n)*$'
-    pattern = re.compile(regex);
+    regex = '^(.|\n)*(\\/\\*\\*(.|\n)*\\*\\/)+(.|\n)*$'
+    pattern = re.compile(regex)
     return pattern
 
+
 def get_directories():
-    """Returns a list of directories to analyse against the regex 
+    """Return a list of directories to analyse against the regex.
+
     Args:
         None
+
     Returns:
         directories: A list of directory
+
     """
     # get current working dir
     directory = os.getcwd()
@@ -58,10 +70,13 @@ def get_directories():
 
 def get_js_files(directories):
     """Create a list of full .js file paths to include in the analysis.
+
     Args:
         directories: Directories object
+
     Returns:
         result: A list of full file paths
+
     """
     # Initialize key variables
     result = []
@@ -70,18 +85,22 @@ def get_js_files(directories):
         for root, _, files in os.walk(d, topdown=False):
             for name in files:
                 # append files with .js extension
-                if(name.endswith('.js')):
+                if name.endswith('.js'):
                     result.append(os.path.join(root, name))
 
     return result
 
+
 def analyse_files_against_regex_pattern(files, pattern):
-    """Runs files against regex pattern to check if JSDocs commands need to run or not
+    """Run files against regex pattern.
+
     Args:
         files : list of file paths which are to be analysed
         pattern : regex Pattern Object
+
     Returns:
         comments_for_jsdoc_exists : boolean to specify running of docs
+
     """
     # boolean to check if docs are to be generated
     comments_for_jsdoc_exists = False
@@ -90,7 +109,7 @@ def analyse_files_against_regex_pattern(files, pattern):
         if comments_for_jsdoc_exists:
             break
         with open(filepath, encoding='utf-8') as code:
-            file_content = code.read();
+            file_content = code.read()
             matches = pattern.search(file_content)
             if matches:
                 comments_for_jsdoc_exists = True
@@ -98,41 +117,48 @@ def analyse_files_against_regex_pattern(files, pattern):
 
     return comments_for_jsdoc_exists
 
+
 def set_github_env_variable(comments_for_jsdoc_exists):
-    """Sets github env variable so that decision can be made in the github action interface
-       to run or skip the JSDocs command
+    """Set github env variable.
+
     Args:
         comments_for_jsdoc_exists : Boolean
+
     Returns:
         None
+
     """
     # this is to setup workflow env variable
-    env_file = os.getenv('GITHUB_ENV') 
+    env_file = os.getenv('GITHUB_ENV')
     try:
         with open(env_file, 'a') as myfile:
-            if comments_for_jsdoc_exists == True:
+            if comments_for_jsdoc_exists:
                 myfile.write('RUN_JSDOCS=True')
             else:
                 myfile.write('RUN_JSDOCS=False')
     except TypeError:
         print('no env file found')
 
-    
-def main(): 
-    """Analyze .js files against regex pattern
-    This function calls the helper functions to run regex pattern against js files and setting 
-    github env variable
+
+def main():
+    """Analyze .js files against regex pattern.
+
+    This function calls the helper functions.
+
     Args:
         None
+
     Returns:
         None
+
     """
     pattern = get_regex_pattern()
     directories = get_directories()
     files = get_js_files(directories)
-    comments_for_jsdoc_exists = analyse_files_against_regex_pattern(files,pattern)
+    comments_for_jsdoc_exists = analyse_files_against_regex_pattern(
+        files, pattern)
     set_github_env_variable(comments_for_jsdoc_exists)
-   
+
 
 if __name__ == '__main__':
     main()
