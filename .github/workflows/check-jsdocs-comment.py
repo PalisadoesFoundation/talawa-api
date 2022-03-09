@@ -9,7 +9,9 @@ def main():
     directory = os.getcwd()
     # this is to setup workflow env variable
     env_file = os.getenv('GITHUB_ENV')
-    # regex expression to check if file contains comments in format for JSdocs
+    # The regex checks if the content of files contain a comment of form => /** {charachters | newline} */ ,
+    # file may also contain any number of newlines or charachters before or after the comment. 
+    # To analyse the regex visit https://regex101.com/ and paste the regex
     pattern = re.compile("^(.|\n)*(\/\*\*(.|\n)*\*\/)+(.|\n)*$");
     # list of dir to look in repo for files
     directories = [
