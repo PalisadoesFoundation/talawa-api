@@ -75,10 +75,7 @@ describe('Language Mutation testing', () => {
       },
     };
 
-    console.log(newArgs);
-    console.log('New Response');
     const newResponse = await languageTranslationMutation({}, newArgs);
-    console.log(newResponse);
     const newFinalResult = {
       en: newResponse.en,
     };
@@ -92,7 +89,6 @@ describe('Language Mutation testing', () => {
       }
     });
 
-    console.log(newFinalResult);
     expect(newFinalResult).toEqual({
       en: enValue,
       translation: {
