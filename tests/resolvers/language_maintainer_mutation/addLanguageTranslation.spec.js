@@ -1,7 +1,6 @@
 const languageTranslationMutation = require('../../../lib/resolvers/language_maintainer_mutation/addLanguageTranslation');
 const database = require('../../../db');
 const shortid = require('shortid');
-const { ConflictError } = require('errors');
 
 beforeAll(async () => {
   require('dotenv').config(); // pull env variables from .env file
@@ -110,13 +109,9 @@ describe('Language Mutation testing', () => {
       },
     };
 
-    const t = await languageTranslationMutation({}, newArgs);
-    expect(t).toThrow(
-      new ConflictError(
-        'Already Present',
-        'translation.alreadyPresent',
-        'translationAlreadyPresent'
-      )
-    );
+    // eslint-disable-next-line jest/valid-expect
+    expect(async () => {
+      await languageTranslationMutation({}, newArgs);
+    }).rejects.toEqual('Already Present');
   });
 });
