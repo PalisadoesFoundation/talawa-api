@@ -109,9 +109,8 @@ describe('Language Mutation testing', () => {
       },
     };
 
-    // eslint-disable-next-line jest/valid-expect
-    expect(async () => {
+    await expect(async () => {
       await languageTranslationMutation({}, newArgs);
-    }).rejects.toEqual('Already Present');
+    }).rejects.toEqual(Error('Already Present'));
   });
 });
