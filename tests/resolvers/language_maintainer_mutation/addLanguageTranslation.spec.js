@@ -1,6 +1,7 @@
 const languageTranslationMutation = require('../../../lib/resolvers/language_maintainer_mutation/addLanguageTranslation');
 const database = require('../../../db');
 const shortid = require('shortid');
+const { ConflictError } = require('errors');
 
 beforeAll(async () => {
   require('dotenv').config(); // pull env variables from .env file
@@ -29,9 +30,10 @@ describe('Language Mutation testing', () => {
     zh: `你好世界 ${uniqueId}`,
   };
   const langCode = ['de', 'en', 'es', 'fr', 'hi', 'ja', 'pt', 'zh'];
+  const randomIndex = getRandomInt(3);
 
   test('New Translation', async () => {
-    const translationLangCode = langCode[getRandomInt(3)];
+    const translationLangCode = langCode[randomIndex];
 
     const args = {
       data: {
@@ -96,5 +98,25 @@ describe('Language Mutation testing', () => {
         value: translationInDiffLanguage[newTranslationLangCode],
       },
     });
+  });
+
+  test('Translation already existing in packet', async () => {
+    const translationLangCode = langCode[randomIndex];
+    const newArgs = {
+      data: {
+        en_value: enValue,
+        translation_lang_code: translationLangCode,
+        translation_value: `${translationInDiffLanguage[translationLangCode]} 123`,
+      },
+    };
+
+    const t = await languageTranslationMutation({}, newArgs);
+    expect(t).toThrow(
+      new ConflictError(
+        'Already Present',
+        'translation.alreadyPresent',
+        'translationAlreadyPresent'
+      )
+    );
   });
 });
