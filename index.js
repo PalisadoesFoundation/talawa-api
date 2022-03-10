@@ -21,7 +21,6 @@ const Query = require('./lib/resolvers/Query');
 const Mutation = require('./lib/resolvers/Mutation');
 const typeDefs = require('./lib/schema/schema.graphql');
 const isAuth = require('./lib/middleware/is-auth');
-const User = require('./lib/resolvers/User');
 const database = require('./db.js');
 const Organization = require('./lib/resolvers/Organization');
 const MembershipRequest = require('./lib/resolvers/MembershipRequest');
@@ -52,7 +51,6 @@ const resolvers = {
   },
   Query,
   Mutation,
-  User,
   Organization,
   MembershipRequest,
   DirectChat,

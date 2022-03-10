@@ -55,6 +55,7 @@ jobs:
   JSDocs:
     name : "JSDocs comments and pipeline"
     runs-on : ubuntu-latest
+    needs: Code-Formatter
     steps:
       - uses: actions/checkout@v2
       - name : "Check whether comments exists for JSDocs"
