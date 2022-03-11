@@ -10,4 +10,3 @@ yarn.lock
 
 # We don't want to have code coverage data stored in the repo as it is dynamic
 coverage/
-coverage/lcov.info
