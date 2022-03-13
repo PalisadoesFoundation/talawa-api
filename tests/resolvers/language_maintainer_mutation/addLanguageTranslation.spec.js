@@ -27,12 +27,14 @@ describe('Language Mutation testing', () => {
     ja: `こんにちは世界 ${uniqueId}`,
     pt: `olá mundo ${uniqueId}`,
     zh: `你好世界 ${uniqueId}`,
+    ur: `ہیلو دنیا ${uniqueId}`,
   };
   const langCode = ['de', 'en', 'es', 'fr', 'hi', 'ja', 'pt', 'zh'];
-  const randomIndex = getRandomInt(3);
+  const randomIndex = getRandomInt(8);
+  const getTranslationLangCode = langCode[randomIndex];
 
   test('New Translation', async () => {
-    const translationLangCode = langCode[randomIndex];
+    const translationLangCode = getTranslationLangCode;
 
     const args = {
       data: {
@@ -67,7 +69,8 @@ describe('Language Mutation testing', () => {
   });
 
   test('New Translation in existing packet', async () => {
-    const newTranslationLangCode = langCode[getRandomInt(3)];
+    langCode[randomIndex] = 'ur';
+    const newTranslationLangCode = langCode[getRandomInt(8)];
     const newArgs = {
       data: {
         en_value: enValue,
@@ -100,7 +103,7 @@ describe('Language Mutation testing', () => {
   });
 
   test('Translation already existing in packet', async () => {
-    const translationLangCode = langCode[randomIndex];
+    const translationLangCode = getTranslationLangCode;
     const newArgs = {
       data: {
         en_value: enValue,
