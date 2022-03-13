@@ -37,7 +37,7 @@ describe('Unit testing', () => {
         isPublic: isPublic_boolean,
         visibleInSearch: visibleInSearch_boolean,
         apiUrl: name,
-      }
+      },
     };
     const context = {
       userId: signUpResponse.user._id.toString(),
