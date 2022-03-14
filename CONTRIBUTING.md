@@ -76,7 +76,7 @@ The process of proposing a change to Talawa API can be summarized as:
          genhtml coverage/lcov.info -o coverage
          ```    
    1. **_Test Code Coverage_:**
-      1. General Information
+      1. _General Information_
          1. The current code coverage of the repo is: [![codecov](https://codecov.io/gh/PalisadoesFoundation/talawa-api/branch/develop/graph/badge.svg?token=CECBQTAOKM)](https://codecov.io/gh/PalisadoesFoundation/talawa-api)
          1. You can determine the percentage test coverage of your code by running these two commands in sequence:
             ```
@@ -87,7 +87,7 @@ The process of proposing a change to Talawa API can be summarized as:
          1. The coverage rate will be visible on the penultimate line of the `genhtml` command's output.
          1. The `genhtml` command is part of the linux `lcov` package. Similar packages can be found for Windows and MacOS.
          1. The currently acceptable coverage rate can be found in the [GitHub Pull Request file](https://github.com/PalisadoesFoundation/talawa-api/blob/develop/.github/workflows/pull-request.yml). Search for the value below the line containing `min_coverage`.
-      1. Creating your code coverage account
+      1. _Creating your code coverage account_
           1. You can also see your code coverage online for your fork of the repo. This is provided by `codecov.io`
               1. Go to this link: `https://app.codecov.io/gh/XXXX/YYYY` where XXXX is your GitHub account username and YYYY is the name of the repository
               1. Login to `codecov.io` using your GitHub account, and add your **repo** and **branches** to the `codecov.io` dashboard. 
@@ -105,10 +105,10 @@ The process of proposing a change to Talawa API can be summarized as:
 
 We have internship partnerships with a number of organizations. See below for more details.
 
-#### GSoC
+### GSoC
 If you are participating in the Summer of Code, please read more about us and our processes [here](https://palisadoesfoundation.github.io/talawa-docs/docs/internships/gsoc/gsoc-introduction)
 
-#### GitHub Externship
+### GitHub Externship
 If you are participating in the GitHub Externship, please read more about us and our processes [here](https://palisadoesfoundation.github.io/talawa-docs/docs/internships/github/github-introduction)
 
 ## Community
