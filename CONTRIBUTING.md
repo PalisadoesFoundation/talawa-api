@@ -70,11 +70,15 @@ The process of proposing a change to Talawa API can be summarized as:
       1. We need to get to 100% test coverage for the app. We periodically increase the desired test coverage for our pull requests to meet this goal.
       1. Pull requests that don't meet the minimum test coverage levels will not be accepted. This may mean that you will have to create tests for code you did not write. You can decide which part of the code base needs additional tests if this happens to you.
    1. **_Testing_:**
-      1. Test using these commands:
+      1. Test using these commands (All tests):
          ```
          npm run test
          genhtml coverage/lcov.info -o coverage
          ```    
+      1. Test using these commands (Single test):
+         ```
+         npm run test -- -t <Name_of_Test>
+         ```             
    1. **_Test Code Coverage_:**
       1. _General Information_
          1. The current code coverage of the repo is: [![codecov](https://codecov.io/gh/PalisadoesFoundation/talawa-api/branch/develop/graph/badge.svg?token=CECBQTAOKM)](https://codecov.io/gh/PalisadoesFoundation/talawa-api)
