@@ -84,7 +84,7 @@ const checkOrderByInput = async (val) => {
     response = response.slice(0, 5);
     responseStructredResult = Array.from(Array(5).keys());
   } else {
-    responseStructredResult = [] * response.length;
+    responseStructredResult = Array.from(Array(response.length).keys());
   }
 
   let index = 0;
