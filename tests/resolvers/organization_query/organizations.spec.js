@@ -71,24 +71,24 @@ afterAll(() => {
 //EVERY SINGLE ONE IN ORDER TO GET COVERAGE TO 100%
 const checkOrderByInput = async (val) => {
   const getRandomOrderByVal = val;
-  const args = {
+  const apiArgs = {
     orderBy: getRandomOrderByVal,
   };
 
-  let response = await organizationQuery({}, args, {
+  let apiResponse = await organizationQuery({}, apiArgs, {
     userId: userId,
   });
 
-  let responseStructredResult;
-  if (response.length > 5) {
-    response = response.slice(0, 5);
-    responseStructredResult = Array.from(Array(5).keys());
-  } else {
-    responseStructredResult = Array.from(Array(response.length).keys());
+  let apiResponseStructuredFormatArray = Array.from(
+    Array(apiResponse.length > 5 ? 5 : apiResponse.length).keys()
+  );
+
+  if (apiResponseStructuredFormatArray.length === 5) {
+    apiResponse = apiResponse.slice(0, 5);
   }
 
   let index = 0;
-  response.forEach((element) => {
+  apiResponse.forEach((element) => {
     const result = {
       id: element['_id'],
       name: element['name'],
@@ -96,32 +96,42 @@ const checkOrderByInput = async (val) => {
       apiUrl: element['apiUrl'],
     };
 
-    responseStructredResult[index] = result;
+    apiResponseStructuredFormatArray[index] = result;
     index++;
   });
 
-  const filterName = getRandomOrderByVal.split('_');
-  let outputResult = Array.from(Array(responseStructredResult.length).keys());
-  let i = 0;
+  const orderByfilterArray = getRandomOrderByVal.split('_');
+  const orderByInputName = orderByfilterArray[0];
+  const orderByOrder = orderByfilterArray[1];
 
-  responseStructredResult.forEach((element) => {
-    outputResult[i] = element[filterName[0]];
-    i++;
+  let outputResult = Array.from(
+    Array(apiResponseStructuredFormatArray.length).keys()
+  );
+
+  index = 0;
+  apiResponseStructuredFormatArray.forEach((element) => {
+    outputResult[index] = element[orderByInputName];
+    index++;
   });
 
-  const argName = filterName[0];
-  outputResult = outputResult.sort((a, b) =>
-    a[argName] > b[argName] ? 1 : b[argName] > a[argName] ? -1 : 0
-  );
+  outputResult = outputResult.sort((a, b) => {
+    if (orderByOrder === 'ASC') {
+      // eslint-disable-next-line prettier/prettier
+      return a[orderByInputName] > b[orderByInputName] ? 1 : b[orderByInputName] > a[orderByInputName] ? -1 : 0;
+    }
+
+    // eslint-disable-next-line prettier/prettier
+    return a[orderByInputName] < b[orderByInputName] ? 1 : b[orderByInputName] < a[orderByInputName] ? -1 : 0;
+  });
 
   let responseStructredResultExpectation = Array.from(
-    Array(responseStructredResult.length).keys()
+    Array(apiResponseStructuredFormatArray.length).keys()
   );
 
-  let t = 0;
-  responseStructredResult.forEach((element) => {
-    responseStructredResultExpectation[t] = element[filterName[0]];
-    t++;
+  index = 0;
+  apiResponseStructuredFormatArray.forEach((element) => {
+    responseStructredResultExpectation[index] = element[orderByInputName];
+    index++;
   });
 
   return {
@@ -180,7 +190,7 @@ describe('Organization Query', () => {
     }
 
     console.log(outputResultArray);
-    console.log('-----');
+    console.log('-----\n\n\n');
     console.log(expectedResultArray);
     //FOR ALL THE CASES BOTH EXPECTED AND ACTUAL VALUES ARE CHECKED
     expect(expectedResultArray).toEqual(outputResultArray);
