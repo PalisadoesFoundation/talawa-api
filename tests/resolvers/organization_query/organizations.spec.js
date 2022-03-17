@@ -183,7 +183,7 @@ describe('Organization Query', () => {
     console.log('-----');
     console.log(expectedResultArray);
     //FOR ALL THE CASES BOTH EXPECTED AND ACTUAL VALUES ARE CHECKED
-    expect(outputResultArray).toEqual(expectedResultArray);
+    expect(expectedResultArray).toEqual(outputResultArray);
   });
 
   //THIS IS THE CASE WHERE USER PROVIDES THE ORGANISATION ID
