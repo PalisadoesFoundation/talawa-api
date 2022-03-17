@@ -114,6 +114,8 @@ const checkOrderByInput = async (val) => {
     index++;
   });
 
+  //SORTING IS PERFORMED IN RESPONSE TO CHECK IF ANY CHANGES HAPPENED
+  //IF INCASE IT DID THE TEST WILL FAIL SUGGESTING THAT orderBy PARAMETER IS NOT WORKING
   outputResult = outputResult.sort((a, b) => {
     if (orderByOrder === 'ASC') {
       // eslint-disable-next-line prettier/prettier
@@ -179,7 +181,9 @@ describe('Organization Query', () => {
       'apiUrl_DESC',
     ];
 
+    // THE ARRAY IS RESPONSIBLE FOR CHECKING WHEATHER THE RESUTS ARE SORTED
     const outputResultArray = Array.from(Array(orderByVal.length).keys());
+    // THE ARRAY OF RESPONSE
     const expectedResultArray = Array.from(Array(orderByVal.length).keys());
 
     //THE LOOP TAKES ALL THE ORDER BY CASES AND STORES THE RESULTS IN ARRAY
@@ -189,9 +193,6 @@ describe('Organization Query', () => {
       expectedResultArray[i] = result['responseStructredResultExpectation'];
     }
 
-    console.log(outputResultArray);
-    console.log('-----\n\n\n');
-    console.log(expectedResultArray);
     //FOR ALL THE CASES BOTH EXPECTED AND ACTUAL VALUES ARE CHECKED
     expect(expectedResultArray).toEqual(outputResultArray);
   });
