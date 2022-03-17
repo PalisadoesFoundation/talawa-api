@@ -50,7 +50,6 @@ describe('Unit testing', () => {
       posts: [],
       membershipRequests: [],
       blockedUsers: [],
-      // _id: 622da0580caf1971d4d4a290,
       name: name,
       description: name,
       isPublic: isPublic_boolean,
