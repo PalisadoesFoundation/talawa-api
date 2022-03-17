@@ -9,14 +9,17 @@
 
 // IMPORTING THE API THAT NEEDS TO BE TESTED FROM THE DESIRE RESOLVER FUNCTION
 const organizationQuery = require('../../../lib/resolvers/organization_query/organizations');
+// IMPORTING THE ORGANOSATION CREATION API THAT WILL BE NEEDED WHILE COVERING ALL CASES IN TEST CODE
 const organizationMutation = require('../../../lib/resolvers/organization_mutations/createOrganization');
 
 // SINCE OUR API WILL CALL ON DATABASE, WE NEED TO MAKE SURE THE DATABASE IS CONNECTED
-// THE db.js FILE PRESENT IN THE ROOT WILL DO OUR WORK
+// THE db.js FILE PRESENT IN THE ROOT WILL DO OUR WORK, SO WE NEED TO IMPORT THAT FILE
 const database = require('../../../db');
 
 // THE shortid IS UTILISED TO GET UNIQUE IDENTIFIER WHICH IS USED AS A RANDOM SET
 // OF NUMBERS IN ORDER TO PERFORM THE SIGNUP
+//THE SIGNUP IS REQUIRED IN ORDER TO HAVE ACCESS TO CREATE ORGANISATION AND VIEW ORGANISATION
+//BOTH OF THIS WILL BE DONE WHEN WE WILL COVERING TEST CASE SCENARIOS
 const shortid = require('shortid');
 
 // THE FUNCTION PURPOSE IS TO SIGNUP A USER AND GET THE ITS UNIQUE ID
@@ -39,6 +42,20 @@ beforeAll(async () => {
   await database.connect();
   let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
   userId = await getUserId(generatedEmail);
+
+  const args = {
+    data: {
+      name: 'Palisadoes Foundation Members',
+      description: 'For all contributors of Palisadoes',
+      location: 'Earth',
+      isPublic: true,
+      visibleInSearch: true,
+    },
+  };
+
+  await organizationMutation({}, args, {
+    userId: userId,
+  });
 });
 
 //AFTER WE ARE DONE WITH OUR TESTING WE NEED TO CLOSE DOWN THE DATABASE TO AVOID
@@ -174,9 +191,9 @@ describe('Organization Query', () => {
   test('Organisation Id provided by user', async () => {
     const args = {
       data: {
-        name: 'Sumitra Saksham Org',
-        description: 'My Club',
-        location: 'Muzaffarpur',
+        name: 'Palisadoes Foundation Members',
+        description: 'For all contributors of Palisadoes',
+        location: 'Earth',
         isPublic: true,
         visibleInSearch: true,
       },
