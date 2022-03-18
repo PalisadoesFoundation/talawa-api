@@ -5,20 +5,18 @@ If you are new to contributing to open source, please read the Open Source Guide
 
 ## Table of Contents
 
-- [Contributing to Talawa API](#contributing-to-talawa-api)
-  - [Table of Contents](#table-of-contents)
   - [Code of Conduct](#code-of-conduct)
   - [Ways to Contribute](#ways-to-contribute)
-    - [Our Development Process](#our-development-process)
+  - [Our Development Process](#our-development-process)
       - [Issues](#issues)
       - [Pull Requests](#pull-requests)
       - [Branching Strategy](#branching-strategy)
-    - [Contributing Code](#contributing-code)
-  - [Internships](#internships)
-    - [GSoC](#gsoc)
-    - [GitHub Externship](#github-externship)
+  - [Contributing Code](#contributing-code)
+  - Internships
+      - [GSoC](#gsoc)
+      - [GitHub Externship](#github-externship)
   - [Community](#community)
-
+  
 ## Code of Conduct
 A safe environment is required for everyone to contribute. Read our [Code of Conduct Guide](https://github.com/PalisadoesFoundation/talawa-api/blob/master/CODE_OF_CONDUCT.md) to understand what this means. Let us know immediately if you have unacceptable experiences in this area.
 
