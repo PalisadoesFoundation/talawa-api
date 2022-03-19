@@ -3,6 +3,20 @@ Thank you for your interest in contributing to Talawa API. Regardless of the siz
 
 If you are new to contributing to open source, please read the Open Source Guides on [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/).
 
+## Table of Contents
+
+* [Code of Conduct](#code-of-conduct)
+* [Ways to Contribute](#ways-to-contribute)
+* [Our Development Process](#our-development-process)
+    * [Issues](#issues)
+    * [Pull Requests](#pull-requests)
+    * [Branching Strategy](#branching-strategy)
+* [Contributing Code](#contributing-code)
+* Internships
+    * [GSoC](#gsoc)
+    * [GitHub Externship](#github-externship)
+* [Community](#community)
+
 ## Code of Conduct
 A safe environment is required for everyone to contribute. Read our [Code of Conduct Guide](https://github.com/PalisadoesFoundation/talawa-api/blob/master/CODE_OF_CONDUCT.md) to understand what this means. Let us know immediately if you have unacceptable experiences in this area.
 
@@ -23,17 +37,6 @@ If you are ready to start contributing code right away, get ready!
 1. Create an issue based on a bug you have found or a feature you would like to add. We value meaningful sugestions and will prioritize them.
 
 Welcome aboard!
-
-## Quicklinks
-
-* [Our Development Process](#Our-development-process)
-    * [Issues](#issues)
-    * [Pull Requests](#pull-requests)
-    * [Git Flow](#git-flow)
-* [Contributing Code](#contributing-code)
-* [GSoC](#gsoc)
-* [Community](#community)
-
 
 ### Our Development Process
 We utilize GitHub issues and pull requests to keep track of issues and contributions from the community. 
@@ -67,22 +70,39 @@ The process of proposing a change to Talawa API can be summarized as:
       1. We need to get to 100% test coverage for the app. We periodically increase the desired test coverage for our pull requests to meet this goal.
       1. Pull requests that don't meet the minimum test coverage levels will not be accepted. This may mean that you will have to create tests for code you did not write. You can decide which part of the code base needs additional tests if this happens to you.
    1. **_Testing_:**
-      1. Test using these commands:
+      1. Test using these commands (All tests):
          ```
          npm run test
          genhtml coverage/lcov.info -o coverage
          ```    
+      1. Test using these commands (Single test):
+         ```
+         npm run test -- -t <Name_of_Test>
+         ```             
    1. **_Test Code Coverage_:**
-      1. The current code coverage of the repo is: [![codecov](https://codecov.io/gh/PalisadoesFoundation/talawa-api/branch/develop/graph/badge.svg?token=CECBQTAOKM)](https://codecov.io/gh/PalisadoesFoundation/talawa-api)
-      2. You can determine the percentage test coverage of your code by running these two commands in sequence:
-         ```
-         npm install
-         npm run test
-         genhtml coverage/lcov.info -o coverage
-         ```
-      1. The coverage rate will be visible on the penultimate line of the `genhtml` command's output.
-      1. The `genhtml` command is part of the linux `lcov` package. Similar packages can be found for Windows and MacOS.
-      1. The currently acceptable coverage rate can be found in the [GitHub Pull Request file](https://github.com/PalisadoesFoundation/talawa-api/blob/develop/.github/workflows/pull-request.yml). Search for the value below the line containing `min_coverage`.
+      1. _General Information_
+         1. The current code coverage of the repo is: [![codecov](https://codecov.io/gh/PalisadoesFoundation/talawa-api/branch/develop/graph/badge.svg?token=CECBQTAOKM)](https://codecov.io/gh/PalisadoesFoundation/talawa-api)
+         1. You can determine the percentage test coverage of your code by running these two commands in sequence:
+            ```
+            npm install
+            npm run test
+            genhtml coverage/lcov.info -o coverage
+            ```
+         1. The coverage rate will be visible on the penultimate line of the `genhtml` command's output.
+         1. The `genhtml` command is part of the linux `lcov` package. Similar packages can be found for Windows and MacOS.
+         1. The currently acceptable coverage rate can be found in the [GitHub Pull Request file](https://github.com/PalisadoesFoundation/talawa-api/blob/develop/.github/workflows/pull-request.yml). Search for the value below the line containing `min_coverage`.
+      1. _Testing Individual Files_
+         1. You can test an individual file and get its code coverage by running this command:
+             ```
+             npm run file-coverage --functionfile=path/to/file --testfile=path/to/test/file
+             ```
+      1. _Creating your code coverage account_
+          1. You can also see your code coverage online for your fork of the repo. This is provided by `codecov.io`
+              1. Go to this link: `https://app.codecov.io/gh/XXXX/YYYY` where XXXX is your GitHub account username and YYYY is the name of the repository
+              1. Login to `codecov.io` using your GitHub account, and add your **repo** and **branches** to the `codecov.io` dashboard. 
+              1. Remember to add the `Repository Upload Token` for your forked repo. This can be found under `Settings` of your `codecov.io` account. 
+              1. Use the value of this token to create a secret named CODE_COV for your forked repo. 
+              1. You will see your code coverage reports with every push to your repo after following these steps
 1. After making changes you can add them to git locally using `git add <file_name>`(to add changes only in a particular file) or `git add .` (to add all changes).
 1. After adding the changes you need to commit them using `git commit -m '<commit message>'`(look at the commit guidelines below for commit messages).
 1. Once you have successfully commited your changes, you need to push the changes to the forked repo on github using: `git push origin <branch_name>`.(Here branch name must be name of the branch you want to push the changes to.)
@@ -90,17 +110,17 @@ The process of proposing a change to Talawa API can be summarized as:
 1. Ensure the test suite passes, either locally or on CI once a PR has been created. 
 1. Review and address comments on your pull request if requested.
 
-### Internships
+## Internships
 
 We have internship partnerships with a number of organizations. See below for more details.
 
-#### GSoC
+### GSoC
 If you are participating in the Summer of Code, please read more about us and our processes [here](https://palisadoesfoundation.github.io/talawa-docs/docs/internships/gsoc/gsoc-introduction)
 
-#### GitHub Externship
+### GitHub Externship
 If you are participating in the GitHub Externship, please read more about us and our processes [here](https://palisadoesfoundation.github.io/talawa-docs/docs/internships/github/github-introduction)
 
-### Community
+## Community
 There are many ways to communicate with the community.
 
 1. The Palisadoes Foundation has a Slack channel where members can assist with support and clarification. Visit [slack.palisadoes.org](http://slack.palisadoes.org) to join our slack channel.
