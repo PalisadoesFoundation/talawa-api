@@ -3,7 +3,7 @@ const shortid = require('shortid');
 const User = require('../../../lib/models/User');
 const Organization = require('../../../lib/models/Organization');
 const Post = require('../../../lib/models/Post');
-const Comment = require('../../../lib/models/Comment');
+require('../../../lib/models/Comment');
 const getPostByItId = require('../../../lib/resolvers/post_query/post');
 let user;
 let org;
