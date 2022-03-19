@@ -73,6 +73,7 @@ beforeAll(async () => {
     const createFirstPost = new Post({
       status: 'ACTIVE',
       likedBy: [mainUserId],
+      likeCount: 1,
       comments: [],
       text: 'a',
       title: 'a',
@@ -85,6 +86,7 @@ beforeAll(async () => {
     const createSecondPost = new Post({
       status: 'ACTIVE',
       likedBy: [mainUserId, secondUserId],
+      likeCount: 2,
       comments: [],
       text: 'b',
       title: 'b',
@@ -97,6 +99,7 @@ beforeAll(async () => {
     const createThirdPost = new Post({
       status: 'ACTIVE',
       likedBy: [mainUserId, secondUserId, thirdUserId],
+      likeCount: 3,
       comments: [],
       text: 'c',
       title: 'c',
@@ -120,6 +123,7 @@ beforeAll(async () => {
     });
     const firstPostComment1 = await createFirstPostComment1.save();
     firstPost.comments = [firstPostComment1._id];
+    firstPost.commentCount = 1;
     firstPost = await firstPost.save();
     //second post
     const createSecondPostComment1 = new Comment({
@@ -141,6 +145,7 @@ beforeAll(async () => {
     const secondPostComment1 = await createSecondPostComment1.save();
     const secondPostComment2 = await createSecondPostComment2.save();
     secondPost.comments = [secondPostComment1._id, secondPostComment2._id];
+    secondPost.commentCount = 2;
     secondPost = await secondPost.save();
     //third post
     const createThirdPostComment1 = new Comment({
@@ -175,6 +180,7 @@ beforeAll(async () => {
       thirdPostComment2._id,
       thirdPostComment3._id,
     ];
+    thirdPost.commentCount = 3;
     thirdPost = await thirdPost.save();
     console.log('posts are commented on successfully');
 
