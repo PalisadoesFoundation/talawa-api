@@ -69,6 +69,7 @@ The process of proposing a change to Talawa API can be summarized as:
    1. **_General_:** 
       1. We need to get to 100% test coverage for the app. We periodically increase the desired test coverage for our pull requests to meet this goal.
       1. Pull requests that don't meet the minimum test coverage levels will not be accepted. This may mean that you will have to create tests for code you did not write. You can decide which part of the code base needs additional tests if this happens to you.
+      1. The [organizations.spec.js](https://github.com/PalisadoesFoundation/talawa-api/blob/develop/tests/resolvers/organization_query/organizations.spec.js) test file is a well documented example of what to do for resolver tests.
    1. **_Testing_:**
       1. Test using these commands (All tests):
          ```
