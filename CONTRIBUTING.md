@@ -79,7 +79,15 @@ The process of proposing a change to Talawa API can be summarized as:
          ```
          npm run test -- -t <Name_of_Test>
          ```             
-   1. **_Test Code Coverage_:**
+      1. Here are some useful testing resources:
+         1. Documentation:
+            1. [Jest testing documentation](https://jestjs.io/docs/expect)
+            1. The [organizations.spec.js](https://github.com/PalisadoesFoundation/talawa-api/blob/develop/tests/resolvers/organization_query/organizations.spec.js) test file is a well documented example of what to do for resolver tests.
+         1. Videos:
+            1. [Introduction To Testing In JavaScript With Jest](https://www.youtube.com/watch?v=FgnxcUQ5vho)
+            1. [Jest Crash Course](https://www.youtube.com/watch?v=7r4xVDI2vho)
+            1. [Testing NodeJS applications with JEST](https://www.youtube.com/watch?v=8gHEv5iNRKk)
+1. **_Test Code Coverage_:**
       1. _General Information_
          1. The current code coverage of the repo is: [![codecov](https://codecov.io/gh/PalisadoesFoundation/talawa-api/branch/develop/graph/badge.svg?token=CECBQTAOKM)](https://codecov.io/gh/PalisadoesFoundation/talawa-api)
          1. You can determine the percentage test coverage of your code by running these two commands in sequence:
