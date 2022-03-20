@@ -16,5 +16,7 @@ afterAll(() => {
 });
 
 describe('Testing users resolver', () => {
-  test('Testing basic info of any user', async () => {});
+  test('Testing basic info of any user', async () => {
+    // Here tests
+  });
 });
