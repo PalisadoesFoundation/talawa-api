@@ -17,6 +17,13 @@ afterAll(() => {
 
 describe('Testing users resolver', () => {
   test('Testing basic info of any user', async () => {
-    // Here tests
+    const args = {
+      id: '62277875e904753262f99bc3',
+    };
+
+    const response = await users.user({}, args, {
+      userId: userId,
+    });
+    expect(response).toBeTruthy();
   });
 });
