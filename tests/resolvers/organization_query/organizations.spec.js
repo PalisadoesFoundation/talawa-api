@@ -119,19 +119,11 @@ const checkOrderByInput = async (val) => {
   outputResult = outputResult.sort((a, b) => {
     if (orderByOrder === 'ASC') {
       // eslint-disable-next-line prettier/prettier
-      return a[orderByInputName] > b[orderByInputName]
-        ? 1
-        : b[orderByInputName] > a[orderByInputName]
-        ? -1
-        : 0;
+      return a[orderByInputName] > b[orderByInputName] ? 1 : b[orderByInputName] > a[orderByInputName] ? -1 : 0;
     }
 
     // eslint-disable-next-line prettier/prettier
-    return a[orderByInputName] < b[orderByInputName]
-      ? 1
-      : b[orderByInputName] < a[orderByInputName]
-      ? -1
-      : 0;
+    return a[orderByInputName] < b[orderByInputName] ? 1 : b[orderByInputName] < a[orderByInputName] ? -1 : 0;
   });
 
   let responseStructredResultExpectation = Array.from(
