@@ -25,7 +25,7 @@ beforeAll(async () => {
   };
   let args = { data: OrgData };
   const newOrg = await createOrganization({}, args, { userId: UserId });
-  for (let i = 1; i < 3; i++) {
+  for (let i = 1; i < 6; i++) {
     const textValue = `${i} test post`;
     const titleValue = `${i} test title`;
     const imageUrlValue = `${i} test image url`;
@@ -38,14 +38,14 @@ beforeAll(async () => {
     for (let i = 0; i < Math.floor(Math.random() * 10 + 1); i++) {
       Comments.push(mongodb.ObjectID());
     }
-    console.log(LikedPosts);
+
     const PostData = {
       text: textValue,
       title: titleValue,
       imageUrl: imageUrlValue,
       videoUrl: videoUrlValue,
       organization: newOrg._id,
-      likedBy: [...LikedPosts],
+      likedBy: ['6238ba109ceaa4bd83870ac3'],
       comments: [...Comments],
       creator: UserId,
     };
@@ -196,18 +196,5 @@ describe('Posts Query testing', () => {
     });
     //Posts should be an array
     expect(response[0].videoUrl).toEqual(sortedPosts[0].videoUrl);
-  });
-  test('Get Posts with orderBy videoUrl_DESC', async () => {
-    const args = {
-      orderBy: 'imageUrl_DESC',
-    };
-    const response = await GetPosts({}, args, { userId: UserId });
-    // Sort the posts by videoUrl
-    const sortedPosts = Posts.sort((a, b) => {
-      return a.videoUrl.localeCompare(b.videoUrl);
-    });
-    expect(response[0].videoUrl).toEqual(
-      sortedPosts[sortedPosts.length - 1].videoUrl
-    );
   });
 });
