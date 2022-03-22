@@ -3,36 +3,25 @@ const { URL } = require('../../../constants');
 const getToken = require('../../functions/getToken');
 const getUserIdFromSignup = require('../../functions/getUserIdFromSignup');
 const shortid = require('shortid');
-const database = require('../../../db');
-
-const User = require('../../../lib/models/User');
-const Organization = require('../../../lib/models/Organization');
+const mongoose = require('mongoose');
 
 let mainOrganizationAdminToken;
 let mainOrganization;
 
-let secondaryOrganizationAdminToken;
-let secondaryOrganization;
+let secondaryUserToken;
 
 let normalUserId;
 
 beforeAll(async () => {
-  // we would have 3 users 2 are admins of mainOrganization and secondaryOrganization and
-  // the third one is just a user who is going to be blocked
-  require('dotenv').config();
-  await database.connect();
-
+  // we would have 3 users 1 is admin of mainOrganization,
+  // and 2 other users.
   let mainOrganizationAdminEmail = `${shortid
     .generate()
     .toLowerCase()}@test.com`;
   mainOrganizationAdminToken = await getToken(mainOrganizationAdminEmail);
 
-  let secondaryOrganizationAdminEmail = `${shortid
-    .generate()
-    .toLowerCase()}@test.com`;
-  secondaryOrganizationAdminToken = await getToken(
-    secondaryOrganizationAdminEmail
-  );
+  let secondaryUserEmail = `${shortid.generate().toLowerCase()}@test.com`;
+  secondaryUserToken = await getToken(secondaryUserEmail);
 
   let normalUserEmail = `${shortid.generate().toLowerCase()}@test.com`;
   normalUserId = await getUserIdFromSignup(normalUserEmail);
@@ -64,44 +53,25 @@ beforeAll(async () => {
     }
   );
   mainOrganization = mainOrg.data.data.createOrganization;
-
-  const secondaryOrg = await axios.post(
-    URL,
-    {
-      query: `
-        mutation {
-          createOrganization(data: {
-            name:"secondary org"
-            description:"secondary org description"
-            isPublic: true
-            visibleInSearch: true
-            }) {
-              _id
-              name
-              creator {
-                _id
-              }
-            }
-        }
-            `,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${secondaryOrganizationAdminToken}`,
-      },
-    }
-  );
-
-  secondaryOrganization = secondaryOrg.data.data.createOrganization;
 });
 
 afterAll(async () => {
-  await Organization.deleteOne({ _id: mainOrganization._id });
-
-  await User.deleteOne({ _id: mainOrganization.creator._id });
-  await User.findByIdAndDelete(normalUserId);
-
-  database.disconnect();
+  await axios.post(
+    URL,
+    {
+      query: `
+          mutation{
+            removeOrganization(id: "${mainOrganization._id}"){
+              _id
+            }
+          }`,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${mainOrganizationAdminToken}`,
+      },
+    }
+  );
 });
 
 describe('unblock user tests', () => {
@@ -118,7 +88,7 @@ describe('unblock user tests', () => {
       },
       {
         headers: {
-          Authorization: `Bearer ${secondaryOrganizationAdminToken}`,
+          Authorization: `Bearer ${secondaryUserToken}`,
         },
       }
     );
@@ -144,20 +114,19 @@ describe('unblock user tests', () => {
   });
 
   test("organization doesn't exist", async () => {
-    await Organization.findByIdAndDelete(secondaryOrganization._id);
     const unblockUserResponse = await axios.post(
       URL,
       {
         query: `
           mutation{
-            unblockUser(organizationId: "${secondaryOrganization._id}", userId: "${normalUserId}"){
+            unblockUser(organizationId: "${new mongoose.Types.ObjectId()}", userId: "${normalUserId}"){
               _id
             }
           }`,
       },
       {
         headers: {
-          Authorization: `Bearer ${secondaryOrganizationAdminToken}`,
+          Authorization: `Bearer ${mainOrganizationAdminToken}`,
         },
       }
     );
@@ -183,14 +152,14 @@ describe('unblock user tests', () => {
   });
 
   test("user doesn't exist", async () => {
-    await User.deleteOne({ _id: secondaryOrganization.creator._id });
-
     const unblockUserResponse = await axios.post(
       URL,
       {
         query: `
           mutation{
-            unblockUser(organizationId: "${mainOrganization._id}", userId: "${secondaryOrganization.creator._id}"){
+            unblockUser(organizationId: "${
+              mainOrganization._id
+            }", userId: "${new mongoose.Types.ObjectId()}"){
               _id
             }
           }`,
