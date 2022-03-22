@@ -5,18 +5,18 @@ If you are new to contributing to open source, please read the Open Source Guide
 
 ## Table of Contents
 
-* [Code of Conduct](#code-of-conduct)
-* [Ways to Contribute](#ways-to-contribute)
-* [Our Development Process](#our-development-process)
-    * [Issues](#issues)
-    * [Pull Requests](#pull-requests)
-    * [Branching Strategy](#branching-strategy)
-* [Contributing Code](#contributing-code)
-* Internships
-    * [GSoC](#gsoc)
-    * [GitHub Externship](#github-externship)
-* [Community](#community)
-
+  - [Code of Conduct](#code-of-conduct)
+  - [Ways to Contribute](#ways-to-contribute)
+  - [Our Development Process](#our-development-process)
+      - [Issues](#issues)
+      - [Pull Requests](#pull-requests)
+      - [Branching Strategy](#branching-strategy)
+  - [Contributing Code](#contributing-code)
+  - Internships
+      - [GSoC](#gsoc)
+      - [GitHub Externship](#github-externship)
+  - [Community](#community)
+  
 ## Code of Conduct
 A safe environment is required for everyone to contribute. Read our [Code of Conduct Guide](https://github.com/PalisadoesFoundation/talawa-api/blob/master/CODE_OF_CONDUCT.md) to understand what this means. Let us know immediately if you have unacceptable experiences in this area.
 
@@ -52,13 +52,13 @@ Make sure you are following [issue report guidelines](https://github.com/Palisad
 For Talawa API, we had employed the following branching strategy to simplify the development process and to ensure that only stable code is pushed to the `master` branch:
 
 - `develop`: For unstable code and bug fixing
-- `alpha-x.x.x`: For stability teesting
+- `alpha-x.x.x`: For stability testing
 - `master`: Where the stable production ready code lies
 
 ### Contributing Code
 Code contributions to Talawa come in the form of pull requests. These are done by forking the repo and making changes locally.
 
-Make sure you have read the [Documentation for Setting up the Project](https://github.com/PalisadoesFoundation/talawa-api/blob/master/configuration.md)
+Make sure you have read the [Documentation for Setting up the Project](https://github.com/PalisadoesFoundation/talawa-api/blob/develop/INSTALLATION.md)
 
 The process of proposing a change to Talawa API can be summarized as:
 1. Fork the Talawa API repository and branch off `master`.
