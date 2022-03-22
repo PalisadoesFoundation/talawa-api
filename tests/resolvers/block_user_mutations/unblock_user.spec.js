@@ -97,93 +97,15 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await Organization.deleteOne({ _id: mainOrganization._id });
-  await Organization.findByIdAndDelete(secondaryOrganization._id);
 
   await User.deleteOne({ _id: mainOrganization.creator._id });
-  await User.deleteOne({ _id: secondaryOrganization.creator._id });
   await User.findByIdAndDelete(normalUserId);
 
   database.disconnect();
 });
 
 describe('unblock user tests', () => {
-  test("organization doesn't exist", async () => {
-    const unblockUserResponse = await axios.post(
-      URL,
-      {
-        query: `
-          mutation{
-            unblockUser(organizationId: "InvalidorganizationId", userId: "${normalUserId}"){
-              _id
-            }
-          }`,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${mainOrganizationAdminToken}`,
-        },
-      }
-    );
-
-    const [notFoundError] = unblockUserResponse.data.errors;
-    const unblockUserData = unblockUserResponse.data.data;
-
-    expect(notFoundError).toEqual(
-      expect.objectContaining({
-        message: 'Organization not found',
-        status: 422,
-      })
-    );
-    expect(notFoundError.data[0]).toEqual(
-      expect.objectContaining({
-        message: 'Organization not found',
-        code: 'organization.notFound',
-        param: 'organization',
-        metadata: {},
-      })
-    );
-    expect(unblockUserData).toEqual(null);
-  });
-
-  test("user doesn't exist", async () => {
-    const unblockUserResponse = await axios.post(
-      URL,
-      {
-        query: `
-          mutation{
-            unblockUser(organizationId: "${mainOrganization._id}", userId: "invaliduserid"){
-              _id
-            }
-          }`,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${mainOrganizationAdminToken}`,
-        },
-      }
-    );
-
-    const [notFoundError] = unblockUserResponse.data.errors;
-    const unblockUserData = unblockUserResponse.data.data;
-
-    expect(notFoundError).toEqual(
-      expect.objectContaining({
-        message: 'User not found',
-        status: 422,
-      })
-    );
-    expect(notFoundError.data[0]).toEqual(
-      expect.objectContaining({
-        message: 'User not found',
-        code: 'user.notFound',
-        param: 'user',
-        metadata: {},
-      })
-    );
-    expect(unblockUserData).toEqual(null);
-  });
-
-  test("user isn't an admin of the org", async () => {
+  test("user isn't the admin of the org", async () => {
     const unblockUserResponse = await axios.post(
       URL,
       {
@@ -215,6 +137,85 @@ describe('unblock user tests', () => {
         message: 'User is not authorized for performing this operation',
         code: 'user.notAuthorized',
         param: 'userAuthorization',
+        metadata: {},
+      })
+    );
+    expect(unblockUserData).toEqual(null);
+  });
+
+  test("organization doesn't exist", async () => {
+    await Organization.findByIdAndDelete(secondaryOrganization._id);
+    const unblockUserResponse = await axios.post(
+      URL,
+      {
+        query: `
+          mutation{
+            unblockUser(organizationId: "${secondaryOrganization._id}", userId: "${normalUserId}"){
+              _id
+            }
+          }`,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${secondaryOrganizationAdminToken}`,
+        },
+      }
+    );
+
+    const [notFoundError] = unblockUserResponse.data.errors;
+    const unblockUserData = unblockUserResponse.data.data;
+
+    expect(notFoundError).toEqual(
+      expect.objectContaining({
+        message: 'Organization not found',
+        status: 422,
+      })
+    );
+    expect(notFoundError.data[0]).toEqual(
+      expect.objectContaining({
+        message: 'Organization not found',
+        code: 'organization.notFound',
+        param: 'organization',
+        metadata: {},
+      })
+    );
+    expect(unblockUserData).toEqual(null);
+  });
+
+  test("user doesn't exist", async () => {
+    await User.deleteOne({ _id: secondaryOrganization.creator._id });
+
+    const unblockUserResponse = await axios.post(
+      URL,
+      {
+        query: `
+          mutation{
+            unblockUser(organizationId: "${mainOrganization._id}", userId: "${secondaryOrganization.creator._id}"){
+              _id
+            }
+          }`,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${mainOrganizationAdminToken}`,
+        },
+      }
+    );
+
+    const [notFoundError] = unblockUserResponse.data.errors;
+    const unblockUserData = unblockUserResponse.data.data;
+
+    expect(notFoundError).toEqual(
+      expect.objectContaining({
+        message: 'User not found',
+        status: 422,
+      })
+    );
+    expect(notFoundError.data[0]).toEqual(
+      expect.objectContaining({
+        message: 'User not found',
+        code: 'user.notFound',
+        param: 'user',
         metadata: {},
       })
     );
