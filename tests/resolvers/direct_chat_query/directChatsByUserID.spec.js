@@ -119,7 +119,7 @@ describe('directChatsByUserID query resolver', () => {
   });
 
   test('returns an array of all the directChats found for the provided args.id', async () => {
-    // Passing id of the user was created for this test.
+    // Passing id of testUser1.
     let args = { id: testUser1.id };
 
     let result = await directChatsByUserID({}, args);
