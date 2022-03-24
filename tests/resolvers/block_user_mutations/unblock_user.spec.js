@@ -152,15 +152,13 @@ describe('unblock user tests', () => {
   });
 
   test("user doesn't exist", async () => {
+    const id = mainOrganization._id;
     const unblockUserResponse = await axios.post(
       URL,
       {
         query: `
           mutation{
-            unblockUser(organizationId: "$
-            {
-              mainOrganization._id
-            }", userId: "${new mongoose.Types.ObjectId()}"){
+            unblockUser(organizationId: "${id}", userId: "${new mongoose.Types.ObjectId()}"){
               _id
             }
           }`,

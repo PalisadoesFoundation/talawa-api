@@ -3,7 +3,9 @@ const { URL } = require('../../../constants');
 const getToken = require('../../functions/getToken');
 const getUserIdFromSignup = require('../../functions/getUserIdFromSignup');
 const shortid = require('shortid');
-const mongoose = require('mongoose');
+const {
+  Types: { ObjectId },
+} = require('mongoose');
 
 let mainOrganizationAdminToken;
 let mainOrganization;
@@ -119,7 +121,7 @@ describe('block user tests', () => {
       {
         query: `
           mutation{
-            blockUser(organizationId: "${new mongoose.Types.ObjectId()}", userId: "${normalUserId}"){
+            blockUser(organizationId: "${new ObjectId()}", userId: "${normalUserId}"){
               _id
             }
           }`,
@@ -152,17 +154,16 @@ describe('block user tests', () => {
   });
 
   test("user doesn't exist", async () => {
+    const id = mainOrganization._id;
     const blockUserResponse = await axios.post(
       URL,
       {
         query: `
-          mutation{
-     blockUser(organizationId: "$
-       mainOrganization._id
-     }", userId: "${new mongoose.Types.ObjectId()}"){
-              _id
-            }
-}`,
+        mutation{
+          blockUser(organizationId: "${id}", userId: "${new ObjectId()}"){
+            _id
+          }
+        }`,
       },
       {
         headers: {
