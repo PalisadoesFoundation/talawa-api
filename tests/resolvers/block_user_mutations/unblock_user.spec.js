@@ -157,7 +157,8 @@ describe('unblock user tests', () => {
       {
         query: `
           mutation{
-            unblockUser(organizationId: "${
+            unblockUser(organizationId: "$
+            {
               mainOrganization._id
             }", userId: "${new mongoose.Types.ObjectId()}"){
               _id

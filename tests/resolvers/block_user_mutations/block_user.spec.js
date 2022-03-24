@@ -157,12 +157,12 @@ describe('block user tests', () => {
       {
         query: `
           mutation{
-            blockUser(organizationId: "${
-              mainOrganization._id
-            }", userId: "${new mongoose.Types.ObjectId()}"){
+     blockUser(organizationId: "$
+       mainOrganization._id
+     }", userId: "${new mongoose.Types.ObjectId()}"){
               _id
             }
-          }`,
+}`,
       },
       {
         headers: {
