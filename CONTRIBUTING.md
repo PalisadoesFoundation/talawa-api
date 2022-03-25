@@ -58,7 +58,7 @@ For Talawa API, we had employed the following branching strategy to simplify the
 ### Contributing Code
 Code contributions to Talawa come in the form of pull requests. These are done by forking the repo and making changes locally.
 
-Make sure you have read the [Documentation for Setting up the Project](https://github.com/PalisadoesFoundation/talawa-api/blob/develop/INSTALLATION.md)
+Make sure you have read the [Documentation for Setting up the Project](INSTALLATION.md)
 
 The process of proposing a change to Talawa API can be summarized as:
 1. Fork the Talawa API repository and branch off `master`.
@@ -82,7 +82,7 @@ The process of proposing a change to Talawa API can be summarized as:
       1. Here are some useful testing resources:
          1. Documentation:
             1. [Jest testing documentation](https://jestjs.io/docs/expect)
-            1. The [organizations.spec.js](https://github.com/PalisadoesFoundation/talawa-api/blob/develop/tests/resolvers/organization_query/organizations.spec.js) test file is a well documented example of what to do for resolver tests.
+            1. The [organizations.spec.js](tests/resolvers/organization_query/organizations.spec.js) test file is a well documented example of what to do for resolver tests.
          1. Videos:
             1. [Introduction To Testing In JavaScript With Jest](https://www.youtube.com/watch?v=FgnxcUQ5vho)
             1. [Jest Crash Course](https://www.youtube.com/watch?v=7r4xVDI2vho)
@@ -98,7 +98,7 @@ The process of proposing a change to Talawa API can be summarized as:
             ```
          1. The coverage rate will be visible on the penultimate line of the `genhtml` command's output.
          1. The `genhtml` command is part of the linux `lcov` package. Similar packages can be found for Windows and MacOS.
-         1. The currently acceptable coverage rate can be found in the [GitHub Pull Request file](https://github.com/PalisadoesFoundation/talawa-api/blob/develop/.github/workflows/pull-request.yml). Search for the value below the line containing `min_coverage`.
+         1. The currently acceptable coverage rate can be found in the [GitHub Pull Request file](.github/workflows/pull-request.yml). Search for the value below the line containing `min_coverage`.
       1. _Testing Individual Files_
          1. You can test an individual file and get its code coverage by running this command:
              ```
