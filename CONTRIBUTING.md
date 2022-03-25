@@ -42,7 +42,7 @@ Welcome aboard!
 We utilize GitHub issues and pull requests to keep track of issues and contributions from the community. 
 
 #### Issues 
-Make sure you are following [issue report guidelines](https://github.com/PalisadoesFoundation/talawa-api/blob/develop/issue-guidelines.md) available here before creating any new issues on Talawa API project.
+Make sure you are following [issue report guidelines](issue-guidelines.md) available here before creating any new issues on Talawa API project.
 
 #### Pull Requests
 [Pull Request guidelines](https://github.com/PalisadoesFoundation/talawa-api/blob/develop/PR-guidelines.md) is best resource to follow to start working on open issues.
