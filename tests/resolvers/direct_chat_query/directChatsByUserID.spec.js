@@ -105,21 +105,20 @@ afterAll(() => {
 
 /* This test uses two users, one organization created by one of created users, one directChat created by the same user who owns the created organization.
    In the first test it tests the resolver for a randomly generated userId.
-   In the second test it tests the resolver to return an array with exactly one directChat object(the directChat object created for this test) for the id
-   of testUser1.*/
+   In the second test it tests the resolver to return an array with exactly one directChat object(the directChat object created for this test).*/
 
 describe('directChatsByUserID query resolver', () => {
-  test('returns an empty list if no directChats are found for the provided args.id', async () => {
+  test('if no directChats are found for the provided args.id, throws NotFoundError', async () => {
     // Random id to pass as the user's id.
     const args = { id: mongoose.Types.ObjectId() };
 
-    const result = await directChatsByUserID({}, args);
-
-    expect(result).toEqual([]);
+    await expect(async () => {
+      await directChatsByUserID({}, args);
+    }).rejects.toEqual(Error('DirectChats not found'));
   });
 
   test('returns an array of all the directChats found for the provided args.id', async () => {
-    // Passing id of testUser1.
+    // Passing id of the user was created for this test.
     let args = { id: testUser1.id };
 
     let result = await directChatsByUserID({}, args);
