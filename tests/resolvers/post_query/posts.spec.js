@@ -171,7 +171,7 @@ describe('Posts Query testing', () => {
     //Posts should be an array
     expect(response[0].imageUrl).toEqual(sortedPosts[0].imageUrl);
   });
-  test('Get Posts with orderBy imageUrl_DESC', async () => {
+    test('Get Posts with orderBy imageUrl_DESC', async () => {
     const args = {
       orderBy: 'imageUrl_DESC',
     };
@@ -196,5 +196,72 @@ describe('Posts Query testing', () => {
     });
     //Posts should be an array
     expect(response[0].videoUrl).toEqual(sortedPosts[0].videoUrl);
+  });
+  test('Get Posts with orderBy videoUrl_DESC', async () => {
+    const args = {
+      orderBy: 'videoUrl_DESC',
+    };
+    const response = await GetPosts({}, args, { userId: UserId });
+    // Sort the posts by videoUrl
+    const sortedPosts = Posts.sort((a, b) => {
+      return a.videoUrl.localeCompare(b.videoUrl);
+    });
+    expect(response[0].videoUrl).toEqual(
+      sortedPosts[sortedPosts.length - 1].videoUrl
+    );
+  });
+  test('Get Posts with orderBy likeCount_ASC', async () => {
+    const args = {
+      orderBy: 'likeCount_ASC',
+    };
+    const response = await GetPosts({}, args, { userId: UserId });
+    // Sort the posts by likes
+    const sortedPosts = Posts.sort((a, b) => {
+      return a.likes - b.likes;
+    });
+    //Posts should be an array
+    expect(response[0].likes).toEqual(sortedPosts[0].likes);
+  });
+  test('Get Posts with orderBy likeCount_DESC', async () => {
+    const args = {
+      orderBy: 'likeCount_DESC',
+    };
+    const response = await GetPosts({}, args, { userId: UserId });
+    // Sort the posts by likes
+    const sortedPosts = Posts.sort((a, b) => {
+      return a.likes - b.likes;
+    });
+    //Posts should be an array
+    expect(response[0].likes).toEqual(
+      sortedPosts[sortedPosts.length - 1].likes
+    );
+  });
+  test('Get Posts with orderBy commentCount_ASC', async () => {
+    const args = {
+      orderBy: 'commentCount_ASC',
+    };
+    const response = await GetPosts({}, args, { userId: UserId });
+    // Sort the posts by comments
+    const sortedPosts = Posts.sort((a, b) => {
+      return a.comments - b.comments;
+    });
+    console.log(sortedPosts[0].comments.length);
+    console.log(response[0].comments.length);
+    //Posts should be an array
+    expect(response[0].comments).toHaveLength(sortedPosts[0].comments.length);
+  });
+  test('Get Posts with orderBy commentCount_DESC', async () => {
+    const args = {
+      orderBy: 'commentCount_DESC',
+    };
+    const response = await GetPosts({}, args, { userId: UserId });
+    // Sort the posts by comments
+    const sortedPosts = Posts.sort((a, b) => {
+      return a.comments - b.comments;
+    });
+    //Posts should be an array
+    expect(response[0].comments).toHaveLength(
+      sortedPosts[sortedPosts.length - 1].comments.length
+    );
   });
 });
