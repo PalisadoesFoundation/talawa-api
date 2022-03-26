@@ -18,7 +18,7 @@ If you are new to contributing to open source, please read the Open Source Guide
   - [Community](#community)
   
 ## Code of Conduct
-A safe environment is required for everyone to contribute. Read our [Code of Conduct Guide](https://github.com/PalisadoesFoundation/talawa-api/blob/master/CODE_OF_CONDUCT.md) to understand what this means. Let us know immediately if you have unacceptable experiences in this area.
+A safe environment is required for everyone to contribute. Read our [Code of Conduct Guide](CODE_OF_CONDUCT.md) to understand what this means. Let us know immediately if you have unacceptable experiences in this area.
 
 No one should fear voicing their opinion. Respones must be respectful.
 
@@ -42,10 +42,10 @@ Welcome aboard!
 We utilize GitHub issues and pull requests to keep track of issues and contributions from the community. 
 
 #### Issues 
-Make sure you are following [issue report guidelines](https://github.com/PalisadoesFoundation/talawa/blob/master/issue-guidelines.md) available here before creating any new issues on Talawa API project.
+Make sure you are following [issue report guidelines](issue-guidelines.md) available here before creating any new issues on Talawa API project.
 
 #### Pull Requests
-[Pull Request guidelines](https://github.com/PalisadoesFoundation/talawa/blob/master/PR-guidelines.md) is best resource to follow to start working on open issues.
+[Pull Request guidelines](PR-guidelines.md) is best resource to follow to start working on open issues.
 
 #### Branching Strategy
 
