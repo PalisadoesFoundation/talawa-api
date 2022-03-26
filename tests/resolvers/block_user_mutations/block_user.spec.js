@@ -205,14 +205,10 @@ describe('block user tests', () => {
     );
 
     const { data } = blockUserResponse;
-    console.log('data: ', data);
     const organizationsBlockedBy = data.data.blockUser.organizationsBlockedBy;
-    console.log('organizationsBlockedBy: ', organizationsBlockedBy);
-    console.log('main organization id: ', mainOrganization._id);
     const organization = organizationsBlockedBy.find(
       (org) => org._id === mainOrganization._id.toString()
     );
-    console.log('organization: ', organization);
     expect(data.data.blockUser._id).toEqual(normalUserId);
     expect(organization._id).toEqual(mainOrganization._id.toString());
   });
