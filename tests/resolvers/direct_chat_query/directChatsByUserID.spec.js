@@ -2,10 +2,17 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const shortid = require('shortid');
 const database = require('../../../db');
-const removeDirectChat = require('../../../lib/resolvers/direct_chat_mutations/removeDirectChat');
+const directChatsByUserID = require('../../../lib/resolvers/direct_chat_query/directChatsByUserID');
 const User = require('../../../lib/models/User');
 const Organization = require('../../../lib/models/Organization');
 const DirectChat = require('../../../lib/models/DirectChat');
+
+let testUser1;
+let testUser2;
+
+let testOrganization;
+
+let testDirectChat;
 
 const createUser = async () => {
   const email = `${shortid.generate().toLowerCase()}@test.com`;
@@ -74,24 +81,19 @@ const createDirectChat = async (user, users, organization) => {
   return createdDirectChat;
 };
 
-let testUser;
-
-let testOrganization;
-
-let testDirectChat;
-
 // Read this :- https://jestjs.io/docs/api#beforeallfn-timeout
 beforeAll(async () => {
   require('dotenv').config(); // pull env variables from .env file
   await database.connect(); // connect the database before running any test in this file's scope
 
-  testUser = await createUser();
+  testUser1 = await createUser();
+  testUser2 = await createUser();
 
-  testOrganization = await createOrganization(testUser);
+  testOrganization = await createOrganization(testUser1);
 
   testDirectChat = await createDirectChat(
-    testUser,
-    [testUser],
+    testUser1,
+    [testUser1, testUser2],
     testOrganization
   );
 });
@@ -101,63 +103,40 @@ afterAll(() => {
   database.disconnect(); // disconnect the database after running every test in this file's scope
 });
 
-// This test uses one user, one organization created by that user, one directChat created by that user.
+/* This test uses two users, one organization created by one of created users, one directChat created by the same user who owns the created organization.
+   In the first test it tests the resolver for a randomly generated userId.
+   In the second test it tests the resolver to return an array with exactly one directChat object(the directChat object created for this test).*/
 
-describe('removeDirectChat mutation resolver', () => {
-  test('if no organization is found for the provided args.organizationId, throws NotFoundError', async () => {
-    const args = {
-      organizationId: mongoose.Types.ObjectId(),
-    };
-
-    await expect(async () => {
-      await removeDirectChat({}, args);
-    }).rejects.toEqual(Error('Organization not found'));
-  });
-
-  test('if no directChat is found for the provided args.chatId, throws NotFoundError', async () => {
-    const args = {
-      chatId: mongoose.Types.ObjectId(),
-      organizationId: testOrganization._id,
-    };
+describe('directChatsByUserID query resolver', () => {
+  test('if no directChats are found for the provided args.id, throws NotFoundError', async () => {
+    // Random id to pass as the user's id.
+    const args = { id: mongoose.Types.ObjectId() };
 
     await expect(async () => {
-      await removeDirectChat({}, args);
-    }).rejects.toEqual(Error('Chat not found'));
+      await directChatsByUserID({}, args);
+    }).rejects.toEqual(Error('DirectChats not found'));
   });
 
-  test('if user making the request is not an admin of the organization(organization with id=args.organizationId), throws UnauthorizedError', async () => {
-    const args = {
-      chatId: testDirectChat._id,
-      organizationId: testOrganization._id,
-    };
+  test('returns an array of all the directChats found for the provided args.id', async () => {
+    // Passing id of one of the users created for this test.
+    let args = { id: testUser1.id };
 
-    const context = { userId: mongoose.Types.ObjectId() };
+    let result = await directChatsByUserID({}, args);
 
-    await expect(async () => {
-      await removeDirectChat({}, args, context);
-    }).rejects.toEqual(Error('User not authorized'));
-  });
-
-  test('removes the directChat(directChat with id=args.chatId) and returns the removed directChat', async () => {
-    const args = {
-      chatId: testDirectChat._id,
-      organizationId: testOrganization._id,
-    };
-
-    const context = { userId: testUser._id };
-
-    const result = await removeDirectChat({}, args, context);
+    expect(result).toHaveLength(1);
 
     expect(result).toEqual(
-      expect.objectContaining({
-        users: expect.arrayContaining([testUser._id]),
-        messages: expect.arrayContaining([]),
-        status: 'ACTIVE',
-        _id: testDirectChat._id,
-        creator: testUser._id,
-        organization: testOrganization._id,
-        __v: 0,
-      })
+      expect.arrayContaining([
+        expect.objectContaining({
+          users: expect.arrayContaining([testUser1._id, testUser2._id]),
+          messages: expect.arrayContaining([]),
+          status: 'ACTIVE',
+          _id: testDirectChat._id,
+          creator: testUser1._id,
+          organization: testOrganization._id,
+          __v: 0,
+        }),
+      ])
     );
   });
 });
