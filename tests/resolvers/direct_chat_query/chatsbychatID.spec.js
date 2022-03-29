@@ -5,7 +5,6 @@ const getToken = require('../../functions/getToken');
 const getUserId = require('../../functions/getUserId');
 const directChatsMessagesByChatID = require('../../../lib/resolvers/direct_chat_query/directChatsMessagesByChatID');
 const database = require('../../../db');
-// jest.useFakeTimers();
 
 let token;
 let userId;
@@ -139,7 +138,7 @@ describe('tests for direct chats by chat id', () => {
     );
     });
 
-    //test for finding a direct chat by chat id
+    // test for finding a direct chat by chat id
     test('find chat by chat id', async () => {
       var args = {
         id: createdDirectChatId
