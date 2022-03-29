@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-const getToken = require('../../functions/getToken');
 const shortid = require('shortid');
 const removeOrganization = require('../../../lib/resolvers/organization_mutations/removeOrganization');
 const mongoose = require('mongoose');
@@ -22,31 +20,22 @@ let membershipRequestId;
 let postId;
 let commentId;
 
-let adminToken;
-let memberToken;
-let membershipRequesterToken;
-let blockedToken;
-
 beforeAll(async () => {
   require('dotenv').config();
   await database.connect();
 
   const adminEmail = `${shortid.generate().toLowerCase()}@test.com`;
-  adminToken = await getToken(adminEmail);
   adminId = await getUserId(adminEmail);
 
   const memberEmail = `${shortid.generate().toLowerCase()}@test.com`;
-  memberToken = await getToken(memberEmail);
   memberId = await getUserId(memberEmail);
 
   const membershipRequesterEmail = `${shortid
     .generate()
     .toLowerCase()}@test.com`;
-  membershipRequesterToken = await getToken(membershipRequesterEmail);
   membershipRequesterId = await getUserId(membershipRequesterEmail);
 
   const blockedEmail = `${shortid.generate().toLowerCase()}@test.com`;
-  blockedToken = await getToken(blockedEmail);
   blockedId = await getUserId(blockedEmail);
 
   const organization = new Organization({
