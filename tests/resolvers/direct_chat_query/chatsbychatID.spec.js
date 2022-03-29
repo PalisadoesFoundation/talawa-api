@@ -141,7 +141,7 @@ describe('tests for direct chats by chat id', () => {
 
     //test for finding a direct chat by chat id
     test('find chat by chat id', async () => {
-      args = {
+      var args = {
         id: createdDirectChatId
       }
       const response = await directChatsMessagesByChatID({}, args);
