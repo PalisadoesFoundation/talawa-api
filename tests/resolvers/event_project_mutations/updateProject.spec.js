@@ -8,6 +8,16 @@ const Organization = require('../../../lib/models/Organization');
 const Event = require('../../../lib/models/Event');
 const EventProject = require('../../../lib/models/EventProject');
 
+let testUser1;
+
+let testUser2;
+
+let testOrganization;
+
+let testEvent;
+
+let testEventProject;
+
 const createUser = async () => {
   const email = `${shortid.generate().toLowerCase()}@test.com`;
   const hashedPassword = await bcrypt.hash('password', 12);
@@ -111,16 +121,6 @@ const createEventProject = async (user, event) => {
 
   return createdEventProject;
 };
-
-let testUser1;
-
-let testUser2;
-
-let testOrganization;
-
-let testEvent;
-
-let testEventProject;
 
 // Read this :- https://jestjs.io/docs/api#beforeallfn-timeout
 beforeAll(async () => {
