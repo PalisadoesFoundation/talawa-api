@@ -7,6 +7,12 @@ const User = require('../../../lib/models/User');
 const Organization = require('../../../lib/models/Organization');
 const DirectChat = require('../../../lib/models/DirectChat');
 
+let testUser;
+
+let testOrganization;
+
+let testDirectChat;
+
 const createUser = async () => {
   const email = `${shortid.generate().toLowerCase()}@test.com`;
   const hashedPassword = await bcrypt.hash('password', 12);
@@ -74,12 +80,6 @@ const createDirectChat = async (user, users, organization) => {
   return createdDirectChat;
 };
 
-let testUser;
-
-let testOrganization;
-
-let testDirectChat;
-
 // Read this :- https://jestjs.io/docs/api#beforeallfn-timeout
 beforeAll(async () => {
   require('dotenv').config(); // pull env variables from .env file
@@ -125,7 +125,7 @@ describe('removeDirectChat mutation resolver', () => {
     }).rejects.toEqual(Error('Chat not found'));
   });
 
-  test('if user making the request is not an admin of the organization(organization with id=args.organizationId), throws UnauthorizedError', async () => {
+  test('if user with id=context.userId is not an admin of the organization with id=args.organizationId, throws UnauthorizedError', async () => {
     const args = {
       chatId: testDirectChat._id,
       organizationId: testOrganization._id,
@@ -138,7 +138,7 @@ describe('removeDirectChat mutation resolver', () => {
     }).rejects.toEqual(Error('User not authorized'));
   });
 
-  test('removes the directChat(directChat with id=args.chatId) and returns the removed directChat', async () => {
+  test('removes the directChat with id=args.chatId and returns the removed directChat', async () => {
     const args = {
       chatId: testDirectChat._id,
       organizationId: testOrganization._id,
@@ -152,7 +152,7 @@ describe('removeDirectChat mutation resolver', () => {
       expect.objectContaining({
         users: expect.arrayContaining([testUser._id]),
         messages: expect.arrayContaining([]),
-        status: 'ACTIVE',
+        status: testDirectChat.status,
         _id: testDirectChat._id,
         creator: testUser._id,
         organization: testOrganization._id,
