@@ -43,8 +43,6 @@ beforeAll(async () => {
     await getToken(thirdEmail);
     thirdUserId = await getUserId(thirdEmail);
 
-    console.log('created users successfully!');
-
     // adding an organization
     const organization = new Organization({
       name: 'mainOrganization',
@@ -63,7 +61,6 @@ beforeAll(async () => {
       creator: mainUserId,
     });
     mainOrganization = await organization.save();
-    console.log('organization created successfully');
 
     // adding posts
     const createFirstPost = new Post({
@@ -105,7 +102,6 @@ beforeAll(async () => {
       organization: mainOrganization._id,
     });
     thirdPost = await createThirdPost.save();
-    console.log('posts created successfully');
 
     // adding one comment for the first post, 2 for the second post and 3 for the third post
     //first post
@@ -178,7 +174,6 @@ beforeAll(async () => {
     ];
     thirdPost.commentCount = 3;
     thirdPost = await thirdPost.save();
-    console.log('posts are commented on successfully');
 
     firstPost = { ...firstPost._doc };
     secondPost = { ...secondPost._doc };
@@ -187,8 +182,6 @@ beforeAll(async () => {
     firstPost._id = firstPost._id.toString();
     secondPost._id = secondPost._id.toString();
     thirdPost._id = thirdPost._id.toString();
-
-    console.log('done setting up data');
   } catch (err) {
     console.log('error: ', err.message);
   }
