@@ -138,6 +138,7 @@ describe('tests for direct chats by chat id', () => {
         })
     );
     });
+    
     // test for if no chats found , throw error
     test('if no direct Chats are found for the provided args.id, throws NotFoundError', async () => {
       // Random id to pass as chat id
