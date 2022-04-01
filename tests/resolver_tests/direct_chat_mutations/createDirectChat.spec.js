@@ -4,6 +4,8 @@ const signup = require('../../../lib/resolvers/auth_mutations/signup');
 const database = require('../../../db');
 const shortid = require('shortid');
 
+const DirectChat = require('../../../lib/models/DirectChat');
+
 beforeAll(async () => {
   require('dotenv').config(); // pull env variables from .env file
   await database.connect();
@@ -80,30 +82,58 @@ describe('Unit testing', () => {
     };
 
     const response = await createDirectChat({}, args, context);
-    expect(response.creator).toEqual(
-      expect.objectContaining({
-        __v: 0,
-        _id: signUpResponse.user._id,
-        adminFor: [createOrgResponse._id.toString()],
-        appLanguageCode: 'en',
-        createdEvents: [],
-        createdOrganizations: [createOrgResponse._id.toString()],
-        email: signUpResponse.user.email,
-        eventAdmin: [],
-        firstName: signUpResponse.user.firstName,
-        lastName: signUpResponse.user.lastName,
-        membershipRequests: [],
-        organizationUserBelongsTo: null,
-        organizationsBlockedBy: [],
-        image: null,
-        joinedOrganizations: [createOrgResponse._id.toString()],
-        pluginCreationAllowed: true,
-        password: expect.any(String),
-        registeredEvents: [],
-        status: 'ACTIVE',
-        tokenVersion: 0,
-        userType: 'USER',
-      })
-    );
+
+    let directChat = await DirectChat.findOne({ _id: response._id })
+      .populate('users')
+      .populate('creator')
+      .populate('organization');
+    // expect(response.creator).toEqual({
+    //   __v: 0,
+    //   _id: signUpResponse.user._id,
+    //   adminFor: [createOrgResponse._id.toString()],
+    //   appLanguageCode: 'en',
+    //   createdEvents: [],
+    //   createdOrganizations: [createOrgResponse._id.toString()],
+    //   email: signUpResponse.user.email,
+    //   eventAdmin: [],
+    //   firstName: signUpResponse.user.firstName,
+    //   lastName: signUpResponse.user.lastName,
+    //   membershipRequests: [],
+    //   organizationUserBelongsTo: null,
+    //   organizationsBlockedBy: [],
+    //   image: null,
+    //   joinedOrganizations: [createOrgResponse._id.toString()],
+    //   pluginCreationAllowed: true,
+    //   password: null,
+    //   registeredEvents: [],
+    //   status: 'ACTIVE',
+    //   tokenVersion: 0,
+    //   userType: 'USER',
+    // });
+
+
+    expect(response.creator).toEqual({
+      __v: 0,
+      _id: signUpResponse.user._id,
+      adminFor: directChat.creator.adminFor,
+      appLanguageCode: 'en',
+      createdEvents: directChat.creator.createdEvents,
+      createdOrganizations: directChat.creator.createdOrganizations,
+      email: signUpResponse.user.email,
+      eventAdmin: directChat.creator.eventAdmin,
+      firstName: signUpResponse.user.firstName,
+      lastName: signUpResponse.user.lastName,
+      membershipRequests: directChat.creator.membershipRequests,
+      organizationUserBelongsTo: null,
+      organizationsBlockedBy: directChat.creator.organizationsBlockedBy,
+      image: null,
+      joinedOrganizations: directChat.creator.joinedOrganizations,
+      password: response.creator.password,
+      pluginCreationAllowed: true,
+      registeredEvents: directChat.creator.registeredEvents,
+      status: 'ACTIVE',
+      tokenVersion: 0,
+      userType: 'USER',
+    });
   });
 });
