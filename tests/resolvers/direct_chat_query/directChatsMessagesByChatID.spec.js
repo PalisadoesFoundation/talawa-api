@@ -5,7 +5,7 @@ const getToken = require('../../functions/getToken');
 const getUserId = require('../../functions/getUserId');
 const directChatsMessagesByChatID = require('../../../lib/resolvers/direct_chat_query/directChatsMessagesByChatID');
 const database = require('../../../db');
-// jest.useFakeTimers();
+const mongoose = require('mongoose');
 
 let token;
 let userId;
@@ -14,12 +14,12 @@ beforeAll(async () => {
     let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
     token = await getToken(generatedEmail);
     userId = await getUserId(generatedEmail);
-    require('dotenv').config();
-    await database.connect();
+    require('dotenv').config(); // pull env variables from .env file
+    await database.connect();  // connect the database before running any test in this file's scope
 });
 
 afterAll(() => {
-  database.disconnect();
+  database.disconnect(); // disconnect the database after running every test in this file's scope
 });
 
 describe('tests for direct chats by chat id', () => {
@@ -138,8 +138,17 @@ describe('tests for direct chats by chat id', () => {
         })
     );
     });
+    // test for if no chats found , throw error
+    test('if no direct Chats are found for the provided args.id, throws NotFoundError', async () => {
+      // Random id to pass as chat id
+      const args = { id: mongoose.Types.ObjectId() };
+      
+      await expect(async () => {
+        await directChatsMessagesByChatID({}, args);
+      }).rejects.toEqual(Error('DirectChats not found'));
+    });
 
-    //test for finding a direct chat by chat id
+    // test for finding a direct chat by chat id
     test('find chat by chat id', async () => {
       var args = {
         id: createdDirectChatId
