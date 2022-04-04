@@ -25,6 +25,8 @@ afterAll(() => {
 });
 
 describe('tests for sendMessageToDirectChat', () => {
+    let createdDirectChatId;
+    let createdOrgId;
     
     test('create direct chat', async () => {
         // CREATE AN ORGANIZATION
