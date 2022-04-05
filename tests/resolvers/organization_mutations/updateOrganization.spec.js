@@ -6,6 +6,8 @@ const updateOrganization = require('../../../lib/resolvers/organization_mutation
 const database = require('../../../db');
 const mongoose = require('mongoose');
 
+let token;
+
 beforeAll(async () => {
     let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
     token = await getToken(generatedEmail);
@@ -22,7 +24,6 @@ describe('organization resolvers', () => {
     const isPublic_boolean = Math.random() < 0.5;
     const visibleInSearch_boolean = Math.random() < 0.5;
     var createdOrgId;
-    var newUserId = mongoose.Types.ObjectId();
 
     // test for creating organization 
     test('createOrganization', async () => {
