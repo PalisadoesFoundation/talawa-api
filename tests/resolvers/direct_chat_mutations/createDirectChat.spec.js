@@ -63,7 +63,6 @@ describe('Unit testing', () => {
     await expect(async () => {
       await createDirectChat({}, args, context);
     }).rejects.toEqual(Error('User not found'));
-
   });
 
   test('Create Direct Chat Mutation without Organization', async () => {
@@ -97,7 +96,6 @@ describe('Unit testing', () => {
     await expect(async () => {
       await createDirectChat({}, args, context);
     }).rejects.toEqual(Error('Organization not Found'));
-
   });
 
   test('Create Direct Chat Mutation without Chat Users', async () => {
@@ -214,7 +212,7 @@ describe('Unit testing', () => {
 
     const response = await createDirectChat({}, args, context);
 
-    response.users.map(user => {
+    response.users.map((user) => {
       expect(user.tokenVersion).toEqual(0);
       expect(user.appLanguageCode).toEqual('en');
       expect(user.createdOrganizations).toEqual([]);
@@ -226,7 +224,7 @@ describe('Unit testing', () => {
       expect(user.adminFor).toEqual([]);
       expect(user.membershipRequests).toEqual([]);
       expect(user.organizationsBlockedBy).toEqual([]);
-      expect(user.status).toEqual("ACTIVE");
+      expect(user.status).toEqual('ACTIVE');
       expect(user.pluginCreationAllowed).toEqual(true);
       expect(user.organizationUserBelongsTo).toEqual(null);
     });
