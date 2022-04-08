@@ -61,7 +61,7 @@ afterAll(() => {
 describe('Comment query for commentsByPost resolver', () => {
   test('Find existing comment by comment id', async () => {
     const arg = {
-      id: `${post.id}`,
+      id: `${comment.post._id}`,
     };
     const response = await commentsByPost({}, arg);
     expect(response).toMatchObject([{text: "new comment"}])
