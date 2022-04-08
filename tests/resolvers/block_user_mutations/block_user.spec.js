@@ -1,21 +1,18 @@
-const axios = require('axios');
-const { URL } = require('../../../constants');
-const getToken = require('../../functions/getToken');
+const blockUser = require('../../../lib/resolvers/block_user_mutations/block_user');
 const shortid = require('shortid');
 const {
   Types: { ObjectId },
 } = require('mongoose');
 
 const database = require('../../../db');
-const getUserId = require('../../functions/getUserId');
+const getUserIdFromSignup = require('../../functions/getUserIdFromSignup');
 const User = require('../../../lib/models/User');
 const Organization = require('../../../lib/models/Organization');
 
-let mainOrganizationAdminToken;
 let mainOrganization;
+let organizationId;
 let mainOrganizationAdminId;
 
-let secondaryUserToken;
 let secondaryUserId;
 
 let normalUserId;
@@ -29,16 +26,15 @@ beforeAll(async () => {
   let mainOrganizationAdminEmail = `${shortid
     .generate()
     .toLowerCase()}@test.com`;
-  mainOrganizationAdminToken = await getToken(mainOrganizationAdminEmail);
-  mainOrganizationAdminId = await getUserId(mainOrganizationAdminEmail);
+  mainOrganizationAdminId = await getUserIdFromSignup(
+    mainOrganizationAdminEmail
+  );
 
   let secondaryUserEmail = `${shortid.generate().toLowerCase()}@test.com`;
-  secondaryUserToken = await getToken(secondaryUserEmail);
-  secondaryUserId = await getUserId(secondaryUserEmail);
+  secondaryUserId = await getUserIdFromSignup(secondaryUserEmail);
 
   let normalUserEmail = `${shortid.generate().toLowerCase()}@test.com`;
-  await getToken(normalUserEmail);
-  normalUserId = await getUserId(normalUserEmail);
+  normalUserId = await getUserIdFromSignup(normalUserEmail);
 
   const organization = new Organization({
     name: 'mainOrganization',
@@ -57,6 +53,7 @@ beforeAll(async () => {
     creator: mainOrganizationAdminId,
   });
   mainOrganization = await organization.save();
+  organizationId = mainOrganization._id;
 });
 afterAll(async () => {
   // delete the organization
@@ -70,211 +67,58 @@ afterAll(async () => {
 
 describe('block user tests', () => {
   test("user isn't an admin of the org", async () => {
-    const blockUserResponse = await axios.post(
-      URL,
-      {
-        query: `
-          mutation{
-            blockUser(organizationId: "${mainOrganization._id}", userId: "${normalUserId}"){
-              _id
-            }
-          }`,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${secondaryUserToken}`,
-        },
-      }
-    );
-
-    const [notAuthorizedError] = blockUserResponse.data.errors;
-    const blockUserData = blockUserResponse.data.data;
-
-    expect(notAuthorizedError).toEqual(
-      expect.objectContaining({
-        message: 'User is not authorized for performing this operation',
-        status: 422,
-      })
-    );
-    expect(notAuthorizedError.data[0]).toEqual(
-      expect.objectContaining({
-        message: 'User is not authorized for performing this operation',
-        code: 'user.notAuthorized',
-        param: 'userAuthorization',
-        metadata: {},
-      })
-    );
-    expect(blockUserData).toEqual(null);
+    await expect(async () => {
+      await blockUser(
+        {},
+        { organizationId, userId: normalUserId },
+        { userId: secondaryUserId }
+      );
+    }).rejects.toThrow('User not authorized');
   });
   test("organization doesn't exist", async () => {
-    const blockUserResponse = await axios.post(
-      URL,
-      {
-        query: `
-          mutation{
-            blockUser(organizationId: "${new ObjectId()}", userId: "${normalUserId}"){
-              _id
-            }
-          }`,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${mainOrganizationAdminToken}`,
-        },
-      }
-    );
-
-    const [notFoundError] = blockUserResponse.data.errors;
-    const blockUserData = blockUserResponse.data.data;
-
-    expect(notFoundError).toEqual(
-      expect.objectContaining({
-        message: 'Organization not found',
-        status: 422,
-      })
-    );
-    expect(notFoundError.data[0]).toEqual(
-      expect.objectContaining({
-        message: 'Organization not found',
-        code: 'organization.notFound',
-        param: 'organization',
-        metadata: {},
-      })
-    );
-    expect(blockUserData).toEqual(null);
+    await expect(async () => {
+      await blockUser(
+        {},
+        { organizationId: new ObjectId(), userId: normalUserId },
+        { userId: mainOrganizationAdminId }
+      );
+    }).rejects.toThrow('Organization not found');
   });
 
   test("user doesn't exist", async () => {
-    const id = mainOrganization._id;
-    const blockUserResponse = await axios.post(
-      URL,
-      {
-        query: `
-        mutation{
-          blockUser(organizationId: "${id}", userId: "${new ObjectId()}"){
-            _id
-          }
-        }`,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${mainOrganizationAdminToken}`,
-        },
-      }
-    );
-
-    const [notFoundError] = blockUserResponse.data.errors;
-    const blockUserData = blockUserResponse.data.data;
-
-    expect(notFoundError).toEqual(
-      expect.objectContaining({
-        message: 'User not found',
-        status: 422,
-      })
-    );
-    expect(notFoundError.data[0]).toEqual(
-      expect.objectContaining({
-        message: 'User not found',
-        code: 'user.notFound',
-        param: 'user',
-        metadata: {},
-      })
-    );
-    expect(blockUserData).toEqual(null);
+    await expect(async () => {
+      await blockUser(
+        {},
+        { organizationId, userId: new ObjectId() },
+        { userId: mainOrganizationAdminId }
+      );
+    }).rejects.toThrow('User not found');
   });
 
   test('a valid block request', async () => {
-    const blockUserResponse = await axios.post(
-      URL,
-      {
-        query: `
-          mutation{
-            blockUser(organizationId: "${mainOrganization._id}", userId: "${normalUserId}"){
-              _id
-              organizationsBlockedBy{
-                _id
-              }
-            }
-          }`,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${mainOrganizationAdminToken}`,
-        },
-      }
+    const receivedUser = await blockUser(
+      {},
+      { organizationId, userId: normalUserId },
+      { userId: mainOrganizationAdminId }
     );
-
-    const { data } = blockUserResponse;
-    const organizationsBlockedBy = data.data.blockUser.organizationsBlockedBy;
-    const organization = organizationsBlockedBy.find(
-      (org) => org._id === mainOrganization._id.toString()
-    );
-    expect(data.data.blockUser._id).toEqual(normalUserId);
-    expect(organization._id).toEqual(mainOrganization._id.toString());
+    expect(receivedUser._id.toString()).toEqual(normalUserId);
+    expect(receivedUser.organizationsBlockedBy[0]).toEqual(organizationId);
   });
 
   test('blocking an already blocked user', async () => {
-    const blockUserResponse = await axios.post(
-      URL,
-      {
-        query: `
-          mutation{
-            blockUser(organizationId: "${mainOrganization._id}", userId: "${normalUserId}"){
-              _id
-            }
-          }`,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${mainOrganizationAdminToken}`,
-        },
-      }
-    );
-
-    const [notAuthorizedError] = blockUserResponse.data.errors;
-    const blockUserData = blockUserResponse.data.data;
-
-    expect(notAuthorizedError).toEqual(
-      expect.objectContaining({
-        message: 'User is not authorized for performing this operation',
-        status: 422,
-      })
-    );
-    expect(notAuthorizedError.data[0]).toEqual(
-      expect.objectContaining({
-        message: 'User is not authorized for performing this operation',
-        code: 'user.notAuthorized',
-        param: 'userAuthorization',
-        metadata: {},
-      })
-    );
-    expect(blockUserData).toEqual(null);
+    await expect(async () => {
+      await blockUser(
+        {},
+        { organizationId, userId: normalUserId },
+        { userId: mainOrganizationAdminId }
+      );
+    }).rejects.toThrow('User not authorized');
   });
 
   test('blockedUsers inside organization contains the blocked user', async () => {
-    const blockedUsersResponse = await axios.post(
-      URL,
-      {
-        query: `
-          query {
-            organizations(id: "${mainOrganization._id}") {
-              blockedUsers {
-                _id
-              }
-            }
-          }`,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${mainOrganizationAdminToken}`,
-        },
-      }
-    );
+    const organization = await Organization.findById(organizationId);
 
-    const blockedUsers =
-      blockedUsersResponse.data.data.organizations[0].blockedUsers;
-    const blockedUser = blockedUsers.find((u) => u._id === normalUserId);
-    expect(blockedUser).toBeTruthy();
-    expect(blockedUser._id).toBe(normalUserId);
+    const blockedUsers = organization.blockedUsers;
+    expect(blockedUsers[0].toString()).toEqual(normalUserId);
   });
 });
