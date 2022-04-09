@@ -23,7 +23,7 @@ afterAll(() => {
 });
 
 
-describe('tests for direct chats by chat id', () => {
+describe('tests for adding a user to group chat', () => {
   let createdGroupChatId;
   let createdOrgId;
   let newUserAddedId;
@@ -136,7 +136,7 @@ describe('tests for direct chats by chat id', () => {
     );
   });
 
-  // test if not groupchat exists
+  // test if no groupchat exists
   test('if no group Chat is found for the provided args.id, throws NotFoundError', async () => {
     // Random id to pass as chat id
     const args = { chatId: mongoose.Types.ObjectId() };
