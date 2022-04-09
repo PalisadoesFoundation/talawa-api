@@ -1,0 +1,86 @@
+We would really advise you to read the docs provided by these two links to get a feel of how you
+should write your tests :-
+
+1) https://github.com/goldbergyoni/javascript-testing-best-practices
+2) https://github.com/testjavascript/nodejs-integration-tests-best-practices
+
+You don’t have to follow each and every practice they’re suggesting because many of them aren’t need
+for our project currently. But some of them are fundamental and essential to writing good tests in any
+ecosystem.
+
+Here’s our current standard approach for setting up the testing environment and writing tests. This will
+help you understand how tests are working and how to write tests:-
+
+1) We have two files named `global_setup.js` and `global_teardown.js` in tests/globalFiles. These files
+are integrated to run with jest through `jest.config.js`. ‘global_setup.js` will clear all the data from the
+database being used for testing each time you run the tests. `global_setup.js` runs each time you run the
+test/tests before all the tests. `global_teardown.js` runs each time after all the test(s) stop(s) running.
+After extensively searching online we’ve found that there is no standardized of handling data
+created/mutated during test runs. This is just one of the approaches. We went with this approach
+because it reduces the total execution time of tests. Between clearing database before all the tests run or
+clearing the database after each test, the first approach is faster. It’s because with the first approach the
+tests can run in parallel but there’s the added condition that tests be written in such a way that they only
+work on data created within them. With the second approach the tests will have to run
+sequentially(runInBand). There’s also a third approach where we create seperate database for each test.
+But creating a new database for each test could introduce other challenges.
+
+2) In each test file there are two main functions :- `beforeAll` and `afterAll`. Each test file imports the
+talawa-api’s http server instance and the database module for connecting/disconnecting the database to
+the current node process. Inside `beforeAll` function block both the http server and the database are
+initialized. The server is initialized with a random port so that there’s no port collision between
+different tests. There’s also a global variable called `httpServerURL` which stores the url of currently
+running talawa-server inside our test file. Use this variable to make the http requests to test out the
+corresponding graphql resolvers. After all tests in a test file are done running, the database and the
+running http server are disconnected and closed inside the `afterAll` function block.
+
+3) Now comes the part about how to write your tests. The two github links listed at the top of this
+document list many best practices/approaches to writing tests for javascript/nodejs projects. Please read
+them, they will immensely help you to understand how to write good tests. You should follow certain
+practices decided by us so that each test file looks similar in structure, approach and is easy to
+understand for other people who want to make changes or debug the file later on. Here they are :-
+
+→ import all absolute modules on the very top of the file.
+
+→ import all the relative modules after the absolute modules.
+
+→ create variables, functions according to the scope in which they are used. A variable used across
+many tests should exist at the top of the `describe` block of those tests within the scope. A variable used
+only in a particular test should exist within that test scope.
+→ `beforeAll` and `afterAll` function blocks pertaining to database connection/disconnection should be
+listed at the top right after previous test.
+
+→ Use descriptive/human-readable and easy-to-understand messages inside `describe`, `test`, `it` etc.,
+functions. This will help you and others to clearly understand what’s happening in that test and also
+help to figure out the bugs easily if that test fails. More on this is in the provided links on the top.
+
+→ Each test should create it’s own data to perform the corresponding test and that data should be
+unique (unique means they have a unique field which clearly distinguishes one data object from the
+other. For example a uuid used as the id field.). Under no circumstances should your test mutate
+anything other than the data which is created to be used for that test. If this practice is not followed race
+conditions will occur between tests. This practice is introduced because by default jest runs tests in
+parallel. Parallelization speeds up test execution by running different test files at the same time utilizing
+your cpu cores. We can run tests in sequential mode by passing in the flag `--runInBand` and no
+collisions will occur but it’s too time consuming to run tests this way in development environment.
+Back to the topic, two or more tests running at the same time, making changes to data of other tests will
+result in failure of some of the tests. Because the database is common between the two tests, one test’s
+data can get mutated by another test and all the logic written for that mutated data in the first test won’t
+work anymore. Make sure you check that the data being mutated in your test is the one created for your
+test. Following this practice will also make the tests more robust because more test logic will have to be
+written to make sure only the data related to your test has been mutated. Now it’s definetely possible
+that querying for some data from the server returns data which wasn’t created in your test(data created
+in other tests). It’s fine. Just make sure to check the expected type of response object and whether the
+data object you created exists in that returned response. Ignoring every other data objects.
+
+→ If possible try to create data that makes sense for the corresponding data model field. Example: - for
+a field `username` of a `User` model use “george2022” not some random gibberish like “1_ad-
+&324_asdf”. This will help you or some other person who tries to work on your test files later on to
+make sense of the data being used while debugging.
+
+→ Make use of pure http clients like axios, fetch etc instead of something like supertest. This is
+because these http clients are framework agnostic and people are more fluent with them. This will
+result in making use of default assertion library provided by jest instead of the one provided by
+supertest.
+
+→ Make sure to follow test-driven-development. Write your test files first then write the corresponding
+code files that those tests going to test.
+

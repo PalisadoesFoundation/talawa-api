@@ -12,7 +12,8 @@
     "stop-test-server-in-action": "pm2 delete all",
     "lint": "eslint . --fix && echo 'Lint complete.'",
     "setup": "npm i boxen@4.2.0 chalk@4.1.0 inquirer markdown-js marked@2.0.1 marked-terminal@4.1.0 node-cmd@5.0.0 -f && node setup.js",
-    "file-coverage": "npm test $npm_config_testfile -- --coverage --collectCoverageFrom=$npm_config_functionfile"
+    "file-coverage": "npm test $npm_config_testfile -- --coverage --collectCoverageFrom=$npm_config_functionfile",
+    "coverage": "nyc npm run test"
   },
   "repository": {
     "type": "git",
@@ -90,6 +91,7 @@
     "jest": "^27.4.7",
     "netmask": ">=2.0.1",
     "nodemon": "^2.0.15",
+    "nyc": "^15.1.0",
     "prettier": "^2.3.2"
   }
 }

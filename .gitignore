@@ -4,6 +4,7 @@ nodemon.json
 .env
 images/
 .vscode
+.nyc_output
 
 # Added as the documentation only refers to npm, not yarn. 
 yarn.lock

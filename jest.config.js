@@ -7,4 +7,6 @@ module.exports = {
   coverageDirectory: './coverage/',
   collectCoverageFrom: ['lib/**/*.js*'],
   coveragePathIgnorePatterns: ['/node_modules/', 'lib/helper_lib'],
+  globalSetup: './tests/global_configuration_files/global_setup.js',
+  globalTeardown: './tests/global_configuration_files/global_teardown.js',
 };
