@@ -308,7 +308,7 @@ describe('User-Organization Resolvers', () => {
       expect.objectContaining({
         message: 'Member not found',
         code: 'member.notFound',
-        param: 'member.notFound',
+        param: 'member',
         metadata: {},
       })
     );

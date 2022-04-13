@@ -60,7 +60,7 @@ describe('event_project_mutation createProject mutation resolver', () => {
     };
     await expect(async () => {
       await createProject({}, args, context);
-    }).rejects.toThrow('User not Authorized');
+    }).rejects.toThrow('User not authorized');
   });
   test('Event project creation', async () => {
     const context = { userId: user._id };
