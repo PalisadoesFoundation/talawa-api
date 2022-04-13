@@ -7,12 +7,14 @@ services:
     ports:
       - '4000:4000'
     links:
-      - mongo
+      - mongodb
     environment:
-      ACCESS_TOKEN_SECRET: "${ACCESS_TOKEN_SECRET}"
-      REFRESH_TOKEN_SECRET: "${REFRESH_TOKEN_SECRET}"
-      MONGO_DB_URL: "${MONGO_DB_URL}"
-  mongo:
-    image: mongo
+      ACCESS_TOKEN_SECRET: '${ACCESS_TOKEN_SECRET}'
+      REFRESH_TOKEN_SECRET: '${REFRESH_TOKEN_SECRET}'
+      MONGO_DB_URL: '${MONGO_DB_URL}'
+  mongodb:
+    container_name: mongodb
+    image: mongo:latest
     ports:
-      - '27017:27017'
+      - 27017:27017
+    restart: always
