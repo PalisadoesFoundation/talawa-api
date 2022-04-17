@@ -128,6 +128,9 @@ If you are participating in the Summer of Code, please read more about us and ou
 ### GitHub Externship
 If you are participating in the GitHub Externship, please read more about us and our processes [here](https://palisadoesfoundation.github.io/talawa-docs/docs/internships/github/github-introduction)
 
+### GSoD
+If you are participating in the Google Season of Docs, please read more about us and our processes [here](https://palisadoesfoundation.github.io/talawa-docs/docs/internships/gsod/gsod-ideas/#revamping-and-restructuring-the-talawa-docs)
+
 ## Community
 There are many ways to communicate with the community.
 
