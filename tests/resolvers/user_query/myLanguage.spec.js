@@ -38,6 +38,5 @@ describe('Testing myLanguage resolver', () => {
         userId: '62277875e904753262f99ba9',
       });
     }).rejects.toEqual(Error('User not found'));
-    
   });
 });

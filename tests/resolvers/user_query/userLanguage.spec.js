@@ -34,6 +34,5 @@ describe('Testing userLanguage resolver', () => {
     await expect(async () => {
       await userLanguageQuery({}, args);
     }).rejects.toEqual(Error('User not found'));
-
   });
 });
