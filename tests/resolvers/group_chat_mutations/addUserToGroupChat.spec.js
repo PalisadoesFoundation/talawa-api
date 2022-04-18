@@ -11,17 +11,16 @@ let token;
 let userId;
 
 beforeAll(async () => {
-    let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
-    token = await getToken(generatedEmail);
-    userId = await getUserId(generatedEmail);
-    require('dotenv').config(); // pull env variables from .env file
-    await database.connect();  // connect the database before running any test in this file's scope
+  let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
+  token = await getToken(generatedEmail);
+  userId = await getUserId(generatedEmail);
+  require('dotenv').config(); // pull env variables from .env file
+  await database.connect(); // connect the database before running any test in this file's scope
 });
 
 afterAll(() => {
   database.disconnect(); // disconnect the database after running every test in this file's scope
 });
-
 
 describe('tests for adding a user to group chat', () => {
   let createdGroupChatId;
@@ -30,12 +29,11 @@ describe('tests for adding a user to group chat', () => {
 
   // CREATE GROUP CHAT
   test('create group chat', async () => {
-
     // CREATE AN ORGANIZATION
     const createdOrgResponse = await axios.post(
-        URL,
-        {
-          query: `
+      URL,
+      {
+        query: `
                   mutation {
                       createOrganization(data: {
                           name:"test org"
@@ -47,21 +45,21 @@ describe('tests for adding a user to group chat', () => {
                           }
                   }
                     `,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      createdOrgId = createdOrgResponse.data.data.createOrganization._id;
-  
-      // CREATE A NEW USER
-      const nameForNewUser = shortid.generate();
-      const email = `${nameForNewUser}@test.com`;
-  
-      const createNewUserResponse = await axios.post(URL, {
-        query: `
+      }
+    );
+    createdOrgId = createdOrgResponse.data.data.createOrganization._id;
+
+    // CREATE A NEW USER
+    const nameForNewUser = shortid.generate();
+    const email = `${nameForNewUser}@test.com`;
+
+    const createNewUserResponse = await axios.post(URL, {
+      query: `
                 mutation {
                     signUp(data: {
                     firstName:"${nameForNewUser}",
@@ -76,7 +74,7 @@ describe('tests for adding a user to group chat', () => {
                     }
                 }
                 `,
-      });
+    });
     const signUpData = createNewUserResponse.data;
     const newUserId = signUpData.data.signUp.user._id;
 
@@ -103,7 +101,7 @@ describe('tests for adding a user to group chat', () => {
     });
     const signUpData1 = createNewUserResponse1.data;
     newUserAddedId = signUpData1.data.signUp.user._id;
-    
+
     const createGroupChatResponse = await axios.post(
       URL,
       {
@@ -140,39 +138,38 @@ describe('tests for adding a user to group chat', () => {
   test('if no group Chat is found for the provided args.id, throws NotFoundError', async () => {
     // Random id to pass as chat id
     const args = { chatId: mongoose.Types.ObjectId() };
-    const context = {userId: mongoose.Types.ObjectId()};
+    const context = { userId: mongoose.Types.ObjectId() };
     await expect(async () => {
       await addUserToGroupChat({}, args, context);
     }).rejects.toEqual(Error('Group Chat not found'));
   });
 
-   // test if user is already added
-   test('if user is already added,throws Error', async () => {
-    const args = { 
-        chatId: createdGroupChatId,
-        userId: userId
+  // test if user is already added
+  test('if user is already added,throws Error', async () => {
+    const args = {
+      chatId: createdGroupChatId,
+      userId: userId,
     };
-    const context = {userId: userId};
+    const context = { userId: userId };
     await expect(async () => {
       await addUserToGroupChat({}, args, context);
     }).rejects.toEqual(Error('User already a member'));
   });
 
-
   // test for adding a user to group chat
   test('add user to group chat', async () => {
     var args = {
-        chatId: createdGroupChatId,
-        userId: newUserAddedId   // passing new user id whichwe created to add to group chat
+      chatId: createdGroupChatId,
+      userId: newUserAddedId, // passing new user id whichwe created to add to group chat
     };
     var context = {
-        userId: userId
+      userId: userId,
     };
     const response = await addUserToGroupChat({}, args, context);
     expect(response).toEqual(
-        expect.objectContaining({
-        messages: expect.any(Array)
-        })
-      );
+      expect.objectContaining({
+        messages: expect.any(Array),
+      })
+    );
   });
-})
+});
