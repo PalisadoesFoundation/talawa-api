@@ -176,7 +176,7 @@ describe('testing removeOrganization resolver', () => {
         { id: organizationId },
         { userId: memberId }
       );
-    }).rejects.toThrow('User not authorized');
+    }).rejects.toThrow('User is not authorized for performing this operation');
   });
 
   test("organization doesn't exist after deletion", async () => {

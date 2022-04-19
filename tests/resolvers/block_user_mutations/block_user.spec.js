@@ -73,7 +73,7 @@ describe('block user tests', () => {
         { organizationId, userId: normalUserId },
         { userId: secondaryUserId }
       );
-    }).rejects.toThrow('User not authorized');
+    }).rejects.toThrow('User is not authorized for performing this operation');
   });
   test("organization doesn't exist", async () => {
     await expect(async () => {
@@ -112,7 +112,7 @@ describe('block user tests', () => {
         { organizationId, userId: normalUserId },
         { userId: mainOrganizationAdminId }
       );
-    }).rejects.toThrow('User not authorized');
+    }).rejects.toThrow('User is not authorized for performing this operation');
   });
 
   test('blockedUsers inside organization contains the blocked user', async () => {
