@@ -135,7 +135,9 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await createAdmin({}, args, context);
-    }).rejects.toEqual(Error('User is not authorized for performing this operation'));
+    }).rejects.toEqual(
+      Error('User is not authorized for performing this operation')
+    );
   });
 
   test('Create Admin Mutation when user is not a member of the organization', async () => {
@@ -240,7 +242,9 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await createAdmin({}, args, context);
-    }).rejects.toEqual(Error('User is not authorized for performing this operation'));
+    }).rejects.toEqual(
+      Error('User is not authorized for performing this operation')
+    );
   });
 
   test('Create Admin Mutation', async () => {
