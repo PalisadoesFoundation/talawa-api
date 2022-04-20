@@ -16,23 +16,20 @@ describe('Unit testing', () => {
       orderBy: 'id_ASC',
     };
     const response = await eventsQuery({}, args);
-    console.log(response);
 
     response.map((event) => {
-      expect(event.status).toEqual('ACTIVE');
-      expect(event.title).toEqual('Talawa Conference Test');
-      expect(event.description).toEqual(
-        'National conference that happens yearly'
-      );
+      expect(typeof event.status === 'string').toBeTruthy();
+      expect(typeof event.title === 'string').toBeTruthy();
+      expect(typeof event.description === 'string').toBeTruthy();
       expect(typeof event.isPublic === 'boolean').toBeTruthy();
       expect(typeof event.isRegisterable === 'boolean').toBeTruthy();
       expect(typeof event.recurring === 'boolean').toBeTruthy();
-      expect(event.recurrance).toEqual('YEARLY');
-      expect(event.location).toEqual('Test');
-      expect(event.startDate).toEqual('2/2/2020');
+      expect(typeof event.recurrance === 'string').toBeTruthy();
+      expect(typeof event.location === 'string').toBeTruthy();
+      expect(typeof event.startDate === 'string').toBeTruthy();
       expect(typeof event.allDay === 'boolean').toBeTruthy();
-      expect(event.startTime).toEqual('1:00 PM');
-      expect(event.endTime).toEqual('2:00 PM');
+      expect(typeof event.startTime === 'string').toBeTruthy();
+      expect(typeof event.endTime === 'string').toBeTruthy();
     });
   });
 });
