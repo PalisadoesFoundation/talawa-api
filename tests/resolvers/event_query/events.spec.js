@@ -16,7 +16,6 @@ describe('Unit testing', () => {
       orderBy: 'id_ASC',
     };
     const response = await eventsQuery({}, args);
-
     response.map((event) => {
       expect(typeof event.status === 'string').toBeTruthy();
       expect(typeof event.title === 'string').toBeTruthy();
@@ -25,7 +24,7 @@ describe('Unit testing', () => {
       expect(typeof event.isRegisterable === 'boolean').toBeTruthy();
       expect(typeof event.recurring === 'boolean').toBeTruthy();
       expect(typeof event.recurrance === 'string').toBeTruthy();
-      expect(typeof event.location === 'string').toBeTruthy();
+      expect(typeof event.location === 'string' || event.location === null).toBeTruthy();
       expect(typeof event.startDate === 'string').toBeTruthy();
       expect(typeof event.allDay === 'boolean').toBeTruthy();
       expect(typeof event.startTime === 'string').toBeTruthy();
