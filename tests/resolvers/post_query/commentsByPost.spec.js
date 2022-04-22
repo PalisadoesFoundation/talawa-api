@@ -11,42 +11,79 @@ let org;
 let post;
 let comment;
 
-beforeAll(async () => {
-  require('dotenv').config(); // pull env variables from .env file
-  await database.connect();
+const createUser = async () => {
   let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
-  user = await User.create({
+  let newUser = await User.create({
     firstName: shortid.generate().toLowerCase(),
     lastName: shortid.generate().toLowerCase(),
     email: generatedEmail,
     userType: 'USER',
     password: 'password',
   });
+  return newUser
+}
+
+const createOrganization = async () => {
+  let newOrg = await Organization.create({
+    name: 'abcd org',
+    description: shortid.generate().toLowerCase(),
+    isPublic: true,
+    location: 'location',
+    creator: user._id,
+    admins: [user._id],
+    members: [user._id],
+  });
+  return newOrg
+}
+
+const createPost = async () => {
+  let newPost = await Post.create({
+    text: 'text',
+    title: 'title',
+    creator: user._id,
+    organization: org._id,
+  });
+  return newPost
+}
+
+const createComment = async () => {
+  let newComment = await Comment.create({
+    text: 'new comment',
+    creator: user._id,
+    post: post._id,
+    likedBy: [user._id],
+    likeCount: 1,
+  })
+  return newComment
+}
+
+const deleteUser = async (id) => {
+ await User.deleteOne({_id: id})
+}
+
+const deleteOrganization = async (id) => {
+  await Organization.deleteOne({_id: id})
+}
+
+const deletePost = async (id) => {
+  await Post.deleteOne({_id: id})
+}
+
+const deleteComment = async (id) => {
+  await Comment.deleteOne({_id: id})
+}
+
+beforeAll(async () => {
+  require('dotenv').config(); // pull env variables from .env file
+  await database.connect();
+  let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
+  user = await createUser()
   if (user) {
-    org = await Organization.create({
-      name: 'abcd org',
-      description: shortid.generate().toLowerCase(),
-      isPublic: true,
-      location: 'location',
-      creator: user._id,
-      admins: [user._id],
-      members: [user._id],
-    });
+    org = await createOrganization()
     if (org) {
-      post = await Post.create({
-        text: 'text',
-        title: 'title',
-        creator: user._id,
-        organization: org._id,
-      });
+      post = await createPost()
       if (post) {
-        comment = await Comment.create({
-          text: 'new comment',
-          creator: user._id,
-          post: post._id,
-          likedBy: [user._id],
-          likeCount: 1,
-        })
+        comment = await createComment()
       }
     }
   } else {
@@ -54,7 +91,11 @@ beforeAll(async () => {
   }
 });
 
-afterAll(() => {
+afterAll(async () => {
+  await deleteComment(comment._id)
+  await deletePost(post._id)
+  await deleteOrganization(org._id)
+  await deleteUser(user._id)
   database.disconnect();
 });
 
@@ -73,5 +114,43 @@ describe('Comment query for commentsByPost resolver', () => {
     await expect(async () => {
       await commentsByPost({}, arg)
     }).rejects.toThrow(Error('Comment not found'));
+  })
+  test('User does not exist', async () => {
+    deleteUser(user._id)
+    const arg = {
+      id: `${comment.post._id}`,
+    };
+    await expect(async () => {
+      await commentsByPost({}, arg)
+    }).rejects.toThrow(Error('User not found'));
+  })
+  test('Organization does not exist', async () => {
+    await deleteComment(comment._id)
+    await deletePost(post._id)
+    await deleteOrganization(org._id)
+    user = await createUser()
+    post = await createPost()
+    comment = await createComment()
+    const arg = {
+      id: `${comment.post._id}`,
+    };
+    await expect(async () => {
+      await commentsByPost({}, arg)
+    }).rejects.toThrow(Error('Organization not found'));
+  })
+  test('Post does not exist', async () => {
+    await deleteComment(comment._id)
+    await deletePost(post._id)
+    await deleteOrganization(org._id)
+    await deleteUser(user._id)
+    user = await createUser()
+    comment = await createComment()
+    organizationn = await createOrganization()
+    const arg = {
+      id: `${comment.post._id}`,
+    };
+    await expect(async () => {
+      await commentsByPost({}, arg)
+    }).rejects.toThrow(Error('Post not found'));
   })
 })
