@@ -76,7 +76,6 @@ const deleteComment = async (id) => {
 beforeAll(async () => {
   require('dotenv').config(); // pull env variables from .env file
   await database.connect();
-  let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
   user = await createUser()
   if (user) {
     org = await createOrganization()
@@ -145,7 +144,7 @@ describe('Comment query for commentsByPost resolver', () => {
     await deleteUser(user._id)
     user = await createUser()
     comment = await createComment()
-    organizationn = await createOrganization()
+    org = await createOrganization()
     const arg = {
       id: `${comment.post._id}`,
     };
