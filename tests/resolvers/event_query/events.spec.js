@@ -24,7 +24,11 @@ describe('Unit testing', () => {
       expect(typeof event.isRegisterable === 'boolean').toBeTruthy();
       expect(typeof event.recurring === 'boolean').toBeTruthy();
       expect(typeof event.recurrance === 'string').toBeTruthy();
-      expect(typeof event.location === 'string' || event.location === null).toBeTruthy();
+      expect(
+        typeof event.location === 'string' ||
+          typeof event.location === 'object' ||
+          event.location === null
+      ).toBeTruthy();
       expect(typeof event.startDate === 'string').toBeTruthy();
       expect(typeof event.allDay === 'boolean').toBeTruthy();
       expect(typeof event.startTime === 'string').toBeTruthy();
