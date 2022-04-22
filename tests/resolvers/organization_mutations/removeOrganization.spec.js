@@ -10,6 +10,12 @@ const Comment = require('../../../lib/models/Comment');
 const User = require('../../../lib/models/User');
 const MembershipRequest = require('../../../lib/models/MembershipRequest');
 
+const {
+  USER_NOT_FOUND,
+  ORGANIZATION_NOT_FOUND,
+  USER_NOT_AUTHORIZED,
+} = require('../../../constants');
+
 let adminId;
 let memberId;
 let membershipRequesterId;
@@ -156,7 +162,7 @@ describe('testing removeOrganization resolver', () => {
   test("user doesn't exist", async () => {
     await expect(async () => {
       await removeOrganization({}, {}, { userId: mongoose.Types.ObjectId() });
-    }).rejects.toThrow('User not found');
+    }).rejects.toThrow(USER_NOT_FOUND);
   });
 
   test("organization doesn't exist", async () => {
@@ -166,7 +172,7 @@ describe('testing removeOrganization resolver', () => {
         { id: mongoose.Types.ObjectId() },
         { userId: memberId }
       );
-    }).rejects.toThrow('Organization not found');
+    }).rejects.toThrow(ORGANIZATION_NOT_FOUND);
   });
 
   test('user is not the creator of org', async () => {
@@ -176,7 +182,7 @@ describe('testing removeOrganization resolver', () => {
         { id: organizationId },
         { userId: memberId }
       );
-    }).rejects.toThrow('User is not authorized for performing this operation');
+    }).rejects.toThrow(USER_NOT_AUTHORIZED);
   });
 
   test("organization doesn't exist after deletion", async () => {
