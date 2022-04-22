@@ -63,19 +63,14 @@ describe('event_project_mutation removeProject mutation resolver', () => {
     await expect(async () => {
       await removeProject({}, args, context);
     }).rejects.toEqual(Error('User not authorized'));
-
-    console.log(user);
   });
-  //.rejects.toThrow('User not authorized');
   test('Event project delete/remove', async () => {
     const context = { userId: `${user._id}` };
-    console.log(eventProject);
     const args = {
       id: eventProject._id,
     };
 
     const removedProject = await removeProject({}, args, context);
-    console.log(removedProject);
     expect(removedProject).toEqual(
       expect.objectContaining({
         tasks: expect.arrayContaining([]),
