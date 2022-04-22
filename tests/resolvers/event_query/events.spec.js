@@ -41,6 +41,7 @@ describe('Unit testing', () => {
       };
       const response = await eventsQuery({}, args);
       response.map((event) => {
+        console.log(event.location, typeof event.location);
         expect(typeof event.status === 'string').toBeTruthy();
         expect(typeof event.title === 'string').toBeTruthy();
         expect(typeof event.description === 'string').toBeTruthy();
@@ -50,8 +51,8 @@ describe('Unit testing', () => {
         expect(typeof event.recurrance === 'string').toBeTruthy();
         expect(
           typeof event.location === 'string' ||
-            typeof event.location === 'object' ||
-            event.location === null
+          typeof event.location === 'object' ||
+          event.location === null
         ).toBeTruthy();
         expect(typeof event.startDate === 'string').toBeTruthy();
         expect(typeof event.allDay === 'boolean').toBeTruthy();
