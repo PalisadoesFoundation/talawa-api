@@ -5,6 +5,16 @@ const USER_NOT_AUTHORIZED_MESSAGE = 'user.notAuthorized';
 const USER_NOT_AUTHORIZED_CODE = 'user.notAuthorized';
 const USER_NOT_AUTHORIZED_PARAM = 'user';
 
+const USER_ALREADY_MEMBER = 'User already member';
+const USER_ALREADY_MEMBER_MESSAGE = 'user.alreadyMember';
+const USER_ALREADY_MEMBER_CODE = 'user.alreadyMember';
+const USER_ALREADY_MEMBER_PARAM = 'userAlreadyMember';
+
+const MEMBERSHIP_REQUEST_NOT_FOUND = 'membership Request not found';
+const MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE = 'membershipRequest.notFound';
+const MEMBERSHIP_REQUEST_NOT_FOUND_CODE = 'membershipRequest.notFound';
+const MEMBERSHIP_REQUEST_NOT_FOUND_PARAM = 'membershipRequest';
+
 const USER_NOT_FOUND = 'User not found';
 const USER_NOT_FOUND_MESSAGE = 'user.notFound';
 const USER_NOT_FOUND_CODE = 'user.notFound';
@@ -49,4 +59,14 @@ module.exports = {
   EVENT_NOT_FOUND_MESSAGE,
   EVENT_NOT_FOUND_CODE,
   EVENT_NOT_FOUND_PARAM,
+
+  USER_ALREADY_MEMBER,
+  USER_ALREADY_MEMBER_CODE,
+  USER_ALREADY_MEMBER_MESSAGE,
+  USER_ALREADY_MEMBER_PARAM,
+
+  MEMBERSHIP_REQUEST_NOT_FOUND,
+  MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
+  MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
+  MEMBERSHIP_REQUEST_NOT_FOUND_PARAM,
 };
