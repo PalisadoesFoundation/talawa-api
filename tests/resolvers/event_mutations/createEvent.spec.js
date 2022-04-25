@@ -4,6 +4,11 @@ const signup = require('../../../lib/resolvers/auth_mutations/signup');
 const database = require('../../../db');
 const shortid = require('shortid');
 const mongoose = require('mongoose');
+const {
+  USER_NOT_FOUND,
+  ORGANIZATION_NOT_AUTHORIZED,
+  ORGANIZATION_NOT_FOUND,
+} = require('../../../constants');
 
 beforeAll(async () => {
   require('dotenv').config(); // pull env variables from .env file
@@ -74,7 +79,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await createEvent({}, args, context);
-    }).rejects.toEqual(Error('User not found'));
+    }).rejects.toEqual(Error(USER_NOT_FOUND));
   });
 
   test('Create Event Mutation without Organization', async () => {
@@ -116,7 +121,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await createEvent({}, args, context);
-    }).rejects.toEqual(Error('Organization not found'));
+    }).rejects.toEqual(Error(ORGANIZATION_NOT_FOUND));
   });
 
   test('Create Event Mutation with the user not present in the Organization', async () => {
@@ -190,7 +195,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await createEvent({}, args, context);
-    }).rejects.toEqual(Error('Organization not Authorized'));
+    }).rejects.toEqual(Error(ORGANIZATION_NOT_AUTHORIZED));
   });
 
   test('Create Event Mutation', async () => {
