@@ -29,7 +29,7 @@ const DirectChatMessage = require('./lib/resolvers/DirectChatMessage');
 const { defaultLocale, supportedLocales } = require('./lib/config/app');
 const GroupChat = require('./lib/resolvers/GroupChat');
 const GroupChatMessage = require('./lib/resolvers/GroupChatMessage');
-//const Subscription = require('./lib/resolvers/Subscription');
+const Subscription = require('./lib/resolvers/Subscription');
 const AuthenticationDirective = require('./lib/directives/authDirective');
 const RoleAuthorizationDirective = require('./lib/directives/roleDirective');
 
@@ -40,15 +40,7 @@ app.use(requestTracing.middleware());
 const pubsub = new PubSub();
 
 const resolvers = {
-  //Subscription,
-  Subscription: {
-    directMessageChat: {
-      resolve: (payload) => {
-        return payload.directMessageChat;
-      },
-      subscribe: () => pubsub.asyncIterator('CHAT_CHANNEL'),
-    },
-  },
+  Subscription: Subscription,
   Query,
   Mutation,
   Organization,
@@ -158,11 +150,9 @@ const apolloServer = new ApolloServer({
         throw new Error('userAuthentication');
       }
       let userId = null;
-      if (connection.authToken) {
-        let decodedToken = jwt.verify(
-          connection.authToken,
-          process.env.ACCESS_TOKEN_SECRET
-        );
+      const token = connection.authorization.split(' ')[1];
+      if (token) {
+        let decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         userId = decodedToken.userId;
       }
 
