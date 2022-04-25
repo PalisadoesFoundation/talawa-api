@@ -2,6 +2,7 @@ const shortid = require('shortid');
 const database = require('../../../db');
 const getUserId = require('../../functions/getUserIdFromSignup');
 const userLanguageQuery = require('../../../lib/resolvers/user_query/userLanguage');
+const { USER_NOT_FOUND } = require('../../../constants');
 
 let userId;
 
@@ -33,6 +34,6 @@ describe('Testing userLanguage resolver', () => {
 
     await expect(async () => {
       await userLanguageQuery({}, args);
-    }).rejects.toEqual(Error('User not found'));
+    }).rejects.toEqual(Error(USER_NOT_FOUND));
   });
 });
