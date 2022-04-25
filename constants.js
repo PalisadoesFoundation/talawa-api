@@ -30,6 +30,11 @@ const ORGANIZATION_MEMBER_NOT_FOUND_MESSAGE = 'organization.member.notFound';
 const ORGANIZATION_MEMBER_NOT_FOUND_CODE = 'organization.member.notFound';
 const ORGANIZATION_MEMBER_NOT_FOUND_PARAM = 'organizationMember';
 
+const CHAT_NOT_FOUND = 'Chat not found';
+const CHAT_NOT_FOUND_MESSAGE = 'chat.notFound';
+const CHAT_NOT_FOUND_CODE = 'chat.notFound';
+const CHAT_NOT_FOUND_PARAM = 'chat';
+
 const IN_PRODUCTION = process.env.NODE_ENV === 'production';
 
 if (process.env.NODE_ENV === 'test') {
@@ -69,4 +74,9 @@ module.exports = {
   ORGANIZATION_MEMBER_NOT_FOUND_MESSAGE,
   ORGANIZATION_MEMBER_NOT_FOUND_CODE,
   ORGANIZATION_MEMBER_NOT_FOUND_PARAM,
+
+  CHAT_NOT_FOUND,
+  CHAT_NOT_FOUND_MESSAGE,
+  CHAT_NOT_FOUND_CODE,
+  CHAT_NOT_FOUND_PARAM,
 };
