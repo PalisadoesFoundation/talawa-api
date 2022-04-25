@@ -5,6 +5,12 @@ const shortid = require('shortid');
 const mongoose = require('mongoose');
 const createAdmin = require('../../../lib/resolvers/admin_mutations/createAdmin');
 const joinPublicOrganization = require('../../../lib/resolvers/member_mutations/join_public_organization');
+const {
+  ORGANIZATION_NOT_FOUND,
+  USER_NOT_FOUND,
+  USER_NOT_AUTHORIZED,
+  ORGANIZATION_MEMBER_NOT_FOUND,
+} = require('../../../constants');
 
 beforeAll(async () => {
   require('dotenv').config(); // pull env variables from .env file
@@ -43,7 +49,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await createAdmin({}, args, context);
-    }).rejects.toEqual(Error('Organization not found'));
+    }).rejects.toEqual(Error(ORGANIZATION_NOT_FOUND));
   });
 
   test('Create Admin Mutation without Existing User', async () => {
@@ -89,7 +95,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await createAdmin({}, args, context);
-    }).rejects.toEqual(Error('User not found'));
+    }).rejects.toEqual(Error(USER_NOT_FOUND));
   });
 
   test('Create Admin Mutation when user is already the admin of the organization', async () => {
@@ -135,9 +141,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await createAdmin({}, args, context);
-    }).rejects.toEqual(
-      Error('User is not authorized for performing this operation')
-    );
+    }).rejects.toEqual(Error(USER_NOT_AUTHORIZED));
   });
 
   test('Create Admin Mutation when user is not a member of the organization', async () => {
@@ -196,7 +200,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await createAdmin({}, args, context);
-    }).rejects.toEqual(Error("Organization's user is not a member"));
+    }).rejects.toEqual(Error(ORGANIZATION_MEMBER_NOT_FOUND));
   });
 
   test('Create Admin Mutation when user is a creator of the organization', async () => {
@@ -242,9 +246,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await createAdmin({}, args, context);
-    }).rejects.toEqual(
-      Error('User is not authorized for performing this operation')
-    );
+    }).rejects.toEqual(Error(USER_NOT_AUTHORIZED));
   });
 
   test('Create Admin Mutation', async () => {

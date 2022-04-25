@@ -25,6 +25,11 @@ const ORGANIZATION_NOT_FOUND_MESSAGE = 'organization.notFound';
 const ORGANIZATION_NOT_FOUND_CODE = 'organization.notFound';
 const ORGANIZATION_NOT_FOUND_PARAM = 'organization';
 
+const ORGANIZATION_MEMBER_NOT_FOUND = "Organization's user is not a member";
+const ORGANIZATION_MEMBER_NOT_FOUND_MESSAGE = 'organization.member.notFound';
+const ORGANIZATION_MEMBER_NOT_FOUND_CODE = 'organization.member.notFound';
+const ORGANIZATION_MEMBER_NOT_FOUND_PARAM = 'organizationMember';
+
 const IN_PRODUCTION = process.env.NODE_ENV === 'production';
 
 if (process.env.NODE_ENV === 'test') {
@@ -59,4 +64,9 @@ module.exports = {
   MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
   MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
   MEMBERSHIP_REQUEST_NOT_FOUND_PARAM,
+
+  ORGANIZATION_MEMBER_NOT_FOUND,
+  ORGANIZATION_MEMBER_NOT_FOUND_MESSAGE,
+  ORGANIZATION_MEMBER_NOT_FOUND_CODE,
+  ORGANIZATION_MEMBER_NOT_FOUND_PARAM,
 };
