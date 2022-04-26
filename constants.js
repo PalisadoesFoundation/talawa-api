@@ -25,6 +25,11 @@ const ORGANIZATION_NOT_FOUND_MESSAGE = 'organization.notFound';
 const ORGANIZATION_NOT_FOUND_CODE = 'organization.notFound';
 const ORGANIZATION_NOT_FOUND_PARAM = 'organization';
 
+const EVENT_NOT_FOUND = 'Event not found';
+const EVENT_NOT_FOUND_MESSAGE = 'event.notFound';
+const EVENT_NOT_FOUND_CODE = 'event.notFound';
+const EVENT_NOT_FOUND_PARAM = 'event';
+
 const IN_PRODUCTION = process.env.NODE_ENV === 'production';
 
 if (process.env.NODE_ENV === 'test') {
@@ -49,6 +54,11 @@ module.exports = {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_PARAM,
+
+  EVENT_NOT_FOUND,
+  EVENT_NOT_FOUND_MESSAGE,
+  EVENT_NOT_FOUND_CODE,
+  EVENT_NOT_FOUND_PARAM,
 
   USER_ALREADY_MEMBER,
   USER_ALREADY_MEMBER_CODE,
