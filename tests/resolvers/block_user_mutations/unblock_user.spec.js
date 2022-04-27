@@ -108,7 +108,7 @@ describe('unblock user tests', () => {
         { organizationId, userId: normalUserId },
         { userId: mainOrganizationAdminId }
       );
-    }).rejects.toThrow('User is not authorized for performing this operation');
+    }).rejects.toThrow(USER_NOT_AUTHORIZED);
   });
 
   test('a valid unblock request', async () => {
