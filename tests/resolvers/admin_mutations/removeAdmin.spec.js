@@ -6,6 +6,11 @@ const mongoose = require('mongoose');
 const createAdmin = require('../../../lib/resolvers/admin_mutations/createAdmin');
 const removeAdmin = require('../../../lib/resolvers/admin_mutations/removeAdmin');
 const joinPublicOrganization = require('../../../lib/resolvers/member_mutations/join_public_organization');
+const {
+  USER_NOT_FOUND,
+  USER_NOT_AUTHORIZED,
+  ORGANIZATION_NOT_FOUND,
+} = require('../../../constants');
 
 beforeAll(async () => {
   require('dotenv').config(); // pull env variables from .env file
@@ -44,7 +49,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await removeAdmin({}, args, context);
-    }).rejects.toEqual(Error('Organization not found'));
+    }).rejects.toEqual(Error(ORGANIZATION_NOT_FOUND));
   });
 
   test('Remove Admin Mutation without Existing User', async () => {
@@ -90,7 +95,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await removeAdmin({}, args, context);
-    }).rejects.toEqual(Error('User not found'));
+    }).rejects.toEqual(Error(USER_NOT_FOUND));
   });
 
   test('Remove Admin Mutation without User being an Admin', async () => {
@@ -149,9 +154,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await removeAdmin({}, args, context);
-    }).rejects.toEqual(
-      Error('User is not authorized for performing this operation')
-    );
+    }).rejects.toEqual(Error(USER_NOT_AUTHORIZED));
   });
 
   test('Remove Admin Mutation when user is the creator of the organization', async () => {
