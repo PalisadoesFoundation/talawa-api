@@ -9,6 +9,13 @@ const getUserIdFromSignUp = require('../../functions/getUserIdFromSignup');
 const Organization = require('../../../lib/models/Organization');
 const User = require('../../../lib/models/User');
 const MembershipRequest = require('../../../lib/models/MembershipRequest');
+const {
+  MEMBERSHIP_REQUEST_NOT_FOUND,
+  ORGANIZATION_NOT_FOUND,
+  USER_NOT_AUTHORIZED,
+  USER_ALREADY_MEMBER,
+  USER_NOT_FOUND,
+} = require('../../../constants');
 
 let adminId;
 let memberId;
@@ -131,7 +138,7 @@ afterAll(async () => {
   await database.disconnect();
 });
 
-describe('accept membership requrest', () => {
+describe('accept membership request', () => {
   test("membership request doesn't exist", async () => {
     await expect(async () => {
       await acceptMembershipRequest(
@@ -139,7 +146,7 @@ describe('accept membership requrest', () => {
         { membershipRequestId: new ObjectId() },
         { userId: adminId }
       );
-    }).rejects.toThrow('membership Request not found');
+    }).rejects.toThrow(MEMBERSHIP_REQUEST_NOT_FOUND);
   });
 
   test("organization doesn't exist", async () => {
@@ -149,7 +156,7 @@ describe('accept membership requrest', () => {
         { membershipRequestId: invalidOrgMembershipRequestId },
         { userId: adminId }
       );
-    }).rejects.toThrow('Organization not found');
+    }).rejects.toThrow(ORGANIZATION_NOT_FOUND);
   });
 
   test("user doesn't exist", async () => {
@@ -159,7 +166,7 @@ describe('accept membership requrest', () => {
         { membershipRequestId: invalidUserMembershipRequestId },
         { userId: adminId }
       );
-    }).rejects.toThrow('User not found');
+    }).rejects.toThrow(USER_NOT_FOUND);
   });
 
   test('user is not the admin of the org', async () => {
@@ -169,7 +176,7 @@ describe('accept membership requrest', () => {
         { membershipRequestId: validMembershipRequestId },
         { userId: memberId }
       );
-    }).rejects.toThrow('User not authorized');
+    }).rejects.toThrow(USER_NOT_AUTHORIZED);
   });
   test('user is already a member', async () => {
     await expect(async () => {
@@ -178,7 +185,7 @@ describe('accept membership requrest', () => {
         { membershipRequestId: alreadyMemberMembershipRequestId },
         { userId: adminId }
       );
-    }).rejects.toThrow('User already member');
+    }).rejects.toThrow(USER_ALREADY_MEMBER);
   });
 
   test('a valid accept member', async () => {

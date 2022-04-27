@@ -1,14 +1,15 @@
 let URL = 'http://calico.palisadoes.org/talawa/graphql';
 
-const USER_NOT_AUTHORIZED = 'User not authorized';
+const USER_NOT_AUTHORIZED =
+  'User is not authorized for performing this operation';
 const USER_NOT_AUTHORIZED_MESSAGE = 'user.notAuthorized';
 const USER_NOT_AUTHORIZED_CODE = 'user.notAuthorized';
 const USER_NOT_AUTHORIZED_PARAM = 'user';
 
-const USER_ALREADY_MEMBER = 'User already member';
+const USER_ALREADY_MEMBER = 'User is already a member';
 const USER_ALREADY_MEMBER_MESSAGE = 'user.alreadyMember';
 const USER_ALREADY_MEMBER_CODE = 'user.alreadyMember';
-const USER_ALREADY_MEMBER_PARAM = 'userAlreadyMember';
+const USER_ALREADY_MEMBER_PARAM = 'user';
 
 const MEMBERSHIP_REQUEST_NOT_FOUND = 'membership Request not found';
 const MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE = 'membershipRequest.notFound';
@@ -39,6 +40,11 @@ const EVENT_NOT_FOUND = 'Event not found';
 const EVENT_NOT_FOUND_MESSAGE = 'event.notFound';
 const EVENT_NOT_FOUND_CODE = 'event.notFound';
 const EVENT_NOT_FOUND_PARAM = 'event';
+
+const MEMBER_NOT_FOUND = 'Member not found';
+const MEMBER_NOT_FOUND_MESSAGE = 'member.notFound';
+const MEMBER_NOT_FOUND_CODE = 'member.notFound';
+const MEMBER_NOT_FOUND_PARAM = 'member';
 
 const IN_PRODUCTION = process.env.NODE_ENV === 'production';
 
@@ -89,4 +95,9 @@ module.exports = {
   CHAT_NOT_FOUND_MESSAGE,
   CHAT_NOT_FOUND_CODE,
   CHAT_NOT_FOUND_PARAM,
+
+  MEMBER_NOT_FOUND,
+  MEMBER_NOT_FOUND_MESSAGE,
+  MEMBER_NOT_FOUND_CODE,
+  MEMBER_NOT_FOUND_PARAM,
 };
