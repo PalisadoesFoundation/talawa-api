@@ -1,6 +1,10 @@
 const axios = require('axios');
 const shortid = require('shortid');
-const { URL } = require('../../../constants');
+const {
+  URL,
+  USER_ALREADY_MEMBER,
+  CHAT_NOT_FOUND,
+} = require('../../../constants');
 const getToken = require('../../functions/getToken');
 const getUserId = require('../../functions/getUserId');
 const addUserToGroupChat = require('../../../lib/resolvers/group_chat_mutations/addUserToGroupChat');
@@ -141,7 +145,7 @@ describe('tests for adding a user to group chat', () => {
     const context = { userId: mongoose.Types.ObjectId() };
     await expect(async () => {
       await addUserToGroupChat({}, args, context);
-    }).rejects.toEqual(Error('Group Chat not found'));
+    }).rejects.toEqual(Error(CHAT_NOT_FOUND));
   });
 
   // test if user is already added
@@ -153,7 +157,7 @@ describe('tests for adding a user to group chat', () => {
     const context = { userId: userId };
     await expect(async () => {
       await addUserToGroupChat({}, args, context);
-    }).rejects.toEqual(Error('User already a member'));
+    }).rejects.toEqual(Error(USER_ALREADY_MEMBER));
   });
 
   // test for adding a user to group chat

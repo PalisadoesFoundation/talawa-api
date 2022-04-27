@@ -5,12 +5,12 @@ const USER_NOT_AUTHORIZED_MESSAGE = 'user.notAuthorized';
 const USER_NOT_AUTHORIZED_CODE = 'user.notAuthorized';
 const USER_NOT_AUTHORIZED_PARAM = 'user';
 
-const USER_ALREADY_MEMBER = 'User already member';
+const USER_ALREADY_MEMBER = 'User is already a member';
 const USER_ALREADY_MEMBER_MESSAGE = 'user.alreadyMember';
 const USER_ALREADY_MEMBER_CODE = 'user.alreadyMember';
 const USER_ALREADY_MEMBER_PARAM = 'userAlreadyMember';
 
-const MEMBERSHIP_REQUEST_NOT_FOUND = 'membership Request not found';
+const MEMBERSHIP_REQUEST_NOT_FOUND = 'Membership Request not found';
 const MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE = 'membershipRequest.notFound';
 const MEMBERSHIP_REQUEST_NOT_FOUND_CODE = 'membershipRequest.notFound';
 const MEMBERSHIP_REQUEST_NOT_FOUND_PARAM = 'membershipRequest';
@@ -29,6 +29,11 @@ const EVENT_NOT_FOUND = 'Event not found';
 const EVENT_NOT_FOUND_MESSAGE = 'event.notFound';
 const EVENT_NOT_FOUND_CODE = 'event.notFound';
 const EVENT_NOT_FOUND_PARAM = 'event';
+
+const CHAT_NOT_FOUND = 'Chat not found';
+const CHAT_NOT_FOUND_MESSAGE = 'chat.notFound';
+const CHAT_NOT_FOUND_CODE = 'chat.notFound';
+const CHAT_NOT_FOUND_PARAM = 'chat';
 
 const IN_PRODUCTION = process.env.NODE_ENV === 'production';
 
@@ -69,4 +74,9 @@ module.exports = {
   MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
   MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
   MEMBERSHIP_REQUEST_NOT_FOUND_PARAM,
+
+  CHAT_NOT_FOUND,
+  CHAT_NOT_FOUND_MESSAGE,
+  CHAT_NOT_FOUND_CODE,
+  CHAT_NOT_FOUND_PARAM,
 };
