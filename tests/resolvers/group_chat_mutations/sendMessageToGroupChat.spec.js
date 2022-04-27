@@ -1,6 +1,10 @@
 const axios = require('axios');
 const shortid = require('shortid');
-const { URL } = require('../../../constants');
+const {
+  URL,
+  USER_NOT_AUTHORIZED,
+  CHAT_NOT_FOUND,
+} = require('../../../constants');
 const getToken = require('../../functions/getToken');
 const getUserId = require('../../functions/getUserId');
 const sendMessageToGroupChat = require('../../../lib/resolvers/group_chat_mutations/sendMessageToGroupChat');
@@ -148,7 +152,7 @@ describe('tests for sending a message to group chat', () => {
     };
     await expect(async () => {
       await sendMessageToGroupChat({}, args, context);
-    }).rejects.toEqual(Error('Group Chat not found'));
+    }).rejects.toEqual(Error(CHAT_NOT_FOUND));
   });
 
   // TEST IF USER IS NOT A MEMBER OF THE GROUP CHAT
@@ -163,7 +167,7 @@ describe('tests for sending a message to group chat', () => {
     };
     await expect(async () => {
       await sendMessageToGroupChat({}, args, context);
-    }).rejects.toEqual(Error('User is not a member of the group chat'));
+    }).rejects.toEqual(Error(USER_NOT_AUTHORIZED));
   });
 
   // TEST FRO SENDING MESSAGE TO THE GROUP CHAT
