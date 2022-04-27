@@ -6,6 +6,11 @@ const {
   eventProjectTestMutationHelpers,
 } = require('./helpers/helperFunctions');
 
+const {
+  USER_NOT_AUTHORIZED,
+  USER_NOT_FOUND,
+  EVENT_PROJECT_NOT_FOUND,
+} = require('../../../constants');
 let user;
 let user2;
 let org;
@@ -44,7 +49,7 @@ describe('event_project_mutation removeProject mutation resolver', () => {
     const context = { userId: mongoose.Types.ObjectId() };
     await expect(async () => {
       await removeProject({}, {}, context);
-    }).rejects.toThrow('User not found');
+    }).rejects.toThrow(USER_NOT_FOUND);
   });
   test('EventProject not exists', async () => {
     const context = { userId: user._id };
@@ -53,7 +58,7 @@ describe('event_project_mutation removeProject mutation resolver', () => {
     };
     await expect(async () => {
       await removeProject({}, args, context);
-    }).rejects.toThrow('EventProject not found');
+    }).rejects.toThrow(EVENT_PROJECT_NOT_FOUND);
   });
   test('when user is not event creator', async () => {
     const context = { userId: user2._id };
@@ -62,7 +67,7 @@ describe('event_project_mutation removeProject mutation resolver', () => {
     };
     await expect(async () => {
       await removeProject({}, args, context);
-    }).rejects.toEqual(Error('User not authorized'));
+    }).rejects.toEqual(Error(USER_NOT_AUTHORIZED));
   });
   test('Event project delete/remove', async () => {
     const context = { userId: `${user._id}` };
