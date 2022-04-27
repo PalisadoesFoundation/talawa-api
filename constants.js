@@ -30,6 +30,11 @@ const EVENT_NOT_FOUND_MESSAGE = 'event.notFound';
 const EVENT_NOT_FOUND_CODE = 'event.notFound';
 const EVENT_NOT_FOUND_PARAM = 'event';
 
+const REGISTRANT_ALREADY_EXIST = 'Already registered for the event';
+const REGISTRANT_ALREADY_EXIST_MESSAGE = 'registrant.alreadyExist';
+const REGISTRANT_ALREADY_EXIST_CODE = 'registrant.alreadyExist';
+const REGISTRANT_ALREADY_EXIST_PARAM = 'registrant';
+
 const IN_PRODUCTION = process.env.NODE_ENV === 'production';
 
 if (process.env.NODE_ENV === 'test') {
@@ -69,4 +74,9 @@ module.exports = {
   MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
   MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
   MEMBERSHIP_REQUEST_NOT_FOUND_PARAM,
+
+  REGISTRANT_ALREADY_EXIST,
+  REGISTRANT_ALREADY_EXIST_CODE,
+  REGISTRANT_ALREADY_EXIST_MESSAGE,
+  REGISTRANT_ALREADY_EXIST_PARAM,
 };

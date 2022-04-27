@@ -5,6 +5,11 @@ const signup = require('../../../lib/resolvers/auth_mutations/signup');
 const registerForEvent = require('../../../lib/resolvers/event_mutations/registerForEvent');
 const createEvent = require('../../../lib/resolvers/event_mutations/createEvent');
 const createOrganization = require('../../../lib/resolvers/organization_mutations/createOrganization');
+const {
+  USER_NOT_FOUND,
+  REGISTRANT_ALREADY_EXIST,
+  EVENT_NOT_FOUND,
+} = require('../../../constants');
 
 beforeAll(async () => {
   require('dotenv').config(); // pull env variables from .env file
@@ -28,7 +33,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await registerForEvent({}, args, context);
-    }).rejects.toEqual(Error('User not found'));
+    }).rejects.toEqual(Error(USER_NOT_FOUND));
   });
 
   test('Register Event Mutation without Existing event', async () => {
@@ -56,7 +61,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await registerForEvent({}, args, context);
-    }).rejects.toEqual(Error('Event not found'));
+    }).rejects.toEqual(Error(EVENT_NOT_FOUND));
   });
 
   test('Register Event Mutation with user (Admin) already registered', async () => {
@@ -124,7 +129,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await registerForEvent({}, args, context);
-    }).rejects.toEqual(Error('Already registered for the event'));
+    }).rejects.toEqual(Error(REGISTRANT_ALREADY_EXIST));
   });
 
   test('Register Event Mutation', async () => {
