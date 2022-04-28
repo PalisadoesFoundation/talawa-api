@@ -5,6 +5,7 @@ const shortid = require('shortid');
 const mongoose = require('mongoose');
 const adminRemoveGroupChat = require('../../../lib/resolvers/admin_mutations/admin-remove-group-chat');
 const createGroupChat = require('../../../lib/resolvers/group_chat_mutations/createGroupChat');
+const { CHAT_NOT_FOUND, USER_NOT_FOUND } = require('../../../constants');
 
 beforeAll(async () => {
   require('dotenv').config(); // pull env variables from .env file
@@ -27,7 +28,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await adminRemoveGroupChat({}, args, context);
-    }).rejects.toEqual(Error('Group not found'));
+    }).rejects.toEqual(Error(CHAT_NOT_FOUND));
   });
 
   test('Admin Remove Group Chat Mutation without User', async () => {
@@ -97,7 +98,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await adminRemoveGroupChat({}, args, context);
-    }).rejects.toEqual(Error('User not found'));
+    }).rejects.toEqual(Error(USER_NOT_FOUND));
   });
 
   test('Admin Remove Group Chat Mutation', async () => {
