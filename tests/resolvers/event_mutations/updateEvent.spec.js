@@ -5,6 +5,11 @@ const signup = require('../../../lib/resolvers/auth_mutations/signup');
 const createEvent = require('../../../lib/resolvers/event_mutations/createEvent');
 const updateEvent = require('../../../lib/resolvers/event_mutations/updateEvent');
 const createOrganization = require('../../../lib/resolvers/organization_mutations/createOrganization');
+const {
+  USER_NOT_FOUND,
+  EVENT_NOT_FOUND,
+  USER_NOT_AUTHORIZED,
+} = require('../../../constants');
 
 beforeAll(async () => {
   require('dotenv').config(); // pull env variables from .env file
@@ -28,7 +33,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await updateEvent({}, args, context);
-    }).rejects.toEqual(Error('User not found'));
+    }).rejects.toEqual(Error(USER_NOT_FOUND));
   });
 
   test('Update Event Mutation without Existing event', async () => {
@@ -56,7 +61,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await updateEvent({}, args, context);
-    }).rejects.toEqual(Error('Event not found'));
+    }).rejects.toEqual(Error(EVENT_NOT_FOUND));
   });
 
   test('Update Event Mutation without user being an Admin', async () => {
@@ -141,9 +146,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await updateEvent({}, args, context);
-    }).rejects.toEqual(
-      Error('User is not authorized for performing this operation')
-    );
+    }).rejects.toEqual(Error(USER_NOT_AUTHORIZED));
   });
 
   test('Update Event Mutation', async () => {
