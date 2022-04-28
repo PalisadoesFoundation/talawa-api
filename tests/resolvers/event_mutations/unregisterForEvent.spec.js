@@ -6,6 +6,11 @@ const createEvent = require('../../../lib/resolvers/event_mutations/createEvent'
 const registerForEvent = require('../../../lib/resolvers/event_mutations/registerForEvent');
 const unregisterForEvent = require('../../../lib/resolvers/event_mutations/unregisterForEvent');
 const createOrganization = require('../../../lib/resolvers/organization_mutations/createOrganization');
+const {
+  EVENT_NOT_FOUND,
+  USER_NOT_FOUND,
+  USER_ALREADY_UNREGISTERED,
+} = require('../../../constants');
 
 beforeAll(async () => {
   require('dotenv').config(); // pull env variables from .env file
@@ -29,7 +34,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await unregisterForEvent({}, args, context);
-    }).rejects.toEqual(Error('User not found'));
+    }).rejects.toEqual(Error(USER_NOT_FOUND));
   });
 
   test('Unregister Event Mutation without Existing event', async () => {
@@ -57,7 +62,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await unregisterForEvent({}, args, context);
-    }).rejects.toEqual(Error('Event not found'));
+    }).rejects.toEqual(Error(EVENT_NOT_FOUND));
   });
 
   test('Unregister Event Mutation without user registered', async () => {
@@ -142,7 +147,7 @@ describe('Unit testing', () => {
 
     await expect(async () => {
       await unregisterForEvent({}, args, context);
-    }).rejects.toEqual(Error('User not found'));
+    }).rejects.toEqual(Error(USER_NOT_FOUND));
   });
 
   test('Unregister Event Mutation when user already unregistered', async () => {
@@ -235,7 +240,7 @@ describe('Unit testing', () => {
     // Calling Unregister Mutation again after unregistering an event
     await expect(async () => {
       await unregisterForEvent({}, args, context);
-    }).rejects.toEqual(Error('Already unregistered for the event'));
+    }).rejects.toEqual(Error(USER_ALREADY_UNREGISTERED));
   });
 
   test('Unregister Event Mutation', async () => {
