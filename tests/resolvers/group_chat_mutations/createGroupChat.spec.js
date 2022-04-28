@@ -12,7 +12,6 @@ let token;
 beforeAll(async () => {
     let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
     token = await getToken(generatedEmail);
-    userId = await getUserId(generatedEmail);
     require('dotenv').config(); // pull env variables from .env file
     await database.connect();  // connect the database before running any test in this file's scope
 });
