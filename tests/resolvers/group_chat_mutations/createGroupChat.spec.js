@@ -2,7 +2,6 @@ const axios = require('axios');
 const shortid = require('shortid');
 const { URL } = require('../../../constants');
 const getToken = require('../../functions/getToken');
-const getUserId = require('../../functions/getUserId');
 const createGroupChat = require('../../../lib/resolvers/group_chat_mutations/createGroupChat');
 const database = require('../../../db');
 const mongoose = require('mongoose');
