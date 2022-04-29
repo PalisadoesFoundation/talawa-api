@@ -25,6 +25,11 @@ const ORGANIZATION_NOT_FOUND_MESSAGE = 'organization.notFound';
 const ORGANIZATION_NOT_FOUND_CODE = 'organization.notFound';
 const ORGANIZATION_NOT_FOUND_PARAM = 'organization';
 
+const EVENT_PROJECT_NOT_FOUND = 'EventProject not found';
+const EVENT_PROJECT_NOT_FOUND_CODE = 'eventProject.notFound';
+const EVENT_PROJECT_NOT_FOUND_MESSAGE = 'eventProject.notFound';
+const EVENT_PROJECT_NOT_FOUND_PARAM = 'eventProject';
+
 const EVENT_NOT_FOUND = 'Event not found';
 const EVENT_NOT_FOUND_MESSAGE = 'event.notFound';
 const EVENT_NOT_FOUND_CODE = 'event.notFound';
@@ -34,6 +39,11 @@ const CHAT_NOT_FOUND = 'Chat not found';
 const CHAT_NOT_FOUND_MESSAGE = 'chat.notFound';
 const CHAT_NOT_FOUND_CODE = 'chat.notFound';
 const CHAT_NOT_FOUND_PARAM = 'chat';
+
+const USER_ALREADY_UNREGISTERED = 'Already registered for the event';
+const USER_ALREADY_UNREGISTERED_MESSAGE = 'registrant.alreadyUnregistered';
+const USER_ALREADY_UNREGISTERED_CODE = 'registrant.alreadyUnregistered';
+const USER_ALREADY_UNREGISTERED_PARAM = 'registrant';
 
 const IN_PRODUCTION = process.env.NODE_ENV === 'production';
 
@@ -60,6 +70,11 @@ module.exports = {
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_PARAM,
 
+  EVENT_PROJECT_NOT_FOUND,
+  EVENT_PROJECT_NOT_FOUND_CODE,
+  EVENT_PROJECT_NOT_FOUND_MESSAGE,
+  EVENT_PROJECT_NOT_FOUND_PARAM,
+
   EVENT_NOT_FOUND,
   EVENT_NOT_FOUND_MESSAGE,
   EVENT_NOT_FOUND_CODE,
@@ -79,4 +94,9 @@ module.exports = {
   CHAT_NOT_FOUND_MESSAGE,
   CHAT_NOT_FOUND_CODE,
   CHAT_NOT_FOUND_PARAM,
+
+  USER_ALREADY_UNREGISTERED,
+  USER_ALREADY_UNREGISTERED_MESSAGE,
+  USER_ALREADY_UNREGISTERED_CODE,
+  USER_ALREADY_UNREGISTERED_PARAM,
 };
