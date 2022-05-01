@@ -1,6 +1,6 @@
 const axios = require('axios');
 const shortid = require('shortid');
-const { URL } = require('../../../constants');
+const { URL, CHAT_NOT_FOUND } = require('../../../constants');
 const getToken = require('../../functions/getToken');
 const getUserId = require('../../functions/getUserId');
 const sendMessageToDirectChat = require('../../../lib/resolvers/direct_chat_mutations/sendMessageToDirectChat');
@@ -147,7 +147,7 @@ describe('tests for sendMessageToDirectChat', () => {
 
     await expect(async () => {
       await sendMessageToDirectChat({}, args);
-    }).rejects.toEqual(Error('DirectChats not found'));
+    }).rejects.toEqual(Error(CHAT_NOT_FOUND));
   });
 
   // test for add message to chat in sendMessageToDirectChat

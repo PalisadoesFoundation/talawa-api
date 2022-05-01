@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { URL } = require('../../../constants');
+const { URL, ORGANIZATION_NOT_FOUND } = require('../../../constants');
 const getToken = require('../../functions/getToken');
 const shortid = require('shortid');
 const updateOrganization = require('../../../lib/resolvers/organization_mutations/updateOrganization');
@@ -85,7 +85,7 @@ describe('organization resolvers', () => {
     };
     await expect(async () => {
       await updateOrganization({}, args, context);
-    }).rejects.toEqual(Error('Organization not found'));
+    }).rejects.toEqual(Error(ORGANIZATION_NOT_FOUND));
   });
 
   // test for update organization

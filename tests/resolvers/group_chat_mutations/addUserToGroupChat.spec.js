@@ -2,8 +2,8 @@ const axios = require('axios');
 const shortid = require('shortid');
 const {
   URL,
-  CHAT_NOT_FOUND,
   USER_ALREADY_MEMBER,
+  CHAT_NOT_FOUND,
 } = require('../../../constants');
 const getToken = require('../../functions/getToken');
 const getUserId = require('../../functions/getUserId');

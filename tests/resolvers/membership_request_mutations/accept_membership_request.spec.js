@@ -12,9 +12,9 @@ const MembershipRequest = require('../../../lib/models/MembershipRequest');
 const {
   MEMBERSHIP_REQUEST_NOT_FOUND,
   ORGANIZATION_NOT_FOUND,
+  USER_NOT_FOUND,
   USER_NOT_AUTHORIZED,
   USER_ALREADY_MEMBER,
-  USER_NOT_FOUND,
 } = require('../../../constants');
 
 let adminId;
