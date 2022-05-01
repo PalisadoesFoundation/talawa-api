@@ -1,7 +1,15 @@
 const axios = require('axios');
 const logger = require('logger');
 const shortid = require('shortid');
-const { URL } = require('../constants');
+const {
+  URL,
+  MEMBER_NOT_FOUND,
+  MEMBER_NOT_FOUND_CODE,
+  MEMBER_NOT_FOUND_PARAM,
+  USER_NOT_AUTHORIZED,
+  USER_NOT_AUTHORIZED_CODE,
+  USER_ALREADY_MEMBER_PARAM,
+} = require('../constants');
 const getToken = require('./functions/getToken');
 
 let token;
@@ -181,16 +189,16 @@ describe('User-Organization Resolvers', () => {
     const { data } = response;
     expect(data.errors[0]).toEqual(
       expect.objectContaining({
-        message: 'User is not authorized for performing this operation',
+        message: USER_NOT_AUTHORIZED,
         status: 422,
       })
     );
 
     expect(data.errors[0].data[0]).toEqual(
       expect.objectContaining({
-        message: 'User is not authorized for performing this operation',
-        code: 'user.notAuthorized',
-        param: 'userAuthorization',
+        message: USER_NOT_AUTHORIZED,
+        code: USER_NOT_AUTHORIZED_CODE,
+        param: USER_ALREADY_MEMBER_PARAM,
         metadata: {},
       })
     );
@@ -299,16 +307,16 @@ describe('User-Organization Resolvers', () => {
 
     expect(data.errors[0]).toEqual(
       expect.objectContaining({
-        message: 'Member not found',
+        message: MEMBER_NOT_FOUND,
         status: 422,
       })
     );
 
     expect(data.errors[0].data[0]).toEqual(
       expect.objectContaining({
-        message: 'Member not found',
-        code: 'member.notFound',
-        param: 'member.notFound',
+        message: MEMBER_NOT_FOUND,
+        code: MEMBER_NOT_FOUND_CODE,
+        param: MEMBER_NOT_FOUND_PARAM,
         metadata: {},
       })
     );
@@ -416,7 +424,7 @@ describe('User-Organization Resolvers', () => {
 
     expect(data.errors[0]).toEqual(
       expect.objectContaining({
-        message: 'User is not a member',
+        message: MEMBER_NOT_FOUND,
         status: 422,
         data: [],
       })
