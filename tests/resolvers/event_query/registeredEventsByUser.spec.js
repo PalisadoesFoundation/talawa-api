@@ -50,20 +50,20 @@ describe('Unit testing', () => {
         expect(typeof event.recurrance === 'string').toBeTruthy();
         expect(
           typeof event.location === 'string' ||
-          event.location === null ||
-          event.location === undefined
+            event.location === null ||
+            event.location === undefined
         ).toBeTruthy();
         expect(typeof event.startDate === 'string').toBeTruthy();
         expect(typeof event.allDay === 'boolean').toBeTruthy();
         expect(
           typeof event.startTime === 'string' ||
-          event.startTime === null ||
-          event.startTime === undefined
+            event.startTime === null ||
+            event.startTime === undefined
         ).toBeTruthy();
         expect(
           typeof event.endTime === 'string' ||
-          event.endTime === null ||
-          event.endTime === undefined
+            event.endTime === null ||
+            event.endTime === undefined
         ).toBeTruthy();
       });
     });
