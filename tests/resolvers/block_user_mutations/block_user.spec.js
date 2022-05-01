@@ -8,6 +8,11 @@ const database = require('../../../db');
 const getUserIdFromSignup = require('../../functions/getUserIdFromSignup');
 const User = require('../../../lib/models/User');
 const Organization = require('../../../lib/models/Organization');
+const {
+  ORGANIZATION_NOT_FOUND,
+  USER_NOT_FOUND,
+  USER_NOT_AUTHORIZED,
+} = require('../../../constants');
 
 let mainOrganization;
 let organizationId;
@@ -73,7 +78,7 @@ describe('block user tests', () => {
         { organizationId, userId: normalUserId },
         { userId: secondaryUserId }
       );
-    }).rejects.toThrow('User not authorized');
+    }).rejects.toThrow(USER_NOT_AUTHORIZED);
   });
   test("organization doesn't exist", async () => {
     await expect(async () => {
@@ -82,7 +87,7 @@ describe('block user tests', () => {
         { organizationId: new ObjectId(), userId: normalUserId },
         { userId: mainOrganizationAdminId }
       );
-    }).rejects.toThrow('Organization not found');
+    }).rejects.toThrow(ORGANIZATION_NOT_FOUND);
   });
 
   test("user doesn't exist", async () => {
@@ -92,7 +97,7 @@ describe('block user tests', () => {
         { organizationId, userId: new ObjectId() },
         { userId: mainOrganizationAdminId }
       );
-    }).rejects.toThrow('User not found');
+    }).rejects.toThrow(USER_NOT_FOUND);
   });
 
   test('a valid block request', async () => {
@@ -112,7 +117,7 @@ describe('block user tests', () => {
         { organizationId, userId: normalUserId },
         { userId: mainOrganizationAdminId }
       );
-    }).rejects.toThrow('User not authorized');
+    }).rejects.toThrow(USER_NOT_AUTHORIZED);
   });
 
   test('blockedUsers inside organization contains the blocked user', async () => {
