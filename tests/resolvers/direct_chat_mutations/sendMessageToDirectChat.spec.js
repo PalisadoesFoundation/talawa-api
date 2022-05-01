@@ -3,10 +3,12 @@ const shortid = require('shortid');
 const { URL, CHAT_NOT_FOUND } = require('../../../constants');
 const getToken = require('../../functions/getToken');
 const getUserId = require('../../functions/getUserId');
-const directChatsMessagesByChatID = require('../../../lib/resolvers/direct_chat_query/directChatsMessagesByChatID');
+const sendMessageToDirectChat = require('../../../lib/resolvers/direct_chat_mutations/sendMessageToDirectChat');
 const database = require('../../../db');
 const mongoose = require('mongoose');
+const { PubSub } = require('apollo-server-express');
 
+const pubsub = new PubSub(); // creating a new pubsub for passing to context in sendMessageToDirectChat
 let token;
 let userId;
 
@@ -22,7 +24,7 @@ afterAll(() => {
   database.disconnect(); // disconnect the database after running every test in this file's scope
 });
 
-describe('tests for direct chats by chat id', () => {
+describe('tests for sendMessageToDirectChat', () => {
   let createdDirectChatId;
   let createdOrgId;
 
@@ -138,23 +140,28 @@ describe('tests for direct chats by chat id', () => {
     );
   });
 
-  // test for if no chats found , throw error
-  test('if no direct Chats are found for the provided args.id, throws NotFoundError', async () => {
+  // if chat not found , throw error
+  test('if no Chat is found for the provided args.chatId, throws NotFoundError', async () => {
     // Random id to pass as chat id
-    const args = { id: mongoose.Types.ObjectId() };
+    const args = { chatId: mongoose.Types.ObjectId() };
 
     await expect(async () => {
-      await directChatsMessagesByChatID({}, args);
+      await sendMessageToDirectChat({}, args);
     }).rejects.toEqual(Error(CHAT_NOT_FOUND));
   });
 
-  // test for finding a direct chat by chat id
-  test('find chat by chat id', async () => {
+  // test for add message to chat in sendMessageToDirectChat
+  test('add message to chat', async () => {
     var args = {
-      id: createdDirectChatId,
+      chatId: createdDirectChatId,
+      messageContent: 'This is a test message',
     };
-    const response = await directChatsMessagesByChatID({}, args);
-    expect(response[0]).toEqual(
+    const context = {
+      userId: userId,
+      pubsub: pubsub,
+    };
+    const response = await sendMessageToDirectChat({}, args, context);
+    expect(response).toEqual(
       expect.objectContaining({
         messageContent: expect.any(String),
       })
