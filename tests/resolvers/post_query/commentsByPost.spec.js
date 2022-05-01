@@ -6,6 +6,13 @@ const Post = require('../../../lib/models/Post');
 const Comment = require('../../../lib/models/Comment')
 const commentsByPost = require('../../../lib/resolvers/post_query/commentsByPost')
 
+const {
+  COMMENT_NOT_FOUND,
+  POST_NOT_FOUND,
+  USER_NOT_FOUND,
+  ORGANIZATION_NOT_FOUND,
+} = require('../../../constants');
+
 let user;
 let org;
 let post;
@@ -112,7 +119,7 @@ describe('Comment query for commentsByPost resolver', () => {
     }
     await expect(async () => {
       await commentsByPost({}, arg)
-    }).rejects.toThrow(Error('Comment not found'));
+    }).rejects.toThrow(COMMENT_NOT_FOUND);
   })
   test('User does not exist', async () => {
     deleteUser(user._id)
@@ -121,7 +128,7 @@ describe('Comment query for commentsByPost resolver', () => {
     };
     await expect(async () => {
       await commentsByPost({}, arg)
-    }).rejects.toThrow(Error('User not found'));
+    }).rejects.toThrow(USER_NOT_FOUND);
   })
   test('Organization does not exist', async () => {
     await deleteComment(comment._id)
@@ -135,7 +142,7 @@ describe('Comment query for commentsByPost resolver', () => {
     };
     await expect(async () => {
       await commentsByPost({}, arg)
-    }).rejects.toThrow(Error('Organization not found'));
+    }).rejects.toThrow(ORGANIZATION_NOT_FOUND);
   })
   test('Post does not exist', async () => {
     await deleteComment(comment._id)
@@ -150,6 +157,6 @@ describe('Comment query for commentsByPost resolver', () => {
     };
     await expect(async () => {
       await commentsByPost({}, arg)
-    }).rejects.toThrow(Error('Post not found'));
+    }).rejects.toThrow(POST_NOT_FOUND);
   })
 })
