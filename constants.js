@@ -1,5 +1,4 @@
 let URL = 'http://calico.palisadoes.org/talawa/graphql';
-
 const USER_NOT_AUTHORIZED =
   'User is not authorized for performing this operation';
 const USER_NOT_AUTHORIZED_MESSAGE = 'user.notAuthorized';
