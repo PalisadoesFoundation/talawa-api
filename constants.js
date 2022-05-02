@@ -1,5 +1,4 @@
 let URL = 'http://calico.palisadoes.org/talawa/graphql';
-
 const USER_NOT_AUTHORIZED =
   'User is not authorized for performing this operation';
 const USER_NOT_AUTHORIZED_MESSAGE = 'user.notAuthorized';
@@ -50,6 +49,11 @@ const REGISTRANT_ALREADY_EXIST = 'Already registered for the event';
 const REGISTRANT_ALREADY_EXIST_MESSAGE = 'registrant.alreadyExist';
 const REGISTRANT_ALREADY_EXIST_CODE = 'registrant.alreadyExist';
 const REGISTRANT_ALREADY_EXIST_PARAM = 'registrant';
+
+const ORGANIZATION_NOT_AUTHORIZED = 'Organization is not authorized';
+const ORGANIZATION_NOT_AUTHORIZED_MESSAGE = 'org.notAuthorized';
+const ORGANIZATION_NOT_AUTHORIZED_CODE = 'org.notAuthorized';
+const ORGANIZATION_NOT_AUTHORIZED_PARAM = 'org';
 
 const MEMBER_NOT_FOUND = 'Member not found';
 const MEMBER_NOT_FOUND_MESSAGE = 'member.notFound';
@@ -110,6 +114,11 @@ module.exports = {
   REGISTRANT_ALREADY_EXIST_CODE,
   REGISTRANT_ALREADY_EXIST_MESSAGE,
   REGISTRANT_ALREADY_EXIST_PARAM,
+
+  ORGANIZATION_NOT_AUTHORIZED,
+  ORGANIZATION_NOT_AUTHORIZED_MESSAGE,
+  ORGANIZATION_NOT_AUTHORIZED_CODE,
+  ORGANIZATION_NOT_AUTHORIZED_PARAM,
 
   ORGANIZATION_MEMBER_NOT_FOUND,
   ORGANIZATION_MEMBER_NOT_FOUND_MESSAGE,
