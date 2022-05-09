@@ -65,6 +65,16 @@ const USER_ALREADY_UNREGISTERED_MESSAGE = 'registrant.alreadyUnregistered';
 const USER_ALREADY_UNREGISTERED_CODE = 'registrant.alreadyUnregistered';
 const USER_ALREADY_UNREGISTERED_PARAM = 'registrant';
 
+const COMMENT_NOT_FOUND = 'Comment not found';
+const COMMENT_NOT_FOUND_MESSAGE = 'comment.notFound'
+const COMMENT_NOT_FOUND_CODE = 'comment.notFound';
+const COMMENT_NOT_FOUND_PARAM = 'comment'
+
+const POST_NOT_FOUND = 'Post not found';
+const POST_NOT_FOUND_MESSAGE = 'post.notFound';
+const POST_NOT_FOUND_CODE = 'post.notFound';
+const POST_NOT_FOUND_PARAM = 'post'
+
 const IN_PRODUCTION = process.env.NODE_ENV === 'production';
 
 if (process.env.NODE_ENV === 'test') {
@@ -139,4 +149,14 @@ module.exports = {
   USER_ALREADY_UNREGISTERED_MESSAGE,
   USER_ALREADY_UNREGISTERED_CODE,
   USER_ALREADY_UNREGISTERED_PARAM,
+
+  COMMENT_NOT_FOUND,
+  COMMENT_NOT_FOUND_MESSAGE,
+  COMMENT_NOT_FOUND_CODE,
+  COMMENT_NOT_FOUND_PARAM,
+
+  POST_NOT_FOUND,
+  POST_NOT_FOUND_MESSAGE,
+  POST_NOT_FOUND_CODE,
+  POST_NOT_FOUND_PARAM,
 };

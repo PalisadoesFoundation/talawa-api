@@ -280,17 +280,6 @@ describe('newsfeed resolvers', () => {
 
   // Comments
 
-  test('Comments by Post', async () => {
-    const response = await axios.post(URL, {
-      query: `query {
-					commentsByPost (id: "${createdPostId}"){
-						text
-					}
-	            }`,
-    });
-    const { data } = response;
-    expect(Array.isArray(data.data.commentsByPost)).toBeTruthy();
-  });
   let createdCommentId;
   test('Create Comment', async () => {
     const response = await axios.post(
