@@ -25,7 +25,7 @@ name: Talawa Heroku CI/CD Pipeline
 on:
   push:
     branches:
-      - develop
+      - master
 jobs:
   build:
     runs-on: ubuntu-latest
