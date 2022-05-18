@@ -9,7 +9,19 @@
 ##############################################################################
 ##############################################################################
 
-name: Talawa Pipeline
+##############################################################################
+##############################################################################
+#
+# NOTE! - Changig branches
+#
+# Before changing the CI/CD branch in this file, you will need to change the
+# configured branch for Heroku auto-deployments. This can be done by 
+# disabling auto-deployments, and then re-enabling it for the new branch.
+#
+##############################################################################
+##############################################################################
+
+name: Talawa Heroku CI/CD Pipeline
 on:
   push:
     branches:
