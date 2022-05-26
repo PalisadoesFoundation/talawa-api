@@ -3,6 +3,9 @@ const login = require('../../../lib/resolvers/auth_mutations/login');
 const database = require('../../../db');
 const shortid = require('shortid');
 
+require('../../../lib/models/Event');
+require('../../../lib/models/MembershipRequest');
+
 beforeAll(async () => {
   require('dotenv').config(); // pull env variables from .env file
   await database.connect();
