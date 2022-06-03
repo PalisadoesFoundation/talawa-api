@@ -11,7 +11,7 @@ afterAll(async () => {
 });
 
 describe('Unit testing', () => {
-  test('test  for', async () => {
+  test('tests for lib/resolvers/group_chat_query/groupChats.js', async () => {
     const res = await groupChat();
     expect(typeof res).toBe('object');
   });
