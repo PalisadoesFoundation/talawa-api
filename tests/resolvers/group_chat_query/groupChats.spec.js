@@ -10,12 +10,12 @@ afterAll(async () => {
   database.disconnect();
 });
 
-describe('Unit testing', () => {
-  test('tests for lib/resolvers/group_chat_query/groupChats.js', async () => {
+describe('tests for lib/resolvers/group_chat_query/groupChats.js', () => {
+  test('Should return  a JSON response (getting the group chat messages from the database)', async () => {
     const res = await groupChat();
     expect(typeof res).toBe('object');
   });
-  test('groupChatMessasges Produces metadata object that can be parsed to valid JSON', async () => {
+  test('groupChat Produces metadata object that can be parsed to valid JSON', async () => {
     const temp = await groupChat();
     const parseJson = () => {
       const json = JSON.stringify(temp);
