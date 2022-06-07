@@ -1,34 +1,37 @@
 require('dotenv').config(); // pull env variables from .env file
 
-const depthLimit = require('graphql-depth-limit');
-const { ApolloServer, PubSub } = require('apollo-server-express');
-const http = require('http');
-const rateLimit = require('express-rate-limit');
-const xss = require('xss-clean');
-const helmet = require('helmet');
-const mongoSanitize = require('express-mongo-sanitize');
-const jwt = require('jsonwebtoken');
-const express = require('express');
-const cors = require('cors');
-const logger = require('logger');
-const requestLogger = require('morgan');
-const path = require('path');
-const i18n = require('i18n');
-const requestContext = require('talawa-request-context');
-const requestTracing = require('request-tracing');
-
+const depthLimit = require('graphql-depth-limit');// pacakge used to limit the number of recursive calls one can do in graphQL
+const { ApolloServer, PubSub } = require('apollo-server-express'); // A TypeScript GraphQL Server for Express, Koa, Hapi, Lambda, and more.
+const http = require('http');  //The HTTP core module is a key module to Node.js networking.
+const rateLimit = require('express-rate-limit'); // Use to limit repeated requests to public APIs and/or endpoints such as password reset. Plays nice with express-slow-down --  Basic rate-limiting middleware for Express that slows down responses rather than blocking them 
+const xss = require('xss-clean'); // to sanitize user input coming from POST body, GET queries, and url param
+const helmet = require('helmet'); //Helmet helps you secure your Express apps by setting various HTTP headers
+const mongoSanitize = require('express-mongo-sanitize'); //Express 4.x middleware which sanitizes user-supplied data to prevent MongoDB Operator Injection
+const jwt = require('jsonwebtoken'); //An implementation of JSON Web Tokens.
+const express = require('express'); // world famous nodejs server
+const cors = require('cors'); // CORS is a node.js package for providing a Connect/Express middleware that can be used to enable CORS with various options.
+const logger = require('logger'); //A simple logging library that combines the simple APIs of Ruby's logger.rb and browser-js console.log()
+const requestLogger = require('morgan'); //HTTP request logger middleware for node.js
+const path = require('path'); // to handle file paths 
+const i18n = require('i18n'); // Lightweight simple translation module with dynamic JSON storage stored at the 'locales' folder
+const requestContext = require('talawa-request-context'); // not sure
+const requestTracing = require('request-tracing'); //   NOT SURE:  probably used to trace the incoming request
+// GETTING THE GRAPHQL QUERIES AND MUTATIONS THESE ONE FILES EXPORT EVERY QUERY AND MUTATION
 const Query = require('./lib/resolvers/Query');
 const Mutation = require('./lib/resolvers/Mutation');
+// IMPORTS ALL THE GRAPHQL SCHEMA AND TYPE DEFINITIONS
 const typeDefs = require('./lib/schema/schema.graphql');
+//JWT function
 const isAuth = require('./lib/middleware/is-auth');
-const database = require('./db.js');
+//database file 
+const database = require('./db.js');  // provides connect and disconnect functions 
 const Organization = require('./lib/resolvers/Organization');
-const MembershipRequest = require('./lib/resolvers/MembershipRequest');
-const DirectChat = require('./lib/resolvers/DirectChat');
-const DirectChatMessage = require('./lib/resolvers/DirectChatMessage');
-const { defaultLocale, supportedLocales } = require('./lib/config/app');
-const GroupChat = require('./lib/resolvers/GroupChat');
-const GroupChatMessage = require('./lib/resolvers/GroupChatMessage');
+const MembershipRequest = require('./lib/resolvers/MembershipRequest');  // finds the org and user by provided id d
+const DirectChat = require('./lib/resolvers/DirectChat'); // helps to find chats 
+const DirectChatMessage = require('./lib/resolvers/DirectChatMessage');// helps to find chat memssages and sender and receiver objects
+const { defaultLocale, supportedLocales } = require('./lib/config/app'); // to get the default locale and supported locales for the i18n
+const GroupChat = require('./lib/resolvers/GroupChat'); //user creator messg org 
+const GroupChatMessage = require('./lib/resolvers/GroupChatMessage'); //groupChatMesssageBelonsTo sender
 const Subscription = require('./lib/resolvers/Subscription');
 const AuthenticationDirective = require('./lib/directives/authDirective');
 const RoleAuthorizationDirective = require('./lib/directives/roleDirective');
