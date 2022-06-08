@@ -75,6 +75,8 @@ const POST_NOT_FOUND_MESSAGE = 'post.notFound';
 const POST_NOT_FOUND_CODE = 'post.notFound';
 const POST_NOT_FOUND_PARAM = 'post';
 
+const STATUS_ACTIVE = 'ACTIVE';
+
 const IN_PRODUCTION = process.env.NODE_ENV === 'production';
 
 if (process.env.NODE_ENV === 'test') {
@@ -82,6 +84,8 @@ if (process.env.NODE_ENV === 'test') {
 }
 
 module.exports = {
+  STATUS_ACTIVE,
+
   URL,
   IN_PRODUCTION,
 
