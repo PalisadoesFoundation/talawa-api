@@ -36,11 +36,11 @@ const Subscription = require('./lib/resolvers/Subscription');
 const AuthenticationDirective = require('./lib/directives/authDirective');
 const RoleAuthorizationDirective = require('./lib/directives/roleDirective');
 
-const app = express();
+const app = express(); // express app 
 
-app.use(requestTracing.middleware());
+app.use(requestTracing.middleware()); // adding request tracing in the project
 
-const pubsub = new PubSub();
+const pubsub = new PubSub(); // 
 
 const resolvers = {
   Subscription: Subscription,
