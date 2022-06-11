@@ -18,7 +18,7 @@ afterAll(() => {
 });
 
 describe('Testing check auth resolver', () => {
-  test('Testing is the user logged in or not', async () => {
+  test('Testing if the user logged in or not', async () => {
     const args = {
       id: '62277875e904753262f99bc3',
     };
