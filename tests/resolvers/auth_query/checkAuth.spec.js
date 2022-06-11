@@ -7,7 +7,7 @@ const checkAuth = require('../../../lib/resolvers/auth_query/checkAuth');
 let userId;
 
 beforeAll(async () => {
-  require('dotenv').config(); // pull env variables from .env file
+  require('dotenv').config();
   await database.connect();
   let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
   userId = await getUserId(generatedEmail);
