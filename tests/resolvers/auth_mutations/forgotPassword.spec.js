@@ -11,12 +11,14 @@ let hashedOtp;
 let otpToken;
 
 beforeAll(async () => {
+  require('dotenv').config();
+
   let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
   token = await getToken(generatedEmail);
   hashedOtp = await bcrypt.hash('12345', 10);
   otpToken = jwt.sign(
     { email: generatedEmail, otp: hashedOtp },
-    'XaZuhz73f3TCI6z3fOd5lA==',
+    process.env.ACCESS_TOKEN_SECRET,
     {
       expiresIn: '15m',
     }
