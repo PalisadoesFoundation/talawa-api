@@ -110,23 +110,46 @@ Follow these steps to get the API running.
             - `<DB_NAME>` is your cloud service database name.
         * Your cloud service may call this URL a `connect` string. Search for the word `connect` in your online database dashboard to find it.
 
-8. When finished, your `.env` file should have the following fields filled in.
+8. Get the google recaptcha secret key from `google-recaptcha-admin` for reCAPTCHA v2 and "I'm not a robot" Checkbox, and copy the key to the `RECAPTCHA_SECRET_KEY` section of the `.env` file.
+
+- Note: In domains, fill localhost
+
+        Google-recaptcha-admin: https://www.google.com/recaptcha/admin/create
+
+9. Enter the gmail credentials for sending mails to the users. In `MAIL_USERNAME` enter email address and in `MAIL_PASSWORD` enter app password.
+- To get the app password, follow these steps:
+  
+  * Go to your Google Account, https://myaccount.google.com/
+  * Select Security.
+  * Under "Signing in to Google," select App Passwords.
+  * At the bottom, choose Select app and choose the app you using and then Select device and choose the device you’re using and then Generate.
+  * The App Password is the 16-character code in the yellow bar on your device.
+  * Paste that App Password in `MAIL_PASSWORD`.
+
+-  Note: You must setup two factor authentication in order to allow the app password.
+
+- For more info refer, https://support.google.com/accounts/answer/185833
+
+10. When finished, your `.env` file should have the following fields filled in.
 
     - ACCESS_TOKEN_SECRET
     - REFRESH_TOKEN_SECRET
     - MONGO_DB_URL
+    - RECAPTCHA_SECRET_KEY
+    - MAIL_USERNAME
+    - MAIL_PASSWORD
 
     Please review the contents of the `.env.sample` file for additional details.
 
-9.  Install required node packages.
+11.  Install required node packages.
 
         npm install
  
-10. Start the `talawa-api` server using the below command.
+12. Start the `talawa-api` server using the below command.
 
         npm start
 
-11. To stop the server after making changes. Press `CTRL + C` in the terminal where the above command is executed.
+13. To stop the server after making changes. Press `CTRL + C` in the terminal where the above command is executed.
 
 # Testing
 You can run `talawa-api` tests using this command
