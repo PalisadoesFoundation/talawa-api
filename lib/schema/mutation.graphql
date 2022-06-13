@@ -3,6 +3,9 @@ module.exports = `
  type Mutation {
     signUp(data: UserInput!, file:Upload): AuthData!
     login(data: LoginInput!): AuthData!
+    otp(data: OTPInput!): OtpData!
+    recaptcha(data: RecaptchaVerification!): Boolean!
+    forgotPassword(data: ForgotPasswordData!): Boolean!
     refreshToken(refreshToken: String!) : ExtendSession!
     revokeRefreshTokenForUser(userId: String!) : Boolean!
     updateLanguage(languageCode: String!) : User! @auth
