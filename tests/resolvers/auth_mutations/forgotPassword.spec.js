@@ -8,6 +8,7 @@ const getToken = require('../../functions/getToken');
 
 let hashedOtp;
 let otpToken;
+let token;
 
 beforeAll(async () => {
   require('dotenv').config();
@@ -26,6 +27,7 @@ beforeAll(async () => {
 
 describe('Testing forgotPassword resolver', () => {
   test('forgotPassword', async () => {
+    console.log(token);
     const response = await axios.post(URL, {
       query: `
             mutation {

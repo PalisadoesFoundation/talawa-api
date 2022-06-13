@@ -15,6 +15,7 @@ beforeAll(async () => {
 
 describe('Testing otp resolver', () => {
   test('otp', async () => {
+    console.log(otpToken);
     const response = await axios.post(
       URL,
       {
