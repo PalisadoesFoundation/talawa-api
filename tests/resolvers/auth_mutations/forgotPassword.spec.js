@@ -6,7 +6,6 @@ const shortid = require('shortid');
 const { URL } = require('../../../constants');
 const getToken = require('../../functions/getToken');
 
-let token;
 let hashedOtp;
 let otpToken;
 

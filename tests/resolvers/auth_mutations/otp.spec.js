@@ -15,8 +15,10 @@ beforeAll(async () => {
 
 describe('Testing otp resolver', () => {
   test('otp', async () => {
-    const response = await axios.post(URL, {
-      query: `
+    const response = await axios.post(
+      URL,
+      {
+        query: `
             mutation {
                 otp(data: {
                     email: "${generatedEmail}"
@@ -25,7 +27,13 @@ describe('Testing otp resolver', () => {
                 }
             }
             `,
-    });
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     const { data } = response;
     otpToken = data.data.otp.otpToken;
