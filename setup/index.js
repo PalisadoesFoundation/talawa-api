@@ -12,10 +12,10 @@
  * executed successfully or not
  */
 const path = require('path');
-const display_about = require('./setup/Display_About');
-const install_dependencies = require('./setup/Install_Dependencies');
-const user_input = require('./setup/User_Input');
-const start_application = require('./setup/Start_Application');
+const display_about = require('./Display_About');
+const install_dependencies = require('./Install_Dependencies');
+const user_input = require('./User_Input');
+const start_application = require('./Start_Application');
 
 /**
  * This asynchronous function runs the setup process
