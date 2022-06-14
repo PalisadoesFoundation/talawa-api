@@ -1,0 +1,34 @@
+# overwrites the previously existing/generated graphql typescript definitions
+overwrite: true
+# where the graphql type defintions(schema) is located
+schema: 'src/lib/schema/**/*.graphql'
+generates:
+  # where to emit the generated graphql typescript defintions
+  ./src/lib/resolvers/__generatedGraphqlTypes__.ts:
+    plugins:
+      - typescript
+      - typescript-resolvers
+    config:
+      # Mappers lets us provide database model types to be used in generated graphql typescript types instead of graphql types.
+      # This is because graphql types and database types don't always sync with each other within a graphql application.
+      mappers:
+        Chat: 'src/lib/models/Chat#IChat'
+        Comment: 'src/lib/models/Comment#IComment'
+        DirectChat: 'src/lib/models/DirectChat#IDirectChat'
+        DirectChatMessage: 'src/lib/models/DirectChatMessage#IDirectChatMessage'
+        Event: 'src/lib/models/Event#IEvent'
+        EventProject: 'src/lib/models/EventProject#IEventProject'
+        File: 'src/lib/models/File#IFile'
+        Group: 'src/lib/models/Group#IGroup'
+        GroupChat: 'src/lib/models/GroupChat#IGroupChat'
+        GroupChatMessage: 'src/lib/models/GroupChatMessage#IGroupChatMessage'
+        ImageHash: 'src/lib/models/ImageHash#IImageHash'
+        Language: 'src/lib/models/Language#ILanguage'
+        MembershipRequest: 'src/lib/models/MembershipRequest#IMembershipRequest'
+        Message: 'src/lib/models/Message#IMessage'
+        Organization: 'src/lib/models/Organization#IOrganization'
+        Plugin: 'src/lib/models/Plugin#IPlugin'
+        PluginField: 'src/lib/models/PluginField#IPluginField'
+        Post: 'src/lib/models/Post#IPost'
+        Task: 'src/lib/models/Task#ITask'
+        User: 'src/lib/models/User#IUser'
