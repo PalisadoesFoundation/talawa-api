@@ -1,0 +1,15 @@
+// This build configuration prevents typescript(tsc) from emitting test files into the dist folder.
+// This configuration file is made use of in the `build` script. Check out package.json to see how it's integrated.
+// More information here :- https://bobbyhadz.com/blog/typescript-exclude-test-files-from-compilation
+{
+  "extends": "./tsconfig.json",
+  // 👇️ this may vary depending on how you
+  // name your test files
+  "exclude": [
+    "src/tests/**/*",
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "src/**/*.spec.js",
+    "src/**/*.test.js"
+  ]
+}
