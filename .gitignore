@@ -10,3 +10,7 @@ yarn.lock
 
 # We don't want to have code coverage data stored in the repo as it is dynamic
 coverage/
+
+# We don't want to push emitted production build of talawa-api to github.
+# It should be generated from scratch each time it needs to be used.
+dist/
