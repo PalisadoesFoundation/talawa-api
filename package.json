@@ -14,7 +14,7 @@
     "setup": "npm i boxen@4.2.0 chalk@4.1.0 inquirer markdown-js marked@2.0.1 marked-terminal@4.1.0 node-cmd@5.0.0 && node ./setup/index.js",
     "file-coverage": "npm test $npm_config_testfile -- --coverage --collectCoverageFrom=$npm_config_functionfile",
     "dev": "ts-node-dev -r tsconfig-paths/register --respawn --exit-child ./src/index.js",
-    "build": "tsc --verbose --pretty --project tsconfig.build.json",
+    "build": "tsc --pretty --project tsconfig.build.json",
     "gql:codegen": "graphql-codegen"
   },
   "repository": {
