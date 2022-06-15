@@ -2,8 +2,8 @@ const User = require('../../models/User');
 const Comment = require('../../models/Comment');
 const Post = require('../../models/Post');
 
-const { NotFoundError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 
 module.exports = async (parent, args, context) => {
   // gets user in token - to be used later on

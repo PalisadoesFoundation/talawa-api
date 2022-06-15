@@ -3,9 +3,9 @@ const Plugin = require('../../models/Plugins');
 const PluginField = require('../../models/PluginsField');
 const Organization = require('../../models/Organization');
 
-const { UnauthorizedError } = require('errors');
-const { NotFoundError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { UnauthorizedError } = require('../../helper_lib/errors');
+const { NotFoundError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 
 module.exports = async (parent, args, context) => {
   let org = await Organization.findOne({

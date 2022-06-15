@@ -1,8 +1,8 @@
 const GroupChat = require('../../models/GroupChat');
 const GroupChatMessage = require('../../models/GroupChatMessage');
 const userExists = require('../../helper_functions/userExists');
-const { NotFoundError, UnauthorizedError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError, UnauthorizedError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 const {
   IN_PRODUCTION,
   USER_NOT_AUTHORIZED,

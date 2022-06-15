@@ -4,8 +4,8 @@ const Comment = require('../../models/Comment');
 const Post = require('../../models/Post');
 const Organization = require('../../models/Organization');
 const creatorCheck = require('../functions/creatorCheck');
-const { NotFoundError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 const {
   USER_NOT_FOUND,
   USER_NOT_FOUND_MESSAGE,

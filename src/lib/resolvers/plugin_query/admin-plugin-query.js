@@ -2,8 +2,8 @@ const Plugin = require('../../models/Plugins');
 const adminCheck = require('../functions/adminCheck');
 const Organization = require('../../models/Organization');
 
-const { NotFoundError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 
 module.exports = async (parent, args, context) => {
   const organizationFound = await Organization.findOne({

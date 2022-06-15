@@ -1,8 +1,8 @@
 const GroupChat = require('../../models/GroupChat');
 const adminCheck = require('../functions/adminCheck');
 const organizationExists = require('../../helper_functions/organizationExists');
-const { NotFoundError, UnauthorizedError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError, UnauthorizedError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 
 module.exports = async (parent, args, context) => {
   const chat = await GroupChat.findById(args.chatId);

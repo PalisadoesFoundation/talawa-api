@@ -1,8 +1,8 @@
 const User = require('../../models/User');
 const Comment = require('../../models/Comment');
 
-const { NotFoundError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 
 const likeComment = async (parent, args, context) => {
   const user = await User.findById(context.userId);

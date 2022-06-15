@@ -1,8 +1,8 @@
 const User = require('../../models/User');
 const DirectChat = require('../../models/DirectChat');
 const Organization = require('../../models/Organization');
-const { NotFoundError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 
 module.exports = async (parent, args, context) => {
   let user = await User.findOne({ _id: context.userId });

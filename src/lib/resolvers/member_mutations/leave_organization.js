@@ -1,7 +1,11 @@
 const User = require('../../models/User');
 const Organization = require('../../models/Organization');
-const { NotFoundError, UnauthorizedError, ConflictError } = require('errors');
-const requestContext = require('talawa-request-context');
+const {
+  NotFoundError,
+  UnauthorizedError,
+  ConflictError,
+} = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 const {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,

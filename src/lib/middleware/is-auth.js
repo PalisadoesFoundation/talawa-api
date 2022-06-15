@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const logger = require('logger');
+const logger = require('../helper_lib/logger');
 
 const isAuth = (req) => {
   // This checks to see if there is an authorization field within the incoming request

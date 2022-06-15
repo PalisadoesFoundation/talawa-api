@@ -1,7 +1,7 @@
 ///Resolver to find direct chats messages by User ID.
 
-const { NotFoundError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 const DirectChatMessages = require('../../models/DirectChatMessage');
 const {
   IN_PRODUCTION,

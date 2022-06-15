@@ -2,8 +2,8 @@
 const userExists = require('../../helper_functions/userExists');
 const User = require('../../models/User');
 const uploadImage = require('../../helper_functions/uploadImage');
-const { ConflictError, NotFoundError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { ConflictError, NotFoundError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 
 const updateUserProfile = async (parent, args, context) => {
   try {

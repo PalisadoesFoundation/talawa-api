@@ -1,5 +1,5 @@
 const { unlink } = require('fs');
-const logger = require('logger');
+const logger = require('../helper_lib/logger');
 const ImageHash = require('../models/ImageHash');
 
 const reuploadDuplicateCheck = require('./ReuploadDuplicateCheck');

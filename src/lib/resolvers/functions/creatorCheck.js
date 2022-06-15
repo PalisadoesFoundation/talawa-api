@@ -1,5 +1,5 @@
-const { UnauthorizedError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { UnauthorizedError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 const {
   USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_MESSAGE,

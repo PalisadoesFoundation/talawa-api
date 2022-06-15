@@ -1,6 +1,6 @@
-const { ConflictError } = require('errors');
+const { ConflictError } = require('../../helper_lib/errors');
 const Language = require('../../models/Language');
-const requestContext = require('talawa-request-context');
+const requestContext = require('../../helper_lib/request-context');
 
 const addLanguageTranslation = async (parent, args) => {
   const langValue = await Language.findOne({

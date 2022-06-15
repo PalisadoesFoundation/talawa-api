@@ -1,6 +1,6 @@
-const { ValidationError } = require('errors');
+const { ValidationError } = require('../../helper_lib/errors');
 const Post = require('../../models/Post');
-const requestContext = require('talawa-request-context');
+const requestContext = require('../../helper_lib/request-context');
 
 const postsByOrganizationConnection = async (parent, args) => {
   var sort = {};

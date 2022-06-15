@@ -1,8 +1,8 @@
 const DirectChat = require('../../models/DirectChat');
 const DirectChatMessage = require('../../models/DirectChatMessage');
 const userExists = require('../../helper_functions/userExists');
-const { NotFoundError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 const {
   IN_PRODUCTION,
   CHAT_NOT_FOUND,

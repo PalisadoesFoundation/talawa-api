@@ -1,8 +1,8 @@
 const User = require('../../models/User');
 const Task = require('../../models/Task');
 
-const { NotFoundError, UnauthorizedError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError, UnauthorizedError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 
 const updateTask = async (parent, args, context) => {
   const user = await User.findOne({ _id: context.userId });

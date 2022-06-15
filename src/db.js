@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const logger = require('logger');
+const logger = require('./lib/helper_lib/logger');
 
 const connect = async () => {
   try {

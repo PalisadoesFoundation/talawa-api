@@ -1,8 +1,8 @@
 const User = require('../../models/User');
 const Organization = require('../../models/Organization');
 const creatorCheck = require('../functions/creatorCheck');
-const { NotFoundError, UnauthorizedError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError, UnauthorizedError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 const {
   ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_PARAM,

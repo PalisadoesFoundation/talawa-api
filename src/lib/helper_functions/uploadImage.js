@@ -1,5 +1,5 @@
 const shortid = require('shortid');
-const logger = require('logger');
+const logger = require('../helper_lib/logger');
 const { createWriteStream } = require('fs');
 const path = require('path');
 const imageAlreadyInDbCheck = require('./imageAlreadyInDbCheck');

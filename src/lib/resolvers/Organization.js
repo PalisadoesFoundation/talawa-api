@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const MembershipRequest = require('../models/MembershipRequest');
-const { NotFoundError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError } = require('../helper_lib/errors');
+const requestContext = require('../helper_lib/request-context');
 
 const Organization = {
   creator: async (parent) => {

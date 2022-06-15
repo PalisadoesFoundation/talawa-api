@@ -1,6 +1,6 @@
 const User = require('../../models/User');
-const { NotFoundError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 
 const updateLanguage = async (parent, args, context) => {
   // gets user in token - to be used later on

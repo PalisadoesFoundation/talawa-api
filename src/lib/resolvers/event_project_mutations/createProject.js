@@ -1,8 +1,8 @@
 const User = require('../../models/User');
 const EventProject = require('../../models/EventProject');
 const Event = require('../../models/Event');
-const { NotFoundError, UnauthorizedError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError, UnauthorizedError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 
 const createEventProject = async (parent, args, context) => {
   // gets user in token - to be used later on

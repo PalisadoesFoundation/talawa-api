@@ -1,7 +1,7 @@
 const User = require('../../models/User');
 const Event = require('../../models/Event');
-const { NotFoundError, UnauthorizedError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError, UnauthorizedError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 const {
   IN_PRODUCTION,
   USER_NOT_FOUND,

@@ -1,8 +1,8 @@
 const User = require('../../models/User');
 const Task = require('../../models/Task');
 const Event = require('../../models/Event');
-const { NotFoundError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 const {
   IN_PRODUCTION,
   USER_NOT_FOUND,

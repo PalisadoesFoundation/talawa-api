@@ -2,8 +2,8 @@ const adminCheck = require('../functions/adminCheck');
 const MembershipRequest = require('../../models/MembershipRequest');
 const userExists = require('../../helper_functions/userExists');
 const organizationExists = require('../../helper_functions/organizationExists');
-const { NotFoundError, ConflictError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError, ConflictError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 
 const {
   MEMBERSHIP_REQUEST_NOT_FOUND,

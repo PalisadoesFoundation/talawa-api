@@ -4,8 +4,8 @@ const {
   createAccessToken,
   createRefreshToken,
 } = require('../../helper_functions/auth');
-const { NotFoundError, ValidationError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError, ValidationError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 const copyToClipboard = require('../functions/copyToClipboard');
 
 module.exports = async (parent, args) => {

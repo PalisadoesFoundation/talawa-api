@@ -1,7 +1,7 @@
-const { NotFoundError } = require('errors');
+const { NotFoundError } = require('../../helper_lib/errors');
 const User = require('../../models/User');
 const userExists = require('../../helper_functions/userExists');
-const requestContext = require('talawa-request-context');
+const requestContext = require('../../helper_lib/request-context');
 const superAdminCheck = require('../../resolvers/functions/superAdminCheck');
 
 module.exports = async (parent, args, context) => {

@@ -1,7 +1,7 @@
 const User = require('../../models/User');
 const uploadImageHelper = require('../../helper_functions/uploadImage');
-const { NotFoundError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 
 const addUserImage = async (parent, args, context) => {
   const user = await User.findById(context.userId);

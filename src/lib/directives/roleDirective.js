@@ -1,7 +1,7 @@
 const { SchemaDirectiveVisitor } = require('apollo-server-express');
-const { UnauthenticatedError } = require('errors');
 const { defaultFieldResolver } = require('graphql');
-const requestContext = require('talawa-request-context');
+const { UnauthenticatedError } = require('../helper_lib/errors');
+const requestContext = require('../helper_lib/request-context');
 const userExists = require('../helper_functions/userExists');
 
 class RoleAuthorizationDirective extends SchemaDirectiveVisitor {

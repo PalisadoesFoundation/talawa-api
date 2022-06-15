@@ -2,8 +2,8 @@ const GroupChat = require('../../models/GroupChat');
 const GroupChatMessage = require('../../models/GroupChatMessage');
 const adminCheck = require('../functions/adminCheck');
 const organizationExists = require('../../helper_functions/organizationExists');
-const { NotFoundError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 
 // admins of the organization can remove chats -- may change in the future
 

@@ -1,8 +1,8 @@
-const { NotFoundError, UnauthorizedError } = require('errors');
+const { NotFoundError, UnauthorizedError } = require('../../helper_lib/errors');
 const User = require('../../models/User');
 const Event = require('../../models/Event');
 const Organization = require('../../models/Organization');
-const requestContext = require('talawa-request-context');
+const requestContext = require('../../helper_lib/request-context');
 const {
   IN_PRODUCTION,
   USER_NOT_FOUND,

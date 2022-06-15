@@ -1,5 +1,5 @@
 const { unlink } = require('fs');
-const logger = require('logger');
+const logger = require('../helper_lib/logger');
 
 module.exports = function deleteDuplicatedImage(imagePath) {
   unlink(imagePath, function (err) {

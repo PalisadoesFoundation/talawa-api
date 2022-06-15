@@ -1,6 +1,6 @@
 const { imageHash } = require('image-hash');
-const { ValidationError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { ValidationError } = require('../helper_lib/errors');
+const requestContext = require('../helper_lib/request-context');
 
 module.exports = async (imageJustUploadedPath, itemImage) => {
   // This function checks whether a user is trying to re=upload the same profile picture or an org is trying to re-upload the same org image

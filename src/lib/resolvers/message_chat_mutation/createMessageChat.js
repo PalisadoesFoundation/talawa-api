@@ -1,7 +1,7 @@
 const User = require('../../models/User');
 const MessageChat = require('../../models/Chat');
-const { NotFoundError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 
 module.exports = async (parent, args, context) => {
   const user = await User.findOne({

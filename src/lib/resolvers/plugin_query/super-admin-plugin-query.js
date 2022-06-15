@@ -3,8 +3,8 @@ const User = require('../../models/User');
 const superAdminCheck = require('../functions/superAdminCheck');
 const Organization = require('../../models/Organization');
 
-const { NotFoundError } = require('errors');
-const requestContext = require('talawa-request-context');
+const { NotFoundError } = require('../../helper_lib/errors');
+const requestContext = require('../../helper_lib/request-context');
 
 module.exports = async (parent, args, context) => {
   const organizationFound = await Organization.findOne({
