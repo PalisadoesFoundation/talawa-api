@@ -6,6 +6,7 @@ module.exports = `
   input LoginInput {
     email:String!, 
     password:String!
+    token: String
   }
   
   type AuthData {
