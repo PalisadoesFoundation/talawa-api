@@ -1,9 +1,9 @@
-const axios = require('axios');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const shortid = require('shortid');
 
-const { URL } = require('../../../constants');
+const database = require('../../../db');
+const forgotPassword = require('../../../lib/resolvers/auth_mutations/forgotPassword');
 const getToken = require('../../functions/getToken');
 
 let hashedOtp;
@@ -12,6 +12,7 @@ let token;
 
 beforeAll(async () => {
   require('dotenv').config();
+  await database.connect();
 
   let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
   token = await getToken(generatedEmail);
@@ -25,22 +26,23 @@ beforeAll(async () => {
   );
 });
 
+afterAll(() => {
+  database.disconnect();
+});
+
 describe('Testing forgotPassword resolver', () => {
   test('forgotPassword', async () => {
     console.log(token);
-    const response = await axios.post(URL, {
-      query: `
-            mutation {
-                forgotPassword(data: {
-                    userOtp:"12345",
-                    newPassword:"newPassword", 
-                    otpToken:"${otpToken}"
-                })
-            }
-            `,
-    });
 
-    const { data } = response;
-    expect(data.data.forgotPassword).toEqual(true);
+    const args = {
+      data: {
+        userOtp: '12345',
+        newPassword: 'newPassword',
+        otpToken: otpToken,
+      },
+    };
+
+    const response = await forgotPassword({}, args);
+    expect(response).toBeTruthy();
   });
 });

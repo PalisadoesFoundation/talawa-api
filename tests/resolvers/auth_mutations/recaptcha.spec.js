@@ -1,20 +1,14 @@
-const axios = require('axios');
-
-const { URL } = require('../../../constants');
+const recaptcha = require('../../../lib/resolvers/auth_mutations/recaptcha');
 
 describe('Testing recaptcha resolver', () => {
   test('recaptcha', async () => {
-    const response = await axios.post(URL, {
-      query: `
-            mutation {
-                recaptcha(data: {
-                    recaptchaToken:"dummyToken"
-                })
-            }
-            `,
-    });
+    const args = {
+      data: {
+        recaptchaToken: 'dummyToken',
+      },
+    };
 
-    const { data } = response;
-    expect(data.data.recaptcha).toEqual(false);
+    const response = await recaptcha({}, args);
+    expect(response).toBeFalsy();
   });
 });
