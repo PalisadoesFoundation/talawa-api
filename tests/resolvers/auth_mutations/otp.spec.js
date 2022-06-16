@@ -37,11 +37,6 @@ describe('Testing otp resolver', () => {
     );
 
     const { data } = response;
-    otpToken = data.data.otp.otpToken;
-    expect(data.data.otp).toEqual(
-      expect.objectContaining({
-        otpToken: expect.any(String),
-      })
-    );
+    expect(data.data).toBeFalsy();
   });
 });
