@@ -10,12 +10,12 @@ const mongoSanitize = require('express-mongo-sanitize');
 const jwt = require('jsonwebtoken');
 const express = require('express');
 const cors = require('cors');
-const logger = require('./lib/helper_lib/logger');
+const logger = require('./lib/helper_lib/logger').default;
 const requestLogger = require('morgan');
 const path = require('path');
 const i18n = require('i18n');
-const requestContext = require('./lib/helper_lib/request-context');
-const requestTracing = require('./lib/helper_lib/request-tracing');
+const requestContext = require('./lib/helper_lib/request-context').default;
+const requestTracing = require('./lib/helper_lib/request-tracing').default;
 
 const Query = require('./lib/resolvers/Query');
 const Mutation = require('./lib/resolvers/Mutation');
