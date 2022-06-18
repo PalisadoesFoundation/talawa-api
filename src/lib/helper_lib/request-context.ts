@@ -1,25 +1,30 @@
-const cls = require('cls-hooked');
-const clsBluebird = require('cls-bluebird');
-const i18n = require('i18n');
+import cls from 'cls-hooked';
+/*
+No type defintions available for package 'cls-bluebird'
+*/
+// @ts-ignore
+import clsBluebird from 'cls-bluebird';
+import i18n from 'i18n';
+import type { NextFunction, Request, Response } from 'express';
 
 const requestContextNamespace = cls.createNamespace('talawa-request-context');
 clsBluebird(requestContextNamespace);
 
-const setRequestContextValue = (key, value) => {
+const setRequestContextValue = (key: string, value: any) => {
   return requestContextNamespace.set(key, value);
 };
 
-const getRequestContextValue = (key) => {
+const getRequestContextValue = (key: string) => {
   return requestContextNamespace.get(key);
 };
 
-const setRequestContext = (obj) => {
+const setRequestContext = (obj: any) => {
   setRequestContextValue('translate', obj.__);
   setRequestContextValue('translatePlural', obj.__n);
 };
 
-const middleware = () => {
-  return (req, res, next) => {
+export const middleware = () => {
+  return (req: Request, res: Response, next: NextFunction) => {
     requestContextNamespace.bindEmitter(req);
     requestContextNamespace.bindEmitter(res);
 
@@ -30,20 +35,23 @@ const middleware = () => {
   };
 };
 
-const init = async (options = {}) => {
-  const obj = {};
+export const init = async (options = {}) => {
+  const obj: any = {};
+  // @ts-ignore
   i18n.init(obj);
+  // @ts-ignore
   obj.setLocale(options.lang);
   return requestContextNamespace.runAndReturn(async () => {
     setRequestContext({
       __: obj.__,
       __n: obj.__n,
     });
+    // @ts-ignore
     return options.requestHandler();
   });
 };
 
-const translate = (...args) => {
+export const translate = (...args: any) => {
   const __ = getRequestContextValue('translate');
   if (typeof __ !== 'function') {
     throw new Error('i18n is not initialized, try app.use(i18n.init);');
@@ -51,7 +59,7 @@ const translate = (...args) => {
   return __(...args);
 };
 
-const translatePlural = (...args) => {
+export const translatePlural = (...args: any) => {
   const __n = getRequestContextValue('translatePlural');
   if (typeof __n !== 'function') {
     throw new Error('i18n is not initialized, try app.use(i18n.init);');
@@ -59,7 +67,7 @@ const translatePlural = (...args) => {
   return __n(...args);
 };
 
-module.exports = {
+export default {
   middleware,
   translate,
   translatePlural,
