@@ -1,41 +1,63 @@
+import { gql } from 'apollo-server-core';
 
-
-module.exports = `
+export const query = gql`
   type Query {
     me: User! @auth
     user(id: ID!): User! @auth
     users(where: UserWhereInput, orderBy: UserOrderByInput): [User] @auth
-    usersConnection(where: UserWhereInput, first: Int, skip: Int, orderBy: UserOrderByInput): [User]! @auth
-    
+    usersConnection(
+      where: UserWhereInput
+      first: Int
+      skip: Int
+      orderBy: UserOrderByInput
+    ): [User]! @auth
+
     checkAuth: User! @auth
 
     organizations(id: ID, orderBy: OrganizationOrderByInput): [Organization]
-    organizationsConnection(where: OrganizationWhereInput, first: Int, skip: Int, orderBy: OrganizationOrderByInput): [Organization]!
-    organizationsMemberConnection(orgId:ID!, where: UserWhereInput, first: Int, skip: Int, orderBy: UserOrderByInput): UserConnection! @auth
-    
+    organizationsConnection(
+      where: OrganizationWhereInput
+      first: Int
+      skip: Int
+      orderBy: OrganizationOrderByInput
+    ): [Organization]!
+    organizationsMemberConnection(
+      orgId: ID!
+      where: UserWhereInput
+      first: Int
+      skip: Int
+      orderBy: UserOrderByInput
+    ): UserConnection! @auth
+
     isUserRegister(eventId: ID!): EventRegistrants
     event(id: ID!): Event
     events(id: ID, orderBy: EventOrderByInput): [Event]
     eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
     registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
     registrantsByEvent(id: ID!): [User]
-    
+
     posts(orderBy: PostOrderByInput): [Post]
     postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
-    postsByOrganizationConnection(id: ID!, where: PostWhereInput, first: Int, skip: Int, orderBy: PostOrderByInput): PostConnection
+    postsByOrganizationConnection(
+      id: ID!
+      where: PostWhereInput
+      first: Int
+      skip: Int
+      orderBy: PostOrderByInput
+    ): PostConnection
     tasksByEvent(id: ID!, orderBy: TaskOrderByInput): [Task]
     tasksByUser(id: ID!, orderBy: TaskOrderByInput): [Task]
     comments: [Comment]
     commentsByPost(id: ID!): [Comment]
     post(id: ID!): Post
     groups: [Group]
-    
+
     directChats: [DirectChat]
     directChatMessages: [DirectChatMessage]
     groupChats: [GroupChat]
     groupChatMessages: [GroupChatMessage]
-    directChatsByUserID(id:ID!): [DirectChat]
-    directChatsMessagesByChatID(id:ID!):[DirectChatMessage]
+    directChatsByUserID(id: ID!): [DirectChat]
+    directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
 
     myLanguage: String @auth
     userLanguage(userId: ID!): String @auth
@@ -44,4 +66,6 @@ module.exports = `
     adminPlugin(orgId: ID!): [Plugin]
     getlanguage(lang_code: String!): [Translation]
   }
-`
+`;
+
+export default query;

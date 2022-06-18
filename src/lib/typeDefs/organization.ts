@@ -1,66 +1,60 @@
+import { gql } from 'apollo-server-core';
 
-
-module.exports = `
-
-
-
+export const organization = gql`
   type Organization {
-    image:String
+    image: String
     _id: ID!
-    name:String!
+    name: String!
     description: String!
     location: String
-    isPublic: Boolean! 
+    isPublic: Boolean!
     creator: User!
     members: [User]
     admins(adminId: ID): [User]
     membershipRequests: [MembershipRequest]
     blockedUsers: [User]
     visibleInSearch: Boolean!
-    apiUrl:String!
-    createdAt:String
+    apiUrl: String!
+    createdAt: String
   }
 
   type OrganizationInfoNode {
-    image:String
+    image: String
     _id: ID!
-    name:String!
+    name: String!
     description: String!
-    isPublic: Boolean! 
+    isPublic: Boolean!
     creator: User!
     visibleInSearch: Boolean!
-    apiUrl:String!
+    apiUrl: String!
   }
 
   input OrganizationInput {
-    name:String!
+    name: String!
     description: String!
     location: String
     attendees: String
-    isPublic: Boolean! 
+    isPublic: Boolean!
     visibleInSearch: Boolean!
-    apiUrl:String
+    apiUrl: String
   }
 
-  
   input UpdateOrganizationInput {
-    name:String
+    name: String
     description: String
     isPublic: Boolean
     visibleInSearch: Boolean
   }
 
-
-
-  input UserAndOrganizationInput{
-    organizationId: ID!, userId: ID!
+  input UserAndOrganizationInput {
+    organizationId: ID!
+    userId: ID!
   }
 
   input MultipleUsersAndOrganizationInput {
-    organizationId: ID!,
+    organizationId: ID!
     userIds: [ID!]!
   }
-
 
   type MembershipRequest {
     _id: ID!
@@ -100,9 +94,9 @@ module.exports = `
     visibleInSearch: Boolean
 
     isPublic: Boolean
-   }
+  }
 
-   enum OrganizationOrderByInput {
+  enum OrganizationOrderByInput {
     id_ASC
     id_DESC
     name_ASC
@@ -111,6 +105,7 @@ module.exports = `
     description_DESC
     apiUrl_ASC
     apiUrl_DESC
-   }
+  }
+`;
 
-`
+export default organization;

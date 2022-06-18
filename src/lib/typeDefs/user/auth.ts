@@ -1,15 +1,13 @@
+import { gql } from 'apollo-server-core';
 
-
-module.exports = `
-
-
+export const auth = gql`
   input LoginInput {
-    email:String!, 
-    password:String!
+    email: String!
+    password: String!
   }
-  
+
   type AuthData {
-    user: User!,
+    user: User!
     accessToken: String!
     refreshToken: String!
   }
@@ -18,6 +16,6 @@ module.exports = `
     accessToken: String!
     refreshToken: String!
   }
+`;
 
-
-`
+export default auth;

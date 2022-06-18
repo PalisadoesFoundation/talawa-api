@@ -16,7 +16,7 @@
     "dev": "ts-node-dev --respawn --exit-child ./src/index.js",
     "prebuild": "rimraf ./dist",
     "build": "tsc --pretty --project tsconfig.build.json",
-    "postbuild": "copyfiles --error --up 1 './src/locales/*' ./dist && copyfiles --error --up 1 './src/lib/schema/*' './src/lib/schema/**/*' ./dist",
+    "postbuild": "copyfiles --error --up 1 './src/locales/*' ./dist",
     "codegen": "graphql-codegen"
   },
   "repository": {

@@ -1,17 +1,19 @@
-module.exports = `
+import { gql } from 'apollo-server-core';
+
+export const newsfeed = gql`
   type Post {
     _id: ID
     text: String!
     title: String
     createdAt: String
     imageUrl: String
-    videoUrl:String
+    videoUrl: String
     creator: User!
     organization: Organization!
     likedBy: [User]
     comments: [Comment]
     likeCount: Int
-    commentCount: Int 
+    commentCount: Int
   }
 
   input PostWhereInput {
@@ -37,14 +39,20 @@ module.exports = `
     title_starts_with: String
   }
 
-  """A connection to a list of items."""
+  """
+  A connection to a list of items.
+  """
   type PostConnection {
-    """Information to aid in pagination."""
+    """
+    Information to aid in pagination.
+    """
     pageInfo: PageInfo!
 
-    """A list of edges."""
+    """
+    A list of edges.
+    """
     edges: [Post]!
-    
+
     aggregate: AggregatePost!
   }
 
@@ -57,7 +65,7 @@ module.exports = `
     text: String!
     title: String
     imageUrl: String
-    videoUrl:String
+    videoUrl: String
     organizationId: ID!
   }
 
@@ -70,7 +78,7 @@ module.exports = `
     likedBy: [User]
     likeCount: Int
   }
-  
+
   input CommentInput {
     text: String!
   }
@@ -93,4 +101,6 @@ module.exports = `
     commentCount_ASC
     commentCount_DESC
   }
-`
+`;
+
+export default newsfeed;

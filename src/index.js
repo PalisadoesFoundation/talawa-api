@@ -19,7 +19,7 @@ const requestTracing = require('./lib/helper_lib/request-tracing').default;
 
 const Query = require('./lib/resolvers/Query');
 const Mutation = require('./lib/resolvers/Mutation');
-const typeDefs = require('./lib/schema/schema.graphql');
+const { typeDefs } = require('./lib/typeDefs');
 const isAuth = require('./lib/middleware/is-auth');
 const database = require('./db');
 const Organization = require('./lib/resolvers/Organization');
