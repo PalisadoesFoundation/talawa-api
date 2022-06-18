@@ -23,10 +23,10 @@ export default {
   ValidationError,
 };
 
-export * from './application-error';
-export * from './conflict-error';
-export * from './internal-server-error';
-export * from './not-found-error';
-export * from './unauthenticated-error';
-export * from './unauthorized-error';
-export * from './validation-error';
+export { ApplicationError, IError } from './application-error';
+export { ConflictError } from './conflict-error';
+export { InternalServerError } from './internal-server-error';
+export { NotFoundError } from './not-found-error';
+export { UnauthenticatedError } from './unauthenticated-error';
+export { UnauthorizedError } from './unauthorized-error';
+export { ValidationError } from './validation-error';

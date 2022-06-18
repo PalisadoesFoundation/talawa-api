@@ -2,7 +2,7 @@ export interface IError {
   message: string;
   code: string | null;
   param: string | null;
-  metadata: Record<any, any>;
+  metadata?: Record<any, any>;
 }
 
 export class ApplicationError extends Error {
