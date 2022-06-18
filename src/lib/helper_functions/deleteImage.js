@@ -1,8 +1,7 @@
 const { unlink } = require('fs');
 const logger = require('../helper_lib/logger');
 const ImageHash = require('../models/ImageHash');
-
-const reuploadDuplicateCheck = require('./ReuploadDuplicateCheck');
+const { reuploadDuplicateCheck } = require('./reuploadDuplicateCheck');
 
 async function deleteImage(imageToBeDeleted, imageBelongingToItem) {
   let tryingToReUploadADuplicate;

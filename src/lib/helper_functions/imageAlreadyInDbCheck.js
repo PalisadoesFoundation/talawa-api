@@ -1,7 +1,7 @@
 const { imageHash } = require('image-hash');
 const ImageHash = require('../models/ImageHash');
 const { deleteDuplicatedImage } = require('./deleteDuplicatedImage');
-const reuploadDuplicateCheck = require('./ReuploadDuplicateCheck');
+const { reuploadDuplicateCheck } = require('./reuploadDuplicateCheck');
 const { ValidationError } = require('../helper_lib/errors');
 const requestContext = require('../helper_lib/request-context');
 
