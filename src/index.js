@@ -10,17 +10,14 @@ const mongoSanitize = require('express-mongo-sanitize');
 const jwt = require('jsonwebtoken');
 const express = require('express');
 const cors = require('cors');
-const logger = require('./lib/helper_lib/logger').default;
 const requestLogger = require('morgan');
 const path = require('path');
 const i18n = require('i18n');
-const requestContext = require('./lib/helper_lib/request-context').default;
-const requestTracing = require('./lib/helper_lib/request-tracing').default;
-
+const { logger, requestContext, requestTracing } = require('./lib/helper_lib');
 const Query = require('./lib/resolvers/Query');
 const Mutation = require('./lib/resolvers/Mutation');
 const { typeDefs } = require('./lib/typeDefs');
-const isAuth = require('./lib/middleware/is-auth').default;
+const { isAuth } = require('./lib/middleware/is-auth');
 const database = require('./db');
 const Organization = require('./lib/resolvers/Organization');
 const MembershipRequest = require('./lib/resolvers/MembershipRequest');
@@ -30,8 +27,10 @@ const { defaultLocale, supportedLocales } = require('./lib/config/app');
 const GroupChat = require('./lib/resolvers/GroupChat');
 const GroupChatMessage = require('./lib/resolvers/GroupChatMessage');
 const Subscription = require('./lib/resolvers/Subscription');
-const AuthenticationDirective = require('./lib/directives/authDirective');
-const RoleAuthorizationDirective = require('./lib/directives/roleDirective');
+const {
+  AuthenticationDirective,
+  RoleAuthorizationDirective,
+} = require('./lib/directives');
 
 const app = express();
 
