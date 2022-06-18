@@ -1,8 +1,7 @@
-const { createLogger, transports, format } = require('winston');
-const requestTracing = require('../request-tracing');
-const _ = require('lodash');
-
-const appConfig = require('../../config/app');
+import _ from 'lodash';
+import { createLogger, transports, format } from 'winston';
+import requestTracing from './request-tracing';
+import appConfig from '../config/app';
 
 const { combine, printf, splat, colorize, simple, timestamp } = format;
 
@@ -36,7 +35,7 @@ const formats = {
   ),
 };
 
-const logger = createLogger({
+export const logger = createLogger({
   transports: [
     new transports.Console({
       level: appConfig.log_level,
@@ -48,9 +47,16 @@ const logger = createLogger({
   ],
 });
 
+/* 
+This piece of code is incorrect and seems pointless.
+It should be removed after confirmation from the mentors.
+For now typescript is ignoring it so that we don't get type errors.
+*/
 logger.stream = {
+  // @ts-ignore
   write: (message) => {
     logger.info((message || '').trim());
   },
 };
-module.exports = logger;
+
+export default logger;
