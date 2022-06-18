@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-catch */
-const userExists = require('../../helper_functions/userExists');
+const { userExists } = require('../../helper_functions/userExists');
 const User = require('../../models/User');
 const uploadImage = require('../../helper_functions/uploadImage');
 const { ConflictError, NotFoundError } = require('../../helper_lib/errors');

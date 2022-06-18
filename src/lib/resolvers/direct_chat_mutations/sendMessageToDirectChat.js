@@ -1,6 +1,6 @@
 const DirectChat = require('../../models/DirectChat');
 const DirectChatMessage = require('../../models/DirectChatMessage');
-const userExists = require('../../helper_functions/userExists');
+const { userExists } = require('../../helper_functions/userExists');
 const { NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
 const {

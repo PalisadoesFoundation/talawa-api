@@ -1,6 +1,6 @@
 const adminCheck = require('../functions/adminCheck');
 const organizationExists = require('../../helper_functions/organizationExists');
-const userExists = require('../../helper_functions/userExists');
+const { userExists } = require('../../helper_functions/userExists');
 const { UnauthorizedError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
 const {

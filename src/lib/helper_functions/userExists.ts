@@ -1,16 +1,17 @@
-const User = require('../models/User');
-const { NotFoundError } = require('../helper_lib/errors');
-const requestContext = require('../helper_lib/request-context');
-const {
+import User from '../models/User';
+import { NotFoundError } from '../helper_lib/errors';
+import requestContext from '../helper_lib/request-context';
+import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
-} = require('../../constants');
+} from '../../constants';
 
-module.exports = async (id) => {
+export const userExists = async (id: string) => {
   const user = await User.findOne({ _id: id });
+
   if (!user) {
     throw new NotFoundError(
       !IN_PRODUCTION
@@ -20,5 +21,8 @@ module.exports = async (id) => {
       USER_NOT_FOUND_PARAM
     );
   }
+
   return user;
 };
+
+export default userExists;

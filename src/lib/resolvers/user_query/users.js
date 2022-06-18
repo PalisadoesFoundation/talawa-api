@@ -3,7 +3,7 @@ const requestContext = require('../../helper_lib/request-context');
 const filterParamUtil = require('./user_filter');
 const orderByFilter = require('./user_orderBy');
 const User = require('../../models/User');
-const userExists = require('../../helper_functions/userExists');
+const { userExists } = require('../../helper_functions/userExists');
 
 // Query to provide logged user information
 const me = async (parent, args, context) => {

@@ -1,6 +1,6 @@
 const User = require('../../models/User');
 const Organization = require('../../models/Organization');
-const userExists = require('../../helper_functions/userExists');
+const { userExists } = require('../../helper_functions/userExists');
 
 const uploadImage = require('../../helper_functions/uploadImage');
 
