@@ -1,18 +1,19 @@
-const Organization = require('../models/Organization');
-const { NotFoundError } = require('../helper_lib/errors');
-const requestContext = require('../helper_lib/request-context');
-const {
+import Organization from '../models/Organization';
+import { NotFoundError } from '../helper_lib/errors';
+import requestContext from '../helper_lib/request-context';
+import {
   IN_PRODUCTION,
   ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_PARAM,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_CODE,
-} = require('../../constants');
+} from '../../constants';
 
-module.exports = async (id) => {
+export const organizationExists = async (id: string) => {
   const organization = await Organization.findOne({
     _id: id,
   });
+
   if (!organization) {
     throw new NotFoundError(
       !IN_PRODUCTION
@@ -22,5 +23,8 @@ module.exports = async (id) => {
       ORGANIZATION_NOT_FOUND_PARAM
     );
   }
+
   return organization;
 };
+
+export default organizationExists;

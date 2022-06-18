@@ -1,7 +1,9 @@
 const User = require('../../models/User');
 const GroupChat = require('../../models/GroupChat');
 const adminCheck = require('../functions/adminCheck');
-const organizationExists = require('../../helper_functions/organizationExists');
+const {
+  organizationExists,
+} = require('../../helper_functions/organizationExists');
 const { NotFoundError, ConflictError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
 const {

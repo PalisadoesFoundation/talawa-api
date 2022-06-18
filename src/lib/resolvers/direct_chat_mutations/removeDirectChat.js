@@ -1,7 +1,9 @@
 const DirectChat = require('../../models/DirectChat');
 const DirectChatMessage = require('../../models/DirectChatMessage');
 const adminCheck = require('../functions/adminCheck');
-const organizationExists = require('../../helper_functions/organizationExists');
+const {
+  organizationExists,
+} = require('../../helper_functions/organizationExists');
 const { NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
 
