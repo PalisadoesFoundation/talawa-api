@@ -1,42 +1,34 @@
-const axios = require('axios');
 const shortid = require('shortid');
 
-const { URL } = require('../../../constants');
+const database = require('../../../db');
+const otp = require('../../../lib/resolvers/auth_mutations/otp');
 const getToken = require('../../functions/getToken');
 
 let generatedEmail;
 let token;
-let otpToken;
 
 beforeAll(async () => {
+  require('dotenv').config();
+  await database.connect();
+
   generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
   token = await getToken(generatedEmail);
 });
 
+afterAll(() => {
+  database.disconnect();
+});
+
 describe('Testing otp resolver', () => {
   test('otp', async () => {
-    console.log(otpToken);
-    const response = await axios.post(
-      URL,
-      {
-        query: `
-            mutation {
-                otp(data: {
-                    email: "${generatedEmail}"
-                }) {
-                    otpToken
-                }
-            }
-            `,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    console.log(token);
 
-    const { data } = response;
-    expect(data.data).toBeFalsy();
+    const args = {
+      data: {
+        email: generatedEmail,
+      },
+    };
+
+    await expect(() => otp({}, args)).rejects.toEqual('Error in sending mail');
   });
 });
