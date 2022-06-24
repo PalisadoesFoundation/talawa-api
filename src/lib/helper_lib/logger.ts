@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { createLogger, transports, format } from 'winston';
 import requestTracing from './request-tracing';
-import appConfig from '../config/app';
+import { appConfig } from '../config';
 
 const { combine, printf, splat, colorize, simple, timestamp } = format;
 

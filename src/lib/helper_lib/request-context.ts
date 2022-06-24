@@ -5,7 +5,7 @@ No type defintions available for package 'cls-bluebird'
 // @ts-ignore
 import clsBluebird from 'cls-bluebird';
 import i18n from 'i18n';
-import type { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
 const requestContextNamespace = cls.createNamespace('talawa-request-context');
 clsBluebird(requestContextNamespace);

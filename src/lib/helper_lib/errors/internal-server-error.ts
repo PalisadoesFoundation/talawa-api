@@ -1,4 +1,4 @@
-import ApplicationError from './application-error';
+import { ApplicationError } from './application-error';
 
 export class InternalServerError extends ApplicationError {
   constructor(
@@ -18,5 +18,3 @@ export class InternalServerError extends ApplicationError {
     super(errorJson, 500, message);
   }
 }
-
-export default InternalServerError;

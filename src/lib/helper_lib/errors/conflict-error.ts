@@ -1,4 +1,4 @@
-import ApplicationError from './application-error';
+import { ApplicationError } from './application-error';
 
 export class ConflictError extends ApplicationError {
   constructor(
@@ -18,5 +18,3 @@ export class ConflictError extends ApplicationError {
     super(errorJson, 409, message);
   }
 }
-
-export default ConflictError;

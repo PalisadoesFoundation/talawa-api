@@ -1,10 +1,10 @@
-import ApplicationError from './application-error';
-import ConflictError from './conflict-error';
-import InternalServerError from './internal-server-error';
-import NotFoundError from './not-found-error';
-import UnauthenticatedError from './unauthenticated-error';
-import UnauthorizedError from './unauthorized-error';
-import ValidationError from './validation-error';
+import { ApplicationError } from './application-error';
+import { ConflictError } from './conflict-error';
+import { InternalServerError } from './internal-server-error';
+import { NotFoundError } from './not-found-error';
+import { UnauthenticatedError } from './unauthenticated-error';
+import { UnauthorizedError } from './unauthorized-error';
+import { ValidationError } from './validation-error';
 
 export default {
   // Base class
@@ -23,10 +23,10 @@ export default {
   ValidationError,
 };
 
-export { ApplicationError, IError } from './application-error';
-export { ConflictError } from './conflict-error';
-export { InternalServerError } from './internal-server-error';
-export { NotFoundError } from './not-found-error';
-export { UnauthenticatedError } from './unauthenticated-error';
-export { UnauthorizedError } from './unauthorized-error';
-export { ValidationError } from './validation-error';
+export * from './application-error';
+export * from './conflict-error';
+export * from './internal-server-error';
+export * from './not-found-error';
+export * from './unauthenticated-error';
+export * from './unauthorized-error';
+export * from './validation-error';

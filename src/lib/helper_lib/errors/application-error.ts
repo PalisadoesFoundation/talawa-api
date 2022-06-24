@@ -19,5 +19,3 @@ export class ApplicationError extends Error {
     this.httpCode = httpCode;
   }
 }
-
-export default ApplicationError;

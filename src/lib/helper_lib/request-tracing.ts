@@ -5,7 +5,7 @@ No type defintions available for package 'cls-bluebird'
 // @ts-ignore
 import clsBluebird from 'cls-bluebird';
 import { customAlphabet } from 'nanoid';
-import type { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
 /*
 Alphabets used in the custom nanoid function
