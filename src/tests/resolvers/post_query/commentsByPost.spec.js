@@ -1,9 +1,6 @@
 const database = require('../../../db');
 const shortid = require('shortid');
-const User = require('../../../lib/models/User');
-const Organization = require('../../../lib/models/Organization');
-const Post = require('../../../lib/models/Post');
-const Comment = require('../../../lib/models/Comment');
+const { User, Organization, Comment, Post } = require('../../../lib/models');
 const commentsByPost = require('../../../lib/resolvers/post_query/commentsByPost');
 
 const {

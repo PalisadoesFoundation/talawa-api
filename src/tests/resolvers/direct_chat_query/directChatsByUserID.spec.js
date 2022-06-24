@@ -3,9 +3,7 @@ const bcrypt = require('bcryptjs');
 const shortid = require('shortid');
 const database = require('../../../db');
 const directChatsByUserID = require('../../../lib/resolvers/direct_chat_query/directChatsByUserID');
-const User = require('../../../lib/models/User');
-const Organization = require('../../../lib/models/Organization');
-const DirectChat = require('../../../lib/models/DirectChat');
+const { User, Organization, DirectChat } = require('../../../lib/models');
 
 let testUser1;
 let testUser2;

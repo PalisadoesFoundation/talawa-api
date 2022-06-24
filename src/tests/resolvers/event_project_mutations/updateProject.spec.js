@@ -3,10 +3,12 @@ const bcrypt = require('bcryptjs');
 const shortid = require('shortid');
 const database = require('../../../db');
 const updateProject = require('../../../lib/resolvers/event_project_mutations/updateProject');
-const User = require('../../../lib/models/User');
-const Organization = require('../../../lib/models/Organization');
-const Event = require('../../../lib/models/Event');
-const EventProject = require('../../../lib/models/EventProject');
+const {
+  User,
+  Organization,
+  Event,
+  EventProject,
+} = require('../../../lib/models');
 
 let testUser1;
 

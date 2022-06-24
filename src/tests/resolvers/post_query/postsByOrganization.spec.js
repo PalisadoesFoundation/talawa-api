@@ -5,10 +5,7 @@ const shortid = require('shortid');
 
 const database = require('../../../db');
 const getUserId = require('../../functions/getUserId');
-const Organization = require('../../../lib/models/Organization');
-const Post = require('../../../lib/models/Post');
-const Comment = require('../../../lib/models/Comment');
-const User = require('../../../lib/models/User');
+const { User, Organization, Comment, Post } = require('../../../lib/models');
 
 let mainUserId;
 let secondUserId;

@@ -6,9 +6,11 @@ const {
 
 const database = require('../../../db');
 const getUserIdFromSignUp = require('../../functions/getUserIdFromSignup');
-const Organization = require('../../../lib/models/Organization');
-const User = require('../../../lib/models/User');
-const MembershipRequest = require('../../../lib/models/MembershipRequest');
+const {
+  Organization,
+  User,
+  MembershipRequest,
+} = require('../../../lib/models');
 const {
   MEMBERSHIP_REQUEST_NOT_FOUND,
   ORGANIZATION_NOT_FOUND,

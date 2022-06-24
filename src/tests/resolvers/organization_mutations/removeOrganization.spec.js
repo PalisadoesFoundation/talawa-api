@@ -4,11 +4,13 @@ const mongoose = require('mongoose');
 
 const database = require('../../../db');
 const getUserIdFromSignUp = require('../../functions/getUserIdFromSignup');
-const Organization = require('../../../lib/models/Organization');
-const Post = require('../../../lib/models/Post');
-const Comment = require('../../../lib/models/Comment');
-const User = require('../../../lib/models/User');
-const MembershipRequest = require('../../../lib/models/MembershipRequest');
+const {
+  User,
+  Organization,
+  Comment,
+  Post,
+  MembershipRequest,
+} = require('../../../lib/models');
 
 const {
   USER_NOT_FOUND,

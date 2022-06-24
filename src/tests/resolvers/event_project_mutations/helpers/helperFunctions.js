@@ -1,9 +1,11 @@
 const shortid = require('shortid');
 const bcrypt = require('bcryptjs');
-const User = require('../../../../lib/models/User');
-const Organization = require('../../../../lib/models/Organization');
-const Event = require('../../../../lib/models/Event');
-const EventProject = require('../../../../lib/models/EventProject');
+const {
+  User,
+  Organization,
+  Event,
+  EventProject,
+} = require('../../../../lib/models');
 
 async function createUser() {
   const email = `${shortid.generate().toLowerCase()}@test.com`;

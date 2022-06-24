@@ -6,8 +6,7 @@ const {
 } = require('mongoose');
 const database = require('../../../db');
 const getUserIdFromSignup = require('../../functions/getUserIdFromSignup');
-const User = require('../../../lib/models/User');
-const Organization = require('../../../lib/models/Organization');
+const { User, Organization } = require('../../../lib/models');
 const {
   ORGANIZATION_NOT_FOUND,
   USER_NOT_FOUND,
