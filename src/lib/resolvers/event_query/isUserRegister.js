@@ -7,7 +7,7 @@ const {
   EVENT_NOT_FOUND_MESSAGE,
   EVENT_NOT_FOUND_PARAM,
 } = require('../../../constants');
-const Event = require('../../models/Event');
+const { Event } = require('../../models');
 
 module.exports = async (parent, args, context) => {
   const eventFound = await Event.findOne({

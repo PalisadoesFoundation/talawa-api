@@ -1,7 +1,5 @@
 const { NotFoundError, UnauthorizedError } = require('../../helper_lib/errors');
-const User = require('../../models/User');
-const Event = require('../../models/Event');
-const Organization = require('../../models/Organization');
+const { User, Organization, Event } = require('../../models');
 const requestContext = require('../../helper_lib/request-context');
 const {
   IN_PRODUCTION,

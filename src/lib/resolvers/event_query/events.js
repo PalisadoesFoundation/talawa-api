@@ -1,4 +1,4 @@
-const Event = require('../../models/Event');
+const { Event } = require('../../models');
 
 module.exports = async (parent, args) => {
   var sort = {};

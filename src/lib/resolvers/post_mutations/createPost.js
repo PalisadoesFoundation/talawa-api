@@ -1,8 +1,5 @@
-const User = require('../../models/User');
-const Post = require('../../models/Post');
-const Organization = require('../../models/Organization');
-
-const uploadImage = require('../../helper_functions/uploadImage');
+const { User, Post, Organization } = require('../../models');
+const { uploadImage } = require('../../helper_functions');
 const { NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
 

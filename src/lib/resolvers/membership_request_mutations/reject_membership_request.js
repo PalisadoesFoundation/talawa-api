@@ -1,6 +1,4 @@
-const User = require('../../models/User');
-const Organization = require('../../models/Organization');
-const MembershipRequest = require('../../models/MembershipRequest');
+const { User, Organization, MembershipRequest } = require('../../models');
 const adminCheck = require('../functions/adminCheck');
 const { NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');

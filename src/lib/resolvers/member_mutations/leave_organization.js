@@ -1,5 +1,4 @@
-const User = require('../../models/User');
-const Organization = require('../../models/Organization');
+const { User, Organization } = require('../../models');
 const {
   NotFoundError,
   UnauthorizedError,

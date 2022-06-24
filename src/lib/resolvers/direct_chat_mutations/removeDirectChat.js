@@ -1,5 +1,4 @@
-const DirectChat = require('../../models/DirectChat');
-const DirectChatMessage = require('../../models/DirectChatMessage');
+const { DirectChat, DirectChatMessage } = require('../../models');
 const adminCheck = require('../functions/adminCheck');
 const {
   organizationExists,

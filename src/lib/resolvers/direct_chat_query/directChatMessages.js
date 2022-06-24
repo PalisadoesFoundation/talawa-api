@@ -1,5 +1,5 @@
-const DirectChatMessages = require('../../models/DirectChatMessage');
+const { DirectChatMessage } = require('../../models');
 
 module.exports = async () => {
-  return await DirectChatMessages.find();
+  return await DirectChatMessage.find();
 };

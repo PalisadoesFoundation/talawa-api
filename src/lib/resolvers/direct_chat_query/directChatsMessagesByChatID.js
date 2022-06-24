@@ -1,8 +1,7 @@
 ///Resolver to find direct chats messages by User ID.
-
 const { NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
-const DirectChatMessages = require('../../models/DirectChatMessage');
+const { DirectChatMessage } = require('../../models');
 const {
   IN_PRODUCTION,
   CHAT_NOT_FOUND,
@@ -12,7 +11,7 @@ const {
 } = require('../../../constants');
 
 module.exports = async (parent, args) => {
-  const directChatsMessagesFound = await DirectChatMessages.find({
+  const directChatsMessagesFound = await DirectChatMessage.find({
     directChatMessageBelongsTo: args.id,
   });
   if (directChatsMessagesFound.length === 0) {

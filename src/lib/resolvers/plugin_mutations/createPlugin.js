@@ -1,10 +1,5 @@
-const User = require('../../models/User');
-const Plugin = require('../../models/Plugins');
-const PluginField = require('../../models/PluginsField');
-const Organization = require('../../models/Organization');
-
-const { UnauthorizedError } = require('../../helper_lib/errors');
-const { NotFoundError } = require('../../helper_lib/errors');
+const { User, Plugin, PluginField, Organization } = require('../../models');
+const { UnauthorizedError, NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
 
 module.exports = async (parent, args, context) => {

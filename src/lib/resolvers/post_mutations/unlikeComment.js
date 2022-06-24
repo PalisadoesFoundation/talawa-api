@@ -1,6 +1,4 @@
-const User = require('../../models/User');
-const Comment = require('../../models/Comment');
-
+const { User, Comment } = require('../../models');
 const { NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
 

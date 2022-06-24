@@ -1,5 +1,4 @@
-const GroupChat = require('../../models/GroupChat');
-const GroupChatMessage = require('../../models/GroupChatMessage');
+const { GroupChat, GroupChatMessage } = require('../../models');
 const adminCheck = require('../functions/adminCheck');
 const {
   organizationExists,

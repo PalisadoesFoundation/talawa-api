@@ -1,5 +1,4 @@
-const User = require('../models/User');
-const GroupChat = require('../models/GroupChat');
+const { User, GroupChat } = require('../models');
 
 module.exports = {
   groupChatMessageBelongsTo: async (parent) => {

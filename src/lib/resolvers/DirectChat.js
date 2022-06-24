@@ -1,6 +1,4 @@
-const User = require('../models/User');
-const DirectChatMessage = require('../models/DirectChatMessage');
-const Organization = require('../models/Organization');
+const { User, DirectChatMessage, Organization } = require('../models');
 
 module.exports = {
   users: async (parent) =>

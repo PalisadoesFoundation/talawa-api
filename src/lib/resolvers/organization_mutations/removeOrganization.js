@@ -1,8 +1,10 @@
-const User = require('../../models/User');
-const MembershipRequest = require('../../models/MembershipRequest');
-const Comment = require('../../models/Comment');
-const Post = require('../../models/Post');
-const Organization = require('../../models/Organization');
+const {
+  User,
+  Organization,
+  Post,
+  Comment,
+  MembershipRequest,
+} = require('../../models');
 const creatorCheck = require('../functions/creatorCheck');
 const { NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');

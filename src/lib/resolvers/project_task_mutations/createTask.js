@@ -1,6 +1,4 @@
-const User = require('../../models/User');
-const Task = require('../../models/Task');
-const Event = require('../../models/Event');
+const { User, Task, Event } = require('../../models');
 const { NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
 const {
@@ -14,6 +12,7 @@ const {
   EVENT_NOT_FOUND_CODE,
   EVENT_NOT_FOUND_PARAM,
 } = require('../../../constants');
+
 const createTask = async (parent, args, context) => {
   // gets user in token - to be used later on
   const user = await User.findOne({ _id: context.userId });

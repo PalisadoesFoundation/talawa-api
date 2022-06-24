@@ -1,5 +1,4 @@
-const GroupChat = require('../../models/GroupChat');
-const GroupChatMessage = require('../../models/GroupChatMessage');
+const { GroupChat, GroupChatMessage } = require('../../models');
 const { userExists } = require('../../helper_functions/userExists');
 const { NotFoundError, UnauthorizedError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');

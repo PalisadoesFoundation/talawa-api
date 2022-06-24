@@ -1,4 +1,4 @@
-const Language = require('../../models/Language');
+const { Language } = require('../../models');
 //const { NotFoundError } = require('../../helper_lib/errors');
 //const requestContext = require('../../helper_lib/request-context');
 

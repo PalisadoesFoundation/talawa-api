@@ -1,4 +1,4 @@
-const { userExists } = require('../../helper_functions/userExists');
+const { userExists } = require('../../helper_functions');
 const { USER_NOT_FOUND } = require('../../../constants');
 
 module.exports = async (parent, args, context) => {

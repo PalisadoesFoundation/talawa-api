@@ -1,4 +1,4 @@
-const Task = require('../../models/Task');
+const { Task } = require('../../models');
 
 module.exports = async (parent, args) => {
   var sort = {};

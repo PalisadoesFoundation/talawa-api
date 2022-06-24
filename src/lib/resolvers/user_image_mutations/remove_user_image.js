@@ -1,5 +1,5 @@
-const User = require('../../models/User');
-const deleteImage = require('../../helper_functions/deleteImage');
+const { User } = require('../../models');
+const { deleteImage } = require('../../helper_functions');
 const { NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
 

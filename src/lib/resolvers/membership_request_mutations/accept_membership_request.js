@@ -1,9 +1,6 @@
 const adminCheck = require('../functions/adminCheck');
-const MembershipRequest = require('../../models/MembershipRequest');
-const { userExists } = require('../../helper_functions/userExists');
-const {
-  organizationExists,
-} = require('../../helper_functions/organizationExists');
+const { MembershipRequest } = require('../../models');
+const { userExists, organizationExists } = require('../../helper_functions');
 const { NotFoundError, ConflictError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
 

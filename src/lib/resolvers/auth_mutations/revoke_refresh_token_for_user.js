@@ -1,5 +1,5 @@
 /* eslint-disable indent */
-const User = require('../../models/User');
+const { User } = require('../../models');
 
 module.exports = async (parent, args) => {
   await User.findOneAndUpdate(

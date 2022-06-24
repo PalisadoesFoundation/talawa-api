@@ -1,5 +1,4 @@
-const User = require('../../models/User');
-const Organization = require('../../models/Organization');
+const { User, Organization } = require('../../models');
 const creatorCheck = require('../functions/creatorCheck');
 const { NotFoundError, UnauthorizedError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');

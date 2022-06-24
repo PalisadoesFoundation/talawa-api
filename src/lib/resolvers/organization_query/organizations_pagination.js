@@ -1,4 +1,4 @@
-const Organization = require('../../models/Organization');
+const { Organization } = require('../../models');
 
 const organizationsConnection = async (parent, args) => {
   var inputArg = {};

@@ -1,5 +1,5 @@
 const { ValidationError } = require('../../helper_lib/errors');
-const Post = require('../../models/Post');
+const { Post } = require('../../models');
 const requestContext = require('../../helper_lib/request-context');
 
 const postsByOrganizationConnection = async (parent, args) => {

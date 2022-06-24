@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken');
-const User = require('../../models/User');
+const { User } = require('../../models');
 const {
   createAccessToken,
   createRefreshToken,
-} = require('../../helper_functions/auth');
+} = require('../../helper_functions');
 const { ValidationError, NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
 

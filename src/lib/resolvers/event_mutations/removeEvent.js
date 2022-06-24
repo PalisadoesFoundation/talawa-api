@@ -1,5 +1,4 @@
-const User = require('../../models/User');
-const Event = require('../../models/Event');
+const { User, Event } = require('../../models');
 const { NotFoundError, UnauthorizedError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
 const {

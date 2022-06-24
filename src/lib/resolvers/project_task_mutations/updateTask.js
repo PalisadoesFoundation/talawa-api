@@ -1,6 +1,4 @@
-const User = require('../../models/User');
-const Task = require('../../models/Task');
-
+const { User, Task } = require('../../models');
 const { NotFoundError, UnauthorizedError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
 

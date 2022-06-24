@@ -1,6 +1,4 @@
-const User = require('../../models/User');
-const GroupChat = require('../../models/GroupChat');
-const Organization = require('../../models/Organization');
+const { User, GroupChat, Organization } = require('../../models');
 const { NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
 

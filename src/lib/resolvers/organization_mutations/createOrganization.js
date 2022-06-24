@@ -1,8 +1,6 @@
-const User = require('../../models/User');
-const Organization = require('../../models/Organization');
+const { User, Organization } = require('../../models');
 const { userExists } = require('../../helper_functions/userExists');
-
-const uploadImage = require('../../helper_functions/uploadImage');
+const { uploadImage } = require('../../helper_functions');
 
 const createOrganization = async (parent, args, context) => {
   //gets user in token - to be used later on

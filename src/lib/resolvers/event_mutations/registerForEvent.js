@@ -1,5 +1,4 @@
-const User = require('../../models/User');
-const Event = require('../../models/Event');
+const { User, Event } = require('../../models');
 const { NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
 const {
@@ -17,6 +16,7 @@ const {
   REGISTRANT_ALREADY_EXIST_MESSAGE,
   REGISTRANT_ALREADY_EXIST_PARAM,
 } = require('../../../constants');
+
 const registerForEvent = async (parent, args, context) => {
   const userFound = await User.findOne({ _id: context.userId });
   if (!userFound) {

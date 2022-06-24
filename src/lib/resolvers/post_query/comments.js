@@ -1,7 +1,6 @@
 const { NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
-
-const Comment = require('../../models/Comment');
+const { Comment } = require('../../models');
 
 module.exports = async () => {
   const commentFound = await Comment.find()

@@ -1,7 +1,6 @@
 const { NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
-
-const Event = require('../../models/Event');
+const { Event } = require('../../models');
 
 module.exports = async (parent, args) => {
   const eventFound = await Event.findOne({

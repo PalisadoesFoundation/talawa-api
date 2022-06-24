@@ -1,9 +1,6 @@
 const { NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
-
-const Comment = require('../../models/Comment');
-const Organization = require('../../models/Organization');
-
+const { Comment, Organization } = require('../../models');
 const {
   COMMENT_NOT_FOUND,
   COMMENT_NOT_FOUND_MESSAGE,

@@ -1,8 +1,5 @@
-const Plugin = require('../../models/Plugins');
-const User = require('../../models/User');
+const { Plugin, User, Organization } = require('../../models');
 const superAdminCheck = require('../functions/superAdminCheck');
-const Organization = require('../../models/Organization');
-
 const { NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
 

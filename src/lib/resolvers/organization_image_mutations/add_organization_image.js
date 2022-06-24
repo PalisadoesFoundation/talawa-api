@@ -1,9 +1,8 @@
-const Organization = require('../../models/Organization');
-const User = require('../../models/User');
+const { User, Organization } = require('../../models');
 const adminCheck = require('../functions/adminCheck');
 const { NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
-const uploadImage = require('../../helper_functions/uploadImage');
+const { uploadImage } = require('../../helper_functions');
 
 module.exports = async (parent, args, context) => {
   const user = await User.findById(context.userId);

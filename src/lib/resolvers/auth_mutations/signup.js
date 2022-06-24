@@ -1,15 +1,12 @@
-const Organization = require('../../models/Organization');
+const { User, Organization } = require('../../models');
 const { NotFoundError, ConflictError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
-
-const User = require('../../models/User');
 const bcrypt = require('bcryptjs');
 const {
   createAccessToken,
   createRefreshToken,
-} = require('../../helper_functions/auth');
-
-const uploadImage = require('../../helper_functions/uploadImage');
+  uploadImage,
+} = require('../../helper_functions');
 const copyToClipboard = require('../functions/copyToClipboard.js');
 
 module.exports = async (parent, args) => {

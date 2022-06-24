@@ -1,10 +1,7 @@
-const User = require('../../models/User');
-const Organization = require('../../models/Organization');
+const { User, Organization, GroupChat } = require('../../models');
 const adminCheck = require('../functions/adminCheck');
 const { NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
-
-const GroupChat = require('../../models/GroupChat');
 const {
   IN_PRODUCTION,
   USER_NOT_FOUND,

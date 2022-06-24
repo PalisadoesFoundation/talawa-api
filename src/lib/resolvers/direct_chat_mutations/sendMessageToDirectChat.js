@@ -1,6 +1,5 @@
-const DirectChat = require('../../models/DirectChat');
-const DirectChatMessage = require('../../models/DirectChatMessage');
-const { userExists } = require('../../helper_functions/userExists');
+const { DirectChat, DirectChatMessage } = require('../../models');
+const { userExists } = require('../../helper_functions');
 const { NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
 const {
@@ -10,6 +9,7 @@ const {
   CHAT_NOT_FOUND_CODE,
   CHAT_NOT_FOUND_PARAM,
 } = require('../../../constants');
+
 module.exports = async (parent, args, context) => {
   const chat = await DirectChat.findById(args.chatId);
   if (!chat) {

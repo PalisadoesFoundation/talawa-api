@@ -1,7 +1,6 @@
-const Organization = require('../../models/Organization');
-const User = require('../../models/User');
+const { User, Organization } = require('../../models');
 const adminCheck = require('../functions/adminCheck');
-const deleteImage = require('../../helper_functions/deleteImage');
+const { deleteImage } = require('../../helper_functions');
 const { NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
 

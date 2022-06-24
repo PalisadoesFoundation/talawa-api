@@ -1,5 +1,5 @@
-const GroupChatMessages = require('../../models/GroupChatMessage');
+const { GroupChatMessage } = require('../../models');
 
 module.exports = async () => {
-  return await GroupChatMessages.find();
+  return await GroupChatMessage.find();
 };

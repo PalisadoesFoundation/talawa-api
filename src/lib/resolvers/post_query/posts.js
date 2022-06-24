@@ -1,4 +1,4 @@
-const Post = require('../../models/Post');
+const { Post } = require('../../models');
 
 module.exports = async (parent, args) => {
   var sort = {};

@@ -1,5 +1,5 @@
-const User = require('../../models/User');
-const uploadImageHelper = require('../../helper_functions/uploadImage');
+const { User } = require('../../models');
+const { uploadImage } = require('../../helper_functions');
 const { NotFoundError } = require('../../helper_lib/errors');
 const requestContext = require('../../helper_lib/request-context');
 
@@ -13,15 +13,15 @@ const addUserImage = async (parent, args, context) => {
     );
   }
 
-  const uploadImage = await uploadImageHelper(args.file, user.image);
+  const imageToUpload = await uploadImage(args.file, user.image);
 
   return await User.findOneAndUpdate(
     { _id: user.id },
     {
       $set: {
-        image: uploadImage.imageAlreadyInDbPath
-          ? uploadImage.imageAlreadyInDbPath
-          : uploadImage.newImagePath,
+        image: imageToUpload.imageAlreadyInDbPath
+          ? imageToUpload.imageAlreadyInDbPath
+          : imageToUpload.newImagePath,
       },
     },
     {
