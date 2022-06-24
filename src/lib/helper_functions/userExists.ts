@@ -1,4 +1,4 @@
-import User from '../models/User';
+import { User } from '../models';
 import { NotFoundError } from '../helper_lib/errors';
 import requestContext from '../helper_lib/request-context';
 import {

@@ -1,10 +1,14 @@
-const { unlink } = require('fs');
-const logger = require('../helper_lib/logger');
-const ImageHash = require('../models/ImageHash');
-const { reuploadDuplicateCheck } = require('./reuploadDuplicateCheck');
+import { unlink } from 'fs';
+import logger from '../helper_lib/logger';
+import { ImageHash } from '../models';
+import { reuploadDuplicateCheck } from './reuploadDuplicateCheck';
 
-async function deleteImage(imageToBeDeleted, imageBelongingToItem) {
+export const deleteImage = async (
+  imageToBeDeleted: string,
+  imageBelongingToItem?: string
+) => {
   let tryingToReUploadADuplicate;
+
   if (imageBelongingToItem) {
     tryingToReUploadADuplicate = await reuploadDuplicateCheck(
       imageBelongingToItem,
@@ -13,8 +17,10 @@ async function deleteImage(imageToBeDeleted, imageBelongingToItem) {
   }
 
   if (!tryingToReUploadADuplicate) {
-    // Only remove the old image if its different from the new one
-    // Ensure image hash isn't used by multiple users/organization before deleting it
+    /* 
+    Only remove the old image if its different from the new one
+    Ensure image hash isn't used by multiple users/organization before deleting it
+    */
     let hash = await ImageHash.findOne({
       fileName: imageToBeDeleted,
     });
@@ -24,8 +30,12 @@ async function deleteImage(imageToBeDeleted, imageBelongingToItem) {
       logger.info('Image cannot be deleted');
     } else {
       logger.info('Image is only used once and therefore can be deleted');
-      unlink(imageToBeDeleted, function (err) {
-        if (err) throw err;
+
+      unlink(imageToBeDeleted, (error) => {
+        if (error) {
+          throw error;
+        }
+
         // if no error, file has been deleted successfully
         logger.info('File deleted!');
       });
@@ -46,6 +56,4 @@ async function deleteImage(imageToBeDeleted, imageBelongingToItem) {
       }
     );
   }
-}
-
-module.exports = deleteImage;
+};

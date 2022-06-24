@@ -1,11 +1,13 @@
-const deleteImage = require('./deleteImage');
-const { ValidationError } = require('../helper_lib/errors');
-const requestContext = require('../helper_lib/request-context');
+import { deleteImage } from './deleteImage';
+import { ValidationError } from '../helper_lib/errors';
+import requestContext from '../helper_lib/request-context';
 
-module.exports = async (filename) => {
+export const imageExtensionCheck = async (filename: string) => {
   const extension = filename.split('.').pop();
+
   if (extension !== 'png' && extension !== 'jpg' && extension !== 'jpeg') {
     await deleteImage(filename);
+
     throw new ValidationError(
       [
         {

@@ -1,4 +1,4 @@
-import Organization from '../models/Organization';
+import { Organization } from '../models';
 import { NotFoundError } from '../helper_lib/errors';
 import requestContext from '../helper_lib/request-context';
 import {

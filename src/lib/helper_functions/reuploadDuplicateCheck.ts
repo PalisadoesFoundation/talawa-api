@@ -13,7 +13,7 @@ interface BufferObject {
   name?: string;
 }
 
-type TOldSrc = string | UrlRequestObject | BufferObject;
+export type TOldSrc = string | UrlRequestObject | BufferObject;
 
 const getImageHash = (oldSrc: TOldSrc) => {
   return new Promise((resolve, reject) => {

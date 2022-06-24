@@ -1,13 +1,14 @@
-const shortid = require('shortid');
-const logger = require('../helper_lib/logger');
-const { createWriteStream } = require('fs');
-const path = require('path');
-const imageAlreadyInDbCheck = require('./imageAlreadyInDbCheck');
-const deleteImage = require('./deleteImage');
-const imageExtensionCheck = require('./imageExtensionCheck');
+import { createWriteStream } from 'fs';
+import path from 'path';
+import shortid from 'shortid';
+import logger from '../helper_lib/logger';
+import { imageAlreadyInDbCheck } from './imageAlreadyInDbCheck';
+import { deleteImage } from './deleteImage';
+import { imageExtensionCheck } from './imageExtensionCheck';
 
-module.exports = async (file, itemImage) => {
+export const uploadImage = async (file: any, itemImage: any) => {
   const id = shortid.generate();
+
   const { createReadStream, filename } = await file;
 
   // throw an error if file is not png or jpg
@@ -22,7 +23,7 @@ module.exports = async (file, itemImage) => {
         )
       )
       .on('close', resolve)
-      .on('error', (error) => reject(error))
+      .on('error', (error: any) => reject(error))
       .on('finish', () => resolve({ path }))
   );
 
