@@ -1,9 +1,8 @@
 import { SchemaDirectiveVisitor } from 'apollo-server-express';
-import { defaultFieldResolver } from 'graphql';
-import type { GraphQLField } from 'graphql';
+import { defaultFieldResolver, GraphQLField } from 'graphql';
 import { UnauthenticatedError } from '../helper_lib/errors';
 import requestContext from '../helper_lib/request-context';
-import { userExists } from '../helper_functions/userExists';
+import { userExists } from '../helper_functions';
 
 export class RoleAuthorizationDirective extends SchemaDirectiveVisitor {
   visitFieldDefinition(field: GraphQLField<any, any>) {
@@ -28,5 +27,3 @@ export class RoleAuthorizationDirective extends SchemaDirectiveVisitor {
     };
   }
 }
-
-export default RoleAuthorizationDirective;
