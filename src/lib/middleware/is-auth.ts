@@ -85,5 +85,3 @@ export const isAuth = (req: Request) => {
 
   return authData;
 };
-
-export default isAuth;
