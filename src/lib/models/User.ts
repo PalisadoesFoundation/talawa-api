@@ -1,9 +1,33 @@
-const mongoose = require('mongoose');
-const { isEmail } = require('validator');
-const mongoosePaginate = require('mongoose-paginate-v2');
-const Schema = mongoose.Schema;
+import { Schema, model, Model, PopulatedDoc, Document } from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate-v2';
+import validator from 'validator';
+import { IEvent } from './Event';
+import { IMembershipRequest } from './MembershipRequest';
+import { IOrganization } from './Organization';
 
-const userSchema = new Schema({
+export interface IUser {
+  image?: string;
+  tokenVersion?: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  appLanguageCode: string;
+  createdOrganizations: Array<PopulatedDoc<IOrganization>>;
+  createdEvents: Array<PopulatedDoc<IEvent>>;
+  userType: 'USER' | 'ADMIN' | 'SUPERADMIN';
+  joinedOrganizations: Array<PopulatedDoc<IOrganization>>;
+  registeredEvents: Array<PopulatedDoc<IEvent>>;
+  eventAdmin: Array<PopulatedDoc<IEvent>>;
+  adminFor: Array<PopulatedDoc<IOrganization>>;
+  membershipRequests: Array<PopulatedDoc<IMembershipRequest>>;
+  organizationsBlockedBy: Array<PopulatedDoc<IOrganization>>;
+  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+  organizationUserBelongsTo?: PopulatedDoc<IOrganization>;
+  pluginCreationAllowed: boolean;
+}
+
+const userSchema = new Schema<IUser, Model<IUser>, IUser>({
   image: {
     type: String,
   },
@@ -21,8 +45,8 @@ const userSchema = new Schema({
   },
   email: {
     type: String,
-    validate: [isEmail, 'invalid email'],
     required: true,
+    validate: [validator.isEmail, 'invalid email'],
   },
   password: {
     type: String,
@@ -30,8 +54,8 @@ const userSchema = new Schema({
   },
   appLanguageCode: {
     type: String,
-    default: 'en',
     required: true,
+    default: 'en',
   },
   createdOrganizations: [
     {
@@ -47,9 +71,9 @@ const userSchema = new Schema({
   ],
   userType: {
     type: String,
+    required: true,
     enum: ['USER', 'ADMIN', 'SUPERADMIN'],
     default: 'USER',
-    required: true,
   },
   joinedOrganizations: [
     {
@@ -90,8 +114,8 @@ const userSchema = new Schema({
   status: {
     type: String,
     required: true,
-    default: 'ACTIVE',
     enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
+    default: 'ACTIVE',
   },
   organizationUserBelongsTo: {
     type: Schema.Types.ObjectId,
@@ -104,5 +128,11 @@ const userSchema = new Schema({
   },
 });
 
+/*
+This library mongoose-paginate-v2 has incompatible typescript bindings.
+@ts-ignore comment cannot be removed until the author of library fixes it.
+*/
+// @ts-ignore
 userSchema.plugin(mongoosePaginate);
-module.exports = mongoose.model('User', userSchema);
+
+export const User = model<IUser>('User', userSchema);

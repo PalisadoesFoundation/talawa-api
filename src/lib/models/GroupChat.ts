@@ -1,8 +1,15 @@
-const mongoose = require('mongoose');
+import { Schema, Types, model, Model } from 'mongoose';
 
-const Schema = mongoose.Schema;
+export interface IGroupChat {
+  title: string;
+  users: Array<Types.ObjectId>;
+  messages: Array<Types.ObjectId>;
+  creator: Types.ObjectId;
+  organization: Types.ObjectId;
+  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+}
 
-const groupChatSchema = new Schema({
+const groupChatSchema = new Schema<IGroupChat, Model<IGroupChat>, IGroupChat>({
   title: {
     type: String,
     required: true,
@@ -33,9 +40,9 @@ const groupChatSchema = new Schema({
   status: {
     type: String,
     required: true,
-    default: 'ACTIVE',
     enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
+    default: 'ACTIVE',
   },
 });
 
-module.exports = mongoose.model('GroupChat', groupChatSchema);
+export const GroupChat = model<IGroupChat>('GroupChat', groupChatSchema);

@@ -1,9 +1,18 @@
-const mongoose = require('mongoose');
+import { Schema, Types, model, Model } from 'mongoose';
 
-const Schema = mongoose.Schema;
+export interface IDirectChat {
+  users: Array<Types.ObjectId>;
+  messages: Array<Types.ObjectId>;
+  creator: Types.ObjectId;
+  organization: Types.ObjectId;
+  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+}
 
-//this is the Structure of the direct chat
-const directChatSchema = new Schema({
+const directChatSchema = new Schema<
+  IDirectChat,
+  Model<IDirectChat>,
+  IDirectChat
+>({
   users: [
     {
       type: Schema.Types.ObjectId,
@@ -30,9 +39,9 @@ const directChatSchema = new Schema({
   status: {
     type: String,
     required: true,
-    default: 'ACTIVE',
     enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
+    default: 'ACTIVE',
   },
 });
 
-module.exports = mongoose.model('DirectChat', directChatSchema);
+export const DirectChat = model<IDirectChat>('DirectChat', directChatSchema);

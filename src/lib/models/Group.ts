@@ -1,8 +1,15 @@
-const mongoose = require('mongoose');
+import { Schema, Types, model, Model } from 'mongoose';
 
-const Schema = mongoose.Schema;
+export interface IGroup {
+  title: string;
+  description?: string;
+  createdAt?: Date;
+  organization: Types.ObjectId;
+  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+  admins: Array<Types.ObjectId>;
+}
 
-const groupSchema = new Schema({
+const groupSchema = new Schema<IGroup, Model<IGroup>, IGroup>({
   title: {
     type: String,
     required: true,
@@ -12,7 +19,7 @@ const groupSchema = new Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now,
+    default: () => new Date(Date.now()),
   },
   organization: {
     type: Schema.Types.ObjectId,
@@ -22,8 +29,8 @@ const groupSchema = new Schema({
   status: {
     type: String,
     required: true,
-    default: 'ACTIVE',
     enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
+    default: 'ACTIVE',
   },
   admins: [
     {
@@ -34,4 +41,4 @@ const groupSchema = new Schema({
   ],
 });
 
-module.exports = mongoose.model('Group', groupSchema);
+export const Group = model<IGroup>('Group', groupSchema);

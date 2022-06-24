@@ -1,32 +1,63 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
-const User = require('./User');
-const Task = require('./Task');
+import { Schema, Types, model, Model, PopulatedDoc } from 'mongoose';
+import { ITask } from './Task';
+import { IUser } from './User';
 
-const UserAttende = new Schema({
+export interface IUserAttende {
+  userId: string;
+  user: PopulatedDoc<IUser>;
+  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+  createdAt: Date;
+}
+
+const userAttendeSchema = new Schema<
+  IUserAttende,
+  Model<IUserAttende>,
+  IUserAttende
+>({
   userId: {
     type: String,
     required: true,
   },
   user: {
     type: Schema.Types.ObjectId,
-    ref: User,
+    ref: 'User',
     required: true,
   },
   status: {
     type: String,
     required: true,
-    default: 'ACTIVE',
     enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
+    default: 'ACTIVE',
   },
   createdAt: {
     type: Date,
-    default: Date.now,
+    default: () => new Date(Date.now()),
   },
 });
 
-//this is the Structure of the event
-const eventSchema = new Schema({
+export interface IEvent {
+  title: string;
+  description: string;
+  attendees?: string;
+  location?: string;
+  recurring: boolean;
+  allDay: boolean;
+  startDate: string;
+  endDate?: string;
+  startTime?: string;
+  endTime?: string;
+  recurrance?: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY' | 'ONCE';
+  isPublic: boolean;
+  isRegisterable: boolean;
+  creator: PopulatedDoc<IUser>;
+  registrants: Array<PopulatedDoc<IUserAttende>>;
+  admins: Array<PopulatedDoc<IUser>>;
+  organization: Types.ObjectId;
+  tasks: Array<PopulatedDoc<ITask>>;
+  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+}
+
+const eventSchema = new Schema<IEvent, Model<IEvent>, IEvent>({
   title: {
     type: String,
     required: true,
@@ -58,28 +89,32 @@ const eventSchema = new Schema({
   endDate: {
     type: String,
     required: function () {
+      // @ts-ignore
       return !this.allDay;
     },
   },
   startTime: {
     type: String,
     required: function () {
+      // @ts-ignore
       return !this.allDay;
     },
   },
   endTime: {
     type: String,
     required: function () {
+      // @ts-ignore
       return !this.allDay;
     },
   },
   recurrance: {
     type: String,
-    default: 'ONCE',
-    enum: ['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY', 'ONCE'],
     required: function () {
+      // @ts-ignore
       return this.recurring;
     },
+    enum: ['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY', 'ONCE'],
+    default: 'ONCE',
   },
   isPublic: {
     type: Boolean,
@@ -91,14 +126,14 @@ const eventSchema = new Schema({
   },
   creator: {
     type: Schema.Types.ObjectId,
-    ref: User,
+    ref: 'User',
     required: true,
   },
-  registrants: [UserAttende],
+  registrants: [userAttendeSchema],
   admins: [
     {
       type: Schema.Types.ObjectId,
-      ref: User,
+      ref: 'User',
       required: true,
     },
   ],
@@ -110,15 +145,15 @@ const eventSchema = new Schema({
   tasks: [
     {
       type: Schema.Types.ObjectId,
-      ref: Task,
+      ref: 'Task',
     },
   ],
   status: {
     type: String,
     required: true,
-    default: 'ACTIVE',
     enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
+    default: 'ACTIVE',
   },
 });
 
-module.exports = mongoose.model('Event', eventSchema);
+export const Event = model<IEvent>('Event', eventSchema);

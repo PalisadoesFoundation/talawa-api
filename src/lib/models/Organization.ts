@@ -1,8 +1,29 @@
-const mongoose = require('mongoose');
+import { Schema, Types, model, Model, PaginateModel } from 'mongoose';
 
-const Schema = mongoose.Schema;
+export interface IOrganization {
+  apiUrl?: string;
+  image?: string;
+  name: string;
+  description: string;
+  location?: string;
+  isPublic: boolean;
+  creator: Types.ObjectId;
+  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+  members: Array<Types.ObjectId>;
+  admins: Array<Types.ObjectId>;
+  groupChats: Array<Types.ObjectId>;
+  posts: Array<Types.ObjectId>;
+  membershipRequests: Array<Types.ObjectId>;
+  blockedUsers: Array<Types.ObjectId>;
+  visibleInSearch?: boolean;
+  createdAt?: Date;
+}
 
-const organizationSchema = new Schema({
+const organizationSchema = new Schema<
+  IOrganization,
+  Model<IOrganization>,
+  IOrganization
+>({
   apiUrl: {
     type: String,
   },
@@ -32,8 +53,8 @@ const organizationSchema = new Schema({
   status: {
     type: String,
     required: true,
-    default: 'ACTIVE',
     enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
+    default: 'ACTIVE',
   },
   members: [
     {
@@ -75,8 +96,11 @@ const organizationSchema = new Schema({
   visibleInSearch: Boolean,
   createdAt: {
     type: Date,
-    default: Date.now,
+    default: () => new Date(Date.now()),
   },
 });
 
-module.exports = mongoose.model('Organization', organizationSchema);
+export const Organization = model<IOrganization>(
+  'Organization',
+  organizationSchema
+);

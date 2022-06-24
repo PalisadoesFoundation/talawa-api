@@ -1,8 +1,17 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+import { Schema, Types, model, Model } from 'mongoose';
 
-//this is the Structure of the Comments
-const pluginSchema = new Schema({
+export interface IPlugin {
+  orgId: Types.ObjectId;
+  pluginName: string;
+  pluginKey?: string;
+  pluginStatus: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+  pluginType: 'UNIVERSAL' | 'PRIVATE';
+  adminAccessAllowed: boolean;
+  additionalInfo: Array<Types.ObjectId>;
+  createdAt?: Date;
+}
+
+const pluginSchema = new Schema<IPlugin, Model<IPlugin>, IPlugin>({
   orgId: {
     type: Schema.Types.ObjectId,
     ref: 'Organization',
@@ -19,14 +28,14 @@ const pluginSchema = new Schema({
   pluginStatus: {
     type: String,
     required: true,
-    default: 'ACTIVE',
     enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
+    default: 'ACTIVE',
   },
   pluginType: {
     type: String,
     required: true,
-    default: 'UNIVERSAL',
     enum: ['UNIVERSAL', 'PRIVATE'],
+    default: 'UNIVERSAL',
   },
   adminAccessAllowed: {
     type: Boolean,
@@ -46,4 +55,4 @@ const pluginSchema = new Schema({
   },
 });
 
-module.exports = mongoose.model('Plugin', pluginSchema);
+export const Plugin = model<IPlugin>('Plugin', pluginSchema);
