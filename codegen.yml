@@ -1,10 +1,10 @@
 # overwrites the previously existing/generated graphql typescript definitions
 overwrite: true
 # where the graphql type defintions(schema) is located
-schema: 'src/lib/schema/**/*.graphql'
+schema: 'src/lib/typeDefs/**/*.ts'
 generates:
   # where to emit the generated graphql typescript defintions
-  ./src/lib/resolvers/__generatedGraphqlTypes__.ts:
+  ./src/lib/resolvers/__generatedGraphqlTypes__.d.ts:
     plugins:
       - typescript
       - typescript-resolvers
