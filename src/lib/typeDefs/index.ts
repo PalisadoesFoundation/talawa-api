@@ -52,7 +52,8 @@ const additionalTypeDefs = gql`
 'gql' tag creates a value of type DocumentNode. Here typeDefs is an array of those DocumentNode type variables
 that can be directly consumed by apollo-server. This is done to have our type-defintions defined inside
 typescript files rather than .graphql files. Therefore, saving us the trouble of manually copying over those
-.graphql files to the dist directory during build time.
+.graphql files to the dist directory during build time and also providing the benefits of dynamically altering
+type-defintions using typescript.
 */
 export const typeDefs = [
   chat,
@@ -70,5 +71,3 @@ export const typeDefs = [
   utils,
   additionalTypeDefs,
 ];
-
-export default typeDefs;

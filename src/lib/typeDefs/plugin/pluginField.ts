@@ -8,5 +8,3 @@ export const pluginField = gql`
     createdAt: String
   }
 `;
-
-export default pluginField;

@@ -67,5 +67,3 @@ export const query = gql`
     getlanguage(lang_code: String!): [Translation]
   }
 `;
-
-export default query;

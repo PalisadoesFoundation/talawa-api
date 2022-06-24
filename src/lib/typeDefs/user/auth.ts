@@ -17,5 +17,3 @@ export const auth = gql`
     refreshToken: String!
   }
 `;
-
-export default auth;

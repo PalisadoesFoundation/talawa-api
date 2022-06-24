@@ -24,5 +24,3 @@ export const plugin = gql`
     value: String!
   }
 `;
-
-export default plugin;

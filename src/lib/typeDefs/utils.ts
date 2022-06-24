@@ -44,5 +44,3 @@ export const utils = gql`
     PRIVATE
   }
 `;
-
-export default utils;

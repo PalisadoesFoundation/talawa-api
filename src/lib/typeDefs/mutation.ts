@@ -84,5 +84,3 @@ export const mutation = gql`
     addLanguageTranslation(data: LanguageInput!): Language! @auth
   }
 `;
-
-export default mutation;

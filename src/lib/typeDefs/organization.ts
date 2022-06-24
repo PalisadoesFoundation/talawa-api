@@ -107,5 +107,3 @@ export const organization = gql`
     apiUrl_DESC
   }
 `;
-
-export default organization;

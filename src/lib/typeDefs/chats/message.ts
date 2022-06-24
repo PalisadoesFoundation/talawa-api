@@ -15,5 +15,3 @@ export const message = gql`
     receiver: ID!
   }
 `;
-
-export default message;

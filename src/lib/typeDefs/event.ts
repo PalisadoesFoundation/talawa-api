@@ -145,5 +145,3 @@ export const event = gql`
   #     }
   #
 `;
-
-export default event;

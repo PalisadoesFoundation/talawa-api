@@ -98,5 +98,3 @@ export const user = gql`
     appLanguageCode_DESC
   }
 `;
-
-export default user;

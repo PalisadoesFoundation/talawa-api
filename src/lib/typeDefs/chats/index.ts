@@ -1,2 +1,2 @@
-export { chat } from './chat';
-export { message } from './message';
+export * from './chat';
+export * from './message';

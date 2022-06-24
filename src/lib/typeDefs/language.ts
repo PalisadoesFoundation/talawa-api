@@ -29,5 +29,3 @@ export const language = gql`
     verified: Boolean
   }
 `;
-
-export default language;

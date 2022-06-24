@@ -102,5 +102,3 @@ export const newsfeed = gql`
     commentCount_DESC
   }
 `;
-
-export default newsfeed;

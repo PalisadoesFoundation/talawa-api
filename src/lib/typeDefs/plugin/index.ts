@@ -1,2 +1,2 @@
-export { plugin } from './plugin';
-export { pluginField } from './pluginField';
+export * from './plugin';
+export * from './pluginField';

@@ -45,5 +45,3 @@ export const chat = gql`
     title: String!
   }
 `;
-
-export default chat;
