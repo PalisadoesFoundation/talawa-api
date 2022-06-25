@@ -11,6 +11,7 @@ module.exports = `
     updateLanguage(languageCode: String!) : User! @auth
 
     updateUserProfile(data: UpdateUserInput, file:Upload): User! @auth
+    updateUserType(data: UpdateUserTypeInput!): Boolean! @auth
     createEvent(data: EventInput): Event! @auth
     removeEvent(id: ID!): Event! @auth
     registerForEvent(id: ID!): Event! @auth
@@ -21,6 +22,9 @@ module.exports = `
     updateOrganization(id:ID!, data: UpdateOrganizationInput) : Organization! @auth
     removeOrganization(id: ID!) : User! @auth
     
+    acceptAdmin(id: ID!): Boolean! @auth
+    rejectAdmin(id: ID!): Boolean! @auth
+
     createAdmin (data: UserAndOrganizationInput!) : User! @auth
     removeAdmin (data: UserAndOrganizationInput!) : User! @auth
     joinPublicOrganization (organizationId: ID!) : User! @auth
