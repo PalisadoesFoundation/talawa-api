@@ -11,7 +11,7 @@ import { user, auth } from './user';
 import { utils } from './utils';
 
 /*
-Named this additionalTypes because they haven't yet been extracted into their own files.
+Named this additionalTypeDefs because they haven't yet been extracted into their own files.
 */
 const additionalTypeDefs = gql`
   directive @auth on FIELD_DEFINITION

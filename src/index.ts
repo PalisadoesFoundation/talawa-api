@@ -1,54 +1,37 @@
-require('dotenv').config(); // pull env variables from .env file
-
-const depthLimit = require('graphql-depth-limit');
-const { ApolloServer, PubSub } = require('apollo-server-express');
-const http = require('http');
-const rateLimit = require('express-rate-limit');
-const xss = require('xss-clean');
-const helmet = require('helmet');
-const mongoSanitize = require('express-mongo-sanitize');
-const jwt = require('jsonwebtoken');
-const express = require('express');
-const cors = require('cors');
-const requestLogger = require('morgan');
-const path = require('path');
-const i18n = require('i18n');
-const { logger, requestContext, requestTracing } = require('./lib/helper_lib');
-const Query = require('./lib/resolvers/Query');
-const Mutation = require('./lib/resolvers/Mutation');
-const { typeDefs } = require('./lib/typeDefs');
-const { isAuth } = require('./lib/middleware/is-auth');
-const database = require('./db');
-const Organization = require('./lib/resolvers/Organization');
-const MembershipRequest = require('./lib/resolvers/MembershipRequest');
-const DirectChat = require('./lib/resolvers/DirectChat');
-const DirectChatMessage = require('./lib/resolvers/DirectChatMessage');
-const { defaultLocale, supportedLocales } = require('./lib/config/app');
-const GroupChat = require('./lib/resolvers/GroupChat');
-const GroupChatMessage = require('./lib/resolvers/GroupChatMessage');
-const Subscription = require('./lib/resolvers/Subscription');
-const {
+import 'dotenv/config'; // pull env variables from .env file
+import http from 'http';
+import path from 'path';
+import express from 'express';
+import { ApolloServer, PubSub } from 'apollo-server-express';
+import depthLimit from 'graphql-depth-limit';
+import rateLimit from 'express-rate-limit';
+/*
+No type defintions available for package 'xss-clean'
+*/
+// @ts-ignore
+import xss from 'xss-clean';
+import helmet from 'helmet';
+import mongoSanitize from 'express-mongo-sanitize';
+import jwt from 'jsonwebtoken';
+import cors from 'cors';
+import requestLogger from 'morgan';
+import i18n from 'i18n';
+import database from './db';
+import { logger, requestContext, requestTracing } from './lib/helper_lib';
+import { appConfig } from './lib/config';
+import { isAuth } from './lib/middleware/is-auth';
+import {
   AuthenticationDirective,
   RoleAuthorizationDirective,
-} = require('./lib/directives');
+} from './lib/directives';
+import { typeDefs } from './lib/typeDefs';
+import { resolvers } from './lib/resolvers';
 
 const app = express();
 
 app.use(requestTracing.middleware());
 
 const pubsub = new PubSub();
-
-const resolvers = {
-  Subscription: Subscription,
-  Query,
-  Mutation,
-  Organization,
-  MembershipRequest,
-  DirectChat,
-  DirectChatMessage,
-  GroupChat,
-  GroupChatMessage,
-};
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
@@ -66,8 +49,8 @@ i18n.configure({
     fr: require('./locales/fr.json'),
   },
   queryParameter: 'lang',
-  defaultLocale: defaultLocale,
-  locales: supportedLocales,
+  defaultLocale: appConfig.defaultLocale,
+  locales: appConfig.supportedLocales,
   autoReload: process.env.NODE_ENV !== 'production',
   updateFiles: process.env.NODE_ENV !== 'production',
   syncFiles: process.env.NODE_ENV !== 'production',
@@ -86,6 +69,7 @@ app.use(mongoSanitize());
 app.use(cors());
 app.use(
   requestLogger(
+    // @ts-ignore
     ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms',
     {
       stream: logger.stream,
@@ -129,14 +113,14 @@ const apolloServer = new ApolloServer({
       };
     }
   },
-  formatError: (err) => {
-    if (!err.originalError) {
-      return err;
+  formatError: (error: any) => {
+    if (!error.originalError) {
+      return error;
     }
-    const message = err.message || 'Something went wrong !';
-    const data = err.originalError.errors || [];
-    const code = err.originalError.code || 422;
-    logger.error(message, err);
+    const message = error.message || 'Something went wrong !';
+    const data = error.originalError.errors || [];
+    const code = error.originalError.code || 422;
+    logger.error(message, error);
     return {
       message,
       status: code,
@@ -144,14 +128,19 @@ const apolloServer = new ApolloServer({
     };
   },
   subscriptions: {
-    onConnect: (connection) => {
+    onConnect: (connection: any) => {
       if (!connection.authorization) {
         throw new Error('userAuthentication');
       }
       let userId = null;
+
       const token = connection.authorization.split(' ')[1];
       if (token) {
-        let decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        let decodedToken = jwt.verify(
+          token,
+          process.env.ACCESS_TOKEN_SECRET as string
+        );
+        // @ts-ignore
         userId = decodedToken.userId;
       }
 

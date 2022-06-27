@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import type { Request } from 'express';
+import { Request } from 'express';
 import logger from '../helper_lib/logger';
 
 /*

@@ -19,7 +19,7 @@ const start_application = async () => {
 
     //Display the command
     console.log(
-      boxen('npm start', {
+      boxen('npm run dev', {
         float: 'center',
         textAlignment: 'center',
         borderColor: 'magenta',
