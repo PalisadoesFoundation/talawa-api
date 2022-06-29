@@ -4,7 +4,7 @@ overwrite: true
 schema: 'src/lib/typeDefs/**/*.ts'
 generates:
   # where to emit the generated graphql typescript defintions
-  ./src/lib/resolvers/__generatedGraphqlTypes__.d.ts:
+  ./src/types/generatedGraphQLTypescriptTypes.ts:
     plugins:
       - typescript
       - typescript-resolvers
