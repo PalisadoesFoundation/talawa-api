@@ -1,4 +1,4 @@
-import { Schema, Types, model, Model, Document, PopulatedDoc } from 'mongoose';
+import { Schema, model, Model, PopulatedDoc } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 import { IComment } from './Comment';
 import { IOrganization } from './Organization';

@@ -1,4 +1,4 @@
-import { Schema, Types, model, Model, PaginateModel } from 'mongoose';
+import { Schema, Types, model, Model } from 'mongoose';
 
 export interface IOrganization {
   apiUrl?: string;

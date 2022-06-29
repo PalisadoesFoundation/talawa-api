@@ -1,4 +1,4 @@
-import { Schema, model, Model, PopulatedDoc, Document } from 'mongoose';
+import { Schema, model, Model, PopulatedDoc } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 import validator from 'validator';
 import { IEvent } from './Event';
