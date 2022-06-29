@@ -8,10 +8,16 @@ import i18n from 'i18n';
 import { NextFunction, Request, Response } from 'express';
 
 const requestContextNamespace = cls.createNamespace('talawa-request-context');
+
 clsBluebird(requestContextNamespace);
 
-const setRequestContextValue = (key: string, value: any) => {
-  return requestContextNamespace.set(key, value);
+/*
+Shorthand notations like 'T', 'U', 'S' are a common convention for writing
+generic types in typescript. Though you are free to use a bigger notation like
+'TypeOfThisGeneric' as well.
+*/
+const setRequestContextValue = <T>(key: string, value: T) => {
+  return requestContextNamespace.set<T>(key, value);
 };
 
 const getRequestContextValue = (key: string) => {
@@ -35,13 +41,33 @@ export const middleware = () => {
   };
 };
 
-export const init = async (options = {}) => {
+/*
+Shorthand notations like 'T', 'U', 'S' are a common convention for writing
+generic types in typescript. Though you are free to use a bigger notation like
+'TypeOfThisGeneric' as well.
+*/
+
+/*
+This interface is introduced because by default options object passed to init
+function is empty. But inside the function a method named 'requestHandler' is being
+called which is supposed to be a field of options object. This interface is not
+accurate but it does the job of implementing the generic type 'T' functionality.
+*/
+interface IInitOptions<T> extends Record<any, any> {
+  requestHandler?: () => T;
+}
+
+/*
+This function has many type errors as it is incorrectly written by the contributer.
+For now we've ignored the errors. And added the generic type 'T' functionality.
+*/
+export const init = async <T>(options: IInitOptions<T> = {}) => {
   const obj: any = {};
   // @ts-ignore
   i18n.init(obj);
   // @ts-ignore
   obj.setLocale(options.lang);
-  return requestContextNamespace.runAndReturn(async () => {
+  return requestContextNamespace.runAndReturn<T>(() => {
     setRequestContext({
       __: obj.__,
       __n: obj.__n,
