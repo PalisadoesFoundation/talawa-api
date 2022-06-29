@@ -18,9 +18,11 @@ using the characters in alphabets string
 const nanoid = customAlphabet(alphabets, 10);
 
 const requestTracingNamespace = cls.createNamespace('request-tracing');
+
 clsBluebird(requestTracingNamespace);
 
 export const tracingIdHeaderName = 'X-Tracing-Id';
+
 const tracingIdContextKeyName = 'tracingId';
 
 const setTracingId = (tracingId: string) => {
@@ -48,8 +50,13 @@ export const middleware = () => {
   };
 };
 
-export const trace = async (tracingId: string, method: () => any) => {
-  await requestTracingNamespace.runAndReturn(async () => {
+/*
+Shorthand notations like 'T', 'U', 'S' are a common convention for writing
+generic types in typescript. Though you are free to use a bigger notation like
+'TypeOfThisGeneric' as well.
+*/
+export const trace = async <T>(tracingId: string, method: () => T) => {
+  await requestTracingNamespace.runAndReturn<T>(() => {
     setTracingId(tracingId || nanoid());
     return method();
   });
