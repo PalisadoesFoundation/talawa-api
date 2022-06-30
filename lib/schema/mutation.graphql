@@ -3,6 +3,7 @@ module.exports = `
  type Mutation {
     signUp(data: UserInput!, file:Upload): AuthData!
     login(data: LoginInput!): AuthData!
+    saveFcmToken(token: String) : Boolean! @auth
     refreshToken(refreshToken: String!) : ExtendSession!
     revokeRefreshTokenForUser(userId: String!) : Boolean!
     updateLanguage(languageCode: String!) : User! @auth
