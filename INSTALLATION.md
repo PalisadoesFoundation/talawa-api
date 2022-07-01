@@ -136,6 +136,19 @@ Follow these steps to get the API running.
   
   - Windows: `$env:GOOGLE_APPLICATION_CREDENTIALS="C:\Users\username\Downloads\service-account-file.json"`
 
+-
+    1. Install the [Firebase CLI](https://firebase.google.com/docs/cli#install_the_firebase_cli).
+    2. Copy the `firebase_options.dart` file as it will be modified.
+    3. Run the following commands in the project directory of talawa mobile app:
+        - `firebase login`
+        - `dart pub global activate flutterfire_cli`
+        - `flutterfire configure`
+    4. Select the project you created in the Firebase console in step 2.
+    5. Add iOS and android platforms to the project.
+    6. Overwrite the `firebase_options.dart` file if asked so.
+    7. Copy the keys to `firebaseOptions.js`, dummy values are provided for reference, replace them.
+    8. Undo the changes made to the `firebase_options.dart` file by pasting the old content from step 2.
+
 11. Start the `talawa-api` server using the below command in the same terminal.
 
         npm start
