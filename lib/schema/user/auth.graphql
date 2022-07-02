@@ -10,21 +10,21 @@ module.exports = `
   }
   
   type AndroidFirebaseOptions {
-    apiKey: String!,
-    appId: String!,
-    messagingSenderId: String!,
-    projectId: String!,
-    storageBucket: String!,
+    apiKey: String,
+    appId: String,
+    messagingSenderId: String,
+    projectId: String,
+    storageBucket: String,
   }
 
   type IOSFirebaseOptions {
-    apiKey: String!,
-    appId: String!,
-    messagingSenderId: String!,
-    projectId: String!,
-    storageBucket: String!,
-    iosClientId: String!,
-    iosBundleId: String!,
+    apiKey: String,
+    appId: String,
+    messagingSenderId: String,
+    projectId: String,
+    storageBucket: String,
+    iosClientId: String,
+    iosBundleId: String,
   }
 
   type AuthData {

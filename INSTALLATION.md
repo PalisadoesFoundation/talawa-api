@@ -146,7 +146,7 @@ Follow these steps to get the API running.
     4. Select the project you created in the Firebase console in step 2.
     5. Add iOS and android platforms to the project.
     6. Overwrite the `firebase_options.dart` file if asked so.
-    7. Copy the keys to `firebaseOptions.js`, dummy values are provided for reference, replace them.
+    7. Copy the keys to `.env` file, for how to set keys refer to `.env.sample` file.
     8. Undo the changes made to the `firebase_options.dart` file by pasting the old content from step 2.
 
 11. Start the `talawa-api` server using the below command in the same terminal.
