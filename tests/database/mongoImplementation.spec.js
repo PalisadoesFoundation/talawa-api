@@ -1,14 +1,17 @@
-const MongoImpl = require('../../lib/Database/MongoImplementation/index');
 const Database = require('../../lib/Database/index');
+const User = require('../../lib/Database/MongoImplementation/schema/User');
 
 const firstUrl = 'mongodb://localhost:27017/db1?retryWrites=true&w=majority';
 const secondUrl = 'mongodb://localhost:27017/db2?retryWrites=true&w=majority';
 
-const firstImpl = new MongoImpl(firstUrl);
-const secondImpl = new MongoImpl(secondUrl);
-
-const firstDB = new Database(firstImpl);
-const secondDB = new Database(secondImpl);
+// not using an options.schema would result in creating a database
+// with all valid schema parts.
+const firstDB = new Database(firstUrl);
+const secondDB = new Database(secondUrl, {
+  schema: {
+    User,
+  },
+});
 
 const FirstUserObject = firstDB.User;
 const SecondUserObject = secondDB.User;
