@@ -66,14 +66,16 @@ const USER_ALREADY_UNREGISTERED_CODE = 'registrant.alreadyUnregistered';
 const USER_ALREADY_UNREGISTERED_PARAM = 'registrant';
 
 const COMMENT_NOT_FOUND = 'Comment not found';
-const COMMENT_NOT_FOUND_MESSAGE = 'comment.notFound'
+const COMMENT_NOT_FOUND_MESSAGE = 'comment.notFound';
 const COMMENT_NOT_FOUND_CODE = 'comment.notFound';
-const COMMENT_NOT_FOUND_PARAM = 'comment'
+const COMMENT_NOT_FOUND_PARAM = 'comment';
 
 const POST_NOT_FOUND = 'Post not found';
 const POST_NOT_FOUND_MESSAGE = 'post.notFound';
 const POST_NOT_FOUND_CODE = 'post.notFound';
-const POST_NOT_FOUND_PARAM = 'post'
+const POST_NOT_FOUND_PARAM = 'post';
+
+const STATUS_ACTIVE = 'ACTIVE';
 
 const IN_PRODUCTION = process.env.NODE_ENV === 'production';
 
@@ -82,6 +84,8 @@ if (process.env.NODE_ENV === 'test') {
 }
 
 module.exports = {
+  STATUS_ACTIVE,
+
   URL,
   IN_PRODUCTION,
 

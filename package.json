@@ -11,7 +11,7 @@
     "start-test-server-in-action": "cross-env NODE_ENV=test pm2 start index.js -f",
     "stop-test-server-in-action": "pm2 delete all",
     "lint": "eslint . --fix && echo 'Lint complete.'",
-    "setup": "npm i boxen@4.2.0 chalk@4.1.0 inquirer markdown-js marked@2.0.1 marked-terminal@4.1.0 node-cmd@5.0.0 -f && node setup.js",
+    "setup": "npm i boxen@4.2.0 chalk@4.1.0 inquirer markdown-js marked@2.0.1 marked-terminal@4.1.0 node-cmd@5.0.0 && node setup.js",
     "file-coverage": "npm test $npm_config_testfile -- --coverage --collectCoverageFrom=$npm_config_functionfile"
   },
   "repository": {
@@ -56,11 +56,11 @@
     "helmet": "^4.6.0",
     "i18n": "^0.13.3",
     "image-hash": "^4.0.1",
-    "inquirer": "^8.2.0",
+    "inquirer": "^8.2.4",
     "jsonwebtoken": "^8.5.1",
     "logger": "file:lib/helper_lib/logger",
     "markdown-js": "^0.0.4",
-    "marked": "^4.0.10",
+    "marked": "^2.0.1",
     "marked-terminal": "^4.1.0",
     "moment": "^2.29.2",
     "mongoose": "^5.13.0",
