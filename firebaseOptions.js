@@ -4,7 +4,7 @@ module.exports.androidFirebaseOptions = {
   messagingSenderId: process.env.messagingSenderId,
   projectId: process.env.projectId,
   storageBucket: process.env.storageBucket,
-}
+};
 
 module.exports.iosFirebaseOptions = {
   apiKey: process.env.iOSapiKey,
@@ -14,4 +14,4 @@ module.exports.iosFirebaseOptions = {
   storageBucket: process.env.iOSstorageBucket,
   iosClientId: process.env.iosClientId,
   iosBundleId: process.env.iosBundleId,
-}
+};
