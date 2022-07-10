@@ -1,8 +1,8 @@
 /* eslint-disable no-useless-catch */
 const { User } = require('../../models');
-const { userExists, uploadImage } = require('../../helper_functions');
-const { ConflictError, NotFoundError } = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+const { userExists, uploadImage } = require('../../utilities');
+const { ConflictError, NotFoundError } = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 
 const updateUserProfile = async (parent, args, context) => {
   try {

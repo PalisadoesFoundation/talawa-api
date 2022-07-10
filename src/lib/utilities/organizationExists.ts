@@ -1,6 +1,6 @@
 import { Organization } from '../models';
-import { NotFoundError } from '../helper_lib/errors';
-import requestContext from '../helper_lib/request-context';
+import { NotFoundError } from '../libraries/errors';
+import requestContext from '../libraries/request-context';
 import {
   IN_PRODUCTION,
   ORGANIZATION_NOT_FOUND,

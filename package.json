@@ -14,7 +14,7 @@
     "setup": "node ./setup/index.js",
     "file-coverage": "npm test $npm_config_testfile -- --coverage --collectCoverageFrom=$npm_config_functionfile",
     "dev": "ts-node-dev --respawn --exit-child ./src/index.ts",
-    "prebuild": "rimraf ./dist",
+    "prebuild": "rimraf ./dist && npm run codegen",
     "build": "tsc --pretty --project tsconfig.build.json",
     "postbuild": "copyfiles --error --up 1 './src/locales/*' ./dist",
     "codegen": "graphql-codegen"

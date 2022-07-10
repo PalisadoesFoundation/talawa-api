@@ -1,6 +1,6 @@
 import { User } from '../models';
-import { NotFoundError } from '../helper_lib/errors';
-import requestContext from '../helper_lib/request-context';
+import { NotFoundError } from '../libraries/errors';
+import requestContext from '../libraries/request-context';
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,

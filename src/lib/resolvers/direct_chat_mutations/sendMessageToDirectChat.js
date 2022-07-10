@@ -1,7 +1,7 @@
 const { DirectChat, DirectChatMessage } = require('../../models');
-const { userExists } = require('../../helper_functions');
-const { NotFoundError } = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+const { userExists } = require('../../utilities');
+const { NotFoundError } = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 const {
   IN_PRODUCTION,
   CHAT_NOT_FOUND,

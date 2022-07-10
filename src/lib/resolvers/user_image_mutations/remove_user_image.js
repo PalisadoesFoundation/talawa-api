@@ -1,7 +1,7 @@
 const { User } = require('../../models');
-const { deleteImage } = require('../../helper_functions');
-const { NotFoundError } = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+const { deleteImage } = require('../../utilities');
+const { NotFoundError } = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 
 module.exports = async (parent, args, context) => {
   const user = await User.findById(context.userId);

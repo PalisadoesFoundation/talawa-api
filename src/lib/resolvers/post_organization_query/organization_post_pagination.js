@@ -1,6 +1,6 @@
-const { ValidationError } = require('../../helper_lib/errors');
+const { ValidationError } = require('../../libraries/errors');
 const { Post } = require('../../models');
-const requestContext = require('../../helper_lib/request-context');
+const requestContext = require('../../libraries/request-context');
 
 const postsByOrganizationConnection = async (parent, args) => {
   var sort = {};

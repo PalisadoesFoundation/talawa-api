@@ -1,7 +1,7 @@
 const adminCheck = require('../functions/adminCheck');
-const { userExists, organizationExists } = require('../../helper_functions');
-const { UnauthorizedError } = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+const { userExists, organizationExists } = require('../../utilities');
+const { UnauthorizedError } = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 const {
   IN_PRODUCTION,
   USER_NOT_AUTHORIZED,

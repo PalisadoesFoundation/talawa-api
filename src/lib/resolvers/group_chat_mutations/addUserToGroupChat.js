@@ -1,8 +1,8 @@
 const { User, GroupChat } = require('../../models');
 const adminCheck = require('../functions/adminCheck');
-const { organizationExists } = require('../../helper_functions');
-const { NotFoundError, ConflictError } = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+const { organizationExists } = require('../../utilities');
+const { NotFoundError, ConflictError } = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 const {
   IN_PRODUCTION,
   CHAT_NOT_FOUND,

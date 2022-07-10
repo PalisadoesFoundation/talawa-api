@@ -1,6 +1,6 @@
-const { ConflictError } = require('../../helper_lib/errors');
+const { ConflictError } = require('../../libraries/errors');
 const { Language } = require('../../models');
-const requestContext = require('../../helper_lib/request-context');
+const requestContext = require('../../libraries/request-context');
 
 const addLanguageTranslation = async (parent, args) => {
   const langValue = await Language.findOne({

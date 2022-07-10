@@ -1,6 +1,6 @@
-# overwrites the previously existing/generated graphql typescript definitions
+# overwrites the already existing/generated graphql typescript definitions
 overwrite: true
-# where the graphql type defintions(schema) is located
+# address to the graphql type defintions(schema)
 schema: 'src/lib/typeDefs/**/*.ts'
 generates:
   # where to emit the generated graphql typescript defintions

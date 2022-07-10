@@ -4,9 +4,9 @@ import {
   GraphQLField,
   GraphQLInterfaceType,
 } from 'graphql';
-import { UnauthenticatedError } from '../helper_lib/errors';
-import requestContext from '../helper_lib/request-context';
-import { userExists } from '../helper_functions';
+import { UnauthenticatedError } from '../libraries/errors';
+import requestContext from '../libraries/request-context';
+import { userExists } from '../utilities';
 import { GraphQLObjectType } from 'graphql';
 
 export class RoleAuthorizationDirective extends SchemaDirectiveVisitor {

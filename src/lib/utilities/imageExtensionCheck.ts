@@ -1,6 +1,6 @@
 import { deleteImage } from './deleteImage';
-import { ValidationError } from '../helper_lib/errors';
-import requestContext from '../helper_lib/request-context';
+import { ValidationError } from '../libraries/errors';
+import requestContext from '../libraries/request-context';
 
 export const imageExtensionCheck = async (filename: string) => {
   const extension = filename.split('.').pop();

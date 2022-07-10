@@ -1,6 +1,6 @@
 const { User, EventProject, Event } = require('../../models');
-const { NotFoundError, UnauthorizedError } = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+const { NotFoundError, UnauthorizedError } = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 
 const createEventProject = async (parent, args, context) => {
   // gets user in token - to be used later on

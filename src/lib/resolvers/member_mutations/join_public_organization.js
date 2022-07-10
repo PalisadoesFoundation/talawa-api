@@ -3,8 +3,8 @@ const {
   NotFoundError,
   ConflictError,
   UnauthorizedError,
-} = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+} = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 
 module.exports = async (parent, args, context) => {
   // ensure organization exists

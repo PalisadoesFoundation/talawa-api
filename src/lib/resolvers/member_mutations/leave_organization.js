@@ -3,8 +3,8 @@ const {
   NotFoundError,
   UnauthorizedError,
   ConflictError,
-} = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+} = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 const {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,

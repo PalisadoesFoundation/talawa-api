@@ -1,8 +1,8 @@
 const { GroupChat } = require('../../models');
 const adminCheck = require('../functions/adminCheck');
-const { organizationExists } = require('../../helper_functions');
-const { NotFoundError, UnauthorizedError } = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+const { organizationExists } = require('../../utilities');
+const { NotFoundError, UnauthorizedError } = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 
 module.exports = async (parent, args, context) => {
   const chat = await GroupChat.findById(args.chatId);

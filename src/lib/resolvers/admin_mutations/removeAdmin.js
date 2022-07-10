@@ -1,7 +1,7 @@
 const { User, Organization } = require('../../models');
 const creatorCheck = require('../functions/creatorCheck');
-const { NotFoundError, UnauthorizedError } = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+const { NotFoundError, UnauthorizedError } = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 const {
   ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_PARAM,

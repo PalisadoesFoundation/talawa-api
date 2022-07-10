@@ -1,7 +1,7 @@
-const { NotFoundError } = require('../../helper_lib/errors');
+const { NotFoundError } = require('../../libraries/errors');
 const { User } = require('../../models');
-const { userExists } = require('../../helper_functions');
-const requestContext = require('../../helper_lib/request-context');
+const { userExists } = require('../../utilities');
+const requestContext = require('../../libraries/request-context');
 const superAdminCheck = require('../../resolvers/functions/superAdminCheck');
 
 module.exports = async (parent, args, context) => {

@@ -1,8 +1,8 @@
 import { SchemaDirectiveVisitor } from 'apollo-server-express';
 import { GraphQLInterfaceType, GraphQLObjectType } from 'graphql';
 import { defaultFieldResolver, GraphQLField } from 'graphql';
-import { UnauthenticatedError } from '../helper_lib/errors';
-import requestContext from '../helper_lib/request-context';
+import { UnauthenticatedError } from '../libraries/errors';
+import requestContext from '../libraries/request-context';
 
 export class AuthenticationDirective extends SchemaDirectiveVisitor {
   visitFieldDefinition(

@@ -1,6 +1,6 @@
 const { User, Post } = require('../../models');
-const { NotFoundError } = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+const { NotFoundError } = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 
 const unlikePost = async (parent, args, context) => {
   const user = await User.findOne({ _id: context.userId });

@@ -1,7 +1,7 @@
 const { GroupChat, GroupChatMessage } = require('../../models');
-const { userExists } = require('../../helper_functions/userExists');
-const { NotFoundError, UnauthorizedError } = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+const { userExists } = require('../../utilities/userExists');
+const { NotFoundError, UnauthorizedError } = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 const {
   IN_PRODUCTION,
   USER_NOT_AUTHORIZED,

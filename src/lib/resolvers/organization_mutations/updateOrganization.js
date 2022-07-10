@@ -1,7 +1,7 @@
 const { Organization } = require('../../models');
 const adminCheck = require('../functions/adminCheck');
-const { NotFoundError } = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+const { NotFoundError } = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 const {
   IN_PRODUCTION,
   ORGANIZATION_NOT_FOUND,

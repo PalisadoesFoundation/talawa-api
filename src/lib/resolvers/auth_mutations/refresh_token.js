@@ -1,11 +1,8 @@
 const jwt = require('jsonwebtoken');
 const { User } = require('../../models');
-const {
-  createAccessToken,
-  createRefreshToken,
-} = require('../../helper_functions');
-const { ValidationError, NotFoundError } = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+const { createAccessToken, createRefreshToken } = require('../../utilities');
+const { ValidationError, NotFoundError } = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 
 module.exports = async (parent, args) => {
   // This route should not be protected because the access token will be expired

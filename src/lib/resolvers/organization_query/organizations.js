@@ -1,5 +1,5 @@
-const { NotFoundError } = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+const { NotFoundError } = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 const { Organization } = require('../../models');
 
 // THE UNIT FUNCTION TO SORT THE RESULTS OF THE OUTPUT ARRAY

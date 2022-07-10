@@ -1,5 +1,5 @@
-const { UnauthorizedError } = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+const { UnauthorizedError } = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 const {
   USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_MESSAGE,

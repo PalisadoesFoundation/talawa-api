@@ -1,7 +1,7 @@
 import { createWriteStream } from 'fs';
 import path from 'path';
 import shortid from 'shortid';
-import logger from '../helper_lib/logger';
+import logger from '../libraries/logger';
 import { imageAlreadyInDbCheck } from './imageAlreadyInDbCheck';
 import { deleteImage } from './deleteImage';
 import { imageExtensionCheck } from './imageExtensionCheck';

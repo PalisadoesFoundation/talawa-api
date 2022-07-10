@@ -1,6 +1,6 @@
 import { imageHash } from 'image-hash';
-import { ValidationError } from '../helper_lib/errors';
-import requestContext from '../helper_lib/request-context';
+import { ValidationError } from '../libraries/errors';
+import requestContext from '../libraries/request-context';
 
 interface UrlRequestObject {
   encoding?: string | null;

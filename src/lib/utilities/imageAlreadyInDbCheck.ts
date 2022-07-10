@@ -2,8 +2,8 @@ import { imageHash } from 'image-hash';
 import { ImageHash } from '../models';
 import { deleteDuplicatedImage } from './deleteDuplicatedImage';
 import { reuploadDuplicateCheck } from './reuploadDuplicateCheck';
-import { ValidationError } from '../helper_lib/errors';
-import requestContext from '../helper_lib/request-context';
+import { ValidationError } from '../libraries/errors';
+import requestContext from '../libraries/request-context';
 
 /*
 Check to see if image already exists in db using hash

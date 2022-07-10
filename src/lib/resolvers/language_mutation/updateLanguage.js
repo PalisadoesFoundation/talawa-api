@@ -1,6 +1,6 @@
 const { User } = require('../../models');
-const { NotFoundError } = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+const { NotFoundError } = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 
 const updateLanguage = async (parent, args, context) => {
   // gets user in token - to be used later on

@@ -1,7 +1,7 @@
 const { User, EventProject } = require('../../models');
 const constants = require('../../../constants');
-const { NotFoundError, UnauthorizedError } = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+const { NotFoundError, UnauthorizedError } = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 
 const removeEventProject = async (parent, args, context) => {
   const user = await User.findOne({ _id: context.userId });

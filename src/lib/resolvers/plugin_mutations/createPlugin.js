@@ -1,6 +1,6 @@
 const { User, Plugin, PluginField, Organization } = require('../../models');
-const { UnauthorizedError, NotFoundError } = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+const { UnauthorizedError, NotFoundError } = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 
 module.exports = async (parent, args, context) => {
   let org = await Organization.findOne({

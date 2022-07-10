@@ -1,7 +1,7 @@
 const { Plugin, User, Organization } = require('../../models');
 const superAdminCheck = require('../functions/superAdminCheck');
-const { NotFoundError } = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+const { NotFoundError } = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 
 module.exports = async (parent, args, context) => {
   const organizationFound = await Organization.findOne({

@@ -3,9 +3,9 @@ const { User } = require('../../models');
 const {
   createAccessToken,
   createRefreshToken,
-} = require('../../helper_functions/auth');
-const { NotFoundError, ValidationError } = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+} = require('../../utilities/auth');
+const { NotFoundError, ValidationError } = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 const copyToClipboard = require('../functions/copyToClipboard');
 
 module.exports = async (parent, args) => {

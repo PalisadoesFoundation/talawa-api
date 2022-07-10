@@ -1,5 +1,5 @@
 const axios = require('axios');
-const logger = require('../lib/helper_lib/logger');
+const logger = require('../lib/libraries/logger');
 const shortid = require('shortid');
 const {
   URL,

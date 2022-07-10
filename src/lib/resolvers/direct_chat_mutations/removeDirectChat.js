@@ -1,10 +1,8 @@
 const { DirectChat, DirectChatMessage } = require('../../models');
 const adminCheck = require('../functions/adminCheck');
-const {
-  organizationExists,
-} = require('../../helper_functions/organizationExists');
-const { NotFoundError } = require('../../helper_lib/errors');
-const requestContext = require('../../helper_lib/request-context');
+const { organizationExists } = require('../../utilities/organizationExists');
+const { NotFoundError } = require('../../libraries/errors');
+const requestContext = require('../../libraries/request-context');
 
 // admins of the organization can remove chats -- may change in the future
 
