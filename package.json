@@ -48,6 +48,7 @@
     "express": "^4.17.1",
     "express-mongo-sanitize": "^2.0.2",
     "express-rate-limit": "^5.2.6",
+    "firebase-admin": "^10.3.0",
     "glob-parent": "^5.1.2",
     "graphql": "^15.5.0",
     "graphql-depth-limit": "^1.1.0",
