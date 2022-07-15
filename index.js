@@ -179,21 +179,19 @@ apolloServer.applyMiddleware({
   app,
 }); // intergrating express with apollo graphql
 apolloServer.installSubscriptionHandlers(httpServer); //
- 
 
-console.log(ip.address());
+
+// console.log(ip.address());
 const serverStart = async () => {
   try {
     await database.connect();
     httpServer.listen(process.env.PORT || 4000, () => {
+      // logger.info(
+      //   `🚀 Server ready at http://${ip.address()}:${process.env.PORT || 4000}${apolloServer.graphqlPath
+      //   }`
+      // );
       logger.info(
-        `🚀 Server ready at http://${ip.address()}:${process.env.PORT || 4000}${
-          apolloServer.graphqlPath
-        }`
-      );
-      logger.info(
-        `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${
-          apolloServer.subscriptionsPath
+        `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${apolloServer.subscriptionsPath
         }`
       );
     });
