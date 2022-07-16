@@ -6,9 +6,11 @@ module.exports = `
     otp(data: OTPInput!): OtpData!
     recaptcha(data: RecaptchaVerification!): Boolean!
     forgotPassword(data: ForgotPasswordData!): Boolean!
+    saveFcmToken(token: String) : Boolean! @auth
     refreshToken(refreshToken: String!) : ExtendSession!
     revokeRefreshTokenForUser(userId: String!) : Boolean!
     updateLanguage(languageCode: String!) : User! @auth
+    logout: Boolean! @auth
 
     updateUserProfile(data: UpdateUserInput, file:Upload): User! @auth
     updateUserType(data: UpdateUserTypeInput!): Boolean! @auth
