@@ -73,6 +73,10 @@ module.exports = `
 
     createMessageChat(data:MessageChatInput!): MessageChat! @auth
     addLanguageTranslation(data: LanguageInput!): Language! @auth
+
+    createTempPlugin(pluginName: String! , pluginCreatedBy: String! ,pluginDesc: String! ,pluginInstallStatus: Boolean! ):Plugin!
+    updateTempPluginStatus(id: ID!, status: Boolean!) : Plugin!
+    updateTempPluginInstalledOrgs(id: ID! ,orgId: ID!) :Plugin! 
   }
   
 `
