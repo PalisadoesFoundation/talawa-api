@@ -174,11 +174,13 @@ const serverStart = async () => {
     await database.connect();
     httpServer.listen(process.env.PORT || 4000, () => {
       logger.info(
-        `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${apolloServer.graphqlPath
+        `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
+          apolloServer.graphqlPath
         }`
       );
       logger.info(
-        `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${apolloServer.subscriptionsPath
+        `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${
+          apolloServer.subscriptionsPath
         }`
       );
     });
