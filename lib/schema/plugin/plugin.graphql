@@ -6,7 +6,7 @@ module.exports = `
     #     pluginStatus: Status!
     #     pluginType: Type!
     #     additionalInfo: [PluginField!]
-    #     createdAt: String
+    #     createdAt: String 
     # }
 
     # input PluginInput{
@@ -23,7 +23,7 @@ module.exports = `
     # }
 
     # For Plugins 
-     type PluginSid {
+     type Plugins {
         _id: ID!
         pluginName: String!
         pluginCreatedBy: String!
