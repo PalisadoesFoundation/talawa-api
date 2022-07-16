@@ -187,4 +187,4 @@ const serverStart = async () => {
   }
 };
 
-serverStart(); 
+serverStart();
