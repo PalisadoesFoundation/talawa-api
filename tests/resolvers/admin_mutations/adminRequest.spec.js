@@ -1,4 +1,5 @@
 const shortid = require('shortid');
+const { USER_NOT_AUTHORIZED } = require('../../../constants');
 
 const database = require('../../../db');
 const User = require('../../../lib/models/User');
@@ -35,6 +36,21 @@ describe('Testing admin request resolver', () => {
     expect(response).toBeTruthy();
   });
 
+  test('Testing, when the loggedIn user is not SUPERADMIN in accept admin', async () => {
+    const generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
+    const userId = await getUserId(generatedEmail);
+
+    const args = {
+      id: userId,
+    };
+
+    await expect(async () => {
+      await acceptAdmin({}, args, {
+        userId,
+      });
+    }).rejects.toEqual(Error(USER_NOT_AUTHORIZED));
+  });
+
   test('Testing reject request', async () => {
     const generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
     const userId = await getUserId(generatedEmail);
@@ -50,5 +66,20 @@ describe('Testing admin request resolver', () => {
     });
 
     expect(response).toBeTruthy();
+  });
+
+  test('Testing, when the loggedIn user is not SUPERADMIN in reject admin', async () => {
+    const generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
+    const userId = await getUserId(generatedEmail);
+
+    const args = {
+      id: userId,
+    };
+
+    await expect(async () => {
+      await rejectAdmin({}, args, {
+        userId,
+      });
+    }).rejects.toEqual(Error(USER_NOT_AUTHORIZED));
   });
 });
