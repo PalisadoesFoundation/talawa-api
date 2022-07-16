@@ -9,21 +9,21 @@ module.exports = `
     #     createdAt: String 
     # }
 
-    # input PluginInput{
-    #     orgId: ID!
-    #     pluginName: String!
-    #     pluginKey: String
-    #     pluginType: Type
-    #     fields: [PluginFieldInput]
-    # }
+    input PluginInput{
+        orgId: ID!
+        pluginName: String!
+        pluginKey: String
+        pluginType: Type
+        fields: [PluginFieldInput]
+    }
 
-    # input PluginFieldInput{
-    #     key: String!
-    #     value: String!
-    # }
+     input PluginFieldInput{
+        key: String!
+         value: String!
+    }
 
     # For Plugins 
-     type Plugins {
+     type Plugin {
         _id: ID!
         pluginName: String!
         pluginCreatedBy: String!

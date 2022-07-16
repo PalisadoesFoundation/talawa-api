@@ -45,6 +45,6 @@ module.exports = `
     getlanguage(lang_code: String!): [Translation]
 
     # For Plugins 
-    getPlugins: [PluginSid]
+    getPlugins: [Plugin]
   }
 `
