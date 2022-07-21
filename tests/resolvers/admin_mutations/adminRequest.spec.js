@@ -1,5 +1,6 @@
+const mongoose = require('mongoose');
 const shortid = require('shortid');
-const { USER_NOT_AUTHORIZED } = require('../../../constants');
+const { USER_NOT_AUTHORIZED, USER_NOT_FOUND } = require('../../../constants');
 
 const database = require('../../../db');
 const User = require('../../../lib/models/User');
@@ -51,6 +52,25 @@ describe('Testing admin request resolver', () => {
     }).rejects.toEqual(Error(USER_NOT_AUTHORIZED));
   });
 
+  test('Testing, when user is not found in accept admin', async () => {
+    const generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
+    const userId = await getUserId(generatedEmail);
+
+    await User.findByIdAndUpdate({ _id: userId }, { userType: 'SUPERADMIN' });
+
+    const context = {
+      userId,
+    };
+
+    const args = {
+      id: mongoose.Types.ObjectId(),
+    };
+
+    await expect(async () => {
+      await acceptAdmin({}, args, context);
+    }).rejects.toEqual(Error(USER_NOT_FOUND));
+  });
+
   test('Testing reject request', async () => {
     const generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
     const userId = await getUserId(generatedEmail);
@@ -81,5 +101,24 @@ describe('Testing admin request resolver', () => {
         userId,
       });
     }).rejects.toEqual(Error(USER_NOT_AUTHORIZED));
+  });
+
+  test('Testing, when user is not found in reject admin', async () => {
+    const generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
+    const userId = await getUserId(generatedEmail);
+
+    await User.findByIdAndUpdate({ _id: userId }, { userType: 'SUPERADMIN' });
+
+    const context = {
+      userId,
+    };
+
+    const args = {
+      id: mongoose.Types.ObjectId(),
+    };
+
+    await expect(async () => {
+      await rejectAdmin({}, args, context);
+    }).rejects.toEqual(Error(USER_NOT_FOUND));
   });
 });
