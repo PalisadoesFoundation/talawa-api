@@ -73,7 +73,7 @@ module.exports = `
     createMessageChat(data:MessageChatInput!): MessageChat! @auth
     addLanguageTranslation(data: LanguageInput!): Language! @auth
 
-    createPlugin(pluginName: String! , pluginCreatedBy: String! ,pluginDesc: String! ,pluginInstallStatus: Boolean! ):Plugin!
+    createPlugin(pluginName: String! , pluginCreatedBy: String! ,pluginDesc: String! ,pluginInstallStatus: Boolean!, installedOrgs:[ID!] ):Plugin!
     updatePluginStatus(id: ID!, status: Boolean!) : Plugin!
     updatePluginInstalledOrgs(id: ID! ,orgId: ID!) :Plugin! 
   }
