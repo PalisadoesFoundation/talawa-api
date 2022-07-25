@@ -11,7 +11,7 @@ afterAll(() => {
 });
 
 describe('Post query testing for post resolver', () => {
-  test('Find existing post by post id', async () => {
+  test('Testing getPlugins Functions', async () => {
     const response = await getPlugins();
     expect(response).toBeTruthy();
   });
