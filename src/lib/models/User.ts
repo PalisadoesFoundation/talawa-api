@@ -129,8 +129,9 @@ const userSchema = new Schema<IUser, Model<IUser>, IUser>({
 });
 
 /*
-This library mongoose-paginate-v2 has incompatible typescript bindings.
-@ts-ignore comment cannot be removed until the author of library fixes it.
+Invalid code. Currently ignored by typescript. Needs fix.
+This library mongoose-paginate-v2 has wrong typescript bindings.
+@ts-ignore cannot be removed until the author of library fixes it.
 */
 // @ts-ignore
 userSchema.plugin(mongoosePaginate);

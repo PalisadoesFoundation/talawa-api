@@ -1,5 +1,13 @@
 import jwt from 'jsonwebtoken';
 
+export interface IJwtTokenPayload {
+  tokenVersion: number;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
 export const createAccessToken = async (user: any) => {
   return jwt.sign(
     {

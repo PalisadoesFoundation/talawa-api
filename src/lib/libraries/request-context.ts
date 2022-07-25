@@ -58,8 +58,7 @@ interface IInitOptions<T> extends Record<any, any> {
 }
 
 /*
-This function has many type errors as it is incorrectly written by the contributer.
-For now we've ignored the errors. And added the generic type 'T' functionality.
+Invalid code. Currently ignored by typescript. Needs fix.
 */
 export const init = async <T>(options: IInitOptions<T> = {}) => {
   const obj: any = {};

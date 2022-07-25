@@ -26,6 +26,7 @@ import {
 } from './lib/directives';
 import { typeDefs } from './lib/typeDefs';
 import { resolvers } from './lib/resolvers';
+import { IJwtTokenPayload } from './lib/utilities';
 
 const app = express();
 
@@ -67,6 +68,9 @@ app.use(
 );
 app.use(mongoSanitize());
 app.use(cors());
+/*
+Invalid code. Needs fix.
+*/
 app.use(
   requestLogger(
     // @ts-ignore
@@ -139,8 +143,7 @@ const apolloServer = new ApolloServer({
         let decodedToken = jwt.verify(
           token,
           process.env.ACCESS_TOKEN_SECRET as string
-        );
-        // @ts-ignore
+        ) as IJwtTokenPayload;
         userId = decodedToken.userId;
       }
 

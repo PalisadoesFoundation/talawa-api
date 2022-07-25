@@ -75,6 +75,9 @@ export const imageAlreadyInDbCheck = async (
       */
       deleteDuplicatedImage(imageJustUploadedPath);
 
+      /*
+      Invalid code. Currently ignored by typescript. Needs fix.
+      */
       // @ts-ignore
       fileName = imageAlreadyExistsInDb._doc.fileName; // will include have file already in db if pic is already saved will be null otherwise
     } else {

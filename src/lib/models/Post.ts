@@ -78,8 +78,9 @@ const postSchema = new Schema<IPost, Model<IPost>, IPost>({
 });
 
 /*
+Invalid code. Currently ignored by typescript. Needs fix.
 This library mongoose-paginate-v2 has wrong typescript bindings.
-@ts-ignore comment cannot be removed until the author of library fixes it. 
+@ts-ignore cannot be removed until the author of library fixes it. 
 */
 // @ts-ignore
 postSchema.plugin(mongoosePaginate);

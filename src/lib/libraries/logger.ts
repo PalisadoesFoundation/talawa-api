@@ -48,9 +48,7 @@ export const logger = createLogger({
 });
 
 /* 
-This piece of code is incorrect and seems pointless.
-It should be removed after confirmation from the mentors.
-For now typescript is ignoring it so that we don't get type errors.
+Invalid code. Currently ignored by typescript. Needs fix.
 */
 logger.stream = {
   // @ts-ignore
