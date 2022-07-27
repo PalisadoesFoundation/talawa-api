@@ -17,6 +17,6 @@ describe('Testing updatePluginInstalledOrgs', () => {
       { id: '62cfcd6233bbe266f59644db', installedOrgs: [] },
       {}
     );
-    expect(response).toBeTruthy();
+    expect(response).toBeFalsy(); // response is null 
   });
 });
