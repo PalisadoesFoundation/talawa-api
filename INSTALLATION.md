@@ -122,7 +122,34 @@ Follow these steps to get the API running.
 
         npm install
  
-10. Start the `talawa-api` server using the below command.
+10. To test the notification service create a new firebase project:
+
+- In the Firebase console, open Settings > [Service Accounts](https://console.firebase.google.com/project/_/settings/serviceaccounts/adminsdk).
+
+- Click Generate New Private Key, then confirm by clicking Generate Key.
+
+- Securely store the JSON file containing the key.
+
+- Run the following command to set the key in the environment variable:
+        
+  - Linux/macOS: `export GOOGLE_APPLICATION_CREDENTIALS="/home/user/Downloads/service-account-file.json"`
+  
+  - Windows: `$env:GOOGLE_APPLICATION_CREDENTIALS="C:\Users\username\Downloads\service-account-file.json"`
+
+-
+    1. Install the [Firebase CLI](https://firebase.google.com/docs/cli#install_the_firebase_cli).
+    2. Copy the `firebase_options.dart` file as it will be modified.
+    3. Run the following commands in the project directory of talawa mobile app:
+        - `firebase login`
+        - `dart pub global activate flutterfire_cli`
+        - `flutterfire configure`
+    4. Select the project you created in the Firebase console in step 2.
+    5. Add iOS and android platforms to the project.
+    6. Overwrite the `firebase_options.dart` file if asked so.
+    7. Copy the keys to `.env` file, for how to set keys refer to `.env.sample` file.
+    8. Undo the changes made to the `firebase_options.dart` file by pasting the old content from step 2.
+
+11. Start the `talawa-api` server using the below command in the same terminal.
 
         npm start
 
