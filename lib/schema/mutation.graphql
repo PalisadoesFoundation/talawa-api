@@ -76,10 +76,13 @@ module.exports = `
     addUserToGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
     removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
     blockPluginCreationBySuperadmin(userId: ID!, blockUser: Boolean!): User! @auth
-    createPlugin(plugin: PluginInput!): Plugin! @auth
 
     createMessageChat(data:MessageChatInput!): MessageChat! @auth
     addLanguageTranslation(data: LanguageInput!): Language! @auth
+
+    createPlugin(pluginName: String! , pluginCreatedBy: String! ,pluginDesc: String! ,pluginInstallStatus: Boolean!, installedOrgs:[ID!] ):Plugin!
+    updatePluginStatus(id: ID!, status: Boolean!) : Plugin!
+    updatePluginInstalledOrgs(id: ID! ,orgId: ID!) :Plugin! 
   }
   
 `
