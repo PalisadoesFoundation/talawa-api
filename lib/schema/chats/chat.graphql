@@ -14,6 +14,7 @@ module.exports = `
         messages: [GroupChatMessage]
         creator: User!
         organization: Organization!
+        title: String
     }
 
     type GroupChatMessage {

@@ -19,6 +19,7 @@ module.exports = `
     image: String
     organizationUserBelongsTo: Organization
     pluginCreationAllowed: Boolean
+    spamInOrganizations: [Organization]
     adminApproved: Boolean
     createdAt:String
   }
