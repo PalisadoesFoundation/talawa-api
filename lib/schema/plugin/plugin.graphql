@@ -1,13 +1,13 @@
 module.exports = `
-    type Plugin {
-        orgId: Organization!
-        pluginName: String!
-        pluginKey: String
-        pluginStatus: Status!
-        pluginType: Type!
-        additionalInfo: [PluginField!]
-        createdAt: String
-    }
+    # type Plugin {
+    #     orgId: Organization!
+    #     pluginName: String!
+    #     pluginKey: String
+    #     pluginStatus: Status!
+    #     pluginType: Type!
+    #     additionalInfo: [PluginField!]
+    #     createdAt: String 
+    # }
 
     input PluginInput{
         orgId: ID!
@@ -17,9 +17,19 @@ module.exports = `
         fields: [PluginFieldInput]
     }
 
-    input PluginFieldInput{
+     input PluginFieldInput{
         key: String!
-        value: String!
+         value: String!
+    }
+
+    # For Plugins 
+     type Plugin {
+        _id: ID!
+        pluginName: String!
+        pluginCreatedBy: String!
+        pluginDesc: String!
+        pluginInstallStatus: Boolean!
+        installedOrgs : [ID!]!
     }
 
 `

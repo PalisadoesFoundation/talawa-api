@@ -6,9 +6,11 @@ module.exports = `
     otp(data: OTPInput!): OtpData!
     recaptcha(data: RecaptchaVerification!): Boolean!
     forgotPassword(data: ForgotPasswordData!): Boolean!
+    saveFcmToken(token: String) : Boolean! @auth
     refreshToken(refreshToken: String!) : ExtendSession!
     revokeRefreshTokenForUser(userId: String!) : Boolean!
     updateLanguage(languageCode: String!) : User! @auth
+    logout: Boolean! @auth
 
     updateUserProfile(data: UpdateUserInput, file:Upload): User! @auth
     updateUserType(data: UpdateUserTypeInput!): Boolean! @auth
@@ -20,7 +22,6 @@ module.exports = `
 
     createOrganization(data: OrganizationInput, file:Upload): Organization! @auth
     updateOrganization(id:ID!, data: UpdateOrganizationInput) : Organization! @auth
-    updateSpamNotification(data: UpdateSpamInput): Organization @auth
     removeOrganization(id: ID!) : User! @auth
     
     acceptAdmin(id: ID!): Boolean! @auth
@@ -37,7 +38,6 @@ module.exports = `
     adminRemoveGroup(groupId:ID!):Message! @auth
 
     createPost(data: PostInput!, file: Upload): Post @auth
-    updatePost(data: PostUpdateInput!, file: Upload): Post @auth
     removePost(id:ID!): Post @auth
     likePost(id:ID!): Post @auth
     unlikePost(id:ID!): Post @auth
@@ -72,14 +72,17 @@ module.exports = `
 
     createGroupChat(data: createGroupChatInput): GroupChat! @auth
     removeGroupChat(chatId: ID!): GroupChat! @auth
-    sendMessageToGroupChat(chatId: ID!, messageContent: String!, isSpam: Boolean): GroupChatMessage! @auth
+    sendMessageToGroupChat(chatId: ID!, messageContent: String!): GroupChatMessage! @auth
     addUserToGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
     removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
     blockPluginCreationBySuperadmin(userId: ID!, blockUser: Boolean!): User! @auth
-    createPlugin(plugin: PluginInput!): Plugin! @auth
 
     createMessageChat(data:MessageChatInput!): MessageChat! @auth
     addLanguageTranslation(data: LanguageInput!): Language! @auth
+
+    createPlugin(pluginName: String! , pluginCreatedBy: String! ,pluginDesc: String! ,pluginInstallStatus: Boolean!, installedOrgs:[ID!] ):Plugin!
+    updatePluginStatus(id: ID!, status: Boolean!) : Plugin!
+    updatePluginInstalledOrgs(id: ID! ,orgId: ID!) :Plugin! 
   }
   
 `

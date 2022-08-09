@@ -1,4 +1,5 @@
 const shortid = require('shortid');
+const { USER_NOT_FOUND, ERROR_IN_SENDING_MAIL } = require('../../../constants');
 
 const database = require('../../../db');
 const otp = require('../../../lib/resolvers/auth_mutations/otp');
@@ -29,6 +30,18 @@ describe('Testing otp resolver', () => {
       },
     };
 
-    await expect(() => otp({}, args)).rejects.toEqual('Error in sending mail');
+    await expect(() => otp({}, args)).rejects.toEqual(ERROR_IN_SENDING_MAIL);
+  });
+
+  test('Testing, when user email is incorrect', async () => {
+    const args = {
+      data: {
+        email: 'abc4321@email.com',
+      },
+    };
+
+    await expect(async () => {
+      await otp({}, args);
+    }).rejects.toEqual(Error(USER_NOT_FOUND));
   });
 });
