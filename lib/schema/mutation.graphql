@@ -6,9 +6,11 @@ module.exports = `
     otp(data: OTPInput!): OtpData!
     recaptcha(data: RecaptchaVerification!): Boolean!
     forgotPassword(data: ForgotPasswordData!): Boolean!
+    saveFcmToken(token: String) : Boolean! @auth
     refreshToken(refreshToken: String!) : ExtendSession!
     revokeRefreshTokenForUser(userId: String!) : Boolean!
     updateLanguage(languageCode: String!) : User! @auth
+    logout: Boolean! @auth
 
     updateUserProfile(data: UpdateUserInput, file:Upload): User! @auth
     updateUserType(data: UpdateUserTypeInput!): Boolean! @auth
@@ -76,10 +78,13 @@ module.exports = `
     addUserToGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
     removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
     blockPluginCreationBySuperadmin(userId: ID!, blockUser: Boolean!): User! @auth
-    createPlugin(plugin: PluginInput!): Plugin! @auth
 
     createMessageChat(data:MessageChatInput!): MessageChat! @auth
     addLanguageTranslation(data: LanguageInput!): Language! @auth
+
+    createPlugin(pluginName: String! , pluginCreatedBy: String! ,pluginDesc: String! ,pluginInstallStatus: Boolean!, installedOrgs:[ID!] ):Plugin!
+    updatePluginStatus(id: ID!, status: Boolean!) : Plugin!
+    updatePluginInstalledOrgs(id: ID! ,orgId: ID!) :Plugin! 
   }
   
 `
