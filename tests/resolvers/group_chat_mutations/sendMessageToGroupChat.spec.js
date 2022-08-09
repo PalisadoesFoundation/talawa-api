@@ -256,7 +256,7 @@ describe('tests for sending a message to group chat', () => {
     };
 
     for (let i = 0; i <= 30; i++) {
-      var args = {
+      let args = {
         chatId: createdGroupChatId,
         messageContent: `This is a test message ${i}`,
       };
@@ -268,7 +268,7 @@ describe('tests for sending a message to group chat', () => {
         })
       );
     }
-    var args = {
+    let args = {
       chatId: createdGroupChatId,
       messageContent: 'This is a final test message',
     };
