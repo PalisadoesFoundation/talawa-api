@@ -137,7 +137,7 @@ afterAll(async () => {
   await database.disconnect();
 });
 
-describe('accept membership request', () => {
+describe('Cancel membership request', () => {
   test('Cancel Membership  : Request Not found Check', async () => {
     await expect(async () => {
       await cancelMembershipRequest(
