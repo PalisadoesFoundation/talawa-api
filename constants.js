@@ -81,6 +81,8 @@ const POST_NOT_FOUND_MESSAGE = 'post.notFound';
 const POST_NOT_FOUND_CODE = 'post.notFound';
 const POST_NOT_FOUND_PARAM = 'post';
 
+const DATABASE_CONNECTION_FAIL = 'Failed to connect to database';
+
 const STATUS_ACTIVE = 'ACTIVE';
 
 const IN_PRODUCTION = process.env.NODE_ENV === 'production';
@@ -175,4 +177,6 @@ module.exports = {
   POST_NOT_FOUND_MESSAGE,
   POST_NOT_FOUND_CODE,
   POST_NOT_FOUND_PARAM,
+
+  DATABASE_CONNECTION_FAIL,
 };
