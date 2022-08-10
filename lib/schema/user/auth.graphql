@@ -39,5 +39,21 @@ module.exports = `
     refreshToken: String!
   }
 
+  input RecaptchaVerification {
+    recaptchaToken: String!
+  }
 
+  input OTPInput {
+    email: String!
+  }
+
+  type OtpData {
+    otpToken: String!
+  }
+
+  input ForgotPasswordData {
+    userOtp: String!
+    newPassword: String!
+    otpToken: String!
+  }
 `
