@@ -25,6 +25,8 @@ const ORGANIZATION_NOT_FOUND_MESSAGE = 'organization.notFound';
 const ORGANIZATION_NOT_FOUND_CODE = 'organization.notFound';
 const ORGANIZATION_NOT_FOUND_PARAM = 'organization';
 
+const CONNECTION_NOT_FOUND = 'Connection not found';
+
 const ORGANIZATION_MEMBER_NOT_FOUND = "Organization's user is not a member";
 const ORGANIZATION_MEMBER_NOT_FOUND_MESSAGE = 'organization.member.notFound';
 const ORGANIZATION_MEMBER_NOT_FOUND_CODE = 'organization.member.notFound';
@@ -107,6 +109,8 @@ module.exports = {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_PARAM,
+
+  CONNECTION_NOT_FOUND,
 
   EVENT_PROJECT_NOT_FOUND,
   EVENT_PROJECT_NOT_FOUND_CODE,

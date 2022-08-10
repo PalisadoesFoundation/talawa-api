@@ -1,6 +1,13 @@
 const shortid = require('shortid');
 const Tenant = require('../../lib/models/Tenant');
 const connectionManager = require('../../lib/ConnectionManager');
+const {
+  Types: { ObjectId },
+} = require('mongoose');
+const {
+  CONNECTION_NOT_FOUND,
+  ORGANIZATION_NOT_FOUND,
+} = require('../../constants');
 
 const database = require('../../db');
 const getUserIdFromSignUp = require('../functions/getUserIdFromSignup');
@@ -73,16 +80,20 @@ afterAll(async () => {
 
 describe('tenant is working and transparent from main db', () => {
   test('initTenants and destroyConnections', async () => {
-    let conn = connectionManager.getTenantConnection(organizationId);
-    expect(conn).toBe(null);
+    let conn;
+    expect(() => {
+      connectionManager.getTenantConnection(organizationId);
+    }).toThrow(CONNECTION_NOT_FOUND);
     await connectionManager.initTenants();
     conn = connectionManager.getTenantConnection(organizationId);
     expect(conn).toBeTruthy();
     await connectionManager.destroyConnections();
-    conn = connectionManager.getTenantConnection(organizationId);
-    expect(conn).toBe(null);
+    expect(() => {
+      connectionManager.getTenantConnection(organizationId);
+    }).toThrow(CONNECTION_NOT_FOUND);
     await connectionManager.initTenants();
   });
+
   test('addConnection', async () => {
     const organization = new Organization({
       name: 'second tenant organization',
@@ -120,9 +131,17 @@ describe('tenant is working and transparent from main db', () => {
     const conn = await connectionManager.addTenantConnection(
       secondOrganizationId
     );
+
     expect(conn).toBeTruthy();
     const posts = await conn.Post.find();
     expect(posts).toEqual([]);
+  });
+
+  test('adding invalid org connection', async () => {
+    // throws the correct error on invalid org id.
+    await expect(async () => {
+      await connectionManager.addTenantConnection(new ObjectId());
+    }).rejects.toThrow(ORGANIZATION_NOT_FOUND);
   });
 
   test('getConnection', async () => {
