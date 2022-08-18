@@ -55,10 +55,10 @@ services:
       - .:/usr/src/app
 
       # We don't want to sync node_modules folder between the host system and container.
-      # It should be updated by rebuilding the image. '.:/usr/src/app:ro' mounts
+      # It should be updated by rebuilding the image. '.:/usr/src/app' mounts
       # everything present in current host system directory to 'WORKDIR' inside
-      # container. This maps an empty address to node_modules folder inside the
-      # container. Therefore, providing a more specific instruction to docker
+      # container. But '/usr/src/app/node_modules' maps an empty address to node_modules
+      # folder inside the container. Therefore, providing a more specific instruction to docker
       # to ignore node_modules.
       - /usr/src/app/node_modules
 
