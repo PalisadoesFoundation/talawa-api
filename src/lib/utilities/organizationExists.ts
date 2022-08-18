@@ -26,5 +26,3 @@ export const organizationExists = async (id: string) => {
 
   return organization;
 };
-
-export default organizationExists;

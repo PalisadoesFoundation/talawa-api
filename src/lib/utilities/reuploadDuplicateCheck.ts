@@ -13,9 +13,9 @@ interface BufferObject {
   name?: string;
 }
 
-export type TOldSrc = string | UrlRequestObject | BufferObject;
+export type Type_OldSrc = string | UrlRequestObject | BufferObject;
 
-const getImageHash = (oldSrc: TOldSrc) => {
+const getImageHash = (oldSrc: Type_OldSrc) => {
   return new Promise((resolve, reject) => {
     imageHash(oldSrc, 16, true, (error: Error, data: any) => {
       if (error) {
@@ -28,8 +28,8 @@ const getImageHash = (oldSrc: TOldSrc) => {
 };
 
 export const reuploadDuplicateCheck = async (
-  imageJustUploadedPath: TOldSrc,
-  itemImage: TOldSrc
+  imageJustUploadedPath: Type_OldSrc,
+  itemImage: Type_OldSrc
 ) => {
   /*
   This function checks whether a user is trying to re-upload the same profile picture
@@ -60,5 +60,3 @@ export const reuploadDuplicateCheck = async (
     );
   }
 };
-
-export default reuploadDuplicateCheck;

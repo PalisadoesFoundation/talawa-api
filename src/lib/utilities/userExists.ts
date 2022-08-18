@@ -24,5 +24,3 @@ export const userExists = async (id: string) => {
 
   return user;
 };
-
-export default userExists;

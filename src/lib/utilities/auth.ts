@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-export interface IJwtTokenPayload {
+export interface Interface_JwtTokenPayload {
   tokenVersion: number;
   userId: string;
   firstName: string;
