@@ -11,7 +11,7 @@ value(null, undefined etc.). But userId must never be used directly. Always make
 sure to rely on isAuth boolean for identifying whether the current user is
 authenticated or not. If isAuth is true only then we are free to make use of userId.
 */
-export interface IAuthData {
+export interface Interface_AuthData {
   isAuth: boolean;
   expired: boolean | undefined;
   userId: string;
@@ -23,7 +23,7 @@ export const isAuth = (req: Request) => {
   object conditionally as the authentication flow continues and return it from
   the function whereever needed.
   */
-  const authData: IAuthData = {
+  const authData: Interface_AuthData = {
     isAuth: false,
     expired: undefined,
     userId: '',
