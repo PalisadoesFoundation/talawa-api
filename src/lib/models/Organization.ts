@@ -1,6 +1,6 @@
 import { Schema, Types, model, Model } from 'mongoose';
 
-export interface IOrganization {
+export interface Interface_Organization {
   apiUrl?: string;
   image?: string;
   name: string;
@@ -20,9 +20,9 @@ export interface IOrganization {
 }
 
 const organizationSchema = new Schema<
-  IOrganization,
-  Model<IOrganization>,
-  IOrganization
+  Interface_Organization,
+  Model<Interface_Organization>,
+  Interface_Organization
 >({
   apiUrl: {
     type: String,
@@ -100,7 +100,7 @@ const organizationSchema = new Schema<
   },
 });
 
-export const Organization = model<IOrganization>(
+export const Organization = model<Interface_Organization>(
   'Organization',
   organizationSchema
 );

@@ -1,6 +1,6 @@
 import { Schema, Types, model, Model } from 'mongoose';
 
-export interface IPlugin {
+export interface Interface_Plugin {
   orgId: Types.ObjectId;
   pluginName: string;
   pluginKey?: string;
@@ -11,7 +11,11 @@ export interface IPlugin {
   createdAt?: Date;
 }
 
-const pluginSchema = new Schema<IPlugin, Model<IPlugin>, IPlugin>({
+const pluginSchema = new Schema<
+  Interface_Plugin,
+  Model<Interface_Plugin>,
+  Interface_Plugin
+>({
   orgId: {
     type: Schema.Types.ObjectId,
     ref: 'Organization',
@@ -55,4 +59,4 @@ const pluginSchema = new Schema<IPlugin, Model<IPlugin>, IPlugin>({
   },
 });
 
-export const Plugin = model<IPlugin>('Plugin', pluginSchema);
+export const Plugin = model<Interface_Plugin>('Plugin', pluginSchema);

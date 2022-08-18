@@ -1,7 +1,7 @@
 import { Schema, model, Model } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 
-export interface IFile {
+export interface Interface_File {
   name: string;
   url?: string;
   size?: number;
@@ -11,7 +11,11 @@ export interface IFile {
   status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
 }
 
-const fileSchema = new Schema<IFile, Model<IFile>, IFile>({
+const fileSchema = new Schema<
+  Interface_File,
+  Model<Interface_File>,
+  Interface_File
+>({
   name: {
     type: String,
     required: true,
@@ -42,4 +46,5 @@ const fileSchema = new Schema<IFile, Model<IFile>, IFile>({
     default: 'ACTIVE',
   },
 });
-export const File = model<IFile>('File', fileSchema);
+
+export const File = model<Interface_File>('File', fileSchema);

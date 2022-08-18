@@ -1,6 +1,6 @@
 import { Schema, Types, model, Model } from 'mongoose';
 
-export interface IMessageChat {
+export interface Interface_MessageChat {
   message: string;
   languageBarrier?: boolean;
   sender: Types.ObjectId;
@@ -9,9 +9,9 @@ export interface IMessageChat {
 }
 
 const messageChatSchema = new Schema<
-  IMessageChat,
-  Model<IMessageChat, {}, {}>,
-  IMessageChat
+  Interface_MessageChat,
+  Model<Interface_MessageChat, {}, {}>,
+  Interface_MessageChat
 >({
   message: {
     type: String,
@@ -39,4 +39,7 @@ const messageChatSchema = new Schema<
   },
 });
 
-export const Chat = model<IMessageChat>('MessageChat', messageChatSchema);
+export const Chat = model<Interface_MessageChat>(
+  'MessageChat',
+  messageChatSchema
+);

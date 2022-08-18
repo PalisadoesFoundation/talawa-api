@@ -1,6 +1,6 @@
 import { Schema, model, Model } from 'mongoose';
 
-export interface IPluginField {
+export interface Interface_PluginField {
   key: string;
   value: string;
   status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
@@ -8,9 +8,9 @@ export interface IPluginField {
 }
 
 const pluginFieldSchema = new Schema<
-  IPluginField,
-  Model<IPluginField>,
-  IPluginField
+  Interface_PluginField,
+  Model<Interface_PluginField>,
+  Interface_PluginField
 >({
   key: {
     type: String,
@@ -32,7 +32,7 @@ const pluginFieldSchema = new Schema<
   },
 });
 
-export const PluginField = model<IPluginField>(
+export const PluginField = model<Interface_PluginField>(
   'PluginField',
   pluginFieldSchema
 );

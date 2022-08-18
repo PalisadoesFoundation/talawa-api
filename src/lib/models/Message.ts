@@ -1,6 +1,6 @@
 import { Schema, Types, model, Model } from 'mongoose';
 
-export interface IMessageSchema {
+export interface Interface_Message {
   text: string;
   imageUrl?: string;
   videoUrl?: string;
@@ -11,9 +11,9 @@ export interface IMessageSchema {
 }
 
 const messageSchema = new Schema<
-  IMessageSchema,
-  Model<IMessageSchema>,
-  IMessageSchema
+  Interface_Message,
+  Model<Interface_Message>,
+  Interface_Message
 >({
   text: {
     type: String,
@@ -49,4 +49,4 @@ const messageSchema = new Schema<
   },
 });
 
-export const Message = model<IMessageSchema>('Message', messageSchema);
+export const Message = model<Interface_Message>('Message', messageSchema);

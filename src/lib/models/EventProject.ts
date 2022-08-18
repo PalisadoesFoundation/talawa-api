@@ -1,6 +1,6 @@
 import { Schema, Types, model, Model } from 'mongoose';
 
-export interface IEventProject {
+export interface Interface_EventProject {
   title: string;
   description: string;
   createdAt?: Date;
@@ -11,9 +11,9 @@ export interface IEventProject {
 }
 
 const eventProjectSchema = new Schema<
-  IEventProject,
-  Model<IEventProject>,
-  IEventProject
+  Interface_EventProject,
+  Model<Interface_EventProject>,
+  Interface_EventProject
 >({
   title: {
     type: String,
@@ -51,7 +51,7 @@ const eventProjectSchema = new Schema<
   },
 });
 
-export const EventProject = model<IEventProject>(
+export const EventProject = model<Interface_EventProject>(
   'EventProject',
   eventProjectSchema
 );

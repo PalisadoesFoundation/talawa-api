@@ -1,25 +1,29 @@
 import { Schema, model, Model, PopulatedDoc } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
-import { IComment } from './Comment';
-import { IOrganization } from './Organization';
-import { IUser } from './User';
+import { Interface_Comment } from './Comment';
+import { Interface_Organization } from './Organization';
+import { Interface_User } from './User';
 
-export interface IPost {
+export interface Interface_Post {
   text: string;
   title?: string;
   status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
   createdAt?: Date;
   imageUrl?: string;
   videoUrl?: string;
-  creator: PopulatedDoc<IUser>;
-  organization: PopulatedDoc<IOrganization>;
-  likedBy: Array<PopulatedDoc<IUser>>;
-  comments: Array<PopulatedDoc<IComment>>;
+  creator: PopulatedDoc<Interface_User>;
+  organization: PopulatedDoc<Interface_Organization>;
+  likedBy: Array<PopulatedDoc<Interface_User>>;
+  comments: Array<PopulatedDoc<Interface_Comment>>;
   likeCount?: number;
   commentCount?: number;
 }
 
-const postSchema = new Schema<IPost, Model<IPost>, IPost>({
+const postSchema = new Schema<
+  Interface_Post,
+  Model<Interface_Post>,
+  Interface_Post
+>({
   text: {
     type: String,
     required: true,
@@ -85,4 +89,4 @@ This library mongoose-paginate-v2 has wrong typescript bindings.
 // @ts-ignore
 postSchema.plugin(mongoosePaginate);
 
-export const Post = model<IPost>('Post', postSchema);
+export const Post = model<Interface_Post>('Post', postSchema);

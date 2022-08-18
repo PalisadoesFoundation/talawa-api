@@ -1,6 +1,6 @@
 import { Schema, Types, model, Model } from 'mongoose';
 
-export interface IGroup {
+export interface Interface_Group {
   title: string;
   description?: string;
   createdAt?: Date;
@@ -9,7 +9,11 @@ export interface IGroup {
   admins: Array<Types.ObjectId>;
 }
 
-const groupSchema = new Schema<IGroup, Model<IGroup>, IGroup>({
+const groupSchema = new Schema<
+  Interface_Group,
+  Model<Interface_Group>,
+  Interface_Group
+>({
   title: {
     type: String,
     required: true,
@@ -41,4 +45,4 @@ const groupSchema = new Schema<IGroup, Model<IGroup>, IGroup>({
   ],
 });
 
-export const Group = model<IGroup>('Group', groupSchema);
+export const Group = model<Interface_Group>('Group', groupSchema);

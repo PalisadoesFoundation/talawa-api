@@ -1,6 +1,6 @@
 import { Schema, model, Model, Types } from 'mongoose';
 
-export interface ILanguageModel {
+export interface Interface_LanguageModel {
   lang_code: string;
   value: string;
   verified: boolean;
@@ -8,9 +8,9 @@ export interface ILanguageModel {
 }
 
 const languageModelSchema = new Schema<
-  ILanguageModel,
-  Model<ILanguageModel>,
-  ILanguageModel
+  Interface_LanguageModel,
+  Model<Interface_LanguageModel>,
+  Interface_LanguageModel
 >({
   lang_code: {
     type: String,
@@ -35,9 +35,9 @@ const languageModelSchema = new Schema<
   },
 });
 
-interface ILanguage {
+interface Interface_Language {
   en: string;
-  translation: Array<ILanguageModel>;
+  translation: Array<Interface_LanguageModel>;
   createdAt: Date;
 }
 
@@ -56,4 +56,4 @@ const languageSchema = new Schema({
   },
 });
 
-export const Language = model<ILanguage>('Language', languageSchema);
+export const Language = model<Interface_Language>('Language', languageSchema);

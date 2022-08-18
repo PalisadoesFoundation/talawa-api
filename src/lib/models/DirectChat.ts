@@ -1,6 +1,6 @@
 import { Schema, Types, model, Model } from 'mongoose';
 
-export interface IDirectChat {
+export interface Interface_DirectChat {
   users: Array<Types.ObjectId>;
   messages: Array<Types.ObjectId>;
   creator: Types.ObjectId;
@@ -9,9 +9,9 @@ export interface IDirectChat {
 }
 
 const directChatSchema = new Schema<
-  IDirectChat,
-  Model<IDirectChat>,
-  IDirectChat
+  Interface_DirectChat,
+  Model<Interface_DirectChat>,
+  Interface_DirectChat
 >({
   users: [
     {
@@ -44,4 +44,7 @@ const directChatSchema = new Schema<
   },
 });
 
-export const DirectChat = model<IDirectChat>('DirectChat', directChatSchema);
+export const DirectChat = model<Interface_DirectChat>(
+  'DirectChat',
+  directChatSchema
+);

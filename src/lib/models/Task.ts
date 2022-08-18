@@ -1,18 +1,22 @@
 import { Schema, model, Model, PopulatedDoc } from 'mongoose';
-import { IEvent } from './Event';
-import { IUser } from './User';
+import { Interface_Event } from './Event';
+import { Interface_User } from './User';
 
-export interface ITask {
+export interface Interface_Task {
   title: string;
   description?: string;
   status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
   createdAt?: Date;
   deadline?: Date;
-  event: PopulatedDoc<IEvent>;
-  creator: PopulatedDoc<IUser>;
+  event: PopulatedDoc<Interface_Event>;
+  creator: PopulatedDoc<Interface_User>;
 }
 
-const taskSchema = new Schema<ITask, Model<ITask>, ITask>({
+const taskSchema = new Schema<
+  Interface_Task,
+  Model<Interface_Task>,
+  Interface_Task
+>({
   title: {
     type: String,
     required: true,
@@ -45,4 +49,4 @@ const taskSchema = new Schema<ITask, Model<ITask>, ITask>({
   },
 });
 
-export const Task = model<ITask>('Task', taskSchema);
+export const Task = model<Interface_Task>('Task', taskSchema);

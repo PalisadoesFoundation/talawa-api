@@ -1,15 +1,15 @@
 import { Schema, Types, model, Model } from 'mongoose';
 
-export interface IMembershipRequest {
+export interface Interface_MembershipRequest {
   organization: Types.ObjectId;
   user?: Types.ObjectId;
   status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
 }
 
 const membershipRequestSchema = new Schema<
-  IMembershipRequest,
-  Model<IMembershipRequest>,
-  IMembershipRequest
+  Interface_MembershipRequest,
+  Model<Interface_MembershipRequest>,
+  Interface_MembershipRequest
 >({
   organization: {
     type: Schema.Types.ObjectId,
@@ -28,7 +28,7 @@ const membershipRequestSchema = new Schema<
   },
 });
 
-export const MembershipRequest = model<IMembershipRequest>(
+export const MembershipRequest = model<Interface_MembershipRequest>(
   'MembershipRequest',
   membershipRequestSchema
 );

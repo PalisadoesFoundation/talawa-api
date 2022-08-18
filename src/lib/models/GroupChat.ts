@@ -1,6 +1,6 @@
 import { Schema, Types, model, Model } from 'mongoose';
 
-export interface IGroupChat {
+export interface Interface_GroupChat {
   title: string;
   users: Array<Types.ObjectId>;
   messages: Array<Types.ObjectId>;
@@ -9,7 +9,11 @@ export interface IGroupChat {
   status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
 }
 
-const groupChatSchema = new Schema<IGroupChat, Model<IGroupChat>, IGroupChat>({
+const groupChatSchema = new Schema<
+  Interface_GroupChat,
+  Model<Interface_GroupChat>,
+  Interface_GroupChat
+>({
   title: {
     type: String,
     required: true,
@@ -45,4 +49,7 @@ const groupChatSchema = new Schema<IGroupChat, Model<IGroupChat>, IGroupChat>({
   },
 });
 
-export const GroupChat = model<IGroupChat>('GroupChat', groupChatSchema);
+export const GroupChat = model<Interface_GroupChat>(
+  'GroupChat',
+  groupChatSchema
+);

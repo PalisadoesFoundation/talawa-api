@@ -1,6 +1,6 @@
 import { Schema, Types, model, Model } from 'mongoose';
 
-export interface IGroupChatMessage {
+export interface Interface_GroupChatMessage {
   groupChatMessageBelongsTo: Types.ObjectId;
   sender: Types.ObjectId;
   createdAt: Date;
@@ -9,9 +9,9 @@ export interface IGroupChatMessage {
 }
 
 const groupChatMessageSchema = new Schema<
-  IGroupChatMessage,
-  Model<IGroupChatMessage>,
-  IGroupChatMessage
+  Interface_GroupChatMessage,
+  Model<Interface_GroupChatMessage>,
+  Interface_GroupChatMessage
 >({
   groupChatMessageBelongsTo: {
     type: Schema.Types.ObjectId,
@@ -39,7 +39,7 @@ const groupChatMessageSchema = new Schema<
   },
 });
 
-export const GroupChatMessage = model<IGroupChatMessage>(
+export const GroupChatMessage = model<Interface_GroupChatMessage>(
   'GroupChatMessage',
   groupChatMessageSchema
 );

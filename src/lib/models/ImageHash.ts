@@ -1,13 +1,17 @@
 import { Schema, model, Model } from 'mongoose';
 
-export interface IImageHash {
+export interface Interface_ImageHash {
   hashValue: string;
   fileName: string;
   numberOfUses: number;
   status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
 }
 
-const imageHashSchema = new Schema<IImageHash, Model<IImageHash>, IImageHash>({
+const imageHashSchema = new Schema<
+  Interface_ImageHash,
+  Model<Interface_ImageHash>,
+  Interface_ImageHash
+>({
   hashValue: {
     type: String,
     required: true,
@@ -29,4 +33,7 @@ const imageHashSchema = new Schema<IImageHash, Model<IImageHash>, IImageHash>({
   },
 });
 
-export const ImageHash = model<IImageHash>('ImageHash', imageHashSchema);
+export const ImageHash = model<Interface_ImageHash>(
+  'ImageHash',
+  imageHashSchema
+);

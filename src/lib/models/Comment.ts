@@ -1,17 +1,21 @@
 import { Schema, model, Model, PopulatedDoc } from 'mongoose';
-import { IUser } from './User';
+import { Interface_User } from './User';
 
-export interface IComment {
+export interface Interface_Comment {
   text: string;
   createdAt?: Date;
-  creator: PopulatedDoc<IUser>;
-  post: PopulatedDoc<IUser>;
-  likedBy: Array<PopulatedDoc<IUser>>;
+  creator: PopulatedDoc<Interface_User>;
+  post: PopulatedDoc<Interface_User>;
+  likedBy: Array<PopulatedDoc<Interface_User>>;
   likeCount?: number;
   status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
 }
 
-const commentSchema = new Schema<IComment, Model<IComment>, IComment>({
+const commentSchema = new Schema<
+  Interface_Comment,
+  Model<Interface_Comment>,
+  Interface_Comment
+>({
   text: {
     type: String,
     required: true,
@@ -48,4 +52,4 @@ const commentSchema = new Schema<IComment, Model<IComment>, IComment>({
   },
 });
 
-export const Comment = model<IComment>('Comment', commentSchema);
+export const Comment = model<Interface_Comment>('Comment', commentSchema);

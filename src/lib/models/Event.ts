@@ -1,18 +1,18 @@
 import { Schema, Types, model, Model, PopulatedDoc } from 'mongoose';
-import { ITask } from './Task';
-import { IUser } from './User';
+import { Interface_Task } from './Task';
+import { Interface_User } from './User';
 
-export interface IUserAttende {
+export interface Interface_UserAttende {
   userId: string;
-  user: PopulatedDoc<IUser>;
+  user: PopulatedDoc<Interface_User>;
   status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
   createdAt: Date;
 }
 
 const userAttendeSchema = new Schema<
-  IUserAttende,
-  Model<IUserAttende>,
-  IUserAttende
+  Interface_UserAttende,
+  Model<Interface_UserAttende>,
+  Interface_UserAttende
 >({
   userId: {
     type: String,
@@ -35,7 +35,7 @@ const userAttendeSchema = new Schema<
   },
 });
 
-export interface IEvent {
+export interface Interface_Event {
   title: string;
   description: string;
   attendees?: string;
@@ -49,15 +49,19 @@ export interface IEvent {
   recurrance?: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY' | 'ONCE';
   isPublic: boolean;
   isRegisterable: boolean;
-  creator: PopulatedDoc<IUser>;
-  registrants: Array<PopulatedDoc<IUserAttende>>;
-  admins: Array<PopulatedDoc<IUser>>;
+  creator: PopulatedDoc<Interface_User>;
+  registrants: Array<PopulatedDoc<Interface_UserAttende>>;
+  admins: Array<PopulatedDoc<Interface_User>>;
   organization: Types.ObjectId;
-  tasks: Array<PopulatedDoc<ITask>>;
+  tasks: Array<PopulatedDoc<Interface_Task>>;
   status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
 }
 
-const eventSchema = new Schema<IEvent, Model<IEvent>, IEvent>({
+const eventSchema = new Schema<
+  Interface_Event,
+  Model<Interface_Event>,
+  Interface_Event
+>({
   title: {
     type: String,
     required: true,
@@ -156,4 +160,4 @@ const eventSchema = new Schema<IEvent, Model<IEvent>, IEvent>({
   },
 });
 
-export const Event = model<IEvent>('Event', eventSchema);
+export const Event = model<Interface_Event>('Event', eventSchema);
