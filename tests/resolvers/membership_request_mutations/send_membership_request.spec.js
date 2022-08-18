@@ -145,6 +145,19 @@ describe('send membership request', () => {
   });
 
   test('a valid accept member', async () => {
-    expect(validMembershipRequestId).toBeTruthy();
+    const membershipRequest = await sendMembershipRequest(
+      {},
+      {
+        membershipRequestId: validMembershipRequestId,
+        organizationId,
+      },
+      { userId: adminId }
+    );
+    const org = await Organization.findById(organizationId);
+    const user = await User.findById(membershipRequesterId);
+
+    expect(membershipRequest).toBeTruthy();
+    expect(org.membershipRequests.length).toBeTruthy();
+    expect(user.membershipRequests.length).toBeTruthy();
   });
 });
