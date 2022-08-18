@@ -32,7 +32,7 @@
   "homepage": "https://github.com/PalisadoesFoundation/talawa-api#readme",
   "dependencies": {
     "@graphql-tools/schema": "^8.3.5",
-    "apollo-server-core": "^3.6.6",
+    "apollo-server-core": "^3.10.1",
     "apollo-server-express": "^2.25.2",
     "axios": "^0.21.2",
     "bcryptjs": "^2.4.3",
