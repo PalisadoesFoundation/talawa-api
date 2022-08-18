@@ -25,6 +25,8 @@ const ORGANIZATION_NOT_FOUND_MESSAGE = 'organization.notFound';
 const ORGANIZATION_NOT_FOUND_CODE = 'organization.notFound';
 const ORGANIZATION_NOT_FOUND_PARAM = 'organization';
 
+const CONNECTION_NOT_FOUND = 'Connection not found';
+
 const ORGANIZATION_MEMBER_NOT_FOUND = "Organization's user is not a member";
 const ORGANIZATION_MEMBER_NOT_FOUND_MESSAGE = 'organization.member.notFound';
 const ORGANIZATION_MEMBER_NOT_FOUND_CODE = 'organization.member.notFound';
@@ -79,6 +81,8 @@ const POST_NOT_FOUND_MESSAGE = 'post.notFound';
 const POST_NOT_FOUND_CODE = 'post.notFound';
 const POST_NOT_FOUND_PARAM = 'post';
 
+const DATABASE_CONNECTION_FAIL = 'Failed to connect to database';
+
 const STATUS_ACTIVE = 'ACTIVE';
 
 const IN_PRODUCTION = process.env.NODE_ENV === 'production';
@@ -107,6 +111,8 @@ module.exports = {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_PARAM,
+
+  CONNECTION_NOT_FOUND,
 
   EVENT_PROJECT_NOT_FOUND,
   EVENT_PROJECT_NOT_FOUND_CODE,
@@ -171,4 +177,6 @@ module.exports = {
   POST_NOT_FOUND_MESSAGE,
   POST_NOT_FOUND_CODE,
   POST_NOT_FOUND_PARAM,
+
+  DATABASE_CONNECTION_FAIL,
 };
