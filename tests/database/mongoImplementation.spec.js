@@ -1,5 +1,6 @@
 const Database = require('../../lib/Database/index');
 const User = require('../../lib/Database/MongoImplementation/schema/User');
+const { DATABASE_CONNECTION_FAIL } = require('../../constants');
 
 const firstUrl = 'mongodb://localhost:27017/db1?retryWrites=true&w=majority';
 const secondUrl = 'mongodb://localhost:27017/db2?retryWrites=true&w=majority';
@@ -29,6 +30,13 @@ afterAll(async () => {
 });
 
 describe('testing multiple databases functionality', () => {
+  test('inavlid url throws an error', async () => {
+    await expect(async () => {
+      const db = new Database('some_invalid_url');
+      await db.connect();
+    }).rejects.toThrow(DATABASE_CONNECTION_FAIL);
+  });
+
   test('first db is working', async () => {
     const firstDbUser = new FirstUserObject({
       firstName: 'test',

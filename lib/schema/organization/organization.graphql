@@ -19,6 +19,7 @@ module.exports = `
     visibleInSearch: Boolean!
     apiUrl:String!
     createdAt:String
+    tags: [String]
   }
 
   type OrganizationInfoNode {
@@ -40,6 +41,7 @@ module.exports = `
     isPublic: Boolean! 
     visibleInSearch: Boolean!
     apiUrl:String
+    tags: [String]
   }
 
   
