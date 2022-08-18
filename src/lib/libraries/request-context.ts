@@ -53,14 +53,14 @@ function is empty. But inside the function a method named 'requestHandler' is be
 called which is supposed to be a field of options object. This interface is not
 accurate but it does the job of implementing the generic type 'T' functionality.
 */
-interface IInitOptions<T> extends Record<any, any> {
+interface Interface_InitOptions<T> extends Record<any, any> {
   requestHandler?: () => T;
 }
 
 /*
 Invalid code. Currently ignored by typescript. Needs fix.
 */
-export const init = async <T>(options: IInitOptions<T> = {}) => {
+export const init = async <T>(options: Interface_InitOptions<T> = {}) => {
   const obj: any = {};
   // @ts-ignore
   i18n.init(obj);

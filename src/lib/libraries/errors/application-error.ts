@@ -1,4 +1,4 @@
-export interface IError {
+export interface Interface_Error {
   message: string;
   code: string | null;
   param: string | null;
@@ -6,11 +6,11 @@ export interface IError {
 }
 
 export class ApplicationError extends Error {
-  public errors: IError[];
+  public errors: Interface_Error[];
   public httpCode: number;
 
   constructor(
-    errors: IError[],
+    errors: Interface_Error[],
     httpCode: number = 422,
     message: string = 'Error'
   ) {
