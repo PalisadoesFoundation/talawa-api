@@ -9,7 +9,11 @@ const getUserIdFromSignUp = require('../../functions/getUserIdFromSignup');
 const Organization = require('../../../lib/models/Organization');
 const User = require('../../../lib/models/User');
 const MembershipRequest = require('../../../lib/models/MembershipRequest');
-const { ORGANIZATION_NOT_FOUND } = require('../../../constants');
+const {
+  ORGANIZATION_NOT_FOUND,
+  USER_NOT_FOUND,
+  MEMBERSHIP_REQUEST_ALREADY_EXIST,
+} = require('../../../constants');
 
 let adminId;
 let memberId;
@@ -124,14 +128,14 @@ afterAll(async () => {
 });
 
 describe('send membership request', () => {
-  test('user exist', async () => {
+  test("user doesn't exist", async () => {
     await expect(async () => {
       await sendMembershipRequest(
         {},
         { membershipRequestId: invalidUserMembershipRequestId },
-        { userId: adminId }
+        { userId: new ObjectId() }
       );
-    }).toBeTruthy();
+    }).rejects.toThrow(USER_NOT_FOUND);
   });
 
   test("organization doesn't exist", async () => {
@@ -142,6 +146,16 @@ describe('send membership request', () => {
         { userId: adminId }
       );
     }).rejects.toThrow(ORGANIZATION_NOT_FOUND);
+  });
+
+  test('membership already exist', async () => {
+    await expect(async () => {
+      await sendMembershipRequest(
+        {},
+        { organizationId },
+        { userId: membershipRequesterId }
+      );
+    }).rejects.toThrow(MEMBERSHIP_REQUEST_ALREADY_EXIST);
   });
 
   test('a valid accept member', async () => {
