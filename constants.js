@@ -51,6 +51,10 @@ const EVENT_NOT_FOUND_MESSAGE = 'event.notFound';
 const EVENT_NOT_FOUND_CODE = 'event.notFound';
 const EVENT_NOT_FOUND_PARAM = 'event';
 
+const ERROR_IN_SENDING_MAIL = 'Error in sending mail';
+
+const INVALID_OTP = 'Invalid OTP';
+
 const REGISTRANT_ALREADY_EXIST = 'Already registered for the event';
 const REGISTRANT_ALREADY_EXIST_MESSAGE = 'registrant.alreadyExist';
 const REGISTRANT_ALREADY_EXIST_CODE = 'registrant.alreadyExist';
@@ -119,6 +123,10 @@ module.exports = {
   EVENT_NOT_FOUND_MESSAGE,
   EVENT_NOT_FOUND_CODE,
   EVENT_NOT_FOUND_PARAM,
+
+  ERROR_IN_SENDING_MAIL,
+
+  INVALID_OTP,
 
   USER_ALREADY_MEMBER,
   USER_ALREADY_MEMBER_CODE,
