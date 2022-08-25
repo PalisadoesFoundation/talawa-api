@@ -12,8 +12,9 @@ Alphabets used in the custom nanoid function
 */
 const alphabets = '0123456789abcdefghijklmnopqrstuvwxyz';
 /*
+
 Custom nanoid function to generate a unique 10 characters request ID
-using the characters in alphabets string
+using the characters in alphabets variable
 */
 const nanoid = customAlphabet(alphabets, 10);
 
@@ -52,8 +53,8 @@ export const middleware = () => {
 
 /*
 Shorthand notations like 'T', 'U', 'S' are a common convention for writing
-generic types in typescript. Though you are free to use a bigger notation like
-'TypeOfThisGeneric' as well.
+generic types in typescript. Though you are free to use a bigger notations
+as well.
 */
 export const trace = async <T>(tracingId: string, method: () => T) => {
   await requestTracingNamespace.runAndReturn<T>(() => {

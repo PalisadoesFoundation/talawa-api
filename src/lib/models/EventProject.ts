@@ -3,10 +3,10 @@ import { Schema, Types, model, Model } from 'mongoose';
 export interface Interface_EventProject {
   title: string;
   description: string;
-  createdAt?: Date;
+  createdAt: Date;
   event: Types.ObjectId;
   creator: Types.ObjectId;
-  tasks?: Array<Types.ObjectId>;
+  tasks: Array<Types.ObjectId>;
   status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
 }
 

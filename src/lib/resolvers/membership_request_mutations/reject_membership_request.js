@@ -2,6 +2,18 @@ const { User, Organization, MembershipRequest } = require('../../models');
 const adminCheck = require('../functions/adminCheck');
 const { NotFoundError } = require('../../libraries/errors');
 const requestContext = require('../../libraries/request-context');
+const {
+  MEMBERSHIP_REQUEST_NOT_FOUND,
+  IN_PRODUCTION,
+  ORGANIZATION_NOT_FOUND,
+  USER_NOT_FOUND,
+  MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
+  MEMBERSHIP_REQUEST_NOT_FOUND_PARAM,
+  ORGANIZATION_NOT_FOUND_CODE,
+  ORGANIZATION_NOT_FOUND_PARAM,
+  USER_NOT_FOUND_CODE,
+  USER_NOT_FOUND_PARAM,
+} = require('../../../constants');
 
 module.exports = async (parent, args, context) => {
   //ensure membership request exists
@@ -10,9 +22,11 @@ module.exports = async (parent, args, context) => {
   });
   if (!membershipRequest) {
     throw new NotFoundError(
-      requestContext.translate('membershipRequest.notFound'),
-      'membershipRequest.notFound',
-      'membershipRequest'
+      !IN_PRODUCTION
+        ? MEMBERSHIP_REQUEST_NOT_FOUND
+        : requestContext.translate('membershipRequest.notFound'),
+      MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
+      MEMBERSHIP_REQUEST_NOT_FOUND_PARAM
     );
   }
 
@@ -22,9 +36,11 @@ module.exports = async (parent, args, context) => {
   });
   if (!org) {
     throw new NotFoundError(
-      requestContext.translate('organization.notFound'),
-      'organization.notFound',
-      'organization'
+      !IN_PRODUCTION
+        ? ORGANIZATION_NOT_FOUND
+        : requestContext.translate('organization.notFound'),
+      ORGANIZATION_NOT_FOUND_CODE,
+      ORGANIZATION_NOT_FOUND_PARAM
     );
   }
 
@@ -33,9 +49,11 @@ module.exports = async (parent, args, context) => {
   });
   if (!user) {
     throw new NotFoundError(
-      requestContext.translate('user.notFound'),
-      'user.notFound',
-      'user'
+      !IN_PRODUCTION
+        ? USER_NOT_FOUND
+        : requestContext.translate('user.notFound'),
+      USER_NOT_FOUND_CODE,
+      USER_NOT_FOUND_PARAM
     );
   }
 
@@ -51,7 +69,7 @@ module.exports = async (parent, args, context) => {
   org.overwrite({
     ...org._doc,
     membershipRequests: org._doc.membershipRequests.filter(
-      (request) => request._id !== membershipRequest.id
+      (request) => request._id.toString() !== membershipRequest._id.toString()
     ),
   });
 
@@ -61,7 +79,7 @@ module.exports = async (parent, args, context) => {
   user.overwrite({
     ...user._doc,
     membershipRequests: user._doc.membershipRequests.filter(
-      (request) => request._id !== membershipRequest.id
+      (request) => request._id.toString() !== membershipRequest._id.toString()
     ),
   });
 

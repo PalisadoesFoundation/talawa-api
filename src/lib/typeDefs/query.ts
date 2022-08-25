@@ -65,5 +65,8 @@ export const query = gql`
     plugin(orgId: ID!): [Plugin]
     adminPlugin(orgId: ID!): [Plugin]
     getlanguage(lang_code: String!): [Translation]
+
+    # For Plugins
+    getPlugins: [Plugin]
   }
 `;

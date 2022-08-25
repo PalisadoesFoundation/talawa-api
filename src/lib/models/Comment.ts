@@ -3,11 +3,11 @@ import { Interface_User } from './User';
 
 export interface Interface_Comment {
   text: string;
-  createdAt?: Date;
+  createdAt: Date;
   creator: PopulatedDoc<Interface_User>;
   post: PopulatedDoc<Interface_User>;
   likedBy: Array<PopulatedDoc<Interface_User>>;
-  likeCount?: number;
+  likeCount: number;
   status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
 }
 

@@ -1,65 +1,26 @@
-const { User, Plugin, PluginField, Organization } = require('../../models');
-const { UnauthorizedError, NotFoundError } = require('../../libraries/errors');
-const requestContext = require('../../libraries/request-context');
+const { Plugin } = require('../../models');
 
+/**
+ * @name createPlugin creates a Plugin and return the same
+ * @description creates a document of Plugin type and stores it in database
+ * @param  {any} parent parent of current request
+ * @param  {object} args payload provided with the request
+ * @param  {any} context context of entire application
+ */
+
+// eslint-disable-next-line no-unused-vars
 module.exports = async (parent, args, context) => {
-  let org = await Organization.findOne({
-    _id: args.plugin.orgId,
-  });
-
-  if (!org) {
-    throw new NotFoundError(
-      requestContext.translate('organization.notFound'),
-      'organization.notFound',
-      'organization'
-    );
-  }
-
-  const user = await User.findOne({
-    _id: context.userId,
-    pluginCreationAllowed: true,
-  });
-
-  if (!user) {
-    throw new NotFoundError(
-      requestContext.translate('user.notFound'),
-      'user.notFound',
-      'user'
-    );
-  }
-
-  const isSuperAdmin = user.userType === 'SUPERADMIN';
-  if (!isSuperAdmin) {
-    const isAdmin = org.admins.includes(user.id);
-    if (!isAdmin) {
-      throw new UnauthorizedError(
-        requestContext.translate('user.notAuthorized'),
-        'user.notAuthorized',
-        'userAuthorization'
-      );
-    }
-  }
-
-  let pluginAddnFields = [];
-  if (args.plugin.fields.length > 0) {
-    for (let i = 0; i < args.plugin.fields.length; i++) {
-      let pluginField = new PluginField({
-        key: args.plugin.fields[i].key,
-        value: args.plugin.fields[i].value,
-      });
-
-      pluginAddnFields.push(pluginField);
-    }
-  }
-
+  //create MongoDB document
   let plugin = new Plugin({
-    orgId: args.plugin.orgId,
-    pluginName: args.plugin.pluginName,
-    pluginKey: args.plugin.pluginKey,
-    additionalInfo: pluginAddnFields,
+    pluginName: args.pluginName,
+    pluginCreatedBy: args.pluginCreatedBy,
+    pluginDesc: args.pluginDesc,
+    pluginInstallStatus: args.pluginInstallStatus,
+    installedOrgs: args.installedOrgs,
   });
 
-  plugin = await plugin.save();
+  //store the plugin
+  plugin = await Plugin.save();
 
   return {
     ...plugin._doc,

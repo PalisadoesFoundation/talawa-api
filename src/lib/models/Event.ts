@@ -40,13 +40,15 @@ export interface Interface_Event {
   description: string;
   attendees?: string;
   location?: string;
+  latitude?: number;
+  longitude?: number;
   recurring: boolean;
   allDay: boolean;
   startDate: string;
   endDate?: string;
   startTime?: string;
   endTime?: string;
-  recurrance?: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY' | 'ONCE';
+  recurrance: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY' | 'ONCE';
   isPublic: boolean;
   isRegisterable: boolean;
   creator: PopulatedDoc<Interface_User>;
@@ -76,6 +78,14 @@ const eventSchema = new Schema<
   },
   location: {
     type: String,
+  },
+  latitude: {
+    type: Number,
+    required: false,
+  },
+  longitude: {
+    type: Number,
+    required: false,
   },
   recurring: {
     type: Boolean,

@@ -8,15 +8,15 @@ export interface Interface_Post {
   text: string;
   title?: string;
   status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
-  createdAt?: Date;
+  createdAt: Date;
   imageUrl?: string;
   videoUrl?: string;
   creator: PopulatedDoc<Interface_User>;
   organization: PopulatedDoc<Interface_Organization>;
   likedBy: Array<PopulatedDoc<Interface_User>>;
   comments: Array<PopulatedDoc<Interface_Comment>>;
-  likeCount?: number;
-  commentCount?: number;
+  likeCount: number;
+  commentCount: number;
 }
 
 const postSchema = new Schema<

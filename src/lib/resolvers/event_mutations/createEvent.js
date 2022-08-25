@@ -16,6 +16,10 @@ const {
   ORGANIZATION_NOT_AUTHORIZED_CODE,
   ORGANIZATION_NOT_AUTHORIZED_PARAM,
 } = require('../../../constants');
+const admin = require('firebase-admin');
+const { applicationDefault } = require('firebase-admin').credential;
+
+admin.initializeApp({ credential: applicationDefault() });
 
 const createEvent = async (parent, args, context) => {
   const user = await User.findOne({ _id: context.userId });
@@ -90,6 +94,21 @@ const createEvent = async (parent, args, context) => {
         },
       }
     );
+
+    const members = org.members;
+    for (let i = 0; i < members.length; i++) {
+      const member = members[i];
+      const memberUser = await User.findOne({ _id: member });
+      if (memberUser && memberUser.token) {
+        await admin.messaging().send({
+          token: memberUser.token,
+          notification: {
+            title: 'New Event',
+            body: `${user.firstName} has created a new event in ${org.name}`,
+          },
+        });
+      }
+    }
 
     return {
       ...newEvent._doc,

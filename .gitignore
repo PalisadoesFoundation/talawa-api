@@ -16,3 +16,5 @@ coverage/
 # Since it will only be needed in CI/CD and production environment it
 # should be generated on the fly at that time.
 dist/
+
+serviceAccountKey.json

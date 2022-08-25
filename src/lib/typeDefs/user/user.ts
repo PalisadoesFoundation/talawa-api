@@ -20,6 +20,8 @@ export const user = gql`
     image: String
     organizationUserBelongsTo: Organization
     pluginCreationAllowed: Boolean
+    adminApproved: Boolean
+    createdAt: String
   }
 
   type UserConnection {
@@ -46,6 +48,11 @@ export const user = gql`
     firstName: String
     lastName: String
     email: String
+  }
+
+  input UpdateUserTypeInput {
+    userType: String
+    id: ID
   }
 
   input UserWhereInput {

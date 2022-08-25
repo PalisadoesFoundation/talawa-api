@@ -3,11 +3,11 @@ import {
   defaultFieldResolver,
   GraphQLField,
   GraphQLInterfaceType,
+  GraphQLObjectType,
 } from 'graphql';
 import { UnauthenticatedError } from '../libraries/errors';
 import requestContext from '../libraries/request-context';
 import { userExists } from '../utilities';
-import { GraphQLObjectType } from 'graphql';
 
 export class RoleAuthorizationDirective extends SchemaDirectiveVisitor {
   visitFieldDefinition(

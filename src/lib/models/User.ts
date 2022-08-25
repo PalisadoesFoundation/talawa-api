@@ -7,7 +7,8 @@ import { Interface_Organization } from './Organization';
 
 export interface Interface_User {
   image?: string;
-  tokenVersion?: number;
+  token?: string;
+  tokenVersion: number;
   firstName: string;
   lastName: string;
   email: string;
@@ -25,6 +26,8 @@ export interface Interface_User {
   status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
   organizationUserBelongsTo?: PopulatedDoc<Interface_Organization>;
   pluginCreationAllowed: boolean;
+  adminApproved: boolean;
+  createdAt: Date;
 }
 
 const userSchema = new Schema<
@@ -34,6 +37,10 @@ const userSchema = new Schema<
 >({
   image: {
     type: String,
+  },
+  token: {
+    type: String,
+    required: false,
   },
   tokenVersion: {
     type: Number,
@@ -129,6 +136,14 @@ const userSchema = new Schema<
     type: Boolean,
     required: true,
     default: true,
+  },
+  adminApproved: {
+    type: Boolean,
+    default: false,
+  },
+  createdAt: {
+    type: Date,
+    default: () => new Date(Date.now()),
   },
 });
 

@@ -13,8 +13,7 @@ clsBluebird(requestContextNamespace);
 
 /*
 Shorthand notations like 'T', 'U', 'S' are a common convention for writing
-generic types in typescript. Though you are free to use a bigger notation like
-'TypeOfThisGeneric' as well.
+generic types in typescript. Though you are free to use a bigger notations as well.
 */
 const setRequestContextValue = <T>(key: string, value: T) => {
   return requestContextNamespace.set<T>(key, value);
@@ -43,8 +42,7 @@ export const middleware = () => {
 
 /*
 Shorthand notations like 'T', 'U', 'S' are a common convention for writing
-generic types in typescript. Though you are free to use a bigger notation like
-'TypeOfThisGeneric' as well.
+generic types in typescript. Though you are free to use a bigger notations as well.
 */
 
 /*

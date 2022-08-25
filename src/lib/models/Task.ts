@@ -6,7 +6,7 @@ export interface Interface_Task {
   title: string;
   description?: string;
   status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
-  createdAt?: Date;
+  createdAt: Date;
   deadline?: Date;
   event: PopulatedDoc<Interface_Event>;
   creator: PopulatedDoc<Interface_User>;
@@ -27,8 +27,8 @@ const taskSchema = new Schema<
   status: {
     type: String,
     required: true,
-    default: 'ACTIVE',
     enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
+    default: 'ACTIVE',
   },
   createdAt: {
     type: Date,

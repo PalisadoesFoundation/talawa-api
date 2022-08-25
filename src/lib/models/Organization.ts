@@ -16,7 +16,8 @@ export interface Interface_Organization {
   membershipRequests: Array<Types.ObjectId>;
   blockedUsers: Array<Types.ObjectId>;
   visibleInSearch?: boolean;
-  createdAt?: Date;
+  tags: Array<string>;
+  createdAt: Date;
 }
 
 const organizationSchema = new Schema<
@@ -94,6 +95,12 @@ const organizationSchema = new Schema<
     },
   ],
   visibleInSearch: Boolean,
+  tags: [
+    {
+      type: String,
+      required: false,
+    },
+  ],
   createdAt: {
     type: Date,
     default: () => new Date(Date.now()),

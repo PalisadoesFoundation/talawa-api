@@ -15,6 +15,8 @@ export const event = gql`
     isPublic: Boolean!
     isRegisterable: Boolean!
     location: String
+    latitude: Float
+    longitude: Float
     organization: Organization
     creator: User!
     registrants: [UserAttende]
@@ -49,6 +51,8 @@ export const event = gql`
     isPublic: Boolean!
     isRegisterable: Boolean!
     location: String
+    latitude: Float
+    longitude: Float
     organizationId: ID!
   }
 
@@ -80,6 +84,8 @@ export const event = gql`
     startDate: String
     endDate: String
     location: String
+    latitude: Float
+    longitude: Float
     allDay: Boolean
     startTime: String
     endTime: String

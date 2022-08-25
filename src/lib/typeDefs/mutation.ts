@@ -4,11 +4,17 @@ export const mutation = gql`
   type Mutation {
     signUp(data: UserInput!, file: Upload): AuthData!
     login(data: LoginInput!): AuthData!
+    otp(data: OTPInput!): OtpData!
+    recaptcha(data: RecaptchaVerification!): Boolean!
+    forgotPassword(data: ForgotPasswordData!): Boolean!
+    saveFcmToken(token: String): Boolean! @auth
     refreshToken(refreshToken: String!): ExtendSession!
     revokeRefreshTokenForUser(userId: String!): Boolean!
     updateLanguage(languageCode: String!): User! @auth
+    logout: Boolean! @auth
 
     updateUserProfile(data: UpdateUserInput, file: Upload): User! @auth
+    updateUserType(data: UpdateUserTypeInput!): Boolean! @auth
     createEvent(data: EventInput): Event! @auth
     removeEvent(id: ID!): Event! @auth
     registerForEvent(id: ID!): Event! @auth
@@ -21,6 +27,8 @@ export const mutation = gql`
       @auth
     removeOrganization(id: ID!): User! @auth
 
+    acceptAdmin(id: ID!): Boolean! @auth
+    rejectAdmin(id: ID!): Boolean! @auth
     createAdmin(data: UserAndOrganizationInput!): User! @auth
     removeAdmin(data: UserAndOrganizationInput!): User! @auth
     joinPublicOrganization(organizationId: ID!): User! @auth
@@ -78,9 +86,18 @@ export const mutation = gql`
     removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
     blockPluginCreationBySuperadmin(userId: ID!, blockUser: Boolean!): User!
       @auth
-    createPlugin(plugin: PluginInput!): Plugin! @auth
 
     createMessageChat(data: MessageChatInput!): MessageChat! @auth
     addLanguageTranslation(data: LanguageInput!): Language! @auth
+
+    createPlugin(
+      pluginName: String!
+      pluginCreatedBy: String!
+      pluginDesc: String!
+      pluginInstallStatus: Boolean!
+      installedOrgs: [ID!]
+    ): Plugin!
+    updatePluginStatus(id: ID!, status: Boolean!): Plugin!
+    updatePluginInstalledOrgs(id: ID!, orgId: ID!): Plugin!
   }
 `;

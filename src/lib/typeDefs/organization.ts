@@ -16,6 +16,7 @@ export const organization = gql`
     visibleInSearch: Boolean!
     apiUrl: String!
     createdAt: String
+    tags: [String!]!
   }
 
   type OrganizationInfoNode {
@@ -27,6 +28,7 @@ export const organization = gql`
     creator: User!
     visibleInSearch: Boolean!
     apiUrl: String!
+    tags: [String!]!
   }
 
   input OrganizationInput {

@@ -2,7 +2,7 @@ import { Schema, Types, model, Model } from 'mongoose';
 
 export interface Interface_MessageChat {
   message: string;
-  languageBarrier?: boolean;
+  languageBarrier: boolean;
   sender: Types.ObjectId;
   receiver: Types.ObjectId;
   createdAt: Date;

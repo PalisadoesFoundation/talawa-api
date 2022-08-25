@@ -4,7 +4,7 @@ export interface Interface_PluginField {
   key: string;
   value: string;
   status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
-  createdAt?: Date;
+  createdAt: Date;
 }
 
 const pluginFieldSchema = new Schema<

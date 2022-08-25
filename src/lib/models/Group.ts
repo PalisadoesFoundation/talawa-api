@@ -3,7 +3,7 @@ import { Schema, Types, model, Model } from 'mongoose';
 export interface Interface_Group {
   title: string;
   description?: string;
-  createdAt?: Date;
+  createdAt: Date;
   organization: Types.ObjectId;
   status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
   admins: Array<Types.ObjectId>;

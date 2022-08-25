@@ -1,62 +1,51 @@
 import { Schema, Types, model, Model } from 'mongoose';
 
 export interface Interface_Plugin {
-  orgId: Types.ObjectId;
   pluginName: string;
-  pluginKey?: string;
-  pluginStatus: 'ACTIVE' | 'BLOCKED' | 'DELETED';
-  pluginType: 'UNIVERSAL' | 'PRIVATE';
-  adminAccessAllowed: boolean;
-  additionalInfo: Array<Types.ObjectId>;
-  createdAt?: Date;
+  pluginCreatedBy: string;
+  pluginDesc: string;
+  pluginInstallStatus: boolean;
+  installedOrgs: Array<Types.ObjectId>;
 }
 
+/**
+ * @name pluginSchema
+ * @description Schema for MongoDB database
+ * @param  {string} pluginName Name of the plugin preferred having underscores "_"
+ * @param {string} pluginCreatedBy name of the plugin creator ex.John Doe
+ * @param {string} pluginDesc brief description of the plugin and it's features
+ * @param {Boolean} pluginInstallStatus shows if the plugin is enabled or not
+ * @param {String[]} installedOrgs list of orgIDs on which the plugin is enabled
+ */
 const pluginSchema = new Schema<
   Interface_Plugin,
   Model<Interface_Plugin>,
   Interface_Plugin
 >({
-  orgId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Organization',
-    required: true,
-  },
   pluginName: {
     type: String,
     required: true,
   },
-  pluginKey: {
-    type: String,
-    required: false,
-  },
-  pluginStatus: {
+  pluginCreatedBy: {
     type: String,
     required: true,
-    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
-    default: 'ACTIVE',
   },
-  pluginType: {
+  pluginDesc: {
     type: String,
     required: true,
-    enum: ['UNIVERSAL', 'PRIVATE'],
-    default: 'UNIVERSAL',
   },
-  adminAccessAllowed: {
+  pluginInstallStatus: {
     type: Boolean,
     required: true,
-    default: true,
+    default: false,
   },
-  additionalInfo: [
+  installedOrgs: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'PluginField',
       required: false,
+      default: [],
     },
   ],
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
 });
 
-export const Plugin = model<Interface_Plugin>('Plugin', pluginSchema);
+export const Plugin = model<Interface_Plugin>('PluginTemp', pluginSchema);

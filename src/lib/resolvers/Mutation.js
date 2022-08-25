@@ -2,6 +2,11 @@ const signUp = require('./auth_mutations/signup');
 const login = require('./auth_mutations/login');
 const refreshToken = require('./auth_mutations/refresh_token');
 const revokeRefreshTokenForUser = require('./auth_mutations/revoke_refresh_token_for_user');
+const otp = require('./auth_mutations/otp');
+const recaptcha = require('./auth_mutations/recaptcha');
+const forgotPassword = require('./auth_mutations/forgotPassword');
+const saveFcmToken = require('./auth_mutations/saveFcmToken');
+const logout = require('./auth_mutations/logout');
 
 const createEvent = require('./event_mutations/createEvent');
 const removeEvent = require('./event_mutations/removeEvent');
@@ -15,6 +20,7 @@ const joinPublicOrganization = require('./member_mutations/join_public_organizat
 const leaveOrganization = require('./member_mutations/leave_organization');
 const removeMember = require('./member_mutations/removeMember');
 const updateUserProfile = require('./user_mutations/updateUserProfile');
+const updateUserType = require('./user_mutations/updateUserType');
 const registerForEvent = require('./event_mutations/registerForEvent');
 const unregisterForEventByUser = require('./event_mutations/unregisterForEvent');
 // const createEventProject = require("./event_project_mutations/createProject")
@@ -27,6 +33,7 @@ const updateTask = require('./project_task_mutations/updateTask');
 const adminRemovePost = require('./admin_mutations/admin-remove-post');
 const adminRemoveEvent = require('./admin_mutations/admin-remove-event');
 const adminRemoveGroup = require('./admin_mutations/admin-remove-group-chat');
+const { acceptAdmin, rejectAdmin } = require('./admin_mutations/adminRequest');
 
 const createPost = require('./post_mutations/createPost');
 const removePost = require('./post_mutations/removePost');
@@ -61,9 +68,11 @@ const removeUserFromGroupChat = require('./group_chat_mutations/removeUserFromGr
 const updateLanguage = require('./language_mutation/updateLanguage');
 const blockPluginCreationBySuperadmin = require('../resolvers/user_mutations/blockForPlugin');
 
-const createPlugin = require('./plugin_mutations/createPlugin');
 const createMessageChat = require('./message_chat_mutation/createMessageChat');
 const addLanguageTranslation = require('./language_maintainer_mutation/addLanguageTranslation');
+const createPlugin = require('./plugin_mutations/createPlugin');
+const updatePluginStatus = require('./plugin_mutations/updatePluginStatus');
+const updatePluginInstalledOrgs = require('./plugin_mutations/updatePluginInstalledOrgs');
 
 const Mutation = {
   signUp,
@@ -71,8 +80,14 @@ const Mutation = {
   refreshToken,
   revokeRefreshTokenForUser,
   updateLanguage,
+  otp,
+  recaptcha,
+  forgotPassword,
+  saveFcmToken,
+  logout,
 
   updateUserProfile,
+  updateUserType,
   createOrganization,
 
   createEvent,
@@ -80,6 +95,8 @@ const Mutation = {
   removeEvent,
   updateEvent,
   unregisterForEventByUser,
+  acceptAdmin,
+  rejectAdmin,
 
   createAdmin,
   removeAdmin,
@@ -131,10 +148,12 @@ const Mutation = {
   addUserToGroupChat,
   removeUserFromGroupChat,
   blockPluginCreationBySuperadmin,
-  createPlugin,
 
   createMessageChat,
   addLanguageTranslation,
+  createPlugin,
+  updatePluginStatus,
+  updatePluginInstalledOrgs,
 };
 
 module.exports = Mutation;

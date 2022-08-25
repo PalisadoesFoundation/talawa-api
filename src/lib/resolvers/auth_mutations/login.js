@@ -7,6 +7,7 @@ const {
 const { NotFoundError, ValidationError } = require('../../libraries/errors');
 const requestContext = require('../../libraries/request-context');
 const copyToClipboard = require('../functions/copyToClipboard');
+const { androidFirebaseOptions, iosFirebaseOptions } = require('../../config');
 
 module.exports = async (parent, args) => {
   const user = await User.findOne({ email: args.data.email.toLowerCase() })
@@ -57,5 +58,7 @@ module.exports = async (parent, args) => {
     },
     accessToken,
     refreshToken,
+    androidFirebaseOptions,
+    iosFirebaseOptions,
   };
 };

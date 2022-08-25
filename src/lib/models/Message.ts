@@ -4,7 +4,7 @@ export interface Interface_Message {
   text: string;
   imageUrl?: string;
   videoUrl?: string;
-  createdAt?: Date;
+  createdAt: Date;
   creator: Types.ObjectId;
   group: Types.ObjectId;
   status: 'ACTIVE' | 'BLOCKED' | 'DELETED';

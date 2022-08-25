@@ -1,6 +1,13 @@
 const { User, Organization, MembershipRequest } = require('../../models');
 const { NotFoundError, UnauthorizedError } = require('../../libraries/errors');
 const requestContext = require('../../libraries/request-context');
+const {
+  IN_PRODUCTION,
+  MEMBERSHIP_REQUEST_NOT_FOUND,
+  ORGANIZATION_NOT_FOUND,
+  USER_NOT_FOUND,
+  USER_NOT_AUTHORIZED,
+} = require('../../../constants');
 
 module.exports = async (parent, args, context) => {
   //ensure request exists
@@ -9,7 +16,9 @@ module.exports = async (parent, args, context) => {
   });
   if (!membershipRequest) {
     throw new NotFoundError(
-      requestContext.translate('membershipRequest.notFound'),
+      !IN_PRODUCTION
+        ? MEMBERSHIP_REQUEST_NOT_FOUND
+        : requestContext.translate('membershipRequest.notFound'),
       'membershipRequest.notFound',
       'membershipRequest'
     );
@@ -21,7 +30,9 @@ module.exports = async (parent, args, context) => {
   });
   if (!org) {
     throw new NotFoundError(
-      requestContext.translate('organization.notFound'),
+      !IN_PRODUCTION
+        ? ORGANIZATION_NOT_FOUND
+        : requestContext.translate('organization.notFound'),
       'organization.notFound',
       'organization'
     );
@@ -31,7 +42,9 @@ module.exports = async (parent, args, context) => {
   const user = await User.findOne({ _id: context.userId });
   if (!user) {
     throw new NotFoundError(
-      requestContext.translate('user.notFound'),
+      !IN_PRODUCTION
+        ? USER_NOT_FOUND
+        : requestContext.translate('user.notFound'),
       'user.notFound',
       'user'
     );
@@ -41,7 +54,9 @@ module.exports = async (parent, args, context) => {
   const owner = user.id === membershipRequest.user.toString();
   if (!owner) {
     throw new UnauthorizedError(
-      requestContext.translate('user.notAuthorized'),
+      !IN_PRODUCTION
+        ? USER_NOT_AUTHORIZED
+        : requestContext.translate('user.notAuthorized'),
       'user.notAuthorized',
       'userAuthorization'
     );
@@ -70,6 +85,6 @@ module.exports = async (parent, args, context) => {
 
   await user.save();
 
-  //return membershipship request
+  //return membership request
   return membershipRequest._doc;
 };

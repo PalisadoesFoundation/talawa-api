@@ -84,6 +84,9 @@ export const POST_NOT_FOUND_MESSAGE = 'post.notFound';
 export const POST_NOT_FOUND_CODE = 'post.notFound';
 export const POST_NOT_FOUND_PARAM = 'post';
 
+export const ERROR_IN_SENDING_MAIL = 'Error in sending mail';
+export const INVALID_OTP = 'Invalid OTP';
+
 export const STATUS_ACTIVE = 'ACTIVE';
 
 export const IN_PRODUCTION = process.env.NODE_ENV === 'production';
@@ -165,6 +168,9 @@ export default {
   COMMENT_NOT_FOUND_MESSAGE,
   COMMENT_NOT_FOUND_CODE,
   COMMENT_NOT_FOUND_PARAM,
+
+  ERROR_IN_SENDING_MAIL,
+  INVALID_OTP,
 
   STATUS_ACTIVE,
 

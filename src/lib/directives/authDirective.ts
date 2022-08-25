@@ -1,6 +1,10 @@
 import { SchemaDirectiveVisitor } from 'apollo-server-express';
-import { GraphQLInterfaceType, GraphQLObjectType } from 'graphql';
-import { defaultFieldResolver, GraphQLField } from 'graphql';
+import {
+  GraphQLInterfaceType,
+  GraphQLObjectType,
+  defaultFieldResolver,
+  GraphQLField,
+} from 'graphql';
 import { UnauthenticatedError } from '../libraries/errors';
 import requestContext from '../libraries/request-context';
 
