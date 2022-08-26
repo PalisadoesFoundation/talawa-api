@@ -86,6 +86,7 @@ const DATABASE_CONNECTION_FAIL = 'Failed to connect to database';
 const STATUS_ACTIVE = 'ACTIVE';
 
 const IN_PRODUCTION = process.env.NODE_ENV === 'production';
+const IN_TEST = process.env.NODE_ENV === 'test';
 
 if (process.env.NODE_ENV === 'test') {
   URL = 'http://localhost:4000/graphql';
@@ -96,6 +97,7 @@ module.exports = {
 
   URL,
   IN_PRODUCTION,
+  IN_TEST,
 
   USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_MESSAGE,
