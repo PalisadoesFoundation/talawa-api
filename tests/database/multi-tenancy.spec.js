@@ -59,8 +59,8 @@ beforeAll(async () => {
   await admin.save();
 
   const tenant = new Tenant({
-    organization: organizationId,
     url: tenantUrl,
+    organization: organizationId,
   });
   await tenant.save();
 });

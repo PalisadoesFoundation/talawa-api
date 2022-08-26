@@ -1,5 +1,5 @@
 const Database = require('../../lib/Database/index');
-const User = require('../../lib/Database/MongoImplementation/schema/User');
+//const User = require('../../lib/Database/MongoImplementation/schema/User');
 const { DATABASE_CONNECTION_FAIL } = require('../../constants');
 
 const firstUrl = 'mongodb://localhost:27017/db1?retryWrites=true&w=majority';
@@ -9,9 +9,7 @@ const secondUrl = 'mongodb://localhost:27017/db2?retryWrites=true&w=majority';
 // with all valid schema parts.
 const firstDB = new Database(firstUrl);
 const secondDB = new Database(secondUrl, {
-  schema: {
-    User,
-  },
+  schema: ['User'],
 });
 
 const FirstUserObject = firstDB.User;

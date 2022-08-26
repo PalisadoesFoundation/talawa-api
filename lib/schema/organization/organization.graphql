@@ -41,6 +41,7 @@ module.exports = `
     isPublic: Boolean! 
     visibleInSearch: Boolean!
     apiUrl:String
+    schema: [String]
     tags: [String]
   }
 
