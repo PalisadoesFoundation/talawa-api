@@ -114,7 +114,8 @@ const apolloServer = new ApolloServer({
     auth: AuthenticationDirective,
     role: RoleAuthorizationDirective,
   },
-  context: ({ req, res, connection }) => {
+  context: async ({ req, res, connection }) => {
+    const tenant = await tenantCtx(req);
     if (connection) {
       return {
         ...connection,
@@ -124,7 +125,7 @@ const apolloServer = new ApolloServer({
       };
     } else {
       return {
-        ...tenantCtx(req),
+        ...tenant,
         ...isAuth(req),
         pubsub,
         res,
