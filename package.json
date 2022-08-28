@@ -83,6 +83,7 @@
     "yarn": "^1.22.10"
   },
   "devDependencies": {
+    "easygraphql-tester": "^5.1.6",
     "eslint": "^7.29.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-prettier": "^8.3.0",
