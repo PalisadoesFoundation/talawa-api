@@ -19,6 +19,8 @@ module.exports = `
     image: String
     organizationUserBelongsTo: Organization
     pluginCreationAllowed: Boolean
+    adminApproved: Boolean
+    createdAt:String
   }
 
   type UserConnection {
@@ -45,6 +47,11 @@ module.exports = `
     firstName: String
     lastName: String
     email: String
+  }
+
+  input UpdateUserTypeInput {
+    userType: String
+    id: ID
   }
 
   input UserWhereInput {
