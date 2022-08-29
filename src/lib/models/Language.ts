@@ -35,7 +35,7 @@ const languageModelSchema = new Schema<
   },
 });
 
-interface Interface_Language {
+export interface Interface_Language {
   en: string;
   translation: Array<Interface_LanguageModel>;
   createdAt: Date;
