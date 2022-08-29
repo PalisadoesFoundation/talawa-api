@@ -1,6 +1,6 @@
-const ncp = require('copy-paste');
+import ncp from 'copy-paste';
 
-module.exports = (text) => {
+export const copyToClipboard = (text: string) => {
   // Only copies in development or test mode
   if (process.env.NODE_ENV !== 'production') {
     ncp.copy(text);

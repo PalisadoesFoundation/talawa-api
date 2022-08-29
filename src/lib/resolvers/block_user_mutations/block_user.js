@@ -1,4 +1,4 @@
-const adminCheck = require('../functions/adminCheck');
+const { adminCheck } = require('../../utilities');
 const { userExists, organizationExists } = require('../../utilities');
 const { UnauthorizedError } = require('../../libraries/errors');
 const requestContext = require('../../libraries/request-context');

@@ -1,4 +1,4 @@
-const adminCheck = require('../functions/adminCheck');
+const { adminCheck } = require('../../utilities');
 const { MembershipRequest } = require('../../models');
 const { userExists, organizationExists } = require('../../utilities');
 const { NotFoundError, ConflictError } = require('../../libraries/errors');

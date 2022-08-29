@@ -1,5 +1,5 @@
 const { User, GroupChat } = require('../../models');
-const adminCheck = require('../functions/adminCheck');
+const { adminCheck } = require('../../utilities');
 const { organizationExists } = require('../../utilities');
 const { NotFoundError, ConflictError } = require('../../libraries/errors');
 const requestContext = require('../../libraries/request-context');

@@ -2,7 +2,7 @@ const { NotFoundError } = require('../../libraries/errors');
 const { User } = require('../../models');
 const { userExists } = require('../../utilities');
 const requestContext = require('../../libraries/request-context');
-const superAdminCheck = require('../../resolvers/functions/superAdminCheck');
+const { superAdminCheck } = require('../../utilities');
 
 module.exports = async (parent, args, context) => {
   let userFound = await userExists(args.userId);

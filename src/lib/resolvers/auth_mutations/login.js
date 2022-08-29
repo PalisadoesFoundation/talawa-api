@@ -6,7 +6,7 @@ const {
 } = require('../../utilities/auth');
 const { NotFoundError, ValidationError } = require('../../libraries/errors');
 const requestContext = require('../../libraries/request-context');
-const copyToClipboard = require('../functions/copyToClipboard');
+const { copyToClipboard } = require('../../utilities');
 const { androidFirebaseOptions, iosFirebaseOptions } = require('../../config');
 
 module.exports = async (parent, args) => {

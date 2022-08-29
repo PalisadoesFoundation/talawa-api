@@ -1,16 +1,17 @@
-const { UnauthorizedError } = require('../../libraries/errors');
-const requestContext = require('../../libraries/request-context');
-const {
-  IN_PRODUCTION,
+import { UnauthorizedError } from '../libraries/errors';
+import requestContext from '../libraries/request-context';
+import {
   USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_PARAM,
-} = require('../../../constants');
+  IN_PRODUCTION,
+} from '../../constants';
 
-const adminCheck = (context, org) => {
-  const isAdmin = org.admins.includes(context.userId);
-  if (!isAdmin) {
+export const creatorCheck = (context: any, org: any) => {
+  const isCreator = String(org.creator) === context.userId;
+
+  if (!isCreator) {
     throw new UnauthorizedError(
       !IN_PRODUCTION
         ? USER_NOT_AUTHORIZED
@@ -20,5 +21,3 @@ const adminCheck = (context, org) => {
     );
   }
 };
-
-module.exports = adminCheck;

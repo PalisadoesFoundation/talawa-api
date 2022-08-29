@@ -1,5 +1,5 @@
 const { DirectChat, DirectChatMessage } = require('../../models');
-const adminCheck = require('../functions/adminCheck');
+const { adminCheck } = require('../../utilities');
 const { organizationExists } = require('../../utilities/organizationExists');
 const { NotFoundError } = require('../../libraries/errors');
 const requestContext = require('../../libraries/request-context');

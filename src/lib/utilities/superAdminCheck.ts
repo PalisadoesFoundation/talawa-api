@@ -1,8 +1,9 @@
-const { UnauthorizedError } = require('../../libraries/errors');
-const requestContext = require('../../libraries/request-context');
+import { UnauthorizedError } from '../libraries/errors';
+import requestContext from '../libraries/request-context';
 
-const superAdminCheck = (context, user) => {
+export const superAdminCheck = (context: any, user: any) => {
   const isSuperAdmin = user.userType === 'SUPERADMIN';
+
   if (!isSuperAdmin) {
     throw new UnauthorizedError(
       process.env.NODE_ENV !== 'production'
@@ -13,5 +14,3 @@ const superAdminCheck = (context, user) => {
     );
   }
 };
-
-module.exports = superAdminCheck;

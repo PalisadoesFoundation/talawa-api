@@ -1,5 +1,5 @@
 const { User, Organization, Event } = require('../../models');
-const adminCheck = require('../functions/adminCheck');
+const { adminCheck } = require('../../utilities');
 const { NotFoundError } = require('../../libraries/errors');
 const requestContext = require('../../libraries/request-context');
 

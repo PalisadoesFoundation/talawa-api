@@ -5,7 +5,7 @@ const {
   Comment,
   MembershipRequest,
 } = require('../../models');
-const creatorCheck = require('../functions/creatorCheck');
+const { creatorCheck } = require('../../utilities');
 const { NotFoundError } = require('../../libraries/errors');
 const requestContext = require('../../libraries/request-context');
 const {

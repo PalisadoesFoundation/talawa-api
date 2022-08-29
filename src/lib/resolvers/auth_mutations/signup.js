@@ -7,7 +7,7 @@ const {
   createRefreshToken,
   uploadImage,
 } = require('../../utilities');
-const copyToClipboard = require('../functions/copyToClipboard.js');
+const { copyToClipboard } = require('../../utilities');
 
 module.exports = async (parent, args) => {
   const emailTaken = await User.findOne({

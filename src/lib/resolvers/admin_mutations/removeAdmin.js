@@ -1,5 +1,5 @@
 const { User, Organization } = require('../../models');
-const creatorCheck = require('../functions/creatorCheck');
+const { creatorCheck } = require('../../utilities');
 const { NotFoundError, UnauthorizedError } = require('../../libraries/errors');
 const requestContext = require('../../libraries/request-context');
 const {
