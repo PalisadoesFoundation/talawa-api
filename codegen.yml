@@ -12,6 +12,10 @@ generates:
       - typescript
       - typescript-resolvers
     config:
+      # Makes the info argument passed to the resolver functions optional
+      optionalInfoArgument: true
+      # Makes the resolver function callable
+      makeResolverTypeCallable: true
       # Mappers lets us provide database model types to be used in generated graphql typescript types instead of graphql types.
       # This is because graphql types and database types don't always sync with each other within a graphql application.
       mappers:
