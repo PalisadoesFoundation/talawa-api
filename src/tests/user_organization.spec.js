@@ -10,12 +10,12 @@ const {
   USER_NOT_AUTHORIZED_CODE,
   USER_ALREADY_MEMBER_PARAM,
 } = require('../constants');
-const getToken = require('./functions/getToken');
+const { getAccessToken } = require('./helperFunctions');
 
 let token;
 beforeAll(async () => {
   let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
-  token = await getToken(generatedEmail);
+  token = await getAccessToken(generatedEmail);
 });
 
 let createdOrgId = 'test';

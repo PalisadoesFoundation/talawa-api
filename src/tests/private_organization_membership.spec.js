@@ -1,12 +1,12 @@
 const axios = require('axios');
 const shortid = require('shortid');
 const { URL } = require('../constants');
-const getToken = require('./functions/getToken');
+const { getAccessToken } = require('./helperFunctions');
 
 let token;
 beforeAll(async () => {
   let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
-  token = await getToken(generatedEmail);
+  token = await getAccessToken(generatedEmail);
 });
 
 describe('Private Organization Membership Tests', () => {

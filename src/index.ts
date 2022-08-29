@@ -94,6 +94,7 @@ const httpServer = http.createServer(app);
 
 const apolloServer = new ApolloServer({
   typeDefs,
+  // @ts-ignore
   resolvers,
   validationRules: [depthLimit(5)],
   schemaDirectives: {

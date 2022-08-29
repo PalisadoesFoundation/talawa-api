@@ -1,13 +1,13 @@
 const axios = require('axios');
 const { URL } = require('../constants');
-const getToken = require('./functions/getToken');
+const { getAccessToken } = require('./helperFunctions');
 const mongoose = require('mongoose');
 const shortid = require('shortid');
 
 let token;
 beforeAll(async () => {
   let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
-  token = await getToken(generatedEmail);
+  token = await getAccessToken(generatedEmail);
 });
 
 describe('newsfeed resolvers', () => {

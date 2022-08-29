@@ -1,16 +1,15 @@
 const axios = require('axios');
 const shortid = require('shortid');
 const { URL } = require('../constants');
-const getToken = require('./functions/getToken');
-const getUserId = require('./functions/getUserId');
+const { getAccessToken, getUserIdFromLogin } = require('./helperFunctions');
 
 let token;
 let userId;
 
 beforeAll(async () => {
   let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
-  token = await getToken(generatedEmail);
-  userId = await getUserId(generatedEmail);
+  token = await getAccessToken(generatedEmail);
+  userId = await getUserIdFromLogin(generatedEmail);
 });
 
 describe('chat resolvers', () => {
