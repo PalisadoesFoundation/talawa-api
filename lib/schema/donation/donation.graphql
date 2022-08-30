@@ -1,0 +1,10 @@
+module.exports = `
+  # For Donation 
+     type Donation {
+        _id: ID!
+        userId: ID!
+        payPalId: String!
+        nameOfUser: String!
+        amount: Int!
+    }
+`
