@@ -12,7 +12,7 @@ const plugins = require("./plugin/plugin.graphql");
 const pluginfields = require("./plugin/pluginField.graphql");
 const message = require("./chats/message.graphql");
 const language = require("./Language/lang.graphql");
-
+const donation = require("./donation/donation.graphql")
 const typeDefs = gql`
   directive @auth on FIELD_DEFINITION
   directive @role(requires: UserType) on FIELD_DEFINITION
@@ -54,6 +54,7 @@ const typeDefs = gql`
   ${pluginfields}
   ${message}
   ${language}
+  ${donation}
 
   type Subscription {
     messageSentToDirectChat: DirectChatMessage

@@ -46,5 +46,6 @@ module.exports = `
 
     # For Plugins 
     getPlugins: [Plugin]
+    getDonations: [Donation]
   }
 `
