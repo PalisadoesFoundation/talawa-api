@@ -61,6 +61,9 @@ const typeDefs = gql`
     messageSentToGroupChat: GroupChatMessage
     directMessageChat: MessageChat
   }
+  type DeletePayload{
+    success : Boolean!
+  }
 `
 
 
