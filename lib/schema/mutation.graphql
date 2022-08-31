@@ -84,7 +84,7 @@ module.exports = `
     updatePluginStatus(id: ID!, status: Boolean!) : Plugin!
     updatePluginInstalledOrgs(id: ID! ,orgId: ID!) :Plugin! 
 
-    createDonation(userId: ID!, payPalId: ID! , nameOfUser: String! , amount: Int! ): Donation!
+    createDonation(userId: ID!,orgId : ID!, payPalId: ID! , nameOfUser: String! , amount: Float!, nameOfOrg : String! ): Donation!
   }
   
 `
