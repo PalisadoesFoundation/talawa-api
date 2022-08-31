@@ -3,8 +3,10 @@ module.exports = `
      type Donation {
         _id: ID!
         userId: ID!
+        orgId : ID!
         payPalId: String!
         nameOfUser: String!
-        amount: Int!
+        nameOfOrg : String!
+        amount: Float!
     }
 `
