@@ -29,10 +29,9 @@ jobs:
     strategy:
       matrix:
         node-version: [14.x]
-        mongodb-version: ['4.4']
     services:
       mongo:
-        image: mongo
+        image: mongo:4.4
         options: >-
                 --health-cmd mongo
                 --health-interval 10s
