@@ -74,20 +74,14 @@ jobs:
     strategy:
       matrix:
         node-version: [14.x]
-        mongodb-version: ['4.4']
     services:
       mongo:
-        image: mongo
+        image: mongo:4.4
         options: >-
                 --health-cmd mongo
                 --health-interval 10s
                 --health-timeout 5s
                 --health-retries 10
-                --health-start-period 25s
-        env:
-          MONGO_INITDB_ROOT_USERNAME: test
-          MONGO_INITDB_ROOT_PASSWORD: password
-          MONGO_INITDB_DATABASE: talawa-test-db
         ports:
           - 27017:27017
     env:
