@@ -59,8 +59,8 @@ module.exports = `
     apiUrl:String
     schema: [String]
     tags: [String]
-    customScheme: Boolean!
-    functionality: FunctionalityInput! 
+    customScheme: Boolean
+    functionality: FunctionalityInput 
   }
 
   
