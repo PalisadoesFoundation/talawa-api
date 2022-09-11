@@ -20,6 +20,7 @@ module.exports = `
     apiUrl:String!
     createdAt:String
     tags: [String]
+    functionality: Functionality!
   }
 
   type OrganizationInfoNode {
@@ -33,6 +34,21 @@ module.exports = `
     apiUrl:String!
   }
 
+  input FunctionalityInput {
+    DirectChat: Boolean!
+    Posts: Boolean!
+    Events: Boolean!
+    Groups: Boolean! 
+    GroupChats: Boolean!
+  }
+  type Functionality {
+    DirectChat: Boolean!
+    Posts: Boolean!
+    Events: Boolean!
+    Groups: Boolean! 
+    GroupChats: Boolean!
+  }
+
   input OrganizationInput {
     name:String!
     description: String!
@@ -41,7 +57,10 @@ module.exports = `
     isPublic: Boolean! 
     visibleInSearch: Boolean!
     apiUrl:String
+    schema: [String]
     tags: [String]
+    customScheme: Boolean
+    functionality: FunctionalityInput 
   }
 
   

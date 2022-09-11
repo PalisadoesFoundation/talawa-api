@@ -21,6 +21,7 @@ const Query = require('./lib/resolvers/Query');
 const Mutation = require('./lib/resolvers/Mutation');
 const typeDefs = require('./lib/schema/schema.graphql');
 const isAuth = require('./lib/middleware/is-auth');
+const tenantCtx = require('./lib/helper_functions/tenantCtx');
 const database = require('./db.js');
 const Organization = require('./lib/resolvers/Organization');
 const MembershipRequest = require('./lib/resolvers/MembershipRequest');
@@ -113,7 +114,8 @@ const apolloServer = new ApolloServer({
     auth: AuthenticationDirective,
     role: RoleAuthorizationDirective,
   },
-  context: ({ req, res, connection }) => {
+  context: async ({ req, res, connection }) => {
+    const tenant = await tenantCtx(req);
     if (connection) {
       return {
         ...connection,
@@ -123,6 +125,7 @@ const apolloServer = new ApolloServer({
       };
     } else {
       return {
+        ...tenant,
         ...isAuth(req),
         pubsub,
         res,
