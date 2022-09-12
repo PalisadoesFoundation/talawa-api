@@ -14,9 +14,10 @@ const message = require("./chats/message.graphql");
 const language = require("./Language/lang.graphql");
 
 const typeDefs = gql`
+  scalar Upload
   directive @auth on FIELD_DEFINITION
   directive @role(requires: UserType) on FIELD_DEFINITION
-
+  
   type Message {
     _id: ID!
     text: String
@@ -39,6 +40,12 @@ const typeDefs = gql`
     createdAt:String
     organization: Organization!
     admins: [User]
+  }
+  type FileUploadResponse {
+  filename: String!
+  mimetype: String!
+  encoding: String!
+  url: String!
   }
   
   ${mutation}
