@@ -5,8 +5,7 @@ import {
   defaultFieldResolver,
   GraphQLField,
 } from 'graphql';
-import { UnauthenticatedError } from '../libraries/errors';
-import requestContext from '../libraries/request-context';
+import { errors, requestContext } from '../libraries';
 
 export class AuthenticationDirective extends SchemaDirectiveVisitor {
   visitFieldDefinition(
@@ -24,7 +23,7 @@ export class AuthenticationDirective extends SchemaDirectiveVisitor {
 
     field.resolve = async (root, args, context, info) => {
       if (context.expired || !context.isAuth)
-        throw new UnauthenticatedError(
+        throw new errors.UnauthenticatedError(
           requestContext.translate('user.notAuthenticated'),
           'user.notAuthenticated',
           'userAuthentication'

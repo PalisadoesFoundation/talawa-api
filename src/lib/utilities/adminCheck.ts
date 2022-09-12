@@ -1,5 +1,5 @@
-import { UnauthorizedError } from '../libraries/errors';
-import requestContext from '../libraries/request-context';
+import { Types } from 'mongoose';
+import { errors, requestContext } from '../libraries';
 import {
   IN_PRODUCTION,
   USER_NOT_AUTHORIZED,
@@ -7,13 +7,19 @@ import {
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_PARAM,
 } from '../../constants';
+import { Interface_Organization } from '../models';
 
-export const adminCheck = (context: any, org: any) => {
-  const isAdmin = org.admins.includes(context.userId);
+export const adminCheck = (
+  userId: string | Types.ObjectId,
+  organization: Interface_Organization
+) => {
+  const userIsOrganizationAdmin = organization.admins.some(
+    (admin) => admin.toString() === userId.toString()
+  );
 
-  if (!isAdmin) {
-    throw new UnauthorizedError(
-      !IN_PRODUCTION
+  if (userIsOrganizationAdmin === false) {
+    throw new errors.UnauthorizedError(
+      IN_PRODUCTION !== true
         ? USER_NOT_AUTHORIZED
         : requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
       USER_NOT_AUTHORIZED_CODE,

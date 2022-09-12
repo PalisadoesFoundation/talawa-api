@@ -1,6 +1,5 @@
 import { imageHash } from 'image-hash';
-import { ValidationError } from '../libraries/errors';
-import requestContext from '../libraries/request-context';
+import { requestContext, errors } from '../libraries';
 
 interface UrlRequestObject {
   encoding?: string | null;
@@ -13,9 +12,9 @@ interface BufferObject {
   name?: string;
 }
 
-export type Type_OldSrc = string | UrlRequestObject | BufferObject;
+export type Type_ImagePath = string | UrlRequestObject | BufferObject;
 
-const getImageHash = (oldSrc: Type_OldSrc) => {
+const getImageHash = (oldSrc: Type_ImagePath) => {
   return new Promise((resolve, reject) => {
     imageHash(oldSrc, 16, true, (error: Error, data: any) => {
       if (error) {
@@ -28,18 +27,18 @@ const getImageHash = (oldSrc: Type_OldSrc) => {
 };
 
 export const reuploadDuplicateCheck = async (
-  imageJustUploadedPath: Type_OldSrc,
-  itemImage: Type_OldSrc
+  oldImagePath: Type_ImagePath | null,
+  newImagePath: Type_ImagePath
 ) => {
   /*
   This function checks whether a user is trying to re-upload the same profile picture
-  or an org is trying to re-upload the same org image 
+  or an organization is trying to re-upload the same organization image 
   */
   try {
-    if (itemImage) {
-      let oldImageHash = await getImageHash(itemImage);
+    if (oldImagePath) {
+      let oldImageHash = await getImageHash(oldImagePath);
 
-      let newImageHash = await getImageHash(imageJustUploadedPath);
+      let newImageHash = await getImageHash(newImagePath);
 
       return oldImageHash === newImageHash;
     }
@@ -48,7 +47,7 @@ export const reuploadDuplicateCheck = async (
   } catch (error) {
     console.error(error);
 
-    throw new ValidationError(
+    throw new errors.ValidationError(
       [
         {
           message: requestContext.translate('invalid.fileType'),

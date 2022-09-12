@@ -3,7 +3,5 @@ export * from './auth';
 export * from './copyToClipboard';
 export * from './creatorCheck';
 export * from './deleteImage';
-export * from './organizationExists';
-export * from './superAdminCheck';
+export * from './mailer';
 export * from './uploadImage';
-export * from './userExists';

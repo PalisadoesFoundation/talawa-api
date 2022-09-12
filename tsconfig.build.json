@@ -11,11 +11,9 @@ More information here :- https://bobbyhadz.com/blog/typescript-exclude-test-file
   "extends": "./tsconfig.json",
   // 👇️ this may vary depending on how you name your test files
   "exclude": [
-    "src/types/**/*",
-    "src/tests/**/*",
+    "src/generated/graphQLTypescriptTypes.ts",
+    "src/tests/",
     "src/**/*.spec.ts",
-    "src/**/*.test.ts",
-    "src/**/*.spec.js",
-    "src/**/*.test.js"
+    "src/**/*.test.ts"
   ]
 }

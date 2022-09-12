@@ -1,0 +1,88 @@
+import 'dotenv/config';
+import { Document } from 'mongoose';
+import {
+  Interface_User,
+  User,
+  Organization,
+  Plugin,
+  Interface_Plugin,
+} from '../../../lib/models';
+import { MutationUpdatePluginStatusArgs } from '../../../generated/graphQLTypescriptTypes';
+import { connect, disconnect } from '../../../db';
+import { updatePluginStatus as updatePluginStatusResolver } from '../../../lib/resolvers/Mutation/updatePluginStatus';
+import { nanoid } from 'nanoid';
+
+let testUser: Interface_User & Document<any, any, Interface_User>;
+let testPlugin: Interface_Plugin & Document<any, any, Interface_Plugin>;
+
+beforeAll(async () => {
+  await connect();
+
+  testUser = await User.create({
+    email: `email${nanoid().toLowerCase()}@gmail.com`,
+    password: 'password',
+    firstName: 'firstName',
+    lastName: 'lastName',
+    appLanguageCode: 'en',
+  });
+
+  const testOrganization = await Organization.create({
+    name: 'name',
+    description: 'description',
+    isPublic: true,
+    creator: testUser._id,
+    admins: [testUser._id],
+    members: [testUser._id],
+  });
+
+  await User.updateOne(
+    {
+      _id: testUser._id,
+    },
+    {
+      $set: {
+        createdOrganizations: [testOrganization._id],
+        adminFor: [testOrganization._id],
+        joinedOrganizations: [testOrganization._id],
+      },
+    }
+  );
+
+  testPlugin = await Plugin.create({
+    pluginName: 'pluginName',
+    pluginCreatedBy: `${testUser.firstName} ${testUser.lastName}`,
+    pluginDesc: 'pluginDesc',
+    pluginInstallStatus: false,
+    installedOrgs: [testOrganization._id],
+  });
+});
+
+afterAll(async () => {
+  await disconnect();
+});
+
+describe('resolvers -> Mutation -> updatePluginStatus', () => {
+  it(`updates the pluginInstallStatus field of plugin with
+   _id === args.id and returns it`, async () => {
+    const args: MutationUpdatePluginStatusArgs = {
+      id: testPlugin._id,
+      status: true,
+    };
+
+    const context = {
+      userId: testUser._id,
+    };
+
+    const updatePluginStatusPayload = await updatePluginStatusResolver?.(
+      {},
+      args,
+      context
+    );
+
+    const updatedTestPlugin = await Plugin.findOne({
+      _id: testPlugin._id,
+    }).lean();
+
+    expect(updatePluginStatusPayload).toEqual(updatedTestPlugin);
+  });
+});

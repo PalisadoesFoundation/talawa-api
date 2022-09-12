@@ -7,26 +7,26 @@ export const deleteImage = async (
   imageToBeDeleted: string,
   imageBelongingToItem?: string
 ) => {
-  let tryingToReUploadADuplicate;
+  let imageIsDuplicate = false;
 
   if (imageBelongingToItem) {
-    tryingToReUploadADuplicate = await reuploadDuplicateCheck(
-      imageBelongingToItem,
-      imageToBeDeleted
+    imageIsDuplicate = await reuploadDuplicateCheck(
+      imageToBeDeleted,
+      imageBelongingToItem
     );
   }
 
-  if (!tryingToReUploadADuplicate) {
+  if (imageIsDuplicate === false) {
     /* 
     Only remove the old image if its different from the new one
     Ensure image hash isn't used by multiple users/organization before deleting it
     */
-    let hash = await ImageHash.findOne({
+    let imageHash = await ImageHash.findOne({
       fileName: imageToBeDeleted,
-    });
+    }).lean();
 
-    if (hash && hash.numberOfUses > 1) {
-      // image is only deleted if it is only used once
+    if (imageHash && imageHash.numberOfUses > 1) {
+      // Image can only be deleted if imageHash.numberOfUses === 1
       logger.info('Image cannot be deleted');
     } else {
       logger.info('Image is only used once and therefore can be deleted');
@@ -36,23 +36,19 @@ export const deleteImage = async (
           throw error;
         }
 
-        // if no error, file has been deleted successfully
+        // If no error occurs image has been successfully deleted.
         logger.info('File deleted!');
       });
     }
 
-    await ImageHash.findOneAndUpdate(
+    await ImageHash.updateOne(
       {
-        // decrement number of uses of hashed image
         fileName: imageToBeDeleted,
       },
       {
         $inc: {
           numberOfUses: -1,
         },
-      },
-      {
-        new: true,
       }
     );
   }

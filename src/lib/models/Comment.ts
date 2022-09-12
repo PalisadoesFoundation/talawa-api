@@ -1,28 +1,26 @@
-import { Schema, model, Model, PopulatedDoc } from 'mongoose';
+import { Schema, model, PopulatedDoc, Types, Document } from 'mongoose';
+import { Interface_Post } from './Post';
 import { Interface_User } from './User';
 
 export interface Interface_Comment {
+  _id: Types.ObjectId;
   text: string;
   createdAt: Date;
-  creator: PopulatedDoc<Interface_User>;
-  post: PopulatedDoc<Interface_User>;
-  likedBy: Array<PopulatedDoc<Interface_User>>;
+  creator: PopulatedDoc<Interface_User & Document>;
+  post: PopulatedDoc<Interface_Post & Document>;
+  likedBy: Array<PopulatedDoc<Interface_User & Document>>;
   likeCount: number;
-  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+  status: string;
 }
 
-const commentSchema = new Schema<
-  Interface_Comment,
-  Model<Interface_Comment>,
-  Interface_Comment
->({
+const commentSchema = new Schema({
   text: {
     type: String,
     required: true,
   },
   createdAt: {
     type: Date,
-    default: () => new Date(Date.now()),
+    default: Date.now,
   },
   creator: {
     type: Schema.Types.ObjectId,

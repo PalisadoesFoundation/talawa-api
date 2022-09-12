@@ -2,7 +2,8 @@
 FROM node:16
 
 # Sets '/usr/src/app' as the default working directory to be used
-# by the subsequent commands and the generated container.
+# by the subsequent commands and the generated container. That means
+# './' will correspond to '/usr/src/app/' inside the container onwards.
 WORKDIR /usr/src/app
 
 # Copies 'package.json' and 'package-lock.json' files.

@@ -1,18 +1,18 @@
-import { Schema, Types, model, Model } from 'mongoose';
+import { Schema, model, PopulatedDoc, Types, Document } from 'mongoose';
+import { Interface_DirectChatMessage } from './DirectChatMessage';
+import { Interface_Organization } from './Organization';
+import { Interface_User } from './User';
 
 export interface Interface_DirectChat {
-  users: Array<Types.ObjectId>;
-  messages: Array<Types.ObjectId>;
-  creator: Types.ObjectId;
-  organization: Types.ObjectId;
-  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+  _id: Types.ObjectId;
+  users: Array<PopulatedDoc<Interface_User & Document>>;
+  messages: Array<PopulatedDoc<Interface_DirectChatMessage & Document>>;
+  creator: PopulatedDoc<Interface_User & Document>;
+  organization: PopulatedDoc<Interface_Organization & Document>;
+  status: string;
 }
 
-const directChatSchema = new Schema<
-  Interface_DirectChat,
-  Model<Interface_DirectChat>,
-  Interface_DirectChat
->({
+const directChatSchema = new Schema({
   users: [
     {
       type: Schema.Types.ObjectId,

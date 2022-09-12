@@ -1,30 +1,31 @@
-import { Schema, Types, model, Model } from 'mongoose';
+import { Schema, model, PopulatedDoc, Types, Document } from 'mongoose';
+import { MembershipRequest } from 'src/generated/graphQLTypescriptTypes';
+import { Interface_Message } from './Message';
+import { Interface_Post } from './Post';
+import { Interface_User } from './User';
 
 export interface Interface_Organization {
-  apiUrl?: string;
-  image?: string;
+  _id: Types.ObjectId;
+  apiUrl: string | undefined;
+  image: string | undefined;
   name: string;
   description: string;
-  location?: string;
+  location: string | undefined;
   isPublic: boolean;
-  creator: Types.ObjectId;
-  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
-  members: Array<Types.ObjectId>;
-  admins: Array<Types.ObjectId>;
-  groupChats: Array<Types.ObjectId>;
-  posts: Array<Types.ObjectId>;
-  membershipRequests: Array<Types.ObjectId>;
-  blockedUsers: Array<Types.ObjectId>;
-  visibleInSearch?: boolean;
+  creator: PopulatedDoc<Interface_User & Document>;
+  status: string;
+  members: Array<PopulatedDoc<Interface_User & Document>>;
+  admins: Array<PopulatedDoc<Interface_User & Document>>;
+  groupChats: Array<PopulatedDoc<Interface_Message & Document>>;
+  posts: Array<PopulatedDoc<Interface_Post & Document>>;
+  membershipRequests: Array<PopulatedDoc<MembershipRequest & Document>>;
+  blockedUsers: Array<PopulatedDoc<Interface_User & Document>>;
+  visibleInSearch: boolean | undefined;
   tags: Array<string>;
   createdAt: Date;
 }
 
-const organizationSchema = new Schema<
-  Interface_Organization,
-  Model<Interface_Organization>,
-  Interface_Organization
->({
+const organizationSchema = new Schema({
   apiUrl: {
     type: String,
   },
@@ -94,7 +95,9 @@ const organizationSchema = new Schema<
       ref: 'User',
     },
   ],
-  visibleInSearch: Boolean,
+  visibleInSearch: {
+    type: Boolean,
+  },
   tags: [
     {
       type: String,
@@ -103,7 +106,7 @@ const organizationSchema = new Schema<
   ],
   createdAt: {
     type: Date,
-    default: () => new Date(Date.now()),
+    default: Date.now,
   },
 });
 

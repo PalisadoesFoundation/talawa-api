@@ -5,9 +5,7 @@ import express from 'express';
 import { ApolloServer, PubSub } from 'apollo-server-express';
 import depthLimit from 'graphql-depth-limit';
 import rateLimit from 'express-rate-limit';
-/*
-No type defintions available for package 'xss-clean'
-*/
+// No type defintions available for package 'xss-clean'
 // @ts-ignore
 import xss from 'xss-clean';
 import helmet from 'helmet';
@@ -19,7 +17,7 @@ import i18n from 'i18n';
 import database from './db';
 import { logger, requestContext, requestTracing } from './lib/libraries';
 import { appConfig } from './lib/config';
-import { isAuth } from './lib/middleware/is-auth';
+import { isAuth } from './lib/middleware';
 import {
   AuthenticationDirective,
   RoleAuthorizationDirective,
@@ -68,9 +66,8 @@ app.use(
 );
 app.use(mongoSanitize());
 app.use(cors());
-/*
-Invalid code. Needs fix.
-*/
+
+// Invalid code. Needs fix.
 app.use(
   requestLogger(
     // @ts-ignore
@@ -94,7 +91,6 @@ const httpServer = http.createServer(app);
 
 const apolloServer = new ApolloServer({
   typeDefs,
-  // @ts-ignore
   resolvers,
   validationRules: [depthLimit(5)],
   schemaDirectives: {
@@ -176,8 +172,8 @@ const serverStart = async () => {
         }`
       );
     });
-  } catch (e) {
-    logger.error('Error while connecting to database', e);
+  } catch (error) {
+    logger.error('Error while connecting to database', error);
   }
 };
 

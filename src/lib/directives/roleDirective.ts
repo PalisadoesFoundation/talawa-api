@@ -5,9 +5,13 @@ import {
   GraphQLInterfaceType,
   GraphQLObjectType,
 } from 'graphql';
-import { UnauthenticatedError } from '../libraries/errors';
-import requestContext from '../libraries/request-context';
-import { userExists } from '../utilities';
+import {
+  USER_NOT_FOUND_CODE,
+  USER_NOT_FOUND_MESSAGE,
+  USER_NOT_FOUND_PARAM,
+} from '../../constants';
+import { errors, requestContext } from '../libraries';
+import { User } from '../models';
 
 export class RoleAuthorizationDirective extends SchemaDirectiveVisitor {
   visitFieldDefinition(
@@ -26,17 +30,27 @@ export class RoleAuthorizationDirective extends SchemaDirectiveVisitor {
     const { requires } = this.args;
 
     field.resolve = async (root, args, context, info) => {
-      const user = await userExists(context.userId);
+      const currentUser = await User.findOne({
+        _id: context.userId,
+      }).lean();
 
-      if (user.userType !== requires) {
-        throw new UnauthenticatedError(
+      if (!currentUser) {
+        throw new errors.NotFoundError(
+          requestContext.translate(USER_NOT_FOUND_MESSAGE),
+          USER_NOT_FOUND_CODE,
+          USER_NOT_FOUND_PARAM
+        );
+      }
+
+      if (currentUser.userType !== requires) {
+        throw new errors.UnauthenticatedError(
           requestContext.translate('user.notAuthenticated'),
           'user.notAuthenticated',
           'userAuthentication'
         );
       }
 
-      context.user = user;
+      context.user = currentUser;
 
       return resolver(root, args, context, info);
     };

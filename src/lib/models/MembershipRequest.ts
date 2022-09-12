@@ -1,16 +1,15 @@
-import { Schema, Types, model, Model } from 'mongoose';
+import { Schema, model, Model, PopulatedDoc, Types, Document } from 'mongoose';
+import { Interface_Organization } from './Organization';
+import { Interface_User } from './User';
 
 export interface Interface_MembershipRequest {
-  organization: Types.ObjectId;
-  user?: Types.ObjectId;
-  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+  _id: Types.ObjectId;
+  organization: PopulatedDoc<Interface_Organization & Document>;
+  user: PopulatedDoc<Interface_User & Document> | undefined;
+  status: string;
 }
 
-const membershipRequestSchema = new Schema<
-  Interface_MembershipRequest,
-  Model<Interface_MembershipRequest>,
-  Interface_MembershipRequest
->({
+const membershipRequestSchema = new Schema({
   organization: {
     type: Schema.Types.ObjectId,
     ref: 'Organization',

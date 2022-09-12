@@ -6,10 +6,13 @@ import { imageAlreadyInDbCheck } from './imageAlreadyInDbCheck';
 import { deleteImage } from './deleteImage';
 import { imageExtensionCheck } from './imageExtensionCheck';
 
-export const uploadImage = async (file: any, itemImage: any) => {
+export const uploadImage = async (
+  newImageFile: any,
+  oldImagePath: string | null
+) => {
   const id = shortid.generate();
 
-  const { createReadStream, filename } = await file;
+  const { createReadStream, filename } = await newImageFile;
 
   // throw an error if file is not png or jpg
   await imageExtensionCheck(filename);
@@ -24,26 +27,29 @@ export const uploadImage = async (file: any, itemImage: any) => {
       )
       .on('close', resolve)
       .on('error', (error: any) => reject(error))
-      .on('finish', () => resolve({ path }))
+      .on('finish', () =>
+        resolve({
+          path,
+        })
+      )
   );
 
-  let imageJustUploadedPath = `images/${id}-${filename}`;
+  let newImagePath = `images/${id}-${filename}`;
 
-  //return imagePath;
-
-  if (itemImage) {
+  if (oldImagePath) {
     logger.info('old image should be deleted');
-    // If user/org already has an image delete it from the API
-    await deleteImage(itemImage, imageJustUploadedPath);
+
+    // If user/organization already has an image delete it from the API
+    await deleteImage(oldImagePath, newImagePath);
   }
 
   let imageAlreadyInDbPath = await imageAlreadyInDbCheck(
-    imageJustUploadedPath,
-    itemImage
+    oldImagePath,
+    newImagePath
   );
 
   return {
-    newImagePath: imageJustUploadedPath,
-    imageAlreadyInDbPath: imageAlreadyInDbPath,
+    newImagePath,
+    imageAlreadyInDbPath,
   };
 };

@@ -1,19 +1,18 @@
-import { Schema, Types, model, Model } from 'mongoose';
+import { Schema, model, PopulatedDoc, Types, Document } from 'mongoose';
+import { Interface_Organization } from './Organization';
+import { Interface_User } from './User';
 
 export interface Interface_Group {
+  _id: Types.ObjectId;
   title: string;
-  description?: string;
+  description: string | undefined;
   createdAt: Date;
-  organization: Types.ObjectId;
-  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
-  admins: Array<Types.ObjectId>;
+  organization: PopulatedDoc<Interface_Organization & Document>;
+  status: string;
+  admins: Array<PopulatedDoc<Interface_User & Document>>;
 }
 
-const groupSchema = new Schema<
-  Interface_Group,
-  Model<Interface_Group>,
-  Interface_Group
->({
+const groupSchema = new Schema({
   title: {
     type: String,
     required: true,
@@ -23,7 +22,7 @@ const groupSchema = new Schema<
   },
   createdAt: {
     type: Date,
-    default: () => new Date(Date.now()),
+    default: Date.now,
   },
   organization: {
     type: Schema.Types.ObjectId,

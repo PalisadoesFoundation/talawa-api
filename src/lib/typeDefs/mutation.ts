@@ -2,93 +2,48 @@ import { gql } from 'apollo-server-core';
 
 export const mutation = gql`
   type Mutation {
-    signUp(data: UserInput!, file: Upload): AuthData!
-    login(data: LoginInput!): AuthData!
-    otp(data: OTPInput!): OtpData!
-    recaptcha(data: RecaptchaVerification!): Boolean!
-    forgotPassword(data: ForgotPasswordData!): Boolean!
-    saveFcmToken(token: String): Boolean! @auth
-    refreshToken(refreshToken: String!): ExtendSession!
-    revokeRefreshTokenForUser(userId: String!): Boolean!
-    updateLanguage(languageCode: String!): User! @auth
-    logout: Boolean! @auth
-
-    updateUserProfile(data: UpdateUserInput, file: Upload): User! @auth
-    updateUserType(data: UpdateUserTypeInput!): Boolean! @auth
-    createEvent(data: EventInput): Event! @auth
-    removeEvent(id: ID!): Event! @auth
-    registerForEvent(id: ID!): Event! @auth
-    unregisterForEventByUser(id: ID!): Event! @auth
-    updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
-
-    createOrganization(data: OrganizationInput, file: Upload): Organization!
-      @auth
-    updateOrganization(id: ID!, data: UpdateOrganizationInput): Organization!
-      @auth
-    removeOrganization(id: ID!): User! @auth
-
     acceptAdmin(id: ID!): Boolean! @auth
-    rejectAdmin(id: ID!): Boolean! @auth
-    createAdmin(data: UserAndOrganizationInput!): User! @auth
-    removeAdmin(data: UserAndOrganizationInput!): User! @auth
-    joinPublicOrganization(organizationId: ID!): User! @auth
-    leaveOrganization(organizationId: ID!): User! @auth
-    removeMember(data: MultipleUsersAndOrganizationInput!): Organization! @auth
 
-    adminRemovePost(organizationId: ID!, postId: ID!): Post! @auth
-    adminRemoveEvent(eventId: ID!): Event! @auth
-    adminRemoveGroup(groupId: ID!): Message! @auth
-
-    createPost(data: PostInput!, file: Upload): Post @auth
-    removePost(id: ID!): Post @auth
-    likePost(id: ID!): Post @auth
-    unlikePost(id: ID!): Post @auth
-
-    createComment(postId: ID!, data: CommentInput!): Comment @auth
-    removeComment(id: ID!): Comment @auth
-    likeComment(id: ID!): Comment @auth
-    unlikeComment(id: ID!): Comment @auth
-
-    createTask(data: TaskInput, eventId: ID!): Task! @auth
-    updateTask(id: ID!, data: UpdateTaskInput): Task @auth
-    removeTask(id: ID!): Task @auth
-
-    createGroup(data: GroupInput!): Group! @auth
-
-    sendMembershipRequest(organizationId: ID!): MembershipRequest! @auth
     acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
-    rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
-    cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
-    blockUser(organizationId: ID!, userId: ID!): User! @auth
-    unblockUser(organizationId: ID!, userId: ID!): User! @auth
+    addLanguageTranslation(data: LanguageInput!): Language! @auth
 
-    addUserImage(file: Upload!): User! @auth
-    removeUserImage: User! @auth
     addOrganizationImage(file: Upload!, organizationId: String!): Organization!
       @auth
-    removeOrganizationImage(organizationId: String!): Organization! @auth
 
-    createDirectChat(data: createChatInput): DirectChat! @auth
-    removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat! @auth
-    sendMessageToDirectChat(
-      chatId: ID!
-      messageContent: String!
-    ): DirectChatMessage! @auth
+    addUserImage(file: Upload!): User! @auth
 
-    createGroupChat(data: createGroupChatInput): GroupChat! @auth
-    removeGroupChat(chatId: ID!): GroupChat! @auth
-    sendMessageToGroupChat(
-      chatId: ID!
-      messageContent: String!
-    ): GroupChatMessage! @auth
     addUserToGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
-    removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
+
+    adminRemoveEvent(eventId: ID!): Event! @auth
+
+    adminRemoveGroup(groupId: ID!): Message! @auth
+
+    adminRemovePost(organizationId: ID!, postId: ID!): Post! @auth
+
     blockPluginCreationBySuperadmin(userId: ID!, blockUser: Boolean!): User!
       @auth
 
+    blockUser(organizationId: ID!, userId: ID!): User! @auth
+
+    cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
+
+    createAdmin(data: UserAndOrganizationInput!): User! @auth
+
+    createComment(postId: ID!, data: CommentInput!): Comment @auth
+
+    createDirectChat(data: createChatInput): DirectChat! @auth
+
+    createEvent(data: EventInput): Event! @auth
+
+    createGroup(data: GroupInput!): Group! @auth
+
+    createGroupChat(data: createGroupChatInput): GroupChat! @auth
+
     createMessageChat(data: MessageChatInput!): MessageChat! @auth
-    addLanguageTranslation(data: LanguageInput!): Language! @auth
+
+    createOrganization(data: OrganizationInput, file: Upload): Organization!
+      @auth
 
     createPlugin(
       pluginName: String!
@@ -97,7 +52,102 @@ export const mutation = gql`
       pluginInstallStatus: Boolean!
       installedOrgs: [ID!]
     ): Plugin!
-    updatePluginStatus(id: ID!, status: Boolean!): Plugin!
+
+    createPost(data: PostInput!, file: Upload): Post @auth
+
+    createTask(data: TaskInput, eventId: ID!): Task! @auth
+
+    forgotPassword(data: ForgotPasswordData!): Boolean!
+
+    joinPublicOrganization(organizationId: ID!): User! @auth
+
+    leaveOrganization(organizationId: ID!): User! @auth
+
+    likeComment(id: ID!): Comment @auth
+
+    likePost(id: ID!): Post @auth
+
+    login(data: LoginInput!): AuthData!
+
+    logout: Boolean! @auth
+
+    otp(data: OTPInput!): OtpData!
+
+    recaptcha(data: RecaptchaVerification!): Boolean!
+
+    refreshToken(refreshToken: String!): ExtendSession!
+
+    registerForEvent(id: ID!): Event! @auth
+
+    rejectAdmin(id: ID!): Boolean! @auth
+
+    rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
+
+    removeAdmin(data: UserAndOrganizationInput!): User! @auth
+
+    removeComment(id: ID!): Comment @auth
+
+    removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat! @auth
+
+    removeEvent(id: ID!): Event! @auth
+
+    removeGroupChat(chatId: ID!): GroupChat! @auth
+
+    removeMember(data: MultipleUsersAndOrganizationInput!): Organization! @auth
+
+    removeOrganization(id: ID!): User! @auth
+
+    removeOrganizationImage(organizationId: String!): Organization! @auth
+
+    removePost(id: ID!): Post @auth
+
+    removeTask(id: ID!): Task @auth
+
+    removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
+
+    removeUserImage: User! @auth
+
+    revokeRefreshTokenForUser(userId: String!): Boolean!
+
+    saveFcmToken(token: String): Boolean! @auth
+
+    sendMembershipRequest(organizationId: ID!): MembershipRequest! @auth
+
+    sendMessageToDirectChat(
+      chatId: ID!
+      messageContent: String!
+    ): DirectChatMessage! @auth
+
+    sendMessageToGroupChat(
+      chatId: ID!
+      messageContent: String!
+    ): GroupChatMessage! @auth
+
+    signUp(data: UserInput!, file: Upload): AuthData!
+
+    unblockUser(organizationId: ID!, userId: ID!): User! @auth
+
+    unlikeComment(id: ID!): Comment @auth
+
+    unlikePost(id: ID!): Post @auth
+
+    unregisterForEventByUser(id: ID!): Event! @auth
+
+    updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
+
+    updateLanguage(languageCode: String!): User! @auth
+
+    updateOrganization(id: ID!, data: UpdateOrganizationInput): Organization!
+      @auth
+
     updatePluginInstalledOrgs(id: ID!, orgId: ID!): Plugin!
+
+    updatePluginStatus(id: ID!, status: Boolean!): Plugin!
+
+    updateTask(id: ID!, data: UpdateTaskInput): Task @auth
+
+    updateUserProfile(data: UpdateUserInput, file: Upload): User! @auth
+
+    updateUserType(data: UpdateUserTypeInput!): Boolean! @auth
   }
 `;

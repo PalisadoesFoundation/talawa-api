@@ -1,15 +1,9 @@
 import mongoose from 'mongoose';
-import logger from './lib/libraries/logger';
+import { logger } from './lib/libraries';
 
 export const connect = async () => {
   try {
-    /*
-    Typescript does not know whether process.env.MONGO_DB_URL will be defined at runtime or not
-    All it knows is that mongoose.connect accepts a string as first argument and it cannot 
-    accept undefined as the first argument. "as string" tells typescript that we are certain 
-    this environment variable will be a string and not undefined.
-    */
-    await mongoose.connect(process.env.MONGO_DB_URL as string, {
+    await mongoose.connect(process.env.MONGO_DB_URL!, {
       useCreateIndex: true,
       useUnifiedTopology: true,
       useFindAndModify: false,

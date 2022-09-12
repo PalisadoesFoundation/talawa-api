@@ -1,6 +1,7 @@
-import { Schema, Types, model, Model } from 'mongoose';
+import { Schema, Types, model, Model, PopulatedDoc } from 'mongoose';
 
 export interface Interface_Plugin {
+  _id: Types.ObjectId;
   pluginName: string;
   pluginCreatedBy: string;
   pluginDesc: string;
@@ -17,11 +18,8 @@ export interface Interface_Plugin {
  * @param {Boolean} pluginInstallStatus shows if the plugin is enabled or not
  * @param {String[]} installedOrgs list of orgIDs on which the plugin is enabled
  */
-const pluginSchema = new Schema<
-  Interface_Plugin,
-  Model<Interface_Plugin>,
-  Interface_Plugin
->({
+
+const pluginSchema = new Schema({
   pluginName: {
     type: String,
     required: true,

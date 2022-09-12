@@ -1,20 +1,19 @@
-import { Schema, Types, model, Model } from 'mongoose';
+import { Schema, model, PopulatedDoc, Types, Document } from 'mongoose';
+import { Interface_Group } from './Group';
+import { Interface_User } from './User';
 
 export interface Interface_Message {
+  _id: Types.ObjectId;
   text: string;
-  imageUrl?: string;
-  videoUrl?: string;
+  imageUrl: string | undefined;
+  videoUrl: string | undefined;
   createdAt: Date;
-  creator: Types.ObjectId;
-  group: Types.ObjectId;
-  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+  creator: PopulatedDoc<Interface_User & Document>;
+  group: PopulatedDoc<Interface_Group & Document>;
+  status: string;
 }
 
-const messageSchema = new Schema<
-  Interface_Message,
-  Model<Interface_Message>,
-  Interface_Message
->({
+const messageSchema = new Schema({
   text: {
     type: String,
     required: true,
@@ -29,7 +28,7 @@ const messageSchema = new Schema<
   },
   createdAt: {
     type: Date,
-    default: () => new Date(Date.now()),
+    default: Date.now,
   },
   creator: {
     type: Schema.Types.ObjectId,

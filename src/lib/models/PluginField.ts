@@ -1,17 +1,14 @@
-import { Schema, model, Model } from 'mongoose';
+import { Schema, model, Types } from 'mongoose';
 
 export interface Interface_PluginField {
+  _id: Types.ObjectId;
   key: string;
   value: string;
-  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+  status: string;
   createdAt: Date;
 }
 
-const pluginFieldSchema = new Schema<
-  Interface_PluginField,
-  Model<Interface_PluginField>,
-  Interface_PluginField
->({
+const pluginFieldSchema = new Schema({
   key: {
     type: String,
     required: true,
@@ -28,7 +25,7 @@ const pluginFieldSchema = new Schema<
   },
   createdAt: {
     type: Date,
-    default: () => new Date(Date.now()),
+    default: Date.now,
   },
 });
 

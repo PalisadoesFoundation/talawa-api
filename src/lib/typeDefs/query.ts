@@ -2,25 +2,53 @@ import { gql } from 'apollo-server-core';
 
 export const query = gql`
   type Query {
-    me: User! @auth
-    user(id: ID!): User! @auth
-    users(where: UserWhereInput, orderBy: UserOrderByInput): [User] @auth
-    usersConnection(
-      where: UserWhereInput
-      first: Int
-      skip: Int
-      orderBy: UserOrderByInput
-    ): [User]! @auth
+    adminPlugin(orgId: ID!): [Plugin]
 
     checkAuth: User! @auth
 
+    comments: [Comment]
+
+    commentsByPost(id: ID!): [Comment]
+
+    directChatMessages: [DirectChatMessage]
+
+    directChats: [DirectChat]
+
+    directChatsByUserID(id: ID!): [DirectChat]
+
+    directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
+
+    event(id: ID!): Event
+
+    events(id: ID, orderBy: EventOrderByInput): [Event]
+
+    eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
+
+    getlanguage(lang_code: String!): [Translation]
+
+    getPlugins: [Plugin]
+
+    groupChatMessages: [GroupChatMessage]
+
+    groupChats: [GroupChat]
+
+    groups: [Group]
+
+    isUserRegister(eventId: ID!): EventRegistrants
+
+    me: User! @auth
+
+    myLanguage: String @auth
+
     organizations(id: ID, orderBy: OrganizationOrderByInput): [Organization]
+
     organizationsConnection(
       where: OrganizationWhereInput
       first: Int
       skip: Int
       orderBy: OrganizationOrderByInput
     ): [Organization]!
+
     organizationsMemberConnection(
       orgId: ID!
       where: UserWhereInput
@@ -29,15 +57,14 @@ export const query = gql`
       orderBy: UserOrderByInput
     ): UserConnection! @auth
 
-    isUserRegister(eventId: ID!): EventRegistrants
-    event(id: ID!): Event
-    events(id: ID, orderBy: EventOrderByInput): [Event]
-    eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
-    registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
-    registrantsByEvent(id: ID!): [User]
+    plugin(orgId: ID!): [Plugin]
+
+    post(id: ID!): Post
 
     posts(orderBy: PostOrderByInput): [Post]
+
     postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
+
     postsByOrganizationConnection(
       id: ID!
       where: PostWhereInput
@@ -45,28 +72,26 @@ export const query = gql`
       skip: Int
       orderBy: PostOrderByInput
     ): PostConnection
+
+    registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
+
+    registrantsByEvent(id: ID!): [User]
+
     tasksByEvent(id: ID!, orderBy: TaskOrderByInput): [Task]
+
     tasksByUser(id: ID!, orderBy: TaskOrderByInput): [Task]
-    comments: [Comment]
-    commentsByPost(id: ID!): [Comment]
-    post(id: ID!): Post
-    groups: [Group]
 
-    directChats: [DirectChat]
-    directChatMessages: [DirectChatMessage]
-    groupChats: [GroupChat]
-    groupChatMessages: [GroupChatMessage]
-    directChatsByUserID(id: ID!): [DirectChat]
-    directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
+    user(id: ID!): User! @auth
 
-    myLanguage: String @auth
     userLanguage(userId: ID!): String @auth
 
-    plugin(orgId: ID!): [Plugin]
-    adminPlugin(orgId: ID!): [Plugin]
-    getlanguage(lang_code: String!): [Translation]
+    users(where: UserWhereInput, orderBy: UserOrderByInput): [User] @auth
 
-    # For Plugins
-    getPlugins: [Plugin]
+    usersConnection(
+      where: UserWhereInput
+      first: Int
+      skip: Int
+      orderBy: UserOrderByInput
+    ): [User]! @auth
   }
 `;

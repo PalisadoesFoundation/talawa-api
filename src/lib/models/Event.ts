@@ -1,19 +1,16 @@
-import { Schema, Types, model, Model, PopulatedDoc } from 'mongoose';
+import { Schema, Types, model, PopulatedDoc, Document } from 'mongoose';
+import { Interface_Organization } from './Organization';
 import { Interface_Task } from './Task';
 import { Interface_User } from './User';
 
 export interface Interface_UserAttende {
   userId: string;
-  user: PopulatedDoc<Interface_User>;
-  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+  user: PopulatedDoc<Interface_User & Document>;
+  status: string;
   createdAt: Date;
 }
 
-const userAttendeSchema = new Schema<
-  Interface_UserAttende,
-  Model<Interface_UserAttende>,
-  Interface_UserAttende
->({
+const userAttendeSchema = new Schema({
   userId: {
     type: String,
     required: true,
@@ -31,39 +28,36 @@ const userAttendeSchema = new Schema<
   },
   createdAt: {
     type: Date,
-    default: () => new Date(Date.now()),
+    default: Date.now,
   },
 });
 
 export interface Interface_Event {
+  _id: Types.ObjectId;
   title: string;
   description: string;
-  attendees?: string;
-  location?: string;
-  latitude?: number;
-  longitude?: number;
+  attendees: string | undefined;
+  location: string | undefined;
+  latitude: number | undefined;
+  longitude: number;
   recurring: boolean;
   allDay: boolean;
   startDate: string;
-  endDate?: string;
-  startTime?: string;
-  endTime?: string;
-  recurrance: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY' | 'ONCE';
+  endDate: string | undefined;
+  startTime: string | undefined;
+  endTime: string | undefined;
+  recurrance: string;
   isPublic: boolean;
   isRegisterable: boolean;
-  creator: PopulatedDoc<Interface_User>;
-  registrants: Array<PopulatedDoc<Interface_UserAttende>>;
-  admins: Array<PopulatedDoc<Interface_User>>;
-  organization: Types.ObjectId;
-  tasks: Array<PopulatedDoc<Interface_Task>>;
-  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+  creator: PopulatedDoc<Interface_User & Document>;
+  registrants: Array<PopulatedDoc<Interface_UserAttende & Document>>;
+  admins: Array<PopulatedDoc<Interface_User & Document>>;
+  organization: PopulatedDoc<Interface_Organization & Document>;
+  tasks: Array<PopulatedDoc<Interface_Task & Document>>;
+  status: string;
 }
 
-const eventSchema = new Schema<
-  Interface_Event,
-  Model<Interface_Event>,
-  Interface_Event
->({
+const eventSchema = new Schema({
   title: {
     type: String,
     required: true,
@@ -127,7 +121,7 @@ const eventSchema = new Schema<
       // @ts-ignore
       return this.recurring;
     },
-    enum: ['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY', 'ONCE'],
+    enum: ['ONCE', 'DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'],
     default: 'ONCE',
   },
   isPublic: {

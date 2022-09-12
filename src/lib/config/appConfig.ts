@@ -1,4 +1,3 @@
-// Types are automatically inferred by typescript
 export const appConfig = {
   env: process.env.NODE_ENV,
   colorize_logs: process.env.COLORIZE_LOGS,

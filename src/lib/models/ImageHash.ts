@@ -1,17 +1,14 @@
-import { Schema, model, Model } from 'mongoose';
+import { Schema, model, Types } from 'mongoose';
 
 export interface Interface_ImageHash {
+  _id: Types.ObjectId;
   hashValue: string;
   fileName: string;
   numberOfUses: number;
-  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+  status: string;
 }
 
-const imageHashSchema = new Schema<
-  Interface_ImageHash,
-  Model<Interface_ImageHash>,
-  Interface_ImageHash
->({
+const imageHashSchema = new Schema({
   hashValue: {
     type: String,
     required: true,

@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { createLogger, transports, format } from 'winston';
-import requestTracing from './request-tracing';
+import requestTracing from './requestTracing';
 import { appConfig } from '../config';
 
 const { combine, printf, splat, colorize, simple, timestamp } = format;
@@ -47,9 +47,7 @@ export const logger = createLogger({
   ],
 });
 
-/* 
-Invalid code. Currently ignored by typescript. Needs fix.
-*/
+// Invalid code. Currently ignored by typescript. Needs fix.
 logger.stream = {
   // @ts-ignore
   write: (message) => {

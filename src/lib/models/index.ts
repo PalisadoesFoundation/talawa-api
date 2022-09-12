@@ -1,4 +1,4 @@
-export * from './Chat';
+export * from './MessageChat';
 export * from './Comment';
 export * from './DirectChat';
 export * from './DirectChat';

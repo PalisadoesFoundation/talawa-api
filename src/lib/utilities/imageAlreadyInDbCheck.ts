@@ -2,8 +2,7 @@ import { imageHash } from 'image-hash';
 import { ImageHash } from '../models';
 import { deleteDuplicatedImage } from './deleteDuplicatedImage';
 import { reuploadDuplicateCheck } from './reuploadDuplicateCheck';
-import { ValidationError } from '../libraries/errors';
-import requestContext from '../libraries/request-context';
+import { errors, requestContext } from '../libraries';
 
 /*
 Check to see if image already exists in db using hash
@@ -11,43 +10,44 @@ if its there point to that image and remove the image just uploaded
 if its not there allow the file to remain uploaded
 */
 export const imageAlreadyInDbCheck = async (
-  imageJustUploadedPath: string,
-  itemImage: string
+  oldImagePath: string | null,
+  newImagePath: string
 ) => {
   try {
     let fileName;
 
-    const getImageHash = () =>
+    const getImageHash = (): Promise<string> =>
       new Promise((resolve, reject) => {
-        imageHash(
-          `./${imageJustUploadedPath}`,
-          16,
-          true,
-          (error: any, data: any) => {
-            if (error) {
-              reject(JSON.stringify(error));
-            } else {
-              resolve(data);
-            }
+        imageHash(`./${newImagePath}`, 16, true, (error: any, data: any) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(data);
           }
-        );
+        });
       });
 
-    const hash = (await getImageHash()) as string;
+    const hash = await getImageHash();
 
-    const imageAlreadyExistsInDb = await ImageHash.findOne({
+    const existingImageHash = await ImageHash.findOne({
       hashValue: hash,
-    });
+    }).lean();
 
-    if (imageAlreadyExistsInDb) {
-      const tryingToReUploadADuplicate = await reuploadDuplicateCheck(
-        imageJustUploadedPath,
-        itemImage
+    if (!existingImageHash) {
+      await ImageHash.create({
+        hashValue: hash,
+        fileName: newImagePath,
+        numberOfUses: 1,
+      });
+    } else {
+      const imageIsDuplicate = await reuploadDuplicateCheck(
+        oldImagePath,
+        newImagePath
       );
 
-      if (!tryingToReUploadADuplicate) {
+      if (imageIsDuplicate === false) {
         // dont increment if the same user/org is using the same image multiple times for the same use case
-        await ImageHash.findOneAndUpdate(
+        await ImageHash.updateOne(
           {
             // Increase the number of places this image is used
             hashValue: hash,
@@ -56,48 +56,18 @@ export const imageAlreadyInDbCheck = async (
             $inc: {
               numberOfUses: 1,
             },
-          },
-          {
-            new: true,
           }
         );
-
-        /*
-        console.log(
-          "num of uses of hash (old image): " + imageHashObj._doc.numberOfUses
-        );
-        */
       }
 
-      /*
-      console.log("Image already exists in db");
-      remove the image that was just uploaded
-      */
-      deleteDuplicatedImage(imageJustUploadedPath);
+      deleteDuplicatedImage(newImagePath);
 
-      /*
-      Invalid code. Currently ignored by typescript. Needs fix.
-      */
-      // @ts-ignore
-      fileName = imageAlreadyExistsInDb._doc.fileName; // will include have file already in db if pic is already saved will be null otherwise
-    } else {
-      let hashObj = new ImageHash({
-        hashValue: hash,
-        fileName: imageJustUploadedPath,
-        numberOfUses: 1,
-      });
-
-      await hashObj.save();
-
-      /*
-      console.log(
-        'number of uses of hash (new image) : ' + hashObj._doc.numberOfUses
-      );
-      */
+      fileName = existingImageHash.fileName; // will include have file already in db if pic is already saved will be null otherwise
     }
+
     return fileName;
   } catch (error) {
-    throw new ValidationError(
+    throw new errors.ValidationError(
       [
         {
           message: requestContext.translate('invalid.fileType'),

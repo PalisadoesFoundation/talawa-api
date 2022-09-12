@@ -1,21 +1,18 @@
-import { Schema, model, Model } from 'mongoose';
+import { Schema, model, Types } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface Interface_File {
+  _id: Types.ObjectId;
   name: string;
-  url?: string;
-  size?: number;
+  url: string | undefined;
+  size: number | undefined;
   secret: string;
   createdAt: Date;
-  contentType?: string;
-  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+  contentType: string | undefined;
+  status: string;
 }
 
-const fileSchema = new Schema<
-  Interface_File,
-  Model<Interface_File>,
-  Interface_File
->({
+const fileSchema = new Schema({
   name: {
     type: String,
     required: true,
@@ -34,7 +31,7 @@ const fileSchema = new Schema<
   createdAt: {
     type: Date,
     required: true,
-    default: () => new Date(Date.now()),
+    default: Date.now,
   },
   contentType: {
     type: String,

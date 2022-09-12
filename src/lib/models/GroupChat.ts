@@ -1,19 +1,19 @@
-import { Schema, Types, model, Model } from 'mongoose';
+import { Schema, Types, model, PopulatedDoc, Document } from 'mongoose';
+import { Interface_GroupChatMessage } from './GroupChatMessage';
+import { Interface_Organization } from './Organization';
+import { Interface_User } from './User';
 
 export interface Interface_GroupChat {
+  _id: Types.ObjectId;
   title: string;
-  users: Array<Types.ObjectId>;
-  messages: Array<Types.ObjectId>;
-  creator: Types.ObjectId;
-  organization: Types.ObjectId;
-  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+  users: Array<PopulatedDoc<Interface_User & Document>>;
+  messages: Array<PopulatedDoc<Interface_GroupChatMessage & Document>>;
+  creator: PopulatedDoc<Interface_User & Document>;
+  organization: PopulatedDoc<Interface_Organization & Document>;
+  status: string;
 }
 
-const groupChatSchema = new Schema<
-  Interface_GroupChat,
-  Model<Interface_GroupChat>,
-  Interface_GroupChat
->({
+const groupChatSchema = new Schema({
   title: {
     type: String,
     required: true,

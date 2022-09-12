@@ -1,20 +1,20 @@
-import { Schema, Types, model, Model } from 'mongoose';
+import { Schema, Types, model, PopulatedDoc, Document } from 'mongoose';
+import { Interface_Event } from './Event';
+import { Interface_Task } from './Task';
+import { Interface_User } from './User';
 
 export interface Interface_EventProject {
+  _id: Types.ObjectId;
   title: string;
   description: string;
   createdAt: Date;
-  event: Types.ObjectId;
-  creator: Types.ObjectId;
-  tasks: Array<Types.ObjectId>;
-  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+  event: PopulatedDoc<Interface_Event & Document>;
+  creator: PopulatedDoc<Interface_User & Document>;
+  tasks: Array<PopulatedDoc<Interface_Task & Document>>;
+  status: string;
 }
 
-const eventProjectSchema = new Schema<
-  Interface_EventProject,
-  Model<Interface_EventProject>,
-  Interface_EventProject
->({
+const eventProjectSchema = new Schema({
   title: {
     type: String,
     required: true,
@@ -25,7 +25,7 @@ const eventProjectSchema = new Schema<
   },
   createdAt: {
     type: Date,
-    default: () => new Date(Date.now()),
+    default: Date.now,
   },
   event: {
     type: Schema.Types.ObjectId,

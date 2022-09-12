@@ -1,4 +1,4 @@
-import { Schema, model, Model, Types } from 'mongoose';
+import { Schema, model, Types, Document, PopulatedDoc } from 'mongoose';
 
 export interface Interface_LanguageModel {
   lang_code: string;
@@ -7,11 +7,7 @@ export interface Interface_LanguageModel {
   createdAt: Date;
 }
 
-const languageModelSchema = new Schema<
-  Interface_LanguageModel,
-  Model<Interface_LanguageModel>,
-  Interface_LanguageModel
->({
+const languageModelSchema = new Schema({
   lang_code: {
     type: String,
     required: true,
@@ -31,13 +27,14 @@ const languageModelSchema = new Schema<
   createdAt: {
     type: Date,
     required: true,
-    default: () => new Date(Date.now()),
+    default: Date.now,
   },
 });
 
 export interface Interface_Language {
+  _id: Types.ObjectId;
   en: string;
-  translation: Array<Interface_LanguageModel>;
+  translation: Array<PopulatedDoc<Interface_LanguageModel & Document>>;
   createdAt: Date;
 }
 
@@ -52,7 +49,7 @@ const languageSchema = new Schema({
   createdAt: {
     type: Date,
     required: true,
-    default: () => new Date(Date.now()),
+    default: Date.now,
   },
 });
 

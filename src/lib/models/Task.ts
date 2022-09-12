@@ -1,22 +1,19 @@
-import { Schema, model, Model, PopulatedDoc } from 'mongoose';
+import { Schema, model, PopulatedDoc, Types, Document } from 'mongoose';
 import { Interface_Event } from './Event';
 import { Interface_User } from './User';
 
 export interface Interface_Task {
+  _id: Types.ObjectId;
   title: string;
-  description?: string;
-  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+  description: string | undefined;
+  status: string;
   createdAt: Date;
-  deadline?: Date;
-  event: PopulatedDoc<Interface_Event>;
-  creator: PopulatedDoc<Interface_User>;
+  deadline: Date | undefined;
+  event: PopulatedDoc<Interface_Event & Document>;
+  creator: PopulatedDoc<Interface_User & Document>;
 }
 
-const taskSchema = new Schema<
-  Interface_Task,
-  Model<Interface_Task>,
-  Interface_Task
->({
+const taskSchema = new Schema({
   title: {
     type: String,
     required: true,
@@ -32,7 +29,7 @@ const taskSchema = new Schema<
   },
   createdAt: {
     type: Date,
-    default: () => new Date(Date.now()),
+    default: Date.now,
   },
   deadline: {
     type: Date,

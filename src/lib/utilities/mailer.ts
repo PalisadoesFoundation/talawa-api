@@ -7,8 +7,8 @@ export interface Interface_MailFields {
   body: string;
 }
 
-export const mailer = (email: any, subject: any, body: any) => {
-  //NODEMAILER SPECIFIC STUFF
+export const mailer = (mailFields: Interface_MailFields) => {
+  // Nodemailer configuration
   let transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -19,14 +19,14 @@ export const mailer = (email: any, subject: any, body: any) => {
 
   let mailOptions = {
     from: 'Talawa<>noreply@gmail.com',
-    to: email,
-    subject: subject,
-    html: body,
+    to: mailFields.emailTo,
+    subject: mailFields.subject,
+    html: mailFields.body,
   };
 
   return new Promise((resolve, reject) => {
-    transporter.sendMail(mailOptions, function (err, info) {
-      if (err) {
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
         reject(ERROR_IN_SENDING_MAIL);
       } else {
         resolve(info);

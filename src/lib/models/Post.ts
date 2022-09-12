@@ -1,29 +1,33 @@
-import { Schema, model, Model, PopulatedDoc } from 'mongoose';
+import {
+  Schema,
+  model,
+  PopulatedDoc,
+  Types,
+  Document,
+  PaginateModel,
+} from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 import { Interface_Comment } from './Comment';
 import { Interface_Organization } from './Organization';
 import { Interface_User } from './User';
 
 export interface Interface_Post {
+  _id: Types.ObjectId;
   text: string;
-  title?: string;
-  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+  title: string | undefined;
+  status: string;
   createdAt: Date;
-  imageUrl?: string;
-  videoUrl?: string;
-  creator: PopulatedDoc<Interface_User>;
-  organization: PopulatedDoc<Interface_Organization>;
-  likedBy: Array<PopulatedDoc<Interface_User>>;
-  comments: Array<PopulatedDoc<Interface_Comment>>;
+  imageUrl: string | undefined;
+  videoUrl: string | undefined;
+  creator: PopulatedDoc<Interface_User & Document>;
+  organization: PopulatedDoc<Interface_Organization & Document>;
+  likedBy: Array<PopulatedDoc<Interface_User & Document>>;
+  comments: Array<PopulatedDoc<Interface_Comment & Document>>;
   likeCount: number;
   commentCount: number;
 }
 
-const postSchema = new Schema<
-  Interface_Post,
-  Model<Interface_Post>,
-  Interface_Post
->({
+const postSchema = new Schema({
   text: {
     type: String,
     required: true,
@@ -39,7 +43,7 @@ const postSchema = new Schema<
   },
   createdAt: {
     type: Date,
-    default: () => new Date(Date.now()),
+    default: Date.now,
   },
   imageUrl: {
     type: String,
@@ -81,12 +85,9 @@ const postSchema = new Schema<
   },
 });
 
-/*
-Invalid code. Currently ignored by typescript. Needs fix.
-This library mongoose-paginate-v2 has wrong typescript bindings.
-@ts-ignore cannot be removed until the author of library fixes it. 
-*/
-// @ts-ignore
 postSchema.plugin(mongoosePaginate);
 
-export const Post = model<Interface_Post>('Post', postSchema);
+export const Post = model<Interface_Post, PaginateModel<Interface_Post>>(
+  'Post',
+  postSchema
+);

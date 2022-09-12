@@ -1,19 +1,18 @@
-import { Schema, Types, model, Model } from 'mongoose';
+import { Schema, model, PopulatedDoc, Types, Document } from 'mongoose';
+import { Interface_DirectChat } from './DirectChat';
+import { Interface_User } from './User';
 
 export interface Interface_DirectChatMessage {
-  directChatMessageBelongsTo: Types.ObjectId;
-  sender: Types.ObjectId;
-  receiver: Types.ObjectId;
+  _id: Types.ObjectId;
+  directChatMessageBelongsTo: PopulatedDoc<Interface_DirectChat & Document>;
+  sender: PopulatedDoc<Interface_User & Document>;
+  receiver: PopulatedDoc<Interface_User & Document>;
   createdAt: Date;
   messageContent: string;
-  status: 'ACTIVE' | 'BLOCKED' | 'DELETED';
+  status: string;
 }
 
-const directChatMessageSchema = new Schema<
-  Interface_DirectChatMessage,
-  Model<Interface_DirectChatMessage>,
-  Interface_DirectChatMessage
->({
+const directChatMessageSchema = new Schema({
   directChatMessageBelongsTo: {
     type: Schema.Types.ObjectId,
     ref: 'DirectChat',
@@ -49,3 +48,5 @@ export const DirectChatMessage = model<Interface_DirectChatMessage>(
   'DirectChatMessage',
   directChatMessageSchema
 );
+
+const s = new DirectChatMessage({});

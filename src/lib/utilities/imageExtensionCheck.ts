@@ -1,14 +1,17 @@
 import { deleteImage } from './deleteImage';
-import { ValidationError } from '../libraries/errors';
-import requestContext from '../libraries/request-context';
+import { errors, requestContext } from '../libraries';
 
 export const imageExtensionCheck = async (filename: string) => {
-  const extension = filename.split('.').pop();
+  const fileExtension = filename.split('.').pop();
 
-  if (extension !== 'png' && extension !== 'jpg' && extension !== 'jpeg') {
+  if (
+    fileExtension !== 'png' &&
+    fileExtension !== 'jpg' &&
+    fileExtension !== 'jpeg'
+  ) {
     await deleteImage(filename);
 
-    throw new ValidationError(
+    throw new errors.ValidationError(
       [
         {
           message: requestContext.translate('invalid.fileType'),
