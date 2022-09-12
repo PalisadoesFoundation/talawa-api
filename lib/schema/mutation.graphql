@@ -1,6 +1,7 @@
 module.exports = `
 
  type Mutation {
+    singleFileUpload(file: Upload!): FileUploadResponse!
     signUp(data: UserInput!, file:Upload): AuthData!
     login(data: LoginInput!): AuthData!
     otp(data: OTPInput!): OtpData!

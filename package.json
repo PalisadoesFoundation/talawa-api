@@ -34,6 +34,7 @@
     "@graphql-tools/schema": "^8.3.5",
     "apollo-server-core": "^3.10.1",
     "apollo-server-express": "^2.25.2",
+    "aws-sdk": "^2.1213.0",
     "axios": "^0.21.2",
     "bcryptjs": "^2.4.3",
     "boxen": "^4.2.0",
