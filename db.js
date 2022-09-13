@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const logger = require('logger');
+const destroyConnections = require('./lib/ConnectionManager/destroyConnections');
 
 const connect = async () => {
   try {
@@ -17,5 +18,6 @@ const connect = async () => {
 
 const disconnect = async () => {
   await mongoose.connection.close();
+  await destroyConnections();
 };
 module.exports = { connect, disconnect };

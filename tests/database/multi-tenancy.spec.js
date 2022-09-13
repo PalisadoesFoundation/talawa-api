@@ -1,13 +1,11 @@
 const shortid = require('shortid');
 const Tenant = require('../../lib/models/Tenant');
+const MainDB = require('../../lib/models');
 const connectionManager = require('../../lib/ConnectionManager');
 const {
   Types: { ObjectId },
 } = require('mongoose');
-const {
-  CONNECTION_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND,
-} = require('../../constants');
+const { ORGANIZATION_NOT_FOUND } = require('../../constants');
 
 const database = require('../../db');
 const getUserIdFromSignUp = require('../functions/getUserIdFromSignup');
@@ -81,16 +79,16 @@ afterAll(async () => {
 describe('tenant is working and transparent from main db', () => {
   test('initTenants and destroyConnections', async () => {
     let conn;
-    expect(() => {
-      connectionManager.getTenantConnection(organizationId);
-    }).toThrow(CONNECTION_NOT_FOUND);
+    expect(connectionManager.getTenantConnection(organizationId)).toEqual(
+      MainDB
+    );
     await connectionManager.initTenants();
     conn = connectionManager.getTenantConnection(organizationId);
     expect(conn).toBeTruthy();
     await connectionManager.destroyConnections();
-    expect(() => {
-      connectionManager.getTenantConnection(organizationId);
-    }).toThrow(CONNECTION_NOT_FOUND);
+    expect(connectionManager.getTenantConnection(organizationId)).toEqual(
+      MainDB
+    );
     await connectionManager.initTenants();
   });
 
