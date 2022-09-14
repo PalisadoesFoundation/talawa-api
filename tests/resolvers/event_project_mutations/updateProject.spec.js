@@ -99,9 +99,9 @@ const createEvent = async (userId, organizationId) => {
     { _id: userId },
     {
       $push: {
-        eventAdmin: newEvent,
-        createdEvents: newEvent,
-        registeredEvents: newEvent,
+        eventAdmin: newEvent._id,
+        createdEvents: newEvent._id,
+        registeredEvents: newEvent._id,
       },
     }
   );
