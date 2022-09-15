@@ -1,9 +1,16 @@
 const registeredEventsByUser = require('../../../lib/resolvers/event_query/registeredEventsByUser');
 const database = require('../../../db');
+const getUserId = require('../../functions/getUserId');
+const getToken = require('../../functions/getToken');
+const shortid = require('shortid');
 
+let userId;
 beforeAll(async () => {
   require('dotenv').config(); // pull env variables from .env file
   await database.connect();
+  let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
+  await getToken(generatedEmail);
+  userId = await getUserId(generatedEmail);
 });
 
 afterAll(() => {
@@ -38,6 +45,7 @@ describe('Unit testing', () => {
     test(`Registered Events by User Query with orderBy ${arg}`, async () => {
       const args = {
         orderBy: arg,
+        id: userId,
       };
       const response = await registeredEventsByUser({}, args);
       response.map((event) => {
