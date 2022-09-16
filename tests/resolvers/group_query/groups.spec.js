@@ -1,18 +1,19 @@
 const database = require('../../../db');
-require('../../../lib/models/Plugin');
-const getPlugins = require('../../../lib/resolvers/plugin_query/getPlugins');
+const groups = require('../../../lib/resolvers/group_query/groups');
 beforeAll(async () => {
-  require('dotenv').config(); // pull env variables from .env file
-  await database.connect();
+    require('dotenv').config(); // pull env variables from .env file
+    await database.connect();
 });
 
 afterAll(() => {
-  database.disconnect();
+    database.disconnect();
 });
 
-describe('Plugins query testing for getting the lib/resolvers/plugin_query/getPlugins.js', () => {
-  test('Testing getPlugins Functions', async () => {
-    const response = await getPlugins();
-    expect(response).toBeTruthy();
-  });
+describe('Groups query testing for getting the lib/resolvers/group_query/groups.js', () => {
+    test('Testing groups Functions', async () => {
+        //on `groups.js` file we are only  returning the data from database which can be some JSON or []
+        //so we will just check if it's truthy value or not in the test.
+        const response = await groups();
+        expect(response).toBeTruthy();
+    });
 });
