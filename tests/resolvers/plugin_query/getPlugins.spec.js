@@ -10,7 +10,7 @@ afterAll(() => {
   database.disconnect();
 });
 
-describe('Post query testing for post resolver', () => {
+describe('Plugins query testing for getting the lib/resolvers/plugin_query/getPlugins.js', () => {
   test('Testing getPlugins Functions', async () => {
     const response = await getPlugins();
     expect(response).toBeTruthy();
