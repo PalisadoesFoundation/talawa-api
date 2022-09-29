@@ -1,6 +1,5 @@
 const shortid = require('shortid');
 const Tenant = require('../../lib/models/Tenant');
-// const MainDB = require('../../lib/models');
 const connectionManager = require('../../lib/ConnectionManager');
 const {
   Types: { ObjectId },
