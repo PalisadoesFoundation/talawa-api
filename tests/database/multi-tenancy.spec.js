@@ -4,10 +4,7 @@ const connectionManager = require('../../lib/ConnectionManager');
 const {
   Types: { ObjectId },
 } = require('mongoose');
-const {
-  CONNECTION_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND,
-} = require('../../constants');
+const { ORGANIZATION_NOT_FOUND } = require('../../constants');
 
 const database = require('../../db');
 const getUserIdFromSignUp = require('../functions/getUserIdFromSignup');
@@ -66,8 +63,10 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  const conn1 = connectionManager.getTenantConnection(organizationId);
-  const conn2 = connectionManager.getTenantConnection(secondOrganizationId);
+  const conn1 = await connectionManager.getTenantConnection(organizationId);
+  const conn2 = await connectionManager.getTenantConnection(
+    secondOrganizationId
+  );
   await conn1.Post.deleteMany();
   await conn2.Post.deleteMany();
   await User.findByIdAndDelete(adminId);
@@ -79,21 +78,6 @@ afterAll(async () => {
 });
 
 describe('tenant is working and transparent from main db', () => {
-  test('initTenants and destroyConnections', async () => {
-    let conn;
-    expect(() => {
-      connectionManager.getTenantConnection(organizationId);
-    }).toThrow(CONNECTION_NOT_FOUND);
-    await connectionManager.initTenants();
-    conn = connectionManager.getTenantConnection(organizationId);
-    expect(conn).toBeTruthy();
-    await connectionManager.destroyConnections();
-    expect(() => {
-      connectionManager.getTenantConnection(organizationId);
-    }).toThrow(CONNECTION_NOT_FOUND);
-    await connectionManager.initTenants();
-  });
-
   test('addConnection', async () => {
     const organization = new Organization({
       name: 'second tenant organization',
@@ -145,7 +129,7 @@ describe('tenant is working and transparent from main db', () => {
   });
 
   test('getConnection', async () => {
-    const conn = connectionManager.getTenantConnection(organizationId);
+    const conn = await connectionManager.getTenantConnection(organizationId);
     const newPost = new conn.Post({
       status: 'ACTIVE',
       likedBy: [adminId],
@@ -164,8 +148,10 @@ describe('tenant is working and transparent from main db', () => {
   });
 
   test('Isolated tenants', async () => {
-    const conn1 = connectionManager.getTenantConnection(organizationId);
-    const conn2 = connectionManager.getTenantConnection(secondOrganizationId);
+    const conn1 = await connectionManager.getTenantConnection(organizationId);
+    const conn2 = await connectionManager.getTenantConnection(
+      secondOrganizationId
+    );
 
     const firstOrgPosts = await conn1.Post.find();
     const secondOrgPosts = await conn2.Post.find();
