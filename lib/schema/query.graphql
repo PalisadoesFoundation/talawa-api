@@ -46,5 +46,8 @@ module.exports = `
 
     # For Plugins 
     getPlugins: [Plugin]
+    getDonations: [Donation]
+    getDonationById(id : ID!): Donation!
+    getDonationByOrgId(orgId :ID!): [Donation]
   }
 `
