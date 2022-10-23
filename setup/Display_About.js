@@ -18,7 +18,7 @@ const display_about = () => {
   );
 
   //Display the text on console
-  display_heading('TALAWA ADMIN');
+  display_heading('TALAWA API');
   display_markdown(data);
 };
 

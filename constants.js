@@ -15,6 +15,12 @@ const MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE = 'membershipRequest.notFound';
 const MEMBERSHIP_REQUEST_NOT_FOUND_CODE = 'membershipRequest.notFound';
 const MEMBERSHIP_REQUEST_NOT_FOUND_PARAM = 'membershipRequest';
 
+const MEMBERSHIP_REQUEST_ALREADY_EXIST = 'Membership Request already Exists';
+const MEMBERSHIP_REQUEST_ALREADY_EXIST_MESSAGE =
+  'membershipRequest.alreadyExists';
+const MEMBERSHIP_REQUEST_ALREADY_EXIST_CODE = 'membershipRequest.alreadyExists';
+const MEMBERSHIP_REQUEST_ALREADY_EXIST_PARAM = 'membershipRequest';
+
 const USER_NOT_FOUND = 'User not found';
 const USER_NOT_FOUND_MESSAGE = 'user.notFound';
 const USER_NOT_FOUND_CODE = 'user.notFound';
@@ -45,6 +51,10 @@ const EVENT_NOT_FOUND_MESSAGE = 'event.notFound';
 const EVENT_NOT_FOUND_CODE = 'event.notFound';
 const EVENT_NOT_FOUND_PARAM = 'event';
 
+const ERROR_IN_SENDING_MAIL = 'Error in sending mail';
+
+const INVALID_OTP = 'Invalid OTP';
+
 const REGISTRANT_ALREADY_EXIST = 'Already registered for the event';
 const REGISTRANT_ALREADY_EXIST_MESSAGE = 'registrant.alreadyExist';
 const REGISTRANT_ALREADY_EXIST_CODE = 'registrant.alreadyExist';
@@ -66,14 +76,16 @@ const USER_ALREADY_UNREGISTERED_CODE = 'registrant.alreadyUnregistered';
 const USER_ALREADY_UNREGISTERED_PARAM = 'registrant';
 
 const COMMENT_NOT_FOUND = 'Comment not found';
-const COMMENT_NOT_FOUND_MESSAGE = 'comment.notFound'
+const COMMENT_NOT_FOUND_MESSAGE = 'comment.notFound';
 const COMMENT_NOT_FOUND_CODE = 'comment.notFound';
-const COMMENT_NOT_FOUND_PARAM = 'comment'
+const COMMENT_NOT_FOUND_PARAM = 'comment';
 
 const POST_NOT_FOUND = 'Post not found';
 const POST_NOT_FOUND_MESSAGE = 'post.notFound';
 const POST_NOT_FOUND_CODE = 'post.notFound';
-const POST_NOT_FOUND_PARAM = 'post'
+const POST_NOT_FOUND_PARAM = 'post';
+
+const STATUS_ACTIVE = 'ACTIVE';
 
 const IN_PRODUCTION = process.env.NODE_ENV === 'production';
 
@@ -82,6 +94,8 @@ if (process.env.NODE_ENV === 'test') {
 }
 
 module.exports = {
+  STATUS_ACTIVE,
+
   URL,
   IN_PRODUCTION,
 
@@ -110,6 +124,10 @@ module.exports = {
   EVENT_NOT_FOUND_CODE,
   EVENT_NOT_FOUND_PARAM,
 
+  ERROR_IN_SENDING_MAIL,
+
+  INVALID_OTP,
+
   USER_ALREADY_MEMBER,
   USER_ALREADY_MEMBER_CODE,
   USER_ALREADY_MEMBER_MESSAGE,
@@ -119,6 +137,11 @@ module.exports = {
   MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
   MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
   MEMBERSHIP_REQUEST_NOT_FOUND_PARAM,
+
+  MEMBERSHIP_REQUEST_ALREADY_EXIST,
+  MEMBERSHIP_REQUEST_ALREADY_EXIST_CODE,
+  MEMBERSHIP_REQUEST_ALREADY_EXIST_MESSAGE,
+  MEMBERSHIP_REQUEST_ALREADY_EXIST_PARAM,
 
   REGISTRANT_ALREADY_EXIST,
   REGISTRANT_ALREADY_EXIST_CODE,

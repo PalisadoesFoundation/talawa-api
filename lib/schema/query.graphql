@@ -7,6 +7,8 @@ module.exports = `
     users(where: UserWhereInput, orderBy: UserOrderByInput): [User] @auth
     usersConnection(where: UserWhereInput, first: Int, skip: Int, orderBy: UserOrderByInput): [User]! @auth
     
+    checkAuth: User! @auth
+
     organizations(id: ID, orderBy: OrganizationOrderByInput): [Organization]
     organizationsConnection(where: OrganizationWhereInput, first: Int, skip: Int, orderBy: OrganizationOrderByInput): [Organization]!
     organizationsMemberConnection(orgId:ID!, where: UserWhereInput, first: Int, skip: Int, orderBy: UserOrderByInput): UserConnection! @auth
@@ -41,5 +43,11 @@ module.exports = `
     plugin(orgId: ID!): [Plugin]
     adminPlugin(orgId: ID!): [Plugin]
     getlanguage(lang_code: String!): [Translation]
+
+    # For Plugins 
+    getPlugins: [Plugin]
+    getDonations: [Donation]
+    getDonationById(id : ID!): Donation!
+    getDonationByOrgId(orgId :ID!): [Donation]
   }
 `

@@ -11,7 +11,7 @@
     "start-test-server-in-action": "cross-env NODE_ENV=test pm2 start index.js -f",
     "stop-test-server-in-action": "pm2 delete all",
     "lint": "eslint . --fix && echo 'Lint complete.'",
-    "setup": "npm i boxen@4.2.0 chalk@4.1.0 inquirer markdown-js marked@2.0.1 marked-terminal@4.1.0 node-cmd@5.0.0 -f && node setup.js",
+    "setup": "npm i boxen@4.2.0 chalk@4.1.0 inquirer markdown-js marked@2.0.1 marked-terminal@5.1.1 node-cmd@5.0.0 && node setup.js",
     "file-coverage": "npm test $npm_config_testfile -- --coverage --collectCoverageFrom=$npm_config_functionfile"
   },
   "repository": {
@@ -32,7 +32,7 @@
   "homepage": "https://github.com/PalisadoesFoundation/talawa-api#readme",
   "dependencies": {
     "@graphql-tools/schema": "^8.3.5",
-    "apollo-server-core": "^3.6.6",
+    "apollo-server-core": "^3.10.1",
     "apollo-server-express": "^2.25.2",
     "axios": "^0.21.2",
     "bcryptjs": "^2.4.3",
@@ -48,6 +48,7 @@
     "express": "^4.17.1",
     "express-mongo-sanitize": "^2.0.2",
     "express-rate-limit": "^5.2.6",
+    "firebase-admin": "^10.3.0",
     "glob-parent": "^5.1.2",
     "graphql": "^15.5.0",
     "graphql-depth-limit": "^1.1.0",
@@ -55,19 +56,21 @@
     "graphql-ws": "^5.6.4",
     "helmet": "^4.6.0",
     "i18n": "^0.13.3",
-    "image-hash": "^4.0.1",
-    "inquirer": "^8.2.0",
+    "image-hash": "^5.3.1",
+    "inquirer": "^8.2.4",
     "jsonwebtoken": "^8.5.1",
+    "jwt-decode": "^3.1.2",
     "logger": "file:lib/helper_lib/logger",
     "markdown-js": "^0.0.4",
-    "marked": "^4.0.10",
-    "marked-terminal": "^4.1.0",
-    "moment": "^2.29.2",
+    "marked": "^2.0.1",
+    "marked-terminal": "^5.1.1",
+    "moment": "^2.29.4",
     "mongoose": "^5.13.0",
     "mongoose-paginate-v2": "^1.3.18",
     "morgan": "^1.10.0",
     "netmask": ">=2.0.1",
     "node-cmd": "^5.0.0",
+    "nodemailer": "^6.7.5",
     "pm2": "^5.1.2",
     "request-tracing": "file:lib/helper_lib/request-tracing",
     "shortid": "^2.2.16",
@@ -80,7 +83,6 @@
     "yarn": "^1.22.10"
   },
   "devDependencies": {
-    "easygraphql-tester": "^5.1.6",
     "eslint": "^7.29.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-prettier": "^8.3.0",
@@ -89,7 +91,7 @@
     "eslint-plugin-prettier": "^3.4.0",
     "jest": "^27.4.7",
     "netmask": ">=2.0.1",
-    "nodemon": "^2.0.15",
+    "nodemon": "^2.0.20",
     "prettier": "^2.3.2"
   }
 }
