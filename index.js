@@ -1,5 +1,6 @@
 require('dotenv').config(); // pull env variables from .env file
 
+const connectionManager = require('./lib/ConnectionManager');
 const depthLimit = require('graphql-depth-limit');
 const { ApolloServer, PubSub } = require('apollo-server-express');
 const http = require('http');
@@ -113,7 +114,7 @@ const apolloServer = new ApolloServer({
     auth: AuthenticationDirective,
     role: RoleAuthorizationDirective,
   },
-  context: ({ req, res, connection }) => {
+  context: async ({ req, res, connection }) => {
     if (connection) {
       return {
         ...connection,
@@ -172,6 +173,7 @@ apolloServer.installSubscriptionHandlers(httpServer);
 const serverStart = async () => {
   try {
     await database.connect();
+    await connectionManager.initTenants();
     httpServer.listen(process.env.PORT || 4000, () => {
       logger.info(
         `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
