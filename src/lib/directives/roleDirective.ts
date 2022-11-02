@@ -1,17 +1,17 @@
-import { SchemaDirectiveVisitor } from 'apollo-server-express';
+import { SchemaDirectiveVisitor } from "apollo-server-express";
 import {
   defaultFieldResolver,
   GraphQLField,
   GraphQLInterfaceType,
   GraphQLObjectType,
-} from 'graphql';
+} from "graphql";
 import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../constants';
-import { errors, requestContext } from '../libraries';
-import { User } from '../models';
+} from "../../constants";
+import { errors, requestContext } from "../libraries";
+import { User } from "../models";
 
 export class RoleAuthorizationDirective extends SchemaDirectiveVisitor {
   visitFieldDefinition(
@@ -44,9 +44,9 @@ export class RoleAuthorizationDirective extends SchemaDirectiveVisitor {
 
       if (currentUser.userType !== requires) {
         throw new errors.UnauthenticatedError(
-          requestContext.translate('user.notAuthenticated'),
-          'user.notAuthenticated',
-          'userAuthentication'
+          requestContext.translate("user.notAuthenticated"),
+          "user.notAuthenticated",
+          "userAuthentication"
         );
       }
 

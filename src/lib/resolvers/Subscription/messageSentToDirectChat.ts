@@ -1,9 +1,9 @@
-import { withFilter } from 'apollo-server-express';
-import { SubscriptionResolvers } from '../../../generated/graphQLTypescriptTypes';
+import { withFilter } from "apollo-server-express";
+import { SubscriptionResolvers } from "../../../generated/graphqlCodegen";
 
-const MESSAGE_SENT_TO_DIRECT_CHAT = 'MESSAGE_SENT_TO_DIRECT_CHAT';
+const MESSAGE_SENT_TO_DIRECT_CHAT = "MESSAGE_SENT_TO_DIRECT_CHAT";
 
-export const messageSentToDirectChat: SubscriptionResolvers['messageSentToDirectChat'] =
+export const messageSentToDirectChat: SubscriptionResolvers["messageSentToDirectChat"] =
   {
     // @ts-ignore
     subscribe: withFilter(
@@ -14,8 +14,8 @@ export const messageSentToDirectChat: SubscriptionResolvers['messageSentToDirect
         const { currentUserId } = context.context;
 
         return (
-          currentUserId == payload.messageSentToDirectChat.receiver ||
-          currentUserId == payload.messageSentToDirectChat.sender
+          currentUserId === payload.messageSentToDirectChat.receiver ||
+          currentUserId === payload.messageSentToDirectChat.sender
         );
       }
     ),

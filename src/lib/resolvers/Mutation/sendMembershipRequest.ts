@@ -8,12 +8,12 @@ import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { User, MembershipRequest, Organization } from '../../models';
+} from "../../../constants";
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { User, MembershipRequest, Organization } from "../../models";
 
-export const sendMembershipRequest: MutationResolvers['sendMembershipRequest'] =
+export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
   async (_parent, args, context) => {
     const currentUserExists = await User.exists({
       _id: context.userId,
@@ -51,14 +51,14 @@ export const sendMembershipRequest: MutationResolvers['sendMembershipRequest'] =
     if (membershipRequestExists === true) {
       throw new errors.ConflictError(
         IN_PRODUCTION !== true
-          ? 'MembershipRequest already exists'
-          : requestContext.translate('membershipRequest.alreadyExists'),
-        'membershipRequest.alreadyExists',
-        'membershipRequest'
+          ? "MembershipRequest already exists"
+          : requestContext.translate("membershipRequest.alreadyExists"),
+        "membershipRequest.alreadyExists",
+        "membershipRequest"
       );
     }
 
-    let createdMembershipRequest = await MembershipRequest.create({
+    const createdMembershipRequest = await MembershipRequest.create({
       user: context.userId,
       organization: organization._id,
     });

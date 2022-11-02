@@ -1,20 +1,20 @@
-import { QueryResolvers } from '../../../generated/graphQLTypescriptTypes';
+import { QueryResolvers } from "../../../generated/graphqlCodegen";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
-import { User } from '../../models';
-import { errors, requestContext } from '../../libraries';
+} from "../../../constants";
+import { User } from "../../models";
+import { errors, requestContext } from "../../libraries";
 
-export const checkAuth: QueryResolvers['checkAuth'] = async (
+export const checkAuth: QueryResolvers["checkAuth"] = async (
   _parent,
   _args,
   context
 ) => {
-  let currentUser = await User.findOne({
+  const currentUser = await User.findOne({
     _id: context.userId,
   }).lean();
 

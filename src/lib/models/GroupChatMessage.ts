@@ -1,6 +1,6 @@
-import { Schema, Types, model, PopulatedDoc, Document } from 'mongoose';
-import { Interface_GroupChat } from './GroupChat';
-import { Interface_User } from './User';
+import { Schema, Types, model, PopulatedDoc, Document, models } from "mongoose";
+import { Interface_GroupChat } from "./GroupChat";
+import { Interface_User } from "./User";
 
 export interface Interface_GroupChatMessage {
   _id: Types.ObjectId;
@@ -14,12 +14,12 @@ export interface Interface_GroupChatMessage {
 const groupChatMessageSchema = new Schema({
   groupChatMessageBelongsTo: {
     type: Schema.Types.ObjectId,
-    ref: 'GroupChat',
+    ref: "GroupChat",
     required: true,
   },
   sender: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
   createdAt: {
@@ -33,12 +33,13 @@ const groupChatMessageSchema = new Schema({
   status: {
     type: String,
     required: true,
-    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
-    default: 'ACTIVE',
+    enum: ["ACTIVE", "BLOCKED", "DELETED"],
+    default: "ACTIVE",
   },
 });
 
-export const GroupChatMessage = model<Interface_GroupChatMessage>(
-  'GroupChatMessage',
-  groupChatMessageSchema
-);
+const GroupChatMessageModel = () =>
+  model<Interface_GroupChatMessage>("GroupChatMessage", groupChatMessageSchema);
+
+export const GroupChatMessage = (models.GroupChatMessage ||
+  GroupChatMessageModel()) as ReturnType<typeof GroupChatMessageModel>;

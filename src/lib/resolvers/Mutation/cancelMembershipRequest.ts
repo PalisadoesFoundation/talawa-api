@@ -1,6 +1,6 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User, Organization, MembershipRequest } from '../../models';
-import { errors, requestContext } from '../../libraries';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { User, Organization, MembershipRequest } from "../../models";
+import { errors, requestContext } from "../../libraries";
 import {
   IN_PRODUCTION,
   ORGANIZATION_NOT_FOUND,
@@ -19,9 +19,9 @@ import {
   MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
   MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
   MEMBERSHIP_REQUEST_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const cancelMembershipRequest: MutationResolvers['cancelMembershipRequest'] =
+export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest"] =
   async (_parent, args, context) => {
     const membershipRequest = await MembershipRequest.findOne({
       _id: args.membershipRequestId,
@@ -38,7 +38,7 @@ export const cancelMembershipRequest: MutationResolvers['cancelMembershipRequest
       );
     }
 
-    let organization = await Organization.findOne({
+    const organization = await Organization.findOne({
       _id: membershipRequest.organization,
     }).lean();
 

@@ -1,4 +1,4 @@
-import { Schema, model, Types } from 'mongoose';
+import { Schema, model, Types, models } from "mongoose";
 
 export interface Interface_ImageHash {
   _id: Types.ObjectId;
@@ -25,12 +25,14 @@ const imageHashSchema = new Schema({
   status: {
     type: String,
     required: true,
-    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
-    default: 'ACTIVE',
+    enum: ["ACTIVE", "BLOCKED", "DELETED"],
+    default: "ACTIVE",
   },
 });
 
-export const ImageHash = model<Interface_ImageHash>(
-  'ImageHash',
-  imageHashSchema
-);
+const ImageHashModel = () =>
+  model<Interface_ImageHash>("ImageHash", imageHashSchema);
+
+export const ImageHash = (models.ImageHash || ImageHashModel()) as ReturnType<
+  typeof ImageHashModel
+>;

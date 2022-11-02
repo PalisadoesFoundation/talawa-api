@@ -1,7 +1,7 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User, Post, Organization } from '../../models';
-import { uploadImage } from '../../utilities';
-import { errors, requestContext } from '../../libraries';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { User, Post, Organization } from "../../models";
+import { uploadImage } from "../../utilities";
+import { errors, requestContext } from "../../libraries";
 import {
   IN_PRODUCTION,
   ORGANIZATION_NOT_FOUND,
@@ -12,9 +12,9 @@ import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const createPost: MutationResolvers['createPost'] = async (
+export const createPost: MutationResolvers["createPost"] = async (
   _parent,
   args,
   context
@@ -52,7 +52,7 @@ export const createPost: MutationResolvers['createPost'] = async (
   let uploadImageObj;
 
   if (args.file) {
-    uploadImageObj = await uploadImage(args.file, '');
+    uploadImageObj = await uploadImage(args.file, "");
   }
 
   // Creates new post.
@@ -60,7 +60,7 @@ export const createPost: MutationResolvers['createPost'] = async (
     ...args.data,
     creator: context.userId,
     organization: args.data.organizationId,
-    imageUrl: args.file ? uploadImageObj?.newImagePath : '',
+    imageUrl: args.file ? uploadImageObj?.newImagePath : "",
   });
 
   // Returns createdPost.

@@ -1,4 +1,4 @@
-import { gql } from 'apollo-server-core';
+import { gql } from "apollo-server-core";
 
 export const user = gql`
   type User {

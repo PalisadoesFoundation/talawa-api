@@ -1,6 +1,6 @@
-import { QueryResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { GroupChat } from '../../models';
+import { QueryResolvers } from "../../../generated/graphqlCodegen";
+import { GroupChat } from "../../models";
 
-export const groupChats: QueryResolvers['groupChats'] = async () => {
+export const groupChats: QueryResolvers["groupChats"] = async () => {
   return await GroupChat.find().lean();
 };

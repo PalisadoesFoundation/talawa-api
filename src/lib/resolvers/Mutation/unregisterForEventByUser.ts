@@ -1,6 +1,6 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { User, Event } from '../../models';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { User, Event } from "../../models";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
@@ -15,9 +15,9 @@ import {
   USER_ALREADY_UNREGISTERED_MESSAGE,
   USER_ALREADY_UNREGISTERED_CODE,
   USER_ALREADY_UNREGISTERED_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const unregisterForEventByUser: MutationResolvers['unregisterForEventByUser'] =
+export const unregisterForEventByUser: MutationResolvers["unregisterForEventByUser"] =
   async (_parent, args, context) => {
     const currentUserExists = await User.exists({
       _id: context.userId,
@@ -65,20 +65,20 @@ export const unregisterForEventByUser: MutationResolvers['unregisterForEventByUs
       );
     }
 
-    if (event.registrants[index].status === 'ACTIVE') {
-      let updatedRegistrants = event.registrants;
+    if (event.registrants[index].status === "ACTIVE") {
+      const updatedRegistrants = event.registrants;
       updatedRegistrants[index] = {
         id: updatedRegistrants[index].id,
         userId: updatedRegistrants[index].userId,
         user: updatedRegistrants[index].user,
-        status: 'DELETED',
+        status: "DELETED",
         createdAt: updatedRegistrants[index].createdAt,
       };
 
       return await Event.findOneAndUpdate(
         {
           _id: args.id,
-          status: 'ACTIVE',
+          status: "ACTIVE",
         },
         {
           $set: {

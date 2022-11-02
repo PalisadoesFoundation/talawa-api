@@ -8,12 +8,12 @@ import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { User, Comment } from '../../models';
+} from "../../../constants";
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { User, Comment } from "../../models";
 
-export const unlikeComment: MutationResolvers['unlikeComment'] = async (
+export const unlikeComment: MutationResolvers["unlikeComment"] = async (
   _parent,
   args,
   context
@@ -32,7 +32,7 @@ export const unlikeComment: MutationResolvers['unlikeComment'] = async (
     );
   }
 
-  let comment = await Comment.findOne({
+  const comment = await Comment.findOne({
     _id: args.id,
   }).lean();
 

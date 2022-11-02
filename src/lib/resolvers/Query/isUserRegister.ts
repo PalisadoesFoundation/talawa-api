@@ -1,26 +1,26 @@
-import { QueryResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { Event } from '../../models';
-import { errors, requestContext } from '../../libraries';
+import { QueryResolvers } from "../../../generated/graphqlCodegen";
+import { Event } from "../../models";
+import { errors, requestContext } from "../../libraries";
 import {
   IN_PRODUCTION,
   EVENT_NOT_FOUND,
   EVENT_NOT_FOUND_CODE,
   EVENT_NOT_FOUND_MESSAGE,
   EVENT_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const isUserRegister: QueryResolvers['isUserRegister'] = async (
+export const isUserRegister: QueryResolvers["isUserRegister"] = async (
   _parent,
   args,
   context
 ) => {
   const event = await Event.findOne({
     _id: args.eventId,
-    status: 'ACTIVE',
+    status: "ACTIVE",
   })
-    .populate('creator', '-password')
-    .populate('tasks')
-    .populate('admins', '-password')
+    .populate("creator", "-password")
+    .populate("tasks")
+    .populate("admins", "-password")
     .lean();
 
   if (!event) {
@@ -38,7 +38,7 @@ export const isUserRegister: QueryResolvers['isUserRegister'] = async (
   for (const registrant of event.registrants) {
     if (
       registrant.userId === context.userId &&
-      registrant.status === 'ACTIVE'
+      registrant.status === "ACTIVE"
     ) {
       isCurrentUserRegistered = true;
       break;

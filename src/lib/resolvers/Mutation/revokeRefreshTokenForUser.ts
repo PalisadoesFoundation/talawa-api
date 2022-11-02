@@ -1,7 +1,7 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User } from '../../models';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { User } from "../../models";
 
-export const revokeRefreshTokenForUser: MutationResolvers['revokeRefreshTokenForUser'] =
+export const revokeRefreshTokenForUser: MutationResolvers["revokeRefreshTokenForUser"] =
   async (_parent, args) => {
     await User.updateOne(
       {

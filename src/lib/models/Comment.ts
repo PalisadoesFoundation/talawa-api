@@ -1,6 +1,6 @@
-import { Schema, model, PopulatedDoc, Types, Document } from 'mongoose';
-import { Interface_Post } from './Post';
-import { Interface_User } from './User';
+import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
+import { Interface_Post } from "./Post";
+import { Interface_User } from "./User";
 
 export interface Interface_Comment {
   _id: Types.ObjectId;
@@ -24,18 +24,18 @@ const commentSchema = new Schema({
   },
   creator: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
   post: {
     type: Schema.Types.ObjectId,
-    ref: 'Post',
+    ref: "Post",
     required: true,
   },
   likedBy: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
     },
   ],
   likeCount: {
@@ -45,9 +45,13 @@ const commentSchema = new Schema({
   status: {
     type: String,
     required: true,
-    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
-    default: 'ACTIVE',
+    enum: ["ACTIVE", "BLOCKED", "DELETED"],
+    default: "ACTIVE",
   },
 });
 
-export const Comment = model<Interface_Comment>('Comment', commentSchema);
+const CommentModel = () => model<Interface_Comment>("Comment", commentSchema);
+
+export const Comment = (models.Comment || CommentModel()) as ReturnType<
+  typeof CommentModel
+>;

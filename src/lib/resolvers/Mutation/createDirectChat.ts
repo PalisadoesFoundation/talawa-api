@@ -1,6 +1,6 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User, Organization, DirectChat } from '../../models';
-import { errors, requestContext } from '../../libraries';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { User, Organization, DirectChat } from "../../models";
+import { errors, requestContext } from "../../libraries";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
@@ -11,14 +11,14 @@ import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const createDirectChat: MutationResolvers['createDirectChat'] = async (
+export const createDirectChat: MutationResolvers["createDirectChat"] = async (
   _parent,
   args,
   context
 ) => {
-  let currentUserExists = await User.exists({
+  const currentUserExists = await User.exists({
     _id: context.userId,
   });
 

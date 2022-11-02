@@ -1,9 +1,9 @@
-import { IN_PRODUCTION } from '../../../constants';
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { Language } from '../../models';
+import { IN_PRODUCTION } from "../../../constants";
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { Language } from "../../models";
 
-export const addLanguageTranslation: MutationResolvers['addLanguageTranslation'] =
+export const addLanguageTranslation: MutationResolvers["addLanguageTranslation"] =
   async (_parent, args) => {
     const language = await Language.findOne({
       en: args.data.en_value,
@@ -16,10 +16,10 @@ export const addLanguageTranslation: MutationResolvers['addLanguageTranslation']
         if (element.lang_code === args.data.translation_lang_code) {
           throw new errors.ConflictError(
             IN_PRODUCTION !== true
-              ? 'Translation already present'
-              : requestContext.translate('translation.alreadyPresent'),
-            'translation.alreadyPresent',
-            'translationAlreadyPresent'
+              ? "Translation already present"
+              : requestContext.translate("translation.alreadyPresent"),
+            "translation.alreadyPresent",
+            "translationAlreadyPresent"
           );
         }
       });

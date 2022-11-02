@@ -1,4 +1,4 @@
-import { Schema, model, Types, Document, PopulatedDoc } from 'mongoose';
+import { Schema, model, Types, Document, PopulatedDoc, models } from "mongoose";
 
 export interface Interface_LanguageModel {
   lang_code: string;
@@ -53,4 +53,9 @@ const languageSchema = new Schema({
   },
 });
 
-export const Language = model<Interface_Language>('Language', languageSchema);
+const LanguageModel = () =>
+  model<Interface_Language>("Language", languageSchema);
+
+export const Language = (models.Language || LanguageModel()) as ReturnType<
+  typeof LanguageModel
+>;

@@ -1,15 +1,15 @@
-import { QueryResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { DirectChatMessage } from '../../models';
+import { QueryResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { DirectChatMessage } from "../../models";
 import {
   IN_PRODUCTION,
   CHAT_NOT_FOUND,
   CHAT_NOT_FOUND_MESSAGE,
   CHAT_NOT_FOUND_CODE,
   CHAT_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const directChatsMessagesByChatID: QueryResolvers['directChatsMessagesByChatID'] =
+export const directChatsMessagesByChatID: QueryResolvers["directChatsMessagesByChatID"] =
   async (_parent, args) => {
     const directChatsMessages = await DirectChatMessage.find({
       directChatMessageBelongsTo: args.id,

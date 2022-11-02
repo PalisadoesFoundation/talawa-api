@@ -1,5 +1,5 @@
-import { imageHash } from 'image-hash';
-import { requestContext, errors } from '../libraries';
+import { imageHash } from "image-hash";
+import { requestContext, errors } from "../libraries";
 
 interface UrlRequestObject {
   encoding?: string | null;
@@ -36,9 +36,9 @@ export const reuploadDuplicateCheck = async (
   */
   try {
     if (oldImagePath) {
-      let oldImageHash = await getImageHash(oldImagePath);
+      const oldImageHash = await getImageHash(oldImagePath);
 
-      let newImageHash = await getImageHash(newImagePath);
+      const newImageHash = await getImageHash(newImagePath);
 
       return oldImageHash === newImageHash;
     }
@@ -50,12 +50,12 @@ export const reuploadDuplicateCheck = async (
     throw new errors.ValidationError(
       [
         {
-          message: requestContext.translate('invalid.fileType'),
-          code: 'invalid.fileType',
-          param: 'fileType',
+          message: requestContext.translate("invalid.fileType"),
+          code: "invalid.fileType",
+          param: "fileType",
         },
       ],
-      requestContext.translate('invalid.fileType')
+      requestContext.translate("invalid.fileType")
     );
   }
 };

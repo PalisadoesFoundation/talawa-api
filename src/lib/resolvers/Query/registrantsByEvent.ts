@@ -1,23 +1,23 @@
-import { QueryResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { Event, Interface_User, Interface_UserAttende } from '../../models';
-import { errors, requestContext } from '../../libraries';
+import { QueryResolvers } from "../../../generated/graphqlCodegen";
+import { Event, Interface_User, Interface_UserAttende } from "../../models";
+import { errors, requestContext } from "../../libraries";
 import {
   IN_PRODUCTION,
   EVENT_NOT_FOUND,
   EVENT_NOT_FOUND_CODE,
   EVENT_NOT_FOUND_MESSAGE,
   EVENT_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const registrantsByEvent: QueryResolvers['registrantsByEvent'] = async (
+export const registrantsByEvent: QueryResolvers["registrantsByEvent"] = async (
   _parent,
   args
 ) => {
   const event = await Event.findOne({
     _id: args.id,
-    status: 'ACTIVE',
+    status: "ACTIVE",
   })
-    .populate('registrants.user', '-password')
+    .populate("registrants.user", "-password")
     .lean();
 
   if (!event) {
@@ -30,11 +30,11 @@ export const registrantsByEvent: QueryResolvers['registrantsByEvent'] = async (
     );
   }
 
-  let registrants: Array<Interface_User> = [];
+  const registrants: Array<Interface_User> = [];
 
   if (event.registrants.length > 0) {
     event.registrants.map((registrant: Interface_UserAttende) => {
-      if (registrant.status === 'ACTIVE') {
+      if (registrant.status === "ACTIVE") {
         registrants.push(registrant.user);
       }
     });

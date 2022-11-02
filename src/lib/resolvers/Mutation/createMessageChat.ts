@@ -1,15 +1,15 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User, MessageChat } from '../../models';
-import { errors, requestContext } from '../../libraries';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { User, MessageChat } from "../../models";
+import { errors, requestContext } from "../../libraries";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const createMessageChat: MutationResolvers['createMessageChat'] = async (
+export const createMessageChat: MutationResolvers["createMessageChat"] = async (
   _parent,
   args,
   context
@@ -38,14 +38,14 @@ export const createMessageChat: MutationResolvers['createMessageChat'] = async (
     receiverUser?.appLanguageCode === currentUser?.appLanguageCode;
 
   // Creates new messageChat.
-  let createdMessageChat = await MessageChat.create({
+  const createdMessageChat = await MessageChat.create({
     sender: currentUser?._id,
     receiver: receiverUser._id,
     message: args.data.message,
     languageBarrier: !isSenderReceiverLanguageSame,
   });
 
-  context.pubsub.publish('CHAT_CHANNEL', {
+  context.pubsub.publish("CHAT_CHANNEL", {
     directMessageChat: {
       ...createdMessageChat,
     },

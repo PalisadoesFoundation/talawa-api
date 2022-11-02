@@ -1,8 +1,8 @@
-import { imageHash } from 'image-hash';
-import { ImageHash } from '../models';
-import { deleteDuplicatedImage } from './deleteDuplicatedImage';
-import { reuploadDuplicateCheck } from './reuploadDuplicateCheck';
-import { errors, requestContext } from '../libraries';
+import { imageHash } from "image-hash";
+import { ImageHash } from "../models";
+import { deleteDuplicatedImage } from "./deleteDuplicatedImage";
+import { reuploadDuplicateCheck } from "./reuploadDuplicateCheck";
+import { errors, requestContext } from "../libraries";
 
 /*
 Check to see if image already exists in db using hash
@@ -70,12 +70,12 @@ export const imageAlreadyInDbCheck = async (
     throw new errors.ValidationError(
       [
         {
-          message: requestContext.translate('invalid.fileType'),
-          code: 'invalid.fileType',
-          param: 'fileType',
+          message: requestContext.translate("invalid.fileType"),
+          code: "invalid.fileType",
+          param: "fileType",
         },
       ],
-      requestContext.translate('invalid.fileType')
+      requestContext.translate("invalid.fileType")
     );
   }
 };

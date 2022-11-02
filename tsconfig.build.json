@@ -1,19 +1,14 @@
-/*
-This build configuration prevents typescript(tsc) from emitting test files into the dist folder.
-This configuration file is made use of in the `build` script. Check out package.json to see how it's integrated.
-This extra step is needed because vs-code's intellisense parses the tsconfig.json file for providing better
-experience with typescript. If it sees that some typescript files are excluded from the 'include' array it won't provide
-type intellisense for libraries and utilities used in those files(for example typescript won't pick up jest functions
-being used in test files without importing them). And that will lead to it throwing type errors.
-More information here :- https://bobbyhadz.com/blog/typescript-exclude-test-files-from-compilation
-*/
 {
-  "extends": "./tsconfig.json",
-  // 👇️ this may vary depending on how you name your test files
-  "exclude": [
-    "src/generated/graphQLTypescriptTypes.ts",
-    "src/tests/",
-    "src/**/*.spec.ts",
-    "src/**/*.test.ts"
-  ]
+  "compilerOptions": {
+    "target": "es2016" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
+    "module": "commonjs" /* Specify what module code is generated. */,
+    "rootDir": "./src" /* Specify the root folder within your source files. */,
+    "outDir": "./build" /* Specify an output folder for all emitted files. */,
+    "removeComments": true /* Disable emitting comments. */,
+    "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
+    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
+    "strict": true /* Enable all strict type-checking options. */,
+    "skipLibCheck": true /* Skip type checking all .d.ts files. */
+  },
+  "include": ["./src"]
 }

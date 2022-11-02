@@ -1,16 +1,16 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User, Organization } from '../../models';
-import { uploadImage } from '../../utilities';
-import { errors, requestContext } from '../../libraries';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { User, Organization } from "../../models";
+import { uploadImage } from "../../utilities";
+import { errors, requestContext } from "../../libraries";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const createOrganization: MutationResolvers['createOrganization'] =
+export const createOrganization: MutationResolvers["createOrganization"] =
   async (_parent, args, context) => {
     const currentUserExists = await User.exists({
       _id: context.userId,

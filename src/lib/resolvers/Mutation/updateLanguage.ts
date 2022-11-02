@@ -4,12 +4,12 @@ import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { User } from '../../models';
+} from "../../../constants";
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { User } from "../../models";
 
-export const updateLanguage: MutationResolvers['updateLanguage'] = async (
+export const updateLanguage: MutationResolvers["updateLanguage"] = async (
   _parent,
   args,
   context

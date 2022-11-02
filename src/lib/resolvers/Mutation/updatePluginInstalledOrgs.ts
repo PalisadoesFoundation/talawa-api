@@ -1,5 +1,5 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { Interface_Plugin, Plugin } from '../../models';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { Plugin } from "../../models";
 
 /**
  * @name updatePluginInstalledOrgs
@@ -9,9 +9,9 @@ import { Interface_Plugin, Plugin } from '../../models';
  * @param  {any} context context of entire application
  */
 
-export const updatePluginInstalledOrgs: MutationResolvers['updatePluginInstalledOrgs'] =
+export const updatePluginInstalledOrgs: MutationResolvers["updatePluginInstalledOrgs"] =
   async (_parent, args, _context) => {
-    let plugin = await Plugin.findOne({
+    const plugin = await Plugin.findOne({
       _id: args.id,
     }).lean();
 

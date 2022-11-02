@@ -1,5 +1,5 @@
-import nodemailer from 'nodemailer';
-import { ERROR_IN_SENDING_MAIL } from '../../constants';
+import nodemailer from "nodemailer";
+import { ERROR_IN_SENDING_MAIL } from "../../constants";
 
 export interface Interface_MailFields {
   emailTo: string;
@@ -9,16 +9,16 @@ export interface Interface_MailFields {
 
 export const mailer = (mailFields: Interface_MailFields) => {
   // Nodemailer configuration
-  let transporter = nodemailer.createTransport({
-    service: 'gmail',
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
     auth: {
       user: process.env.MAIL_USERNAME,
       pass: process.env.MAIL_PASSWORD,
     },
   });
 
-  let mailOptions = {
-    from: 'Talawa<>noreply@gmail.com',
+  const mailOptions = {
+    from: "Talawa<>noreply@gmail.com",
     to: mailFields.emailTo,
     subject: mailFields.subject,
     html: mailFields.body,

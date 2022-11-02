@@ -1,18 +1,18 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { Organization } from '../../models';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { Organization } from "../../models";
 import {
   IN_PRODUCTION,
   ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_PARAM,
-} from '../../../constants';
-import { adminCheck } from '../../utilities';
+} from "../../../constants";
+import { adminCheck } from "../../utilities";
 
-export const updateOrganization: MutationResolvers['updateOrganization'] =
+export const updateOrganization: MutationResolvers["updateOrganization"] =
   async (_parent, args, context) => {
-    let organization = await Organization.findOne({
+    const organization = await Organization.findOne({
       _id: args.id,
     }).lean();
 

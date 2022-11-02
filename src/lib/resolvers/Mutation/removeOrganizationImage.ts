@@ -8,13 +8,13 @@ import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { User, Organization } from '../../models';
-import { adminCheck, deleteImage } from '../../utilities';
+} from "../../../constants";
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { User, Organization } from "../../models";
+import { adminCheck, deleteImage } from "../../utilities";
 
-export const removeOrganizationImage: MutationResolvers['removeOrganizationImage'] =
+export const removeOrganizationImage: MutationResolvers["removeOrganizationImage"] =
   async (_parent, args, context) => {
     const currentUserExists = await User.exists({
       _id: context.userId,
@@ -53,10 +53,10 @@ export const removeOrganizationImage: MutationResolvers['removeOrganizationImage
     if (!organization.image) {
       throw new errors.NotFoundError(
         IN_PRODUCTION !== true
-          ? 'Organization image not found'
-          : requestContext.translate('organization.profile.notFound'),
-        'organization.notFound',
-        'organization'
+          ? "Organization image not found"
+          : requestContext.translate("organization.profile.notFound"),
+        "organization.notFound",
+        "organization"
       );
     }
 

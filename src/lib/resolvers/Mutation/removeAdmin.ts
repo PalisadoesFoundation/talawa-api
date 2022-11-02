@@ -1,7 +1,7 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { adminCheck, creatorCheck } from '../../utilities';
-import { User, Organization } from '../../models';
-import { errors, requestContext } from '../../libraries';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { adminCheck, creatorCheck } from "../../utilities";
+import { User, Organization } from "../../models";
+import { errors, requestContext } from "../../libraries";
 import {
   ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_PARAM,
@@ -12,9 +12,9 @@ import {
   USER_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_CODE,
-} from '../../../constants';
+} from "../../../constants";
 
-export const removeAdmin: MutationResolvers['removeAdmin'] = async (
+export const removeAdmin: MutationResolvers["removeAdmin"] = async (
   _parent,
   args,
   context
@@ -34,7 +34,7 @@ export const removeAdmin: MutationResolvers['removeAdmin'] = async (
     );
   }
 
-  let user = await User.findOne({
+  const user = await User.findOne({
     _id: args.data.userId,
   }).lean();
 
@@ -86,6 +86,6 @@ export const removeAdmin: MutationResolvers['removeAdmin'] = async (
       new: true,
     }
   )
-    .select(['-password'])
+    .select(["-password"])
     .lean();
 };

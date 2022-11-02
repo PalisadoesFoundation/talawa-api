@@ -1,5 +1,5 @@
-import { User, EventProject, Event } from '../../models';
-import { errors, requestContext } from '../../libraries';
+import { User, EventProject, Event } from "../../models";
+import { errors, requestContext } from "../../libraries";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
@@ -14,7 +14,7 @@ import {
   EVENT_NOT_FOUND_MESSAGE,
   EVENT_NOT_FOUND_CODE,
   EVENT_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
 export const createEventProject = async (
   _parent: any,

@@ -1,10 +1,10 @@
-import { createWriteStream } from 'fs';
-import path from 'path';
-import shortid from 'shortid';
-import logger from '../libraries/logger';
-import { imageAlreadyInDbCheck } from './imageAlreadyInDbCheck';
-import { deleteImage } from './deleteImage';
-import { imageExtensionCheck } from './imageExtensionCheck';
+import { createWriteStream } from "fs";
+import path from "path";
+import shortid from "shortid";
+import logger from "../libraries/logger";
+import { imageAlreadyInDbCheck } from "./imageAlreadyInDbCheck";
+import { deleteImage } from "./deleteImage";
+import { imageExtensionCheck } from "./imageExtensionCheck";
 
 export const uploadImage = async (
   newImageFile: any,
@@ -22,28 +22,28 @@ export const uploadImage = async (
     createReadStream()
       .pipe(
         createWriteStream(
-          path.join(__dirname, '../images', `/${id}-${filename}`)
+          path.join(__dirname, "../images", `/${id}-${filename}`)
         )
       )
-      .on('close', resolve)
-      .on('error', (error: any) => reject(error))
-      .on('finish', () =>
+      .on("close", resolve)
+      .on("error", (error: any) => reject(error))
+      .on("finish", () =>
         resolve({
           path,
         })
       )
   );
 
-  let newImagePath = `images/${id}-${filename}`;
+  const newImagePath = `images/${id}-${filename}`;
 
   if (oldImagePath) {
-    logger.info('old image should be deleted');
+    logger.info("old image should be deleted");
 
     // If user/organization already has an image delete it from the API
     await deleteImage(oldImagePath, newImagePath);
   }
 
-  let imageAlreadyInDbPath = await imageAlreadyInDbCheck(
+  const imageAlreadyInDbPath = await imageAlreadyInDbCheck(
     oldImagePath,
     newImagePath
   );

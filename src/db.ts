@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
-import { logger } from './lib/libraries';
+import mongoose from "mongoose";
+import { logger } from "./lib/libraries";
 
 export const connect = async () => {
   try {
@@ -10,7 +10,7 @@ export const connect = async () => {
       useNewUrlParser: true,
     });
   } catch (error) {
-    logger.error('Error while connecting to mongo database', error);
+    logger.error("Error while connecting to mongo database", error);
     process.exit(1);
   }
 };

@@ -1,6 +1,6 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { adminCheck } from '../../utilities';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { adminCheck } from "../../utilities";
 import {
   IN_PRODUCTION,
   USER_NOT_AUTHORIZED,
@@ -15,10 +15,10 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
-import { Organization, User } from '../../models';
+} from "../../../constants";
+import { Organization, User } from "../../models";
 
-export const blockUser: MutationResolvers['blockUser'] = async (
+export const blockUser: MutationResolvers["blockUser"] = async (
   _parent,
   args,
   context
@@ -38,7 +38,7 @@ export const blockUser: MutationResolvers['blockUser'] = async (
     );
   }
 
-  let userExists = await User.exists({
+  const userExists = await User.exists({
     _id: args.userId,
   });
 
@@ -100,6 +100,6 @@ export const blockUser: MutationResolvers['blockUser'] = async (
       new: true,
     }
   )
-    .select(['-password'])
+    .select(["-password"])
     .lean();
 };

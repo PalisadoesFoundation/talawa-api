@@ -1,15 +1,15 @@
-import { User } from '../../models';
-import { errors, requestContext } from '../../libraries';
-import { OrganizationResolvers } from '../../../generated/graphQLTypescriptTypes';
+import { User } from "../../models";
+import { errors, requestContext } from "../../libraries";
+import { OrganizationResolvers } from "../../../generated/graphqlCodegen";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const creator: OrganizationResolvers['creator'] = async (parent) => {
+export const creator: OrganizationResolvers["creator"] = async (parent) => {
   const user = await User.findOne({
     _id: parent.creator,
   }).lean();

@@ -1,7 +1,7 @@
-import { DirectChatMessageResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User } from '../../models';
+import { DirectChatMessageResolvers } from "../../../generated/graphqlCodegen";
+import { User } from "../../models";
 
-export const receiver: DirectChatMessageResolvers['receiver'] = async (
+export const receiver: DirectChatMessageResolvers["receiver"] = async (
   parent
 ) => {
   return await User.findOne({

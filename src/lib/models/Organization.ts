@@ -1,8 +1,8 @@
-import { Schema, model, PopulatedDoc, Types, Document } from 'mongoose';
-import { MembershipRequest } from 'src/generated/graphQLTypescriptTypes';
-import { Interface_Message } from './Message';
-import { Interface_Post } from './Post';
-import { Interface_User } from './User';
+import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
+import { MembershipRequest } from "../../generated/graphqlCodegen";
+import { Interface_Message } from "./Message";
+import { Interface_Post } from "./Post";
+import { Interface_User } from "./User";
 
 export interface Interface_Organization {
   _id: Types.ObjectId;
@@ -49,50 +49,50 @@ const organizationSchema = new Schema({
   },
   creator: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
   status: {
     type: String,
     required: true,
-    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
-    default: 'ACTIVE',
+    enum: ["ACTIVE", "BLOCKED", "DELETED"],
+    default: "ACTIVE",
   },
   members: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
     },
   ],
   admins: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
   ],
   groupChats: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'Message',
+      ref: "Message",
     },
   ],
   posts: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'Post',
+      ref: "Post",
     },
   ],
   membershipRequests: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'MembershipRequest',
+      ref: "MembershipRequest",
     },
   ],
   blockedUsers: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
     },
   ],
   visibleInSearch: {
@@ -110,7 +110,8 @@ const organizationSchema = new Schema({
   },
 });
 
-export const Organization = model<Interface_Organization>(
-  'Organization',
-  organizationSchema
-);
+const OrganizationModel = () =>
+  model<Interface_Organization>("Organization", organizationSchema);
+
+export const Organization = (models.Organization ||
+  OrganizationModel()) as ReturnType<typeof OrganizationModel>;

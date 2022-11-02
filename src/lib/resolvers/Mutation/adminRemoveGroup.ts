@@ -1,7 +1,7 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { adminCheck } from '../../utilities';
-import { User, Organization, GroupChat } from '../../models';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { adminCheck } from "../../utilities";
+import { User, Organization, GroupChat } from "../../models";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
@@ -16,15 +16,15 @@ import {
   CHAT_NOT_FOUND_PARAM,
   CHAT_NOT_FOUND_CODE,
   CHAT_NOT_FOUND_MESSAGE,
-} from '../../../constants';
+} from "../../../constants";
 
 // @ts-ignore
-export const adminRemoveGroup: MutationResolvers['adminRemoveGroup'] = async (
+export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
   _parent,
   args,
   context
 ) => {
-  let groupChat = await GroupChat.findOne({
+  const groupChat = await GroupChat.findOne({
     _id: args.groupId,
   }).lean();
 
@@ -39,7 +39,7 @@ export const adminRemoveGroup: MutationResolvers['adminRemoveGroup'] = async (
     );
   }
 
-  let organization = await Organization.findOne({
+  const organization = await Organization.findOne({
     _id: groupChat.organization,
   }).lean();
 
@@ -54,7 +54,7 @@ export const adminRemoveGroup: MutationResolvers['adminRemoveGroup'] = async (
     );
   }
 
-  let currentUserExists = await User.exists({
+  const currentUserExists = await User.exists({
     _id: context.userId,
   });
 

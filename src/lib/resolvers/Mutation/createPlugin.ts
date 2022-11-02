@@ -1,5 +1,5 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { Plugin } from '../../models';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { Plugin } from "../../models";
 
 /**
  * @name createPlugin creates a Plugin and return the same
@@ -9,7 +9,7 @@ import { Plugin } from '../../models';
  * @param  {any} context context of entire application
  */
 
-export const createPlugin: MutationResolvers['createPlugin'] = async (
+export const createPlugin: MutationResolvers["createPlugin"] = async (
   _parent,
   args,
   _context

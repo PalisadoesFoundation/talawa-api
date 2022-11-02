@@ -21,9 +21,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install Dependencies
-        run: yarn
+        run: npm ci
       - name: Run ESLint and Prettier
-        run: yarn lint
+        run: npm run lint
 
   Count-lines-of-code:
     name: Total number of lines in every file should not be more than 400
@@ -33,7 +33,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: chmod +x ./.github/workflows/countline.py
       - run: |
-          ./.github/workflows/countline.py --exclude_directories tests
+          ./.github/workflows/countline.py --exclude_directories __tests__
 
   Code-Formatter:
     name: Formats the code
@@ -97,10 +97,7 @@ jobs:
         uses: actions/setup-node@v2
 
       - name: Install dependencies
-        run: npm install
-
-      - name: Start the Application
-        run: npm run start-test-server-in-action
+        run: npm ci
 
       - name: Sleep for 10s
         uses: juliangruber/sleep-action@v1
@@ -114,8 +111,6 @@ jobs:
         uses: codecov/codecov-action@v2.1.0
         with:
           verbose: true
-      - name: Stop the Application
-        run: npm run stop-test-server-in-action
 
       - name: Test acceptable level of code coverage
         uses: VeryGoodOpenSource/very_good_coverage@v1.1.1

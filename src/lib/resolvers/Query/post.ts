@@ -1,25 +1,25 @@
-import { QueryResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { Post } from '../../models';
-import { errors, requestContext } from '../../libraries';
+import { QueryResolvers } from "../../../generated/graphqlCodegen";
+import { Post } from "../../models";
+import { errors, requestContext } from "../../libraries";
 import {
   IN_PRODUCTION,
   POST_NOT_FOUND,
   POST_NOT_FOUND_CODE,
   POST_NOT_FOUND_MESSAGE,
   POST_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const post: QueryResolvers['post'] = async (_parent, args) => {
+export const post: QueryResolvers["post"] = async (_parent, args) => {
   const post = await Post.findOne({ _id: args.id })
-    .populate('organization')
+    .populate("organization")
     .populate({
-      path: 'comments',
+      path: "comments",
       populate: {
-        path: 'creator',
+        path: "creator",
       },
     })
-    .populate('likedBy')
-    .populate('creator', '-password')
+    .populate("likedBy")
+    .populate("creator", "-password")
     .lean();
 
   if (!post) {

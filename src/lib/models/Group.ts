@@ -1,6 +1,6 @@
-import { Schema, model, PopulatedDoc, Types, Document } from 'mongoose';
-import { Interface_Organization } from './Organization';
-import { Interface_User } from './User';
+import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
+import { Interface_Organization } from "./Organization";
+import { Interface_User } from "./User";
 
 export interface Interface_Group {
   _id: Types.ObjectId;
@@ -26,22 +26,26 @@ const groupSchema = new Schema({
   },
   organization: {
     type: Schema.Types.ObjectId,
-    ref: 'Organization',
+    ref: "Organization",
     required: true,
   },
   status: {
     type: String,
     required: true,
-    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
-    default: 'ACTIVE',
+    enum: ["ACTIVE", "BLOCKED", "DELETED"],
+    default: "ACTIVE",
   },
   admins: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
   ],
 });
 
-export const Group = model<Interface_Group>('Group', groupSchema);
+const GroupModel = () => model<Interface_Group>("Group", groupSchema);
+
+export const Group = (models.Group || GroupModel()) as ReturnType<
+  typeof GroupModel
+>;

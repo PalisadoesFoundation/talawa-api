@@ -1,6 +1,6 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { adminCheck } from '../../utilities';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { adminCheck } from "../../utilities";
 import {
   IN_PRODUCTION,
   USER_NOT_AUTHORIZED,
@@ -15,10 +15,10 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
-import { Organization, User } from '../../models';
+} from "../../../constants";
+import { Organization, User } from "../../models";
 
-export const unblockUser: MutationResolvers['unblockUser'] = async (
+export const unblockUser: MutationResolvers["unblockUser"] = async (
   _parent,
   args,
   context
@@ -56,7 +56,7 @@ export const unblockUser: MutationResolvers['unblockUser'] = async (
   // checks if current user is an admin of the organization with _id === args.organizationId
   adminCheck(context.userId, organization);
 
-  let userIsBlockedFromOrganization = organization.blockedUsers.some(
+  const userIsBlockedFromOrganization = organization.blockedUsers.some(
     (blockedUser) => blockedUser.toString() === user._id.toString()
   );
 
@@ -101,6 +101,6 @@ export const unblockUser: MutationResolvers['unblockUser'] = async (
       new: true,
     }
   )
-    .select(['-password'])
+    .select(["-password"])
     .lean();
 };

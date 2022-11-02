@@ -5,11 +5,12 @@ import {
   Types,
   Document,
   PaginateModel,
-} from 'mongoose';
-import mongoosePaginate from 'mongoose-paginate-v2';
-import { Interface_Comment } from './Comment';
-import { Interface_Organization } from './Organization';
-import { Interface_User } from './User';
+  models,
+} from "mongoose";
+import mongoosePaginate from "mongoose-paginate-v2";
+import { Interface_Comment } from "./Comment";
+import { Interface_Organization } from "./Organization";
+import { Interface_User } from "./User";
 
 export interface Interface_Post {
   _id: Types.ObjectId;
@@ -38,8 +39,8 @@ const postSchema = new Schema({
   status: {
     type: String,
     required: true,
-    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
-    default: 'ACTIVE',
+    enum: ["ACTIVE", "BLOCKED", "DELETED"],
+    default: "ACTIVE",
   },
   createdAt: {
     type: Date,
@@ -55,24 +56,24 @@ const postSchema = new Schema({
   },
   creator: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
   organization: {
     type: Schema.Types.ObjectId,
-    ref: 'Organization',
+    ref: "Organization",
     required: true,
   },
   likedBy: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
     },
   ],
   comments: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'Comment',
+      ref: "Comment",
     },
   ],
   likeCount: {
@@ -87,7 +88,9 @@ const postSchema = new Schema({
 
 postSchema.plugin(mongoosePaginate);
 
-export const Post = model<Interface_Post, PaginateModel<Interface_Post>>(
-  'Post',
-  postSchema
-);
+const PostModel = () =>
+  model<Interface_Post, PaginateModel<Interface_Post>>("Post", postSchema);
+
+export const Post = (models.Post || PostModel()) as ReturnType<
+  typeof PostModel
+>;

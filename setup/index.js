@@ -11,28 +11,28 @@
  * Every step displays whether it has been
  * executed successfully or not
  */
-const path = require('path');
-const display_about = require('./Display_About');
-const install_dependencies = require('./Install_Dependencies');
-const user_input = require('./User_Input');
-const start_application = require('./Start_Application');
+const path = require("path");
+const displayAbout = require("./displayAbout");
+const installDependencies = require("./installDependencies");
+const userInput = require("./userInput");
+const startApplication = require("./startApplication");
 
 /**
  * This asynchronous function runs the setup process
  * by executing each of the steps serially
  */
-const run_setup = async () => {
+const runSetup = async () => {
   //1. Display information about the project
-  display_about();
+  displayAbout();
 
   //2. Install project dependencies
-  await install_dependencies();
+  await installDependencies();
 
   //3. Set up user configuration
-  await user_input(path.join(__dirname, '.env'));
+  await userInput(path.join(__dirname, ".env"));
 
   //4. Display command to start the application
-  await start_application();
+  await startApplication();
 };
 
-run_setup();
+runSetup();

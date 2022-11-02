@@ -1,13 +1,13 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
 import {
   User,
   Organization,
   Post,
   Comment,
   MembershipRequest,
-} from '../../models';
-import { creatorCheck } from '../../utilities';
+} from "../../models";
+import { creatorCheck } from "../../utilities";
 import {
   USER_NOT_FOUND,
   IN_PRODUCTION,
@@ -18,11 +18,11 @@ import {
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const removeOrganization: MutationResolvers['removeOrganization'] =
+export const removeOrganization: MutationResolvers["removeOrganization"] =
   async (_parent, args, context) => {
-    let currentUser = await User.findOne({
+    const currentUser = await User.findOne({
       _id: context.userId,
     }).lean();
 
@@ -82,7 +82,7 @@ export const removeOrganization: MutationResolvers['removeOrganization'] =
     );
 
     // Remove organization._id from each member's joinedOrganizations field for organization.members list.
-    for (let memberId of organization.members) {
+    for (const memberId of organization.members) {
       const member = await User.findOne({
         _id: memberId,
       }).lean();
@@ -103,7 +103,7 @@ export const removeOrganization: MutationResolvers['removeOrganization'] =
     }
 
     // Remove organization._id from each admin's joinedOrganizations field for organization.admins list.
-    for (let adminId of organization.admins) {
+    for (const adminId of organization.admins) {
       const admin = await User.findOne({
         _id: adminId,
       }).lean();
@@ -127,7 +127,7 @@ export const removeOrganization: MutationResolvers['removeOrganization'] =
     Remove membershipRequest._id from each requester's membershipRequests
     field for membershipRequest.user for organization.membershipRequests list.
     */
-    for (let membershipRequestId of organization.membershipRequests) {
+    for (const membershipRequestId of organization.membershipRequests) {
       const membershipRequest = await MembershipRequest.findOneAndDelete({
         _id: membershipRequestId,
       }).lean();
@@ -155,7 +155,7 @@ export const removeOrganization: MutationResolvers['removeOrganization'] =
     Remove organization._id from each blockedUser's organizationsBlockedBy
     field for organization.blockedUsers list.
     */
-    for (let blockedUserId of organization.blockedUsers) {
+    for (const blockedUserId of organization.blockedUsers) {
       const blockedUser = await User.findOne({
         _id: blockedUserId,
       }).lean();
@@ -184,6 +184,6 @@ export const removeOrganization: MutationResolvers['removeOrganization'] =
     return await User.findOne({
       _id: currentUser._id,
     })
-      .select(['-password'])
+      .select(["-password"])
       .lean();
   };

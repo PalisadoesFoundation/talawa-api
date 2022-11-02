@@ -1,15 +1,15 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User } from '../../models';
-import { errors, requestContext } from '../../libraries';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { User } from "../../models";
+import { errors, requestContext } from "../../libraries";
 import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
   USER_NOT_FOUND,
   IN_PRODUCTION,
-} from '../../../constants';
+} from "../../../constants";
 
-export const logout: MutationResolvers['logout'] = async (
+export const logout: MutationResolvers["logout"] = async (
   _parent,
   _args,
   context

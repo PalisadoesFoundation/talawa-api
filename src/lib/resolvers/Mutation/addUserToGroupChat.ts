@@ -1,7 +1,7 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { adminCheck } from '../../utilities';
-import { User, GroupChat, Organization } from '../../models';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { adminCheck } from "../../utilities";
+import { User, GroupChat, Organization } from "../../models";
 import {
   IN_PRODUCTION,
   CHAT_NOT_FOUND,
@@ -20,11 +20,11 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const addUserToGroupChat: MutationResolvers['addUserToGroupChat'] =
+export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
   async (_parent, args, context) => {
-    let groupChat = await GroupChat.findOne({
+    const groupChat = await GroupChat.findOne({
       _id: args.chatId,
     }).lean();
 

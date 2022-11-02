@@ -1,15 +1,15 @@
-import { QueryResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User } from '../../models';
-import { errors, requestContext } from '../../libraries';
+import { QueryResolvers } from "../../../generated/graphqlCodegen";
+import { User } from "../../models";
+import { errors, requestContext } from "../../libraries";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const myLanguage: QueryResolvers['myLanguage'] = async (
+export const myLanguage: QueryResolvers["myLanguage"] = async (
   _parent,
   _args,
   context
@@ -17,7 +17,7 @@ export const myLanguage: QueryResolvers['myLanguage'] = async (
   const currentUser = await User.findOne({
     _id: context.userId,
   })
-    .select(['appLanguageCode'])
+    .select(["appLanguageCode"])
     .lean();
 
   if (!currentUser) {

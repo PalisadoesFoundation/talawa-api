@@ -1,7 +1,7 @@
-import { Schema, Types, model, PopulatedDoc, Document } from 'mongoose';
-import { Interface_Event } from './Event';
-import { Interface_Task } from './Task';
-import { Interface_User } from './User';
+import { Schema, Types, model, PopulatedDoc, Document, models } from "mongoose";
+import { Interface_Event } from "./Event";
+import { Interface_Task } from "./Task";
+import { Interface_User } from "./User";
 
 export interface Interface_EventProject {
   _id: Types.ObjectId;
@@ -29,29 +29,30 @@ const eventProjectSchema = new Schema({
   },
   event: {
     type: Schema.Types.ObjectId,
-    ref: 'Event',
+    ref: "Event",
     required: true,
   },
   creator: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
   tasks: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'Task',
+      ref: "Task",
     },
   ],
   status: {
     type: String,
     required: true,
-    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
-    default: 'ACTIVE',
+    enum: ["ACTIVE", "BLOCKED", "DELETED"],
+    default: "ACTIVE",
   },
 });
 
-export const EventProject = model<Interface_EventProject>(
-  'EventProject',
-  eventProjectSchema
-);
+const EventProjectModel = () =>
+  model<Interface_EventProject>("EventProject", eventProjectSchema);
+
+export const EventProject = (models.EventProject ||
+  EventProjectModel()) as ReturnType<typeof EventProjectModel>;

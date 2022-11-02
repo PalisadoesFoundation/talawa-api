@@ -1,8 +1,8 @@
-import { ApplicationError } from './applicationError';
+import { ApplicationError } from "./applicationError";
 
 export class ConflictError extends ApplicationError {
   constructor(
-    message: string = 'Conflicting entry found',
+    message: string = "Conflicting entry found",
     code: string | null = null,
     param: string | null = null,
     metadata: Record<any, any> = {}

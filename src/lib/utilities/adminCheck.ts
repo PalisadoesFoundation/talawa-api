@@ -1,13 +1,13 @@
-import { Types } from 'mongoose';
-import { errors, requestContext } from '../libraries';
+import { Types } from "mongoose";
+import { errors, requestContext } from "../libraries";
 import {
   IN_PRODUCTION,
   USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_PARAM,
-} from '../../constants';
-import { Interface_Organization } from '../models';
+} from "../../constants";
+import { Interface_Organization } from "../models";
 
 export const adminCheck = (
   userId: string | Types.ObjectId,

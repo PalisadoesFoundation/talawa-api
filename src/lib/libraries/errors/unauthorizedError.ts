@@ -1,8 +1,8 @@
-import { ApplicationError } from './applicationError';
+import { ApplicationError } from "./applicationError";
 
 export class UnauthorizedError extends ApplicationError {
   constructor(
-    message: string = 'UnauthorizedError',
+    message: string = "UnauthorizedError",
     code: string | null = null,
     param: string | null = null,
     metadata: Record<any, any> = {}

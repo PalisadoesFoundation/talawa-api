@@ -1,7 +1,7 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User, Organization } from '../../models';
-import { errors, requestContext } from '../../libraries';
-import { creatorCheck } from '../../utilities';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { User, Organization } from "../../models";
+import { errors, requestContext } from "../../libraries";
+import { creatorCheck } from "../../utilities";
 import {
   IN_PRODUCTION,
   ORGANIZATION_NOT_FOUND,
@@ -20,9 +20,9 @@ import {
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const createAdmin: MutationResolvers['createAdmin'] = async (
+export const createAdmin: MutationResolvers["createAdmin"] = async (
   _parent,
   args,
   context
@@ -45,7 +45,7 @@ export const createAdmin: MutationResolvers['createAdmin'] = async (
   // Checks whether currentUser with _id === context.userId is the creator of organization.
   creatorCheck(context.userId, organization);
 
-  let userExists = await User.exists({
+  const userExists = await User.exists({
     _id: args.data.userId,
   });
 
@@ -119,6 +119,6 @@ export const createAdmin: MutationResolvers['createAdmin'] = async (
       new: true,
     }
   )
-    .select(['-password'])
+    .select(["-password"])
     .lean();
 };

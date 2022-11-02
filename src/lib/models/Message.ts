@@ -1,6 +1,6 @@
-import { Schema, model, PopulatedDoc, Types, Document } from 'mongoose';
-import { Interface_Group } from './Group';
-import { Interface_User } from './User';
+import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
+import { Interface_Group } from "./Group";
+import { Interface_User } from "./User";
 
 export interface Interface_Message {
   _id: Types.ObjectId;
@@ -32,20 +32,24 @@ const messageSchema = new Schema({
   },
   creator: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
   group: {
     type: Schema.Types.ObjectId,
-    ref: 'Group',
+    ref: "Group",
     required: true,
   },
   status: {
     type: String,
     required: true,
-    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
-    default: 'ACTIVE',
+    enum: ["ACTIVE", "BLOCKED", "DELETED"],
+    default: "ACTIVE",
   },
 });
 
-export const Message = model<Interface_Message>('Message', messageSchema);
+const MessageModel = () => model<Interface_Message>("Message", messageSchema);
+
+export const Message = (models.Message || MessageModel()) as ReturnType<
+  typeof MessageModel
+>;

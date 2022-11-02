@@ -2,19 +2,19 @@ import {
   EventOrderByInput,
   InputMaybe,
   QueryResolvers,
-} from '../../../generated/graphQLTypescriptTypes';
-import { Event } from '../../models';
+} from "../../../generated/graphqlCodegen";
+import { Event } from "../../models";
 
-export const events: QueryResolvers['events'] = async (_parent, args) => {
-  let sort = getSort(args.orderBy);
+export const events: QueryResolvers["events"] = async (_parent, args) => {
+  const sort = getSort(args.orderBy);
 
   const events = await Event.find({
-    status: 'ACTIVE',
+    status: "ACTIVE",
   })
     .sort(sort)
-    .populate('creator', '-password')
-    .populate('tasks')
-    .populate('admins', '-password')
+    .populate("creator", "-password")
+    .populate("tasks")
+    .populate("admins", "-password")
     .lean();
 
   return events;
@@ -22,79 +22,79 @@ export const events: QueryResolvers['events'] = async (_parent, args) => {
 
 const getSort = (orderBy: InputMaybe<EventOrderByInput> | undefined) => {
   if (orderBy !== null) {
-    if (orderBy === 'id_ASC') {
+    if (orderBy === "id_ASC") {
       return {
         _id: 1,
       };
-    } else if (orderBy === 'id_DESC') {
+    } else if (orderBy === "id_DESC") {
       return {
         _id: -1,
       };
-    } else if (orderBy === 'title_ASC') {
+    } else if (orderBy === "title_ASC") {
       return {
         title: 1,
       };
-    } else if (orderBy === 'title_DESC') {
+    } else if (orderBy === "title_DESC") {
       return {
         title: -1,
       };
-    } else if (orderBy === 'description_ASC') {
+    } else if (orderBy === "description_ASC") {
       return {
         description: 1,
       };
-    } else if (orderBy === 'description_DESC') {
+    } else if (orderBy === "description_DESC") {
       return {
         description: -1,
       };
-    } else if (orderBy === 'startDate_ASC') {
+    } else if (orderBy === "startDate_ASC") {
       return {
         startDate: 1,
       };
-    } else if (orderBy === 'startDate_DESC') {
+    } else if (orderBy === "startDate_DESC") {
       return {
         startDate: -1,
       };
-    } else if (orderBy === 'endDate_ASC') {
+    } else if (orderBy === "endDate_ASC") {
       return {
         endDate: 1,
       };
-    } else if (orderBy === 'endDate_DESC') {
+    } else if (orderBy === "endDate_DESC") {
       return {
         endDate: -1,
       };
-    } else if (orderBy === 'allDay_ASC') {
+    } else if (orderBy === "allDay_ASC") {
       return {
         allDay: 1,
       };
-    } else if (orderBy === 'allDay_DESC') {
+    } else if (orderBy === "allDay_DESC") {
       return {
         allDay: -1,
       };
-    } else if (orderBy === 'startTime_ASC') {
+    } else if (orderBy === "startTime_ASC") {
       return {
         startTime: 1,
       };
-    } else if (orderBy === 'startTime_DESC') {
+    } else if (orderBy === "startTime_DESC") {
       return {
         startTime: -1,
       };
-    } else if (orderBy === 'endTime_ASC') {
+    } else if (orderBy === "endTime_ASC") {
       return {
         endTime: 1,
       };
-    } else if (orderBy === 'endTime_DESC') {
+    } else if (orderBy === "endTime_DESC") {
       return {
         endTime: -1,
       };
-    } else if (orderBy === 'recurrance_ASC') {
+    } else if (orderBy === "recurrance_ASC") {
       return {
         recurrance: 1,
       };
-    } else if (orderBy === 'recurrance_DESC') {
+    } else if (orderBy === "recurrance_DESC") {
       return {
         recurrance: -1,
       };
-    } else if (orderBy === 'location_ASC') {
+    } else if (orderBy === "location_ASC") {
       return {
         location: 1,
       };

@@ -1,5 +1,5 @@
-import { Schema, model, PopulatedDoc, Types, Document } from 'mongoose';
-import { Interface_User } from './User';
+import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
+import { Interface_User } from "./User";
 
 export interface Interface_MessageChat {
   _id: Types.ObjectId;
@@ -22,12 +22,12 @@ const messageChatSchema = new Schema({
   },
   sender: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
   receiver: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
   createdAt: {
@@ -37,7 +37,8 @@ const messageChatSchema = new Schema({
   },
 });
 
-export const MessageChat = model<Interface_MessageChat>(
-  'MessageChat',
-  messageChatSchema
-);
+const MessageChatModel = () =>
+  model<Interface_MessageChat>("MessageChat", messageChatSchema);
+
+export const MessageChat = (models.MessageChat ||
+  MessageChatModel()) as ReturnType<typeof MessageChatModel>;

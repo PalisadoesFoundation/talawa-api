@@ -1,15 +1,15 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User, Post, Comment } from '../../models';
-import { errors, requestContext } from '../../libraries';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { User, Post, Comment } from "../../models";
+import { errors, requestContext } from "../../libraries";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const createComment: MutationResolvers['createComment'] = async (
+export const createComment: MutationResolvers["createComment"] = async (
   _parent,
   args,
   context

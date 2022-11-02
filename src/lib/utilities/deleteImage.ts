@@ -1,7 +1,7 @@
-import { unlink } from 'fs';
-import logger from '../libraries/logger';
-import { ImageHash } from '../models';
-import { reuploadDuplicateCheck } from './reuploadDuplicateCheck';
+import { unlink } from "fs";
+import logger from "../libraries/logger";
+import { ImageHash } from "../models";
+import { reuploadDuplicateCheck } from "./reuploadDuplicateCheck";
 
 export const deleteImage = async (
   imageToBeDeleted: string,
@@ -21,15 +21,15 @@ export const deleteImage = async (
     Only remove the old image if its different from the new one
     Ensure image hash isn't used by multiple users/organization before deleting it
     */
-    let imageHash = await ImageHash.findOne({
+    const imageHash = await ImageHash.findOne({
       fileName: imageToBeDeleted,
     }).lean();
 
     if (imageHash && imageHash.numberOfUses > 1) {
       // Image can only be deleted if imageHash.numberOfUses === 1
-      logger.info('Image cannot be deleted');
+      logger.info("Image cannot be deleted");
     } else {
-      logger.info('Image is only used once and therefore can be deleted');
+      logger.info("Image is only used once and therefore can be deleted");
 
       unlink(imageToBeDeleted, (error) => {
         if (error) {
@@ -37,7 +37,7 @@ export const deleteImage = async (
         }
 
         // If no error occurs image has been successfully deleted.
-        logger.info('File deleted!');
+        logger.info("File deleted!");
       });
     }
 

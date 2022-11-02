@@ -1,6 +1,6 @@
-import { QueryResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { requestContext, errors } from '../../libraries';
-import { Comment, Organization } from '../../models';
+import { QueryResolvers } from "../../../generated/graphqlCodegen";
+import { requestContext, errors } from "../../libraries";
+import { Comment, Organization } from "../../models";
 import {
   COMMENT_NOT_FOUND,
   COMMENT_NOT_FOUND_CODE,
@@ -19,9 +19,9 @@ import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const commentsByPost: QueryResolvers['commentsByPost'] = async (
+export const commentsByPost: QueryResolvers["commentsByPost"] = async (
   _parent,
   args,
   _context
@@ -29,9 +29,9 @@ export const commentsByPost: QueryResolvers['commentsByPost'] = async (
   const comments = await Comment.find({
     post: args.id,
   })
-    .populate('creator', '-password')
-    .populate('post')
-    .populate('likedBy')
+    .populate("creator", "-password")
+    .populate("post")
+    .populate("likedBy")
     .lean();
 
   // Throws error if comments list is empty.

@@ -8,12 +8,12 @@ import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { User, Post } from '../../models';
+} from "../../../constants";
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { User, Post } from "../../models";
 
-export const unlikePost: MutationResolvers['unlikePost'] = async (
+export const unlikePost: MutationResolvers["unlikePost"] = async (
   _parent,
   args,
   context

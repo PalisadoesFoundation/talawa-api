@@ -1,7 +1,7 @@
-import { GroupChatResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User } from '../../models';
+import { GroupChatResolvers } from "../../../generated/graphqlCodegen";
+import { User } from "../../models";
 
-export const users: GroupChatResolvers['users'] = async (parent) => {
+export const users: GroupChatResolvers["users"] = async (parent) => {
   return await User.find({
     _id: {
       $in: parent.users,

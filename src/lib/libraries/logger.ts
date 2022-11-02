@@ -1,16 +1,16 @@
-import _ from 'lodash';
-import { createLogger, transports, format } from 'winston';
-import requestTracing from './requestTracing';
-import { appConfig } from '../config';
+import _ from "lodash";
+import { createLogger, transports, format } from "winston";
+import requestTracing from "./requestTracing";
+import { appConfig } from "../config";
 
 const { combine, printf, splat, colorize, simple, timestamp } = format;
 
 const loggerFormat = printf((info) => {
-  let formatObject = `${info.level || '-'} ${info.timestamp || '-'} ${
-    requestTracing.getTracingId() || '-'
+  let formatObject = `${info.level || "-"} ${info.timestamp || "-"} ${
+    requestTracing.getTracingId() || "-"
   } ${info.message} ${
-    JSON.stringify(_.omit(info, ['level', 'message', 'stack', 'timestamp'])) ||
-    '-'
+    JSON.stringify(_.omit(info, ["level", "message", "stack", "timestamp"])) ||
+    "-"
   }`;
 
   if (info.stack) {
@@ -24,13 +24,13 @@ const formats = {
     colorize(),
     splat(),
     simple(),
-    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
     loggerFormat
   ),
   non_colorized: combine(
     splat(),
     simple(),
-    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
     loggerFormat
   ),
 };
@@ -40,7 +40,7 @@ export const logger = createLogger({
     new transports.Console({
       level: appConfig.log_level,
       format:
-        appConfig.colorize_logs === 'true'
+        appConfig.colorize_logs === "true"
           ? formats.colorized
           : formats.non_colorized,
     }),
@@ -51,7 +51,7 @@ export const logger = createLogger({
 logger.stream = {
   // @ts-ignore
   write: (message) => {
-    logger.info((message || '').trim());
+    logger.info((message || "").trim());
   },
 };
 

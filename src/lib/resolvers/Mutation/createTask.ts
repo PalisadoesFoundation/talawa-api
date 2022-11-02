@@ -1,6 +1,6 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User, Task, Event } from '../../models';
-import { errors, requestContext } from '../../libraries';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { User, Task, Event } from "../../models";
+import { errors, requestContext } from "../../libraries";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
@@ -11,9 +11,9 @@ import {
   EVENT_NOT_FOUND_MESSAGE,
   EVENT_NOT_FOUND_CODE,
   EVENT_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const createTask: MutationResolvers['createTask'] = async (
+export const createTask: MutationResolvers["createTask"] = async (
   _parent,
   args,
   context

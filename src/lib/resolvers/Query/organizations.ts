@@ -2,18 +2,18 @@ import {
   InputMaybe,
   OrganizationOrderByInput,
   QueryResolvers,
-} from '../../../generated/graphQLTypescriptTypes';
-import { Organization } from '../../models';
-import { errors, requestContext } from '../../libraries';
+} from "../../../generated/graphqlCodegen";
+import { Organization } from "../../models";
+import { errors, requestContext } from "../../libraries";
 import {
   IN_PRODUCTION,
   ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const organizations: QueryResolvers['organizations'] = async (
+export const organizations: QueryResolvers["organizations"] = async (
   _parent,
   args
 ) => {
@@ -44,19 +44,19 @@ export const organizations: QueryResolvers['organizations'] = async (
 
 const getSort = (orderBy: InputMaybe<OrganizationOrderByInput> | undefined) => {
   if (orderBy !== null) {
-    if (orderBy === 'id_ASC') {
+    if (orderBy === "id_ASC") {
       return { _id: 1 };
-    } else if (orderBy === 'id_DESC') {
+    } else if (orderBy === "id_DESC") {
       return { _id: -1 };
-    } else if (orderBy === 'name_ASC') {
+    } else if (orderBy === "name_ASC") {
       return { name: 1 };
-    } else if (orderBy === 'name_DESC') {
+    } else if (orderBy === "name_DESC") {
       return { name: -1 };
-    } else if (orderBy === 'description_ASC') {
+    } else if (orderBy === "description_ASC") {
       return { description: 1 };
-    } else if (orderBy === 'description_DESC') {
+    } else if (orderBy === "description_DESC") {
       return { description: -1 };
-    } else if (orderBy === 'apiUrl_ASC') {
+    } else if (orderBy === "apiUrl_ASC") {
       return { apiUrl: 1 };
     } else {
       return { apiUrl: -1 };

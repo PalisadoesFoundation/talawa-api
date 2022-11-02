@@ -1,6 +1,6 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { User } from '../../models';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { User } from "../../models";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
@@ -11,11 +11,11 @@ import {
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const blockPluginCreationBySuperadmin: MutationResolvers['blockPluginCreationBySuperadmin'] =
+export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCreationBySuperadmin"] =
   async (_parent, args, context) => {
-    let userExists = await User.exists({
+    const userExists = await User.exists({
       _id: args.userId,
     });
 
@@ -46,7 +46,7 @@ export const blockPluginCreationBySuperadmin: MutationResolvers['blockPluginCrea
     }
 
     // Checks whether currentUser is a SUPERADMIN.
-    const currentUserIsSuperAdmin = currentUser.userType === 'SUPERADMIN';
+    const currentUserIsSuperAdmin = currentUser.userType === "SUPERADMIN";
 
     if (currentUserIsSuperAdmin === false) {
       throw new errors.UnauthorizedError(

@@ -1,18 +1,18 @@
-import jwt from 'jsonwebtoken';
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { User } from '../../models';
-import { createAccessToken, createRefreshToken } from '../../utilities';
+import jwt from "jsonwebtoken";
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { User } from "../../models";
+import { createAccessToken, createRefreshToken } from "../../utilities";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
-import { Interface_JwtTokenPayload } from '../../utilities';
+} from "../../../constants";
+import { Interface_JwtTokenPayload } from "../../utilities";
 
-export const refreshToken: MutationResolvers['refreshToken'] = async (
+export const refreshToken: MutationResolvers["refreshToken"] = async (
   _parent,
   args
 ) => {
@@ -23,19 +23,19 @@ export const refreshToken: MutationResolvers['refreshToken'] = async (
         {
           message:
             IN_PRODUCTION !== true
-              ? 'Invalid refreshToken'
-              : requestContext.translate('invalid.refreshToken'),
-          code: 'invalid.refreshToken',
-          param: 'refreshToken',
+              ? "Invalid refreshToken"
+              : requestContext.translate("invalid.refreshToken"),
+          code: "invalid.refreshToken",
+          param: "refreshToken",
         },
       ],
       IN_PRODUCTION !== true
-        ? 'Invalid refreshToken'
-        : requestContext.translate('invalid.refreshToken')
+        ? "Invalid refreshToken"
+        : requestContext.translate("invalid.refreshToken")
     );
   }
 
-  let jwtPayload: Interface_JwtTokenPayload = jwt.verify(
+  const jwtPayload: Interface_JwtTokenPayload = jwt.verify(
     args.refreshToken,
     process.env.REFRESH_TOKEN_SECRET!
   ) as Interface_JwtTokenPayload;
@@ -62,15 +62,15 @@ export const refreshToken: MutationResolvers['refreshToken'] = async (
         {
           message:
             IN_PRODUCTION !== true
-              ? 'Invalid refreshToken'
-              : requestContext.translate('invalid.refreshToken'),
-          code: 'invalid.refreshToken',
-          param: 'refreshToken',
+              ? "Invalid refreshToken"
+              : requestContext.translate("invalid.refreshToken"),
+          code: "invalid.refreshToken",
+          param: "refreshToken",
         },
       ],
       IN_PRODUCTION !== true
-        ? 'Invalid refreshToken'
-        : requestContext.translate('invalid.refreshToken')
+        ? "Invalid refreshToken"
+        : requestContext.translate("invalid.refreshToken")
     );
   }
 

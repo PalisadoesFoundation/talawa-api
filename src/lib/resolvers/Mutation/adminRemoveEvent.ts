@@ -1,7 +1,7 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { adminCheck } from '../../utilities';
-import { User, Organization, Event } from '../../models';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { adminCheck } from "../../utilities";
+import { User, Organization, Event } from "../../models";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
@@ -16,14 +16,14 @@ import {
   EVENT_NOT_FOUND_PARAM,
   EVENT_NOT_FOUND_CODE,
   EVENT_NOT_FOUND_MESSAGE,
-} from '../../../constants';
+} from "../../../constants";
 
-export const adminRemoveEvent: MutationResolvers['adminRemoveEvent'] = async (
+export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
   _parent,
   args,
   context
 ) => {
-  let event = await Event.findOne({
+  const event = await Event.findOne({
     _id: args.eventId,
   }).lean();
 
@@ -38,7 +38,7 @@ export const adminRemoveEvent: MutationResolvers['adminRemoveEvent'] = async (
     );
   }
 
-  let organization = await Organization.findOne({
+  const organization = await Organization.findOne({
     _id: event.organization,
   }).lean();
 
@@ -53,7 +53,7 @@ export const adminRemoveEvent: MutationResolvers['adminRemoveEvent'] = async (
     );
   }
 
-  let currentUser = await User.findOne({
+  const currentUser = await User.findOne({
     _id: context.userId,
   }).lean();
 

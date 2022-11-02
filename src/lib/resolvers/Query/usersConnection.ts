@@ -3,10 +3,10 @@ import {
   QueryResolvers,
   UserOrderByInput,
   UserWhereInput,
-} from '../../../generated/graphQLTypescriptTypes';
-import { User } from '../../models';
+} from "../../../generated/graphqlCodegen";
+import { User } from "../../models";
 
-export const usersConnection: QueryResolvers['usersConnection'] = async (
+export const usersConnection: QueryResolvers["usersConnection"] = async (
   _parent,
   args
 ) => {
@@ -17,13 +17,13 @@ export const usersConnection: QueryResolvers['usersConnection'] = async (
     .sort(sort)
     .limit(args.first!)
     .skip(args.skip!)
-    .select(['-password'])
-    .populate('createdOrganizations')
-    .populate('createdEvents')
-    .populate('joinedOrganizations')
-    .populate('registeredEvents')
-    .populate('eventAdmin')
-    .populate('adminFor')
+    .select(["-password"])
+    .populate("createdOrganizations")
+    .populate("createdEvents")
+    .populate("joinedOrganizations")
+    .populate("registeredEvents")
+    .populate("eventAdmin")
+    .populate("adminFor")
     .lean();
 
   return users;
@@ -114,14 +114,14 @@ const getInputArg = (where: InputMaybe<UserWhereInput> | undefined) => {
         ...inputArg,
         firstName: {
           $regex: where.firstName_contains,
-          $options: 'i',
+          $options: "i",
         },
       };
     }
 
     //Returns users with firstName starts with that provided string
     if (where.firstName_starts_with) {
-      const regexp = new RegExp('^' + where.firstName_starts_with);
+      const regexp = new RegExp("^" + where.firstName_starts_with);
       inputArg = {
         ...inputArg,
         firstName: regexp,
@@ -172,14 +172,14 @@ const getInputArg = (where: InputMaybe<UserWhereInput> | undefined) => {
         ...inputArg,
         lastName: {
           $regex: where.lastName_contains,
-          $options: 'i',
+          $options: "i",
         },
       };
     }
 
     //Returns users with LastName starting with provided string
     if (where.lastName_starts_with) {
-      const regexp = new RegExp('^' + where.lastName_starts_with);
+      const regexp = new RegExp("^" + where.lastName_starts_with);
       inputArg = {
         ...inputArg,
         lastName: regexp,
@@ -230,14 +230,14 @@ const getInputArg = (where: InputMaybe<UserWhereInput> | undefined) => {
         ...inputArg,
         email: {
           $regex: where.email_contains,
-          $options: 'i',
+          $options: "i",
         },
       };
     }
 
     //Returns user with email starts with provided string
     if (where.email_starts_with) {
-      const regexp = new RegExp('^' + where.email_starts_with);
+      const regexp = new RegExp("^" + where.email_starts_with);
       inputArg = {
         ...inputArg,
         email: regexp,
@@ -288,14 +288,14 @@ const getInputArg = (where: InputMaybe<UserWhereInput> | undefined) => {
         ...inputArg,
         appLanguageCode: {
           $regex: where.appLanguageCode_contains,
-          $options: 'i',
+          $options: "i",
         },
       };
     }
 
     //Returns user with appLanguageCode starts with provided string
     if (where.appLanguageCode_starts_with) {
-      const regexp = new RegExp('^' + where.email_starts_with);
+      const regexp = new RegExp("^" + where.email_starts_with);
       inputArg = {
         ...inputArg,
         appLanguageCode: regexp,
@@ -308,39 +308,39 @@ const getInputArg = (where: InputMaybe<UserWhereInput> | undefined) => {
 
 const getSort = (orderBy: InputMaybe<UserOrderByInput> | undefined) => {
   if (orderBy !== null) {
-    if (orderBy === 'id_ASC') {
+    if (orderBy === "id_ASC") {
       return {
         _id: 1,
       };
-    } else if (orderBy === 'id_DESC') {
+    } else if (orderBy === "id_DESC") {
       return {
         _id: -1,
       };
-    } else if (orderBy === 'firstName_ASC') {
+    } else if (orderBy === "firstName_ASC") {
       return {
         firstName: 1,
       };
-    } else if (orderBy === 'firstName_DESC') {
+    } else if (orderBy === "firstName_DESC") {
       return {
         firstName: -1,
       };
-    } else if (orderBy === 'lastName_ASC') {
+    } else if (orderBy === "lastName_ASC") {
       return {
         lastName: 1,
       };
-    } else if (orderBy === 'lastName_DESC') {
+    } else if (orderBy === "lastName_DESC") {
       return {
         lastName: -1,
       };
-    } else if (orderBy === 'appLanguageCode_ASC') {
+    } else if (orderBy === "appLanguageCode_ASC") {
       return {
         appLanguageCode: 1,
       };
-    } else if (orderBy === 'appLanguageCode_DESC') {
+    } else if (orderBy === "appLanguageCode_DESC") {
       return {
         appLanguageCode: -1,
       };
-    } else if (orderBy === 'email_ASC') {
+    } else if (orderBy === "email_ASC") {
       return {
         email: 1,
       };

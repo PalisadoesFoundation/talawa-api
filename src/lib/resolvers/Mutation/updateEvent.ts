@@ -1,6 +1,6 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { User, Event } from '../../models';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { User, Event } from "../../models";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
@@ -15,9 +15,9 @@ import {
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const updateEvent: MutationResolvers['updateEvent'] = async (
+export const updateEvent: MutationResolvers["updateEvent"] = async (
   _parent,
   args,
   context

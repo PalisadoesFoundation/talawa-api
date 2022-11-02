@@ -1,11 +1,11 @@
-import { SchemaDirectiveVisitor } from 'apollo-server-express';
+import { SchemaDirectiveVisitor } from "apollo-server-express";
 import {
   GraphQLInterfaceType,
   GraphQLObjectType,
   defaultFieldResolver,
   GraphQLField,
-} from 'graphql';
-import { errors, requestContext } from '../libraries';
+} from "graphql";
+import { errors, requestContext } from "../libraries";
 
 export class AuthenticationDirective extends SchemaDirectiveVisitor {
   visitFieldDefinition(
@@ -24,9 +24,9 @@ export class AuthenticationDirective extends SchemaDirectiveVisitor {
     field.resolve = async (root, args, context, info) => {
       if (context.expired || !context.isAuth)
         throw new errors.UnauthenticatedError(
-          requestContext.translate('user.notAuthenticated'),
-          'user.notAuthenticated',
-          'userAuthentication'
+          requestContext.translate("user.notAuthenticated"),
+          "user.notAuthenticated",
+          "userAuthentication"
         );
 
       return resolver(root, args, context, info);

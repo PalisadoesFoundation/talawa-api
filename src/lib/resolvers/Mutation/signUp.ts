@@ -1,23 +1,23 @@
-import bcrypt from 'bcryptjs';
+import bcrypt from "bcryptjs";
 import {
   IN_PRODUCTION,
   ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_PARAM,
-} from '../../../constants';
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { User, Organization } from '../../models';
+} from "../../../constants";
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { User, Organization } from "../../models";
 import {
   createAccessToken,
   createRefreshToken,
   uploadImage,
   copyToClipboard,
-} from '../../utilities';
-import { androidFirebaseOptions, iosFirebaseOptions } from '../../config';
+} from "../../utilities";
+import { androidFirebaseOptions, iosFirebaseOptions } from "../../config";
 
-export const signUp: MutationResolvers['signUp'] = async (_parent, args) => {
+export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   const userWithEmailExists = await User.exists({
     email: args.data.email.toLowerCase(),
   });
@@ -25,10 +25,10 @@ export const signUp: MutationResolvers['signUp'] = async (_parent, args) => {
   if (userWithEmailExists === true) {
     throw new errors.ConflictError(
       IN_PRODUCTION !== true
-        ? 'Email already exists'
-        : requestContext.translate('email.alreadyExists'),
-      'email.alreadyExists',
-      'email'
+        ? "Email already exists"
+        : requestContext.translate("email.alreadyExists"),
+      "email.alreadyExists",
+      "email"
     );
   }
 
@@ -58,7 +58,7 @@ export const signUp: MutationResolvers['signUp'] = async (_parent, args) => {
     uploadImageObj = await uploadImage(args.file, null);
   }
 
-  let createdUser = await User.create({
+  const createdUser = await User.create({
     ...args.data,
     organizationUserBelongsTo: organization ? organization._id : null,
     email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors

@@ -1,7 +1,7 @@
-import { Schema, Types, model, PopulatedDoc, Document } from 'mongoose';
-import { Interface_Organization } from './Organization';
-import { Interface_Task } from './Task';
-import { Interface_User } from './User';
+import { Schema, Types, model, PopulatedDoc, Document, models } from "mongoose";
+import { Interface_Organization } from "./Organization";
+import { Interface_Task } from "./Task";
+import { Interface_User } from "./User";
 
 export interface Interface_UserAttende {
   userId: string;
@@ -17,14 +17,14 @@ const userAttendeSchema = new Schema({
   },
   user: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
   status: {
     type: String,
     required: true,
-    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
-    default: 'ACTIVE',
+    enum: ["ACTIVE", "BLOCKED", "DELETED"],
+    default: "ACTIVE",
   },
   createdAt: {
     type: Date,
@@ -121,8 +121,8 @@ const eventSchema = new Schema({
       // @ts-ignore
       return this.recurring;
     },
-    enum: ['ONCE', 'DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'],
-    default: 'ONCE',
+    enum: ["ONCE", "DAILY", "WEEKLY", "MONTHLY", "YEARLY"],
+    default: "ONCE",
   },
   isPublic: {
     type: Boolean,
@@ -134,34 +134,38 @@ const eventSchema = new Schema({
   },
   creator: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
   registrants: [userAttendeSchema],
   admins: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
   ],
   organization: {
     type: Schema.Types.ObjectId,
-    ref: 'Organization',
+    ref: "Organization",
     required: true,
   },
   tasks: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'Task',
+      ref: "Task",
     },
   ],
   status: {
     type: String,
     required: true,
-    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
-    default: 'ACTIVE',
+    enum: ["ACTIVE", "BLOCKED", "DELETED"],
+    default: "ACTIVE",
   },
 });
 
-export const Event = model<Interface_Event>('Event', eventSchema);
+const EventModel = () => model<Interface_Event>("Event", eventSchema);
+
+export const Event = (models.Event || EventModel()) as ReturnType<
+  typeof EventModel
+>;

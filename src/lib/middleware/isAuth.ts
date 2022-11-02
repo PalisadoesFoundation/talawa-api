@@ -1,6 +1,6 @@
-import jwt from 'jsonwebtoken';
-import { Request } from 'express';
-import logger from '../libraries/logger';
+import jwt from "jsonwebtoken";
+import { Request } from "express";
+import logger from "../libraries/logger";
 
 // This interface represents the type of data object returned by isAuth function.
 export interface Interface_AuthData {
@@ -31,10 +31,10 @@ export const isAuth = (request: Request) => {
 
   // format of request sent will be Bearer tokenvalue
   // this splits it into two values bearer and the token
-  const token = authHeader.split(' ')[1];
+  const token = authHeader.split(" ")[1];
 
   // if the token is null or an empty string
-  if (!token || token === '') {
+  if (!token || token === "") {
     return authData;
   }
 
@@ -55,7 +55,7 @@ export const isAuth = (request: Request) => {
       }
     ); // If there is an error decoded token would contain it
 
-    if (decodedToken.name === 'TokenExpiredError') {
+    if (decodedToken.name === "TokenExpiredError") {
       // If the token has expired set the expired field of authData to true and return it
       authData.expired = true;
       return authData;
@@ -67,7 +67,7 @@ export const isAuth = (request: Request) => {
 
   // if the decoded token is not set
   if (!decodedToken) {
-    logger.info('decoded token is not present');
+    logger.info("decoded token is not present");
     return authData;
   }
 

@@ -2,12 +2,12 @@
 overwrite: true
 # address to the graphql type defintions(schema)
 schema:
-  - 'src/lib/typeDefs/**/*.ts'
+  - './src/lib/typeDefs/**/*.ts'
   # Upload scalar is injected by apollo-server into the schema. Graphql-codegen by default generates it's typescript type as 'any'.
   - scalar Upload
 generates:
   # where to emit the generated graphql typescript defintions
-  ./src/generated/graphQLTypescriptTypes.ts:
+  ./src/generated/graphqlCodegen.ts:
     plugins:
       - typescript
       - typescript-resolvers

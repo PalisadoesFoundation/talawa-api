@@ -1,7 +1,7 @@
-import { GroupChatResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { Organization } from '../../models';
+import { GroupChatResolvers } from "../../../generated/graphqlCodegen";
+import { Organization } from "../../models";
 
-export const organization: GroupChatResolvers['organization'] = async (
+export const organization: GroupChatResolvers["organization"] = async (
   parent
 ) => {
   return await Organization.findOne({

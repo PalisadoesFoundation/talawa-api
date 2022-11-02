@@ -1,6 +1,6 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User, Comment } from '../../models';
-import { errors, requestContext } from '../../libraries';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { User, Comment } from "../../models";
+import { errors, requestContext } from "../../libraries";
 import {
   COMMENT_NOT_FOUND,
   COMMENT_NOT_FOUND_CODE,
@@ -11,9 +11,9 @@ import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const likeComment: MutationResolvers['likeComment'] = async (
+export const likeComment: MutationResolvers["likeComment"] = async (
   _parent,
   args,
   context
@@ -33,7 +33,7 @@ export const likeComment: MutationResolvers['likeComment'] = async (
     );
   }
 
-  let comment = await Comment.findOne({
+  const comment = await Comment.findOne({
     _id: args.id,
   }).lean();
 

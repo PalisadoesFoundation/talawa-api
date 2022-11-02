@@ -1,6 +1,6 @@
-import { MembershipRequestResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { organization } from './organization';
-import { user } from './user';
+import { MembershipRequestResolvers } from "../../../generated/graphqlCodegen";
+import { organization } from "./organization";
+import { user } from "./user";
 
 export const MembershipRequest: MembershipRequestResolvers = {
   organization,

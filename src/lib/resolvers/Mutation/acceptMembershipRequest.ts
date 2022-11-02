@@ -1,7 +1,7 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { adminCheck } from '../../utilities';
-import { MembershipRequest, Organization, User } from '../../models';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { adminCheck } from "../../utilities";
+import { MembershipRequest, Organization, User } from "../../models";
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND,
   MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
@@ -20,9 +20,9 @@ import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
   USER_NOT_FOUND,
-} from '../../../constants';
+} from "../../../constants";
 
-export const acceptMembershipRequest: MutationResolvers['acceptMembershipRequest'] =
+export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest"] =
   async (_parent, args, context) => {
     const membershipRequest = await MembershipRequest.findOne({
       _id: args.membershipRequestId,
@@ -39,7 +39,7 @@ export const acceptMembershipRequest: MutationResolvers['acceptMembershipRequest
       );
     }
 
-    let organization = await Organization.findOne({
+    const organization = await Organization.findOne({
       _id: membershipRequest.organization,
     }).lean();
 
@@ -54,7 +54,7 @@ export const acceptMembershipRequest: MutationResolvers['acceptMembershipRequest
       );
     }
 
-    let user = await User.findOne({
+    const user = await User.findOne({
       _id: membershipRequest.user,
     }).lean();
 

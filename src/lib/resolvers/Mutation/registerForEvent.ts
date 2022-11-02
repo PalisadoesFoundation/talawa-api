@@ -1,6 +1,6 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { User, Event, Interface_Event } from '../../models';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { User, Event } from "../../models";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
@@ -15,9 +15,9 @@ import {
   REGISTRANT_ALREADY_EXIST_CODE,
   REGISTRANT_ALREADY_EXIST_MESSAGE,
   REGISTRANT_ALREADY_EXIST_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const registerForEvent: MutationResolvers['registerForEvent'] = async (
+export const registerForEvent: MutationResolvers["registerForEvent"] = async (
   _parent,
   args,
   context
@@ -60,7 +60,7 @@ export const registerForEvent: MutationResolvers['registerForEvent'] = async (
 
   // Checks whether currentUser with _id === context.userId is already a registrant for event.
   if (index !== -1) {
-    if (event.registrants[index].status === 'ACTIVE') {
+    if (event.registrants[index].status === "ACTIVE") {
       throw new errors.NotFoundError(
         IN_PRODUCTION !== true
           ? REGISTRANT_ALREADY_EXIST
@@ -94,7 +94,7 @@ export const registerForEvent: MutationResolvers['registerForEvent'] = async (
     return await Event.findOneAndUpdate(
       {
         _id: event._id,
-        status: 'ACTIVE',
+        status: "ACTIVE",
       },
       {
         $push: {
@@ -109,14 +109,14 @@ export const registerForEvent: MutationResolvers['registerForEvent'] = async (
       }
     ).lean();
   } else {
-    let updatedRegistrants = event.registrants;
+    const updatedRegistrants = event.registrants;
 
     // Sets registrant.status for user with _id === context.userId of event to ACTIVE.
     updatedRegistrants[index] = {
       id: updatedRegistrants[index].id,
       userId: updatedRegistrants[index].userId,
       user: updatedRegistrants[index].user,
-      status: 'ACTIVE',
+      status: "ACTIVE",
       createdAt: updatedRegistrants[index].createdAt,
     };
 
@@ -124,7 +124,7 @@ export const registerForEvent: MutationResolvers['registerForEvent'] = async (
     return await Event.findOneAndUpdate(
       {
         _id: event._id,
-        status: 'ACTIVE',
+        status: "ACTIVE",
       },
       {
         $set: {

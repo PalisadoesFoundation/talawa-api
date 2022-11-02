@@ -1,6 +1,6 @@
-import { Schema, model, Model, PopulatedDoc, Types, Document } from 'mongoose';
-import { Interface_Organization } from './Organization';
-import { Interface_User } from './User';
+import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
+import { Interface_Organization } from "./Organization";
+import { Interface_User } from "./User";
 
 export interface Interface_MembershipRequest {
   _id: Types.ObjectId;
@@ -12,22 +12,26 @@ export interface Interface_MembershipRequest {
 const membershipRequestSchema = new Schema({
   organization: {
     type: Schema.Types.ObjectId,
-    ref: 'Organization',
+    ref: "Organization",
     required: true,
   },
   user: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
   },
   status: {
     type: String,
     required: true,
-    default: 'ACTIVE',
-    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
+    default: "ACTIVE",
+    enum: ["ACTIVE", "BLOCKED", "DELETED"],
   },
 });
 
-export const MembershipRequest = model<Interface_MembershipRequest>(
-  'MembershipRequest',
-  membershipRequestSchema
-);
+const MembershipRequestModel = () =>
+  model<Interface_MembershipRequest>(
+    "MembershipRequest",
+    membershipRequestSchema
+  );
+
+export const MembershipRequest = (models.MembershipRequest ||
+  MembershipRequestModel()) as ReturnType<typeof MembershipRequestModel>;

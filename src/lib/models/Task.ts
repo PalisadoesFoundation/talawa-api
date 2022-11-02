@@ -1,6 +1,6 @@
-import { Schema, model, PopulatedDoc, Types, Document } from 'mongoose';
-import { Interface_Event } from './Event';
-import { Interface_User } from './User';
+import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
+import { Interface_Event } from "./Event";
+import { Interface_User } from "./User";
 
 export interface Interface_Task {
   _id: Types.ObjectId;
@@ -24,8 +24,8 @@ const taskSchema = new Schema({
   status: {
     type: String,
     required: true,
-    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
-    default: 'ACTIVE',
+    enum: ["ACTIVE", "BLOCKED", "DELETED"],
+    default: "ACTIVE",
   },
   createdAt: {
     type: Date,
@@ -36,14 +36,18 @@ const taskSchema = new Schema({
   },
   event: {
     type: Schema.Types.ObjectId,
-    ref: 'Event',
+    ref: "Event",
     required: true,
   },
   creator: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
 });
 
-export const Task = model<Interface_Task>('Task', taskSchema);
+const TaskModel = () => model<Interface_Task>("Task", taskSchema);
+
+export const Task = (models.Task || TaskModel()) as ReturnType<
+  typeof TaskModel
+>;

@@ -1,6 +1,6 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { User, Organization, Event } from '../../models';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { User, Organization, Event } from "../../models";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
@@ -15,14 +15,14 @@ import {
   ORGANIZATION_NOT_AUTHORIZED_MESSAGE,
   ORGANIZATION_NOT_AUTHORIZED_CODE,
   ORGANIZATION_NOT_AUTHORIZED_PARAM,
-} from '../../../constants';
-import admin, { credential } from 'firebase-admin';
+} from "../../../constants";
+import admin, { credential } from "firebase-admin";
 
 const applicationDefault = credential.applicationDefault;
 
 admin.initializeApp({ credential: applicationDefault() });
 
-export const createEvent: MutationResolvers['createEvent'] = async (
+export const createEvent: MutationResolvers["createEvent"] = async (
   _parent,
   args,
   context
@@ -57,12 +57,12 @@ export const createEvent: MutationResolvers['createEvent'] = async (
     );
   }
 
-  let userCreatedOrganization = currentUser.createdOrganizations.some(
+  const userCreatedOrganization = currentUser.createdOrganizations.some(
     (createdOrganization) =>
       createdOrganization.toString() === organization._id.toString()
   );
 
-  let userJoinedOrganization = currentUser.joinedOrganizations.some(
+  const userJoinedOrganization = currentUser.joinedOrganizations.some(
     (joinedOrganization) =>
       joinedOrganization.toString() === organization._id.toString()
   );
@@ -119,7 +119,7 @@ export const createEvent: MutationResolvers['createEvent'] = async (
       await admin.messaging().send({
         token: user.token,
         notification: {
-          title: 'New Event',
+          title: "New Event",
           body: `${currentUser.firstName} has created a new event in ${organization.name}`,
         },
       });

@@ -1,4 +1,4 @@
-import { adminCheck } from '../../utilities';
+import { adminCheck } from "../../utilities";
 import {
   CHAT_NOT_FOUND,
   CHAT_NOT_FOUND_CODE,
@@ -9,12 +9,12 @@ import {
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_PARAM,
-} from '../../../constants';
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { GroupChat, GroupChatMessage, Organization } from '../../models';
+} from "../../../constants";
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { GroupChat, GroupChatMessage, Organization } from "../../models";
 
-export const removeGroupChat: MutationResolvers['removeGroupChat'] = async (
+export const removeGroupChat: MutationResolvers["removeGroupChat"] = async (
   _parent,
   args,
   context

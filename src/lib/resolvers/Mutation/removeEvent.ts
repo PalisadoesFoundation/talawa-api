@@ -1,6 +1,6 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { User, Event } from '../../models';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { User, Event } from "../../models";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
@@ -15,9 +15,9 @@ import {
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const removeEvent: MutationResolvers['removeEvent'] = async (
+export const removeEvent: MutationResolvers["removeEvent"] = async (
   _parent,
   args,
   context
@@ -53,12 +53,12 @@ export const removeEvent: MutationResolvers['removeEvent'] = async (
   }
 
   // Boolean to determine whether user is an admin of organization.
-  let currentUserIsOrganizationAdmin = currentUser.adminFor.some(
+  const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
     (organization) => organization.toString() === event.organization.toString()
   );
 
   // Boolean to determine whether user is an admin of event.
-  let currentUserIsEventAdmin = event.admins.some(
+  const currentUserIsEventAdmin = event.admins.some(
     (admin) => admin.toString() === currentUser._id.toString()
   );
 
@@ -100,7 +100,7 @@ export const removeEvent: MutationResolvers['removeEvent'] = async (
       _id: event._id,
     },
     {
-      status: 'DELETED',
+      status: "DELETED",
     }
   );
 

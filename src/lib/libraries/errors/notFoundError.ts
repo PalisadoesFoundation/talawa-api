@@ -1,8 +1,8 @@
-import { ApplicationError } from './applicationError';
+import { ApplicationError } from "./applicationError";
 
 export class NotFoundError extends ApplicationError {
   constructor(
-    message: string = 'Not Found',
+    message: string = "Not Found",
     code: string | null = null,
     param: string | null = null,
     metadata: Record<any, any> = {}

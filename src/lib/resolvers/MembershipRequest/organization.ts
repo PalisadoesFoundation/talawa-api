@@ -1,7 +1,7 @@
-import { MembershipRequestResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { Organization } from '../../models';
+import { MembershipRequestResolvers } from "../../../generated/graphqlCodegen";
+import { Organization } from "../../models";
 
-export const organization: MembershipRequestResolvers['organization'] = async (
+export const organization: MembershipRequestResolvers["organization"] = async (
   parent
 ) => {
   return Organization.findOne({

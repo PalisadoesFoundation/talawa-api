@@ -1,6 +1,6 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User, Post, Comment } from '../../models';
-import { errors, requestContext } from '../../libraries';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { User, Post, Comment } from "../../models";
+import { errors, requestContext } from "../../libraries";
 import {
   USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
@@ -14,9 +14,9 @@ import {
   USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_CODE,
-} from '../../../constants';
+} from "../../../constants";
 
-export const removeComment: MutationResolvers['removeComment'] = async (
+export const removeComment: MutationResolvers["removeComment"] = async (
   _parent,
   args,
   context

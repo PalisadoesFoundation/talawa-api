@@ -8,12 +8,12 @@ import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { User, Task } from '../../models';
+} from "../../../constants";
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { User, Task } from "../../models";
 
-export const updateTask: MutationResolvers['updateTask'] = async (
+export const updateTask: MutationResolvers["updateTask"] = async (
   _parent,
   args,
   context
@@ -39,10 +39,10 @@ export const updateTask: MutationResolvers['updateTask'] = async (
   if (!task) {
     throw new errors.NotFoundError(
       IN_PRODUCTION !== true
-        ? 'Task not found'
-        : requestContext.translate('task.notFound'),
-      'task.notFound',
-      'task'
+        ? "Task not found"
+        : requestContext.translate("task.notFound"),
+      "task.notFound",
+      "task"
     );
   }
 

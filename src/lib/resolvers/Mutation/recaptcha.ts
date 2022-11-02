@@ -1,7 +1,7 @@
-import axios from 'axios';
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
+import axios from "axios";
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
 
-export const recaptcha: MutationResolvers['recaptcha'] = async (
+export const recaptcha: MutationResolvers["recaptcha"] = async (
   _parent,
   args
 ) => {

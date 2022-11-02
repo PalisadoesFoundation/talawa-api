@@ -3,21 +3,21 @@ import {
   QueryResolvers,
   UserOrderByInput,
   UserWhereInput,
-} from '../../../generated/graphQLTypescriptTypes';
-import { User } from '../../models';
+} from "../../../generated/graphqlCodegen";
+import { User } from "../../models";
 
 // @ts-ignore
-export const organizationsMemberConnection: QueryResolvers['organizationsMemberConnection'] =
+export const organizationsMemberConnection: QueryResolvers["organizationsMemberConnection"] =
   async (_parent, args) => {
-    let inputArg = getInputArg(args.where);
-    let sort = getSort(args.orderBy);
+    const inputArg = getInputArg(args.where);
+    const sort = getSort(args.orderBy);
 
     // Pagination based Options
     let paginateOptions;
 
     if (args.first) {
       if (args.skip === null) {
-        throw 'Missing Skip parameter. Set it to either 0 or some other value';
+        throw "Missing Skip parameter. Set it to either 0 or some other value";
       }
 
       paginateOptions = {
@@ -43,7 +43,7 @@ export const organizationsMemberConnection: QueryResolvers['organizationsMemberC
       },
       {
         ...paginateOptions,
-        select: ['-password'],
+        select: ["-password"],
       }
     );
 
@@ -51,7 +51,7 @@ export const organizationsMemberConnection: QueryResolvers['organizationsMemberC
 
     if (paginateOptions.pagination) {
       if (args.skip === undefined) {
-        throw new Error('Skip parameter is missing');
+        throw new Error("Skip parameter is missing");
       }
 
       users = usersModel.docs.map((user) => {
@@ -170,14 +170,14 @@ const getInputArg = (where: InputMaybe<UserWhereInput> | undefined) => {
         ...inputArg,
         firstName: {
           $regex: where.firstName_contains,
-          $options: 'i',
+          $options: "i",
         },
       };
     }
 
     //Returns users with firstName starts with that provided string
     if (where.firstName_starts_with) {
-      const regexp = new RegExp('^' + where.firstName_starts_with);
+      const regexp = new RegExp("^" + where.firstName_starts_with);
       inputArg = {
         ...inputArg,
         firstName: regexp,
@@ -228,14 +228,14 @@ const getInputArg = (where: InputMaybe<UserWhereInput> | undefined) => {
         ...inputArg,
         lastName: {
           $regex: where.lastName_contains,
-          $options: 'i',
+          $options: "i",
         },
       };
     }
 
     //Returns users with LastName starting with provided string
     if (where.lastName_starts_with) {
-      const regexp = new RegExp('^' + where.lastName_starts_with);
+      const regexp = new RegExp("^" + where.lastName_starts_with);
       inputArg = {
         ...inputArg,
         lastName: regexp,
@@ -286,14 +286,14 @@ const getInputArg = (where: InputMaybe<UserWhereInput> | undefined) => {
         ...inputArg,
         email: {
           $regex: where.email_contains,
-          $options: 'i',
+          $options: "i",
         },
       };
     }
 
     //Returns user with email starts with provided string
     if (where.email_starts_with) {
-      const regexp = new RegExp('^' + where.email_starts_with);
+      const regexp = new RegExp("^" + where.email_starts_with);
       inputArg = {
         ...inputArg,
         email: regexp,
@@ -344,14 +344,14 @@ const getInputArg = (where: InputMaybe<UserWhereInput> | undefined) => {
         ...inputArg,
         appLanguageCode: {
           $regex: where.appLanguageCode_contains,
-          $options: 'i',
+          $options: "i",
         },
       };
     }
 
     //Returns user with appLanguageCode starts with provided string
     if (where.appLanguageCode_starts_with) {
-      const regexp = new RegExp('^' + where.email_starts_with);
+      const regexp = new RegExp("^" + where.email_starts_with);
       inputArg = {
         ...inputArg,
         appLanguageCode: regexp,
@@ -364,39 +364,39 @@ const getInputArg = (where: InputMaybe<UserWhereInput> | undefined) => {
 
 const getSort = (orderBy: InputMaybe<UserOrderByInput> | undefined) => {
   if (orderBy !== null) {
-    if (orderBy === 'id_ASC') {
+    if (orderBy === "id_ASC") {
       return {
         _id: 1,
       };
-    } else if (orderBy === 'id_DESC') {
+    } else if (orderBy === "id_DESC") {
       return {
         _id: -1,
       };
-    } else if (orderBy === 'firstName_ASC') {
+    } else if (orderBy === "firstName_ASC") {
       return {
         firstName: 1,
       };
-    } else if (orderBy === 'firstName_DESC') {
+    } else if (orderBy === "firstName_DESC") {
       return {
         firstName: -1,
       };
-    } else if (orderBy === 'lastName_ASC') {
+    } else if (orderBy === "lastName_ASC") {
       return {
         lastName: 1,
       };
-    } else if (orderBy === 'lastName_DESC') {
+    } else if (orderBy === "lastName_DESC") {
       return {
         lastName: -1,
       };
-    } else if (orderBy === 'appLanguageCode_ASC') {
+    } else if (orderBy === "appLanguageCode_ASC") {
       return {
         appLanguageCode: 1,
       };
-    } else if (orderBy === 'appLanguageCode_DESC') {
+    } else if (orderBy === "appLanguageCode_DESC") {
       return {
         appLanguageCode: -1,
       };
-    } else if (orderBy === 'email_ASC') {
+    } else if (orderBy === "email_ASC") {
       return {
         email: 1,
       };

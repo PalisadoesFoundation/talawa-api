@@ -1,6 +1,6 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User, Organization } from '../../models';
-import { errors, requestContext } from '../../libraries';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { User, Organization } from "../../models";
+import { errors, requestContext } from "../../libraries";
 import {
   IN_PRODUCTION,
   ORGANIZATION_NOT_FOUND,
@@ -19,9 +19,9 @@ import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const joinPublicOrganization: MutationResolvers['joinPublicOrganization'] =
+export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"] =
   async (_parent, args, context) => {
     const organization = await Organization.findOne({
       _id: args.organizationId,
@@ -49,7 +49,7 @@ export const joinPublicOrganization: MutationResolvers['joinPublicOrganization']
       );
     }
 
-    let currentUserExists = await User.exists({
+    const currentUserExists = await User.exists({
       _id: context.userId,
     });
 
@@ -108,6 +108,6 @@ export const joinPublicOrganization: MutationResolvers['joinPublicOrganization']
         new: true,
       }
     )
-      .select(['-password'])
+      .select(["-password"])
       .lean();
   };

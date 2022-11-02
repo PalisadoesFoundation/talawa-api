@@ -1,6 +1,6 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { DirectChat, DirectChatMessage, User } from '../../models';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { DirectChat, DirectChatMessage, User } from "../../models";
 import {
   IN_PRODUCTION,
   CHAT_NOT_FOUND,
@@ -11,9 +11,9 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const sendMessageToDirectChat: MutationResolvers['sendMessageToDirectChat'] =
+export const sendMessageToDirectChat: MutationResolvers["sendMessageToDirectChat"] =
   async (_parent, args, context) => {
     const directChat = await DirectChat.findOne({
       _id: args.chatId,
@@ -69,7 +69,7 @@ export const sendMessageToDirectChat: MutationResolvers['sendMessageToDirectChat
     );
 
     // calls subscription
-    context.pubsub.publish('MESSAGE_SENT_TO_DIRECT_CHAT', {
+    context.pubsub.publish("MESSAGE_SENT_TO_DIRECT_CHAT", {
       messageSentToDirectChat: createdDirectChatMessage.toObject(),
     });
 

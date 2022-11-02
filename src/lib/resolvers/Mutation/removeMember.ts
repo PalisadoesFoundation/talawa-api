@@ -1,7 +1,7 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { User, Organization } from '../../models';
-import { adminCheck } from '../../utilities';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { User, Organization } from "../../models";
+import { adminCheck } from "../../utilities";
 import {
   USER_NOT_FOUND,
   MEMBER_NOT_FOUND,
@@ -10,9 +10,9 @@ import {
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const removeMember: MutationResolvers['removeMember'] = async (
+export const removeMember: MutationResolvers["removeMember"] = async (
   _parent,
   args,
   context
@@ -40,7 +40,7 @@ export const removeMember: MutationResolvers['removeMember'] = async (
   stored in an array an thrown at the end. This variable is used to store all the
   errors we want to throw from the following for loop.
   */
-  let errorsToThrow = [];
+  const errorsToThrow = [];
 
   for await (const userId of args.data.userIds) {
     // do not run an async function inside a for each loop - it doesnt work
@@ -56,7 +56,7 @@ export const removeMember: MutationResolvers['removeMember'] = async (
     }
 
     // Boolean to determine whether user is a member of organization.
-    let userIsOrganizationMember = organization?.members.some(
+    const userIsOrganizationMember = organization?.members.some(
       (member) => member.toString() === user._id.toString()
     );
 
@@ -70,7 +70,7 @@ export const removeMember: MutationResolvers['removeMember'] = async (
     }
 
     // Boolean to determine whether user is an admin of organization.
-    let userIsOrganizationAdmin = organization?.admins.some(
+    const userIsOrganizationAdmin = organization?.admins.some(
       (admin) => admin.toString() === user._id.toString()
     );
 
@@ -80,7 +80,7 @@ export const removeMember: MutationResolvers['removeMember'] = async (
     */
     if (userIsOrganizationAdmin === true) {
       errorsToThrow.push(
-        'Administrators cannot remove members who are also Administrators'
+        "Administrators cannot remove members who are also Administrators"
       );
       break;
     }
@@ -94,7 +94,7 @@ export const removeMember: MutationResolvers['removeMember'] = async (
     */
     if (organization?.creator.toString() === user._id.toString()) {
       errorsToThrow.push(
-        'Administrators cannot remove the creator of the organization from the organization'
+        "Administrators cannot remove the creator of the organization from the organization"
       );
       break;
     }

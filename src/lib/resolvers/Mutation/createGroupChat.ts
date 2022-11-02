@@ -1,6 +1,6 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User, GroupChat, Organization } from '../../models';
-import { errors, requestContext } from '../../libraries';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { User, GroupChat, Organization } from "../../models";
+import { errors, requestContext } from "../../libraries";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
@@ -11,9 +11,9 @@ import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const createGroupChat: MutationResolvers['createGroupChat'] = async (
+export const createGroupChat: MutationResolvers["createGroupChat"] = async (
   _parent,
   args,
   context
@@ -72,7 +72,7 @@ export const createGroupChat: MutationResolvers['createGroupChat'] = async (
   }
 
   // Creates new groupChat.
-  let createdGroupChat = await GroupChat.create({
+  const createdGroupChat = await GroupChat.create({
     creator: context.userId,
     users: usersInGroupChat,
     organization: args.data?.organizationId,

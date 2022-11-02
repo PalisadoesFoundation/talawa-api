@@ -1,5 +1,5 @@
-import { Schema, model, Types } from 'mongoose';
-import { v4 as uuidv4 } from 'uuid';
+import { Schema, model, Types, models } from "mongoose";
+import { v4 as uuidv4 } from "uuid";
 
 export interface Interface_File {
   _id: Types.ObjectId;
@@ -39,9 +39,13 @@ const fileSchema = new Schema({
   status: {
     type: String,
     required: true,
-    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
-    default: 'ACTIVE',
+    enum: ["ACTIVE", "BLOCKED", "DELETED"],
+    default: "ACTIVE",
   },
 });
 
-export const File = model<Interface_File>('File', fileSchema);
+const FileModel = () => model<Interface_File>("File", fileSchema);
+
+export const File = (models.File || FileModel()) as ReturnType<
+  typeof FileModel
+>;

@@ -1,12 +1,12 @@
-import cls from 'cls-hooked';
+import cls from "cls-hooked";
 // No type defintions available for package 'cls-bluebird'
 // @ts-ignore
-import clsBluebird from 'cls-bluebird';
-import { customAlphabet } from 'nanoid';
-import { NextFunction, Request, Response } from 'express';
+import clsBluebird from "cls-bluebird";
+import { customAlphabet } from "nanoid";
+import { NextFunction, Request, Response } from "express";
 
 // Alphabets used in the custom nanoid function
-const alphabets = '0123456789abcdefghijklmnopqrstuvwxyz';
+const alphabets = "0123456789abcdefghijklmnopqrstuvwxyz";
 
 /*
 Custom nanoid function to generate a unique 10 characters request ID
@@ -14,13 +14,13 @@ using the characters in alphabets variable
 */
 const nanoid = customAlphabet(alphabets, 10);
 
-const requestTracingNamespace = cls.createNamespace('request-tracing');
+const requestTracingNamespace = cls.createNamespace("request-tracing");
 
 clsBluebird(requestTracingNamespace);
 
-export const tracingIdHeaderName = 'X-Tracing-Id';
+export const tracingIdHeaderName = "X-Tracing-Id";
 
-const tracingIdContextKeyName = 'tracingId';
+const tracingIdContextKeyName = "tracingId";
 
 const setTracingId = (tracingId: string) => {
   return requestTracingNamespace.set(tracingIdContextKeyName, tracingId);

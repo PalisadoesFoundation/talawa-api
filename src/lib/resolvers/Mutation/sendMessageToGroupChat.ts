@@ -1,6 +1,6 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { GroupChat, GroupChatMessage, User } from '../../models';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { GroupChat, GroupChatMessage, User } from "../../models";
 import {
   IN_PRODUCTION,
   USER_NOT_AUTHORIZED,
@@ -15,9 +15,9 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const sendMessageToGroupChat: MutationResolvers['sendMessageToGroupChat'] =
+export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"] =
   async (_parent, args, context) => {
     const groupChat = await GroupChat.findOne({
       _id: args.chatId,
@@ -47,7 +47,7 @@ export const sendMessageToGroupChat: MutationResolvers['sendMessageToGroupChat']
       );
     }
 
-    let currentUserIsAMemberOfGroupChat = groupChat.users.some(
+    const currentUserIsAMemberOfGroupChat = groupChat.users.some(
       (user) => user.toString() === context.userId.toString()
     );
 
@@ -85,7 +85,7 @@ export const sendMessageToGroupChat: MutationResolvers['sendMessageToGroupChat']
     );
 
     // calls subscription
-    context.pubsub.publish('MESSAGE_SENT_TO_GROUP_CHAT', {
+    context.pubsub.publish("MESSAGE_SENT_TO_GROUP_CHAT", {
       messageSentToGroupChat: createdGroupChatMessage.toObject(),
     });
 

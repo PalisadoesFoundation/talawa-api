@@ -1,5 +1,5 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User } from '../../models';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { User } from "../../models";
 import {
   IN_PRODUCTION,
   USER_NOT_AUTHORIZED,
@@ -7,15 +7,15 @@ import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
-import { errors, requestContext } from '../../libraries';
+} from "../../../constants";
+import { errors, requestContext } from "../../libraries";
 
-export const rejectAdmin: MutationResolvers['rejectAdmin'] = async (
+export const rejectAdmin: MutationResolvers["rejectAdmin"] = async (
   _parent,
   args,
   context
 ) => {
-  let currentUser = await User.findOne({
+  const currentUser = await User.findOne({
     _id: context.userId,
   }).lean();
 
@@ -31,7 +31,7 @@ export const rejectAdmin: MutationResolvers['rejectAdmin'] = async (
   }
 
   // Checks whether currentUser is not a SUPERADMIN.
-  if (currentUser.userType !== 'SUPERADMIN') {
+  if (currentUser.userType !== "SUPERADMIN") {
     throw new Error(USER_NOT_AUTHORIZED);
   }
 

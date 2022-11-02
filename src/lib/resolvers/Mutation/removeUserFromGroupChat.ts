@@ -12,13 +12,13 @@ import {
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_PARAM,
-} from '../../../constants';
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { GroupChat, Organization } from '../../models';
-import { adminCheck } from '../../utilities';
+} from "../../../constants";
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { GroupChat, Organization } from "../../models";
+import { adminCheck } from "../../utilities";
 
-export const removeUserFromGroupChat: MutationResolvers['removeUserFromGroupChat'] =
+export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat"] =
   async (_parent, args, context) => {
     const groupChat = await GroupChat.findOne({
       _id: args.chatId,
@@ -53,7 +53,7 @@ export const removeUserFromGroupChat: MutationResolvers['removeUserFromGroupChat
     // Checks whether currentUser with _id == context.userId is an admin of organzation.
     adminCheck(context.userId, organization);
 
-    let userIsMemberOfGroupChat = groupChat.users.some(
+    const userIsMemberOfGroupChat = groupChat.users.some(
       (user) => user.toString() === args.userId.toString()
     );
 

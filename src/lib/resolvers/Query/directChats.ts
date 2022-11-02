@@ -1,6 +1,6 @@
-import { QueryResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { DirectChat } from '../../models';
+import { QueryResolvers } from "../../../generated/graphqlCodegen";
+import { DirectChat } from "../../models";
 
-export const directChats: QueryResolvers['directChats'] = async () => {
+export const directChats: QueryResolvers["directChats"] = async () => {
   return await DirectChat.find().lean();
 };

@@ -1,5 +1,5 @@
-import jwt from 'jsonwebtoken';
-import { Interface_User } from '../models';
+import jwt from "jsonwebtoken";
+import { Interface_User } from "../models";
 
 export interface Interface_JwtTokenPayload {
   tokenVersion: number;
@@ -20,7 +20,7 @@ export const createAccessToken = async (user: Interface_User) => {
     },
     process.env.ACCESS_TOKEN_SECRET!,
     {
-      expiresIn: '15m',
+      expiresIn: "15m",
     }
   );
 };
@@ -36,7 +36,7 @@ export const createRefreshToken = async (user: Interface_User) => {
     },
     process.env.REFRESH_TOKEN_SECRET!,
     {
-      expiresIn: '30d',
+      expiresIn: "30d",
     }
   );
 };

@@ -1,5 +1,5 @@
-import { User, EventProject } from '../../models';
-import { errors, requestContext } from '../../libraries';
+import { User, EventProject } from "../../models";
+import { errors, requestContext } from "../../libraries";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
@@ -14,7 +14,7 @@ import {
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
 export const removeEventProject = async (
   _parent: any,

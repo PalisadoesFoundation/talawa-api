@@ -1,11 +1,11 @@
-import cls from 'cls-hooked';
+import cls from "cls-hooked";
 // No type defintions available for package 'cls-bluebird'
 // @ts-ignore
-import clsBluebird from 'cls-bluebird';
-import i18n from 'i18n';
-import { NextFunction, Request, Response } from 'express';
+import clsBluebird from "cls-bluebird";
+import i18n from "i18n";
+import { NextFunction, Request, Response } from "express";
 
-const requestContextNamespace = cls.createNamespace('talawa-request-context');
+const requestContextNamespace = cls.createNamespace("talawa-request-context");
 
 clsBluebird(requestContextNamespace);
 
@@ -18,8 +18,8 @@ const getRequestContextValue = (key: string) => {
 };
 
 const setRequestContext = (obj: any) => {
-  setRequestContextValue('translate', obj.__);
-  setRequestContextValue('translatePlural', obj.__n);
+  setRequestContextValue("translate", obj.__);
+  setRequestContextValue("translatePlural", obj.__n);
 };
 
 export const middleware = () => {
@@ -56,17 +56,17 @@ export const init = async <T>(options: Interface_InitOptions<T> = {}) => {
 };
 
 export const translate = (...args: any) => {
-  const __ = getRequestContextValue('translate');
-  if (typeof __ !== 'function') {
-    throw new Error('i18n is not initialized, try app.use(i18n.init);');
+  const __ = getRequestContextValue("translate");
+  if (typeof __ !== "function") {
+    throw new Error("i18n is not initialized, try app.use(i18n.init);");
   }
   return __(...args);
 };
 
 export const translatePlural = (...args: any) => {
-  const __n = getRequestContextValue('translatePlural');
-  if (typeof __n !== 'function') {
-    throw new Error('i18n is not initialized, try app.use(i18n.init);');
+  const __n = getRequestContextValue("translatePlural");
+  if (typeof __n !== "function") {
+    throw new Error("i18n is not initialized, try app.use(i18n.init);");
   }
   return __n(...args);
 };

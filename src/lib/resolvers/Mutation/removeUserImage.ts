@@ -4,13 +4,13 @@ import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { User } from '../../models';
-import { deleteImage } from '../../utilities';
+} from "../../../constants";
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { User } from "../../models";
+import { deleteImage } from "../../utilities";
 
-export const removeUserImage: MutationResolvers['removeUserImage'] = async (
+export const removeUserImage: MutationResolvers["removeUserImage"] = async (
   _parent,
   _args,
   context
@@ -34,10 +34,10 @@ export const removeUserImage: MutationResolvers['removeUserImage'] = async (
   if (!currentUser.image) {
     throw new errors.NotFoundError(
       IN_PRODUCTION !== true
-        ? 'User profile image not found'
-        : requestContext.translate('user.profileImage.notFound'),
-      'user.profileImage.notFound',
-      'userProfileImage'
+        ? "User profile image not found"
+        : requestContext.translate("user.profileImage.notFound"),
+      "user.profileImage.notFound",
+      "userProfileImage"
     );
   }
 

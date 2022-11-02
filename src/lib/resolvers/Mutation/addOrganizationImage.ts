@@ -1,7 +1,7 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { adminCheck, uploadImage } from '../../utilities';
-import { User, Organization } from '../../models';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { adminCheck, uploadImage } from "../../utilities";
+import { User, Organization } from "../../models";
 import {
   IN_PRODUCTION,
   ORGANIZATION_NOT_FOUND,
@@ -12,9 +12,9 @@ import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const addOrganizationImage: MutationResolvers['addOrganizationImage'] =
+export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
   async (_parent, args, context) => {
     const currentUserExists = await User.exists({
       _id: context.userId,
@@ -50,7 +50,7 @@ export const addOrganizationImage: MutationResolvers['addOrganizationImage'] =
     adminCheck(context.userId, organization);
 
     // Upload Image
-    let uploadImageObj = await uploadImage(args.file, organization.image!);
+    const uploadImageObj = await uploadImage(args.file, organization.image!);
 
     // Updates the organization with new image and returns the updated organization.
     return await Organization.findOneAndUpdate(

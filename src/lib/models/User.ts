@@ -5,12 +5,13 @@ import {
   PaginateModel,
   Types,
   Document,
-} from 'mongoose';
-import mongoosePaginate from 'mongoose-paginate-v2';
-import validator from 'validator';
-import { Interface_Event } from './Event';
-import { Interface_MembershipRequest } from './MembershipRequest';
-import { Interface_Organization } from './Organization';
+  models,
+} from "mongoose";
+import mongoosePaginate from "mongoose-paginate-v2";
+import validator from "validator";
+import { Interface_Event } from "./Event";
+import { Interface_MembershipRequest } from "./MembershipRequest";
+import { Interface_Organization } from "./Organization";
 
 export interface Interface_User {
   _id: Types.ObjectId;
@@ -67,7 +68,7 @@ const userSchema = new Schema({
   email: {
     type: String,
     required: true,
-    validate: [validator.isEmail, 'invalid email'],
+    validate: [validator.isEmail, "invalid email"],
   },
   password: {
     type: String,
@@ -76,71 +77,71 @@ const userSchema = new Schema({
   appLanguageCode: {
     type: String,
     required: true,
-    default: 'en',
+    default: "en",
   },
   createdOrganizations: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'Organization',
+      ref: "Organization",
     },
   ],
   createdEvents: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'Event',
+      ref: "Event",
     },
   ],
   userType: {
     type: String,
     required: true,
-    enum: ['USER', 'ADMIN', 'SUPERADMIN'],
-    default: 'USER',
+    enum: ["USER", "ADMIN", "SUPERADMIN"],
+    default: "USER",
   },
   joinedOrganizations: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'Organization',
+      ref: "Organization",
     },
   ],
   registeredEvents: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'Event',
+      ref: "Event",
     },
   ],
   eventAdmin: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'Event',
+      ref: "Event",
     },
   ],
   adminFor: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'Organization',
+      ref: "Organization",
     },
   ],
   membershipRequests: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'MembershipRequest',
+      ref: "MembershipRequest",
     },
   ],
   organizationsBlockedBy: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'Organization',
+      ref: "Organization",
     },
   ],
   status: {
     type: String,
     required: true,
-    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
-    default: 'ACTIVE',
+    enum: ["ACTIVE", "BLOCKED", "DELETED"],
+    default: "ACTIVE",
   },
   organizationUserBelongsTo: {
     type: Schema.Types.ObjectId,
-    ref: 'Organization',
+    ref: "Organization",
   },
   pluginCreationAllowed: {
     type: Boolean,
@@ -159,7 +160,9 @@ const userSchema = new Schema({
 
 userSchema.plugin(mongoosePaginate);
 
-export const User = model<Interface_User, PaginateModel<Interface_User>>(
-  'User',
-  userSchema
-);
+const UserModel = () =>
+  model<Interface_User, PaginateModel<Interface_User>>("User", userSchema);
+
+export const User = (models.User || UserModel()) as ReturnType<
+  typeof UserModel
+>;

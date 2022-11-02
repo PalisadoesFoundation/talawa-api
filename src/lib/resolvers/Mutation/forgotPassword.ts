@@ -1,10 +1,10 @@
-import bcrypt from 'bcryptjs';
-import jwtDecode from 'jwt-decode';
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User } from '../../models';
-import { INVALID_OTP } from '../../../constants';
+import bcrypt from "bcryptjs";
+import jwtDecode from "jwt-decode";
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { User } from "../../models";
+import { INVALID_OTP } from "../../../constants";
 
-export const forgotPassword: MutationResolvers['forgotPassword'] = async (
+export const forgotPassword: MutationResolvers["forgotPassword"] = async (
   _parent,
   args
 ) => {

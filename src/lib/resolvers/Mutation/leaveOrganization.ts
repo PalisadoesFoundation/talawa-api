@@ -1,6 +1,6 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User, Organization } from '../../models';
-import { errors, requestContext } from '../../libraries';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { User, Organization } from "../../models";
+import { errors, requestContext } from "../../libraries";
 import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
@@ -19,9 +19,9 @@ import {
   USER_NOT_FOUND,
   USER_NOT_AUTHORIZED_MESSAGE,
   MEMBER_NOT_FOUND,
-} from '../../../constants';
+} from "../../../constants";
 
-export const leaveOrganization: MutationResolvers['leaveOrganization'] = async (
+export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   _parent,
   args,
   context
@@ -41,7 +41,7 @@ export const leaveOrganization: MutationResolvers['leaveOrganization'] = async (
     );
   }
 
-  let currentUser = await User.findOne({
+  const currentUser = await User.findOne({
     _id: context.userId,
   }).lean();
 
@@ -119,6 +119,6 @@ export const leaveOrganization: MutationResolvers['leaveOrganization'] = async (
       new: true,
     }
   )
-    .select(['-password'])
+    .select(["-password"])
     .lean();
 };

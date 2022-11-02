@@ -1,7 +1,7 @@
-import { Schema, model, PopulatedDoc, Types, Document } from 'mongoose';
-import { Interface_DirectChatMessage } from './DirectChatMessage';
-import { Interface_Organization } from './Organization';
-import { Interface_User } from './User';
+import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
+import { Interface_DirectChatMessage } from "./DirectChatMessage";
+import { Interface_Organization } from "./Organization";
+import { Interface_User } from "./User";
 
 export interface Interface_DirectChat {
   _id: Types.ObjectId;
@@ -16,35 +16,36 @@ const directChatSchema = new Schema({
   users: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
   ],
   messages: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'DirectChatMessage',
+      ref: "DirectChatMessage",
     },
   ],
   creator: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
   organization: {
     type: Schema.Types.ObjectId,
-    ref: 'Organization',
+    ref: "Organization",
     required: true,
   },
   status: {
     type: String,
     required: true,
-    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
-    default: 'ACTIVE',
+    enum: ["ACTIVE", "BLOCKED", "DELETED"],
+    default: "ACTIVE",
   },
 });
 
-export const DirectChat = model<Interface_DirectChat>(
-  'DirectChat',
-  directChatSchema
-);
+const DirectChatModel = () =>
+  model<Interface_DirectChat>("DirectChat", directChatSchema);
+
+export const DirectChat = (models.DirectChat ||
+  DirectChatModel()) as ReturnType<typeof DirectChatModel>;

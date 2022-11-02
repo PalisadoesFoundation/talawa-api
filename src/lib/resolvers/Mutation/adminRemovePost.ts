@@ -1,7 +1,7 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { errors, requestContext } from '../../libraries';
-import { adminCheck } from '../../utilities';
-import { User, Organization, Post } from '../../models';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { errors, requestContext } from "../../libraries";
+import { adminCheck } from "../../utilities";
+import { User, Organization, Post } from "../../models";
 import {
   IN_PRODUCTION,
   ORGANIZATION_NOT_FOUND,
@@ -16,14 +16,14 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const adminRemovePost: MutationResolvers['adminRemovePost'] = async (
+export const adminRemovePost: MutationResolvers["adminRemovePost"] = async (
   _parent,
   args,
   context
 ) => {
-  let organization = await Organization.findOne({
+  const organization = await Organization.findOne({
     _id: args.organizationId,
   }).lean();
 
@@ -38,7 +38,7 @@ export const adminRemovePost: MutationResolvers['adminRemovePost'] = async (
     );
   }
 
-  let currentUserExists = await User.exists({
+  const currentUserExists = await User.exists({
     _id: context.userId,
   });
 
@@ -56,7 +56,7 @@ export const adminRemovePost: MutationResolvers['adminRemovePost'] = async (
   // Checks whether currentUser with _id === context.userId is an admin of organization.
   adminCheck(context.userId, organization);
 
-  let post = await Post.findOne({
+  const post = await Post.findOne({
     _id: args.postId,
   }).lean();
 

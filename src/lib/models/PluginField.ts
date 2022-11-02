@@ -1,4 +1,4 @@
-import { Schema, model, Types } from 'mongoose';
+import { Schema, model, Types, models } from "mongoose";
 
 export interface Interface_PluginField {
   _id: Types.ObjectId;
@@ -20,8 +20,8 @@ const pluginFieldSchema = new Schema({
   status: {
     type: String,
     required: true,
-    enum: ['ACTIVE', 'BLOCKED', 'DELETED'],
-    default: 'ACTIVE',
+    enum: ["ACTIVE", "BLOCKED", "DELETED"],
+    default: "ACTIVE",
   },
   createdAt: {
     type: Date,
@@ -29,7 +29,8 @@ const pluginFieldSchema = new Schema({
   },
 });
 
-export const PluginField = model<Interface_PluginField>(
-  'PluginField',
-  pluginFieldSchema
-);
+const PluginFieldModel = () =>
+  model<Interface_PluginField>("PluginField", pluginFieldSchema);
+
+export const PluginField = (models.PluginField ||
+  PluginFieldModel()) as ReturnType<typeof PluginFieldModel>;

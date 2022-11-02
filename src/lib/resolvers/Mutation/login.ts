@@ -1,22 +1,22 @@
-import bcrypt from 'bcryptjs';
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User } from '../../models';
+import bcrypt from "bcryptjs";
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { User } from "../../models";
 import {
   createAccessToken,
   createRefreshToken,
   copyToClipboard,
-} from '../../utilities';
-import { errors, requestContext } from '../../libraries';
-import { androidFirebaseOptions, iosFirebaseOptions } from '../../config';
+} from "../../utilities";
+import { errors, requestContext } from "../../libraries";
+import { androidFirebaseOptions, iosFirebaseOptions } from "../../config";
 import {
   IN_PRODUCTION,
   USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const login: MutationResolvers['login'] = async (_parent, args) => {
+export const login: MutationResolvers["login"] = async (_parent, args) => {
   let user = await User.findOne({
     email: args.data.email.toLowerCase(),
   }).lean();
@@ -44,15 +44,15 @@ export const login: MutationResolvers['login'] = async (_parent, args) => {
         {
           message:
             IN_PRODUCTION !== true
-              ? 'Invalid credentials'
-              : requestContext.translate('invalid.credentials'),
-          code: 'invalid.credentials',
-          param: 'credentials',
+              ? "Invalid credentials"
+              : requestContext.translate("invalid.credentials"),
+          code: "invalid.credentials",
+          param: "credentials",
         },
       ],
       IN_PRODUCTION !== true
-        ? 'Invalid credentials'
-        : requestContext.translate('invalid.credentials')
+        ? "Invalid credentials"
+        : requestContext.translate("invalid.credentials")
     );
   }
 
@@ -67,16 +67,16 @@ export const login: MutationResolvers['login'] = async (_parent, args) => {
   user = await User.findOne({
     _id: user._id,
   })
-    .select(['-password'])
-    .populate('joinedOrganizations')
-    .populate('createdOrganizations')
-    .populate('createdEvents')
-    .populate('registeredEvents')
-    .populate('eventAdmin')
-    .populate('adminFor')
-    .populate('membershipRequests')
-    .populate('organizationsBlockedBy')
-    .populate('organizationUserBelongsTo')
+    .select(["-password"])
+    .populate("joinedOrganizations")
+    .populate("createdOrganizations")
+    .populate("createdEvents")
+    .populate("registeredEvents")
+    .populate("eventAdmin")
+    .populate("adminFor")
+    .populate("membershipRequests")
+    .populate("organizationsBlockedBy")
+    .populate("organizationUserBelongsTo")
     .lean();
 
   return {

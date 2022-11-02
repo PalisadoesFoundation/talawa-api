@@ -1,11 +1,11 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { User } from '../../models';
-import { mailer } from '../../utilities';
-import { USER_NOT_FOUND } from '../../../constants';
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { User } from "../../models";
+import { mailer } from "../../utilities";
+import { USER_NOT_FOUND } from "../../../constants";
 
-export const otp: MutationResolvers['otp'] = async (_parent, args) => {
+export const otp: MutationResolvers["otp"] = async (_parent, args) => {
   const user = await User.findOne({
     email: args.data.email,
   }).lean();
@@ -27,11 +27,11 @@ export const otp: MutationResolvers['otp'] = async (_parent, args) => {
     },
     process.env.ACCESS_TOKEN_SECRET!,
     {
-      expiresIn: '15m',
+      expiresIn: "15m",
     }
   );
 
-  const subject = 'OTP for Talawa-admin forgot password';
+  const subject = "OTP for Talawa-admin forgot password";
   const body = `<h2>Hi, ${username}</h2><p>Your OTP: ${otp}</p> <p>Your OTP will expires in 5 minutes.</p><br><br> <small>Do not share your otp with others.</small>`;
 
   return mailer({

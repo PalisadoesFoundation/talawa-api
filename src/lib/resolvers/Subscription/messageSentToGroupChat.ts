@@ -1,10 +1,10 @@
-import { withFilter } from 'apollo-server-express';
-import { SubscriptionResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { GroupChat } from '../../models';
+import { withFilter } from "apollo-server-express";
+import { SubscriptionResolvers } from "../../../generated/graphqlCodegen";
+import { GroupChat } from "../../models";
 
-const MESSAGE_SENT_TO_GROUP_CHAT = 'MESSAGE_SENT_TO_GROUP_CHAT';
+const MESSAGE_SENT_TO_GROUP_CHAT = "MESSAGE_SENT_TO_GROUP_CHAT";
 
-export const messageSentToGroupChat: SubscriptionResolvers['messageSentToGroupChat'] =
+export const messageSentToGroupChat: SubscriptionResolvers["messageSentToGroupChat"] =
   {
     // @ts-ignore
     subscribe: withFilter(

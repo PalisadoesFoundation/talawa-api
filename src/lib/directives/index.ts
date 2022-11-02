@@ -1,2 +1,2 @@
-export * from './authDirective';
-export * from './roleDirective';
+export * from "./authDirective";
+export * from "./roleDirective";

@@ -1,7 +1,7 @@
-import { MutationResolvers } from '../../../generated/graphQLTypescriptTypes';
-import { DirectChat, DirectChatMessage, Organization } from '../../models';
-import { adminCheck } from '../../utilities';
-import { errors, requestContext } from '../../libraries';
+import { MutationResolvers } from "../../../generated/graphqlCodegen";
+import { DirectChat, DirectChatMessage, Organization } from "../../models";
+import { adminCheck } from "../../utilities";
+import { errors, requestContext } from "../../libraries";
 import {
   CHAT_NOT_FOUND,
   CHAT_NOT_FOUND_CODE,
@@ -12,9 +12,9 @@ import {
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_PARAM,
-} from '../../../constants';
+} from "../../../constants";
 
-export const removeDirectChat: MutationResolvers['removeDirectChat'] = async (
+export const removeDirectChat: MutationResolvers["removeDirectChat"] = async (
   _parent,
   args,
   context

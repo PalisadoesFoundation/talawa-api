@@ -3,10 +3,10 @@ import {
   OrganizationOrderByInput,
   OrganizationWhereInput,
   QueryResolvers,
-} from '../../../generated/graphQLTypescriptTypes';
-import { Organization } from '../../models';
+} from "../../../generated/graphqlCodegen";
+import { Organization } from "../../models";
 
-export const organizationsConnection: QueryResolvers['organizationsConnection'] =
+export const organizationsConnection: QueryResolvers["organizationsConnection"] =
   async (_parent, args) => {
     const inputArg = getInputArg(args.where);
     const sort = getSort(args.orderBy);
@@ -92,13 +92,13 @@ const getInputArg = (where: InputMaybe<OrganizationWhereInput> | undefined) => {
     if (where.name_contains) {
       inputArg = {
         ...inputArg,
-        name: { $regex: where.name_contains, $options: 'i' },
+        name: { $regex: where.name_contains, $options: "i" },
       };
     }
 
     // Returns organizations with name starts with that provided string
     if (where.name_starts_with) {
-      const regexp = new RegExp('^' + where.name_starts_with);
+      const regexp = new RegExp("^" + where.name_starts_with);
       inputArg = {
         ...inputArg,
         name: regexp,
@@ -143,14 +143,14 @@ const getInputArg = (where: InputMaybe<OrganizationWhereInput> | undefined) => {
         ...inputArg,
         description: {
           $regex: where.description_contains,
-          $options: 'i',
+          $options: "i",
         },
       };
     }
 
     // Returns organizations with description starting with provided string
     if (where.description_starts_with) {
-      const regexp = new RegExp('^' + where.description_starts_with);
+      const regexp = new RegExp("^" + where.description_starts_with);
       inputArg = {
         ...inputArg,
         description: regexp,
@@ -193,13 +193,13 @@ const getInputArg = (where: InputMaybe<OrganizationWhereInput> | undefined) => {
     if (where.apiUrl_contains) {
       inputArg = {
         ...inputArg,
-        apiUrl: { $regex: where.apiUrl_contains, $options: 'i' },
+        apiUrl: { $regex: where.apiUrl_contains, $options: "i" },
       };
     }
 
     // Returns organizations with apiUrl starts with provided string
     if (where.apiUrl_starts_with) {
-      const regexp = new RegExp('^' + where.apiUrl_starts_with);
+      const regexp = new RegExp("^" + where.apiUrl_starts_with);
       inputArg = {
         ...inputArg,
         apiUrl: regexp,
@@ -228,31 +228,31 @@ const getInputArg = (where: InputMaybe<OrganizationWhereInput> | undefined) => {
 
 const getSort = (orderBy: InputMaybe<OrganizationOrderByInput> | undefined) => {
   if (orderBy !== null) {
-    if (orderBy === 'id_ASC') {
+    if (orderBy === "id_ASC") {
       return {
         _id: 1,
       };
-    } else if (orderBy === 'id_DESC') {
+    } else if (orderBy === "id_DESC") {
       return {
         _id: -1,
       };
-    } else if (orderBy === 'name_ASC') {
+    } else if (orderBy === "name_ASC") {
       return {
         name: 1,
       };
-    } else if (orderBy === 'name_DESC') {
+    } else if (orderBy === "name_DESC") {
       return {
         name: -1,
       };
-    } else if (orderBy === 'description_ASC') {
+    } else if (orderBy === "description_ASC") {
       return {
         description: 1,
       };
-    } else if (orderBy === 'description_DESC') {
+    } else if (orderBy === "description_DESC") {
       return {
         description: -1,
       };
-    } else if (orderBy === 'apiUrl_ASC') {
+    } else if (orderBy === "apiUrl_ASC") {
       return {
         apiUrl: 1,
       };

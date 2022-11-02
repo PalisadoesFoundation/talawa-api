@@ -1,18 +1,15 @@
-import {
-  QueryResolvers,
-  Translation,
-} from '../../../generated/graphQLTypescriptTypes';
-import { Language } from '../../models';
+import { QueryResolvers, Translation } from "../../../generated/graphqlCodegen";
+import { Language } from "../../models";
 
-export const getlanguage: QueryResolvers['getlanguage'] = async (
+export const getlanguage: QueryResolvers["getlanguage"] = async (
   _parent,
   args
 ) => {
   const languages = await Language.find({
-    'translation.lang_code': args.lang_code,
+    "translation.lang_code": args.lang_code,
   }).lean();
 
-  let filteredLanguages: Array<Translation> = [];
+  const filteredLanguages: Array<Translation> = [];
 
   languages.forEach((language) => {
     language.translation.forEach((languageModel) => {

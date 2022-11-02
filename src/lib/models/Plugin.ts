@@ -1,4 +1,4 @@
-import { Schema, Types, model, Model, PopulatedDoc } from 'mongoose';
+import { Schema, Types, model, models } from "mongoose";
 
 export interface Interface_Plugin {
   _id: Types.ObjectId;
@@ -46,4 +46,8 @@ const pluginSchema = new Schema({
   ],
 });
 
-export const Plugin = model<Interface_Plugin>('PluginTemp', pluginSchema);
+const PluginModel = () => model<Interface_Plugin>("Plugin", pluginSchema);
+
+export const Plugin = (models.Plugin || PluginModel()) as ReturnType<
+  typeof PluginModel
+>;
