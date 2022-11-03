@@ -143,7 +143,7 @@ Follow these steps to get the api running :-
 
 3.  Talawa-API uses a configuration file named `.env` in the root directory. It is not a part of the repo and you will need to create it. There is a sample configuration file named `.env.sample` in the root directory. Create a new `.env` file by copying the contents of the `.env.sample` file.
 
-    cp .env .env.sample
+    cp .env.sample .env
 
 4.  Generate an `ACCESS_TOKEN_SECRET` using the `openessl` command below and copy the result to the `ACCESS_TOKEN_SECRET` section of the `.env` file.
 

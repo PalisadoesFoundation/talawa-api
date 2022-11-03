@@ -23,6 +23,7 @@ generates:
         Comment: '../lib/models/Comment#Interface_Comment'
         DirectChat: '../lib/models/DirectChat#Interface_DirectChat'
         DirectChatMessage: '../lib/models/DirectChatMessage#Interface_DirectChatMessage'
+        Donation: "../lib/models/Donation#Interface_Donation"
         Event: '../lib/models/Event#Interface_Event'
         # EventProject: '../lib/models/EventProject#Interface_EventProject'
         # File: '../lib/models/File#Interface_File'

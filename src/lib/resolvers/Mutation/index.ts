@@ -14,6 +14,7 @@ import { cancelMembershipRequest } from "./cancelMembershipRequest";
 import { createAdmin } from "./createAdmin";
 import { createComment } from "./createComment";
 import { createDirectChat } from "./createDirectChat";
+import { createDonation } from "./createDonation";
 import { createEvent } from "./createEvent";
 import { createGroupChat } from "./createGroupChat";
 import { createMessageChat } from "./createMessageChat";
@@ -21,6 +22,7 @@ import { createOrganization } from "./createOrganization";
 import { createPlugin } from "./createPlugin";
 import { createPost } from "./createPost";
 import { createTask } from "./createTask";
+import { deleteDonationById } from "./deleteDonationById";
 import { forgotPassword } from "./forgotPassword";
 import { joinPublicOrganization } from "./joinPublicOrganization";
 import { leaveOrganization } from "./leaveOrganization";
@@ -81,6 +83,7 @@ export const Mutation: MutationResolvers = {
   createAdmin,
   createComment,
   createDirectChat,
+  createDonation,
   createEvent,
   createGroupChat,
   createMessageChat,
@@ -88,6 +91,7 @@ export const Mutation: MutationResolvers = {
   createPlugin,
   createPost,
   createTask,
+  deleteDonationById,
   forgotPassword,
   joinPublicOrganization,
   leaveOrganization,

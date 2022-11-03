@@ -1,5 +1,5 @@
 import { unlink } from "fs";
-import logger from "../libraries/logger";
+import { logger } from "../libraries";
 import { ImageHash } from "../models";
 import { reuploadDuplicateCheck } from "./reuploadDuplicateCheck";
 

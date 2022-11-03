@@ -1,13 +1,13 @@
 import _ from "lodash";
 import { createLogger, transports, format } from "winston";
-import requestTracing from "./requestTracing";
+import { getTracingId } from "./requestTracing";
 import { appConfig } from "../config";
 
 const { combine, printf, splat, colorize, simple, timestamp } = format;
 
 const loggerFormat = printf((info) => {
   let formatObject = `${info.level || "-"} ${info.timestamp || "-"} ${
-    requestTracing.getTracingId() || "-"
+    getTracingId() || "-"
   } ${info.message} ${
     JSON.stringify(_.omit(info, ["level", "message", "stack", "timestamp"])) ||
     "-"
@@ -54,5 +54,3 @@ logger.stream = {
     logger.info((message || "").trim());
   },
 };
-
-export default logger;

@@ -70,10 +70,3 @@ export const translatePlural = (...args: any) => {
   }
   return __n(...args);
 };
-
-export default {
-  middleware,
-  translate,
-  translatePlural,
-  init,
-};

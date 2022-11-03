@@ -34,6 +34,15 @@ export const mutation = gql`
 
     createDirectChat(data: createChatInput): DirectChat! @auth
 
+    createDonation(
+      userId: ID!
+      orgId: ID!
+      payPalId: ID!
+      nameOfUser: String!
+      amount: Float!
+      nameOfOrg: String!
+    ): Donation!
+
     createEvent(data: EventInput): Event! @auth
 
     createGroup(data: GroupInput!): Group! @auth
@@ -56,6 +65,8 @@ export const mutation = gql`
     createPost(data: PostInput!, file: Upload): Post @auth
 
     createTask(data: TaskInput, eventId: ID!): Task! @auth
+
+    deleteDonationById(id: ID!): DeletePayload!
 
     forgotPassword(data: ForgotPasswordData!): Boolean!
 

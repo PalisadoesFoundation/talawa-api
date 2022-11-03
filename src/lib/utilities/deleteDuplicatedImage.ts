@@ -1,5 +1,5 @@
 import { unlink, PathLike } from "fs";
-import { logger } from "../libraries/logger";
+import { logger } from "../libraries";
 
 export const deleteDuplicatedImage = (imagePath: PathLike) => {
   unlink(imagePath, function (error) {

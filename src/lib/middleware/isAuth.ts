@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { Request } from "express";
-import logger from "../libraries/logger";
+import { logger } from "../libraries";
 
 // This interface represents the type of data object returned by isAuth function.
 export interface Interface_AuthData {

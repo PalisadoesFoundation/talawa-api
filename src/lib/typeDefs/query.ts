@@ -24,6 +24,12 @@ export const query = gql`
 
     eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
 
+    getDonationById(id: ID!): Donation!
+
+    getDonationByOrgId(orgId: ID!): [Donation]
+
+    getDonations: [Donation]
+
     getlanguage(lang_code: String!): [Translation]
 
     getPlugins: [Plugin]

@@ -3,6 +3,7 @@ import { Interface_MessageChat } from '../lib/models/MessageChat';
 import { Interface_Comment } from '../lib/models/Comment';
 import { Interface_DirectChat } from '../lib/models/DirectChat';
 import { Interface_DirectChatMessage } from '../lib/models/DirectChatMessage';
+import { Interface_Donation } from '../lib/models/Donation';
 import { Interface_Event } from '../lib/models/Event';
 import { Interface_Group } from '../lib/models/Group';
 import { Interface_GroupChat } from '../lib/models/GroupChat';
@@ -76,6 +77,11 @@ export type CommentInput = {
   text: Scalars['String'];
 };
 
+export type DeletePayload = {
+  __typename?: 'DeletePayload';
+  success: Scalars['Boolean'];
+};
+
 export type DirectChat = {
   __typename?: 'DirectChat';
   _id: Scalars['ID'];
@@ -93,6 +99,17 @@ export type DirectChatMessage = {
   messageContent: Scalars['String'];
   receiver: User;
   sender: User;
+};
+
+export type Donation = {
+  __typename?: 'Donation';
+  _id: Scalars['ID'];
+  amount: Scalars['Float'];
+  nameOfOrg: Scalars['String'];
+  nameOfUser: Scalars['String'];
+  orgId: Scalars['ID'];
+  payPalId: Scalars['String'];
+  userId: Scalars['ID'];
 };
 
 export type Event = {
@@ -311,6 +328,7 @@ export type Mutation = {
   createAdmin: User;
   createComment?: Maybe<Comment>;
   createDirectChat: DirectChat;
+  createDonation: Donation;
   createEvent: Event;
   createGroup: Group;
   createGroupChat: GroupChat;
@@ -319,6 +337,7 @@ export type Mutation = {
   createPlugin: Plugin;
   createPost?: Maybe<Post>;
   createTask: Task;
+  deleteDonationById: DeletePayload;
   forgotPassword: Scalars['Boolean'];
   joinPublicOrganization: User;
   leaveOrganization: User;
@@ -446,6 +465,16 @@ export type MutationCreateDirectChatArgs = {
 };
 
 
+export type MutationCreateDonationArgs = {
+  amount: Scalars['Float'];
+  nameOfOrg: Scalars['String'];
+  nameOfUser: Scalars['String'];
+  orgId: Scalars['ID'];
+  payPalId: Scalars['ID'];
+  userId: Scalars['ID'];
+};
+
+
 export type MutationCreateEventArgs = {
   data?: InputMaybe<EventInput>;
 };
@@ -490,6 +519,11 @@ export type MutationCreatePostArgs = {
 export type MutationCreateTaskArgs = {
   data?: InputMaybe<TaskInput>;
   eventId: Scalars['ID'];
+};
+
+
+export type MutationDeleteDonationByIdArgs = {
+  id: Scalars['ID'];
 };
 
 
@@ -937,6 +971,9 @@ export type Query = {
   event?: Maybe<Event>;
   events?: Maybe<Array<Maybe<Event>>>;
   eventsByOrganization?: Maybe<Array<Maybe<Event>>>;
+  getDonationById: Donation;
+  getDonationByOrgId?: Maybe<Array<Maybe<Donation>>>;
+  getDonations?: Maybe<Array<Maybe<Donation>>>;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
   groupChatMessages?: Maybe<Array<Maybe<GroupChatMessage>>>;
@@ -998,6 +1035,16 @@ export type QueryEventsArgs = {
 export type QueryEventsByOrganizationArgs = {
   id?: InputMaybe<Scalars['ID']>;
   orderBy?: InputMaybe<EventOrderByInput>;
+};
+
+
+export type QueryGetDonationByIdArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type QueryGetDonationByOrgIdArgs = {
+  orgId: Scalars['ID'];
 };
 
 
@@ -1409,8 +1456,10 @@ export type ResolversTypes = {
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Comment: ResolverTypeWrapper<Interface_Comment>;
   CommentInput: CommentInput;
+  DeletePayload: ResolverTypeWrapper<DeletePayload>;
   DirectChat: ResolverTypeWrapper<Interface_DirectChat>;
   DirectChatMessage: ResolverTypeWrapper<Interface_DirectChatMessage>;
+  Donation: ResolverTypeWrapper<Interface_Donation>;
   Event: ResolverTypeWrapper<Interface_Event>;
   EventInput: EventInput;
   EventOrderByInput: EventOrderByInput;
@@ -1490,8 +1539,10 @@ export type ResolversParentTypes = {
   Boolean: Scalars['Boolean'];
   Comment: Interface_Comment;
   CommentInput: CommentInput;
+  DeletePayload: DeletePayload;
   DirectChat: Interface_DirectChat;
   DirectChatMessage: Interface_DirectChatMessage;
+  Donation: Interface_Donation;
   Event: Interface_Event;
   EventInput: EventInput;
   EventRegistrants: Omit<EventRegistrants, 'event'> & { event: ResolversParentTypes['Event'] };
@@ -1602,6 +1653,11 @@ export type CommentResolvers<ContextType = any, ParentType extends ResolversPare
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type DeletePayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeletePayload'] = ResolversParentTypes['DeletePayload']> = {
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type DirectChatResolvers<ContextType = any, ParentType extends ResolversParentTypes['DirectChat'] = ResolversParentTypes['DirectChat']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
@@ -1618,6 +1674,17 @@ export type DirectChatMessageResolvers<ContextType = any, ParentType extends Res
   messageContent?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   receiver?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   sender?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type DonationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Donation'] = ResolversParentTypes['Donation']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  amount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  nameOfOrg?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  nameOfUser?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  orgId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  payPalId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -1757,6 +1824,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
   createComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'data' | 'postId'>>;
   createDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, Partial<MutationCreateDirectChatArgs>>;
+  createDonation?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<MutationCreateDonationArgs, 'amount' | 'nameOfOrg' | 'nameOfUser' | 'orgId' | 'payPalId' | 'userId'>>;
   createEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, Partial<MutationCreateEventArgs>>;
   createGroup?: Resolver<ResolversTypes['Group'], ParentType, ContextType, RequireFields<MutationCreateGroupArgs, 'data'>>;
   createGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, Partial<MutationCreateGroupChatArgs>>;
@@ -1765,6 +1833,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createPlugin?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationCreatePluginArgs, 'pluginCreatedBy' | 'pluginDesc' | 'pluginInstallStatus' | 'pluginName'>>;
   createPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'data'>>;
   createTask?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationCreateTaskArgs, 'eventId'>>;
+  deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;
   joinPublicOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationJoinPublicOrganizationArgs, 'organizationId'>>;
   leaveOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationLeaveOrganizationArgs, 'organizationId'>>;
@@ -1910,6 +1979,9 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<QueryEventArgs, 'id'>>;
   events?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryEventsArgs>>;
   eventsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryEventsByOrganizationArgs>>;
+  getDonationById?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<QueryGetDonationByIdArgs, 'id'>>;
+  getDonationByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Donation']>>>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdArgs, 'orgId'>>;
+  getDonations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Donation']>>>, ParentType, ContextType>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
   groupChatMessages?: Resolver<Maybe<Array<Maybe<ResolversTypes['GroupChatMessage']>>>, ParentType, ContextType>;
@@ -2011,8 +2083,10 @@ export type Resolvers<ContextType = any> = {
   AndroidFirebaseOptions?: AndroidFirebaseOptionsResolvers<ContextType>;
   AuthData?: AuthDataResolvers<ContextType>;
   Comment?: CommentResolvers<ContextType>;
+  DeletePayload?: DeletePayloadResolvers<ContextType>;
   DirectChat?: DirectChatResolvers<ContextType>;
   DirectChatMessage?: DirectChatMessageResolvers<ContextType>;
+  Donation?: DonationResolvers<ContextType>;
   Event?: EventResolvers<ContextType>;
   EventRegistrants?: EventRegistrantsResolvers<ContextType>;
   ExtendSession?: ExtendSessionResolvers<ContextType>;

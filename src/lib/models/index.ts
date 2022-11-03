@@ -3,6 +3,7 @@ export * from "./Comment";
 export * from "./DirectChat";
 export * from "./DirectChat";
 export * from "./DirectChatMessage";
+export * from "./Donation";
 export * from "./Event";
 export * from "./EventProject";
 export * from "./File";

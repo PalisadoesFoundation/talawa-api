@@ -1,5 +1,6 @@
 import { gql } from "apollo-server-express";
 import { chat, message } from "./chats";
+import { donation } from "./donation";
 import { event } from "./event";
 import { language } from "./language";
 import { mutation } from "./mutation";
@@ -46,6 +47,10 @@ const additionalTypeDefs = gql`
     messageSentToGroupChat: GroupChatMessage
     directMessageChat: MessageChat
   }
+
+  type DeletePayload {
+    success: Boolean!
+  }
 `;
 
 /*
@@ -56,18 +61,19 @@ typescript files rather than .graphql files. Therefore, saving us the trouble of
 type-defintions using typescript.
 */
 export const typeDefs = [
+  additionalTypeDefs,
+  auth,
   chat,
-  message,
+  donation,
   event,
   language,
   mutation,
+  message,
   newsfeed,
   organization,
   plugin,
   pluginField,
   query,
-  auth,
   user,
   utils,
-  additionalTypeDefs,
 ];

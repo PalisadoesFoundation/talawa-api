@@ -53,10 +53,3 @@ export const trace = async <T>(tracingId: string, method: () => T) => {
     return method();
   });
 };
-
-export default {
-  tracingIdHeaderName,
-  getTracingId,
-  middleware,
-  trace,
-};
