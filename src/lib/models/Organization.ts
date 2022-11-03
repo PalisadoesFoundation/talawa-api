@@ -1,0 +1,117 @@
+import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
+import { MembershipRequest } from "../../generated/graphqlCodegen";
+import { Interface_Message } from "./Message";
+import { Interface_Post } from "./Post";
+import { Interface_User } from "./User";
+
+export interface Interface_Organization {
+  _id: Types.ObjectId;
+  apiUrl: string | undefined;
+  image: string | undefined;
+  name: string;
+  description: string;
+  location: string | undefined;
+  isPublic: boolean;
+  creator: PopulatedDoc<Interface_User & Document>;
+  status: string;
+  members: Array<PopulatedDoc<Interface_User & Document>>;
+  admins: Array<PopulatedDoc<Interface_User & Document>>;
+  groupChats: Array<PopulatedDoc<Interface_Message & Document>>;
+  posts: Array<PopulatedDoc<Interface_Post & Document>>;
+  membershipRequests: Array<PopulatedDoc<MembershipRequest & Document>>;
+  blockedUsers: Array<PopulatedDoc<Interface_User & Document>>;
+  visibleInSearch: boolean | undefined;
+  tags: Array<string>;
+  createdAt: Date;
+}
+
+const organizationSchema = new Schema({
+  apiUrl: {
+    type: String,
+  },
+  image: {
+    type: String,
+  },
+  name: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  location: {
+    type: String,
+  },
+  isPublic: {
+    type: Boolean,
+    required: true,
+  },
+  creator: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  status: {
+    type: String,
+    required: true,
+    enum: ["ACTIVE", "BLOCKED", "DELETED"],
+    default: "ACTIVE",
+  },
+  members: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
+  admins: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+  ],
+  groupChats: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Message",
+    },
+  ],
+  posts: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Post",
+    },
+  ],
+  membershipRequests: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "MembershipRequest",
+    },
+  ],
+  blockedUsers: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
+  visibleInSearch: {
+    type: Boolean,
+  },
+  tags: [
+    {
+      type: String,
+      required: false,
+    },
+  ],
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+const OrganizationModel = () =>
+  model<Interface_Organization>("Organization", organizationSchema);
+
+export const Organization = (models.Organization ||
+  OrganizationModel()) as ReturnType<typeof OrganizationModel>;

@@ -1,5 +1,6 @@
-node_modules
 .github
 .vscode
-
-old-api
+build
+coverage
+node_modules
+src/generated
