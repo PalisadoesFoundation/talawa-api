@@ -36,7 +36,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
           email: testUser.email,
           otp: "otp",
         },
-        "testSecret",
+        process.env.NODE_ENV!,
         {
           expiresIn: 99999999,
         }
@@ -66,7 +66,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
         email: testUser.email,
         otp: hashedOtp,
       },
-      "testSecret",
+      process.env.NODE_ENV!,
       {
         expiresIn: 99999999,
       }
