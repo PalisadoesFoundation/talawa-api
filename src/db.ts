@@ -18,5 +18,3 @@ export const connect = async () => {
 export const disconnect = async () => {
   await mongoose.connection.close();
 };
-
-export default { connect, disconnect };

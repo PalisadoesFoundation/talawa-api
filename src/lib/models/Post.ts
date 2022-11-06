@@ -91,6 +91,7 @@ postSchema.plugin(mongoosePaginate);
 const PostModel = () =>
   model<Interface_Post, PaginateModel<Interface_Post>>("Post", postSchema);
 
+// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Post = (models.Post || PostModel()) as ReturnType<
   typeof PostModel
 >;

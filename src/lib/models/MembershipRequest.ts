@@ -33,5 +33,6 @@ const MembershipRequestModel = () =>
     membershipRequestSchema
   );
 
+// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const MembershipRequest = (models.MembershipRequest ||
   MembershipRequestModel()) as ReturnType<typeof MembershipRequestModel>;

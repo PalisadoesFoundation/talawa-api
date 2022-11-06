@@ -56,6 +56,7 @@ const languageSchema = new Schema({
 const LanguageModel = () =>
   model<Interface_Language>("Language", languageSchema);
 
+// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Language = (models.Language || LanguageModel()) as ReturnType<
   typeof LanguageModel
 >;

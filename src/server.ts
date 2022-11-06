@@ -14,7 +14,7 @@ import jwt from "jsonwebtoken";
 import cors from "cors";
 import requestLogger from "morgan";
 import i18n from "i18n";
-import database from "./db";
+import * as database from "./db";
 import { logger, requestContext, requestTracing } from "./lib/libraries";
 import { appConfig } from "./lib/config";
 import { isAuth } from "./lib/middleware";

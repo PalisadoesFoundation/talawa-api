@@ -1,32 +1,14 @@
-import { ApplicationError } from "./applicationError";
-import { ConflictError } from "./conflictError";
-import { InternalServerError } from "./internalServerError";
-import { NotFoundError } from "./notFoundError";
-import { UnauthenticatedError } from "./unauthenticatedError";
-import { UnauthorizedError } from "./unauthorizedError";
-import { ValidationError } from "./validationError";
-
-export default {
-  // Base class
-  ApplicationError,
-  // Used for resource already present
-  ConflictError,
-  // Used for server fatal error
-  InternalServerError,
-  // Used for resource not found
-  NotFoundError,
-  // Used for invalid authentication token or wrong credentials
-  UnauthenticatedError,
-  // Used for user is forbidden to perform operation
-  UnauthorizedError,
-  // Used for basic sanity checks
-  ValidationError,
-};
-
+// Base class
 export * from "./applicationError";
+// Used for resource already present
 export * from "./conflictError";
+// Used for server fatal error
 export * from "./internalServerError";
+// Used for resource not found
 export * from "./notFoundError";
+// Used for invalid authentication token or wrong credentials
 export * from "./unauthenticatedError";
+// Used for user is forbidden to perform operation
 export * from "./unauthorizedError";
+// Used for basic sanity checks
 export * from "./validationError";

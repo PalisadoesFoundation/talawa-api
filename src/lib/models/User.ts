@@ -163,6 +163,7 @@ userSchema.plugin(mongoosePaginate);
 const UserModel = () =>
   model<Interface_User, PaginateModel<Interface_User>>("User", userSchema);
 
+// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const User = (models.User || UserModel()) as ReturnType<
   typeof UserModel
 >;

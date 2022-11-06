@@ -50,5 +50,6 @@ const DirectChatMessageModel = () =>
     directChatMessageSchema
   );
 
+// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const DirectChatMessage = (models.DirectChatMessage ||
   DirectChatMessageModel()) as ReturnType<typeof DirectChatMessageModel>;

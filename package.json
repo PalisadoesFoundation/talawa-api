@@ -33,7 +33,7 @@
   "homepage": "https://github.com/PalisadoesFoundation/talawa-api#readme",
   "dependencies": {
     "@graphql-tools/schema": "^8.4.0",
-    "apollo-server-core": "^3.9.0",
+    "apollo-server-core": "^3.11.1",
     "apollo-server-express": "^2.25.4",
     "axios": "^0.21.4",
     "bcryptjs": "^2.4.3",
@@ -46,7 +46,7 @@
     "express": "^4.18.1",
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^5.5.1",
-    "firebase-admin": "^11.0.1",
+    "firebase-admin": "^10.3.0",
     "graphql": "^15.8.0",
     "graphql-depth-limit": "^1.1.0",
     "graphql-upload": "^12.0.0",

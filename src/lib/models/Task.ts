@@ -48,6 +48,7 @@ const taskSchema = new Schema({
 
 const TaskModel = () => model<Interface_Task>("Task", taskSchema);
 
+// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Task = (models.Task || TaskModel()) as ReturnType<
   typeof TaskModel
 >;

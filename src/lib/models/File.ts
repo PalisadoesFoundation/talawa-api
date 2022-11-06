@@ -46,6 +46,7 @@ const fileSchema = new Schema({
 
 const FileModel = () => model<Interface_File>("File", fileSchema);
 
+// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const File = (models.File || FileModel()) as ReturnType<
   typeof FileModel
 >;

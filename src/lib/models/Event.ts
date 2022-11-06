@@ -166,6 +166,7 @@ const eventSchema = new Schema({
 
 const EventModel = () => model<Interface_Event>("Event", eventSchema);
 
+// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Event = (models.Event || EventModel()) as ReturnType<
   typeof EventModel
 >;

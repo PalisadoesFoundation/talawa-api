@@ -39,6 +39,7 @@ const donationSchema = new Schema({
 const DonationModel = () =>
   model<Interface_Donation>("Donation", donationSchema);
 
+// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Donation = (models.Donation || DonationModel()) as ReturnType<
   typeof DonationModel
 >;

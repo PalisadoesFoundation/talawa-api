@@ -32,5 +32,6 @@ const pluginFieldSchema = new Schema({
 const PluginFieldModel = () =>
   model<Interface_PluginField>("PluginField", pluginFieldSchema);
 
+// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const PluginField = (models.PluginField ||
   PluginFieldModel()) as ReturnType<typeof PluginFieldModel>;
