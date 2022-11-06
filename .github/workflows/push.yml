@@ -1,0 +1,67 @@
+##############################################################################
+##############################################################################
+#
+# NOTE!
+#
+# Please read the README.md file in this directory that defines what should
+# be placed in this file
+#
+##############################################################################
+##############################################################################
+
+name: Push Workflow
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  ##############################################################################
+  # This section is added so that the most recent and valid level of
+  # code coverage (post PR merge) is reported
+  ##############################################################################
+
+  Code-Coverage:
+    name: Testing Application
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x]
+    services:
+      mongo:
+        image: mongo:4.4
+        options: >-
+          --health-cmd mongo
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 27017:27017
+    env:
+      MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
+      ACCESS_TOKEN_SECRET: eeb2137b1961a3da9e3736ea4a9ed1e77cb33a4fad8a153d364c2f04ec50eab7
+      REFRESH_TOKEN_SECRET: 96d41e144e63475f7f753735b50305cd2857cc41c2f2570babdb948c10b77bc5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sleep for 10s
+        uses: juliangruber/sleep-action@v1
+        with:
+          time: 10s
+
+      - name: Run the tests
+        run: npm run test
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2.1.0
+        with:
+          verbose: true
