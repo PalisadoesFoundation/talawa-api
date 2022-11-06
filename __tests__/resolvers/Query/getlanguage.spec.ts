@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { getlanguage as getLanguageResolver } from "../../../src/lib/resolvers/Query/getlanguage";
-import database from "../../../src/db";
+import { connect, disconnect } from "../../../src/db";
 import { Interface_Language, Language } from "../../../src/lib/models";
 import { Document } from "mongoose";
 import { QueryGetlanguageArgs } from "../../../src/generated/graphqlCodegen";
@@ -15,7 +15,7 @@ const deValue = `de ${nanoid().toLowerCase()}`;
 const frValue = `fr ${nanoid().toLowerCase()}`;
 
 beforeAll(async () => {
-  await database.connect();
+  await connect();
 
   testLanguages = await Language.insertMany([
     {
@@ -52,7 +52,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await database.disconnect();
+  await disconnect();
 });
 
 describe("resolvers -> Query -> getLanguage", () => {
