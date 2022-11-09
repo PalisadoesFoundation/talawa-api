@@ -1,14 +1,20 @@
-node_modules/
+node_modules
 nodemon.json
-.idea/
+.idea
 .env
-images/
+images
 .vscode
 
-# Added as the documentation only refers to npm, not yarn. 
+# Added as the documentation only refers to npm, not yarn and pnpm. 
 yarn.lock
+pnpm-lock.yaml
 
 # We don't want to have code coverage data stored in the repo as it is dynamic
-coverage/
+coverage
+
+# We don't want to push emitted production build of talawa-api to github.
+# Since it will only be needed in CI/CD and production environment it
+# should be generated on the fly at that time.
+build
 
 serviceAccountKey.json

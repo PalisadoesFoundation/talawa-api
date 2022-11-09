@@ -1,0 +1,46 @@
+# overwrites the already existing/generated graphql typescript definitions
+overwrite: true
+# address to the graphql type defintions(schema)
+schema:
+  - "./src/lib/typeDefs/**/*.ts"
+  # Upload scalar is injected by apollo-server into the schema. Graphql-codegen by default generates it's typescript type as 'any'.
+  - scalar Upload
+generates:
+  # where to emit the generated graphql typescript defintions
+  ./src/generated/graphqlCodegen.ts:
+    plugins:
+      # Generates base typescript types from graphql types.
+      - typescript
+      # Generates resolver types using base typescript types generated above.
+      - typescript-resolvers
+    config:
+      # Makes the info argument passed to the resolver functions optional
+      optionalInfoArgument: true
+      # Makes the resolver function callable
+      makeResolverTypeCallable: true
+      # Mappers lets us provide database model types to be used in generated typescript types instead of graphql types. This
+      # is because what we retrieve from the database and what we choose to return from a graphql server could be completely
+      # different fields. This also helps in seperating out resolver logic for nested relation fields into their own resolvers
+      # instead of resolving them in the root resolver itself.
+      mappers:
+        MessageChat: "../lib/models/MessageChat#Interface_MessageChat"
+        Comment: "../lib/models/Comment#Interface_Comment"
+        DirectChat: "../lib/models/DirectChat#Interface_DirectChat"
+        DirectChatMessage: "../lib/models/DirectChatMessage#Interface_DirectChatMessage"
+        Donation: "../lib/models/Donation#Interface_Donation"
+        Event: "../lib/models/Event#Interface_Event"
+        # EventProject: '../lib/models/EventProject#Interface_EventProject'
+        # File: '../lib/models/File#Interface_File'
+        Group: "../lib/models/Group#Interface_Group"
+        GroupChat: "../lib/models/GroupChat#Interface_GroupChat"
+        GroupChatMessage: "../lib/models/GroupChatMessage#Interface_GroupChatMessage"
+        # ImageHash: '../lib/models/ImageHash#Interface_ImageHash'
+        Language: "../lib/models/Language#Interface_Language"
+        MembershipRequest: "../lib/models/MembershipRequest#Interface_MembershipRequest"
+        Message: "../lib/models/Message#Interface_Message"
+        Organization: "../lib/models/Organization#Interface_Organization"
+        Plugin: "../lib/models/Plugin#Interface_Plugin"
+        PluginField: "../lib/models/PluginField#Interface_PluginField"
+        Post: "../lib/models/Post#Interface_Post"
+        Task: "../lib/models/Task#Interface_Task"
+        User: "../lib/models/User#Interface_User"
