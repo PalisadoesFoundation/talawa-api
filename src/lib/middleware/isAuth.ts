@@ -9,6 +9,11 @@ export interface Interface_AuthData {
   userId: string | undefined;
 }
 
+/**
+ * This function determines whether the user is authorised and whether the access token has expired.
+ * @param Request - User Request
+ * @returns Returns `authData` object with `isAuth`, `expired` and `userId` properties.
+ */
 export const isAuth = (request: Request) => {
   /*
   This object is the return value of this function. Mutate the fields of this
