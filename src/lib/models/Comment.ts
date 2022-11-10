@@ -1,7 +1,9 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
 import { Interface_Post } from "./Post";
 import { Interface_User } from "./User";
-
+/**
+ * This is an interface representing a document for a comment in the database(MongoDB). 
+ */
 export interface Interface_Comment {
   _id: Types.ObjectId;
   text: string;

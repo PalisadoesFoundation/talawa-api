@@ -1,5 +1,7 @@
 import { Schema, model, Types, models } from "mongoose";
-
+/**
+ * This is an interface representing a document for a donation in the database(MongoDB). 
+ */
 export interface Interface_Donation {
   userId: Types.ObjectId | string;
   orgId: Types.ObjectId | string;

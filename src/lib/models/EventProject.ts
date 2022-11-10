@@ -2,7 +2,9 @@ import { Schema, Types, model, PopulatedDoc, Document, models } from "mongoose";
 import { Interface_Event } from "./Event";
 import { Interface_Task } from "./Task";
 import { Interface_User } from "./User";
-
+/**
+ * This is an interface representing a document for an event project in the database(MongoDB). 
+ */
 export interface Interface_EventProject {
   _id: Types.ObjectId;
   title: string;

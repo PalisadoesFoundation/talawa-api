@@ -1,6 +1,8 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
 import { Interface_User } from "./User";
-
+/**
+ * This is an interface representing a document for a chat in the database(MongoDB). 
+ */
 export interface Interface_MessageChat {
   _id: Types.ObjectId;
   message: string;

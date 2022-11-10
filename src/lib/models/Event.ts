@@ -2,7 +2,9 @@ import { Schema, Types, model, PopulatedDoc, Document, models } from "mongoose";
 import { Interface_Organization } from "./Organization";
 import { Interface_Task } from "./Task";
 import { Interface_User } from "./User";
-
+/**
+ * This is an interface representing a document for a user attendee in the database(MongoDB). 
+ */
 export interface Interface_UserAttende {
   userId: string;
   user: PopulatedDoc<Interface_User & Document>;
@@ -37,7 +39,9 @@ const userAttendeSchema = new Schema({
     default: Date.now,
   },
 });
-
+/**
+ * This is an interface representing a document for an event in the database(MongoDB). 
+ */
 export interface Interface_Event {
   _id: Types.ObjectId;
   title: string;
