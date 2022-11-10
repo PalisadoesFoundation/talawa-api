@@ -12,7 +12,15 @@ export interface Interface_GroupChat {
   organization: PopulatedDoc<Interface_Organization & Document>;
   status: string;
 }
-
+/**
+ * This is the structure of a group chat
+ * @param title - Title
+ * @param users - Users of the chat
+ * @param messages - Message of the chat
+ * @param creator - Creator of the chat
+ * @param organization - Organization
+ * @param status - Status
+ */
 const groupChatSchema = new Schema({
   title: {
     type: String,

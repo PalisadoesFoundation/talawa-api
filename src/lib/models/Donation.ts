@@ -8,7 +8,15 @@ export interface Interface_Donation {
   nameOfUser: string;
   amount: number;
 }
-
+/**
+ * This is the Structure of the Donation
+ * @param userId - User-id
+ * @param orgId - Organization-id
+ * @param nameOfOrg - Name of the organization
+ * @param payPalId - PayPalId
+ * @param nameOfUser - Name of the user
+ * @param amount - Amount of the donation
+ */
 const donationSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,

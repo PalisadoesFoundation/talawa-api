@@ -13,7 +13,16 @@ export interface Interface_EventProject {
   tasks: Array<PopulatedDoc<Interface_Task & Document>>;
   status: string;
 }
-
+/**
+ * This is the Structure of the event project
+ * @param title - Title
+ * @param description - description
+ * @param createdAt - Created at Date
+ * @param event - Event
+ * @param creator - Creator
+ * @param tasks - Tasks
+ * @param status - Status
+ */
 const eventProjectSchema = new Schema({
   title: {
     type: String,

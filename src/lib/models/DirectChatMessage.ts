@@ -11,7 +11,15 @@ export interface Interface_DirectChatMessage {
   messageContent: string;
   status: string;
 }
-
+/**
+ * This is the Structure of the Direct chat Message
+ * @param directChatMessageBelongsTo - To whom the direct chat messages belong
+ * @param sender - Sender
+ * @param receiver - Receiver
+ * @param createdAt - Date when the message was created
+ * @param messageContent - Message content
+ * @param status - whether the message is active, blocked or deleted
+ */
 const directChatMessageSchema = new Schema({
   directChatMessageBelongsTo: {
     type: Schema.Types.ObjectId,
