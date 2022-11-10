@@ -4,11 +4,15 @@ import { deleteDuplicatedImage } from "./deleteDuplicatedImage";
 import { reuploadDuplicateCheck } from "./reuploadDuplicateCheck";
 import { errors, requestContext } from "../libraries";
 
-/*
-Check to see if image already exists in db using hash
-if its there point to that image and remove the image just uploaded
-if its not there allow the file to remain uploaded
-*/
+
+/**
+ * This function checks if an image already exists in the database using hash.
+ * If it does, then point to that image and remove the image just uploaded.
+ * Else, allow the file to get uploaded.
+ * @param oldImagePath - Path of image
+ * @param newImagePath - Does image belong to an item
+ * @returns file name.
+ */
 export const imageAlreadyInDbCheck = async (
   oldImagePath: string | null,
   newImagePath: string
