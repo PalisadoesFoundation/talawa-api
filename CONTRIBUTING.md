@@ -26,7 +26,7 @@ No one should fear voicing their opinion. Respones must be respectful.
 
 If you are ready to start contributing code right away, get ready!
 
-1. Join our Slack and introduce yourself. See details on how to join below.
+1. Join our Slack and introduce yourself. See details on how to join below in the Community section.
    1. This repository has its own dedicated channel.
    1. There are many persons on the various channels who are willing to assist you in getting started.
 1. Take a look at our issues (**_after reading our guidelines below_**):
@@ -99,11 +99,6 @@ The process of proposing a change to Talawa API can be summarized as:
          1. The coverage rate will be visible on the penultimate line of the `genhtml` command's output.
          1. The `genhtml` command is part of the linux `lcov` package. Similar packages can be found for Windows and MacOS.
          1. The currently acceptable coverage rate can be found in the [GitHub Pull Request file](.github/workflows/pull-request.yml). Search for the value below the line containing `min_coverage`.
-      1. _Testing Individual Files_
-         1. You can test an individual file and get its code coverage by running this command:
-             ```
-             npm run file-coverage --functionfile=path/to/file --testfile=path/to/test/file
-             ```
       1. _Creating your code coverage account_
           1. You can also see your code coverage online for your fork of the repo. This is provided by `codecov.io`
               1. Go to this link: `https://app.codecov.io/gh/XXXX/YYYY` where XXXX is your GitHub account username and YYYY is the name of the repository
@@ -131,5 +126,5 @@ If you are participating in the GitHub Externship, please read more about us and
 ## Community
 There are many ways to communicate with the community.
 
-1. The Palisadoes Foundation has a Slack channel where members can assist with support and clarification. Visit [slack.palisadoes.org](http://slack.palisadoes.org) to join our slack channel.
+1. The Palisadoes Foundation has a Slack channel where members can assist with support and clarification. Visit the [Talawa GitHub repository home page](https://github.com/PalisadoesFoundation/talawa) for the link to join our slack channel.
 1. We also have a technical email list run by [freelists.org](https://www.freelists.org/). Search for "palisadoes" and join. Members on this list are also periodically added to our marketing email list that focuses on less technical aspects of our work.

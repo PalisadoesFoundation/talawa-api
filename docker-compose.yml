@@ -1,18 +1,71 @@
-version: '3'
+# Version of docker-compose.
+version: '3.9'
+
 services:
-  app:
-    container_name: talawa-api
-    restart: always
-    build: .
-    ports:
-      - '4000:4000'
-    links:
-      - mongo
-    environment:
-      ACCESS_TOKEN_SECRET: "${ACCESS_TOKEN_SECRET}"
-      REFRESH_TOKEN_SECRET: "${REFRESH_TOKEN_SECRET}"
-      MONGO_DB_URL: "${MONGO_DB_URL}"
-  mongo:
+  # Name of database service.
+  talawa_mongodb_service:
+    # Name of the created database container.
+    container_name: talawa_mongodb
+
+    # Image used for creating the database container.
+    # More about it here:- https://hub.docker.com/_/mongo.
     image: mongo
+
+    # Maps port 27017 of host system to port 27017 of container. MongoDB by default
+    # runs on port 27017. So, inside the container it runs on port 27017 and
+    # after mapping it's accessible on port 27017 on the host system as well.
     ports:
-      - '27017:27017'
+      - 27017:27017
+
+    # Restarts the container automatically.
+    restart: always
+
+    # Mounts the data created/stored in container's file system to a host
+    # system's volume which is managed by docker. This prevents data deletion
+    # if the container is stopped/deleted/rebuilt. To delete the volume as
+    # well use 'docker rm -v container_id' command. This is called
+    # 'named volume' approach to persisting data with docker.
+    volumes:
+      - talawa_mongodb:/data/db
+
+  # Name of api service.
+  talawa_api_service:
+    # Name of the created api(server) container.
+    container_name: talawa_api
+
+    # Tells docker-compose the location of Dockerfile.
+    build: .
+
+    # Maps port 4000 of host system to port 4000 of container. In
+    # development environment talawa-api runs on port 4000. So, inside
+    # the container it runs on port 4000 and after mapping it's
+    # accessible on port 4000 on the host system as well.
+    ports:
+      - 4000:4000
+
+    # Restarts the container automatically.
+    restart: always
+
+    volumes:
+      # Mounts current directory to '/usr/src/app' directory of container.
+      # This will keep the files in current directory in sync with container
+      # files and any changes made to these files on host system will be reflected
+      # inside the container. This is useful for a development environment.
+      # This is called the 'bind mount' approach to persisting data with docker.
+      - .:/usr/src/app
+
+      # We don't want to sync node_modules folder between the host system and container.
+      # It should be updated by rebuilding the image. '.:/usr/src/app' mounts
+      # everything present in current host system directory to 'WORKDIR' inside
+      # container. But '/usr/src/app/node_modules' maps an empty address to node_modules
+      # folder inside the container. Therefore, providing a more specific instruction to docker
+      # to ignore node_modules.
+      - /usr/src/app/node_modules
+
+    # Makes this service dependent on 'talawa_mongodb_service'. Docker will make sure
+    # that 'talawa_mongodb_service' is active/online before running 'talawa_api_service'.
+    depends_on:
+      - talawa_mongodb_service
+
+volumes:
+  talawa_mongodb: {}
