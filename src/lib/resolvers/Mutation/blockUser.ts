@@ -17,7 +17,18 @@ import {
   USER_NOT_FOUND_PARAM,
 } from "../../../constants";
 import { Organization, User } from "../../models";
-
+/**
+ * This function enables blocking a user.
+ * @param _parent -
+ * @param args - 
+ * @param context - 
+ * @remarks The following checks are done:
+ * 1. If the organization exists
+ * 2. If the user exists
+ * 3. If the user is an admin of organization
+ * 4. If the user to be blocked is already blocked by the organization
+ * @returns Deleted updated user
+ */
 export const blockUser: MutationResolvers["blockUser"] = async (
   _parent,
   args,

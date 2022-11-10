@@ -17,7 +17,18 @@ import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
 } from "../../../constants";
-
+/**
+ * This function enables an admin to remove a post.
+ * @param _parent -
+ * @param args - 
+ * @param context - 
+ * @remarks The following checks are done:
+ * 1. If the post exists
+ * 2. If the organization exists
+ * 3. If the user exists
+ * 4. If the user is an admin of organization
+ * @returns Deleted post
+ */
 export const adminRemovePost: MutationResolvers["adminRemovePost"] = async (
   _parent,
   args,

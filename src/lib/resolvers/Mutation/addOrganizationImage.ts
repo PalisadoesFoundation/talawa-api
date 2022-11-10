@@ -13,7 +13,17 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
 } from "../../../constants";
-
+/**
+ * This function adds Organization Image.
+ * @param _parent -
+ * @param args - 
+ * @param context - 
+ * @remarks The following checks are done:
+ * 1. If the current user exists
+ * 2. If the organization exists
+ * 3. If the user trying to add the image is an admin of organization
+ * @returns Updated Organization
+ */
 export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
   async (_parent, args, context) => {
     const currentUserExists = await User.exists({

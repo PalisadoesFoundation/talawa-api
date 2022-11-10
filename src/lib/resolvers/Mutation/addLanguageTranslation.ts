@@ -2,7 +2,15 @@ import { IN_PRODUCTION } from "../../../constants";
 import { MutationResolvers } from "../../../generated/graphqlCodegen";
 import { errors, requestContext } from "../../libraries";
 import { Language } from "../../models";
-
+/**
+ * This function adds language translation.
+ * @param _parent -
+ * @param args - 
+ * @remarks The following checks are done:
+ * 1. If the language exists
+ * 2. If the translation already exists.
+ * @returns Updated langauge
+ */
 export const addLanguageTranslation: MutationResolvers["addLanguageTranslation"] =
   async (_parent, args) => {
     const language = await Language.findOne({

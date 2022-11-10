@@ -20,7 +20,18 @@ import {
   MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
   MEMBERSHIP_REQUEST_NOT_FOUND_PARAM,
 } from "../../../constants";
-
+/**
+ * This function enables to cancel membership request.
+ * @param _parent -
+ * @param args - 
+ * @param context - 
+ * @remarks The following checks are done:
+ * 1. If the membership request exists
+ * 2. If the organization exists
+ * 3. If the user exists
+ * 4. If the user is the creator of the request
+ * @returns Deleted membership request
+ */
 export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest"] =
   async (_parent, args, context) => {
     const membershipRequest = await MembershipRequest.findOne({

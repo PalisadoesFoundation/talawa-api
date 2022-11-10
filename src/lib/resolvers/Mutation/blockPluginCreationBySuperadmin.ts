@@ -12,7 +12,16 @@ import {
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_PARAM,
 } from "../../../constants";
-
+/**
+ * This function enables an admin to create block plugin.
+ * @param _parent -
+ * @param args - 
+ * @param context - 
+ * @remarks The following checks are done:
+ * 1. If the user exists
+ * 2. If the user is the SUPERADMIN of organization
+ * @returns Deleted updated user
+ */
 export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCreationBySuperadmin"] =
   async (_parent, args, context) => {
     const userExists = await User.exists({
