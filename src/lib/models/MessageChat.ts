@@ -1,6 +1,9 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
 import { Interface_User } from "./User";
 
+/**
+ * This is an interface that represents a database(MongoDB) document for MessageChat.
+ */
 export interface Interface_MessageChat {
   _id: Types.ObjectId;
   message: string;
@@ -10,6 +13,14 @@ export interface Interface_MessageChat {
   createdAt: Date;
 }
 
+/**
+ * This describes the schema for a `MessageChat` that corresponds to `Interface_MessageChat` document.
+ * @param message - Message content.
+ * @param languageBarrier - Language check of the message.
+ * @param sender - Message Sender(User), referring to `User` model.
+ * @param receiver - Message Receiver(User), referring to `User` model.
+ * @param createdAt - Time stamp of data creation.
+ */
 const messageChatSchema = new Schema({
   message: {
     type: String,
@@ -37,6 +48,7 @@ const messageChatSchema = new Schema({
   },
 });
 
+// create a model.
 const MessageChatModel = () =>
   model<Interface_MessageChat>("MessageChat", messageChatSchema);
 
