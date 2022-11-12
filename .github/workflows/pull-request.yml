@@ -25,16 +25,6 @@ jobs:
       - name: Run ESLint and Prettier
         run: npm run lint
 
-  Count-lines-of-code:
-    name: Total number of lines in every file should not be more than 400
-    runs-on: ubuntu-latest
-    needs: Linter
-    steps:
-      - uses: actions/checkout@v2
-      - run: chmod +x ./.github/workflows/countline.py
-      - run: |
-          ./.github/workflows/countline.py --exclude_directories __tests__
-
   Code-Formatter:
     name: Formats the code
     runs-on: ubuntu-latest
