@@ -9,6 +9,14 @@ import {
 } from "../../constants";
 import { Interface_Organization } from "../models";
 
+/**
+ * If the current user is an admin of the organisation, this function returns `true` otherwise it returns `false`.
+ * @remarks
+ * This is a utility method.
+ * @param userId - Current user id.
+ * @param organization - Organization data of `Interface_Organization` type.
+ * @returns `True` or `False`.
+ */
 export const adminCheck = (
   userId: string | Types.ObjectId,
   organization: Interface_Organization
