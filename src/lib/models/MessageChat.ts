@@ -21,7 +21,7 @@ export interface Interface_MessageChat {
  * @param sender - Sender
  * @param receiver - Receiver
  * @param createdAt - Date when the chat was created
-
+ */
 const messageChatSchema = new Schema({
   message: {
     type: String,
