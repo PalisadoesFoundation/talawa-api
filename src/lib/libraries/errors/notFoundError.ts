@@ -1,5 +1,7 @@
 import { ApplicationError } from "./applicationError";
-
+/**
+ * This class detects Not Found errors and sends those errors to the superclass ApplicationError.
+ */
 export class NotFoundError extends ApplicationError {
   constructor(
     message: string = "Not Found",

@@ -14,6 +14,12 @@ import { errors, requestContext } from "../libraries";
 import { User } from "../models";
 
 export class RoleAuthorizationDirective extends SchemaDirectiveVisitor {
+  /**
+   * This function authenticates the role of the user and if not validated, then throws an Unauthenticated Error.
+   * @param field - GraphQLField
+   * @param  _details - Object
+   * @returns resolver function
+   */
   visitFieldDefinition(
     field: GraphQLField<any, any>,
     /*
