@@ -4,6 +4,14 @@ import { GroupChat } from "../../models";
 
 const MESSAGE_SENT_TO_GROUP_CHAT = "MESSAGE_SENT_TO_GROUP_CHAT";
 
+/**
+ * This property included a `subscribe` method, which is used to 
+ * subscribe the `current_user` to get updates for Group chats.
+ * 
+ * @remarks To control updates on a per-client basis, the function uses the `withFilter` 
+ * method imported from `apollo-server-express` module. 
+ * You can learn about `subscription` {@link https://www.apollographql.com/docs/apollo-server/data/subscriptions/ | here }.
+ */
 export const messageSentToGroupChat: SubscriptionResolvers["messageSentToGroupChat"] =
   {
     // @ts-ignore
