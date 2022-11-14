@@ -1,5 +1,8 @@
 import { Schema, Types, model, models } from "mongoose";
 
+/**
+ * This is an interface that represents a database(MongoDB) document for Plugin.
+ */
 export interface Interface_Plugin {
   _id: Types.ObjectId;
   pluginName: string;
@@ -10,13 +13,12 @@ export interface Interface_Plugin {
 }
 
 /**
- * @name pluginSchema
- * @description Schema for MongoDB database
- * @param  {string} pluginName Name of the plugin preferred having underscores "_"
- * @param {string} pluginCreatedBy name of the plugin creator ex.John Doe
- * @param {string} pluginDesc brief description of the plugin and it's features
- * @param {Boolean} pluginInstallStatus shows if the plugin is enabled or not
- * @param {String[]} installedOrgs list of orgIDs on which the plugin is enabled
+ * This describes the schema for a `Plugin` that corresponds to `Interface_Plugin` document.
+ * @param pluginName - Name of the plugin preferred having underscores "_"
+ * @param pluginCreatedBy - name of the plugin creator ex.John Doe
+ * @param pluginDesc - brief description of the plugin and it's features
+ * @param pluginInstallStatus - shows if the plugin is enabled or not
+ * @param installedOrgs - list of orgIDs on which the plugin is enabled
  */
 
 const pluginSchema = new Schema({
@@ -46,6 +48,7 @@ const pluginSchema = new Schema({
   ],
 });
 
+// creates a model.
 const PluginModel = () => model<Interface_Plugin>("Plugin", pluginSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.

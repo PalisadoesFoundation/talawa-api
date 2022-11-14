@@ -1,5 +1,7 @@
 import { ApplicationError } from "./applicationError";
-
+/**
+ * This class detects unauthenticated errors and sends those errors to the superclass ApplicationError.
+ */
 export class UnauthenticatedError extends ApplicationError {
   constructor(
     message: string = "UnauthenticatedError",

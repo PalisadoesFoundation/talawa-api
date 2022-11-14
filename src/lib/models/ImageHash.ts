@@ -1,5 +1,8 @@
 import { Schema, model, Types, models } from "mongoose";
 
+/**
+ * This is an interface that represents a database(MongoDB) document for Image Hash.
+ */
 export interface Interface_ImageHash {
   _id: Types.ObjectId;
   hashValue: string;
@@ -8,6 +11,13 @@ export interface Interface_ImageHash {
   status: string;
 }
 
+/**
+ * This represents the schema for an `ImageHash`.
+ * @param hashValue - Hash value of an image. `type: String`
+ * @param fileName - Image file name.
+ * @param numberOfUses - Number of times used.
+ * @param status - Status.
+ */
 const imageHashSchema = new Schema({
   hashValue: {
     type: String,
@@ -30,6 +40,7 @@ const imageHashSchema = new Schema({
   },
 });
 
+// Create a model.
 const ImageHashModel = () =>
   model<Interface_ImageHash>("ImageHash", imageHashSchema);
 
