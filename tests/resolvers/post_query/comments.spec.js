@@ -101,6 +101,6 @@ afterAll(async () => {
 describe('Comment query for commentsByPost resolver', () => {
   test('Find existing comments', async () => {
     const response = await getComments();
-    expect(response[0].text).toMatch(/This is my first comment!/);
+    expect(response[0].text).toMatch(/new comment/);
   });
 });
