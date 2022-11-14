@@ -11,7 +11,12 @@ import {
   USER_NOT_FOUND_PARAM,
 } from "../../../constants";
 import { Interface_JwtTokenPayload } from "../../utilities";
-
+/**
+ * This function creates a new access and refresh token.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @returns New access and refresh tokens.
+ */
 export const refreshToken: MutationResolvers["refreshToken"] = async (
   _parent,
   args

@@ -12,7 +12,17 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
 } from "../../../constants";
-
+/**
+ * This function enables to like a comment.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists
+ * 2. If the comment exists
+ * 3. If the user has already liked the comment.
+ * @returns Comment without the like
+ */
 export const likeComment: MutationResolvers["likeComment"] = async (
   _parent,
   args,

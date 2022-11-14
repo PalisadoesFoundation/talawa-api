@@ -11,9 +11,9 @@ import {
 } from "../../../constants";
 /**
  * This function adds User Image.
- * @param _parent -
- * @param args - 
- * @param context - 
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the current user exists
  * @returns Updated User

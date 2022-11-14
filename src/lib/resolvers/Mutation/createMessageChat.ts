@@ -8,7 +8,16 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
 } from "../../../constants";
-
+/**
+ * This function enables to create a chat.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the receiver user exists
+ * 2. If the sender and receiver users have same language code.
+ * @returns Created message chat.
+ */
 export const createMessageChat: MutationResolvers["createMessageChat"] = async (
   _parent,
   args,

@@ -13,7 +13,17 @@ import {
 import { MutationResolvers } from "../../../generated/graphqlCodegen";
 import { errors, requestContext } from "../../libraries";
 import { GroupChat, GroupChatMessage, Organization } from "../../models";
-
+/**
+ * This function enables to remove an graoup chat.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the group chat exists
+ * 2. If the organization exists
+ * 3. If the user is an admin of the organization.
+ * @returns Deleted group chat.
+ */
 export const removeGroupChat: MutationResolvers["removeGroupChat"] = async (
   _parent,
   args,

@@ -20,7 +20,18 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
 } from "../../../constants";
-
+/**
+ * This function enables to join a public organization.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the organization exists
+ * 2. If the organization is public.
+ * 3. If the user exists
+ * 4. If the user is already a member of the organization.
+ * @returns Updated user.
+ */
 export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"] =
   async (_parent, args, context) => {
     const organization = await Organization.findOne({

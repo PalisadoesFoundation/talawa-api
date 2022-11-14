@@ -17,7 +17,17 @@ import {
   USER_NOT_FOUND_PARAM,
 } from "../../../constants";
 import { Organization, User } from "../../models";
-
+/**
+ * This function enables to unblock user.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the organization exists.
+ * 2. If the user exists
+ * 3. If the user is an admin of the organization
+ * @returns updated organization.
+ */
 export const unblockUser: MutationResolvers["unblockUser"] = async (
   _parent,
   args,

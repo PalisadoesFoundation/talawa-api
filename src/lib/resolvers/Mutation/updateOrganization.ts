@@ -9,7 +9,16 @@ import {
   ORGANIZATION_NOT_FOUND_PARAM,
 } from "../../../constants";
 import { adminCheck } from "../../utilities";
-
+/**
+ * This function enables to update an organization.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the organization exists.
+ * 2. The the user is an admin of the organization.
+ * @returns Updated organization.
+ */
 export const updateOrganization: MutationResolvers["updateOrganization"] =
   async (_parent, args, context) => {
     const organization = await Organization.findOne({

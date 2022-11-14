@@ -16,7 +16,12 @@ import {
   copyToClipboard,
 } from "../../utilities";
 import { androidFirebaseOptions, iosFirebaseOptions } from "../../config";
-
+/**
+ * This function enables sign up.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @returns Sign up details.
+ */
 export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   const userWithEmailExists = await User.exists({
     email: args.data.email.toLowerCase(),

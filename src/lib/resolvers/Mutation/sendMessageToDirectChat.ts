@@ -12,7 +12,16 @@ import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
 } from "../../../constants";
-
+/**
+ * This function enables to send message to direct chat.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the direct chat exists.
+ * 2. If the user exists
+ * @returns Direct chat message.
+ */
 export const sendMessageToDirectChat: MutationResolvers["sendMessageToDirectChat"] =
   async (_parent, args, context) => {
     const directChat = await DirectChat.findOne({

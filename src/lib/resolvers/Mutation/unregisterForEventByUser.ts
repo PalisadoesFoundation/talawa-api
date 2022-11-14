@@ -16,7 +16,17 @@ import {
   USER_ALREADY_UNREGISTERED_CODE,
   USER_ALREADY_UNREGISTERED_PARAM,
 } from "../../../constants";
-
+/**
+ * This function enables a user to unregister from an event.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists.
+ * 2. If the event exists.
+ * 3. If the user is a registrant of the event.
+ * @returns Updated event.
+ */
 export const unregisterForEventByUser: MutationResolvers["unregisterForEventByUser"] =
   async (_parent, args, context) => {
     const currentUserExists = await User.exists({

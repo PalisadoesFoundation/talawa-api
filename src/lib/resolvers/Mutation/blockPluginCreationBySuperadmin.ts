@@ -14,9 +14,9 @@ import {
 } from "../../../constants";
 /**
  * This function enables an admin to create block plugin.
- * @param _parent -
- * @param args - 
- * @param context - 
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the user exists
  * 2. If the user is the SUPERADMIN of organization

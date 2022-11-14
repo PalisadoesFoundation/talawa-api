@@ -12,7 +12,16 @@ import {
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_PARAM,
 } from "../../../constants";
-
+/**
+ * This function enables to create a group chat.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists
+ * 2. If the organization exists
+ * @returns Created group chat
+ */
 export const createGroupChat: MutationResolvers["createGroupChat"] = async (
   _parent,
   args,

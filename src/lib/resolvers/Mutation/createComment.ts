@@ -8,7 +8,15 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
 } from "../../../constants";
-
+/**
+ * This function enables to create comment.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists
+ * @returns Created comment
+ */
 export const createComment: MutationResolvers["createComment"] = async (
   _parent,
   args,

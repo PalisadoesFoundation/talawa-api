@@ -23,9 +23,9 @@ import {
 } from "../../../constants";
 /**
  * This function adds user to group chat.
- * @param _parent -
- * @param args - 
- * @param context - 
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the group chat exists
  * 2. If the organization exists

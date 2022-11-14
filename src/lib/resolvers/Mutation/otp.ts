@@ -4,7 +4,14 @@ import { MutationResolvers } from "../../../generated/graphqlCodegen";
 import { User } from "../../models";
 import { mailer } from "../../utilities";
 import { USER_NOT_FOUND } from "../../../constants";
-
+/**
+ * This function generates otp.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @remarks The following checks are done:
+ * 1. If the user exists
+ * @returns Email to the user with the otp.
+ */
 export const otp: MutationResolvers["otp"] = async (_parent, args) => {
   const user = await User.findOne({
     email: args.data.email,

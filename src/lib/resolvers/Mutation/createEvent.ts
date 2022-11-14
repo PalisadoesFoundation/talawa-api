@@ -21,7 +21,17 @@ import admin, { credential } from "firebase-admin";
 const applicationDefault = credential.applicationDefault;
 
 admin.initializeApp({ credential: applicationDefault() });
-
+/**
+ * This function enables to create an event.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists
+ * 2. If the organization exists
+ * 3. If the user is a part of the organization.
+ * @returns Created event
+ */
 export const createEvent: MutationResolvers["createEvent"] = async (
   _parent,
   args,

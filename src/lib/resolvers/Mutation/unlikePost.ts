@@ -12,7 +12,16 @@ import {
 import { MutationResolvers } from "../../../generated/graphqlCodegen";
 import { errors, requestContext } from "../../libraries";
 import { User, Post } from "../../models";
-
+/**
+ * This function enables to unlike a post.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists.
+ * 2. If the post exists
+ * @returns Post.
+ */
 export const unlikePost: MutationResolvers["unlikePost"] = async (
   _parent,
   args,

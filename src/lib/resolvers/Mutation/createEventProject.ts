@@ -15,7 +15,17 @@ import {
   EVENT_NOT_FOUND_CODE,
   EVENT_NOT_FOUND_PARAM,
 } from "../../../constants";
-
+/**
+ * This function enables to create an event project.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists
+ * 2. If the event exists
+ * 3. If the user is an admin of the event.
+ * @returns Created event project
+ */
 export const createEventProject = async (
   _parent: any,
   args: any,

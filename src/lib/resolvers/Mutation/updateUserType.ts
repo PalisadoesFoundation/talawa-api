@@ -9,7 +9,15 @@ import {
   USER_NOT_FOUND_PARAM,
 } from "../../../constants";
 import { errors, requestContext } from "../../libraries";
-
+/**
+ * This function enables to update user type.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists.
+ * @returns Updated user type.
+ */
 export const updateUserType: MutationResolvers["updateUserType"] = async (
   _parent,
   args,

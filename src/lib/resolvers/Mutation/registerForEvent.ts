@@ -16,7 +16,17 @@ import {
   REGISTRANT_ALREADY_EXIST_MESSAGE,
   REGISTRANT_ALREADY_EXIST_PARAM,
 } from "../../../constants";
-
+/**
+ * This function enables to register for event.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists
+ * 2. If the event exists.
+ * 2. If the user has already registered for the event
+ * @returns Updated event.
+ */
 export const registerForEvent: MutationResolvers["registerForEvent"] = async (
   _parent,
   args,

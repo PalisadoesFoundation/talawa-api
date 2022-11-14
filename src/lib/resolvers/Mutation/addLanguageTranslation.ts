@@ -4,8 +4,8 @@ import { errors, requestContext } from "../../libraries";
 import { Language } from "../../models";
 /**
  * This function adds language translation.
- * @param _parent -
- * @param args - 
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
  * @remarks The following checks are done:
  * 1. If the language exists
  * 2. If the translation already exists.

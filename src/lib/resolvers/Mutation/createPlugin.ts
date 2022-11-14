@@ -1,14 +1,14 @@
 import { MutationResolvers } from "../../../generated/graphqlCodegen";
 import { Plugin } from "../../models";
 
-/**
- * @name createPlugin creates a Plugin and return the same
- * @description creates a document of Plugin type and stores it in database
- * @param  {any} parent parent of current request
- * @param  {object} args payload provided with the request
- * @param  {any} context context of entire application
- */
 
+/**
+ * This function enables to create a plugin.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param _context - context of entire application
+ * @returns Created plugin
+ */
 export const createPlugin: MutationResolvers["createPlugin"] = async (
   _parent,
   args,

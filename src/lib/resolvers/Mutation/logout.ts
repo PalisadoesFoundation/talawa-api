@@ -8,7 +8,15 @@ import {
   USER_NOT_FOUND,
   IN_PRODUCTION,
 } from "../../../constants";
-
+/**
+ * This function enables logout.
+ * @param _parent - parent of current request
+ * @param _args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists
+ * @returns True if the operation is successful.
+ */
 export const logout: MutationResolvers["logout"] = async (
   _parent,
   _args,

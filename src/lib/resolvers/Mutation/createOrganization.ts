@@ -9,7 +9,15 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
 } from "../../../constants";
-
+/**
+ * This function enables to create an organization.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists
+ * @returns Created organization
+ */
 export const createOrganization: MutationResolvers["createOrganization"] =
   async (_parent, args, context) => {
     const currentUserExists = await User.exists({

@@ -13,7 +13,18 @@ import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_CODE,
 } from "../../../constants";
-
+/**
+ * This function enables to remove an admin.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists
+ * 2. If the organization exists.
+ * 3. If the user to be removed is an admin.
+ * 4. If the user removing the admin is the creator of the organization
+ * @returns Updated user.
+ */
 export const removeAdmin: MutationResolvers["removeAdmin"] = async (
   _parent,
   args,

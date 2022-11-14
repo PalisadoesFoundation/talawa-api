@@ -17,7 +17,18 @@ import { MutationResolvers } from "../../../generated/graphqlCodegen";
 import { errors, requestContext } from "../../libraries";
 import { GroupChat, Organization } from "../../models";
 import { adminCheck } from "../../utilities";
-
+/**
+ * This function enables to remove a user from group chat.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the group chat exists.
+ * 2. If the organization exists
+ * 3. If the user is the admin of the organization.
+ * 4. If the user to be removed is a member of the organization.
+ * @returns Updated group chat.
+ */
 export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat"] =
   async (_parent, args, context) => {
     const groupChat = await GroupChat.findOne({

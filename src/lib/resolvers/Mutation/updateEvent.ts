@@ -16,7 +16,17 @@ import {
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_PARAM,
 } from "../../../constants";
-
+/**
+ * This function enables to update an event.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists.
+ * 2. If the event exists.
+ * 3. The the user is an admin of the event.
+ * @returns Updated event.
+ */
 export const updateEvent: MutationResolvers["updateEvent"] = async (
   _parent,
   args,

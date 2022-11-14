@@ -15,7 +15,15 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
 } from "../../../constants";
-
+/**
+ * This function enables login.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @remarks The following checks are done:
+ * 1. If the user exists
+ * 2. If the password is valid
+ * @returns Updated user
+ */
 export const login: MutationResolvers["login"] = async (_parent, args) => {
   let user = await User.findOne({
     email: args.data.email.toLowerCase(),

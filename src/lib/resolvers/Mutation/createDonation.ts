@@ -1,11 +1,13 @@
 import { MutationResolvers } from "../../../generated/graphqlCodegen";
 import { Donation } from "../../models";
 
+
 /**
- * @name createDonation creates a Donation as transaction and returns the same
- * @description creates a document of Donation type and stores it in database
- * @param  {any} parent parent of current request
- * @param  {object} args payload provided with the request
+ * This function enables to create a donation as transaction
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @returns Created Donation
  */
 export const createDonation: MutationResolvers["createDonation"] = async (
   _parent,

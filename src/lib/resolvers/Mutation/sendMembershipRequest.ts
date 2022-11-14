@@ -12,7 +12,17 @@ import {
 import { MutationResolvers } from "../../../generated/graphqlCodegen";
 import { errors, requestContext } from "../../libraries";
 import { User, MembershipRequest, Organization } from "../../models";
-
+/**
+ * This function enables to send membership request.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists.
+ * 2. If the organization exists
+ * 3. If the membership request already exists.
+ * @returns Membership request.
+ */
 export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
   async (_parent, args, context) => {
     const currentUserExists = await User.exists({

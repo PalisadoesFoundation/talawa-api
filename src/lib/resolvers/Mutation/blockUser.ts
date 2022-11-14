@@ -19,9 +19,9 @@ import {
 import { Organization, User } from "../../models";
 /**
  * This function enables blocking a user.
- * @param _parent -
- * @param args - 
- * @param context - 
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the organization exists
  * 2. If the user exists
