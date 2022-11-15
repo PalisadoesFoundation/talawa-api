@@ -5,6 +5,13 @@ import {
 } from "../../../generated/graphqlCodegen";
 import { Post } from "../../models";
 
+/**
+ * The query will fetch all the Posts in specified order from the database.
+ * @param _parent 
+ * @param args - An object that contains `orderBy` field to get the data in specified order.
+ * @returns An object `posts` containing a list of all the post in a specified order.
+ * @remarks The query function uses `getSort()` function to sort the data in specified order.
+ */
 export const posts: QueryResolvers["posts"] = async (_parent, args) => {
   const sort = getSort(args.orderBy);
 

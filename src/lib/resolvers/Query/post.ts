@@ -9,6 +9,12 @@ import {
   POST_NOT_FOUND_PARAM,
 } from "../../../constants";
 
+/**
+ * This query will fetch the specified Post from the database.
+ * @param _parent 
+ * @param args - An object that contains `id` of the Post.
+ * @returns An object `post`. If the `appLanguageCode` field not found then it throws a `NotFoundError` error.
+ */
 export const post: QueryResolvers["post"] = async (_parent, args) => {
   const post = await Post.findOne({ _id: args.id })
     .populate("organization")

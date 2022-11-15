@@ -21,6 +21,15 @@ import {
   USER_NOT_FOUND_PARAM,
 } from "../../../constants";
 
+/**
+ * This query will fetch all the comments for a Post from database.
+ * @param _parent 
+ * @param args - An object that contains `id` of the post.
+ * @param _context 
+ * @returns An object `comments` that contains all the comments for the Post.
+ * @remarks You can learn about GraphQL `Resolvers` 
+ * {@link https://www.apollographql.com/docs/apollo-server/data/resolvers/ | here}.
+ */
 export const commentsByPost: QueryResolvers["commentsByPost"] = async (
   _parent,
   args,

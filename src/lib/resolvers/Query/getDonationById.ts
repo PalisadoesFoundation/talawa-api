@@ -2,8 +2,10 @@ import { QueryResolvers } from "../../../generated/graphqlCodegen";
 import { Donation } from "../../models";
 
 /**
- * @name getDonationsById a GraphQL Query
- * @description returns donation as a transaction that matches the provided Id property from database
+ * This query will fetch the donation as a transaction from database.
+ * @param _parent 
+ * @param args - An object that contains `id` of the donation.
+ * @returns A `donation` object.
  */
 export const getDonationById: QueryResolvers["getDonationById"] = async (
   _parent,

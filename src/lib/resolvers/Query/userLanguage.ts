@@ -9,6 +9,12 @@ import {
   USER_NOT_FOUND_PARAM,
 } from "../../../constants";
 
+/**
+ * This query will fetch the language code for the user from the database.
+ * @param _parent 
+ * @param args - An object that contains `userId`.
+ * @returns The language code of the user.
+ */
 export const userLanguage: QueryResolvers["userLanguage"] = async (
   _parent,
   args

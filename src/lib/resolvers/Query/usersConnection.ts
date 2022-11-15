@@ -6,6 +6,14 @@ import {
 } from "../../../generated/graphqlCodegen";
 import { User } from "../../models";
 
+/**
+ * This query will fetch all the users in a specified order to paginate from the database.
+ * @param _parent 
+ * @param args - An object that contains relevant data to execute the query.
+ * @returns An object that contains list of the users.
+ * @remarks Connection in graphQL means pagination, 
+ * learn more about Connection {@link https://relay.dev/graphql/connections.htm | here}.
+ */
 export const usersConnection: QueryResolvers["usersConnection"] = async (
   _parent,
   args

@@ -9,6 +9,14 @@ import {
   EVENT_NOT_FOUND_PARAM,
 } from "../../../constants";
 
+/**
+ * This query determines whether or not the user is registered for an event.
+ * @param _parent 
+ * @param args - An object that contains `eventId` of an event.
+ * @param context - An object that contains `userId` of the User.
+ * @returns An object that contains an `event` object and a boolean property `isRegistered`.
+ * If the `event` is null or not found then throws `NotFoundError` error.
+ */
 export const isUserRegister: QueryResolvers["isUserRegister"] = async (
   _parent,
   args,

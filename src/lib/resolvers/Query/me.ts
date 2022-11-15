@@ -9,7 +9,13 @@ import {
   IN_PRODUCTION,
 } from "../../../constants";
 
-// Resolver function for field 'me' of type 'Query'
+/**
+ * This query fetch the current user from the database.
+ * @param _parent 
+ * @param _args 
+ * @param context - An object that contains `userId`.
+ * @returns An object `currentUser` for the current user. If the user not found then it throws a `NotFoundError` error.
+ */
 export const me: QueryResolvers["me"] = async (_parent, _args, context) => {
   const currentUser = await User.findOne({
     _id: context.userId,
