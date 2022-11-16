@@ -1,5 +1,7 @@
 import { gql } from "apollo-server-core";
-
+/**
+ * This file creates schemas for different kinds of auhentications.
+ */
 export const auth = gql`
   input LoginInput {
     email: String!

@@ -1,5 +1,7 @@
 import { gql } from "apollo-server-core";
-
+/**
+ * This file creates the schema for a user.
+ */
 export const user = gql`
   type User {
     tokenVersion: Int!
