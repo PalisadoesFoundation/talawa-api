@@ -1,5 +1,9 @@
 import { gql } from "apollo-server-core";
 
+/**
+ * This graphQL typeDef defines the schema-defintion and 
+ * contains query logic to interact with `Language` and related schemas.
+ */
 export const language = gql`
   type Language {
     _id: ID!

@@ -1,5 +1,8 @@
 import { gql } from "apollo-server-core";
 
+/**
+ * This graphQL typeDef defines the logic for different queries defined in the talawa-api.
+ */
 export const query = gql`
   type Query {
     adminPlugin(orgId: ID!): [Plugin]

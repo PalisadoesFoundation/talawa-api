@@ -1,5 +1,8 @@
 import { gql } from "apollo-server-core";
 
+/**
+ * This graphQL typeDef defines the logic for different mutations defined in the talawa-api.
+ */
 export const mutation = gql`
   type Mutation {
     acceptAdmin(id: ID!): Boolean! @auth

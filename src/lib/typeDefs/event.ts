@@ -1,5 +1,9 @@
 import { gql } from "apollo-server-core";
 
+/**
+ * This graphQL typeDef defines the schema-defintion and 
+ * contains query logic to interact with `Event` and related schemas.
+ */
 export const event = gql`
   type Event {
     _id: ID!
