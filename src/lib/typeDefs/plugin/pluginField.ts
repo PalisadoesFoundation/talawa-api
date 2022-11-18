@@ -1,11 +1,7 @@
 import { gql } from "apollo-server-core";
 /**
- * This file creates schema for a plugin field.
- * The object consists of the following elements:
- * 1. key
- * 2. value
- * 3. status
- * 4. Created at date 
+ * This graphql typedef defines the schema-definition and contains 
+ * the query logic to interact with a plugin field.
  */
 export const pluginField = gql`
   type PluginField {

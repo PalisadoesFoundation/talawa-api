@@ -1,13 +1,7 @@
 import { gql } from "apollo-server-core";
 /**
- * This file creates schemas for different types of chats.
- * The chats and subparts of the chats covered are:
- * 1. Direct chat
- * 2. Group chat
- * 3. Group chat message
- * 4. Direct chat message
- * 5. Direct chat input
- * 6. Group chat input
+ * This graphql typedef defines the schema-definition and contains 
+ * the query logic to interact with various types of chats.
  */
 export const chat = gql`
   type DirectChat {

@@ -1,13 +1,7 @@
 import { gql } from "apollo-server-core";
 /**
- * This file creates schema for a plugin.
- * The object consists of the following elements:
- * 1. Organization id
- * 2. Plugin name
- * 3. Plugin key
- * 4. Plugin type
- * 5. Additional information
- * 6. Created at date 
+ * This graphql typedef defines the schema-definition and contains 
+ * the query logic to interact with a plugin.
  */
 export const plugin = gql`
   # type Plugin {

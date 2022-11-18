@@ -1,6 +1,7 @@
 import { gql } from "apollo-server-core";
 /**
- * This file creates the schema for a user.
+ * This graphql typedef defines the schema-definition and contains 
+ * the query logic for a user.
  */
 export const user = gql`
   type User {
