@@ -15,6 +15,12 @@ const MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE = 'membershipRequest.notFound';
 const MEMBERSHIP_REQUEST_NOT_FOUND_CODE = 'membershipRequest.notFound';
 const MEMBERSHIP_REQUEST_NOT_FOUND_PARAM = 'membershipRequest';
 
+const MEMBERSHIP_REQUEST_ALREADY_EXIST = 'Membership Request already Exists';
+const MEMBERSHIP_REQUEST_ALREADY_EXIST_MESSAGE =
+  'membershipRequest.alreadyExists';
+const MEMBERSHIP_REQUEST_ALREADY_EXIST_CODE = 'membershipRequest.alreadyExists';
+const MEMBERSHIP_REQUEST_ALREADY_EXIST_PARAM = 'membershipRequest';
+
 const USER_NOT_FOUND = 'User not found';
 const USER_NOT_FOUND_MESSAGE = 'user.notFound';
 const USER_NOT_FOUND_CODE = 'user.notFound';
@@ -24,6 +30,8 @@ const ORGANIZATION_NOT_FOUND = 'Organization not found';
 const ORGANIZATION_NOT_FOUND_MESSAGE = 'organization.notFound';
 const ORGANIZATION_NOT_FOUND_CODE = 'organization.notFound';
 const ORGANIZATION_NOT_FOUND_PARAM = 'organization';
+
+const CONNECTION_NOT_FOUND = 'Connection not found';
 
 const ORGANIZATION_MEMBER_NOT_FOUND = "Organization's user is not a member";
 const ORGANIZATION_MEMBER_NOT_FOUND_MESSAGE = 'organization.member.notFound';
@@ -79,9 +87,12 @@ const POST_NOT_FOUND_MESSAGE = 'post.notFound';
 const POST_NOT_FOUND_CODE = 'post.notFound';
 const POST_NOT_FOUND_PARAM = 'post';
 
+const DATABASE_CONNECTION_FAIL = 'Failed to connect to database';
+
 const STATUS_ACTIVE = 'ACTIVE';
 
 const IN_PRODUCTION = process.env.NODE_ENV === 'production';
+const IN_TEST = process.env.NODE_ENV === 'test';
 
 if (process.env.NODE_ENV === 'test') {
   URL = 'http://localhost:4000/graphql';
@@ -92,6 +103,7 @@ module.exports = {
 
   URL,
   IN_PRODUCTION,
+  IN_TEST,
 
   USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_MESSAGE,
@@ -107,6 +119,8 @@ module.exports = {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_PARAM,
+
+  CONNECTION_NOT_FOUND,
 
   EVENT_PROJECT_NOT_FOUND,
   EVENT_PROJECT_NOT_FOUND_CODE,
@@ -131,6 +145,11 @@ module.exports = {
   MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
   MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
   MEMBERSHIP_REQUEST_NOT_FOUND_PARAM,
+
+  MEMBERSHIP_REQUEST_ALREADY_EXIST,
+  MEMBERSHIP_REQUEST_ALREADY_EXIST_CODE,
+  MEMBERSHIP_REQUEST_ALREADY_EXIST_MESSAGE,
+  MEMBERSHIP_REQUEST_ALREADY_EXIST_PARAM,
 
   REGISTRANT_ALREADY_EXIST,
   REGISTRANT_ALREADY_EXIST_CODE,
@@ -171,4 +190,6 @@ module.exports = {
   POST_NOT_FOUND_MESSAGE,
   POST_NOT_FOUND_CODE,
   POST_NOT_FOUND_PARAM,
+
+  DATABASE_CONNECTION_FAIL,
 };

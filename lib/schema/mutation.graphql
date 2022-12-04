@@ -85,6 +85,9 @@ module.exports = `
     createPlugin(pluginName: String! , pluginCreatedBy: String! ,pluginDesc: String! ,pluginInstallStatus: Boolean!, installedOrgs:[ID!] ):Plugin!
     updatePluginStatus(id: ID!, status: Boolean!) : Plugin!
     updatePluginInstalledOrgs(id: ID! ,orgId: ID!) :Plugin! 
+
+    createDonation(userId: ID!,orgId : ID!, payPalId: ID! , nameOfUser: String! , amount: Float!, nameOfOrg : String! ): Donation!
+    deleteDonationById(id : ID!): DeletePayload!
   }
   
 `

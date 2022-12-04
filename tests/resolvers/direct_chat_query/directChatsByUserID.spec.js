@@ -77,6 +77,18 @@ const createDirectChat = async (user, users, organization) => {
   });
 
   const createdDirectChat = await newDirectChat.save();
+  for (let user of users) {
+    await User.updateOne(
+      {
+        _id: user._doc._id,
+      },
+      {
+        $push: {
+          directChats: createdDirectChat._doc._id,
+        },
+      }
+    );
+  }
 
   return createdDirectChat;
 };
