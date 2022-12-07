@@ -63,7 +63,7 @@ Follow these steps to get the API running :-
     - Go to your Google Account, https://myaccount.google.com/
     - Select Security.
     - Under "Signing in to Google," select App Passwords.
-    - At the bottom, choose Select app and choose the app you using and then Select device and choose the device you’re using and then Generate.
+    - At the bottom, choose Select app and choose the app you're using and then Select device and choose the device you’re using and then Generate.
     - The App Password is the 16-character code in the yellow bar on your device.
     - Paste that App Password in `MAIL_PASSWORD`.
 
