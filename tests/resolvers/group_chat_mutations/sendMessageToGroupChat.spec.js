@@ -174,7 +174,7 @@ describe('tests for sending a message to group chat', () => {
     }).rejects.toEqual(Error(USER_NOT_AUTHORIZED));
   });
 
-  // TEST FRO SENDING MESSAGE TO THE GROUP CHAT
+  // TEST FOR SENDING MESSAGE TO THE GROUP CHAT
   test('send message to group chat', async () => {
     var args = {
       chatId: createdGroupChatId,
