@@ -1,10 +1,5 @@
 const axios = require('axios');
 const { URL } = require('../constants');
-const shortid = require('shortid');
-
-beforeAll(async () => {
-  let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
-});
 
 describe('users resolvers', () => {
   test('users query without Authorization', async () => {
