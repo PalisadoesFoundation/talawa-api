@@ -74,7 +74,13 @@ afterAll(async () => {
 describe("resolvers -> Query -> directChats", () => {
   it(`returns list of all existing directChats`, async () => {
     const directChatsPayload = await directChatsResolver?.({}, {}, {});
+
     const directChats = await DirectChat.find().lean();
+
+    // checks length of chats
+    expect(directChatsPayload?.length).toEqual(directChats?.length);
+    
+    // checks every chat
     expect(directChatsPayload).toEqual(directChats);
   });
 });
