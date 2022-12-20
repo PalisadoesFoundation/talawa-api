@@ -86,7 +86,7 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
 
   it(`throws NotFoundError if no user exists with _id === args.data.receiver and IN_PRODUCTION === true`, async () => {
     const { requestContext } = await import("../../../src/lib/libraries");
-    const spy = vi.spyOn(requestContext, "translate");
+    const spy = vi.spyOn(requestContext, "translate").mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
       const args: MutationCreateMessageChatArgs = {
@@ -116,6 +116,7 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
       await createMessageChatResolver?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`)
     }
   });
 
