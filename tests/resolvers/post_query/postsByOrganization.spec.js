@@ -1,13 +1,14 @@
+const axios = require('axios');
+const { URL } = require('../../../constants');
+const getToken = require('../../functions/getToken');
 const shortid = require('shortid');
 
-const getToken = require('../../functions/getToken');
 const database = require('../../../db');
 const getUserId = require('../../functions/getUserId');
 const Organization = require('../../../lib/models/Organization');
 const Post = require('../../../lib/models/Post');
 const Comment = require('../../../lib/models/Comment');
 const User = require('../../../lib/models/User');
-const postsByOrganization = require('../../../lib/resolvers/post_query/postsByOrganization');
 
 let mainUserId;
 let secondUserId;
@@ -205,436 +206,380 @@ afterAll(async () => {
 
 describe('postsByOrganization sorting choices', () => {
   test('id_ASC', async () => {
-    const args = {
-      id: mainOrganization._id,
-      orderBy: 'id_ASC',
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-    expect(response[0]._id.toString()).toEqual(firstPost._id);
-    expect(response[1]._id.toString()).toEqual(secondPost._id);
-    expect(response[2]._id.toString()).toEqual(thirdPost._id);
+    const response = await axios.post(URL, {
+      query: `query {
+                postsByOrganization (id: "${mainOrganization._id}", orderBy: id_ASC) {
+					_id
+					text
+					creator {
+						firstName
+						email
+					}
+					likedBy {
+						firstName
+					}
+                }
+            }`,
+    });
+    const posts = response.data.data.postsByOrganization;
+    expect(Array.isArray(posts)).toBeTruthy();
+    expect(posts[0]._id).toBe(firstPost._id);
+    expect(posts[1]._id).toBe(secondPost._id);
+    expect(posts[2]._id).toBe(thirdPost._id);
   });
 
   test('id_DESC', async () => {
-    const args = {
-      id: mainOrganization._id,
-      orderBy: 'id_DESC',
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-    expect(response[0]._id.toString()).toEqual(thirdPost._id);
-    expect(response[1]._id.toString()).toEqual(secondPost._id);
-    expect(response[2]._id.toString()).toEqual(firstPost._id);
+    const response = await axios.post(URL, {
+      query: `query {
+                postsByOrganization (id: "${mainOrganization._id}", orderBy: id_DESC) {
+					_id
+					text
+					creator {
+						firstName
+						email
+					}
+					likedBy {
+						firstName
+					}
+                }
+            }`,
+    });
+    const posts = response.data.data.postsByOrganization;
+    expect(Array.isArray(posts)).toBeTruthy();
+    expect(posts[0]._id).toBe(thirdPost._id);
+    expect(posts[1]._id).toBe(secondPost._id);
+    expect(posts[2]._id).toBe(firstPost._id);
   });
 
   test('text_ASC', async () => {
-    const args = {
-      id: mainOrganization._id,
-      orderBy: 'text_ASC',
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-    expect(response[0]._id.toString()).toEqual(firstPost._id);
-    expect(response[1]._id.toString()).toEqual(secondPost._id);
-    expect(response[2]._id.toString()).toEqual(thirdPost._id);
+    const response = await axios.post(URL, {
+      query: `query {
+                postsByOrganization (id: "${mainOrganization._id}", orderBy: text_ASC) {
+					_id
+					text
+					creator {
+						firstName
+						email
+					}
+					likedBy {
+						firstName
+					}
+                }
+            }`,
+    });
+    const posts = response.data.data.postsByOrganization;
+    expect(Array.isArray(posts)).toBeTruthy();
+    expect(posts[0]._id).toBe(firstPost._id);
+    expect(posts[1]._id).toBe(secondPost._id);
+    expect(posts[2]._id).toBe(thirdPost._id);
   });
 
   test('text_DESC', async () => {
-    const args = {
-      id: mainOrganization._id,
-      orderBy: 'text_DESC',
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-    expect(response[0]._id.toString()).toEqual(thirdPost._id);
-    expect(response[1]._id.toString()).toEqual(secondPost._id);
-    expect(response[2]._id.toString()).toEqual(firstPost._id);
+    const response = await axios.post(URL, {
+      query: `query {
+                postsByOrganization (id: "${mainOrganization._id}", orderBy: text_DESC) {
+					_id
+					text
+					creator {
+						firstName
+						email
+					}
+					likedBy {
+						firstName
+					}
+                }
+            }`,
+    });
+    const posts = response.data.data.postsByOrganization;
+    expect(Array.isArray(posts)).toBeTruthy();
+    expect(posts[0]._id).toBe(thirdPost._id);
+    expect(posts[1]._id).toBe(secondPost._id);
+    expect(posts[2]._id).toBe(firstPost._id);
   });
 
   test('title_ASC', async () => {
-    const args = {
-      id: mainOrganization._id,
-      orderBy: 'title_ASC',
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-    expect(response[0]._id.toString()).toEqual(firstPost._id);
-    expect(response[1]._id.toString()).toEqual(secondPost._id);
-    expect(response[2]._id.toString()).toEqual(thirdPost._id);
+    const response = await axios.post(URL, {
+      query: `query {
+                postsByOrganization (id: "${mainOrganization._id}", orderBy: title_ASC) {
+					_id
+					text
+					creator {
+						firstName
+						email
+					}
+					likedBy {
+						firstName
+					}
+                }
+            }`,
+    });
+    const posts = response.data.data.postsByOrganization;
+    expect(Array.isArray(posts)).toBeTruthy();
+    expect(posts[0]._id).toBe(firstPost._id);
+    expect(posts[1]._id).toBe(secondPost._id);
+    expect(posts[2]._id).toBe(thirdPost._id);
   });
 
   test('title_DESC', async () => {
-    const args = {
-      id: mainOrganization._id,
-      orderBy: 'title_DESC',
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-    expect(response[0]._id.toString()).toEqual(thirdPost._id);
-    expect(response[1]._id.toString()).toEqual(secondPost._id);
-    expect(response[2]._id.toString()).toEqual(firstPost._id);
+    const response = await axios.post(URL, {
+      query: `query {
+                postsByOrganization (id: "${mainOrganization._id}", orderBy: title_DESC) {
+					_id
+					text
+					creator {
+						firstName
+						email
+					}
+					likedBy {
+						firstName
+					}
+                }
+            }`,
+    });
+    const posts = response.data.data.postsByOrganization;
+    expect(Array.isArray(posts)).toBeTruthy();
+    expect(posts[0]._id).toBe(thirdPost._id);
+    expect(posts[1]._id).toBe(secondPost._id);
+    expect(posts[2]._id).toBe(firstPost._id);
   });
 
   test('createdAt_ASC', async () => {
-    const args = {
-      id: mainOrganization._id,
-      orderBy: 'createdAt_ASC',
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-    expect(response[0]._id.toString()).toEqual(firstPost._id);
-    expect(response[1]._id.toString()).toEqual(secondPost._id);
-    expect(response[2]._id.toString()).toEqual(thirdPost._id);
+    const response = await axios.post(URL, {
+      query: `query {
+                postsByOrganization (id: "${mainOrganization._id}", orderBy: createdAt_ASC) {
+					_id
+					text
+					creator {
+						firstName
+						email
+					}
+					likedBy {
+						firstName
+					}
+                }
+            }`,
+    });
+    const posts = response.data.data.postsByOrganization;
+    expect(Array.isArray(posts)).toBeTruthy();
+    expect(posts[0]._id).toBe(firstPost._id);
+    expect(posts[1]._id).toBe(secondPost._id);
+    expect(posts[2]._id).toBe(thirdPost._id);
   });
 
   test('createdAt_DESC', async () => {
-    const args = {
-      id: mainOrganization._id,
-      orderBy: 'createdAt_DESC',
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-    expect(response[0]._id.toString()).toEqual(thirdPost._id);
-    expect(response[1]._id.toString()).toEqual(secondPost._id);
-    expect(response[2]._id.toString()).toEqual(firstPost._id);
+    const response = await axios.post(URL, {
+      query: `query {
+                postsByOrganization (id: "${mainOrganization._id}", orderBy: createdAt_DESC) {
+					_id
+					text
+					creator {
+						firstName
+						email
+					}
+					likedBy {
+						firstName
+					}
+                }
+            }`,
+    });
+    const posts = response.data.data.postsByOrganization;
+    expect(Array.isArray(posts)).toBeTruthy();
+    expect(posts[0]._id).toBe(thirdPost._id);
+    expect(posts[1]._id).toBe(secondPost._id);
+    expect(posts[2]._id).toBe(firstPost._id);
   });
 
   test('videoUrl_ASC', async () => {
-    const args = {
-      id: mainOrganization._id,
-      orderBy: 'videoUrl_ASC',
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-    expect(response[0]._id.toString()).toEqual(firstPost._id);
-    expect(response[1]._id.toString()).toEqual(secondPost._id);
-    expect(response[2]._id.toString()).toEqual(thirdPost._id);
+    const response = await axios.post(URL, {
+      query: `query {
+                postsByOrganization (id: "${mainOrganization._id}", orderBy: videoUrl_ASC) {
+					_id
+					text
+					creator {
+						firstName
+						email
+					}
+					likedBy {
+						firstName
+					}
+                }
+            }`,
+    });
+    const posts = response.data.data.postsByOrganization;
+    expect(Array.isArray(posts)).toBeTruthy();
+    expect(posts[0]._id).toBe(firstPost._id);
+    expect(posts[1]._id).toBe(secondPost._id);
+    expect(posts[2]._id).toBe(thirdPost._id);
   });
 
   test('videoUrl_DESC', async () => {
-    const args = {
-      id: mainOrganization._id,
-      orderBy: 'videoUrl_DESC',
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-    expect(response[0]._id.toString()).toEqual(thirdPost._id);
-    expect(response[1]._id.toString()).toEqual(secondPost._id);
-    expect(response[2]._id.toString()).toEqual(firstPost._id);
+    const response = await axios.post(URL, {
+      query: `query {
+                postsByOrganization (id: "${mainOrganization._id}", orderBy: videoUrl_DESC) {
+					_id
+					text
+					creator {
+						firstName
+						email
+					}
+					likedBy {
+						firstName
+					}
+                }
+            }`,
+    });
+    const posts = response.data.data.postsByOrganization;
+    expect(Array.isArray(posts)).toBeTruthy();
+    expect(posts[0]._id).toBe(thirdPost._id);
+    expect(posts[1]._id).toBe(secondPost._id);
+    expect(posts[2]._id).toBe(firstPost._id);
   });
 
   test('imageUrl_ASC', async () => {
-    const args = {
-      id: mainOrganization._id,
-      orderBy: 'imageUrl_ASC',
-    };
+    const response = await axios.post(URL, {
+      query: `query {
+                postsByOrganization (id: "${mainOrganization._id}", orderBy: imageUrl_ASC) {
+					_id
+					text
+          likeCount
+          commentCount
+					creator {
+						firstName
+						email
+					}
+					likedBy {
+						firstName
+					}
+                }
+            }`,
+    });
+    const posts = response.data.data.postsByOrganization;
+    expect(Array.isArray(posts)).toBeTruthy();
 
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-    expect(response[0]._id.toString()).toEqual(firstPost._id);
-    expect(response[1]._id.toString()).toEqual(secondPost._id);
-    expect(response[2]._id.toString()).toEqual(thirdPost._id);
+    expect(posts[0]._id).toBe(firstPost._id);
+    expect(posts[1]._id).toBe(secondPost._id);
+    expect(posts[2]._id).toBe(thirdPost._id);
   });
 
   test('imageUrl_DESC', async () => {
-    const args = {
-      id: mainOrganization._id,
-      orderBy: 'imageUrl_DESC',
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-    expect(response[0]._id.toString()).toEqual(thirdPost._id);
-    expect(response[1]._id.toString()).toEqual(secondPost._id);
-    expect(response[2]._id.toString()).toEqual(firstPost._id);
+    const response = await axios.post(URL, {
+      query: `query {
+                postsByOrganization (id: "${mainOrganization._id}", orderBy: imageUrl_DESC) {
+					_id
+					text
+          likeCount
+          commentCount
+					creator {
+						firstName
+						email
+					}
+					likedBy {
+						firstName
+					}
+                }
+            }`,
+    });
+    const posts = response.data.data.postsByOrganization;
+    expect(Array.isArray(posts)).toBeTruthy();
+    expect(posts[0]._id).toBe(thirdPost._id);
+    expect(posts[1]._id).toBe(secondPost._id);
+    expect(posts[2]._id).toBe(firstPost._id);
   });
 
   test('likeCount_ASC', async () => {
-    const args = {
-      id: mainOrganization._id,
-      orderBy: 'likeCount_ASC',
-    };
+    const response = await axios.post(URL, {
+      query: `query {
+                postsByOrganization (id: "${mainOrganization._id}", orderBy: likeCount_ASC) {
+					_id
+					text
+          likeCount
+          commentCount
+					creator {
+						firstName
+						email
+					}
+					likedBy {
+						firstName
+					}
+                }
+            }`,
+    });
+    const posts = response.data.data.postsByOrganization;
+    expect(Array.isArray(posts)).toBeTruthy();
 
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-    expect(response[0]._id.toString()).toEqual(firstPost._id);
-    expect(response[1]._id.toString()).toEqual(secondPost._id);
-    expect(response[2]._id.toString()).toEqual(thirdPost._id);
+    expect(posts[0]._id).toBe(firstPost._id);
+    expect(posts[1]._id).toBe(secondPost._id);
+    expect(posts[2]._id).toBe(thirdPost._id);
   });
 
   test('likeCount_DESC', async () => {
-    const args = {
-      id: mainOrganization._id,
-      orderBy: 'likeCount_DESC',
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-    expect(response[0]._id.toString()).toEqual(thirdPost._id);
-    expect(response[1]._id.toString()).toEqual(secondPost._id);
-    expect(response[2]._id.toString()).toEqual(firstPost._id);
+    const response = await axios.post(URL, {
+      query: `query {
+                postsByOrganization (id: "${mainOrganization._id}", orderBy: likeCount_DESC) {
+					_id
+					text
+          likeCount
+          commentCount
+					creator {
+						firstName
+						email
+					}
+					likedBy {
+						firstName
+					}
+                }
+            }`,
+    });
+    const posts = response.data.data.postsByOrganization;
+    expect(Array.isArray(posts)).toBeTruthy();
+    expect(posts[0]._id).toBe(thirdPost._id);
+    expect(posts[1]._id).toBe(secondPost._id);
+    expect(posts[2]._id).toBe(firstPost._id);
   });
 
   test('commentCount_ASC', async () => {
-    const args = {
-      id: mainOrganization._id,
-      orderBy: 'commentCount_ASC',
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-    expect(response[0]._id.toString()).toEqual(firstPost._id);
-    expect(response[1]._id.toString()).toEqual(secondPost._id);
-    expect(response[2]._id.toString()).toEqual(thirdPost._id);
+    const response = await axios.post(URL, {
+      query: `query {
+                postsByOrganization (id: "${mainOrganization._id}", orderBy: commentCount_ASC) {
+					_id
+					text
+					creator {
+						firstName
+						email
+					}
+					likedBy {
+						firstName
+					}
+                }
+            }`,
+    });
+    const posts = response.data.data.postsByOrganization;
+    expect(Array.isArray(posts)).toBeTruthy();
+    expect(posts[0]._id).toBe(firstPost._id);
+    expect(posts[1]._id).toBe(secondPost._id);
+    expect(posts[2]._id).toBe(thirdPost._id);
   });
 
   test('commentCount_DESC', async () => {
-    const args = {
-      id: mainOrganization._id,
-      orderBy: 'commentCount_DESC',
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-    expect(response[0]._id.toString()).toEqual(thirdPost._id);
-    expect(response[1]._id.toString()).toEqual(secondPost._id);
-    expect(response[2]._id.toString()).toEqual(firstPost._id);
-  });
-
-  // filters tests
-  test('id', async () => {
-    const args = {
-      id: mainOrganization._id,
-      where: {
-        id: firstPost._id,
-      },
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-    expect(response[0]._id.toString()).toEqual(firstPost._id);
-  });
-
-  test('id_not', async () => {
-    const args = {
-      id: mainOrganization._id,
-      where: {
-        id_not: firstPost._id,
-      },
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-  });
-
-  test('id_in', async () => {
-    const args = {
-      id: mainOrganization._id,
-      where: {
-        id_in: firstPost._id,
-      },
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-  });
-
-  test('id_not_in', async () => {
-    const args = {
-      id: mainOrganization._id,
-      where: {
-        id_not_in: firstPost._id,
-      },
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-  });
-
-  test('text', async () => {
-    const args = {
-      id: mainOrganization._id,
-      where: {
-        text: 'a',
-      },
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-  });
-
-  test('text_not', async () => {
-    const args = {
-      id: mainOrganization._id,
-      where: {
-        text_not: 'a',
-      },
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-  });
-
-  test('text_in', async () => {
-    const args = {
-      id: mainOrganization._id,
-      where: {
-        text_in: 'a',
-      },
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-  });
-
-  test('text_not_in', async () => {
-    const args = {
-      id: mainOrganization._id,
-      where: {
-        text_not_in: 'a',
-      },
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-  });
-
-  test('text_contains', async () => {
-    const args = {
-      id: mainOrganization._id,
-      where: {
-        text_contains: 'a',
-      },
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-  });
-
-  test('text_starts_with', async () => {
-    const args = {
-      id: mainOrganization._id,
-      where: {
-        text_starts_with: 'a',
-      },
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-  });
-
-  test('title', async () => {
-    const args = {
-      id: mainOrganization._id,
-      where: {
-        title: 'a',
-      },
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-  });
-
-  test('title_not', async () => {
-    const args = {
-      id: mainOrganization._id,
-      where: {
-        title_not: 'a',
-      },
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-  });
-
-  test('title_in', async () => {
-    const args = {
-      id: mainOrganization._id,
-      where: {
-        title_in: 'a',
-      },
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-  });
-
-  test('title_not_in', async () => {
-    const args = {
-      id: mainOrganization._id,
-      where: {
-        title_not_in: 'a',
-      },
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-  });
-
-  test('title_contains', async () => {
-    const args = {
-      id: mainOrganization._id,
-      where: {
-        title_contains: 'a',
-      },
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
-  });
-
-  test('title_starts_with', async () => {
-    const args = {
-      id: mainOrganization._id,
-      where: {
-        title_starts_with: 'a',
-      },
-    };
-
-    const response = await postsByOrganization({}, args);
-
-    expect(response).toBeTruthy();
+    const response = await axios.post(URL, {
+      query: `query {
+                postsByOrganization (id: "${mainOrganization._id}", orderBy: commentCount_DESC) {
+					_id
+					text
+					creator {
+						firstName
+						email
+					}
+					likedBy {
+						firstName
+					}
+                }
+            }`,
+    });
+    const posts = response.data.data.postsByOrganization;
+    expect(Array.isArray(posts)).toBeTruthy();
+    expect(posts[0]._id).toBe(thirdPost._id);
+    expect(posts[1]._id).toBe(secondPost._id);
+    expect(posts[2]._id).toBe(firstPost._id);
   });
 });

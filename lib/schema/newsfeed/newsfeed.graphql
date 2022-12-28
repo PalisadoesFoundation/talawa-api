@@ -93,12 +93,4 @@ module.exports = `
     commentCount_ASC
     commentCount_DESC
   }
-
-  input PostUpdateInput {
-    _id: ID!
-    text: String
-    title: String
-    imageUrl: String
-    videoUrl:String
-  }
 `

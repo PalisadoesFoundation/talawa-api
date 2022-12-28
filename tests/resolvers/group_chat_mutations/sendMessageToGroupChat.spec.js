@@ -14,16 +14,12 @@ const { PubSub } = require('apollo-server-express');
 
 let token;
 let userId;
-let userId1;
 const pubsub = new PubSub(); // creating a new pubsub for passing to context in sendMessageToDirectChat
 
 beforeAll(async () => {
   let generatedEmail = `${shortid.generate().toLowerCase()}@test.com`;
-  let generatedEmail1 = `${shortid.generate().toLowerCase()}@test.com`;
   token = await getToken(generatedEmail);
   userId = await getUserId(generatedEmail);
-  await getToken(generatedEmail1);
-  userId1 = await getUserId(generatedEmail1);
   require('dotenv').config(); // pull env variables from .env file
   await database.connect(); // connect the database before running any test in this file's scope
 });
@@ -120,7 +116,7 @@ describe('tests for sending a message to group chat', () => {
           createGroupChat(data: {
             title: "This is a group chat for testing"
             organizationId: "${createdOrgId}"
-            userIds: ["${userId}", "${newUserId}", "${userId1}"]
+            userIds: ["${userId}", "${newUserId}"]
           }){
             _id
           }
@@ -174,7 +170,7 @@ describe('tests for sending a message to group chat', () => {
     }).rejects.toEqual(Error(USER_NOT_AUTHORIZED));
   });
 
-  // TEST FOR SENDING MESSAGE TO THE GROUP CHAT
+  // TEST FRO SENDING MESSAGE TO THE GROUP CHAT
   test('send message to group chat', async () => {
     var args = {
       chatId: createdGroupChatId,
@@ -188,95 +184,6 @@ describe('tests for sending a message to group chat', () => {
     expect(response).toEqual(
       expect.objectContaining({
         messageContent: 'This is a test message',
-      })
-    );
-  });
-
-  // TEST WHEN USER SPAM THE CHAT AND IT IS CHECKED VIA PLUGIN
-  test('send message to group chat with isSpam agrument to be true', async () => {
-    var args = {
-      chatId: createdGroupChatId,
-      messageContent: 'This is a test message',
-      isSpam: true,
-    };
-    var context = {
-      userId: userId,
-      pubsub: pubsub,
-    };
-    const response = await sendMessageToGroupChat({}, args, context);
-    expect(response).toEqual(
-      expect.objectContaining({
-        messageContent: 'This is a test message',
-      })
-    );
-  });
-
-  // TEST WHEN USER NOT SPAM THE CHAT AND IT IS CHECKED VIA PLUGIN
-  test('send message to group chat with isSpam agrument to be false', async () => {
-    var args = {
-      chatId: createdGroupChatId,
-      messageContent: 'This is a test message',
-      isSpam: false,
-    };
-    var context = {
-      userId: userId,
-      pubsub: pubsub,
-    };
-    const response = await sendMessageToGroupChat({}, args, context);
-    expect(response).toEqual(
-      expect.objectContaining({
-        messageContent: 'This is a test message',
-      })
-    );
-  });
-
-  // TEST WHEN USER SPAM THE CHAT AND IT IS CHECKED VIA PRE-DEFINED KEYWORDS
-  test('send message to group chat with spam keyword', async () => {
-    var args = {
-      chatId: createdGroupChatId,
-      messageContent: 'Click here to get the smart phone is of Best price.',
-    };
-    var context = {
-      userId: userId1,
-      pubsub: pubsub,
-    };
-    const response = await sendMessageToGroupChat({}, args, context);
-    expect(response).toEqual(
-      expect.objectContaining({
-        messageContent: 'Click here to get the smart phone is of Best price.',
-      })
-    );
-  });
-
-  // TEST WHEN USER SPAM THE CHAT AND IT IS CHECKED VIA FREQUENCY OF THE MESSAGES
-  test('send message to group chat with frequency of less then 5 seconds', async () => {
-    var context = {
-      userId: userId,
-      pubsub: pubsub,
-    };
-
-    for (let i = 0; i <= 30; i++) {
-      let args = {
-        chatId: createdGroupChatId,
-        messageContent: `This is a test message ${i}`,
-      };
-
-      const response = await sendMessageToGroupChat({}, args, context);
-      expect(response).toEqual(
-        expect.objectContaining({
-          messageContent: `This is a test message ${i}`,
-        })
-      );
-    }
-    let args = {
-      chatId: createdGroupChatId,
-      messageContent: 'This is a final test message',
-    };
-
-    const response = await sendMessageToGroupChat({}, args, context);
-    expect(response).toEqual(
-      expect.objectContaining({
-        messageContent: 'This is a final test message',
       })
     );
   });

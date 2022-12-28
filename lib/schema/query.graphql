@@ -16,12 +16,12 @@ module.exports = `
     isUserRegister(eventId: ID!): EventRegistrants
     event(id: ID!): Event
     events(id: ID, orderBy: EventOrderByInput): [Event]
-    eventsByOrganization(id: ID, where: EventWhereInput, orderBy: EventOrderByInput): [Event]
+    eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
     registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
     registrantsByEvent(id: ID!): [User]
     
     posts(orderBy: PostOrderByInput): [Post]
-    postsByOrganization(id: ID!, where: PostWhereInput, orderBy: PostOrderByInput): [Post]
+    postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
     postsByOrganizationConnection(id: ID!, where: PostWhereInput, first: Int, skip: Int, orderBy: PostOrderByInput): PostConnection
     tasksByEvent(id: ID!, orderBy: TaskOrderByInput): [Task]
     tasksByUser(id: ID!, orderBy: TaskOrderByInput): [Task]

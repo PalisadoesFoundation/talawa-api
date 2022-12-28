@@ -119,38 +119,4 @@ describe('Unit testing', () => {
       });
     });
   });
-
-  const filterByArgs = [
-    { key: 'id', value: '62a8a8b0324ed047c8875cb3' },
-    { key: 'id_not', value: '62a8a8b0324ed047c8875cb3' },
-    { key: 'id_in', value: '62a8a8b0324ed047c8875cb3' },
-    { key: 'id_not_in', value: '62a8a8b0324ed047c8875cb3' },
-    { key: 'description', value: 'National' },
-    { key: 'description_not', value: 'National' },
-    { key: 'description_in', value: 'National' },
-    { key: 'description_not_in', value: 'National' },
-    { key: 'description_contains', value: 'National' },
-    { key: 'description_starts_with', value: 'National' },
-    { key: 'title', value: 'Talawa' },
-    { key: 'title_not', value: 'Talawa' },
-    { key: 'title_in', value: 'Talawa' },
-    { key: 'title_not_in', value: 'Talawa' },
-    { key: 'title_contains', value: 'Talawa' },
-    { key: 'title_starts_with', value: 'Talawa' },
-  ];
-
-  filterByArgs.map((arg) => {
-    test(`Events By Organization Query with filter ${arg.key}`, async () => {
-      let args = {
-        where: {
-          [arg.key]: arg.value,
-        },
-      };
-
-      const response = await eventsByOrganization({}, args);
-      response.map((event) => {
-        expect(event).toBeTruthy();
-      });
-    });
-  });
 });

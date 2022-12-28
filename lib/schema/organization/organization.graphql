@@ -20,7 +20,6 @@ module.exports = `
     apiUrl:String!
     createdAt:String
     tags: [String]
-    spamCount: [SpamCount]
     functionality: Functionality!
   }
 
@@ -88,19 +87,6 @@ module.exports = `
     _id: ID!
     user: User!
     organization: Organization!
-  }
-
-  type SpamCount {
-    _id: ID
-    user: User
-    isReaded: Boolean
-    groupchat: GroupChat
-  }
-
-  input UpdateSpamInput {
-    orgId: ID!
-    spamId: ID!
-    isReaded: Boolean
   }
 
   input OrganizationWhereInput {
