@@ -13,13 +13,8 @@ export default defineConfig({
       // coverage in test coverage report.
       exclude: [
         "src/lib/config",
-        "src/lib/directives/index.ts",
-        "src/lib/libraries/**/*index.ts",
-        "src/lib/middleware/index.ts",
         "src/lib/models",
-        "src/lib/resolvers/**/*index.ts",
         "src/lib/typeDefs",
-        "src/lib/utilities/index.ts",
       ],
       // This is used to tell vitest which coverage provider to use. c8 is the default
       // and newer coverage provider for node.js applications. You can swap it with
