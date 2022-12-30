@@ -1,5 +1,4 @@
 import "dotenv/config";
-import { creator as creatorResolver } from "../../../src/lib/resolvers/Organization/creator";
 import { connect, disconnect } from "../../../src/db";
 import {
   User,
@@ -8,9 +7,17 @@ import {
   Interface_User,
 } from "../../../src/lib/models";
 import { Document, Types } from "mongoose";
-import { USER_NOT_FOUND } from "../../../src/constants";
+import { USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
 import { nanoid } from "nanoid";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  afterEach,
+  vi,
+} from "vitest";
 
 let testUser: Interface_User & Document<any, any, Interface_User>;
 
@@ -57,7 +64,12 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Organization -> creator", () => {
-  it(`throws NotFoundError if no user exists with _id === parent.creator`, async () => {
+  afterEach(() => {
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
+
+  it(`throws NotFoundError if no user exists with _id === parent.creator and IN_PRODUCTION === false`, async () => {
     try {
       testOrganization = await Organization.findOneAndUpdate(
         {
@@ -75,9 +87,65 @@ describe("resolvers -> Organization -> creator", () => {
 
       const parent = testOrganization!.toObject();
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+          IN_PRODUCTION: false,
+        };
+      });
+
+      const { creator: creatorResolver } = await import(
+        "../../../src/lib/resolvers/Organization/creator"
+      );
       await creatorResolver?.(parent, {}, {});
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_FOUND);
+    }
+  });
+
+  it(`throws NotFoundError if no user exists with _id === parent.creator and IN_PRODUCTION === true`, async () => {
+    const { requestContext } = await import("../../../src/lib/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
+    try {
+      testOrganization = await Organization.findOneAndUpdate(
+        {
+          _id: testOrganization!._id,
+        },
+        {
+          $set: {
+            creator: Types.ObjectId().toString(),
+          },
+        },
+        {
+          new: true,
+        }
+      );
+
+      const parent = testOrganization!.toObject();
+
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+          IN_PRODUCTION: true,
+        };
+      });
+
+      const { creator: creatorResolver } = await import(
+        "../../../src/lib/resolvers/Organization/creator"
+      );
+      await creatorResolver?.(parent, {}, {});
+    } catch (error: any) {
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
     }
   });
 
@@ -98,6 +166,9 @@ describe("resolvers -> Organization -> creator", () => {
 
     const parent = testOrganization!.toObject();
 
+    const { creator: creatorResolver } = await import(
+      "../../../src/lib/resolvers/Organization/creator"
+    );
     const creatorPayload = await creatorResolver?.(parent, {}, {});
 
     const creator = await User.findOne({
