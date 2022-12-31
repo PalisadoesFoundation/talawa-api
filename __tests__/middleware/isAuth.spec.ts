@@ -2,6 +2,7 @@ import { Request } from "express";
 import { isAuth } from "../../src/lib/middleware/isAuth";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import jwt from "jsonwebtoken";
+import { logger } from "../../src/lib/libraries/logger";
 
 interface Test_Interface_AuthData {
   isAuth: boolean;
@@ -85,6 +86,32 @@ describe("middleware -> isAuth", () => {
       process.env.ACCESS_TOKEN_SECRET as string,
       expect.anything()
     );
+    expect(authData).toEqual(testAuthData);
+  });
+
+  it("returns authData if decoded token is not set", () => {
+    const verifyMocked = vi
+      .spyOn(jwt, "verify")
+      .mockImplementationOnce((..._args: any) => {
+        return "";
+      });
+
+    const infoSpy = vi.spyOn(logger, "info");
+
+    const mockRequest = {
+      headers: {
+        authorization: "Token SomeToken",
+      },
+    } as Request;
+
+    const authData: Test_Interface_AuthData = isAuth(mockRequest);
+
+    expect(verifyMocked).toHaveBeenCalledWith(
+      "SomeToken",
+      process.env.ACCESS_TOKEN_SECRET as string,
+      expect.anything()
+    );
+    expect(infoSpy).toBeCalledWith("decoded token is not present");
     expect(authData).toEqual(testAuthData);
   });
 
