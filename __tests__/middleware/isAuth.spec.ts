@@ -1,6 +1,6 @@
 import { Request } from "express";
 import { isAuth } from "../../src/lib/middleware/isAuth";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import jwt from "jsonwebtoken";
 
 interface Test_Interface_AuthData {
@@ -18,7 +18,9 @@ describe("middleware -> isAuth", () => {
       expired: undefined,
       userId: undefined,
     };
+  });
 
+  afterEach(() => {
     vi.resetAllMocks();
   });
 
@@ -87,11 +89,9 @@ describe("middleware -> isAuth", () => {
   });
 
   it("returns authData if jwt.verify throws error", () => {
-    const verifyMocked = vi
-      .spyOn(jwt, "verify")
-      .mockImplementationOnce((...args: any) => {
-        throw new Error();
-      });
+    vi.spyOn(jwt, "verify").mockImplementationOnce((..._args: any) => {
+      throw new Error();
+    });
 
     const mockRequest = {
       headers: {
