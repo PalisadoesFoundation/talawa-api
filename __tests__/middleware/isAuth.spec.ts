@@ -22,7 +22,7 @@ describe("middleware -> isAuth", () => {
   });
 
   afterEach(() => {
-    vi.resetAllMocks();
+    vi.restoreAllMocks();
   });
 
   it("returns authData if headers.authorisation === undefined", () => {
