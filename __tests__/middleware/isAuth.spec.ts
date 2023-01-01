@@ -36,9 +36,11 @@ describe("middleware -> isAuth", () => {
   });
 
   it("returns authData if token === undefined", () => {
+    const testAuthorizationHeader = (Math.random() + 1).toString(36).substring(2, 5);
+
     const mockRequest = {
       headers: {
-        authorization: "Token",
+        authorization: testAuthorizationHeader,
       },
     } as Request;
 
@@ -48,9 +50,14 @@ describe("middleware -> isAuth", () => {
   });
 
   it("returns authData if token === ''", async () => {
+    const testAuthorizationHeader = (Math.random() + 1)
+      .toString(36)
+      .substring(2, 5)
+      .concat(" ");
+
     const mockRequest = {
       headers: {
-        authorization: "Token ",
+        authorization: testAuthorizationHeader,
       },
     } as Request;
 
@@ -71,9 +78,15 @@ describe("middleware -> isAuth", () => {
         return callBackFn(err, {});
       });
 
+    const testToken = (Math.random() + 1).toString(36).substring(2, 5);
+    const testAuthorizationHeader = (Math.random() + 1)
+      .toString(36)
+      .substring(2, 5)
+      .concat(" ", testToken);
+
     const mockRequest = {
       headers: {
-        authorization: "Token Expired",
+        authorization: testAuthorizationHeader,
       },
     } as Request;
 
@@ -82,7 +95,7 @@ describe("middleware -> isAuth", () => {
     testAuthData.expired = true;
 
     expect(verifyMocked).toHaveBeenCalledWith(
-      "Expired",
+      testToken,
       process.env.ACCESS_TOKEN_SECRET as string,
       expect.anything()
     );
@@ -98,16 +111,22 @@ describe("middleware -> isAuth", () => {
 
     const infoSpy = vi.spyOn(logger, "info");
 
+    const testToken = (Math.random() + 1).toString(36).substring(2, 5);
+    const testAuthorizationHeader = (Math.random() + 1)
+      .toString(36)
+      .substring(2, 5)
+      .concat(" ", testToken);
+
     const mockRequest = {
       headers: {
-        authorization: "Token SomeToken",
+        authorization: testAuthorizationHeader,
       },
     } as Request;
 
     const authData: Test_Interface_AuthData = isAuth(mockRequest);
 
     expect(verifyMocked).toHaveBeenCalledWith(
-      "SomeToken",
+      testToken,
       process.env.ACCESS_TOKEN_SECRET as string,
       expect.anything()
     );
@@ -120,9 +139,15 @@ describe("middleware -> isAuth", () => {
       throw new Error();
     });
 
+    const testToken = (Math.random() + 1).toString(36).substring(2, 5);
+    const testAuthorizationHeader = (Math.random() + 1)
+      .toString(36)
+      .substring(2, 5)
+      .concat(" ", testToken);
+
     const mockRequest = {
       headers: {
-        authorization: "Token SomeToken",
+        authorization: testAuthorizationHeader,
       },
     } as Request;
 
@@ -145,11 +170,17 @@ describe("middleware -> isAuth", () => {
         return callBackFn(null, decoded);
       });
 
-    const mockRequest = {
-      headers: {
-        authorization: "Token Valid",
-      },
-    } as Request;
+      const testToken = (Math.random() + 1).toString(36).substring(2, 5);
+      const testAuthorizationHeader = (Math.random() + 1)
+        .toString(36)
+        .substring(2, 5)
+        .concat(" ", testToken);
+  
+      const mockRequest = {
+        headers: {
+          authorization: testAuthorizationHeader,
+        },
+      } as Request;
 
     const authData: Test_Interface_AuthData = isAuth(mockRequest);
 
@@ -157,7 +188,7 @@ describe("middleware -> isAuth", () => {
     testAuthData.userId = "ValidUserId";
 
     expect(verifyMocked).toHaveBeenCalledWith(
-      "Valid",
+      testToken,
       process.env.ACCESS_TOKEN_SECRET as string,
       expect.anything()
     );
