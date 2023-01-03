@@ -7,10 +7,17 @@ import {
 } from "../../../src/lib/models";
 import { MutationCreateMessageChatArgs } from "../../../src/generated/graphqlCodegen";
 import { connect, disconnect } from "../../../src/db";
-import { createMessageChat as createMessageChatResolver } from "../../../src/lib/resolvers/Mutation/createMessageChat";
-import { USER_NOT_FOUND } from "../../../src/constants";
+import { USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
 import { nanoid } from "nanoid";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  vi,
+  afterEach,
+} from "vitest";
 
 let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
 
@@ -40,7 +47,12 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> createMessageChat", () => {
-  it(`throws NotFoundError if no user exists with _id === args.data.receiver`, async () => {
+  afterEach(() => {
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
+
+  it(`throws NotFoundError if no user exists with _id === args.data.receiver and IN_PRODUCTION === false`, async () => {
     try {
       const args: MutationCreateMessageChatArgs = {
         data: {
@@ -53,9 +65,60 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
         userId: testUsers[0].id,
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+          IN_PRODUCTION: false,
+        };
+      });
+
+      const { createMessageChat: createMessageChatResolver } = await import(
+        "../../../src/lib/resolvers/Mutation/createMessageChat"
+      );
       await createMessageChatResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_FOUND);
+    }
+  });
+
+  it(`throws NotFoundError if no user exists with _id === args.data.receiver and IN_PRODUCTION === true`, async () => {
+    const { requestContext } = await import("../../../src/lib/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationCreateMessageChatArgs = {
+        data: {
+          message: "",
+          receiver: Types.ObjectId().toString(),
+        },
+      };
+
+      const context = {
+        userId: testUsers[0].id,
+      };
+
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+          IN_PRODUCTION: true,
+        };
+      });
+
+      const { createMessageChat: createMessageChatResolver } = await import(
+        "../../../src/lib/resolvers/Mutation/createMessageChat"
+      );
+      await createMessageChatResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
     }
   });
 
@@ -83,6 +146,9 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
       pubsub,
     };
 
+    const { createMessageChat: createMessageChatResolver } = await import(
+      "../../../src/lib/resolvers/Mutation/createMessageChat"
+    );
     const createMessageChatPayload = await createMessageChatResolver?.(
       {},
       args,
