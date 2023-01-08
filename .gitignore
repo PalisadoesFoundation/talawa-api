@@ -18,3 +18,9 @@ coverage
 build
 
 serviceAccountKey.json
+
+
+bazel-bin
+bazel-medium-bazel-nodejs-getting-started
+bazel-out
+bazel-testlogs
