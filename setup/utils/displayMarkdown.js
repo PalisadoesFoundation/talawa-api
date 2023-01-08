@@ -9,7 +9,7 @@ marked.setOptions({
 });
 
 const displayMarkdown = (text) => {
-  console.log(marked(text));
+  console.log(marked.parse(text));
 };
 
 module.exports = displayMarkdown;
