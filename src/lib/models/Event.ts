@@ -96,28 +96,28 @@ const eventSchema = new Schema({
   },
   endDate: {
     type: String,
-    required: function () {
+    required: function (): ()=> boolean {
       // @ts-ignore
       return !this.allDay;
     },
   },
   startTime: {
     type: String,
-    required: function () {
+    required: function (): ()=> boolean {
       // @ts-ignore
       return !this.allDay;
     },
   },
   endTime: {
     type: String,
-    required: function () {
+    required: function (): ()=> boolean {
       // @ts-ignore
       return !this.allDay;
     },
   },
   recurrance: {
     type: String,
-    required: function () {
+    required: function (): ()=> boolean {
       // @ts-ignore
       return this.recurring;
     },

@@ -8,8 +8,12 @@ marked.setOptions({
   renderer: new TerminalRenderer(),
 });
 
+/**
+ * `displayMarkdown` takes a string of markdown text and returns the HTML equivalent.
+ * @param text - The text to be parsed.
+ */
 const displayMarkdown = (text) => {
-  console.log(marked(text));
+  console.log(marked.parse(text));
 };
 
 module.exports = displayMarkdown;
