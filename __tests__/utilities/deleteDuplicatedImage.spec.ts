@@ -35,7 +35,9 @@ describe("utilities -> deleteDuplicatedImage", () => {
       .spyOn(deleteDuplicatedImage, "deleteDuplicatedImage")
       .mockImplementation((_imagePath: any) => {});
 
-    deleteDuplicatedImage.deleteDuplicatedImage(testImagePath);
+    const deleteDuplicatedImageInfo =
+      deleteDuplicatedImage.deleteDuplicatedImage(testImagePath);
     expect(mockedDeleteDuplicatedImage).toBeCalledWith(testImagePath);
+    expect(deleteDuplicatedImageInfo).toBeUndefined();
   });
 });
