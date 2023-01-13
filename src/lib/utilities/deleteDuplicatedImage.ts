@@ -4,7 +4,7 @@ import { logger } from "../libraries";
 export const deleteDuplicatedImage = (imagePath: PathLike) => {
   unlink(imagePath, function (error) {
     if (error) {
-      throw new Error(error);
+      throw error;
     }
 
     // if no error is thrown, file has been deleted successfully
