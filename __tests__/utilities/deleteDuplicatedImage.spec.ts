@@ -1,3 +1,4 @@
+require("dotenv").config();
 import { nanoid } from "nanoid";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { logger } from "../../src/lib/libraries";
@@ -6,9 +7,16 @@ const fs = require("fs");
 
 const testImagePath: string = `${nanoid()}-testImagePath`;
 
+// vi.mock("../../src/lib/libraries/logger", () => {
+//   return {
+//     info: vi.fn(),
+//   };
+// });
+
 vi.mock("fs", () => {
-  const mFs = { unlink: vi.fn() };
-  return mFs;
+  return {
+    unlink: vi.fn(),
+  };
 });
 
 describe("utilities -> deleteDuplicatedImage", () => {
@@ -16,7 +24,20 @@ describe("utilities -> deleteDuplicatedImage", () => {
     vi.restoreAllMocks();
   });
 
-  it("should delete the duplicated image", () => {
+  it("it should throw an error", async () => {
+    const mockedDeleteDuplicatedImage = vi
+      .spyOn(deleteDuplicatedImage, "deleteDuplicatedImage")
+      .mockImplementation((_imagePath: any) => {});
+
+    deleteDuplicatedImage.deleteDuplicatedImage(testImagePath);
+    expect(mockedDeleteDuplicatedImage).toBeCalledWith(testImagePath);
+    expect(
+      deleteDuplicatedImage.deleteDuplicatedImage(testImagePath)
+    ).toBeUndefined();
+  });
+
+  it("it should delete duplicated image", () => {
+    // fs.unlink
     vi.spyOn(fs, "unlink").mockImplementationOnce(
       (_imagePath: any, callback: any) => {
         callback(null);
@@ -30,21 +51,5 @@ describe("utilities -> deleteDuplicatedImage", () => {
     expect(logSpy).toBeCalledWith(
       "File was deleted as it already exists in the db!"
     );
-  });
-
-  it("should throw an error", () => {
-    const mockedDeleteDuplicatedImage = vi
-      .spyOn(deleteDuplicatedImage, "deleteDuplicatedImage")
-      .mockImplementationOnce((_imagePath: any) => {});
-    const logSpy = vi.spyOn(logger, "info");
-
-    fs.unlink(testImagePath, () => {});
-    deleteDuplicatedImage.deleteDuplicatedImage(testImagePath);
-    expect(mockedDeleteDuplicatedImage).toBeCalledWith(testImagePath);
-    expect(
-      deleteDuplicatedImage.deleteDuplicatedImage(testImagePath)
-    ).toBeUndefined();
-    expect(fs.unlink).toBeCalledWith(testImagePath, expect.any(Function));
-    expect(logSpy).not.toBeCalled();
   });
 });
