@@ -1,6 +1,6 @@
 require("dotenv").config();
 import { nanoid } from "nanoid";
-import { afterEach, describe, expect, it, test, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import * as deleteDuplicatedImage from "../../src/lib/utilities/deleteDuplicatedImage";
 
 const testImagePath: string = `${nanoid()}-testImagePath`;
