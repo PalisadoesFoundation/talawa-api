@@ -1,9 +1,14 @@
 require("dotenv").config();
 import { nanoid } from "nanoid";
-import fs from "fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import * as deleteDuplicatedImage from "../../src/lib/utilities/deleteDuplicatedImage";
+import { deleteDuplicatedImage } from "../../src/lib/utilities/deleteDuplicatedImage";
+// const fs = require("fs");
+import * as fs from "fs";
 import { logger } from "../../src/lib/libraries";
+
+vi.mock("fs", () => ({
+  unlink: vi.fn(),
+}));
 
 const testImagePath: string = `${nanoid()}-testImagePath`;
 
@@ -12,26 +17,26 @@ describe("utilities -> deleteDuplicatedImage", () => {
     vi.restoreAllMocks();
   });
 
-  it("should handle unlinking image", async () => {
-    const mockedDeleteDuplicatedImage = vi
-      .spyOn(deleteDuplicatedImage, "deleteDuplicatedImage")
-      .mockImplementation((_imagePath: any) => null);
-    const mockedFs = vi
-      .spyOn(fs, "unlink")
-      .mockImplementationOnce((_imagePath: any, callback: any) => {
-        callback(new Error("error"));
-      });
-    const mockedLogger = vi.spyOn(logger, "info");
-    deleteDuplicatedImage.deleteDuplicatedImage(testImagePath);
-    fs.unlink(testImagePath, () => {});
-    logger.info("File was deleted as it already exists in the db!");
-    expect(mockedDeleteDuplicatedImage).toBeCalledWith(testImagePath);
-    expect(mockedFs).toBeCalledWith(testImagePath, expect.any(Function));
-    expect(deleteDuplicatedImage.deleteDuplicatedImage(testImagePath)).toBe(
-      null
+  it("should delete duplicated image", () => {
+    vi.spyOn(fs, "unlink").mockImplementationOnce(
+      (_imagePath: any, callback: any) => callback(null)
     );
-    expect(mockedLogger).toBeCalledWith(
+    const logSpy = vi.spyOn(logger, "info");
+    deleteDuplicatedImage(testImagePath);
+    expect(fs.unlink).toBeCalledWith(testImagePath, expect.any(Function));
+    expect(logSpy).toBeCalledWith(
       "File was deleted as it already exists in the db!"
     );
+  });
+
+  it("should throw error", () => {
+    const error = new Error("There was an error deleting the file.");
+    vi.spyOn(fs, "unlink").mockImplementationOnce(
+      (_imagePath: any, callback: any) => callback(error)
+    );
+    const logSpy = vi.spyOn(logger, "info");
+    expect(() => deleteDuplicatedImage(testImagePath)).toThrowError(error);
+    expect(fs.unlink).toBeCalledWith(testImagePath, expect.any(Function));
+    expect(logSpy).not.toBeCalled();
   });
 });
