@@ -19,7 +19,7 @@ jobs:
     name: Lints the code
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3
       - name: Install Dependencies
         run: npm ci
       - name: Run ESLint and Prettier
@@ -31,7 +31,7 @@ jobs:
     needs: Linter
     steps:
       - name: Checkout
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v3
         with:
           # This is important to fetch the changes to the previous commit
           fetch-depth: 0
@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: Code-Formatter
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3
       - name: 'Check whether comments exists for JSDocs'
         run: |
           chmod +x ./.github/workflows/check-jsdocs-comment.py
@@ -81,10 +81,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v3
 
       - name: Set up Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
 
       - name: Install dependencies
         run: npm ci
@@ -98,12 +98,12 @@ jobs:
         run: npm run test
 
       - name: Present current coverage in PR
-        uses: codecov/codecov-action@v3.1.1
+        uses: codecov/codecov-action@v3
         with:
           verbose: true
 
       - name: Test acceptable level of code coverage
-        uses: VeryGoodOpenSource/very_good_coverage@v2.1.0
+        uses: VeryGoodOpenSource/very_good_coverage@v2
         with:
           path: './coverage/lcov.info'
           min_coverage: 81.1
