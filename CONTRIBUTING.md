@@ -118,10 +118,7 @@ The process of proposing a change to Talawa API can be summarized as:
 We have internship partnerships with a number of organizations. See below for more details.
 
 ### GSoC
-If you are participating in the Summer of Code, please read more about us and our processes [here](https://palisadoesfoundation.github.io/talawa-docs/docs/internships/gsoc/gsoc-introduction)
-
-### GitHub Externship
-If you are participating in the GitHub Externship, please read more about us and our processes [here](https://palisadoesfoundation.github.io/talawa-docs/docs/internships/github/github-introduction)
+If you are participating in the Summer of Code, please read more about us and our processes [here](https://docs.talawa.io/docs/internships/gsoc/gsoc-introduction)
 
 ## Community
 There are many ways to communicate with the community.
