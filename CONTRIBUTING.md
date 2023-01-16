@@ -14,7 +14,6 @@ If you are new to contributing to open source, please read the Open Source Guide
   - [Contributing Code](#contributing-code)
   - Internships
       - [GSoC](#gsoc)
-      - [GitHub Externship](#github-externship)
   - [Community](#community)
   
 ## Code of Conduct
