@@ -1,7 +1,6 @@
 # Talawa-api installation
 
-This document provides instructions on how to set up and start a running instance of talawa-api on your local system. The instructions are written to be followed in sequence so make sure to go thorough without skipping any sections. There are two main sections:- [Installation using standard way](#installation-using-standard-way) and [Installation using docker](#installation-using-docker). We recommend following `Installation using standard way` section because `Installation using docker` section requires good knowledge of working with docker.
-
+This document provides instructions on how to set up and start a running instance of talawa-api on your local system. The instructions are written to be followed in sequence so make sure to go thorough without skipping any sections. There are two main sections:- [Installation using standard way](#installation-using-standard-way) and [Installation using docker](#installation-using-docker). We recommend following `Installation using standard way`.
 <br/>
 
 # Table of contents
