@@ -35,6 +35,8 @@ This document provides instructions on how to set up and start a running instanc
 
 # Installation using standard way
 
+This is the recommended way to set up talawa-api. Docker comes with its own set of complexities and if you're a beginner you're better off without it.
+
 ## Install node.js
 
 Best way to install and manage `node.js` is making use of node version managers. Two most popular node version managers right now are [fnm](https://github.com/Schniz/fnm) and [nvm](https://github.com/nvm-sh/nvm). We'd recommend `fnm` because it's written in `rust` and is much faster than `nvm`. Install whichever one you want and follow their guide to set up `node.js` on your system.
