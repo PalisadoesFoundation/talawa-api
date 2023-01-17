@@ -75,14 +75,16 @@ A file named `.env` is required in the root directory of talawa-api for storing 
 
 This `.env` file must be populated with the following environment variables for talawa-api to work:-
 
-1. ACCESS_TOKEN_SECRET
-2. REFRESH_TOKEN_SECRET
-3. MONGODB_URL
-4. RECAPTCHA_SECRET_KEY
-5. MAIL_USERNAME
-6. MAIL_PASSWORD
+| Variable             | Description                                            |
+| -------------------- | ------------------------------------------------------ |
+| ACCESS_TOKEN_SECRET  | Used for signing/verifying JWT tokens                  |
+| REFRESH_TOKEN_SECRET | Used for signing/verifying JWT tokens                  |
+| MONGO_DB_URL         | Used for connecting talawa-api to the mongoDB database |
+| RECAPTCHA_SECRET_KEY | Used for authentication using reCAPTCHA                |
+| MAIL_USERNAME        | Used for mailing service                               |
+| MAIL_PASSWORD        | Used for mailing service                               |
 
-Follow the instructions from [Access/refresh token secrets](#accessrefresh-token-secrets) section up to and including [Google/firebase](#googlefirebase) section to learn about these environment variables and how to set them up.
+Follow the instructions from [Access/refresh token secrets](#accessrefresh-token-secrets) section up to and including [Google/firebase](#googlefirebase) section to learn more about these environment variables and how to set them up.
 
 <br/>
 
