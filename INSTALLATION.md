@@ -16,7 +16,8 @@ This document provides instructions on how to set up and start a running instanc
 8.  [Google/firebase](#googlefirebase)
 9.  [Running talawa-api](#running-talawa-api)
 10. [Accessing talawa-api](#accessing-talawa-api)
-11. [Running tests](#running-tests)
+11. [Changing default talawa-api port](#changing-default-talawa-api-port)
+12. [Running tests](#running-tests)
 
 <br/>
 
@@ -249,7 +250,7 @@ GraphQL endpoint for handling `subscriptions` is this:-
 
 <br/>
 
-## Changing the port on which talawa-api runs
+## Changing default talawa-api port
 
 If port `4000` is not free on your system you can pass a custom environment variable named `PORT` to the script to make it use a different port on your system's localhost. Here's the syntax for it:-
 
