@@ -1,40 +1,24 @@
 # Talawa-api installation
 
-This document provides instructions on how to set up and start a running instance of talawa-api on your local system. The instructions are written to be followed in sequence so make sure to go thorough without skipping any sections. There are two main sections:- [Installation using standard way](#installation-using-standard-way) and [Installation using docker](#installation-using-docker). We recommend following [Installation using standard way](#installation-using-standard-way).
+This document provides instructions on how to set up and start a running instance of talawa-api on your local system. The instructions are written to be followed in sequence so make sure to go through each of them step by step without skipping any sections.
+
 <br/>
 
 # Table of contents
 
-1. [Installation using standard way](#installation-using-standard-way)
-
-   1. [Install node.js](#install-nodejs)
-   2. [Install git](#install-git)
-   3. [Clone this repository](#clone-this-repository)
-   4. [Change directory into the cloned repo](#change-directory-into-the-cloned-repo)
-   5. [Creating .env file](#creating-env-file)
-   6. [Access/refresh token secrets](#accessrefresh-token-secrets)
-   7. [MongoDB](#mongodb)
-   8. [Google/firebase](#googlefirebase)
-   9. [Running talawa-api](#running-talawa-api)
-   10. [Accessing talawa-api](#accessing-talawa-api)
-   11. [Running tests](#running-tests)
+1.  [Install node.js](#install-nodejs)
+2.  [Install git](#install-git)
+3.  [Clone this repository](#clone-this-repository)
+4.  [Change directory into the cloned repo](#change-directory-into-the-cloned-repo)
+5.  [Creating .env file](#creating-env-file)
+6.  [Access/refresh token secrets](#accessrefresh-token-secrets)
+7.  [MongoDB](#mongodb)
+8.  [Google/firebase](#googlefirebase)
+9.  [Running talawa-api](#running-talawa-api)
+10. [Accessing talawa-api](#accessing-talawa-api)
+11. [Running tests](#running-tests)
 
 <br/>
-
-2. [Installation using docker](#installation-using-docker)
-
-   1. [Automatic mongoDB docker container](#automatic-mongodb-docker-container)
-   2. [Setting up .env file](#setting-up-env-file)
-   3. [Building talawa-api docker image](#building-talawa-api-docker-image)
-   4. [Running talawa-api docker container](#running-talawa-api-docker-container)
-   5. [Accessing the automatic mongoDB docker container](#accessing-the-automatic-mongodb-docker-container)
-   6. [Accessing talawa-api docker container](#accessing-talawa-api-docker-container)
-
-<br/>
-
-# Installation using standard way
-
-This is the recommended way to set up talawa-api. Docker comes with its own set of complexities and if you're a beginner you're better off without it.
 
 ## Install node.js
 
@@ -125,7 +109,7 @@ We're listing some common approaches to set up a running instance of mongodb dat
 
 2. `System native database approach:-` You can install mongodb natively on your system and create/connect to the database. Follow the setup guide on official [mongodb docs](https://www.mongodb.com/docs/manual/administration/install-community/) for your respective operating system.
 
-3. `Docker container approach:-` If you are fluent in working with docker you should use this approach. Docker is a great way to manage and run applications without natively installing anything on your system. With this you can set up a mongodb database inside a docker container and manage it as per your will. Follow this [video tutorial](https://www.youtube.com/watch?v=uklyCSKQ1Po) to set up a mongodb docker container.
+3. `Docker container approach:-` If you are fluent in working with docker you should use this approach. Docker is a great way to manage and run applications without natively installing anything on your system. With this you can set up the mongodb database inside a docker container and manage it as per your will. Follow this [video tutorial](https://www.youtube.com/watch?v=uklyCSKQ1Po) to set up a mongodb docker container.
 
 <br/>
 
@@ -217,7 +201,7 @@ We use firebase for mobile app notifications. To configure the notification serv
 
 10. Overwrite the `firebase_options.dart` file if asked so.
 
-11. Copy the keys to `.env` file. For more information on how to set the keys refer to `.env.sample` file.
+11. Copy/paste the keys generated for `iOS` and `android` platforms respectively in `.env` file.
 
 12. Undo the changes made to the `firebase_options.dart` file by pasting the old content from `step 6`.
 
@@ -292,65 +276,3 @@ Talawa-api makes use of `vitest` to run tests because it is much faster than `je
 You can run the tests for talawa-api using this command:-
 
         npm run test
-
-<br/>
-
-# Installation using docker
-
-We've written `docker` and `docker compose` configuration files if you want to run talawa-api inside a docker container.
-
-**NOTE:-** `We are not listing every possible thing you need to know about docker in the following steps. We expect you to have minimum working knowledge with docker if you're using this approach. If you don't know anything about docker it's better to either learn about docker first or just follow the steps mentioned before this section. Also, make sure that you have plenty of free storage on your system as docker downloads a lot of large images.`
-
-<br/>
-
-## Setting up .env file
-
-We have written the `docker` configuration in such a way that a mongodb `docker` container is also started along with talawa-api `docker` container. This is done so you don't have to manually set up a mongodb database and then connect it to the talawa-api `docker` container yourselves.
-
-To make use of the mongodb `docker` container that's automatically started with talawa-api `docker` container copy/paste the following connection string to the variable named `MONGODB_URL` in `.env` file:-
-
-        mongodb://talawa_mongodb:27017/<DATABASE_NAME>?retryWrites=true&w=majority
-
-where `<DATABASE_NAME>` is name of the database you want to use or are using for talawa-api.
-
-To set up the remaining environment variables follow the steps from [Creating .env file](#creating-env-file) section up to and including [Google/firebase](#googlefirebase) section excluding the [MongoDB](#mongodb) section.
-
-<br/>
-
-## Building talawa-api docker image
-
-Run the following command to build the `docker` image for talawa-api:-
-
-        sudo docker-compose build
-
-<br/>
-
-## Running talawa-api docker container
-
-**NOTE:-** `We have mapped talawa-api docker container to port 4000 of your system's localhost. Make sure that port 4000 is free on your system's localhost or you'll get an error.`
-
-To start the talawa-api `docker` container run this command while being in the root directory of cloned talawa-api folder:-
-
-        sudo docker-compose up
-
-This will also start up `mongodb` docker container alongside talawa-api `docker` container.
-
-<br/>
-
-## Accessing the automatic mongoDB docker container
-
-We have mapped the `mongodb container` to port `27017` of your system's localhost if you want to access it. Make sure that port `27017` is free on your system's localhost or you'll get an error. To access this `mongodb` container on your system use this connection string:-
-
-        mongodb://localhost:27017/<DATABASE_NAME>?retryWrites=true&w=majority
-
-where `<DATABASE_NAME>` is name of the database you want to use or are using for talawa-api.
-
-<br/>
-
-## Accessing talawa-api docker container
-
-You can access the running talawa-api `docker` container on your system using this endpoint:-
-
-        http://localhost:4000/
-
-Refer to [Accessing talawa-api](#accessing-talawa-api) section for more information.
