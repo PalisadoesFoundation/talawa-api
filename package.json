@@ -7,7 +7,6 @@
     "build": "tsc --pretty --project tsconfig.build.json",
     "dev": "concurrently  \"tsx watch ./src/server.ts\" \"graphql-codegen --watch\"",
     "lint": "eslint . --fix && echo 'Lint complete.'",
-    "postbuild": "copyfiles --error --up 1 './src/locales/*' ./build",
     "prebuild": "graphql-codegen && rimraf ./build",
     "prod": "cross-env NODE_ENV=production pm2-runtime start ./build/server.js",
     "start": "cross-env pm2-runtime start ./build/server.js --watch",

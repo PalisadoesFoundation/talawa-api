@@ -3,4 +3,4 @@
 build
 coverage
 node_modules
-src/generated
+src/types

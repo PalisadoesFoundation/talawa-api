@@ -1,5 +1,4 @@
 node_modules
-nodemon.json
 .idea
 .env
 images
@@ -9,12 +8,9 @@ images
 yarn.lock
 pnpm-lock.yaml
 
-# We don't want to have code coverage data stored in the repo as it is dynamic
+# These files/folders are dynamic and should not be pushed to the repo.
+# They should be generated on the fly whenever they're needed.
 coverage
-
-# We don't want to push emitted production build of talawa-api to github.
-# Since it will only be needed in CI/CD and production environment it
-# should be generated on the fly at that time.
 build
 
 serviceAccountKey.json
