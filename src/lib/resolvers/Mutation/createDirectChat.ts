@@ -23,7 +23,6 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
   });
 
   // Checks whether currentUser with _id === context.userId exists.
-  // if user data is not there
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
       IN_PRODUCTION !== true
