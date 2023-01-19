@@ -149,7 +149,4 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       })
     );
   });
-  it(`inproduction`async()=>{
-
-  })
 });
