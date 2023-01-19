@@ -18,6 +18,7 @@ This document provides instructions on how to set up and start a running instanc
 10. [Accessing talawa-api](#accessing-talawa-api)
 11. [Changing default talawa-api port](#changing-default-talawa-api-port)
 12. [Running tests](#running-tests)
+13. [Linting code files](#linting-code-files)
 
 <br/>
 
@@ -138,9 +139,11 @@ We use `reCAPTCHA` for authentication. Follow these steps:-
    ![Set up recaptcha page](./image/recaptcha_set_up.webp)
 
 3. Click on `Submit` button.
-4. Copy the generated secret key to variable named `RECAPTCHA_SECRET_KEY` in `.env` file.
+4. Copy the generated `Secret Key` to variable named `RECAPTCHA_SECRET_KEY` in `.env` file.
 
    ![Set up recaptcha page](./image/recaptcha_secret.webp)
+
+5. Save the generated `Site key` as it will be used in `talawa-admin`.
 
 <br/>
 
@@ -277,3 +280,11 @@ Talawa-api makes use of `vitest` to run tests because it is much faster than `je
 You can run the tests for talawa-api using this command:-
 
         npm run test
+
+<br/>
+
+## Linting code files
+
+You can lint your code files using this command:-
+
+        npm run lint
