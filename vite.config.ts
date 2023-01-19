@@ -16,6 +16,7 @@ export default defineConfig({
         "src/config",
         "src/models",
         "src/typeDefs",
+        "src/types",
         "src/constants.ts",
         "src/db.ts",
         "src/server.ts",
