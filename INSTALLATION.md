@@ -121,6 +121,28 @@ Which approach you choose to set up your mongodb database does not matter. What 
 
 <br/>
 
+### Optional:- Managing mongodb database using VSCode extension
+
+This guide is for `VSCode` users to easily manage their `mongoDB` databases:-
+
+1.  Install the offical `MongoDB` extension for `VSCode` named `MongoDB for VS Code`.
+
+    ![Install official mongoDB vscode extension](./image/install_mongodb_vscode_extension.webp)
+
+<br/>
+
+2. Connect your `mongoDB` database to the extension.
+
+   ![Connect your mongoDB database to the extension](./image/connect_extension_to_mongodb_step_1.webp)
+
+    <br/>
+
+   ![Connect your mongoDB database to the extension](./image/connect_extension_to_mongodb_step_2.webp)
+
+3. Now you can manage the database you are using for `talawa-api` through this extension within `VSCode`.
+
+<br/>
+
 ## Google/firebase
 
 You need to have a `google` account to follow the following steps.
@@ -141,7 +163,7 @@ We use `reCAPTCHA` for authentication. Follow these steps:-
 3. Click on `Submit` button.
 4. Copy the generated `Secret Key` to variable named `RECAPTCHA_SECRET_KEY` in `.env` file.
 
-   ![Set up recaptcha page](./image/recaptcha_secret.webp)
+   ![Set up recaptcha page](./image/recaptcha_site_and_secret_key.webp)
 
 5. Save the generated `Site key` as it will be used in `talawa-admin`.
 
