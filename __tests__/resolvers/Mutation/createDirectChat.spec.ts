@@ -10,7 +10,13 @@ import {
 import { MutationCreateDirectChatArgs } from "../../../src/generated/graphqlCodegen";
 import { connect, disconnect } from "../../../src/db";
 import { createDirectChat as createDirectChatResolver } from "../../../src/lib/resolvers/Mutation/createDirectChat";
-import { ORGANIZATION_NOT_FOUND, USER_NOT_FOUND ,IN_PRODUCTION} from "../../../src/constants";
+import {
+  ORGANIZATION_NOT_FOUND,
+  USER_NOT_FOUND,
+  IN_PRODUCTION,
+  USER_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_MESSAGE,
+} from "../../../src/constants";
 import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
@@ -72,10 +78,10 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
 
       await createDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      if ( IN_PRODUCTION !== true) {
+      if (IN_PRODUCTION !== true) {
         expect(error.message).toEqual(USER_NOT_FOUND);
-      }else{
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
+      } else {
+        requestContext.translate(USER_NOT_FOUND_MESSAGE);
       }
     }
   });
@@ -95,12 +101,11 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
 
       await createDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      if ( IN_PRODUCTION !== true) {
+      if (IN_PRODUCTION !== true) {
         expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
-      }else{
-      requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE)
+      } else {
+        requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE);
       }
-      
     }
   });
 
