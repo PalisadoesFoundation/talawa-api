@@ -790,7 +790,7 @@ export type OrganizationInput = {
   isPublic: Scalars['Boolean'];
   location?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
-  tags: Array<InputMaybe<Scalars['String']>>;
+  tags: Array<Scalars['String']>;
   visibleInSearch: Scalars['Boolean'];
 };
 
