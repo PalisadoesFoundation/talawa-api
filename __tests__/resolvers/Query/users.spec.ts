@@ -13,8 +13,9 @@ import {
 } from "../../../src/generated/graphqlCodegen";
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
-import { USER_NOT_FOUND } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import * as mongoose from "mongoose";
 
 let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
 
@@ -27,17 +28,77 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Query -> users", () => {
-  it("throws NotFoundError if no user exists", async () => {
+  it("throws NotFoundError if no user exists and IN_PRODUCTION === false", async () => {
+    const testObjectId = new mongoose.Types.ObjectId();
+
+    vi.doMock("../../../src/constants", async () => {
+      const actualConstants: object = await vi.importActual(
+        "../../../src/constants"
+      );
+      return {
+        ...actualConstants,
+        IN_PRODUCTION: false,
+      };
+    });
+
     try {
       const args: QueryUsersArgs = {
         orderBy: null,
-        where: null,
+        where: {
+          id: testObjectId as unknown as string,
+        },
       };
 
-      await usersResolver?.({}, args, {});
+      const { users: mockedInProductionUserResolver } = await import(
+        "../../../src/lib/resolvers/Query/users"
+      );
+      await mockedInProductionUserResolver?.({}, args, {});
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_FOUND);
     }
+
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
+
+  it("throws NotFoundError if no user exists and IN_PRODUCTION === true", async () => {
+    const testObjectId = new mongoose.Types.ObjectId();
+
+    vi.doMock("../../../src/constants", async () => {
+      const actualConstants: object = await vi.importActual(
+        "../../../src/constants"
+      );
+      return {
+        ...actualConstants,
+        IN_PRODUCTION: true,
+      };
+    });
+
+    const { requestContext } = await import("../../../src/lib/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: QueryUsersArgs = {
+        orderBy: null,
+        where: {
+          id: testObjectId as unknown as string,
+        },
+      };
+
+      const { users: mockedInProductionUserResolver } = await import(
+        "../../../src/lib/resolvers/Query/users"
+      );
+      await mockedInProductionUserResolver?.({}, args, {});
+    } catch (error: any) {
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+    }
+
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
   });
 
   describe("", () => {

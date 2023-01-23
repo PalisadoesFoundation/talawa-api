@@ -1,218 +1,312 @@
-# Setting Up The MongoDB Database
+# Talawa-api installation
 
-A running instance of mongodb and it's connection string is required for making use of talawa-api. We're listing a few common approaches to get a running instance of mongodb database :-
+This document provides instructions on how to set up and start a running instance of talawa-api on your local system. The instructions are written to be followed in sequence so make sure to go through each of them step by step without skipping any sections.
 
-1. Using a hosted(remote) mongodb database :- MongoDB Atlas is the easiest way to get a running instance of mongodb database. We will be making use of mongodb atlas though mongodb can be hosted using other platforms as well. Follow the setup guide on [mongodb atlas docs](https://www.mongodb.com/docs/atlas/getting-started/). If you want to use some other mongodb hosted database please do your own research.
+<br/>
 
-2. Using a mongodb database installed on your local system natively :- Follow the setup guide on [mongodb docs](https://www.mongodb.com/docs/manual/administration/install-community/) for your respective operating system.
+# Table of contents
 
-3. Using a containerized mongodb docker container on your local system :- Follow the setup guide using this [video tutorial](https://www.youtube.com/watch?v=uklyCSKQ1Po).
+1.  [Install node.js](#install-nodejs)
+2.  [Install git](#install-git)
+3.  [Clone this repository](#clone-this-repository)
+4.  [Change directory into the cloned repo](#change-directory-into-the-cloned-repo)
+5.  [Creating .env file](#creating-env-file)
+6.  [Access/refresh token secrets](#accessrefresh-token-secrets)
+7.  [MongoDB](#mongodb)
+8.  [Google/firebase](#googlefirebase)
+9.  [Running talawa-api](#running-talawa-api)
+10. [Accessing talawa-api](#accessing-talawa-api)
+11. [Changing default talawa-api port](#changing-default-talawa-api-port)
+12. [Running tests](#running-tests)
+13. [Linting code files](#linting-code-files)
 
-**Note:** If you are running mongodb on a remote system, either a cloud service or a system under your control, then ensure you have provided the correct access permissions and firewall openings for the VM/server/service where the mongodb is hosted.
+<br/>
 
-Paste the connection string for your database as the value for environment variable named `MONGO_DB_URL` inside the `.env` file present in the root directory of this application.
+## Install node.js
 
-# Talawa-api Installation
+Best way to install and manage `node.js` is making use of node version managers. Two most popular node version managers right now are [fnm](https://github.com/Schniz/fnm) and [nvm](https://github.com/nvm-sh/nvm). We'd recommend `fnm` because it's written in `rust` and is much faster than `nvm`. Install whichever one you want and follow their guide to set up `node.js` on your system.
 
-Talawa API is mainly written and built using `node.js` and `typescript`. We are providing some common approaches to set it up on your system.
+<br/>
 
-## Installation using the standard method
+## Install git
 
-Pre-requisites :-
+Follow the setup guide for `git` on official [git docs](https://git-scm.com/downloads). Basic `git` knowledge is required for open source contribution so make sure you're comfortable with it. [Here's](https://youtu.be/apGV9Kg7ics) a good tutorial to get started with `git` and `github`.
 
-1. A running mongodb database connection string. Refer to `Setting Up The MongoDB Database` section for more information.
+<br/>
 
-2. NodeJS installed on your local system(version 14 or above preferrable). It's best to make use of a node version manager to manage nodejs versions on your system. Two popular node version managers currently are [fnm](https://github.com/Schniz/fnm) and [nvm](https://github.com/nvm-sh/nvm). Follow the setup guide for either of them and install NodeJS.
+## Clone this repository
 
-Follow these steps to get the API running :-
-
-1.  Clone this repo to your local machine :-
+First you need a local copy of talawa-api. Run the following command in the directory of choice on your local system.
 
         git clone https://github.com/PalisadoesFoundation/talawa-api
 
-2.  Change directory to cloned folder :-
+This will download a local copy of talawa-api in that directory.
 
-        cd talawa-api
+<br/>
 
-3.  Install the npm packages required by talawa-api :-
+## Change directory into the cloned repo
 
-        npm install
+Right after cloning the repo you can change the directory of your current `terminal(shell)` to the root directory of cloned repository using this command:-
 
-4.  Talawa-API uses a configuration file named `.env` in the root directory. It is not a part of the repo and you will need to create it. There is a sample configuration file named `.env.sample` in the root directory. Create a new `.env` file by copying the contents of the `.env.sample` file.
+        cd ./talawa-api
+
+**NOTE:-** `All the commands we're going to execute in the following instructions will assume you are in the root directory of the project. If you fail to do so, the commands will not work.`
+
+<br/>
+
+## Creating .env file
+
+A file named `.env` is required in the root directory of talawa-api for storing environment variables used at runtime. It is not a part of the repo and you will have to create it. For a sample of `.env` file there is a file named `.env.sample` in the root directory. Create a new `.env` file by copying the contents of the `.env.sample` into `.env` file.
 
         cp .env.sample .env
 
-5.  Generate an `ACCESS_TOKEN_SECRET` using the `openessl` command below and copy the result to the `ACCESS_TOKEN_SECRET` section of the `.env` file.
+This `.env` file must be populated with the following environment variables for talawa-api to work:-
+
+| Variable             | Description                                            |
+| -------------------- | ------------------------------------------------------ |
+| ACCESS_TOKEN_SECRET  | Used for signing/verifying JWT tokens                  |
+| REFRESH_TOKEN_SECRET | Used for signing/verifying JWT tokens                  |
+| MONGO_DB_URL         | Used for connecting talawa-api to the mongoDB database |
+| RECAPTCHA_SECRET_KEY | Used for authentication using reCAPTCHA                |
+| MAIL_USERNAME        | Used for mailing service                               |
+| MAIL_PASSWORD        | Used for mailing service                               |
+
+Follow the instructions from [Access/refresh token secrets](#accessrefresh-token-secrets) section up to and including [Google/firebase](#googlefirebase) section to learn more about these environment variables and how to set them up.
+
+<br/>
+
+## Access/refresh token secrets
+
+Access and refresh token secrets are used for authentication purposes.
+
+<br/>
+
+### Setting up ACCESS_TOKEN_SECRET in .env file
+
+Run the following command and copy/paste the result to the variable named `ACCESS_TOKEN_SECRET` in `.env` file.
 
         openssl rand -hex 32
 
-6.  Generate an `REFRESH_TOKEN_SECRET` using the `openessl` command below and copy the result to the `REFRESH_TOKEN_SECRET` section of the `.env` file.
+<br/>
+
+### Setting up REFRESH_TOKEN_SECRET in .env file
+
+Run the following command and copy/paste the result to the variable named `REFRESH_TOKEN_SECRET` in `.env` file.
 
         openssl rand -hex 32
 
-7.  Follow the `Setting Up Mongodb Database` section to set up a mongodb database and get a mongodb database connection string. Paste that connection string in `.env` file under the variable named `MONGO_DB_URL`.
+<br/>
 
-8.  Get the google recaptcha secret key from `google-recaptcha-admin` for reCAPTCHA v2 and "I'm not a robot" Checkbox, and copy the key to the `RECAPTCHA_SECRET_KEY` section of the `.env` file.
+## MongoDB
 
-    **Note**: In domains, fill localhost
+Talawa-api makes use of `mongoDB` for its database needs. We make use of `mongoose ODM` to interact with the mongoDB database from within the code.
 
-        Google-recaptcha-admin: https://www.google.com/recaptcha/admin/create
+<br/>
 
-9.  Enter the gmail credentials for sending mails to the users. In `MAIL_USERNAME` enter email address and in `MAIL_PASSWORD` enter app password. To get the app password, follow these steps:
+### Setting up the mongoDB database
 
-    - Go to your Google Account, https://myaccount.google.com/
-    - Select Security.
-    - Under "Signing in to Google," select App Passwords.
-    - At the bottom, choose Select app and choose the app you're using and then Select device and choose the device you’re using and then Generate.
-    - The App Password is the 16-character code in the yellow bar on your device.
-    - Paste that App Password in `MAIL_PASSWORD`.
+We're listing some common approaches to set up a running instance of mongodb database:-
 
-    **Note**: You must setup two factor authentication in order to allow the app password.
+1. `Hosted database approach:-` MongoDB Atlas is the easiest way to get a running instance of mongodb database. It is a hosted(remote) mongodb database provided by mongodb itself. If you're a beginner and don't want too much of a hassle setting up the database you should use this approach. Follow the setup guide on official [mongodb atlas docs](https://www.mongodb.com/docs/atlas/getting-started/). Mongodb Atlas is just one of the many hosted database solutions. If you want to use something else please do your own research.
 
-    For more info refer, https://support.google.com/accounts/answer/185833
+2. `System native database approach:-` You can install mongodb natively on your system and create/connect to the database. Follow the setup guide on official [mongodb docs](https://www.mongodb.com/docs/manual/administration/install-community/) for your respective operating system.
 
-10. When finished, your `.env` file should have the following fields filled in :-
+3. `Docker container approach:-` If you are fluent in working with docker you should use this approach. Docker is a great way to manage and run applications without natively installing anything on your system. With this you can set up the mongodb database inside a docker container and manage it as per your will. Follow this [video tutorial](https://www.youtube.com/watch?v=uklyCSKQ1Po) to set up a mongodb docker container.
 
-    - ACCESS_TOKEN_SECRET
-    - REFRESH_TOKEN_SECRET
-    - MONGO_DB_URL
-    - RECAPTCHA_SECRET_KEY
-    - MAIL_USERNAME
-    - MAIL_PASSWORD
+<br/>
 
-    Please review the contents of the `.env.sample` file for additional details.
+### Setting up MONGODB_URL in .env file
 
-11. Install the required dependencies.
+Which approach you choose to set up your mongodb database does not matter. What matters is the `connection string` to that database using which talawa-api can connect to it. `Connection string` can differ depending on the approach you used to set up your database instance. Please read the official [mongodb docs](https://www.mongodb.com/docs/manual/reference/connection-string/) on `connection string`. Copy/paste this `connection string` to the variable named `MONGO_DB_URL` in `.env` file.
 
-        npm install
+<br/>
 
-12. To test the notification service create a new firebase project:
+### Optional:- Managing mongodb database using VSCode extension
 
-- In the Firebase console, open Settings > [Service Accounts](https://console.firebase.google.com/project/_/settings/serviceaccounts/adminsdk).
+This guide is for `VSCode` users to easily manage their `mongoDB` databases:-
 
-- Click Generate New Private Key, then confirm by clicking Generate Key.
+1.  Install the offical `MongoDB` extension for `VSCode` named `MongoDB for VS Code`.
 
-- Securely store the JSON file containing the key.
+    ![Install official mongoDB vscode extension](./image/install_mongodb_vscode_extension.webp)
 
-- Run the following command to set the key in the environment variable:
+<br/>
 
-  - Linux/macOS: `export GOOGLE_APPLICATION_CREDENTIALS="/home/user/Downloads/service-account-file.json"`
+2. Connect your `mongoDB` database to the extension.
 
-  - Windows: `$env:GOOGLE_APPLICATION_CREDENTIALS="C:\Users\username\Downloads\service-account-file.json"`
+   ![Connect your mongoDB database to the extension](./image/connect_extension_to_mongodb_step_1.webp)
 
-  1.  Install the [Firebase CLI](https://firebase.google.com/docs/cli#install_the_firebase_cli).
-  2.  Copy the `firebase_options.dart` file as it will be modified.
-  3.  Run the following commands in the project directory of talawa mobile app:
+    <br/>
 
-      - `firebase login`
-      - `dart pub global activate flutterfire_cli`
-      - `flutterfire configure`
+   ![Connect your mongoDB database to the extension](./image/connect_extension_to_mongodb_step_2.webp)
 
-  4.  Select the project you created in the Firebase console in step 2.
-  5.  Add iOS and android platforms to the project.
-  6.  Overwrite the `firebase_options.dart` file if asked so.
-  7.  Copy the keys to `.env` file, for how to set keys refer to `.env.sample` file.
-  8.  Undo the changes made to the `firebase_options.dart` file by pasting the old content from step 2.
+3. Now you can manage the database you are using for `talawa-api` through this extension within `VSCode`.
 
-13. The command below will run the talawa-api server in development environment.
+<br/>
+
+## Google/firebase
+
+You need to have a `google` account to follow the following steps.
+
+<br/>
+
+### Setting up RECAPTCHA_SECRET_KEY in .env file
+
+<br/>
+
+We use `reCAPTCHA` for authentication. Follow these steps:-
+
+1. Visit [this](https://www.google.com/recaptcha/admin/create) url.
+2. Fill in the input blocks as shown in the screenshot:-
+
+   ![Set up recaptcha page](./image/recaptcha_set_up.webp)
+
+3. Click on `Submit` button.
+4. Copy the generated `Secret Key` to variable named `RECAPTCHA_SECRET_KEY` in `.env` file.
+
+   ![Set up recaptcha page](./image/recaptcha_site_and_secret_key.webp)
+
+5. Save the generated `Site key` as it will be used in `talawa-admin`.
+
+<br/>
+
+### Setting up MAIL_USERNAME/MAIL_PASSWORD in .env file
+
+**NOTE:-** `Your google account needs to have two factor authentication set up for the following steps to work.`
+
+1.  Go to your [google account page](https://myaccount.google.com/).
+
+2.  Select `Security`.
+
+3.  Under `Signing in to Google` section select `App Passwords`.
+
+4.  Click on `Select app` section and choose `Other(Custom name)`, enter `talawa` as the custom name and press `Generate` button.
+
+5.  Copy the 16 character generated app password to the variable named `MAIL_PASSWORD` in `.env` file.
+
+6.  Copy you usual gmail address to the variable named `MAIL_USERNAME` in `.env` file.
+
+For more info refer to [this](https://support.google.com/accounts/answer/185833).
+
+<br/>
+
+### Firebase notification service
+
+We use firebase for mobile app notifications. To configure the notification service create a new firebase project and follow these steps:-
+
+1.  In the Firebase console, open Settings > [Service Accounts](https://console.firebase.google.com/project/_/settings/serviceaccounts/adminsdk).
+
+2.  Click on `Generate New Private Key`, then confirm by clicking on `Generate Key`.
+
+3.  Securely store the `JSON` file containing the key.
+
+4.  Run the following commands to set the key in the environment variable for your respective operating system:
+
+    1.  `Linux/macOS:`
+
+            export GOOGLE_APPLICATION_CREDENTIALS="/home/user/Downloads/service-account-file.json"
+
+    2.  `Windows:`
+
+            $env:GOOGLE_APPLICATION_CREDENTIALS="C:\Users\username\Downloads\service-account-file.json"
+
+5.  Install the [Firebase CLI](https://firebase.google.com/docs/cli#install_the_firebase_cli).
+
+6.  Copy the `firebase_options.dart` file as it will be modified.
+
+7.  Run the following commands in the project directory of talawa mobile app:
+
+        firebase login
+
+        dart pub global activate flutterfire_cli
+
+        flutterfire configure
+
+8.  Select the project you created in the firebase console.
+
+9.  Add `iOS` and `android` platforms to the project.
+
+10. Overwrite the `firebase_options.dart` file if asked so.
+
+11. Copy/paste the keys generated for `iOS` and `android` platforms respectively in `.env` file.
+
+12. Undo the changes made to the `firebase_options.dart` file by pasting the old content from `step 6`.
+
+<br/>
+
+## Installing required packages/dependencies
+
+Run the following command to install the packages and dependencies required by talawa-api:-
+
+        npm run install
+
+<br/>
+
+## Running talawa-api
+
+Talawa-api development server runs two processes simultaneously in the background. They are:-
+
+1. `GraphQL code generator:-` This watches for changes in the graphQL type definition files and generates corresponding typescript types in the background. This results in good code editor experience with typescript.
+
+2. `Talawa-api server:-` This runs talawa-api directly transpiling the typescript files and running them without emitting as javascript files. It also watches for changes in the code files and restarts the server if it detects any changes.
+
+Run the following command to start talawa-api development server:-
 
         npm run dev
 
-14. To stop the server use this keybind in the terminal where the above command is executed :-
+<br/>
 
-        CTRL + C
+## Accessing talawa-api
 
-## Installation using docker
+By default talawa-api runs on `port 4000` on your system's localhost. It is available on the following endpoint:-
 
-Pre-requisites :-
+        http://localhost:4000/
 
-1. `Docker` installed on your system. Follow the setup guide on [docker docs](https://docs.docker.com/get-docker/).
-2. Free port `27017` on your system's localhost.
+If you navigate to the endpoint you and see a `JSON` response like this it means talawa-api is running successfully:-
 
-**Note:** We are not listing every possible thing you need to know about docker in the following steps. We expect you to have minimum working knowledge with docker if you're using this approach. If you don't know anything about docker it's better to either learn about docker first or go with the steps mentioned in the section `Installation using standard method`. Also docker downloads a lot of large images, if you are short on storage or with slow internet connection prefer using the standard method.
+        {"talawa-version":"v1","status":"healthy"}
 
-Follow these steps to get the api running :-
+GraphQL endpoint for handling `queries` and `mutations` is this:-
 
-1.  Clone this repo to your local machine
+        http://localhost:4000/graphql/
 
-        git clone https://github.com/PalisadoesFoundation/talawa-api
+GraphQL endpoint for handling `subscriptions` is this:-
 
-2.  Change directory to cloned folder :-
+        ws://localhost:4000/graphql/
 
-        cd talawa-api
+<br/>
 
-3.  Talawa-API uses a configuration file named `.env` in the root directory. It is not a part of the repo and you will need to create it. There is a sample configuration file named `.env.sample` in the root directory. Create a new `.env` file by copying the contents of the `.env.sample` file.
+## Changing default talawa-api port
 
-    cp .env.sample .env
+If port `4000` is not free on your system you can pass a custom environment variable named `PORT` to the script to make it use a different port on your system's localhost. Here's the syntax for it:-
 
-4.  Generate an `ACCESS_TOKEN_SECRET` using the `openessl` command below and copy the result to the `ACCESS_TOKEN_SECRET` section of the `.env` file.
+        PORT=<CUSTOM_PORT_VALUE> npm run dev
 
-        openssl rand -hex 32
+where `<CUSTOM_PORT_VALUE>` is whatever value you want the `PORT` to be. Whatever you pass will be substituted as the value for port and talawa-api development server on that port. Syntax wise it looks like-
 
-5.  Generate an `REFRESH_TOKEN_SECRET` using the `openessl` command below and copy the result to the `REFRESH_TOKEN_SECRET` section of the `.env` file.
+        http://localhost:<CUSTOM_PORT_VALUE>/
 
-        openssl rand -hex 32
+For example:-
 
-6.  We have written the docker configuration in such a way that along with talawa-api mongodb is also started inside a docker container. Both of them communicate with each other internally. This is done so you don't have to manually set up a mongodb database and then connect it to the talawa-api docker container yourselves. Within the docker environment this mongodb container is accessible using this connection string :-
+        PORT=5000 npm run dev
 
-        mongodb://talawa_mongodb:27017/<DATABASE_NAME>?retryWrites=true&w=majority
+will make talawa-api accessible on the following endpoint:-
 
-    We have mapped this mongodb docker container to port `27017` of your system's localhost. Make sure that port `27017` is free on your system's localhost or you'll get an error. To access this mongodb container on your system use this connection string :-
+        http://localhost:5000/
 
-        mongodb://localhost:27017/<DATABASE_NAME>?retryWrites=true&w=majority
+<br/>
 
-7.  When finished, your `.env` file should have the following fields filled in.
+## Running tests
 
-    - ACCESS_TOKEN_SECRET
-    - REFRESH_TOKEN_SECRET
-    - MONGO_DB_URL
+Talawa-api makes use of `vitest` to run tests because it is much faster than `jest` and more comfortable to work with.
 
-    Please review the contents of the `.env.sample` file for additional details.
-
-8.  Build the `docker` image that will support talawa-api
-
-        sudo docker-compose build
-
-9.  To start the talawa-api docker container run this command while being in the talawa-api folder directory :-
-
-        sudo docker-compose up
-
-    **Note** :- There is one caveat here. `Docker` might not automatically start each time you reboot your system. To start docker after a system reboot on linux machines run this command :-
-
-        sudo systemctl start docker
-
-    To make docker start automatically after system reboots follow [start docker on boot](https://docs.docker.com/engine/install/linux-postinstall/#configure-docker-to-start-on-boot) guide.
-
-10. To stop the talawa-api docker container run this command while being in the talawa-api folder directory :-
-
-        sudo docker-compose down
-
-## Automated Installation
-
-This method will automate most of the work needed for setting up talawa-api.
-
-Pre-requisites :-
-
-1. A running mongodb database connection string.
-
-2. NodeJS installed on your local system(version 14 or above preferrable). It's best to make use of a node version manager to manage nodejs versions on your system. Two popular node version managers currently are [fnm](https://github.com/Schniz/fnm) and [nvm](https://github.com/nvm-sh/nvm). Follow the setup guide for either of them and install NodeJS.
-
-Follow these steps to get the api running :-
-
-1.  Clone this repo to your local machine using this command :-
-
-         git clone https://github.com/PalisadoesFoundation/talawa-api
-
-2.  Change directory into the cloned folder using this command :-
-
-        cd talawa-api
-
-3.  Run the setup command :-
-
-        npm run setup
-
-# Testing
-
-You can run the tests for talawa-api using this command :-
+You can run the tests for talawa-api using this command:-
 
         npm run test
+
+<br/>
+
+## Linting code files
+
+You can lint your code files using this command:-
+
+        npm run lint
