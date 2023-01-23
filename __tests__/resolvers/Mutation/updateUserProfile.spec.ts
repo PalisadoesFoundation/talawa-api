@@ -61,6 +61,85 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     }
   });
 
+  it(`updates current user's user object when any single argument(email) is given w/0 changing other fields `, async () => {
+    const args: MutationUpdateUserProfileArgs = {
+      data: {
+        email: `email${nanoid().toLowerCase()}@gmail.com`,
+      },
+    };
+
+    const context = {
+      userId: testUser._id,
+    };
+
+    const updateUserProfilePayload = await updateUserProfileResolver?.(
+      {},
+      args,
+      context
+    );
+
+    expect(updateUserProfilePayload).toEqual({
+      ...testUser.toObject(),
+      email: args.data?.email,
+      firstName: "firstName",
+      lastName: "lastName",
+    });
+  });
+
+  it(`updates current user's user object when any single argument(firstName) is given w/0 changing other fields `, async () => {
+    const args: MutationUpdateUserProfileArgs = {
+      data: {
+        firstName: "newFirstName",
+      },
+    };
+
+    const context = {
+      userId: testUser._id,
+    };
+
+    const updateUserProfilePayload = await updateUserProfileResolver?.(
+      {},
+      args,
+      context
+    );
+
+    const testUserobj = await User.findById({ _id: testUser.id });
+
+    expect(updateUserProfilePayload).toEqual({
+      ...testUser.toObject(),
+      email: testUserobj?.email,
+      firstName: args.data?.firstName,
+      lastName: testUser.lastName,
+    });
+  });
+
+  it(`updates current user's user object when any single argument(LastName) is given w/0 changing other fields `, async () => {
+    const args: MutationUpdateUserProfileArgs = {
+      data: {
+        lastName: "newLastName",
+      },
+    };
+
+    const context = {
+      userId: testUser._id,
+    };
+
+    const updateUserProfilePayload = await updateUserProfileResolver?.(
+      {},
+      args,
+      context
+    );
+
+    const testUserobj = await User.findById({ _id: testUser.id });
+
+    expect(updateUserProfilePayload).toEqual({
+      ...testUser.toObject(),
+      email: testUserobj?.email,
+      firstName: testUserobj?.firstName,
+      lastName: args.data?.lastName,
+    });
+  });
+
   it(`updates current user's user object and returns the object`, async () => {
     const args: MutationUpdateUserProfileArgs = {
       data: {
