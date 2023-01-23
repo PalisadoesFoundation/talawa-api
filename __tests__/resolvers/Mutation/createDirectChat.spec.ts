@@ -81,7 +81,9 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       if (IN_PRODUCTION !== true) {
         expect(error.message).toEqual(USER_NOT_FOUND);
       } else {
-        requestContext.translate(USER_NOT_FOUND_MESSAGE);
+        expect(error.message).toEqual(
+          requestContext.translate(USER_NOT_FOUND_MESSAGE)
+        );
       }
     }
   });
@@ -104,7 +106,9 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       if (IN_PRODUCTION !== true) {
         expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
       } else {
-        requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE);
+        expect(error.message).toEqual(
+          requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE)
+        );
       }
     }
   });
@@ -127,7 +131,9 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       if (IN_PRODUCTION !== true) {
         expect(error.message).toEqual(USER_NOT_FOUND);
       } else {
-        requestContext.translate(USER_NOT_FOUND_MESSAGE);
+        expect(error.message).toEqual(
+          requestContext.translate(USER_NOT_FOUND_MESSAGE)
+        );
       }
     }
   });
