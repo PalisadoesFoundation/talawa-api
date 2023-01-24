@@ -61,9 +61,8 @@ def get_directories():
     # list of dir to look in repo for files
     directories = [
         directory,
-        os.path.expanduser(os.path.join(directory, 'lib')),
         os.path.expanduser(os.path.join(directory, 'src')),
-        os.path.expanduser(os.path.join(directory, 'test'))
+        os.path.expanduser(os.path.join(directory, 'tests'))
     ]
     return directories
 

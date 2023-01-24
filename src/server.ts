@@ -15,16 +15,16 @@ import cors from "cors";
 import requestLogger from "morgan";
 import i18n from "i18n";
 import * as database from "./db";
-import { logger, requestContext, requestTracing } from "./lib/libraries";
-import { appConfig } from "./lib/config";
-import { isAuth } from "./lib/middleware";
+import { logger, requestContext, requestTracing } from "./libraries";
+import { appConfig } from "./config";
+import { isAuth } from "./middleware";
 import {
   AuthenticationDirective,
   RoleAuthorizationDirective,
-} from "./lib/directives";
-import { typeDefs } from "./lib/typeDefs";
-import { resolvers } from "./lib/resolvers";
-import { Interface_JwtTokenPayload } from "./lib/utilities";
+} from "./directives";
+import { typeDefs } from "./typeDefs";
+import { resolvers } from "./resolvers";
+import { Interface_JwtTokenPayload } from "./utilities";
 
 const app = express();
 
@@ -39,13 +39,13 @@ const apiLimiter = rateLimit({
 });
 
 i18n.configure({
-  directory: `${__dirname}/locales`,
+  directory: `${__dirname}/../locales`,
   staticCatalog: {
-    en: require("./locales/en.json"),
-    hi: require("./locales/hi.json"),
-    zh: require("./locales/zh.json"),
-    sp: require("./locales/sp.json"),
-    fr: require("./locales/fr.json"),
+    en: require("../locales/en.json"),
+    hi: require("../locales/hi.json"),
+    zh: require("../locales/zh.json"),
+    sp: require("../locales/sp.json"),
+    fr: require("../locales/fr.json"),
   },
   queryParameter: "lang",
   defaultLocale: appConfig.defaultLocale,

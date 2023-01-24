@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { logger } from "./lib/libraries";
+import { logger } from "./libraries";
 
 export const connect = async () => {
   try {
