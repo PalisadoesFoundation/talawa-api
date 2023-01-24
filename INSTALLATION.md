@@ -18,6 +18,7 @@ This document provides instructions on how to set up and start a running instanc
 10. [Accessing talawa-api](#accessing-talawa-api)
 11. [Changing default talawa-api port](#changing-default-talawa-api-port)
 12. [Running tests](#running-tests)
+13. [Linting code files](#linting-code-files)
 
 <br/>
 
@@ -120,6 +121,28 @@ Which approach you choose to set up your mongodb database does not matter. What 
 
 <br/>
 
+### Optional:- Managing mongodb database using VSCode extension
+
+This guide is for `VSCode` users to easily manage their `mongoDB` databases:-
+
+1.  Install the offical `MongoDB` extension for `VSCode` named `MongoDB for VS Code`.
+
+    ![Install official mongoDB vscode extension](./image/install_mongodb_vscode_extension.webp)
+
+<br/>
+
+2. Connect your `mongoDB` database to the extension.
+
+   ![Connect your mongoDB database to the extension](./image/connect_extension_to_mongodb_step_1.webp)
+
+    <br/>
+
+   ![Connect your mongoDB database to the extension](./image/connect_extension_to_mongodb_step_2.webp)
+
+3. Now you can manage the database you are using for `talawa-api` through this extension within `VSCode`.
+
+<br/>
+
 ## Google/firebase
 
 You need to have a `google` account to follow the following steps.
@@ -138,9 +161,11 @@ We use `reCAPTCHA` for authentication. Follow these steps:-
    ![Set up recaptcha page](./image/recaptcha_set_up.webp)
 
 3. Click on `Submit` button.
-4. Copy the generated secret key to variable named `RECAPTCHA_SECRET_KEY` in `.env` file.
+4. Copy the generated `Secret Key` to variable named `RECAPTCHA_SECRET_KEY` in `.env` file.
 
-   ![Set up recaptcha page](./image/recaptcha_secret.webp)
+   ![Set up recaptcha page](./image/recaptcha_site_and_secret_key.webp)
+
+5. Save the generated `Site key` as it will be used in `talawa-admin`.
 
 <br/>
 
@@ -277,3 +302,11 @@ Talawa-api makes use of `vitest` to run tests because it is much faster than `je
 You can run the tests for talawa-api using this command:-
 
         npm run test
+
+<br/>
+
+## Linting code files
+
+You can lint your code files using this command:-
+
+        npm run lint
