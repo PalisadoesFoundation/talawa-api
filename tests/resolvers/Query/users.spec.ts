@@ -2,10 +2,7 @@ import "dotenv/config";
 import { users as usersResolver } from "../../../src/resolvers/Query/users";
 import { Event, Interface_User, Organization, User } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
-import {
-  UserOrderByInput,
-  QueryUsersArgs,
-} from "../../../src/types/generatedGraphQLTypes";
+import { QueryUsersArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
 import { USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
