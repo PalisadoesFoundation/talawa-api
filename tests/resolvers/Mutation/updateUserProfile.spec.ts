@@ -140,6 +140,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     });
   });
 
+
   it(`updates current user's user object and returns the object`, async () => {
     const args: MutationUpdateUserProfileArgs = {
       data: {
