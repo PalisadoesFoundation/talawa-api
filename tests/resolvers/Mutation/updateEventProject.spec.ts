@@ -16,7 +16,11 @@ import {beforeAll, afterAll, describe, it, expect} from "vitest"
 import {
     USER_NOT_FOUND,
     USER_NOT_AUTHORIZED,
+    IN_PRODUCTION,
     EVENT_PROJECT_NOT_FOUND , 
+    EVENT_PROJECT_NOT_FOUND_MESSAGE,
+    EVENT_PROJECT_NOT_FOUND_CODE, 
+    EVENT_PROJECT_NOT_FOUND_PARAM
 } from "../../../src/constants"
 import { updateEventProject } from "../../../src/resolvers/Mutation/updateEventProject";
 let testUser: Interface_User & Document<any, any, Interface_User>
@@ -128,7 +132,12 @@ describe('resolvers -> Mutation -> createEventProject', () => {
             await updateEventProject?.({} , args , context)
 
         } catch (error:any) {
-                expect(error.message).toBe(EVENT_PROJECT_NOT_FOUND)
+            if (IN_PRODUCTION) {
+                expect(error.message).toBe(EVENT_PROJECT_NOT_FOUND_MESSAGE)
+                expect(error.code).toBe(EVENT_PROJECT_NOT_FOUND_CODE);
+            } else {
+                expect(error.message).toBe(EVENT_PROJECT_NOT_FOUND);
+            }
             
         }
     });
@@ -147,6 +156,7 @@ describe('resolvers -> Mutation -> createEventProject', () => {
 
             await updateEventProject?.({} , args , context);
         } catch (error:any) {
+
             expect(error.message).toBe(USER_NOT_AUTHORIZED);
         }
     });
