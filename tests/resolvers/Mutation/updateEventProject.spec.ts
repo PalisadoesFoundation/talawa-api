@@ -12,15 +12,7 @@ import {
 } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { connect, disconnect } from "../../../src/db";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  vi,
-  beforeEach,
-} from "vitest";
+import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
   USER_NOT_FOUND,
   USER_NOT_AUTHORIZED,
@@ -38,12 +30,7 @@ let testEvent: Interface_Event & Document<any, any, Interface_Event>;
 let testEventProject: Interface_EventProject &
   Document<any, any, Interface_EventProject>;
 
-beforeEach(() => {
-  vi.stubGlobal(IN_PRODUCTION, true);
-});
-
 beforeAll(async () => {
-  vi.stubGlobal(IN_PRODUCTION, true);
   await connect();
   testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,
@@ -149,7 +136,6 @@ describe("resolvers -> Mutation -> createEventProject", () => {
 
   it("should throw an error when event is not found", async () => {
     try {
-      vi.stubGlobal(IN_PRODUCTION, false);
       const args = {
         id: Types.ObjectId().toString(),
       };
