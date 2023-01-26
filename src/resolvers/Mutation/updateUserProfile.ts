@@ -43,7 +43,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
         "email"
       );
     }
-  }// Upload file
+  } // Upload file
   let uploadImageObj;
   if (args.file) {
     uploadImageObj = await uploadImage(args.file, null);
@@ -57,11 +57,18 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
       {
         _id: context.userId,
       },
-      { $set: {
+      {
+        $set: {
           email: args.data?.email ? args.data.email : currentUser?.email,
-          firstName: args.data?.firstName ? args.data.firstName : currentUser?.firstName,
-          lastName: args.data?.lastName ? args.data.lastName : currentUser?.lastName,
-          image: uploadImageObj.imageAlreadyInDbPath ? uploadImageObj.imageAlreadyInDbPath : uploadImageObj.newImagePath,
+          firstName: args.data?.firstName
+            ? args.data.firstName
+            : currentUser?.firstName,
+          lastName: args.data?.lastName
+            ? args.data.lastName
+            : currentUser?.lastName,
+          image: uploadImageObj.imageAlreadyInDbPath
+            ? uploadImageObj.imageAlreadyInDbPath
+            : uploadImageObj.newImagePath,
         },
       },
       {
@@ -75,7 +82,6 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
       },
       {
         $set: {
-
           email: args.data?.email ? args.data.email : currentUser?.email,
           firstName: args.data?.firstName
             ? args.data.firstName
@@ -83,7 +89,6 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
           lastName: args.data?.lastName
             ? args.data.lastName
             : currentUser?.lastName,
-
         },
       },
       {
