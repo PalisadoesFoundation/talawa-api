@@ -10,12 +10,14 @@ import {
 } from "../../../src/lib/models"
 import {nanoid} from "nanoid"
 import {connect, disconnect} from "../../../src/db"
-import {beforeAll, afterAll, describe, it, expect} from "vitest"
-import {createEventProject} from "../../../src/lib/resolvers/Mutation/createEventProject"
+import {beforeAll, afterAll, describe, it, expect, vi, afterEach} from "vitest"
 import {
     USER_NOT_FOUND,
     EVENT_NOT_FOUND,
-    USER_NOT_AUTHORIZED
+    USER_NOT_AUTHORIZED,
+    USER_NOT_FOUND_MESSAGE,
+    EVENT_NOT_FOUND_MESSAGE,
+    USER_NOT_AUTHORIZED_MESSAGE
 } from "../../../src/constants"
 
 let testUser: Interface_User & Document<any, any, Interface_User>
@@ -84,6 +86,11 @@ afterAll(async () => {
     await disconnect()
 })
 
+afterEach(async () => {
+    vi.doUnmock("../../../src/constants")
+    vi.resetModules();
+})
+
 describe('resolvers -> Mutation -> createEventProject', () => {
     it('Should throw an error if the user is not found', async () => {
         const args = {
@@ -92,9 +99,42 @@ describe('resolvers -> Mutation -> createEventProject', () => {
             }
         }
 
+        const {createEventProject} = await import("../../../src/lib/resolvers/Mutation/createEventProject")
+
         expect(async () => {
             await createEventProject(null, args, {user: null})
         }).rejects.toThrowError(USER_NOT_FOUND)
+    })
+    it('Should throw an error if the user is not found and IN_PRODUCTION is true', async () => {
+        const { requestContext } = await import("../../../src/lib/libraries");
+        const spy = vi
+            .spyOn(requestContext, "translate")
+            .mockImplementationOnce((message) => `Translated ${message}`);
+        
+        try {
+            const args = {
+                data: {
+                    eventId: null
+                }
+            }
+
+            vi.doMock("../../../src/constants", async () => {
+                const actualConstants: object = await vi.importActual(
+                  "../../../src/constants"
+                );
+                return {
+                  ...actualConstants,
+                  IN_PRODUCTION: true,
+                };
+            });
+
+            const {createEventProject} = await import("../../../src/lib/resolvers/Mutation/createEventProject")
+
+            await createEventProject(null, args, {user: null})
+        } catch(err: any) {
+            expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE)
+            expect(err.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`)
+        }
     })
     it('Should throw an error if the event is not found', async () => {
         const args = {
@@ -107,9 +147,47 @@ describe('resolvers -> Mutation -> createEventProject', () => {
             userId: testUser._id
         }
 
+        const {createEventProject} = await import("../../../src/lib/resolvers/Mutation/createEventProject")
+
         expect(async () => {
             await createEventProject(null, args, context)
         }).rejects.toThrowError(EVENT_NOT_FOUND)
+    })
+    it('Should throw an error if the event is not found and IN_PRODUCTION is true', async () => {
+        const args = {
+            data: {
+                eventId: null
+            }
+        }
+
+        const context = {
+            userId: testUser._id
+        }
+
+        const { requestContext } = await import("../../../src/lib/libraries");
+
+        const spy = vi
+            .spyOn(requestContext, "translate")
+            .mockImplementationOnce((message) => `Translated ${message}`);
+
+        vi.doMock("../../../src/constants", async () => {
+            const actualConstants: object = await vi.importActual(
+              "../../../src/constants"
+            );
+            return {
+              ...actualConstants,
+              IN_PRODUCTION: true,
+            };
+        });
+
+        const {createEventProject} = await import("../../../src/lib/resolvers/Mutation/createEventProject")
+
+        try {
+            await createEventProject(null, args, context)
+        } catch(error: any) {
+            expect(spy).toBeCalledWith(EVENT_NOT_FOUND_MESSAGE)
+            expect(error.message).toEqual(`Translated ${EVENT_NOT_FOUND_MESSAGE}`)
+        }
     })
     it('Should throw an error if the user is not an admin of the event', async () => {
         const args = {
@@ -122,14 +200,53 @@ describe('resolvers -> Mutation -> createEventProject', () => {
             userId: testUser._id
         }
 
+        const {createEventProject} = await import("../../../src/lib/resolvers/Mutation/createEventProject")
+
         expect(async () => {
             await createEventProject(null, args, context)
         }).rejects.toThrowError(USER_NOT_AUTHORIZED)
+    })
+    it('Should throw an error if the user is not an admin of the event and IN_PRODUCTION is true', async () => {
+        const args = {
+            data: {
+                eventId: testEvent._id
+            }
+        }
+
+        const context = {
+            userId: testUser._id
+        }
+
+        const { requestContext } = await import("../../../src/lib/libraries");
+
+        const spy = vi
+            .spyOn(requestContext, "translate")
+            .mockImplementationOnce((message) => `Translated ${message}`);
+
+        vi.doMock("../../../src/constants", async () => {
+            const actualConstants: object = await vi.importActual(
+              "../../../src/constants"
+            );
+            return {
+              ...actualConstants,
+              IN_PRODUCTION: true,
+            };
+        });
+
+        const {createEventProject} = await import("../../../src/lib/resolvers/Mutation/createEventProject")
+
+        try {
+            await createEventProject(null, args, context)
+        } catch(error: any) {
+            expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE)
+            expect(error.message).toEqual(`Translated ${USER_NOT_AUTHORIZED_MESSAGE}`)
+        }
     })
     it('Should create a project', async () => {
         const context = {
             userId: testAdminUser._id
         }
+
         const args = {
             data: {
                 eventId: testEvent._id,
@@ -140,6 +257,7 @@ describe('resolvers -> Mutation -> createEventProject', () => {
             },
         }
 
+        const {createEventProject} = await import("../../../src/lib/resolvers/Mutation/createEventProject")
 
         const result = await createEventProject(null, args, context)
 
