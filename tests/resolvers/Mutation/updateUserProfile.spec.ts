@@ -4,7 +4,7 @@ import { Interface_User, User } from "../../../src/models";
 import { MutationUpdateUserProfileArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { updateUserProfile as updateUserProfileResolver } from "../../../src/resolvers/Mutation/updateUserProfile";
-import { USER_NOT_AUTHORIZED_MESSAGE, USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import { USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
 import { nanoid } from "nanoid";
 import {
   beforeAll,
@@ -57,7 +57,6 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     }
   });
 
-
   it(`throws NotFoundError if no user exists with _id === context.userId // IN_PRODUCTION=true`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
@@ -65,7 +64,6 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
 
-  
     try {
       const args: MutationUpdateUserProfileArgs = {
         data: {},
@@ -84,9 +82,8 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
           IN_PRODUCTION: true,
         };
       });
-      const { updateUserProfile: updateUserProfileResolverUserError } = await import(
-        "../../../src/resolvers/Mutation/updateUserProfile"
-      );
+      const { updateUserProfile: updateUserProfileResolverUserError } =
+        await import("../../../src/resolvers/Mutation/updateUserProfile");
       await updateUserProfileResolverUserError?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_MESSAGE);
@@ -121,7 +118,6 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
 
-  
     try {
       const args: MutationUpdateUserProfileArgs = {
         data: {
@@ -142,16 +138,12 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
           IN_PRODUCTION: true,
         };
       });
-      const { updateUserProfile: updateUserProfileResolverEmailError } = await import(
-        "../../../src/resolvers/Mutation/updateUserProfile"
-      );
+      const { updateUserProfile: updateUserProfileResolverEmailError } =
+        await import("../../../src/resolvers/Mutation/updateUserProfile");
       await updateUserProfileResolverEmailError?.({}, args, context);
-   
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith("email.alreadyExists");
-      expect(error.message).toEqual(
-        `Translated ${"email.alreadyExists"}`
-      );
+      expect(error.message).toEqual(`Translated ${"email.alreadyExists"}`);
     }
   });
 
