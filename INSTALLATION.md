@@ -267,16 +267,9 @@ We use firebase for mobile app notifications. To configure the notification serv
 
 ## Installing required packages/dependencies
 
-We suggest you use one of two ways to install the packages and dependencies required by talawa-api:
-
-1. Using `npm`
+Install the required node packages required by `talawa-api` using the command:
 
        npm run install
-
-1. Using `fnm`
-
-       node --version > .node-version
-       fnm install
 
 <br/>
 
