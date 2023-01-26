@@ -7,7 +7,7 @@ import {
     Interface_Organization,
     Event,
     Interface_Event,
-} from "../../../src/lib/models"
+} from "../../../src/models"
 import {nanoid} from "nanoid"
 import {connect, disconnect} from "../../../src/db"
 import {beforeAll, afterAll, describe, it, expect, vi, afterEach} from "vitest"
@@ -99,14 +99,14 @@ describe('resolvers -> Mutation -> createEventProject', () => {
             }
         }
 
-        const {createEventProject} = await import("../../../src/lib/resolvers/Mutation/createEventProject")
+        const {createEventProject} = await import("../../../src/resolvers/Mutation/createEventProject")
 
         expect(async () => {
             await createEventProject(null, args, {user: null})
         }).rejects.toThrowError(USER_NOT_FOUND)
     })
     it('Should throw an error if the user is not found and IN_PRODUCTION is true', async () => {
-        const { requestContext } = await import("../../../src/lib/libraries");
+        const { requestContext } = await import("../../../src/libraries");
         const spy = vi
             .spyOn(requestContext, "translate")
             .mockImplementationOnce((message) => `Translated ${message}`);
@@ -128,7 +128,7 @@ describe('resolvers -> Mutation -> createEventProject', () => {
                 };
             });
 
-            const {createEventProject} = await import("../../../src/lib/resolvers/Mutation/createEventProject")
+            const {createEventProject} = await import("../../../src/resolvers/Mutation/createEventProject")
 
             await createEventProject(null, args, {user: null})
         } catch(err: any) {
@@ -147,7 +147,7 @@ describe('resolvers -> Mutation -> createEventProject', () => {
             userId: testUser._id
         }
 
-        const {createEventProject} = await import("../../../src/lib/resolvers/Mutation/createEventProject")
+        const {createEventProject} = await import("../../../src/resolvers/Mutation/createEventProject")
 
         expect(async () => {
             await createEventProject(null, args, context)
@@ -164,7 +164,7 @@ describe('resolvers -> Mutation -> createEventProject', () => {
             userId: testUser._id
         }
 
-        const { requestContext } = await import("../../../src/lib/libraries");
+        const { requestContext } = await import("../../../src/libraries");
 
         const spy = vi
             .spyOn(requestContext, "translate")
@@ -180,7 +180,7 @@ describe('resolvers -> Mutation -> createEventProject', () => {
             };
         });
 
-        const {createEventProject} = await import("../../../src/lib/resolvers/Mutation/createEventProject")
+        const {createEventProject} = await import("../../../src/resolvers/Mutation/createEventProject")
 
         try {
             await createEventProject(null, args, context)
@@ -200,7 +200,7 @@ describe('resolvers -> Mutation -> createEventProject', () => {
             userId: testUser._id
         }
 
-        const {createEventProject} = await import("../../../src/lib/resolvers/Mutation/createEventProject")
+        const {createEventProject} = await import("../../../src/resolvers/Mutation/createEventProject")
 
         expect(async () => {
             await createEventProject(null, args, context)
@@ -217,7 +217,7 @@ describe('resolvers -> Mutation -> createEventProject', () => {
             userId: testUser._id
         }
 
-        const { requestContext } = await import("../../../src/lib/libraries");
+        const { requestContext } = await import("../../../src/libraries");
 
         const spy = vi
             .spyOn(requestContext, "translate")
@@ -233,7 +233,7 @@ describe('resolvers -> Mutation -> createEventProject', () => {
             };
         });
 
-        const {createEventProject} = await import("../../../src/lib/resolvers/Mutation/createEventProject")
+        const {createEventProject} = await import("../../../src/resolvers/Mutation/createEventProject")
 
         try {
             await createEventProject(null, args, context)
@@ -257,7 +257,7 @@ describe('resolvers -> Mutation -> createEventProject', () => {
             },
         }
 
-        const {createEventProject} = await import("../../../src/lib/resolvers/Mutation/createEventProject")
+        const {createEventProject} = await import("../../../src/resolvers/Mutation/createEventProject")
 
         const result = await createEventProject(null, args, context)
 
