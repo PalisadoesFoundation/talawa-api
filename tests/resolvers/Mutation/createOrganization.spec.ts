@@ -37,6 +37,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
           visibleInSearch: true,
           apiUrl: "apiUrl",
           location: "location",
+          tags: ["tag1", "tag2"],
         },
       };
 
@@ -59,6 +60,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         visibleInSearch: true,
         apiUrl: "apiUrl",
         location: "location",
+        tags: ["tag1", "tag2"],
       },
     };
 
@@ -83,6 +85,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         creator: testUser._id,
         admins: [testUser._id],
         members: [testUser._id],
+        tags: ["tag1", "tag2"],
       })
     );
 
