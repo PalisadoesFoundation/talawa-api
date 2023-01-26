@@ -15,7 +15,6 @@ import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import { nanoid } from "nanoid";
-import shortid from "shortid";
 import {
   beforeAll,
   afterAll,
@@ -63,12 +62,9 @@ beforeAll(async () => {
       },
     }
   );
-
-  vi.spyOn(shortid, "generate").mockReturnValue("23TplPdS");
 });
 
 afterAll(async () => {
-  vi.spyOn(shortid, "generate").mockRestore();
   await disconnect();
 });
 
@@ -268,10 +264,8 @@ describe("resolvers -> Mutation -> createPost", () => {
       createReadStream: {},
     };
 
-    const id = shortid.generate();
-
     const returnImageFile = {
-      newImagePath: `images/${id}-${newImageFile.filename}`,
+      newImagePath: "/testImage",
       imageAlreadyInDbPath: "",
     };
 
