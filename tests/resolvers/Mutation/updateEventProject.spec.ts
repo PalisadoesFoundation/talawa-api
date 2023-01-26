@@ -12,7 +12,7 @@ import {
 } from '../../../src/models'
 import {nanoid} from "nanoid"
 import {connect, disconnect} from "../../../src/db"
-import {beforeAll, afterAll, describe, it, expect} from "vitest"
+import {beforeAll, afterAll, describe, it, expect, vi, beforeEach} from "vitest"
 import {
     USER_NOT_FOUND,
     USER_NOT_AUTHORIZED,
@@ -29,9 +29,13 @@ let testAdminUser: Interface_User & Document<any, any, Interface_User>
 let testEvent: Interface_Event & Document<any, any, Interface_Event>
 let testEventProject: Interface_EventProject&Document<any , any , Interface_EventProject>
 
-beforeAll(async () => {
-    await connect()
+beforeEach(()=>{
+    vi.stubGlobal(IN_PRODUCTION , true);
+})
 
+beforeAll(async () => {
+    vi.stubGlobal(IN_PRODUCTION , true);
+    await connect()
     testUser = await User.create({
         email: `email${nanoid().toLowerCase()}@gmail.com`,
         password: "password",
@@ -39,7 +43,6 @@ beforeAll(async () => {
         lastName: "lastName",
         appLanguageCode: "en",
     })
-
     testAdminUser = await User.create({
         email: `email${nanoid().toLowerCase()}@gmail.com`,
         password: "password",
@@ -135,11 +138,32 @@ describe('resolvers -> Mutation -> createEventProject', () => {
             if (IN_PRODUCTION) {
                 expect(error.message).toBe(EVENT_PROJECT_NOT_FOUND_MESSAGE)
                 expect(error.code).toBe(EVENT_PROJECT_NOT_FOUND_CODE);
-            } else {
-                expect(error.message).toBe(EVENT_PROJECT_NOT_FOUND);
+                
             }
             
         }
+        
+    });
+
+    it('should throw an error when event is not found', async () => {
+        try {
+
+            vi.stubGlobal(IN_PRODUCTION , false);
+            const args = {
+                id: Types.ObjectId().toString()
+            }
+
+            const context = {
+                userId : testUser.id
+            };
+
+            await updateEventProject?.({} , args , context)
+            
+        } catch (error:any) {
+            expect(error.message).toBe(EVENT_PROJECT_NOT_FOUND);
+            
+        }
+        
     });
 
     it('should throw an error if user is not admin of the event', async () => {
