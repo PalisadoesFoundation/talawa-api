@@ -256,10 +256,28 @@ We use firebase for mobile app notifications. To configure the notification serv
 1. Add the parameters in the `static const FirebaseOptions android = FirebaseOptions` section of the `firebase_options.dart` file to the Talawa API `.env` file under the `androidFirebaseOptions` heading. 
    1. Replace any parameters that are already there in that section.
    1. Remove any trailing commas on the lines you have added.
+   1. Remove any leading spaces on the lines you have added.
+   1. The final result in the `.env` file should look like this
+
+                apiKey: '9f6297b283db701dab7766c993c48b',
+                appId: '1:261699118608:android:366ff7dbdfba5c5a9e8392',
+                messagingSenderId: '261699118608',
+                projectId: 'talawa-thingy',
+                storageBucket: 'talawa-thingy.appspot.com',
 
 1. Add the parameters in the `static const FirebaseOptions ios = FirebaseOptions` section of the `firebase_options.dart` file to the Talawa API `.env` file under the `iosFirebaseOptions` heading. Replace any paramters that are already there.
    1. Replace any parameters that are already there in that section.
    1. Remove any trailing commas on the lines you have added.
+   1. Remove any leading spaces on the lines you have added.
+   1. The final result in the `.env` file should look like this
+
+                apiKey: 'c2d283aa45f4e858c9cbfe32c58c67',
+                appId: '1:261699118608:ios:1babbb3c07b8461ebdcb2',
+                messagingSenderId: '261699118608',
+                projectId: 'talawa-thingy',
+                storageBucket: 'talawa-thingy.appspot.com',
+                iosClientId: '261699118608-d519b739e43c6214374c0da62feaef.apps.googleusercontent.com',
+                iosBundleId: 'com.example.talawa',    
 
 1. Undo the changes made to the `firebase_options.dart` file by overwriting it with the version you saved at the beginning of this section.
 
