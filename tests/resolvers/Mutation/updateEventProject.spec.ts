@@ -12,14 +12,22 @@ import {
 } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { connect, disconnect } from "../../../src/db";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  vi,
+  afterEach,
+} from "vitest";
 import {
   USER_NOT_FOUND,
   USER_NOT_AUTHORIZED,
-  IN_PRODUCTION,
   EVENT_PROJECT_NOT_FOUND,
   EVENT_PROJECT_NOT_FOUND_MESSAGE,
-  EVENT_PROJECT_NOT_FOUND_CODE,
+  USER_NOT_FOUND_MESSAGE,
+  USER_NOT_AUTHORIZED_MESSAGE,
 } from "../../../src/constants";
 import { updateEventProject } from "../../../src/resolvers/Mutation/updateEventProject";
 let testUser: Interface_User & Document<any, any, Interface_User>;
@@ -97,7 +105,12 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> createEventProject", () => {
-  it("Should throw an error if the user is not found", async () => {
+  afterEach(() => {
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
+
+  it("Should throw an error if the user is not found /IN_PRODUCTION=false ", async () => {
     try {
       const args = {
         data: {
@@ -108,6 +121,15 @@ describe("resolvers -> Mutation -> createEventProject", () => {
       const context = {
         userId: Types.ObjectId().toString(),
       };
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+          IN_PRODUCTION: false,
+        };
+      });
 
       await updateEventProject?.({}, args, context);
     } catch (error: any) {
@@ -115,26 +137,43 @@ describe("resolvers -> Mutation -> createEventProject", () => {
     }
   });
 
-  it("should throw an error when event is not found", async () => {
+  it("Should throw an error if the user is not found /IN_PRODUCTION=true ", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
     try {
       const args = {
-        id: Types.ObjectId().toString(),
+        data: {
+          eventId: null,
+        },
       };
 
       const context = {
-        userId: testUser.id,
+        userId: Types.ObjectId().toString(),
       };
-
-      await updateEventProject?.({}, args, context);
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+          IN_PRODUCTION: true,
+        };
+      });
+      const { updateEventProject: updateEventProjectResolver } = await import(
+        "../../../src/resolvers/Mutation/updateEventProject"
+      );
+      await updateEventProjectResolver?.({}, args, context);
     } catch (error: any) {
-      if (IN_PRODUCTION) {
-        expect(error.message).toBe(EVENT_PROJECT_NOT_FOUND_MESSAGE);
-        expect(error.code).toBe(EVENT_PROJECT_NOT_FOUND_CODE);
-      }
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
     }
   });
 
-  it("should throw an error when event is not found", async () => {
+  it("should throw an error when event is not found / IN_PRODUCTION= false", async () => {
     try {
       const args = {
         id: Types.ObjectId().toString(),
@@ -143,6 +182,15 @@ describe("resolvers -> Mutation -> createEventProject", () => {
       const context = {
         userId: testUser.id,
       };
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+          IN_PRODUCTION: false,
+        };
+      });
 
       await updateEventProject?.({}, args, context);
     } catch (error: any) {
@@ -150,7 +198,44 @@ describe("resolvers -> Mutation -> createEventProject", () => {
     }
   });
 
-  it("should throw an error if user is not admin of the event", async () => {
+  it("should throw an error when event is not found / IN_PRODUCTION=true", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args = {
+        id: Types.ObjectId().toString(),
+      };
+
+      const context = {
+        userId: testUser.id,
+      };
+
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+          IN_PRODUCTION: true,
+        };
+      });
+      const { updateEventProject: updateEventProjectResolver } = await import(
+        "../../../src/resolvers/Mutation/updateEventProject"
+      );
+      await updateEventProjectResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenLastCalledWith(EVENT_PROJECT_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${EVENT_PROJECT_NOT_FOUND_MESSAGE}`
+      );
+    }
+  });
+
+  it("should throw an error if user is not admin of the event // IN_PRODUCTION=false", async () => {
     try {
       const args = {
         id: testEventProject.id.toString(),
@@ -162,6 +247,41 @@ describe("resolvers -> Mutation -> createEventProject", () => {
       await updateEventProject?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toBe(USER_NOT_AUTHORIZED);
+    }
+  });
+
+  it("should throw an error if user is not admin of the event // IN_PRODUCTION=true", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args = {
+        id: testEventProject.id.toString(),
+      };
+      const context = {
+        userId: testUser._id,
+      };
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+          IN_PRODUCTION: true,
+        };
+      });
+      const { updateEventProject: updateEventProjectResolver } = await import(
+        "../../../src/resolvers/Mutation/updateEventProject"
+      );
+      await updateEventProjectResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
+      );
     }
   });
 
