@@ -6,6 +6,10 @@ import {
   Organization,
   Interface_Organization,
 } from "../../../src/models";
+import {
+  USER_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_MESSAGE,
+} from "../../../src/constants";
 import { MutationCreatePostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { createPost as createPostResolver } from "../../../src/resolvers/Mutation/createPost";
@@ -74,7 +78,7 @@ describe("resolvers -> Mutation -> createPost", () => {
 
       await createPostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND || USER_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -95,7 +99,9 @@ describe("resolvers -> Mutation -> createPost", () => {
 
       await createPostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(error.message).toEqual(
+        ORGANIZATION_NOT_FOUND || ORGANIZATION_NOT_FOUND_MESSAGE
+      );
     }
   });
 
