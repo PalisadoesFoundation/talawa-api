@@ -207,11 +207,13 @@ We use firebase for mobile app notifications. To configure the notification serv
 
 1. Click on `Generate New Private Key` button
 
-1. Confirm by clicking on `Generate Key`. This will automatically download the keys in your browser.
+1. Confirm by clicking on `Generate Key`. This will automatically download the private keys in your browser.
 
-1. Securely store the `JSON` file containing the key. These will be used in the next section.
+1. Securely store the `JSON` file containing the private key. These will be used in the next section.
 
 ### Apply the Firebase Keys to the Talawa Mobile App
+
+The key generated in the previous step is in a format suitable for use in a mobile app. We need to convert it for use by the API. This will require you to do some work in the talawa repository to do the necessary conversion. The resulting output will be stored in a `lib/firebase_options.dart` file. Some of the contents of this file will then need to be added to the API's `.env` file. Here we go.
 
 1. Clone the talawa mobile app in a separate directory that is not under your Talawa-API directory. 
 
