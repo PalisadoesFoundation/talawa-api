@@ -4,7 +4,7 @@ import { Interface_User, User } from "../../../src/models";
 import { MutationUpdateUserProfileArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { updateUserProfile as updateUserProfileResolver } from "../../../src/resolvers/Mutation/updateUserProfile";
-import { USER_NOT_FOUND } from "../../../src/constants";
+import { USER_NOT_AUTHORIZED_MESSAGE, USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
 import { nanoid } from "nanoid";
 import {
   beforeAll,
@@ -55,6 +55,45 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     }
   });
 
+
+  it(`throws NotFoundError if no user exists with _id === context.userId // IN_PRODUCTION=true`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+  
+    try {
+      const args: MutationUpdateUserProfileArgs = {
+        data: {},
+      };
+
+      const context = {
+        userId: Types.ObjectId().toString(),
+      };
+
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+          IN_PRODUCTION: true,
+        };
+      });
+      const { updateUserProfile: updateUserProfileResolverUserError } = await import(
+        "../../../src/resolvers/Mutation/updateUserProfile"
+      );
+      await updateUserProfileResolverUserError?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_MESSAGE}`
+      );
+    }
+  });
+
   it(`throws ConflictError if args.data.email is already registered for another user'`, async () => {
     try {
       const args: MutationUpdateUserProfileArgs = {
@@ -70,6 +109,47 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       await updateUserProfileResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual("Email already exists");
+    }
+  });
+
+  it(`throws ConflictError if args.data.email is already registered for another user'// IN_PRODUCTION=true `, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+  
+    try {
+      const args: MutationUpdateUserProfileArgs = {
+        data: {
+          email: testUser.email,
+        },
+      };
+
+      const context = {
+        userId: testUser._id,
+      };
+
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+          IN_PRODUCTION: true,
+        };
+      });
+      const { updateUserProfile: updateUserProfileResolverEmailError } = await import(
+        "../../../src/resolvers/Mutation/updateUserProfile"
+      );
+      await updateUserProfileResolverEmailError?.({}, args, context);
+   
+    } catch (error: any) {
+      expect(spy).toHaveBeenLastCalledWith("email.alreadyExists");
+      expect(error.message).toEqual(
+        `Translated ${"email.alreadyExists"}`
+      );
     }
   });
 
