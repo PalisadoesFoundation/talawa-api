@@ -189,55 +189,94 @@ For more info refer to [this](https://support.google.com/accounts/answer/185833)
 
 <br/>
 
-### Firebase notification service
+### Generate Firebase Keys for the Talawa Notification Service
 
 We use firebase for mobile app notifications. To configure the notification service create a new firebase project and follow these steps:-
 
-1.  In the Firebase console, open Settings > [Service Accounts](https://console.firebase.google.com/project/_/settings/serviceaccounts/adminsdk).
+1. Create a new Firebase project for Talawa-API
 
-2.  Click on `Generate New Private Key`, then confirm by clicking on `Generate Key`.
+1. When created you will automatically enter the project's console area
 
-3.  Securely store the `JSON` file containing the key.
+1. Click on the settings icon beside the `Project Overview` heading
 
-4.  Run the following commands to set the key in the environment variable for your respective operating system:
+1. Click on `Project Settings`
+
+1. Click on the `Service Accounts` tab
+
+1. Click on the `Node.js` radio button
+
+1. Click on `Generate New Private Key` button
+
+1. Confirm by clicking on `Generate Key`. This will automatically download the keys in your browser.
+
+1. Securely store the `JSON` file containing the key. These will be used in the next section.
+
+### Apply the Firebase Keys to the Talawa Mobile App
+
+1. Clone the talawa mobile app in a separate directory that is not under your Talawa-API directory. 
+
+1. Enter that directory as you will need to edit files there
+
+1.  Run the following commands to set the key in the environment variable for your respective operating system:
 
     1.  `Linux/macOS:`
 
-            export GOOGLE_APPLICATION_CREDENTIALS="/home/user/Downloads/service-account-file.json"
+            export GOOGLE_APPLICATION_CREDENTIALS="/PATH/TO/JSON/FILE/filename.json"
 
-    2.  `Windows:`
+    1.  `Windows:`
 
-            $env:GOOGLE_APPLICATION_CREDENTIALS="C:\Users\username\Downloads\service-account-file.json"
+            $env:GOOGLE_APPLICATION_CREDENTIALS="C:\PATH\TO\JSON\FILE\filename.json"
 
-5.  Install the [Firebase CLI](https://firebase.google.com/docs/cli#install_the_firebase_cli).
+1.  Install the [Firebase CLI](https://firebase.google.com/docs/cli#install_the_firebase_cli).
 
-6.  Copy the `firebase_options.dart` file as it will be modified.
+1.  Save the origintal copy the `lib/firebase_options.dart` file as it will be modified.
 
-7.  Run the following commands in the project directory of talawa mobile app:
+1.  Run the following commands in the project directory of talawa mobile app:
 
         firebase login
 
         dart pub global activate flutterfire_cli
 
-        flutterfire configure
+1. Run any commands about exporting variables from the previous `dart` command.
 
-8.  Select the project you created in the firebase console.
+1. Run the following command to configure the application for Firebase
 
-9.  Add `iOS` and `android` platforms to the project.
+       flutterfire configure
 
-10. Overwrite the `firebase_options.dart` file if asked so.
+1.  Select the project you created in the firebase console.
 
-11. Copy/paste the keys generated for `iOS` and `android` platforms respectively in `.env` file.
+1.  Add `iOS` and `android` platforms to the project.
 
-12. Undo the changes made to the `firebase_options.dart` file by pasting the old content from `step 6`.
+1. Overwrite the `firebase_options.dart` file if asked so.
+
+1. The command will generate keys for the `iOS` and `android` platforms respectively and place them in the `firebase_options.dart` file.
+
+1. Edit the `firebase_options.dart` file.
+
+1. Add the parameters in the `static const FirebaseOptions android = FirebaseOptions` section of the `firebase_options.dart` file to the Talawa API `.env` file under the `androidFirebaseOptions` heading. 
+   1. Replace any parameters that are already there in that section.
+   1. Remove any trailing commas on the lines you have added.
+
+1. Add the parameters in the `static const FirebaseOptions ios = FirebaseOptions` section of the `firebase_options.dart` file to the Talawa API `.env` file under the `iosFirebaseOptions` heading. Replace any paramters that are already there.
+   1. Replace any parameters that are already there in that section.
+   1. Remove any trailing commas on the lines you have added.
+
+1. Undo the changes made to the `firebase_options.dart` file by overwriting it with the version you saved at the beginning of this section.
 
 <br/>
 
 ## Installing required packages/dependencies
 
-Run the following command to install the packages and dependencies required by talawa-api:-
+We suggest you use one of two ways to install the packages and dependencies required by talawa-api:
 
-        npm run install
+1. Using `npm`
+
+       npm run install
+
+1. Using `fnm`
+
+       node --version > .node-version
+       fnm install
 
 <br/>
 
