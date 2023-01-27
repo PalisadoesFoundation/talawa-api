@@ -91,7 +91,52 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
       expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
     }
   });
-  it(`updates organization's image and returns the updated organization`, async () => {
+  it(`updates organization's image with the old image and returns the updated organization`, async () => {
+    await Organization.updateOne(
+      {
+        _id: testOrganization._id,
+      },
+      {
+        $set: {
+          image: testImagePath,
+        },
+      }
+    );
+    vi.spyOn(uploadImage, "uploadImage").mockImplementationOnce(
+      async (newImagePath: any, imageAlreadyInDbPath: any) => ({
+        newImagePath,
+        imageAlreadyInDbPath,
+      })
+    );
+    const args: MutationAddOrganizationImageArgs = {
+      organizationId: testOrganization.id,
+      file: testImagePath,
+    };
+    const context = {
+      userId: testUser._id,
+    };
+    const addOrganizationImagePayload = await addOrganizationImageResolver?.(
+      {},
+      args,
+      context
+    );
+    const updatedTestOrganization = await Organization.findOne({
+      _id: testOrganization._id,
+    }).lean();
+    expect(addOrganizationImagePayload).toEqual(updatedTestOrganization);
+    expect(addOrganizationImagePayload?.image).toEqual(testImagePath);
+  });
+  it(`updates organization's image with the new image and returns the updated organization`, async () => {
+    await Organization.updateOne(
+      {
+        _id: testOrganization._id,
+      },
+      {
+        $unset: {
+          image: 1,
+        },
+      }
+    );
     vi.spyOn(uploadImage, "uploadImage").mockImplementationOnce(
       async (newImagePath: any, imageAlreadyInDbPath: any) => ({
         newImagePath,
