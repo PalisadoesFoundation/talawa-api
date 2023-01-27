@@ -196,9 +196,6 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
     const context = {
       userId: testUser._id,
     };
-    // const { addOrganizationImage } = await import(
-    //   "../../../src/resolvers/Mutation/addOrganizationImage"
-    // );
     const addOrganizationImagePayload = await addOrganizationImageResolver?.(
       {},
       args,
@@ -234,9 +231,6 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
     const context = {
       userId: testUser._id,
     };
-    // const { addOrganizationImage } = await import(
-    //   "../../../src/resolvers/Mutation/addOrganizationImage"
-    // );
     const addOrganizationImagePayload = await addOrganizationImageResolver?.(
       {},
       args,
