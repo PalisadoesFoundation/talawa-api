@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck, uploadImage } from "../../utilities";
