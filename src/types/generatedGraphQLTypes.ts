@@ -787,6 +787,7 @@ export type OrganizationInput = {
   apiUrl?: InputMaybe<Scalars['String']>;
   attendees?: InputMaybe<Scalars['String']>;
   description: Scalars['String'];
+  image?: InputMaybe<Scalars['String']>;
   isPublic: Scalars['Boolean'];
   location?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
