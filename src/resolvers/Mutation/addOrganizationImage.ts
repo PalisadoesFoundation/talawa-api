@@ -51,7 +51,6 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
 
     // Upload Image
     const uploadImageObj = await uploadImage(args.file, organization.image!);
-
     // Updates the organization with new image and returns the updated organization.
     return await Organization.findOneAndUpdate(
       {

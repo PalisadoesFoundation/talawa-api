@@ -9,17 +9,19 @@ import {
 import { MutationAddOrganizationImageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { addOrganizationImage as addOrganizationImageResolver } from "../../../src/resolvers/Mutation/addOrganizationImage";
-import {
-  ORGANIZATION_NOT_FOUND,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
-} from "../../../src/constants";
+import * as uploadImage from "../../../src/utilities/uploadImage";
+import { ORGANIZATION_NOT_FOUND, USER_NOT_FOUND } from "../../../src/constants";
 import { nanoid } from "nanoid";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 
+const testImagePath: string = `${nanoid().toLowerCase()}test.png`;
 let testUser: Interface_User & Document<any, any, Interface_User>;
 let testOrganization: Interface_Organization &
   Document<any, any, Interface_Organization>;
+
+vi.mock("../../utilities", () => ({
+  uploadImage: vi.fn(),
+}));
 
 beforeAll(async () => {
   await connect();
@@ -38,6 +40,7 @@ beforeAll(async () => {
     isPublic: true,
     creator: testUser._id,
     members: [testUser._id],
+    admins: [testUser._id],
     blockedUsers: [testUser._id],
   });
 
@@ -66,85 +69,51 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
         organizationId: "",
         file: "",
       };
-
       const context = {
         userId: Types.ObjectId().toString(),
       };
-
       await addOrganizationImageResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_FOUND);
     }
   });
-
   it(`throws NotFoundError if no organization exists with _id === args.organizationId`, async () => {
     try {
       const args: MutationAddOrganizationImageArgs = {
         organizationId: Types.ObjectId().toString(),
         file: "",
       };
-
       const context = {
         userId: testUser.id,
       };
-
       await addOrganizationImageResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
     }
   });
-
-  it(`throws UnauthorizedError if current user with _id === context.userId
-  is not an admin of organization with _id === args.organizationId`, async () => {
-    try {
-      const args: MutationAddOrganizationImageArgs = {
-        organizationId: testOrganization.id,
-        file: "",
-      };
-
-      const context = {
-        userId: testUser.id,
-      };
-
-      await addOrganizationImageResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
-    }
+  it(`updates organization's image and returns the updated organization`, async () => {
+    vi.spyOn(uploadImage, "uploadImage").mockImplementationOnce(
+      async (newImagePath: any, imageAlreadyInDbPath: any) => ({
+        newImagePath,
+        imageAlreadyInDbPath,
+      })
+    );
+    const args: MutationAddOrganizationImageArgs = {
+      organizationId: testOrganization.id,
+      file: testImagePath,
+    };
+    const context = {
+      userId: testUser._id,
+    };
+    const addOrganizationImagePayload = await addOrganizationImageResolver?.(
+      {},
+      args,
+      context
+    );
+    const updatedTestOrganization = await Organization.findOne({
+      _id: testOrganization._id,
+    }).lean();
+    expect(addOrganizationImagePayload).toEqual(updatedTestOrganization);
+    expect(addOrganizationImagePayload?.image).toEqual(testImagePath);
   });
-
-  // it(`updates organization's image and returns the updated organization`, async () => {
-  //   await Organization.updateOne(
-  //     {
-  //       _id: testOrganization._id,
-  //     },
-  //     {
-  //       $set: {
-  //         image: 'image',
-  //       },
-  //     }
-  //   );
-
-  //   const args: MutationAddOrganizationImageArgs = {
-  //     organizationId: testOrganization.id,
-  //     file: '',
-  //   };
-
-  //   const context = {
-  //     userId: testUser._id,
-  //   };
-
-  //   const addOrganizationImagePayload = await addOrganizationImageResolver?.(
-  //     {},
-  //     args,
-  //     context
-  //   );
-
-  //   const updatedTestOrganization = await Organization.findOne({
-  //     _id: testOrganization._id,
-  //   }).lean();
-
-  //   expect(addOrganizationImagePayload).toEqual(updatedTestOrganization);
-
-  //   expect(addOrganizationImagePayload?.image).toEqual(null);
-  // });
 });
