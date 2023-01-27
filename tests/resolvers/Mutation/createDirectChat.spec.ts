@@ -9,7 +9,6 @@ import {
 import { MutationCreateDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import {
-  IN_PRODUCTION,
   ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND,
@@ -97,7 +96,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationCreateDirectChatArgs = {
         data: {
@@ -124,7 +123,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       await createDirectChatResolver?.({}, args, context);
     } catch (error: any) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
   it(`throws NotFoundError if no organization exists with _id === args.data.organizationId`, async () => {
@@ -151,7 +150,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationCreateDirectChatArgs = {
         data: {
@@ -179,9 +178,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       await createDirectChatResolver?.({}, args, context);
     } catch (error: any) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_MESSAGE}`
-      );
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -210,7 +207,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationCreateDirectChatArgs = {
         data: {
@@ -237,7 +234,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       await createDirectChatResolver?.({}, args, context);
     } catch (error: any) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
   it(`creates the directChat and returns it`, async () => {
@@ -270,4 +267,3 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
     );
   });
 });
-
