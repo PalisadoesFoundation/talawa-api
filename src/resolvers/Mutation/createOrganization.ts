@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization } from "../../models";
-import { uploadImage } from "../../utilities";
+// import { uploadImage } from "../../utilities";
 import { errors, requestContext } from "../../libraries";
 import {
   IN_PRODUCTION,

@@ -82,6 +82,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
           visibleInSearch: true,
           apiUrl: "apiUrl",
           location: "location",
+          tags: ["tag1", "tag2"],
         },
       };
 
@@ -123,6 +124,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         visibleInSearch: true,
         apiUrl: "apiUrl",
         location: "location",
+        tags: ["tag1", "tag2"],
       },
       file: testImagePath,
     };

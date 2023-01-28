@@ -39,6 +39,8 @@ export const organization = gql`
     isPublic: Boolean!
     visibleInSearch: Boolean!
     apiUrl: String
+    image: String
+    tags: [String!]!
   }
 
   input UpdateOrganizationInput {
