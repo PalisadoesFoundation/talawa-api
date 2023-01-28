@@ -1,6 +1,7 @@
+import "dotenv/config";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization } from "../../models";
-// import { uploadImage } from "../../utilities";
+import { uploadImage } from "../../utilities";
 import { errors, requestContext } from "../../libraries";
 import {
   IN_PRODUCTION,
@@ -27,16 +28,15 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       );
     }
 
-    // //Upload file
-    // let uploadImageObj;
-    // if (args.file) {
-    //   uploadImageObj = await uploadImage(args.file, null);
-    // }
-
+    //Upload file
+    let uploadImageObj;
+    if (args.file) {
+      uploadImageObj = await uploadImage(args.file, null);
+    }
     // Creates new organization.
     const createdOrganization = await Organization.create({
       ...args.data,
-      image: args.data?.image,
+      image: uploadImageObj ? uploadImageObj.newImagePath : null,
       creator: context.userId,
       admins: [context.userId],
       members: [context.userId],
