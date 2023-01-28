@@ -69,7 +69,6 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> updatePluginInstalledOrgs", () => {
-  
   it(`if organization with _id === args.orgId doesn't exist in plugin.installedOrgs
   for plugin with _id === args.id, adds it to plugin.installedOrgs`, async () => {
     const args: MutationUpdatePluginInstalledOrgsArgs = {
@@ -80,7 +79,6 @@ describe("resolvers -> Mutation -> updatePluginInstalledOrgs", () => {
     const context = {
       userId: testUser._id,
     };
-    
 
     const updatePluginInstalledOrgsPayload =
       await updatePluginInstalledOrgsResolver?.({}, args, context);
@@ -88,13 +86,12 @@ describe("resolvers -> Mutation -> updatePluginInstalledOrgs", () => {
     const testUpdatePluginStatusPayload = await Plugin.findOne({
       _id: testPlugin._id,
     }).lean();
-    
+
     expect(updatePluginInstalledOrgsPayload).toEqual(
       testUpdatePluginStatusPayload
     );
   });
 
-  
   it(`if organization with _id === args.orgId already exists in plugin.installedOrgs
     for plugin with _id === args.id, removes it from plugin.installedOrgs`, async () => {
     const args: MutationUpdatePluginInstalledOrgsArgs = {
@@ -113,11 +110,8 @@ describe("resolvers -> Mutation -> updatePluginInstalledOrgs", () => {
       _id: testPlugin._id,
     }).lean();
 
-    
     expect(updatePluginInstalledOrgsPayload).toEqual(
       testUpdatePluginStatusPayload
     );
   });
-
-  
 });

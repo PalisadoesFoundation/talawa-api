@@ -16,15 +16,14 @@ export const updatePluginInstalledOrgs: MutationResolvers["updatePluginInstalled
     }).lean();
 
     const organizationHasPluginInstalled = plugin?.installedOrgs.some(
-      (organization) =>organization.equals(args.orgId)
-      
+      (organization) => organization.equals(args.orgId)
     );
 
     /*
     Remove args.orgId from installedOrgs ifplugin is already installed for
     organization with _id === args.orgId
     */
-   
+
     if (organizationHasPluginInstalled) {
       return await Plugin.findOneAndUpdate(
         {
