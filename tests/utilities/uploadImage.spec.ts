@@ -51,7 +51,15 @@ afterAll(async () => {
   fs.unlink(path.join(__dirname, "../../src/images/image.png"), (err) => {
     if (err) throw err;
   });
-  fs.rmdirSync(path.join(__dirname, "../../src/images"), { recursive: true });
+  fs.rm(
+    path.join(__dirname, "../../src/images"),
+    { recursive: true },
+    (err) => {
+      if (err) {
+        throw err;
+      }
+    }
+  );
   await disconnect();
 });
 
@@ -105,6 +113,69 @@ describe("utilities -> uploadImage", () => {
 
     expect(mockedImageAlreadyInDb).toHaveBeenCalledWith(
       null,
+      testUserObj?.image
+    );
+    expect(uploadImagePayload?.newImagePath).toEqual(testUserObj?.image);
+  });
+
+  it("should create a new Image when an old Image Path already Exists", async () => {
+    const pngImage: any = {
+      filename: "image.png",
+      createReadStream: () => {
+        return fs.createReadStream(
+          path.join(__dirname, "../../src/images/image.png")
+        );
+      },
+    };
+
+    const imageAlreadyInDbFile = await import(
+      "../../src/utilities/imageAlreadyInDbCheck"
+    );
+
+    const mockedImageAlreadyInDb = vi
+      .spyOn(imageAlreadyInDbFile, "imageAlreadyInDbCheck")
+      .mockImplementation(
+        async (oldImagePath: string | null, newImagePath: string) => {
+          console.log(oldImagePath, newImagePath);
+
+          return newImagePath;
+        }
+      );
+
+    const { uploadImage } = await import("../../src/utilities/uploadImage");
+
+    const testUserBeforeObj = await User.findById({
+      _id: testUser.id,
+    });
+    const oldImagePath = testUserBeforeObj?.image!;
+    console.log(oldImagePath);
+
+    const deleteDuplicatedImage = await import(
+      "../../src/utilities/deleteImage"
+    );
+
+    const mockedDeleteImage = vi
+      .spyOn(deleteDuplicatedImage, "deleteImage")
+      .mockImplementation(async () => {});
+
+    const uploadImagePayload = await uploadImage(pngImage, oldImagePath);
+
+    const testUserObj = await User.findByIdAndUpdate(
+      {
+        _id: testUser.id,
+      },
+      {
+        $set: {
+          image: uploadImagePayload.newImagePath,
+        },
+      },
+      {
+        new: true,
+      }
+    ).lean();
+    expect(mockedDeleteImage).toBeCalledWith(oldImagePath, testUserObj?.image);
+    expect(mockedImageAlreadyInDb).toHaveBeenCalledWith(
+      oldImagePath,
       testUserObj?.image
     );
     expect(uploadImagePayload?.newImagePath).toEqual(testUserObj?.image);

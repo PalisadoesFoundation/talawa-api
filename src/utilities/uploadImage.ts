@@ -36,7 +36,9 @@ export const uploadImage = async (
 
   const newImagePath = `images/${id}-${filename}`;
 
-  if (oldImagePath) {
+  if (oldImagePath !== null) {
+    console.log("oldImagePath is not null");
+
     logger.info("old image should be deleted");
 
     // If user/organization already has an image delete it from the API
