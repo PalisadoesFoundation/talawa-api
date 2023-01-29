@@ -35,7 +35,7 @@ const formats = {
   ),
 };
 
-export const logger = createLogger({
+const logger = createLogger({
   transports: [
     new transports.Console({
       level: appConfig.log_level,
@@ -47,10 +47,12 @@ export const logger = createLogger({
   ],
 });
 
-// Invalid code. Currently ignored by typescript. Needs fix.
+// The code block shifted before exporting logger
 logger.stream = {
   // @ts-ignore
   write: (message) => {
     logger.info((message || "").trim());
   },
 };
+
+export {logger};
