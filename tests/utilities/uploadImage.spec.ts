@@ -27,11 +27,13 @@ beforeAll(async () => {
     lastName: "lastName",
     appLanguageCode: "en",
   });
-  fs.mkdir(path.join(__dirname, "../../src/images"), (err) => {
-    if (err) {
-      throw err;
-    }
-  });
+  if (!fs.existsSync(path.join(__dirname, "../../src/images"))){
+    fs.mkdir(path.join(__dirname, "../../src/images"), (err) => {
+      if (err) {
+        throw err;
+      }
+    });
+  }
   const img =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0" +
     "NAAAAKElEQVQ4jWNgYGD4Twzu6FhFFGYYNXDUwGFpIAk2E4dHDRw1cDgaCAASFOffhEIO" +
@@ -51,15 +53,6 @@ afterAll(async () => {
   fs.unlink(path.join(__dirname, "../../src/images/image.png"), (err) => {
     if (err) throw err;
   });
-  fs.rm(
-    path.join(__dirname, "../../src/images"),
-    { recursive: true },
-    (err) => {
-      if (err) {
-        throw err;
-      }
-    }
-  );
   await disconnect();
 });
 
@@ -116,6 +109,10 @@ describe("utilities -> uploadImage", () => {
       testUserObj?.image
     );
     expect(uploadImagePayload?.newImagePath).toEqual(testUserObj?.image);
+
+    fs.unlink(path.join(__dirname, "../../src/".concat(uploadImagePayload.newImagePath)), (err) => {
+      if (err) throw err;
+    });
   });
 
   it("should create a new Image when an old Image Path already Exists", async () => {
@@ -179,5 +176,8 @@ describe("utilities -> uploadImage", () => {
       testUserObj?.image
     );
     expect(uploadImagePayload?.newImagePath).toEqual(testUserObj?.image);
+    fs.unlink(path.join(__dirname, "../../src/".concat(uploadImagePayload.newImagePath)), (err) => {
+      if (err) throw err;
+    });
   });
 });
