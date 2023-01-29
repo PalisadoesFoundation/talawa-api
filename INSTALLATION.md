@@ -120,6 +120,28 @@ We're listing some common approaches to set up a running instance of mongodb dat
 
 Which approach you choose to set up your mongodb database does not matter. What matters is the `connection string` to that database using which talawa-api can connect to it. `Connection string` can differ depending on the approach you used to set up your database instance. Please read the official [mongodb docs](https://www.mongodb.com/docs/manual/reference/connection-string/) on `connection string`. Copy/paste this `connection string` to the variable named `MONGO_DB_URL` in `.env` file.
 
+Your MongoDB installation may include either the `mongo` or `mongosh` command line utility. An easy way of determining the `connection string` is to:
+
+1. Run the command line utility 
+1. Note the `connection string` in the first lines of the output. 
+1. Add the first section of the `connection string` to the `MONGO_DB_URL` section of the `.env` file. In this case it is `mongodb://127.0.0.1:27017/`
+
+```
+$ mongosh
+
+Current Mongosh Log ID: e6ab4232a963d456920b3736
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2
+Using MongoDB:          6.0.4
+Using Mongosh:          1.6.2
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+...
+...
+...
+...
+
+```
 <br/>
 
 ### Optional:- Managing mongodb database using VSCode extension
