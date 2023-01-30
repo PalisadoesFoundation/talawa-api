@@ -55,4 +55,4 @@ logger.stream = {
   },
 };
 
-export {logger};
+export { logger };
