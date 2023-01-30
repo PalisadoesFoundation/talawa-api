@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { Request } from "express";
 import { logger } from "../libraries";
+import { ACCESS_TOKEN_SECRET } from "../constants";
 
 // This interface represents the type of data object returned by isAuth function.
 export interface Interface_AuthData {
@@ -45,7 +46,7 @@ export const isAuth = (request: Request) => {
   try {
     decodedToken = jwt.verify(
       token,
-      process.env.ACCESS_TOKEN_SECRET as string,
+      ACCESS_TOKEN_SECRET as string,
       (err, decoded) => {
         if (err) {
           return err;

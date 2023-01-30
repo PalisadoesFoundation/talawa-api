@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ERROR_IN_SENDING_MAIL } from "../../src/constants";
+import { ERROR_IN_SENDING_MAIL, MAIL_PASSWORD, MAIL_USERNAME } from "../../src/constants";
 import { mailer } from "../../src/utilities/mailer";
 import { nanoid } from "nanoid";
 import Mail from "nodemailer/lib/mailer";
@@ -20,8 +20,8 @@ const testMailFields: Test_Interface_MailFields = {
 const testTransport: object = {
   service: "gmail",
   auth: {
-    user: process.env.MAIL_USERNAME,
-    pass: process.env.MAIL_PASSWORD,
+    user: MAIL_USERNAME,
+    pass: MAIL_PASSWORD,
   },
 };
 
