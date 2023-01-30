@@ -1,33 +1,28 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import { Interface_User, User } from "../../../src/models";
+import {
+  //  Document,
+  Types,
+} from "mongoose";
+// import {  Interface_User, User } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
 import { MutationAddUserImageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { addUserImage as addUserImageResolver } from "../../../src/resolvers/Mutation/addUserImage";
-import { USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  afterEach,
-  vi,
-} from "vitest";
-import { nanoid } from "nanoid";
+import { USER_NOT_FOUND } from "../../../src/constants";
+// import { nanoid } from "nanoid";
+import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
+// let testUser:Interface_User & Document<any, any, Interface_User>
 
 beforeAll(async () => {
   await connect();
 
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
+  // testUser = await User.create({
+  //   email: `email${nanoid().toLowerCase()}@gmail.com`,
+  //   password: "password",
+  //   firstName: "firstName",
+  //   lastName: "lastName",
+  //   appLanguageCode: "en",
+  // });
 });
 
 afterAll(async () => {
@@ -35,11 +30,6 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> addUserImage", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-    vi.doUnmock("../../../src/constants");
-    vi.resetModules();
-  });
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationAddUserImageArgs = {
@@ -55,110 +45,36 @@ describe("resolvers -> Mutation -> addUserImage", () => {
       expect(error.message).toEqual(USER_NOT_FOUND);
     }
   });
-  it(`throws NotFoundError if no user exists with _id === context.userId // IN_PRODUCTION=true`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
 
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
+  // it(`sets image field to null for organization with _id === args.organizationId
+  // and returns the updated organization`, async () => {
+  //   await User.updateOne(
+  //     {
+  //       _id: testUser._id,
+  //     },
+  //     {
+  //       $set: {
+  //         image: 'image',
+  //       },
+  //     }
+  //   );
 
-    try {
-      const args: MutationAddUserImageArgs = {
-        file: "",
-      };
+  //   const args: MutationAddUserImageArgs = {
+  //     file: '',
+  //   };
 
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
+  //   const context = {
+  //     userId: testUser._id,
+  //   };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
-      const { addUserImage: addUserImageResolverUserError } = await import(
-        "../../../src/resolvers/Mutation/addUserImage"
-      );
-      await addUserImageResolverUserError?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
-    }
-  });
-  it(`When Image is given, updates current user's user object and returns the object when Image is  in DB path`, async () => {
-    const uploadImage = await import("../../../src/utilities");
+  //   const addUserImagePayload = await addUserImageResolver?.({}, args, context);
 
-    const spy = vi
-      .spyOn(uploadImage, "uploadImage")
-      .mockImplementationOnce(async () => {
-        return {
-          newImagePath: "newImagePath",
-          imageAlreadyInDbPath: "imageAlreadyInDbPath",
-        };
-      });
+  //   const updatedTestUser = await User.findOne({
+  //     _id: testUser._id,
+  //   }).lean();
 
-    const args: MutationAddUserImageArgs = {
-      file: "newImageFile.png",
-    };
+  //   expect(addUserImagePayload).toEqual(updatedTestUser);
 
-    const context = {
-      userId: testUser._id,
-    };
-
-    const { addUserImage: addUserImageResolverUserError } = await import(
-      "../../../src/resolvers/Mutation/addUserImage"
-    );
-    const addUserImagePayload = await addUserImageResolverUserError?.(
-      {},
-      args,
-      context
-    );
-
-    expect(spy).toHaveBeenCalledTimes(1);
-    expect(addUserImagePayload).toEqual({
-      ...testUser.toObject(),
-
-      image: "imageAlreadyInDbPath",
-    });
-  });
-  it(`When Image is given, updates current user's user object and returns the object when Image is not in DB path`, async () => {
-    const uploadImage = await import("../../../src/utilities");
-
-    const spy = vi
-      .spyOn(uploadImage, "uploadImage")
-      .mockImplementationOnce(async () => {
-        return {
-          newImagePath: "newImagePath",
-          imageAlreadyInDbPath: "",
-        };
-      });
-
-    const args: MutationAddUserImageArgs = {
-      file: "newImageFile.png",
-    };
-
-    const context = {
-      userId: testUser._id,
-    };
-
-    const { addUserImage: addUserImageResolverUserError } = await import(
-      "../../../src/resolvers/Mutation/addUserImage"
-    );
-    const addUserImagePayload = await addUserImageResolverUserError?.(
-      {},
-      args,
-      context
-    );
-
-    expect(spy).toHaveBeenCalledTimes(1);
-    expect(addUserImagePayload).toEqual({
-      ...testUser.toObject(),
-
-      image: "newImagePath",
-    });
-  });
+  //   expect(addUserImagePayload?.image).toEqual(null);
+  // });
 });

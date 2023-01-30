@@ -17,13 +17,10 @@ import {
   ORGANIZATION_NOT_AUTHORIZED_PARAM,
 } from "../../constants";
 import admin, { credential } from "firebase-admin";
-import { getApps } from "firebase-admin/app";
 
 const applicationDefault = credential.applicationDefault;
 
-getApps().length === 0
-  ? admin.initializeApp({ credential: applicationDefault() })
-  : getApps();
+admin.initializeApp({ credential: applicationDefault() });
 
 export const createEvent: MutationResolvers["createEvent"] = async (
   _parent,
