@@ -43,14 +43,14 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
         "email"
       );
     }
-  }
-
-  // Upload file
+  } // Upload file
   let uploadImageObj;
   if (args.file) {
     uploadImageObj = await uploadImage(args.file, null);
   }
-
+  const currentUser = await User.findById({
+    _id: context.userId,
+  });
   // Update User
   if (uploadImageObj) {
     return await User.findOneAndUpdate(
@@ -59,9 +59,13 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
       },
       {
         $set: {
-          email: args.data?.email,
-          firstName: args.data?.firstName,
-          lastName: args.data?.lastName,
+          email: args.data?.email ? args.data.email : currentUser?.email,
+          firstName: args.data?.firstName
+            ? args.data.firstName
+            : currentUser?.firstName,
+          lastName: args.data?.lastName
+            ? args.data.lastName
+            : currentUser?.lastName,
           image: uploadImageObj.imageAlreadyInDbPath
             ? uploadImageObj.imageAlreadyInDbPath
             : uploadImageObj.newImagePath,
@@ -78,9 +82,13 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
       },
       {
         $set: {
-          email: args.data?.email,
-          firstName: args.data?.firstName,
-          lastName: args.data?.lastName,
+          email: args.data?.email ? args.data.email : currentUser?.email,
+          firstName: args.data?.firstName
+            ? args.data.firstName
+            : currentUser?.firstName,
+          lastName: args.data?.lastName
+            ? args.data.lastName
+            : currentUser?.lastName,
         },
       },
       {
