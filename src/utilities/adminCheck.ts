@@ -13,8 +13,8 @@ export const adminCheck = (
   userId: string | Types.ObjectId,
   organization: Interface_Organization
 ) => {
-  const userIsOrganizationAdmin = organization.admins.some(
-    (admin) => admin.toString() === userId.toString()
+  const userIsOrganizationAdmin = organization.admins.some((admin) =>
+    admin.equals(userId.toString())
   );
 
   if (userIsOrganizationAdmin === false) {
