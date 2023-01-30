@@ -5,6 +5,7 @@ import { User } from "../../models";
 import { createAccessToken, createRefreshToken } from "../../utilities";
 import {
   IN_PRODUCTION,
+  REFRESH_TOKEN_SECRET,
   USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
@@ -37,7 +38,7 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
 
   const jwtPayload: Interface_JwtTokenPayload = jwt.verify(
     args.refreshToken,
-    process.env.REFRESH_TOKEN_SECRET!
+    REFRESH_TOKEN_SECRET!
   ) as Interface_JwtTokenPayload;
 
   // The refresh token received is valid so we can send a new access token
