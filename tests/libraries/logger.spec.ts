@@ -1,10 +1,8 @@
 import "dotenv/config";
-import _ from "lodash";
-import { afterEach, describe, expect, it, vi, assert } from "vitest";
-import { getTracingId } from "../../src/libraries/requestTracing";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock('winston', () => {
-    const mFormat = {
+    const mformat = {
         colorize: vi.fn(),
         splat: vi.fn(),
         simple: vi.fn(),
@@ -12,19 +10,20 @@ vi.mock('winston', () => {
         timestamp: vi.fn(),
         printf: vi.fn(),
     };
-    const mTransports = {
+    const mtransports = {
       Console: vi.fn(),
     };
-    const mLogger = {
+    const mlogger = {
       info: vi.fn(),
       error: vi.fn()
     };
     return {
-      format: mFormat,
-      transports: mTransports,
-      createLogger: vi.fn(() => mLogger),
+      format: mformat,
+      transports: mtransports,
+      createLogger: vi.fn(() => mlogger),
     };
 });
+
 
 import { createLogger, transports, format} from "winston";
 import { logger } from "../../src/libraries";
@@ -34,24 +33,26 @@ describe('logger functions',() => {
         vi.restoreAllMocks();
     });
 
-    it('basic logger info test', () => {
-        const spyLog = vi.spyOn(logger,"info");
+    it('logger test should pass', () => {
+        const spyInfoLog = vi.spyOn(logger,"info");
+        const spyErrorLog = vi.spyOn(logger,"error");
 
         expect(logger).toBeDefined();
         logger.info("Info Test for logger");
-        expect(logger.info).toHaveBeenCalledTimes(1);
-        expect(spyLog).toBeCalledWith(
+        expect(spyInfoLog).toBeCalledWith(
             "Info Test for logger"
         );
-    });
 
-    it('winston logger error testing', () => {
-        const spyLog = vi.spyOn(logger,"error");
-        expect(logger).toBeDefined();
         logger.error("Error Test for logger");
         expect(logger.error).toHaveBeenCalledTimes(1);
-        expect(spyLog).toBeCalledWith(
+        expect(spyErrorLog).toBeCalledWith(
             "Error Test for logger"
         );
+
+        expect(createLogger).toBeCalledTimes(1);
+        expect(format.combine).toBeCalledTimes(2);
+        expect(format.timestamp).toBeCalledWith({ format: 'YYYY-MM-DD HH:mm:ss' });
+        expect(transports.Console).toBeCalledTimes(1);
+        expect(logger.info).toHaveBeenCalledTimes(1);
     });
 })
