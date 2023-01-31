@@ -15,10 +15,11 @@ This document provides instructions on how to set up and start a running instanc
 7.  [MongoDB](#mongodb)
 8.  [Google/firebase](#googlefirebase)
 9.  [Running talawa-api](#running-talawa-api)
-10. [Accessing talawa-api](#accessing-talawa-api)
-11. [Changing default talawa-api port](#changing-default-talawa-api-port)
-12. [Running tests](#running-tests)
-13. [Linting code files](#linting-code-files)
+10. [Installing required packages](#installing-required-packages)
+11. [Accessing talawa-api](#accessing-talawa-api)
+12. [Changing default talawa-api port](#changing-default-talawa-api-port)
+13. [Running tests](#running-tests)
+14. [Linting code files](#linting-code-files)
 
 <br/>
 
@@ -119,6 +120,50 @@ We're listing some common approaches to set up a running instance of mongodb dat
 
 Which approach you choose to set up your mongodb database does not matter. What matters is the `connection string` to that database using which talawa-api can connect to it. `Connection string` can differ depending on the approach you used to set up your database instance. Please read the official [mongodb docs](https://www.mongodb.com/docs/manual/reference/connection-string/) on `connection string`. Copy/paste this `connection string` to the variable named `MONGO_DB_URL` in `.env` file.
 
+Your MongoDB installation may include either the `mongo` or `mongosh` command line utility. An easy way of determining the `connection string` is to:
+
+1. Run the command line utility 
+1. Note the `connection string` in the first lines of the output. 
+1. Add the first section of the `connection string` to the `MONGO_DB_URL` section of the `.env` file. In this case it is `mongodb://127.0.0.1:27017/`
+
+```
+$ mongosh
+
+Current Mongosh Log ID: e6ab4232a963d456920b3736
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2
+Using MongoDB:          6.0.4
+Using Mongosh:          1.6.2
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+...
+...
+...
+...
+
+```
+<br/>
+
+### Optional:- Managing mongodb database using VSCode extension
+
+This guide is for `VSCode` users to easily manage their `mongoDB` databases:-
+
+1.  Install the offical `MongoDB` extension for `VSCode` named `MongoDB for VS Code`.
+
+    ![Install official mongoDB vscode extension](./image/install_mongodb_vscode_extension.webp)
+
+<br/>
+
+2. Connect your `mongoDB` database to the extension.
+
+   ![Connect your mongoDB database to the extension](./image/connect_extension_to_mongodb_step_1.webp)
+
+    <br/>
+
+   ![Connect your mongoDB database to the extension](./image/connect_extension_to_mongodb_step_2.webp)
+
+3. Now you can manage the database you are using for `talawa-api` through this extension within `VSCode`.
+
 <br/>
 
 ## Google/firebase
@@ -141,7 +186,7 @@ We use `reCAPTCHA` for authentication. Follow these steps:-
 3. Click on `Submit` button.
 4. Copy the generated `Secret Key` to variable named `RECAPTCHA_SECRET_KEY` in `.env` file.
 
-   ![Set up recaptcha page](./image/recaptcha_secret.webp)
+   ![Set up recaptcha page](./image/recaptcha_site_and_secret_key.webp)
 
 5. Save the generated `Site key` as it will be used in `talawa-admin`.
 
@@ -167,55 +212,109 @@ For more info refer to [this](https://support.google.com/accounts/answer/185833)
 
 <br/>
 
-### Firebase notification service
+### Generate Firebase Keys for the Talawa Notification Service
 
 We use firebase for mobile app notifications. To configure the notification service create a new firebase project and follow these steps:-
 
-1.  In the Firebase console, open Settings > [Service Accounts](https://console.firebase.google.com/project/_/settings/serviceaccounts/adminsdk).
+1. Create a new Firebase project for Talawa-API
 
-2.  Click on `Generate New Private Key`, then confirm by clicking on `Generate Key`.
+1. When created you will automatically enter the project's console area
 
-3.  Securely store the `JSON` file containing the key.
+1. Click on the settings icon beside the `Project Overview` heading
 
-4.  Run the following commands to set the key in the environment variable for your respective operating system:
+1. Click on `Project Settings`
+
+1. Click on the `Service Accounts` tab
+
+1. Click on the `Node.js` radio button
+
+1. Click on `Generate New Private Key` button
+
+1. Confirm by clicking on `Generate Key`. This will automatically download the private keys in your browser.
+
+1. Securely store the `JSON` file containing the private key. These will be used in the next section.
+
+### Apply the Firebase Keys to the Talawa Mobile App
+
+The key generated in the previous step is in a format suitable for use in a mobile app. We need to convert it for use by the API. This will require you to do some work in the talawa repository to do the necessary conversion. The resulting output will be stored in a `lib/firebase_options.dart` file. Some of the contents of this file will then need to be added to the API's `.env` file. Here we go.
+
+1.  Clone the talawa mobile app in a separate directory that is not under your Talawa-API directory.
+
+1.  Enter that directory as you will need to edit files there
+
+1.  Run the following commands to set the key in the environment variable for your respective operating system:
 
     1.  `Linux/macOS:`
 
-            export GOOGLE_APPLICATION_CREDENTIALS="/home/user/Downloads/service-account-file.json"
+            export GOOGLE_APPLICATION_CREDENTIALS="/PATH/TO/JSON/FILE/filename.json"
 
-    2.  `Windows:`
+    1.  `Windows:`
 
-            $env:GOOGLE_APPLICATION_CREDENTIALS="C:\Users\username\Downloads\service-account-file.json"
+            $env:GOOGLE_APPLICATION_CREDENTIALS="C:\PATH\TO\JSON\FILE\filename.json"
 
-5.  Install the [Firebase CLI](https://firebase.google.com/docs/cli#install_the_firebase_cli).
+1.  Install the [Firebase CLI](https://firebase.google.com/docs/cli#install_the_firebase_cli).
 
-6.  Copy the `firebase_options.dart` file as it will be modified.
+1.  Save the origintal copy the `lib/firebase_options.dart` file as it will be modified.
 
-7.  Run the following commands in the project directory of talawa mobile app:
+1.  Run the following commands in the project directory of talawa mobile app:
 
         firebase login
 
         dart pub global activate flutterfire_cli
 
-        flutterfire configure
+1.  Run any commands about exporting variables from the previous `dart` command.
 
-8.  Select the project you created in the firebase console.
+1.  Run the following command to configure the application for Firebase
 
-9.  Add `iOS` and `android` platforms to the project.
+    flutterfire configure
 
-10. Overwrite the `firebase_options.dart` file if asked so.
+1.  Select the project you created in the firebase console.
 
-11. Copy/paste the keys generated for `iOS` and `android` platforms respectively in `.env` file.
+1.  Add `iOS` and `android` platforms to the project.
 
-12. Undo the changes made to the `firebase_options.dart` file by pasting the old content from `step 6`.
+1.  Overwrite the `firebase_options.dart` file if asked so.
+
+1.  The command will generate keys for the `iOS` and `android` platforms respectively and place them in the `firebase_options.dart` file.
+
+1.  Edit the `firebase_options.dart` file.
+
+1.  Add the parameters in the `static const FirebaseOptions android = FirebaseOptions` section of the `firebase_options.dart` file to the Talawa API `.env` file under the `androidFirebaseOptions` heading.
+
+    1.  Replace any parameters that are already there in that section.
+    1.  Remove any trailing commas on the lines you have added.
+    1.  Remove any leading spaces on the lines you have added.
+    1.  The final result in the `.env` file should look like this
+
+                 apiKey: '9f6297b283db701dab7766c993c48b',
+                 appId: '1:261699118608:android:366ff7dbdfba5c5a9e8392',
+                 messagingSenderId: '261699118608',
+                 projectId: 'talawa-thingy',
+                 storageBucket: 'talawa-thingy.appspot.com',
+
+1.  Add the parameters in the `static const FirebaseOptions ios = FirebaseOptions` section of the `firebase_options.dart` file to the Talawa API `.env` file under the `iosFirebaseOptions` heading. Replace any paramters that are already there.
+
+    1.  Replace any parameters that are already there in that section.
+    1.  Remove any trailing commas on the lines you have added.
+    1.  Remove any leading spaces on the lines you have added.
+    1.  The final result in the `.env` file should look like this
+
+                 apiKey: 'c2d283aa45f4e858c9cbfe32c58c67',
+                 appId: '1:261699118608:ios:1babbb3c07b8461ebdcb2',
+                 messagingSenderId: '261699118608',
+                 projectId: 'talawa-thingy',
+                 storageBucket: 'talawa-thingy.appspot.com',
+                 iosClientId: '261699118608-d519b739e43c6214374c0da62feaef.apps.googleusercontent.com',
+                 iosBundleId: 'com.example.talawa',
+
+1.  Undo the changes made to the `firebase_options.dart` file by overwriting it with the version you saved at the beginning of this section.
 
 <br/>
 
-## Installing required packages/dependencies
+## Installing required packages
 
-Run the following command to install the packages and dependencies required by talawa-api:-
+Install the packages required by `talawa-api` using this command:
 
-        npm run install
+       npm install
 
 <br/>
 

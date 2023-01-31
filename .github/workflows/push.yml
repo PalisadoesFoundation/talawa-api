@@ -15,6 +15,9 @@ on:
   push:
     branches:
       - '**'
+      
+env:
+    CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }}
 
 jobs:
   ##############################################################################
@@ -61,7 +64,9 @@ jobs:
       - name: Run the tests
         run: npm run test
 
-      - name: Upload coverage to Codecov
+      - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
         uses: codecov/codecov-action@v3
         with:
           verbose: true
+          fail_ci_if_error: true
+          name: '${{env.CODECOV_UNIQUE_NAME}}'  

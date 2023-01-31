@@ -14,6 +14,10 @@ on:
   pull_request:
     branches:
       - '**'
+      
+env:
+    CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }}
+          
 jobs:
   Linter:
     name: Lints the code
@@ -97,13 +101,15 @@ jobs:
       - name: Run the tests
         run: npm run test
 
-      - name: Present current coverage in PR
+      - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
         uses: codecov/codecov-action@v3
         with:
           verbose: true
+          fail_ci_if_error: true
+          name: '${{env.CODECOV_UNIQUE_NAME}}'  
 
       - name: Test acceptable level of code coverage
         uses: VeryGoodOpenSource/very_good_coverage@v2
         with:
           path: './coverage/lcov.info'
-          min_coverage: 81.1
+          min_coverage: 89.0
