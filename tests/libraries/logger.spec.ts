@@ -2,7 +2,7 @@ import "dotenv/config";
 import _ from "lodash";
 import { afterEach, describe, expect, it, vi } from "vitest";
 //import { getTracingId } from "./../../src/libraries/requestTracing";
-//import { appConfig } from "./../../src/config/appConfig";
+import { appConfig } from "./../../src/config/appConfig";
 
 vi.mock("winston", () => {
   const mformat = {
@@ -63,5 +63,13 @@ describe("logger functions", () => {
     // sending message null or undefined to get the "" <- msg as logger.info
     stream.write(null);
     expect(spyInfoLog).toBeCalledWith("");
+  });
+
+  it("testing format colorization", () => {
+    if (appConfig.colorize_logs === "true") {
+      expect(format.colorize).toHaveBeenCalledTimes(1);
+    } else {
+      expect(format.colorize).toHaveBeenCalledTimes(0);
+    }
   });
 });
