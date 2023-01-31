@@ -351,7 +351,7 @@ const getInputArg = (where: InputMaybe<UserWhereInput> | undefined) => {
 
     //Returns user with appLanguageCode starts with provided string
     if (where.appLanguageCode_starts_with) {
-      const regexp = new RegExp("^" + where.email_starts_with);
+      const regexp = new RegExp("^" + where.appLanguageCode_starts_with);
       inputArg = {
         ...inputArg,
         appLanguageCode: regexp,
