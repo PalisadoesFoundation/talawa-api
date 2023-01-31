@@ -29,7 +29,7 @@ vi.mock("winston", () => {
 });
 
 import { createLogger, transports, format } from "winston";
-import { logger } from "../../src/libraries";
+import { logger, stream } from "../../src/libraries";
 
 describe("logger functions", () => {
   afterEach(() => {
@@ -53,5 +53,15 @@ describe("logger functions", () => {
     expect(format.timestamp).toBeCalledWith({ format: "YYYY-MM-DD HH:mm:ss" });
     expect(transports.Console).toBeCalledTimes(1);
     expect(logger.info).toHaveBeenCalledTimes(1);
+  });
+
+  it("logger stream testing", () => {
+    const spyInfoLog = vi.spyOn(logger, "info");
+    stream.write("Testing for logger streaming");
+    expect(spyInfoLog).toBeCalledWith("Testing for logger streaming");
+
+    // sending message null or undefined to get the "" <- msg as logger.info
+    stream.write(null);
+    expect(spyInfoLog).toBeCalledWith("");
   });
 });
