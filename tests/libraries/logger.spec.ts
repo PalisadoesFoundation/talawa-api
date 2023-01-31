@@ -1,5 +1,8 @@
 import "dotenv/config";
+import _ from "lodash";
 import { afterEach, describe, expect, it, vi } from "vitest";
+//import { getTracingId } from "./../../src/libraries/requestTracing";
+//import { appConfig } from "./../../src/config/appConfig";
 
 vi.mock("winston", () => {
   const mformat = {
@@ -16,6 +19,7 @@ vi.mock("winston", () => {
   const mlogger = {
     info: vi.fn(),
     error: vi.fn(),
+    stram: vi.fn(),
   };
   return {
     format: mformat,
@@ -32,10 +36,9 @@ describe("logger functions", () => {
     vi.restoreAllMocks();
   });
 
-  it("logger test should pass", () => {
+  it("basic logger test should pass", () => {
     const spyInfoLog = vi.spyOn(logger, "info");
     const spyErrorLog = vi.spyOn(logger, "error");
-
     expect(logger).toBeDefined();
     logger.info("Info Test for logger");
     expect(spyInfoLog).toBeCalledWith("Info Test for logger");
@@ -45,6 +48,7 @@ describe("logger functions", () => {
     expect(spyErrorLog).toBeCalledWith("Error Test for logger");
 
     expect(createLogger).toBeCalledTimes(1);
+    expect(format.printf).toBeCalledWith(expect.any(Function));
     expect(format.combine).toBeCalledTimes(2);
     expect(format.timestamp).toBeCalledWith({ format: "YYYY-MM-DD HH:mm:ss" });
     expect(transports.Console).toBeCalledTimes(1);

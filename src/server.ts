@@ -15,7 +15,7 @@ import cors from "cors";
 import requestLogger from "morgan";
 import i18n from "i18n";
 import * as database from "./db";
-import { logger, requestContext, requestTracing } from "./libraries";
+import { logger, requestContext, requestTracing, stream } from "./libraries";
 import { appConfig } from "./config";
 import { isAuth } from "./middleware";
 import {
@@ -67,13 +67,13 @@ app.use(
 app.use(mongoSanitize());
 app.use(cors());
 
-// Invalid code. Needs fix.
+// Fix added to stream
 app.use(
   requestLogger(
     // @ts-ignore
     ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms',
     {
-      stream: logger.stream,
+      stream: stream,
     }
   )
 );

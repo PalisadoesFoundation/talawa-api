@@ -36,6 +36,11 @@ const formats = {
 };
 
 const logger = createLogger({
+  level: appConfig.log_level,
+  format:
+    appConfig.colorize_logs === "true"
+      ? formats.colorized
+      : formats.non_colorized,
   transports: [
     new transports.Console({
       level: appConfig.log_level,
@@ -48,11 +53,11 @@ const logger = createLogger({
 });
 
 // The code block shifted before exporting logger
-logger.stream = {
+const stream = {
   // @ts-ignore
   write: (message) => {
     logger.info((message || "").trim());
   },
 };
 
-export { logger };
+export { logger, stream };
