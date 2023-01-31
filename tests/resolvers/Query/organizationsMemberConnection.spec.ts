@@ -11,7 +11,6 @@ import { QueryOrganizationsMemberConnectionArgs } from "../../../src/types/gener
 import { Document, Types } from "mongoose";
 import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { UserOrderByInput } from "../../../src/types/generatedGraphQLTypes";
 
 let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
 let testOrganization: Interface_Organization &
