@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 import { mailer } from "../../utilities";
-import { USER_NOT_FOUND } from "../../constants";
+import { ACCESS_TOKEN_SECRET, USER_NOT_FOUND } from "../../constants";
 import { logger } from "../../libraries";
 
 export const otp: MutationResolvers["otp"] = async (_parent, args) => {
@@ -26,7 +26,7 @@ export const otp: MutationResolvers["otp"] = async (_parent, args) => {
       email: args.data.email,
       otp: hashedOtp,
     },
-    process.env.ACCESS_TOKEN_SECRET!,
+    ACCESS_TOKEN_SECRET!,
     {
       expiresIn: "15m",
     }

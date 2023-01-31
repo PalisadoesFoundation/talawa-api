@@ -91,3 +91,39 @@ export const USER_NOT_FOUND = "User not found";
 export const USER_NOT_FOUND_CODE = "user.notFound";
 export const USER_NOT_FOUND_MESSAGE = "user.notFound";
 export const USER_NOT_FOUND_PARAM = "user";
+
+export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
+
+export const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
+
+export const MONGO_DB_URL = process.env.MONGO_DB_URL;
+
+export const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
+
+export const MAIL_USERNAME = process.env.MAIL_USERNAME;
+
+export const MAIL_PASSWORD = process.env.MAIL_PASSWORD;
+
+export const apiKey = process.env.apiKey;
+
+export const appId = process.env.appId;
+
+export const messagingSenderId = process.env.messagingSenderId;
+
+export const projectId = process.env.projectId;
+
+export const storageBucket = process.env.storageBucket;
+
+export const iOSapiKey = process.env.iOSapiKey;
+
+export const iOSappId = process.env.iOSappId;
+
+export const iOSmessagingSenderId = process.env.iOSmessagingSenderId;
+
+export const iOSprojectId = process.env.iOSprojectId;
+
+export const iOSstorageBucket = process.env.iOSstorageBucket;
+
+export const iosClientId = process.env.iosClientId;
+
+export const iosBundleId = process.env.iosBundleId;

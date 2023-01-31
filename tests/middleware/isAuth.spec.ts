@@ -3,6 +3,7 @@ import { isAuth } from "../../src/middleware/isAuth";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import jwt from "jsonwebtoken";
 import { logger } from "../../src/libraries/logger";
+import { ACCESS_TOKEN_SECRET } from "../../src/constants";
 
 interface Test_Interface_AuthData {
   isAuth: boolean;
@@ -98,7 +99,7 @@ describe("middleware -> isAuth", () => {
 
     expect(verifyMocked).toHaveBeenCalledWith(
       testToken,
-      process.env.ACCESS_TOKEN_SECRET as string,
+      ACCESS_TOKEN_SECRET as string,
       expect.anything()
     );
     expect(authData).toEqual(testAuthData);
@@ -129,7 +130,7 @@ describe("middleware -> isAuth", () => {
 
     expect(verifyMocked).toHaveBeenCalledWith(
       testToken,
-      process.env.ACCESS_TOKEN_SECRET as string,
+      ACCESS_TOKEN_SECRET as string,
       expect.anything()
     );
     expect(infoSpy).toBeCalledWith("decoded token is not present");
@@ -191,7 +192,7 @@ describe("middleware -> isAuth", () => {
 
     expect(verifyMocked).toHaveBeenCalledWith(
       testToken,
-      process.env.ACCESS_TOKEN_SECRET as string,
+      ACCESS_TOKEN_SECRET as string,
       expect.anything()
     );
     expect(authData).toEqual(testAuthData);
