@@ -153,15 +153,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         email: testUsers[1].email,
         appLanguageCode: testUsers[1].appLanguageCode,
       },
-      orderBy: UserOrderByInput.IdAsc,
-    };
-
-    const paginateOptions = {
-      lean: true,
-      sort: sort,
-      pagination: true,
-      page: args.skip,
-      limit: args.first,
+      orderBy: "id_ASC",
     };
 
     const organizationsMemberConnectionPayload =
@@ -179,7 +171,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         id: String(user._id),
       };
     });
-
 
     expect(organizationsMemberConnectionPayload).toEqual({
       pageInfo: {
@@ -235,7 +226,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         email_not: testUsers[2].email,
         appLanguageCode_not: testUsers[2].appLanguageCode,
       },
-      orderBy: UserOrderByInput.IdDesc,
+      orderBy: "id_DESC",
     };
 
     const organizationsMemberConnectionPayload =
@@ -309,7 +300,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         email_in: [testUsers[1].email],
         appLanguageCode_in: [testUsers[1].appLanguageCode],
       },
-      orderBy: UserOrderByInput.FirstNameAsc,
+      orderBy: "firstName_ASC",
     };
 
     const organizationsMemberConnectionPayload =
@@ -385,7 +376,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         email_not_in: [testUsers[2].email],
         appLanguageCode_not_in: [testUsers[2].appLanguageCode],
       },
-      orderBy: UserOrderByInput.FirstNameDesc,
+      orderBy: "firstName_DESC",
     };
 
     const organizationsMemberConnectionPayload =
@@ -461,7 +452,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         email_contains: testUsers[1].email,
         appLanguageCode_contains: testUsers[1].appLanguageCode,
       },
-      orderBy: UserOrderByInput.LastNameAsc,
+      orderBy: "lastName_ASC",
     };
 
     const organizationsMemberConnectionPayload =
@@ -525,7 +516,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         email_starts_with: testUsers[0].email,
         appLanguageCode_starts_with: testUsers[0].appLanguageCode,
       },
-      orderBy: UserOrderByInput.LastNameDesc,
+      orderBy: "lastName_DESC",
     };
 
     const organizationsMemberConnectionPayload =
@@ -577,7 +568,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       first: 2,
       skip: 1,
       where: {},
-      orderBy: UserOrderByInput.AppLanguageCodeAsc,
+      orderBy: "appLanguageCode_ASC",
     };
 
     const organizationsMemberConnectionPayload =
@@ -630,7 +621,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       first: 2,
       skip: 1,
       where: {},
-      orderBy: UserOrderByInput.AppLanguageCodeDesc,
+      orderBy: "appLanguageCode_DESC",
     };
 
     const organizationsMemberConnectionPayload =
@@ -683,7 +674,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       first: 2,
       skip: 1,
       where: null,
-      orderBy: UserOrderByInput.EmailAsc,
+      orderBy: "email_ASC",
     };
 
     const organizationsMemberConnectionPayload =
@@ -736,7 +727,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       first: 2,
       skip: 1,
       where: null,
-      orderBy: UserOrderByInput.EmailDesc,
+      orderBy: "email_DESC",
     };
 
     const organizationsMemberConnectionPayload =
