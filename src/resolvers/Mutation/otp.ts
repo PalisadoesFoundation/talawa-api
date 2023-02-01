@@ -34,22 +34,12 @@ export const otp: MutationResolvers["otp"] = async (_parent, args) => {
 
   const subject = "OTP for Talawa-admin forgot password";
   const body = `<h2>Hi, ${username}</h2><p>Your OTP: ${otp}</p> <p>Your OTP will expires in 5 minutes.</p><br><br> <small>Do not share your otp with others.</small>`;
-  console.log("waiting here!!");
-  console.log("Mailer func", mailer);
   return mailer({
     emailTo: args.data.email,
     subject,
     body,
-  })
-    .then((info) => {
-      console.log("Promise rejected", info);
-      logger.info(info);
-      console.log("entered in then block");
-      console.log({ otpToken });
-      return { otpToken };
-    })
-    .catch((error) => {
-      console.log(error);
-      logger.error(error);
-    });
+  }).then((info) => {
+    logger.info(info);
+    return { otpToken };
+  });
 };
