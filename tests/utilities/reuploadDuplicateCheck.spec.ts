@@ -1,4 +1,4 @@
-import "dotenv/config";
+require("dotenv").config();
 import { ImageHash } from "../../src/models";
 import {
   afterAll,
