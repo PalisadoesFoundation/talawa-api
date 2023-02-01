@@ -1,61 +1,31 @@
 import "dotenv/config";
 import { membershipRequests as membershipRequestsResolver } from "../../../src/resolvers/Organization/membershipRequests";
 import { connect, disconnect } from "../../../src/db";
-import {
-  User,
-  Organization,
-  MembershipRequest,
-  Interface_Organization,
-} from "../../../src/models";
-import { Document } from "mongoose";
-import { nanoid } from "nanoid";
+import { User, Organization, MembershipRequest } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  createTestUserAndOrganization,
+  testOrganizationType,
+  testUserType,
+} from "../../helpers/userAndOrg";
 
-let testOrganization:
-  | (Interface_Organization & Document<any, any, Interface_Organization>)
-  | null;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
-
-  const testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        createdOrganizations: testOrganization._id,
-        adminFor: testOrganization._id,
-        joinedOrganizations: testOrganization._id,
-      },
-    }
-  );
+  const userAndOrg = await createTestUserAndOrganization();
+  testUser = userAndOrg[0];
+  testOrganization = userAndOrg[1];
 
   const testMembershipRequest = await MembershipRequest.create({
-    user: testUser._id,
-    organization: testOrganization._id,
+    user: testUser!._id,
+    organization: testOrganization!._id,
   });
 
   await User.updateOne(
     {
-      _id: testUser._id,
+      _id: testUser!._id,
     },
     {
       $push: {
@@ -69,7 +39,7 @@ beforeAll(async () => {
 
   testOrganization = await Organization.findOneAndUpdate(
     {
-      _id: testOrganization._id,
+      _id: testOrganization!._id,
     },
     {
       $push: {
