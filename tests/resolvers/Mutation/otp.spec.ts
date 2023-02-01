@@ -1,55 +1,37 @@
 import "dotenv/config";
 import { MutationOtpArgs } from "../../../src/types/generatedGraphQLTypes";
-// import { Document } from "mongoose";
-// import { Interface_User, User } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
 import { otp as otpResolver } from "../../../src/resolvers/Mutation/otp";
-import { USER_NOT_FOUND } from "../../../src/constants";
+import { USER_NOT_FOUND, ACCESS_TOKEN_SECRET } from "../../../src/constants";
 import { nanoid } from "nanoid";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import jwt from "jsonwebtoken";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import nodemailer from "nodemailer";
 
-// let testUser: Interface_User & Document<any, any, Interface_User>;
+import { User } from "../../../src/models";
+
+// create a mock implementation for the nodemailer library
+vi.mock("nodemailer", () => {
+  return {
+    createTransport: vi.fn().mockImplementation(() => {
+      return {
+        sendMail: vi.fn().mockImplementation(() => {
+          return Promise.resolve({ response: "Email sent" });
+        }),
+      };
+    }),
+  };
+});
+
+const mockTransporter = require("nodemailer");
 
 beforeAll(async () => {
   await connect();
-
-  // testUser = await User.create({
-  //   email: `email${nanoid().toLowerCase()}@gmail.com`,
-  //   password: "password",
-  //   firstName: "firstName",
-  //   lastName: "lastName",
-  //   appLanguageCode: "en",
-  // });
 });
 
 afterAll(async () => {
   await disconnect();
 });
-
-// describe('Testing otp resolver', () => {
-//   test('otp', async () => {
-
-//     const args = {
-//       data: {
-//         email: generatedEmail,
-//       },
-//     };
-
-//     await expect(() => otp({}, args)).rejects.toEqual(ERROR_IN_SENDING_MAIL);
-//   });
-
-//   test('Testing, when user email is incorrect', async () => {
-//     const args = {
-//       data: {
-//         email: 'abc4321@email.com',
-//       },
-//     };
-
-//     await expect(async () => {
-//       await otp({}, args);
-//     }).rejects.toEqual(Error(USER_NOT_FOUND));
-//   });
-// });
 
 describe("resolvers -> Mutation -> otp", () => {
   it("throws Error if no user exists with email === args.data.email", async () => {
@@ -60,9 +42,54 @@ describe("resolvers -> Mutation -> otp", () => {
         },
       };
 
-      await otpResolver?.({}, args, {});
+      await otpResolver(null, args, {});
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_FOUND);
     }
+  });
+
+  it("generates and returns a new OTP token with a valid user", async () => {
+    const user = await User.create({
+      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      password: "password",
+      firstName: "firstName",
+      lastName: "lastName",
+      appLanguageCode: "en",
+    });
+
+    const args: MutationOtpArgs = {
+      data: {
+        email: user.email,
+      },
+    };
+
+    const { otpToken } = await otpResolver(null, args, {});
+    const decodedToken = jwt.verify(otpToken, ACCESS_TOKEN_SECRET!);
+
+    expect(typeof decodedToken).toEqual("object");
+    expect(decodedToken.email).toEqual(user.email);
+    expect(decodedToken.otp).toBeDefined();
+
+    // check if the nodemailer library was called
+    expect(nodemailer.createTransport).toHaveBeenCalled();
+    expect(nodemailer.createTransport().sendMail).toHaveBeenCalled();
+  });
+  it("sends an email with the OTP", async () => {
+    const user = await User.create({
+      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      password: "password",
+      firstName: "firstName",
+      lastName: "lastName",
+      appLanguageCode: "en",
+    });
+
+    const args: MutationOtpArgs = {
+      data: {
+        email: user.email,
+      },
+    };
+
+    const { otpToken } = await otpResolver(null, args, {});
+    expect(mockTransporter.createTransport().sendMail).toHaveBeenCalled();
   });
 });
