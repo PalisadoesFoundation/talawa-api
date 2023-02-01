@@ -19,13 +19,13 @@ beforeAll(async () => {
   testOrganization = userAndOrg[1];
 
   const testMembershipRequest = await MembershipRequest.create({
-    user: testUser._id,
-    organization: testOrganization._id,
+    user: testUser!._id,
+    organization: testOrganization!._id,
   });
 
   await User.updateOne(
     {
-      _id: testUser._id,
+      _id: testUser!._id,
     },
     {
       $push: {
@@ -39,7 +39,7 @@ beforeAll(async () => {
 
   testOrganization = await Organization.findOneAndUpdate(
     {
-      _id: testOrganization._id,
+      _id: testOrganization!._id,
     },
     {
       $push: {

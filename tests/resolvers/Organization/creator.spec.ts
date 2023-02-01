@@ -125,7 +125,7 @@ describe("resolvers -> Organization -> creator", () => {
       },
       {
         $set: {
-          creator: testUser._id,
+          creator: testUser!._id,
         },
       },
       {

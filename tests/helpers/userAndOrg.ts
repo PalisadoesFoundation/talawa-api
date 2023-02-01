@@ -1,8 +1,8 @@
 import {
-  User,
-  Organization,
-  Interface_User,
   Interface_Organization,
+  Interface_User,
+  Organization,
+  User,
 } from "../../src/models";
 import { nanoid } from "nanoid";
 import { Document } from "mongoose";
@@ -28,7 +28,7 @@ export const createTestUser = async (): Promise<testUserType> => {
 };
 
 export const createTestOrganizationWithAdmin = async (
-  userID
+  userID: string
 ): Promise<testOrganizationType> => {
   const testOrganization = await Organization.create({
     name: "name",
@@ -59,6 +59,6 @@ export const createTestUserAndOrganization = async (): Promise<
   [testUserType, testOrganizationType]
 > => {
   const testUser = await createTestUser();
-  const testOrganization = await createTestOrganizationWithAdmin(testUser._id);
+  const testOrganization = await createTestOrganizationWithAdmin(testUser!._id);
   return [testUser, testOrganization];
 };
