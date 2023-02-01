@@ -18,9 +18,9 @@ export type testUserType =
 export const createTestUser = async (): Promise<testUserType> => {
   const testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
+    password: nanoid().toLowerCase(),
+    firstName: nanoid().toLowerCase(),
+    lastName: nanoid().toLowerCase(),
     appLanguageCode: "en",
   });
 
@@ -31,8 +31,8 @@ export const createTestOrganizationWithAdmin = async (
   userID: string
 ): Promise<testOrganizationType> => {
   const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
+    name: nanoid().toLowerCase(),
+    description: nanoid().toLowerCase(),
     isPublic: true,
     creator: userID,
     admins: [userID],
