@@ -1,14 +1,8 @@
 import "dotenv/config";
 import { connect, disconnect } from "../../../src/db";
-import {
-  User,
-  Organization,
-  Interface_Organization,
-  Interface_User,
-} from "../../../src/models";
-import { Document, Types } from "mongoose";
+import { User, Organization } from "../../../src/models";
+import { Types } from "mongoose";
 import { USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import {
   beforeAll,
   afterAll,

@@ -1,12 +1,7 @@
 import "dotenv/config";
 import { membershipRequests as membershipRequestsResolver } from "../../../src/resolvers/Organization/membershipRequests";
 import { connect, disconnect } from "../../../src/db";
-import {
-  User,
-  Organization,
-  MembershipRequest,
-  Interface_Organization,
-} from "../../../src/models";
+import { User, Organization, MembershipRequest } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
   createTestUserAndOrganization,
