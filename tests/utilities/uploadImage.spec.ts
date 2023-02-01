@@ -27,7 +27,7 @@ beforeAll(async () => {
     lastName: "lastName",
     appLanguageCode: "en",
   });
-  if (!fs.existsSync(path.join(__dirname, "../../src/images"))){
+  if (!fs.existsSync(path.join(__dirname, "../../src/images"))) {
     fs.mkdir(path.join(__dirname, "../../src/images"), (err) => {
       if (err) {
         throw err;
@@ -110,9 +110,15 @@ describe("utilities -> uploadImage", () => {
     );
     expect(uploadImagePayload?.newImagePath).toEqual(testUserObj?.image);
 
-    fs.unlink(path.join(__dirname, "../../src/".concat(uploadImagePayload.newImagePath)), (err) => {
-      if (err) throw err;
-    });
+    fs.unlink(
+      path.join(
+        __dirname,
+        "../../src/".concat(uploadImagePayload.newImagePath)
+      ),
+      (err) => {
+        if (err) throw err;
+      }
+    );
   });
 
   it("should create a new Image when an old Image Path already Exists", async () => {
@@ -176,8 +182,14 @@ describe("utilities -> uploadImage", () => {
       testUserObj?.image
     );
     expect(uploadImagePayload?.newImagePath).toEqual(testUserObj?.image);
-    fs.unlink(path.join(__dirname, "../../src/".concat(uploadImagePayload.newImagePath)), (err) => {
-      if (err) throw err;
-    });
+    fs.unlink(
+      path.join(
+        __dirname,
+        "../../src/".concat(uploadImagePayload.newImagePath)
+      ),
+      (err) => {
+        if (err) throw err;
+      }
+    );
   });
 });
