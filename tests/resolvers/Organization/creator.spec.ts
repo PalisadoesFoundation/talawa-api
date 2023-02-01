@@ -18,45 +18,20 @@ import {
   afterEach,
   vi,
 } from "vitest";
+import {
+  createTestUserAndOrganization,
+  testUserType,
+  testOrganizationType,
+} from "../../helpers/userAndOrg";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-
-let testOrganization:
-  | (Interface_Organization & Document<any, any, Interface_Organization>)
-  | null;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        createdOrganizations: testOrganization._id,
-        adminFor: testOrganization._id,
-        joinedOrganizations: testOrganization._id,
-      },
-    }
-  );
+  const userAndOrg = await createTestUserAndOrganization();
+  testUser = userAndOrg[0];
+  testOrganization = userAndOrg[1];
 });
 
 afterAll(async () => {

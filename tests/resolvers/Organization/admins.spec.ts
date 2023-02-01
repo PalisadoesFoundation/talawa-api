@@ -12,7 +12,7 @@ let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
-  let userAndOrg = await createTestUserAndOrganization();
+  const userAndOrg = await createTestUserAndOrganization();
   testOrganization = userAndOrg[1];
 });
 
