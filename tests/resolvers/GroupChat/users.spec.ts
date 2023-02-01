@@ -1,58 +1,19 @@
 import "dotenv/config";
 import { users as usersResolver } from "../../../src/resolvers/GroupChat/users";
 import { connect, disconnect } from "../../../src/db";
-import {
-  User,
-  Organization,
-  Interface_GroupChat,
-  GroupChat,
-} from "../../../src/models";
-import { Document } from "mongoose";
-import { nanoid } from "nanoid";
+import { User } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  createTestGroupChatMessage,
+  testGroupChatMessageType,
+} from "../../helpers/groupChat";
 
-let testGroupChat: Interface_GroupChat &
-  Document<any, any, Interface_GroupChat>;
+let testGroupChat: testGroupChatMessageType;
 
 beforeAll(async () => {
   await connect();
-
-  const testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        createdOrganizations: testOrganization._id,
-        adminFor: testOrganization._id,
-        joinedOrganizations: testOrganization._id,
-      },
-    }
-  );
-
-  testGroupChat = await GroupChat.create({
-    creator: testUser._id,
-    users: [testUser._id],
-    organization: testOrganization._id,
-    title: "title",
-  });
+  const resultArray = await createTestGroupChatMessage();
+  testGroupChat = resultArray[3];
 });
 
 afterAll(async () => {
@@ -61,13 +22,13 @@ afterAll(async () => {
 
 describe("resolvers -> GroupChat -> users", () => {
   it(`returns user objects for parent.users`, async () => {
-    const parent = testGroupChat.toObject();
+    const parent = testGroupChat!.toObject();
 
     const usersPayload = await usersResolver?.(parent, {}, {});
 
     const users = await User.find({
       _id: {
-        $in: testGroupChat.users,
+        $in: testGroupChat!.users,
       },
     }).lean();
 
