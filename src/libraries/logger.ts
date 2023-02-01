@@ -36,11 +36,6 @@ const formats = {
 };
 
 const logger = createLogger({
-  level: appConfig.log_level,
-  format:
-    appConfig.colorize_logs === "true"
-      ? formats.colorized
-      : formats.non_colorized,
   transports: [
     new transports.Console({
       level: appConfig.log_level,

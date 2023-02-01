@@ -1,7 +1,6 @@
 import "dotenv/config";
 import _ from "lodash";
 import { afterEach, describe, expect, it, vi } from "vitest";
-//import { getTracingId } from "./../../src/libraries/requestTracing";
 import { appConfig } from "./../../src/config/appConfig";
 
 vi.mock("winston", () => {
