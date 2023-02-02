@@ -1,54 +1,25 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Interface_Organization,
-} from "../../../src/models";
+import { Types } from "mongoose";
 import { MutationCreateGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { createGroupChat as createGroupChatResolver } from "../../../src/resolvers/Mutation/createGroupChat";
 import { ORGANIZATION_NOT_FOUND, USER_NOT_FOUND } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  testOrganizationType,
+  testUserType,
+  createTestUserAndOrganization,
+} from "../../helpers/userAndOrg";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
+  const resultsArray = await createTestUserAndOrganization();
 
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
+  testUser = resultsArray[0];
+  testOrganization = resultsArray[1];
 });
 
 afterAll(async () => {
@@ -87,7 +58,7 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await createGroupChatResolver?.({}, args, context);
@@ -100,14 +71,14 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
     try {
       const args: MutationCreateGroupChatArgs = {
         data: {
-          organizationId: testOrganization.id,
+          organizationId: testOrganization!.id,
           title: "",
           userIds: [Types.ObjectId().toString()],
         },
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await createGroupChatResolver?.({}, args, context);
@@ -119,14 +90,14 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
   it(`creates the groupChat and returns it`, async () => {
     const args: MutationCreateGroupChatArgs = {
       data: {
-        organizationId: testOrganization.id,
+        organizationId: testOrganization!.id,
         title: "title",
-        userIds: [testUser.id],
+        userIds: [testUser!.id],
       },
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const createGroupChatPayload = await createGroupChatResolver?.(
@@ -138,9 +109,9 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
     expect(createGroupChatPayload).toEqual(
       expect.objectContaining({
         title: "title",
-        creator: testUser._id,
-        users: [testUser._id],
-        organization: testOrganization._id,
+        creator: testUser!._id,
+        users: [testUser!._id],
+        organization: testOrganization!._id,
       })
     );
   });

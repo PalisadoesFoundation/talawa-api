@@ -1,6 +1,5 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import { Interface_User, User } from "../../../src/models";
+import { Types } from "mongoose";
 import { connect, disconnect } from "../../../src/db";
 import { MutationAddUserImageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { addUserImage as addUserImageResolver } from "../../../src/resolvers/Mutation/addUserImage";
@@ -14,20 +13,13 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { nanoid } from "nanoid";
+import { testUserType, createTestUser } from "../../helpers/userAndOrg";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: testUserType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
+  testUser = await createTestUser();
 });
 
 afterAll(async () => {
@@ -106,7 +98,7 @@ describe("resolvers -> Mutation -> addUserImage", () => {
     };
 
     const context = {
-      userId: testUser._id,
+      userId: testUser!._id,
     };
 
     const { addUserImage: addUserImageResolverUserError } = await import(
@@ -120,7 +112,7 @@ describe("resolvers -> Mutation -> addUserImage", () => {
 
     expect(spy).toHaveBeenCalledTimes(1);
     expect(addUserImagePayload).toEqual({
-      ...testUser.toObject(),
+      ...testUser!.toObject(),
 
       image: "imageAlreadyInDbPath",
     });
@@ -142,7 +134,7 @@ describe("resolvers -> Mutation -> addUserImage", () => {
     };
 
     const context = {
-      userId: testUser._id,
+      userId: testUser!._id,
     };
 
     const { addUserImage: addUserImageResolverUserError } = await import(
@@ -156,7 +148,7 @@ describe("resolvers -> Mutation -> addUserImage", () => {
 
     expect(spy).toHaveBeenCalledTimes(1);
     expect(addUserImagePayload).toEqual({
-      ...testUser.toObject(),
+      ...testUser!.toObject(),
 
       image: "newImagePath",
     });

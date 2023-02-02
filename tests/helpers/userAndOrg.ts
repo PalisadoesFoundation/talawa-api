@@ -28,7 +28,8 @@ export const createTestUser = async (): Promise<testUserType> => {
 };
 
 export const createTestOrganizationWithAdmin = async (
-  userID: string
+  userID: string,
+  isMember = true
 ): Promise<testOrganizationType> => {
   const testOrganization = await Organization.create({
     name: `orgName${nanoid().toLowerCase()}`,
@@ -36,7 +37,7 @@ export const createTestOrganizationWithAdmin = async (
     isPublic: true,
     creator: userID,
     admins: [userID],
-    members: [userID],
+    members: isMember ? [userID] : [],
   });
 
   await User.updateOne(
@@ -55,10 +56,13 @@ export const createTestOrganizationWithAdmin = async (
   return testOrganization;
 };
 
-export const createTestUserAndOrganization = async (): Promise<
-  [testUserType, testOrganizationType]
-> => {
+export const createTestUserAndOrganization = async (
+  isMember = true
+): Promise<[testUserType, testOrganizationType]> => {
   const testUser = await createTestUser();
-  const testOrganization = await createTestOrganizationWithAdmin(testUser!._id);
+  const testOrganization = await createTestOrganizationWithAdmin(
+    testUser!._id,
+    isMember
+  );
   return [testUser, testOrganization];
 };
