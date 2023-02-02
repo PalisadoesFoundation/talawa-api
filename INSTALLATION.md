@@ -6,20 +6,31 @@ This document provides instructions on how to set up and start a running instanc
 
 # Table of contents
 
-1.  [Install node.js](#install-nodejs)
-2.  [Install git](#install-git)
-3.  [Clone this repository](#clone-this-repository)
-4.  [Change directory into the cloned repo](#change-directory-into-the-cloned-repo)
-5.  [Creating .env file](#creating-env-file)
-6.  [Access/refresh token secrets](#accessrefresh-token-secrets)
-7.  [MongoDB](#mongodb)
-8.  [Google/firebase](#googlefirebase)
-9.  [Running talawa-api](#running-talawa-api)
-10. [Installing required packages](#installing-required-packages)
-11. [Accessing talawa-api](#accessing-talawa-api)
-12. [Changing default talawa-api port](#changing-default-talawa-api-port)
-13. [Running tests](#running-tests)
-14. [Linting code files](#linting-code-files)
+- [Talawa-api installation](#talawa-api-installation)
+- [Table of contents](#table-of-contents)
+  - [Install node.js](#install-nodejs)
+  - [Install git](#install-git)
+  - [Clone this repository](#clone-this-repository)
+  - [Change directory into the cloned repo](#change-directory-into-the-cloned-repo)
+  - [Creating .env file](#creating-env-file)
+  - [Access/refresh token secrets](#accessrefresh-token-secrets)
+    - [Setting up ACCESS\_TOKEN\_SECRET in .env file](#setting-up-access_token_secret-in-env-file)
+    - [Setting up REFRESH\_TOKEN\_SECRET in .env file](#setting-up-refresh_token_secret-in-env-file)
+  - [MongoDB](#mongodb)
+    - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
+    - [Setting up MONGODB\_URL in .env file](#setting-up-mongodb_url-in-env-file)
+    - [Optional:- Managing mongodb database using VSCode extension](#optional--managing-mongodb-database-using-vscode-extension)
+  - [Google/firebase](#googlefirebase)
+    - [Setting up RECAPTCHA\_SECRET\_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
+    - [Setting up MAIL\_USERNAME/MAIL\_PASSWORD in .env file](#setting-up-mail_usernamemail_password-in-env-file)
+    - [Generate Firebase Keys for the Talawa Notification Service](#generate-firebase-keys-for-the-talawa-notification-service)
+    - [Apply the Firebase Keys to the Talawa Mobile App](#apply-the-firebase-keys-to-the-talawa-mobile-app)
+  - [Installing required packages](#installing-required-packages)
+  - [Running talawa-api](#running-talawa-api)
+  - [Accessing talawa-api](#accessing-talawa-api)
+  - [Changing default talawa-api port](#changing-default-talawa-api-port)
+  - [Running tests](#running-tests)
+  - [Linting code files](#linting-code-files)
 
 <br/>
 
@@ -102,6 +113,14 @@ Run the following command and copy/paste the result to the variable named `REFRE
 
 Talawa-api makes use of `mongoDB` for its database needs. We make use of `mongoose ODM` to interact with the mongoDB database from within the code.
 
+**NOTE -**
+It must be noted that that talawa-api actually uses **2** databases. You only have to setup
+one database and provide it's URL in the .env file. This will be `primary database` and would
+be used to store all your data.
+
+In addition, we would automatically create a new database with the name `YOUR_DB_NAME` + `_TEST`,
+which would be exclusively used for storing all the testing data generated during the testing process so that it does not bloat the main database with un-necesary data.
+
 <br/>
 
 ### Setting up the mongoDB database
@@ -122,8 +141,8 @@ Which approach you choose to set up your mongodb database does not matter. What 
 
 Your MongoDB installation may include either the `mongo` or `mongosh` command line utility. An easy way of determining the `connection string` is to:
 
-1. Run the command line utility 
-1. Note the `connection string` in the first lines of the output. 
+1. Run the command line utility
+1. Note the `connection string` in the first lines of the output.
 1. Add the first section of the `connection string` to the `MONGO_DB_URL` section of the `.env` file. In this case it is `mongodb://127.0.0.1:27017/`
 
 ```
@@ -142,6 +161,7 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 ...
 
 ```
+
 <br/>
 
 ### Optional:- Managing mongodb database using VSCode extension
@@ -381,6 +401,10 @@ You can run the tests for talawa-api using this command:-
         npm run test
 
 <br/>
+
+**NOTE -** STRICTLY use the `test` script to run the tests as this script sets the `NODE_ENV` to `testing` and thus connects to the testing database instead of the main database.
+
+Using other ways to run tests (like using `npx vitest`) may result in the bloating of the main database with testing data. Before using such methods, do ensure the `NODE_ENV` is set to `testing` to avoid the aforementioned.
 
 ## Linting code files
 

@@ -4,7 +4,13 @@ import { logger } from "./libraries";
 
 export const connect = async () => {
   try {
-    await mongoose.connect(MONGO_DB_URL!, {
+    let CONNECTION_URL = MONGO_DB_URL;
+
+    if (process.env.NODE_ENV === "testing") {
+      CONNECTION_URL += "_TEST";
+    }
+
+    await mongoose.connect(CONNECTION_URL!, {
       useCreateIndex: true,
       useUnifiedTopology: true,
       useFindAndModify: false,
