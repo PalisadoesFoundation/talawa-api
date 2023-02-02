@@ -6,7 +6,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
   createTestDirectChat,
   testDirectChatType,
-} from "../../helpers/directChatMessage";
+} from "../../helpers/directChat";
 
 let testDirectChatMessage: testDirectChatType;
 beforeAll(async () => {
