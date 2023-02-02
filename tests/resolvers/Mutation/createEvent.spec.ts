@@ -1,11 +1,6 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Interface_Organization,
-} from "../../../src/models";
+import { Types } from "mongoose";
+import { User, Organization } from "../../../src/models";
 import { MutationCreateEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { createEvent as createEventResolver } from "../../../src/resolvers/Mutation/createEvent";
@@ -14,40 +9,36 @@ import {
   ORGANIZATION_NOT_FOUND,
   USER_NOT_FOUND,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  testUserType,
+  testOrganizationType,
+  createTestUser,
+} from "../../helpers/userAndOrg";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
 
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
+  testUser = await createTestUser();
   testOrganization = await Organization.create({
     name: "name",
     description: "description",
     isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
+    creator: testUser!._id,
+    admins: [testUser!._id],
+    members: [testUser!._id],
   });
 
   await User.updateOne(
     {
-      _id: testUser._id,
+      _id: testUser!._id,
     },
     {
       $push: {
-        adminFor: testOrganization._id,
+        adminFor: testOrganization!._id,
       },
     }
   );
@@ -95,7 +86,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await createEventResolver?.({}, args, context);
@@ -109,7 +100,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
     try {
       const args: MutationCreateEventArgs = {
         data: {
-          organizationId: testOrganization.id,
+          organizationId: testOrganization!.id,
           allDay: false,
           description: "",
           endDate: "",
@@ -128,7 +119,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await createEventResolver?.({}, args, context);
@@ -140,19 +131,19 @@ describe("resolvers -> Mutation -> createEvent", () => {
   it(`creates the event and returns it`, async () => {
     await User.updateOne(
       {
-        _id: testUser._id,
+        _id: testUser!._id,
       },
       {
         $push: {
-          createdOrganizations: testOrganization._id,
-          joinedOrganizations: testOrganization._id,
+          createdOrganizations: testOrganization!._id,
+          joinedOrganizations: testOrganization!._id,
         },
       }
     );
 
     const args: MutationCreateEventArgs = {
       data: {
-        organizationId: testOrganization.id,
+        organizationId: testOrganization!.id,
         allDay: false,
         description: "newDescription",
         endDate: new Date().toUTCString(),
@@ -171,7 +162,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const createEventPayload = await createEventResolver?.({}, args, context);
@@ -188,20 +179,20 @@ describe("resolvers -> Mutation -> createEvent", () => {
         recurring: false,
         title: "newTitle",
         recurrance: "DAILY",
-        creator: testUser._id,
+        creator: testUser!._id,
         registrants: expect.arrayContaining([
           expect.objectContaining({
-            userId: testUser._id.toString(),
-            user: testUser._id,
+            userId: testUser!._id.toString(),
+            user: testUser!._id,
           }),
         ]),
-        admins: expect.arrayContaining([testUser._id]),
-        organization: testOrganization._id,
+        admins: expect.arrayContaining([testUser!._id]),
+        organization: testOrganization!._id,
       })
     );
 
     const updatedTestUser = await User.findOne({
-      _id: testUser._id,
+      _id: testUser!._id,
     })
       .select(["eventAdmin", "createdEvents", "registeredEvents"])
       .lean();
