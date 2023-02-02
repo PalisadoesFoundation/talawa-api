@@ -5,6 +5,7 @@ import {
 } from "./userAndOrg";
 import { Event, User, Interface_Event } from "../../src/models";
 import { Document } from "mongoose";
+import { nanoid } from "nanoid";
 
 export type testEventType =
   | (Interface_Event & Document<any, any, Interface_Event>)
@@ -18,8 +19,8 @@ export const createTestEvent = async (): Promise<
   const testOrganization = resultsArray[1];
 
   const testEvent = await Event.create({
-    title: "title",
-    description: "description",
+    title: `title${nanoid().toLowerCase()}`,
+    description: `description${nanoid().toLowerCase()}`,
     allDay: true,
     startDate: new Date(),
     recurring: true,
