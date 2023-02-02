@@ -64,7 +64,7 @@ describe("logger functions", () => {
     expect(spyInfoLog).toBeCalledWith("");
   });
 
-  it("testing format colorization", () => {
+  it("testing console colorization", () => {
     if (appConfig.colorize_logs === "true") {
       expect(format.colorize).toHaveBeenCalledTimes(1);
     } else {
