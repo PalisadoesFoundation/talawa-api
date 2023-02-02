@@ -25,7 +25,7 @@ jobs:
   # code coverage (post PR merge) is reported
   ##############################################################################
 
-  Code-Coverage:
+  Test-Application:
     name: Testing Application
     runs-on: ubuntu-latest
     strategy:
@@ -63,7 +63,7 @@ jobs:
 
       - name: Run the tests
         run: npm run test
-
+    
       - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
         uses: codecov/codecov-action@v3
         with:
