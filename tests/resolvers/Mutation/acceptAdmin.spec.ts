@@ -31,6 +31,11 @@ afterAll(async () => {
   await disconnect();
 });
 
+afterEach(() => {
+  vi.doUnmock("../../../src/constants");
+  vi.resetModules();
+});
+
 describe("resolvers -> Mutation -> acceptAdmin", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
@@ -115,11 +120,6 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
 });
 
 describe("resolvers -> Mutation -> acceptAdmin [IN_PRODUCTION]", () => {
-  afterEach(() => {
-    vi.doUnmock("../../../src/constants");
-    vi.resetModules();
-  });
-
   it(`throws NotFoundError if no user exists with _id === context.userId [IN_PRODUCTION]`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
@@ -145,10 +145,10 @@ describe("resolvers -> Mutation -> acceptAdmin [IN_PRODUCTION]", () => {
         };
       });
 
-      const { acceptAdmin: acceptAdminResolver } = await import(
+      const { acceptAdmin } = await import(
         "../../../src/resolvers/Mutation/acceptAdmin"
       );
-      await acceptAdminResolver?.({}, args, context);
+      await acceptAdmin?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
       expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
@@ -156,6 +156,11 @@ describe("resolvers -> Mutation -> acceptAdmin [IN_PRODUCTION]", () => {
   });
 
   it(`throws NotFoundError if no user exists with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
     try {
       await User.updateOne(
         {
@@ -175,10 +180,23 @@ describe("resolvers -> Mutation -> acceptAdmin [IN_PRODUCTION]", () => {
       const context = {
         userId: testUser!.id,
       };
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+          IN_PRODUCTION: true,
+        };
+      });
 
-      await acceptAdminResolver?.({}, args, context);
+      const { acceptAdmin } = await import(
+        "../../../src/resolvers/Mutation/acceptAdmin"
+      );
+      await acceptAdmin?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
     }
   });
 });
