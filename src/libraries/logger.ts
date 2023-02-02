@@ -25,16 +25,14 @@ const formats = {
   ),
 };
 
-const loggerFormat =
-  appConfig.colorize_logs === "true"
-    ? formats.colorized
-    : formats.non_colorized;
-
 const logger = createLogger({
   transports: [
     new transports.Console({
       level: appConfig.log_level,
-      format: loggerFormat,
+      format:
+        appConfig.colorize_logs === "true"
+          ? formats.colorized
+          : formats.non_colorized,
     }),
   ],
 });
