@@ -1,14 +1,8 @@
 import "dotenv/config";
 import { connect, disconnect } from "../../../src/db";
-import {
-  User,
-  Organization,
-  Interface_Organization,
-  Interface_User,
-} from "../../../src/models";
-import { Document, Types } from "mongoose";
+import { User, Organization } from "../../../src/models";
+import { Types } from "mongoose";
 import { USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import {
   beforeAll,
   afterAll,
@@ -18,45 +12,20 @@ import {
   afterEach,
   vi,
 } from "vitest";
+import {
+  createTestUserAndOrganization,
+  testUserType,
+  testOrganizationType,
+} from "../../helpers/userAndOrg";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-
-let testOrganization:
-  | (Interface_Organization & Document<any, any, Interface_Organization>)
-  | null;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        createdOrganizations: testOrganization._id,
-        adminFor: testOrganization._id,
-        joinedOrganizations: testOrganization._id,
-      },
-    }
-  );
+  const userAndOrg = await createTestUserAndOrganization();
+  testUser = userAndOrg[0];
+  testOrganization = userAndOrg[1];
 });
 
 afterAll(async () => {
@@ -156,7 +125,7 @@ describe("resolvers -> Organization -> creator", () => {
       },
       {
         $set: {
-          creator: testUser._id,
+          creator: testUser!._id,
         },
       },
       {
