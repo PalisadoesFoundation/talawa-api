@@ -29,14 +29,15 @@ export const createTestUser = async (): Promise<testUserType> => {
 
 export const createTestOrganizationWithAdmin = async (
   userID: string,
-  isMember = true
+  isMember = true,
+  isAdmin = true
 ): Promise<testOrganizationType> => {
   const testOrganization = await Organization.create({
     name: `orgName${nanoid().toLowerCase()}`,
     description: `orgDesc${nanoid().toLowerCase()}`,
     isPublic: true,
     creator: userID,
-    admins: [userID],
+    admins: isAdmin ? [userID] : [],
     members: isMember ? [userID] : [],
   });
 
@@ -57,12 +58,14 @@ export const createTestOrganizationWithAdmin = async (
 };
 
 export const createTestUserAndOrganization = async (
-  isMember = true
+  isMember = true,
+  isAdmin = true
 ): Promise<[testUserType, testOrganizationType]> => {
   const testUser = await createTestUser();
   const testOrganization = await createTestOrganizationWithAdmin(
     testUser!._id,
-    isMember
+    isMember,
+    isAdmin
   );
   return [testUser, testOrganization];
 };
