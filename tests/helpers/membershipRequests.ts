@@ -10,6 +10,7 @@ import {
   User,
 } from "../../src/models";
 import { Document } from "mongoose";
+import { nanoid } from "nanoid";
 
 export type testMembershipRequestType =
   | (Interface_MembershipRequest &
@@ -22,8 +23,8 @@ export const createTestMembershipRequest = async (): Promise<
   const testUser = await createTestUser();
 
   const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
+    name: `name${nanoid().toLowerCase()}`,
+    description: `desc${nanoid().toLowerCase()}`,
     isPublic: true,
     creator: testUser!._id,
     admins: [testUser!._id],
