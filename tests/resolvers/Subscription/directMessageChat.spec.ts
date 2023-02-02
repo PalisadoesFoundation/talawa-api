@@ -7,12 +7,21 @@ describe("src -> resolvers -> Subscription -> directMessageChat", () => {
       "../../../src/resolvers/Subscription/directMessageChat"
     );
     const _args = {};
+    const _parent = {};
     const context = {
-      pubsub: "hello",
+      pubsub: {
+        asyncInterator: () => {
+          return "string";
+        },
+      },
     };
     const payload = {
       directMessageChat: true,
     };
+    // @ts-ignore
+    directMessageChatPayload._parent = _parent;
+    // @ts-ignore
+    directMessageChatPayload._args = _args;
     // @ts-ignore
     directMessageChatPayload.payload = payload;
     // @ts-ignore
