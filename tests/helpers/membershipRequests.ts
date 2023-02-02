@@ -2,6 +2,7 @@ import {
   createTestUser,
   testUserType,
   testOrganizationType,
+  createTestUserAndOrganization,
 } from "./userAndOrg";
 import {
   Interface_MembershipRequest,
@@ -60,5 +61,48 @@ export const createTestMembershipRequest = async (): Promise<
     }
   );
 
+  return [testUser, testOrganization, testMembershipRequest];
+};
+
+export const createTestMembershipRequestAsNew = async (): Promise<
+  [testUserType, testOrganizationType, testMembershipRequestType]
+> => {
+  const resultsArray = await createTestUserAndOrganization();
+
+  let testUser = resultsArray[0];
+  let testOrganization = resultsArray[1];
+
+  const testMembershipRequest = await MembershipRequest.create({
+    user: testUser!._id,
+    organization: testOrganization!._id,
+  });
+
+  testUser = await User.findOneAndUpdate(
+    {
+      _id: testUser!._id,
+    },
+    {
+      $push: {
+        membershipRequests: testMembershipRequest._id,
+      },
+    },
+    {
+      new: true,
+    }
+  );
+
+  testOrganization = await Organization.findOneAndUpdate(
+    {
+      _id: testOrganization!._id,
+    },
+    {
+      $push: {
+        membershipRequests: testMembershipRequest._id,
+      },
+    },
+    {
+      new: true,
+    }
+  );
   return [testUser, testOrganization, testMembershipRequest];
 };
