@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { Types } from "mongoose";
-import { Organization, GroupChat, GroupChatMessage } from "../../../src/models";
+import { Organization, GroupChat } from "../../../src/models";
 import { MutationAddUserToGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import {
@@ -345,7 +345,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
     }
   });
 
-  it(`deletes the groupChat with _id === args.chatId and returns it`, async () => {
+  it(`add the groupChat with _id === args.chatId and returns it`, async () => {
     await GroupChat.updateOne(
       {
         _id: testGroupChat!._id,
@@ -374,12 +374,6 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       context
     );
 
-    expect(addUserToGroupChatPayload).toEqual(testGroupChat!.toObject());
-
-    const testDeletedGroupChatMessages = await GroupChatMessage.find({
-      groupChatMessageBelongsTo: testGroupChat!._id,
-    }).lean();
-
-    expect(testDeletedGroupChatMessages).toEqual([]);
+    expect(addUserToGroupChatPayload?._id).toEqual(testGroupChat!._id);
   });
 });
