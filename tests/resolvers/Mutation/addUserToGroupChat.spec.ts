@@ -373,7 +373,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       args,
       context
     );
-
     expect(addUserToGroupChatPayload?._id).toEqual(testGroupChat!._id);
+    expect(addUserToGroupChatPayload?.users).toEqual([testUser!._id]);
   });
 });
