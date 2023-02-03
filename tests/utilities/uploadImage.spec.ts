@@ -1,5 +1,4 @@
 require("dotenv").config();
-import { nanoid } from "nanoid";
 import fs from "fs";
 import {
   afterAll,
@@ -11,22 +10,19 @@ import {
   vi,
 } from "vitest";
 import { connect, disconnect } from "../../src/db";
-import { Interface_User, User } from "../../src/models";
-import { Document } from "mongoose";
+import { User } from "../../src/models";
 import path from "path";
+import {
+  createTestUserAndOrganization,
+  testUserType,
+} from "../helpers/userAndOrg";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: testUserType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
+  const testUserObj = await createTestUserAndOrganization();
+  testUser = testUserObj[0];
   if (!fs.existsSync(path.join(__dirname, "../../src/images"))) {
     fs.mkdir(path.join(__dirname, "../../src/images"), (err) => {
       if (err) {
@@ -92,7 +88,7 @@ describe("utilities -> uploadImage", () => {
 
     const testUserObj = await User.findByIdAndUpdate(
       {
-        _id: testUser.id,
+        _id: testUser!.id,
       },
       {
         $set: {
@@ -148,7 +144,7 @@ describe("utilities -> uploadImage", () => {
     const { uploadImage } = await import("../../src/utilities/uploadImage");
 
     const testUserBeforeObj = await User.findById({
-      _id: testUser.id,
+      _id: testUser!.id,
     });
     const oldImagePath = testUserBeforeObj?.image!;
     console.log(oldImagePath);
@@ -165,7 +161,7 @@ describe("utilities -> uploadImage", () => {
 
     const testUserObj = await User.findByIdAndUpdate(
       {
-        _id: testUser.id,
+        _id: testUser!.id,
       },
       {
         $set: {

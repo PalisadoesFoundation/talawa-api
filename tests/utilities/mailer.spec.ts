@@ -1,6 +1,10 @@
 import nodemailer from "nodemailer";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ERROR_IN_SENDING_MAIL, MAIL_PASSWORD, MAIL_USERNAME } from "../../src/constants";
+import {
+  ERROR_IN_SENDING_MAIL,
+  MAIL_PASSWORD,
+  MAIL_USERNAME,
+} from "../../src/constants";
 import { mailer } from "../../src/utilities/mailer";
 import { nanoid } from "nanoid";
 import Mail from "nodemailer/lib/mailer";

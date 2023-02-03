@@ -1,13 +1,6 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Interface_Organization,
-  MembershipRequest,
-  Interface_MembershipRequest,
-} from "../../../src/models";
+import { Types } from "mongoose";
+import { User, Organization, MembershipRequest } from "../../../src/models";
 import { MutationAcceptMembershipRequestArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { acceptMembershipRequest as acceptMembershipRequestResolver } from "../../../src/resolvers/Mutation/acceptMembershipRequest";
@@ -18,63 +11,23 @@ import {
   USER_NOT_AUTHORIZED,
   USER_NOT_FOUND,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
+import {
+  testMembershipRequestType,
+  createTestMembershipRequest,
+} from "../../helpers/membershipRequests";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
-let testMembershipRequest: Interface_MembershipRequest &
-  Document<any, any, Interface_MembershipRequest>;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
+let testMembershipRequest: testMembershipRequestType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    visibleInSearch: true,
-  });
-
-  testMembershipRequest = await MembershipRequest.create({
-    user: testUser._id,
-    organization: testOrganization._id,
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        createdOrganizations: testOrganization._id,
-        adminFor: testOrganization._id,
-        membershipRequests: testMembershipRequest._id,
-      },
-    }
-  );
-
-  await Organization.updateOne(
-    {
-      _id: testOrganization._id,
-    },
-    {
-      $push: {
-        membershipRequests: testMembershipRequest._id,
-      },
-    }
-  );
+  const resultArray = await createTestMembershipRequest();
+  testUser = resultArray[0];
+  testOrganization = resultArray[1];
+  testMembershipRequest = resultArray[2];
 });
 
 afterAll(async () => {
@@ -89,7 +42,7 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await acceptMembershipRequestResolver?.({}, args, context);
@@ -103,7 +56,7 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
     try {
       await MembershipRequest.updateOne(
         {
-          _id: testMembershipRequest._id,
+          _id: testMembershipRequest!._id,
         },
         {
           $set: {
@@ -113,11 +66,11 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
       );
 
       const args: MutationAcceptMembershipRequestArgs = {
-        membershipRequestId: testMembershipRequest.id,
+        membershipRequestId: testMembershipRequest!.id,
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await acceptMembershipRequestResolver?.({}, args, context);
@@ -131,22 +84,22 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
     try {
       await MembershipRequest.updateOne(
         {
-          _id: testMembershipRequest._id,
+          _id: testMembershipRequest!._id,
         },
         {
           $set: {
-            organization: testOrganization._id,
+            organization: testOrganization!._id,
             user: Types.ObjectId().toString(),
           },
         }
       );
 
       const args: MutationAcceptMembershipRequestArgs = {
-        membershipRequestId: testMembershipRequest.id,
+        membershipRequestId: testMembershipRequest!.id,
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await acceptMembershipRequestResolver?.({}, args, context);
@@ -161,18 +114,18 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
     try {
       await MembershipRequest.updateOne(
         {
-          _id: testMembershipRequest._id,
+          _id: testMembershipRequest!._id,
         },
         {
           $set: {
-            user: testUser.id,
+            user: testUser!.id,
           },
         }
       );
 
       await Organization.updateOne(
         {
-          _id: testOrganization._id,
+          _id: testOrganization!._id,
         },
         {
           $set: {
@@ -182,11 +135,11 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
       );
 
       const args: MutationAcceptMembershipRequestArgs = {
-        membershipRequestId: testMembershipRequest.id,
+        membershipRequestId: testMembershipRequest!.id,
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await acceptMembershipRequestResolver?.({}, args, context);
@@ -201,22 +154,22 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization._id,
+          _id: testOrganization!._id,
         },
         {
           $push: {
-            admins: testUser._id,
-            members: testUser._id,
+            admins: testUser!._id,
+            members: testUser!._id,
           },
         }
       );
 
       const args: MutationAcceptMembershipRequestArgs = {
-        membershipRequestId: testMembershipRequest.id,
+        membershipRequestId: testMembershipRequest!.id,
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await acceptMembershipRequestResolver?.({}, args, context);
@@ -228,7 +181,7 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
   it(`accepts the membershipRequest and returns it`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization._id,
+        _id: testOrganization!._id,
       },
       {
         $set: {
@@ -238,42 +191,42 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
     );
 
     const args: MutationAcceptMembershipRequestArgs = {
-      membershipRequestId: testMembershipRequest.id,
+      membershipRequestId: testMembershipRequest!.id,
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const acceptMembershipRequestPayload =
       await acceptMembershipRequestResolver?.({}, args, context);
 
     expect(acceptMembershipRequestPayload).toEqual(
-      testMembershipRequest.toObject()
+      testMembershipRequest!.toObject()
     );
 
     const updatedTestOrganization = await Organization.findOne({
-      _id: testOrganization._id,
+      _id: testOrganization!._id,
     })
       .select(["members", "membershipRequests"])
       .lean();
 
     expect(updatedTestOrganization).toEqual(
       expect.objectContaining({
-        members: expect.arrayContaining([testUser._id]),
+        members: expect.arrayContaining([testUser!._id]),
         membershipRequests: expect.arrayContaining([]),
       })
     );
 
     const updatedTestUser = await User.findOne({
-      _id: testUser._id,
+      _id: testUser!._id,
     })
       .select(["joinedOrganizations", "membershipRequests"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        joinedOrganizations: expect.arrayContaining([testOrganization._id]),
+        joinedOrganizations: expect.arrayContaining([testOrganization!._id]),
         membershipRequests: expect.arrayContaining([]),
       })
     );

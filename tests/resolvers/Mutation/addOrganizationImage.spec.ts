@@ -1,11 +1,6 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Interface_Organization,
-} from "../../../src/models";
+import { Types } from "mongoose";
+import { Organization } from "../../../src/models";
 import { MutationAddOrganizationImageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { addOrganizationImage as addOrganizationImageResolver } from "../../../src/resolvers/Mutation/addOrganizationImage";
@@ -26,11 +21,15 @@ import {
   vi,
   afterEach,
 } from "vitest";
+import {
+  testUserType,
+  testOrganizationType,
+  createTestUserAndOrganization,
+} from "../../helpers/userAndOrg";
 
 const testImagePath: string = `${nanoid().toLowerCase()}test.png`;
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
 
 vi.mock("../../utilities", () => ({
   uploadImage: vi.fn(),
@@ -38,37 +37,9 @@ vi.mock("../../utilities", () => ({
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    members: [testUser._id],
-    admins: [testUser._id],
-    blockedUsers: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
+  const resultArray = await createTestUserAndOrganization();
+  testUser = resultArray[0];
+  testOrganization = resultArray[1];
 });
 
 afterAll(async () => {
@@ -132,7 +103,7 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
       file: "",
     };
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
     const { addOrganizationImage } = await import(
       "../../../src/resolvers/Mutation/addOrganizationImage"
@@ -152,7 +123,7 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
         file: "",
       };
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
       vi.doMock("../../../src/constants", async () => {
         const actualConstants: object = await vi.importActual(
@@ -175,7 +146,7 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
   it(`updates organization's image with the old image and returns the updated organization`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization._id,
+        _id: testOrganization!._id,
       },
       {
         $set: {
@@ -190,11 +161,11 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
       })
     );
     const args: MutationAddOrganizationImageArgs = {
-      organizationId: testOrganization.id,
+      organizationId: testOrganization!.id,
       file: testImagePath,
     };
     const context = {
-      userId: testUser._id,
+      userId: testUser!._id,
     };
     const addOrganizationImagePayload = await addOrganizationImageResolver?.(
       {},
@@ -202,7 +173,7 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
       context
     );
     const updatedTestOrganization = await Organization.findOne({
-      _id: testOrganization._id,
+      _id: testOrganization!._id,
     }).lean();
     expect(addOrganizationImagePayload).toEqual(updatedTestOrganization);
     expect(addOrganizationImagePayload?.image).toEqual(testImagePath);
@@ -210,7 +181,7 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
   it(`updates organization's image with the new image and returns the updated organization`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization._id,
+        _id: testOrganization!._id,
       },
       {
         $unset: {
@@ -225,11 +196,11 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
       })
     );
     const args: MutationAddOrganizationImageArgs = {
-      organizationId: testOrganization.id,
+      organizationId: testOrganization!.id,
       file: testImagePath,
     };
     const context = {
-      userId: testUser._id,
+      userId: testUser!._id,
     };
     const addOrganizationImagePayload = await addOrganizationImageResolver?.(
       {},
@@ -237,7 +208,7 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
       context
     );
     const updatedTestOrganization = await Organization.findOne({
-      _id: testOrganization._id,
+      _id: testOrganization!._id,
     }).lean();
     expect(addOrganizationImagePayload).toEqual(updatedTestOrganization);
     expect(addOrganizationImagePayload?.image).toEqual(testImagePath);

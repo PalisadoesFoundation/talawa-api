@@ -5,37 +5,27 @@ import { appConfig } from "../config";
 
 const { combine, printf, splat, colorize, simple, timestamp } = format;
 
-const loggerFormat = printf((info) => {
-  let formatObject = `${info.level || "-"} ${info.timestamp || "-"} ${
-    getTracingId() || "-"
-  } ${info.message} ${
-    JSON.stringify(_.omit(info, ["level", "message", "stack", "timestamp"])) ||
-    "-"
-  }`;
-
-  if (info.stack) {
-    formatObject += `\n${info.stack}`;
-  }
-  return formatObject;
-});
-
 const formats = {
   colorized: combine(
     colorize(),
     splat(),
     simple(),
     timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-    loggerFormat
+    printf(
+      (info) =>`${info.level || "-"} ${info.timestamp || "-"} ${getTracingId() || "-"} ${info.message} ${JSON.stringify(_.omit(info, ["level", "message", "stack", "timestamp"])) || "-"} ${info.stack || ""}`
+    )
   ),
   non_colorized: combine(
     splat(),
     simple(),
     timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-    loggerFormat
+    printf(
+      (info) =>`${info.level || "-"} ${info.timestamp || "-"} ${getTracingId() || "-"} ${info.message} ${JSON.stringify(_.omit(info, ["level", "message", "stack", "timestamp"])) || "-"} ${info.stack || ""}`
+    )
   ),
 };
 
-export const logger = createLogger({
+const logger = createLogger({
   transports: [
     new transports.Console({
       level: appConfig.log_level,
@@ -47,10 +37,12 @@ export const logger = createLogger({
   ],
 });
 
-// Invalid code. Currently ignored by typescript. Needs fix.
-logger.stream = {
+// The code block shifted before exporting logger
+const stream = {
   // @ts-ignore
   write: (message) => {
     logger.info((message || "").trim());
   },
 };
+
+export { logger, stream };
