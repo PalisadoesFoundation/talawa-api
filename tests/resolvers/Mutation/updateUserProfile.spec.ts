@@ -87,9 +87,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       await updateUserProfileResolverUserError?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_MESSAGE);
-      // expect(error.message).toEqual(
-      //   `Translated ${USER_NOT_FOUND_MESSAGE}`
-      // );
+      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
     }
   });
 

@@ -20,6 +20,7 @@ export default defineConfig({
         "src/constants.ts",
         "src/db.ts",
         "src/server.ts",
+        "src/**/index.ts",
       ],
 
       // This is used to tell vitest which coverage provider to use. c8 is the newer and

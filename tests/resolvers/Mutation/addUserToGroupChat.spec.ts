@@ -1,14 +1,6 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Interface_Organization,
-  GroupChat,
-  Interface_GroupChat,
-  GroupChatMessage,
-} from "../../../src/models";
+import { Types } from "mongoose";
+import { Organization, GroupChat, GroupChatMessage } from "../../../src/models";
 import { MutationAddUserToGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { addUserToGroupChat as addUserToGroupChatResolver } from "../../../src/resolvers/Mutation/addUserToGroupChat";
@@ -19,54 +11,23 @@ import {
   USER_NOT_AUTHORIZED,
   USER_NOT_FOUND,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
+import {
+  testGroupChatType,
+  createTestGroupChat,
+} from "../../helpers/groupChat";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
-let testGroupChat: Interface_GroupChat &
-  Document<any, any, Interface_GroupChat>;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
+let testGroupChat: testGroupChatType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        createdOrganizations: testOrganization._id,
-        adminFor: testOrganization._id,
-        joinedOrganizations: testOrganization._id,
-      },
-    }
-  );
-
-  testGroupChat = await GroupChat.create({
-    title: "title",
-    users: [testUser._id],
-    creator: testUser._id,
-    organization: testOrganization._id,
-  });
+  const resultArray = await createTestGroupChat();
+  testUser = resultArray[0];
+  testOrganization = resultArray[1];
+  testGroupChat = resultArray[2];
 });
 
 afterAll(async () => {
@@ -78,11 +39,11 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
     try {
       const args: MutationAddUserToGroupChatArgs = {
         chatId: Types.ObjectId().toString(),
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await addUserToGroupChatResolver?.({}, args, context);
@@ -106,12 +67,12 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       );
 
       const args: MutationAddUserToGroupChatArgs = {
-        chatId: testGroupChat.id,
-        userId: testUser.id,
+        chatId: testGroupChat!.id,
+        userId: testUser!.id,
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await addUserToGroupChatResolver?.({}, args, context);
@@ -130,14 +91,14 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
         },
         {
           $set: {
-            organization: testOrganization._id,
+            organization: testOrganization!._id,
           },
         }
       );
 
       await Organization.updateOne(
         {
-          _id: testOrganization._id,
+          _id: testOrganization!._id,
         },
         {
           $set: {
@@ -147,12 +108,12 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       );
 
       const args: MutationAddUserToGroupChatArgs = {
-        chatId: testGroupChat.id,
-        userId: testUser.id,
+        chatId: testGroupChat!.id,
+        userId: testUser!.id,
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await addUserToGroupChatResolver?.({}, args, context);
@@ -165,22 +126,22 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization._id,
+          _id: testOrganization!._id,
         },
         {
           $push: {
-            admins: testUser._id,
+            admins: testUser!._id,
           },
         }
       );
 
       const args: MutationAddUserToGroupChatArgs = {
-        chatId: testGroupChat.id,
+        chatId: testGroupChat!.id,
         userId: Types.ObjectId().toString(),
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await addUserToGroupChatResolver?.({}, args, context);
@@ -193,12 +154,12 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
   of groupChat with _id === args.chatId`, async () => {
     try {
       const args: MutationAddUserToGroupChatArgs = {
-        chatId: testGroupChat.id,
-        userId: testUser.id,
+        chatId: testGroupChat!.id,
+        userId: testUser!.id,
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await addUserToGroupChatResolver?.({}, args, context);
@@ -210,7 +171,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
   it(`deletes the groupChat with _id === args.chatId and returns it`, async () => {
     await GroupChat.updateOne(
       {
-        _id: testGroupChat._id,
+        _id: testGroupChat!._id,
       },
       {
         $set: {
@@ -220,12 +181,12 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
     );
 
     const args: MutationAddUserToGroupChatArgs = {
-      chatId: testGroupChat.id,
-      userId: testUser.id,
+      chatId: testGroupChat!.id,
+      userId: testUser!.id,
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const addUserToGroupChatPayload = await addUserToGroupChatResolver?.(

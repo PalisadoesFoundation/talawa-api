@@ -25,6 +25,7 @@ import {
 import { typeDefs } from "./typeDefs";
 import { resolvers } from "./resolvers";
 import { Interface_JwtTokenPayload } from "./utilities";
+import { ACCESS_TOKEN_SECRET } from "./constants";
 
 const app = express();
 
@@ -139,7 +140,7 @@ const apolloServer = new ApolloServer({
       if (token) {
         const decodedToken = jwt.verify(
           token,
-          process.env.ACCESS_TOKEN_SECRET as string
+          ACCESS_TOKEN_SECRET as string
         ) as Interface_JwtTokenPayload;
         userId = decodedToken.userId;
       }

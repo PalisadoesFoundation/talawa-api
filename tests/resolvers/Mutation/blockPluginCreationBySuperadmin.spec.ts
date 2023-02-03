@@ -1,25 +1,18 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import { Interface_User, User } from "../../../src/models";
+import { User } from "../../../src/models";
+import { Types } from "mongoose";
 import { MutationBlockPluginCreationBySuperadminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { blockPluginCreationBySuperadmin as blockPluginCreationBySuperadminResolver } from "../../../src/resolvers/Mutation/blockPluginCreationBySuperadmin";
 import { USER_NOT_AUTHORIZED, USER_NOT_FOUND } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { testUserType, createTestUser } from "../../helpers/userAndOrg";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: testUserType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
+  testUser = await createTestUser();
 });
 
 afterAll(async () => {
@@ -35,7 +28,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await blockPluginCreationBySuperadminResolver?.({}, args, context);
@@ -48,7 +41,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
     try {
       const args: MutationBlockPluginCreationBySuperadminArgs = {
         blockUser: false,
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       const context = {
@@ -66,11 +59,11 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
     try {
       const args: MutationBlockPluginCreationBySuperadminArgs = {
         blockUser: false,
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await blockPluginCreationBySuperadminResolver?.({}, args, context);
@@ -83,7 +76,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
   with _id === args.userId and returns the user`, async () => {
     await User.updateOne(
       {
-        _id: testUser._id,
+        _id: testUser!._id,
       },
       {
         userType: "SUPERADMIN",
@@ -92,18 +85,18 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
 
     const args: MutationBlockPluginCreationBySuperadminArgs = {
       blockUser: true,
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const blockPluginCreationBySuperadminPayload =
       await blockPluginCreationBySuperadminResolver?.({}, args, context);
 
     const testUpdatedTestUser = await User.findOne({
-      _id: testUser.id,
+      _id: testUser!.id,
     }).lean();
 
     expect(blockPluginCreationBySuperadminPayload).toEqual(testUpdatedTestUser);
