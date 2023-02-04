@@ -12,14 +12,7 @@ const formats = {
     simple(),
     timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
     printf(
-      (info) =>
-        `${info.level || "-"} ${info.timestamp || "-"} ${
-          getTracingId() || "-"
-        } ${info.message} ${
-          JSON.stringify(
-            _.omit(info, ["level", "message", "stack", "timestamp"])
-          ) || "-"
-        } ${info.stack || ""}`
+      (info) =>`${info.level || "-"} ${info.timestamp || "-"} ${getTracingId() || "-"} ${info.message} ${JSON.stringify(_.omit(info, ["level", "message", "stack", "timestamp"])) || "-"} ${info.stack || ""}`
     )
   ),
   non_colorized: combine(
@@ -27,14 +20,7 @@ const formats = {
     simple(),
     timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
     printf(
-      (info) =>
-        `${info.level || "-"} ${info.timestamp || "-"} ${
-          getTracingId() || "-"
-        } ${info.message} ${
-          JSON.stringify(
-            _.omit(info, ["level", "message", "stack", "timestamp"])
-          ) || "-"
-        } ${info.stack || ""}`
+      (info) =>`${info.level || "-"} ${info.timestamp || "-"} ${getTracingId() || "-"} ${info.message} ${JSON.stringify(_.omit(info, ["level", "message", "stack", "timestamp"])) || "-"} ${info.stack || ""}`
     )
   ),
 };
