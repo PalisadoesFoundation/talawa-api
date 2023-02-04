@@ -15,7 +15,7 @@ const deValue = `de ${nanoid().toLowerCase()}`;
 const frValue = `fr ${nanoid().toLowerCase()}`;
 
 beforeAll(async () => {
-  await connect("TALAWA_TESING_DB");
+  await connect("TALAWA_TESTING_DB");
 
   testLanguages = await Language.insertMany([
     {

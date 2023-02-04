@@ -20,7 +20,7 @@ import {
 let testUser: testUserType;
 
 beforeAll(async () => {
-  await connect("TALAWA_TESING_DB");
+  await connect("TALAWA_TESTING_DB");
   const testUserObj = await createTestUserAndOrganization();
   testUser = testUserObj[0];
 

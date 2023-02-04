@@ -19,7 +19,7 @@ let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
 let testTask: Interface_Task & Document<any, any, Interface_Task>;
 
 beforeAll(async () => {
-  await connect("TALAWA_TESING_DB");
+  await connect("TALAWA_TESTING_DB");
 
   testUsers = await User.insertMany([
     {

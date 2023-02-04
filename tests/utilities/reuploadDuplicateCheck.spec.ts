@@ -26,7 +26,7 @@ const testErrors = [
 ];
 
 beforeAll(async () => {
-  await connect("TALAWA_TESING_DB");
+  await connect("TALAWA_TESTING_DB");
 });
 
 afterAll(async () => {

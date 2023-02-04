@@ -29,7 +29,7 @@ let testPost: Interface_Post & Document<any, any, Interface_Post>;
 let testComment: Interface_Comment & Document<any, any, Interface_Comment>;
 
 beforeAll(async () => {
-  await connect("TALAWA_TESING_DB");
+  await connect("TALAWA_TESTING_DB");
 
   testUsers = await User.insertMany([
     {

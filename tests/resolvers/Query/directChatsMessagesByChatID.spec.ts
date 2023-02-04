@@ -18,7 +18,7 @@ let testDirectChats: (Interface_DirectChat &
   Document<any, any, Interface_DirectChat>)[];
 
 beforeAll(async () => {
-  await connect("TALAWA_TESING_DB");
+  await connect("TALAWA_TESTING_DB");
 
   const testUsers = await User.insertMany([
     {

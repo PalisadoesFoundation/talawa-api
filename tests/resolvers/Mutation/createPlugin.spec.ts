@@ -10,7 +10,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 let testUser: Interface_User & Document<any, any, Interface_User>;
 
 beforeAll(async () => {
-  await connect("TALAWA_TESING_DB");
+  await connect("TALAWA_TESTING_DB");
 
   testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,

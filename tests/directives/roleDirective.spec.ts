@@ -48,7 +48,7 @@ const resolvers = {
 };
 
 beforeAll(async () => {
-  await connect("TALAWA_TESING_DB");
+  await connect("TALAWA_TESTING_DB");
   testUser = await User.create({
     userId: Types.ObjectId().toString(),
     email: `email${nanoid().toLowerCase()}@gmail.com`,
