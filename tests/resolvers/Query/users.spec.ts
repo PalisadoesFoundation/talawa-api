@@ -23,7 +23,18 @@ describe("resolvers -> Query -> users", () => {
   it("throws NotFoundError if no user exists", async () => {
     const testObjectId = new mongoose.Types.ObjectId();
 
+    vi.doMock("../../../src/constants", async () => {
+      const actualConstants: object = await vi.importActual(
+        "../../../src/constants"
+      );
+      return {
+        ...actualConstants,
+        IN_PRODUCTION: true,
+      };
+    });
+
     const { requestContext } = await import("../../../src/libraries");
+
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
