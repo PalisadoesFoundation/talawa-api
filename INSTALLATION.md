@@ -6,20 +6,30 @@ This document provides instructions on how to set up and start a running instanc
 
 # Table of contents
 
-1.  [Install node.js](#install-nodejs)
-2.  [Install git](#install-git)
-3.  [Clone this repository](#clone-this-repository)
-4.  [Change directory into the cloned repo](#change-directory-into-the-cloned-repo)
-5.  [Creating .env file](#creating-env-file)
-6.  [Access/refresh token secrets](#accessrefresh-token-secrets)
-7.  [MongoDB](#mongodb)
-8.  [Google/firebase](#googlefirebase)
-9.  [Running talawa-api](#running-talawa-api)
-10. [Installing required packages](#installing-required-packages)
-11. [Accessing talawa-api](#accessing-talawa-api)
-12. [Changing default talawa-api port](#changing-default-talawa-api-port)
-13. [Running tests](#running-tests)
-14. [Linting code files](#linting-code-files)
+- [Talawa-api installation](#talawa-api-installation)
+- [Table of contents](#table-of-contents)
+  - [Install node.js](#install-nodejs)
+  - [Install git](#install-git)
+  - [Setting up the repository](#setting-up-the-repository)
+  - [Creating .env file](#creating-env-file)
+  - [Access/refresh token secrets](#accessrefresh-token-secrets)
+    - [Setting up ACCESS\_TOKEN\_SECRET in .env file](#setting-up-access_token_secret-in-env-file)
+    - [Setting up REFRESH\_TOKEN\_SECRET in .env file](#setting-up-refresh_token_secret-in-env-file)
+  - [MongoDB](#mongodb)
+    - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
+    - [Setting up MONGODB\_URL in .env file](#setting-up-mongodb_url-in-env-file)
+    - [Optional:- Managing mongodb database using VSCode extension](#optional--managing-mongodb-database-using-vscode-extension)
+  - [Google/firebase](#googlefirebase)
+    - [Setting up RECAPTCHA\_SECRET\_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
+    - [Setting up MAIL\_USERNAME/MAIL\_PASSWORD in .env file](#setting-up-mail_usernamemail_password-in-env-file)
+    - [Generate Firebase Keys for the Talawa Notification Service](#generate-firebase-keys-for-the-talawa-notification-service)
+    - [Apply the Firebase Keys to the Talawa Mobile App](#apply-the-firebase-keys-to-the-talawa-mobile-app)
+  - [Installing required packages](#installing-required-packages)
+  - [Running talawa-api](#running-talawa-api)
+  - [Accessing talawa-api](#accessing-talawa-api)
+  - [Changing default talawa-api port](#changing-default-talawa-api-port)
+  - [Running tests](#running-tests)
+  - [Linting code files](#linting-code-files)
 
 <br/>
 
@@ -35,25 +45,47 @@ Follow the setup guide for `git` on official [git docs](https://git-scm.com/down
 
 <br/>
 
-## Clone this repository
+## Setting up the repository
 
-First you need a local copy of talawa-api. Run the following command in the directory of choice on your local system.
+1. Navigate to the folder where you want to setup the repository. Here, I will set it up in a folder called `talawa`.
 
-        git clone https://github.com/PalisadoesFoundation/talawa-api
+2. Navigate to the folder and open a terminal in this folder (you can right-click and choose appropiate option based onn your OS). Next, we'll fork and clone the `talawa-api` repository.
 
-This will download a local copy of talawa-api in that directory.
+3. Navigate to [https://github.com/PalisadoesFoundation/talawa-api/](hhttps://github.com/PalisadoesFoundation/talawa-api/) and click on the fork button. It is placed on the right corner opposite the repository name `PalisadoesFoundation/talawa-api`.
 
-<br/>
+![Image with fork](./image/install1.png)
 
-## Change directory into the cloned repo
+4. You should now see `talawa-api` under your repositories. It will be marked as forked from `PalisadoesFoundation/talawa-api`
 
-Right after cloning the repo you can change the directory of your current `terminal(shell)` to the root directory of cloned repository using this command:-
+![Image of user's clone](./image/install2.png)
 
-        cd ./talawa-api
+5. Clone the repository to your local computer (replacing the values in `{{}}`):
 
-**NOTE:-** `All the commands we're going to execute in the following instructions will assume you are in the root directory of the project. If you fail to do so, the commands will not work.`
+```
+$ git clone https://github.com/{{GITHUB USERNAME}}/talawa-api.git
+```
 
-<br/>
+Now your origin remote is pointing to your fork (`{{GITHUB USERNAME}}/talawa-api`). To stay up to date with the main `PalisadoesFoundation/talawa-api` repository, add it as a remote called upstream. You'll first need to move into the `talawa-api` directory that was created by the clone operation.
+
+```
+$ cd talawa-api
+$ git remote add upstream https://github.com/PalisadoesFoundation/talawa-api.git
+$ git remote -v
+origin     https://github.com/{{GITHUB USERNAME}}/talawa-api.git (fetch)
+origin     https://github.com/{{GITHUB USERNAME}}/talawa-api (push)
+upstream   https://github.com/PalisadoesFoundation/talawa-api.git (fetch)
+upstream   https://github.com/PalisadoesFoundation/talawa-api.git (push)
+```
+
+The git remote -v command at the end shows all your current remotes.
+
+Now you can pull in changes from `PalisadoesFoundation/talawa-api` by running `git pull upstream {{branch}}` and push your changes to your fork by running `git push origin {{branch}}`.
+
+We have established a clean setup now. We can make any changes we like and push it to this forked repository, and then make a pull request for getting the changes merged into the original repository. Here's a nice picture explaining the process ([image source](https://github.com/Rafase282/My-FreeCodeCamp-Code/wiki/Lesson-Save-your-Code-Revisions-Forever-with-Git)).
+
+![Diagram of the fork-and-clone workflow](./image/install3.png)
+
+For making any changes to original repository, we first sync our cloned repository with original repository. We merge `develop` with `upstream/develop` to do this. Now we make a new branch, do the changes on the branch, push the branch to forked repository, and make a PR from Github interface. We use a different branch to make changes so that we can work on multiple issues while still having a clean version in develop branch.
 
 ## Creating .env file
 
@@ -122,8 +154,8 @@ Which approach you choose to set up your mongodb database does not matter. What 
 
 Your MongoDB installation may include either the `mongo` or `mongosh` command line utility. An easy way of determining the `connection string` is to:
 
-1. Run the command line utility 
-1. Note the `connection string` in the first lines of the output. 
+1. Run the command line utility
+1. Note the `connection string` in the first lines of the output.
 1. Add the first section of the `connection string` to the `MONGO_DB_URL` section of the `.env` file. In this case it is `mongodb://127.0.0.1:27017/`
 
 ```
@@ -142,6 +174,7 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 ...
 
 ```
+
 <br/>
 
 ### Optional:- Managing mongodb database using VSCode extension
