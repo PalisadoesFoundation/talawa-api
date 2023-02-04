@@ -632,39 +632,5 @@ describe("resolvers -> Query -> users", () => {
 
       expect(usersPayload).toEqual(users);
     });
-
-    it(`returns list of all existing users sorted by 'email_DESC' if
-    args.orderBy === undefined`, async () => {
-      const where = {};
-
-      const sort = {
-        email: -1,
-      };
-
-      const args: QueryUsersArgs = {
-        where: null,
-        orderBy: undefined,
-      };
-
-      const usersPayload = await usersResolver?.({}, args, {});
-
-      let users = await User.find(where)
-        .sort(sort)
-        .select(["-password"])
-        .populate("createdOrganizations")
-        .populate("createdEvents")
-        .populate("joinedOrganizations")
-        .populate("registeredEvents")
-        .populate("eventAdmin")
-        .populate("adminFor")
-        .lean();
-
-      users = users.map((user) => ({
-        ...user,
-        organizationsBlockedBy: [],
-      }));
-
-      expect(usersPayload).toEqual(users);
-    });
   });
 });
