@@ -144,6 +144,26 @@ export const getSort = (orderBy: any) => {
       return {
         email: -1,
       };
+    } else if (orderBy === "text_ASC") {
+      return { text: 1 };
+    } else if (orderBy === "text_DESC") {
+      return { text: -1 };
+    } else if (orderBy === "imageUrl_ASC") {
+      return { imageUrl: 1 };
+    } else if (orderBy === "imageUrl_DESC") {
+      return { imageUrl: -1 };
+    } else if (orderBy === "videoUrl_ASC") {
+      return { videoUrl: 1 };
+    } else if (orderBy === "videoUrl_DESC") {
+      return { videoUrl: -1 };
+    } else if (orderBy === "likeCount_ASC") {
+      return { likeCount: 1 };
+    } else if (orderBy === "likeCount_DESC") {
+      return { likeCount: -1 };
+    } else if (orderBy === "commentCount_ASC") {
+      return { commentCount: 1 };
+    } else if (orderBy === "commentCount_DESC") {
+      return { commentCount: -1 };
     }
   }
 
