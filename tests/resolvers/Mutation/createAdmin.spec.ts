@@ -7,6 +7,7 @@ import { createAdmin as createAdminResolver } from "../../../src/resolvers/Mutat
 import {
   ORGANIZATION_MEMBER_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
+  USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
@@ -83,7 +84,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
       await createAdminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
     }
   });
 
