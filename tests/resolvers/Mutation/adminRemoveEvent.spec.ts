@@ -5,12 +5,12 @@ import { MutationAdminRemoveEventArgs } from "../../../src/types/generatedGraphQ
 import { connect, disconnect } from "../../../src/db";
 import { adminRemoveEvent as adminRemoveEventResolver } from "../../../src/resolvers/Mutation/adminRemoveEvent";
 import {
-  EVENT_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND,
+  EVENT_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
+  USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
 import { testEventType, createTestEvent } from "../../helpers/events";
 
@@ -25,6 +25,10 @@ beforeAll(async () => {
   testUser = resultsArray[0];
   testOrganization = resultsArray[1];
   testEvent = resultsArray[2];
+  const { requestContext } = await import("../../../src/libraries");
+  vi.spyOn(requestContext, "translate").mockImplementation(
+    (message) => message
+  );
 });
 
 afterAll(async () => {
@@ -33,6 +37,10 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> adminRemoveEvent", () => {
   it(`throws NotFoundError if no event exists with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message
+    );
     try {
       const args: MutationAdminRemoveEventArgs = {
         eventId: Types.ObjectId().toString(),
@@ -44,7 +52,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
 
       await adminRemoveEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(EVENT_NOT_FOUND);
+      expect(error.message).toEqual(EVENT_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -72,7 +80,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
 
       await adminRemoveEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -99,7 +107,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
 
       await adminRemoveEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 

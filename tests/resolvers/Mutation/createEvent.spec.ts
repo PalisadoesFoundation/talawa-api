@@ -5,11 +5,11 @@ import { MutationCreateEventArgs } from "../../../src/types/generatedGraphQLType
 import { connect, disconnect } from "../../../src/db";
 import { createEvent as createEventResolver } from "../../../src/resolvers/Mutation/createEvent";
 import {
-  ORGANIZATION_NOT_AUTHORIZED,
-  ORGANIZATION_NOT_FOUND,
-  USER_NOT_FOUND,
+  ORGANIZATION_NOT_AUTHORIZED_MESSAGE,
+  ORGANIZATION_NOT_FOUND_MESSAGE,
+  USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
   testUserType,
   testOrganizationType,
@@ -42,6 +42,10 @@ beforeAll(async () => {
       },
     }
   );
+  const { requestContext } = await import("../../../src/libraries");
+  vi.spyOn(requestContext, "translate").mockImplementation(
+    (message) => message
+  );
 });
 
 afterAll(async () => {
@@ -59,7 +63,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
       await createEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -91,7 +95,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
       await createEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -124,7 +128,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
       await createEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_AUTHORIZED);
+      expect(error.message).toEqual(ORGANIZATION_NOT_AUTHORIZED_MESSAGE);
     }
   });
 

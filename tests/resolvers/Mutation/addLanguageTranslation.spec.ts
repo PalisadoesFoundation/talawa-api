@@ -4,7 +4,7 @@ import { connect, disconnect } from "../../../src/db";
 import { MutationAddLanguageTranslationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Language } from "../../../src/models";
 import { nanoid } from "nanoid";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 
 const randomValue = nanoid().toLowerCase();
 
@@ -57,12 +57,16 @@ describe("resolvers -> Mutation -> addLanguageTranslation", () => {
 
   it(`throws ConflictError if translation.lang_code === args.data.translation_lang_code
   for language with en === args.data.en_value`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => `Translated ${message}`
+    );
     try {
       const args: MutationAddLanguageTranslationArgs = testArgs[1];
 
       await addLanguageTranslationResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual("Translation already present");
+      expect(error.message).toEqual(`Translated translation.alreadyPresent`);
     }
   });
 

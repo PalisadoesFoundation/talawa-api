@@ -3,16 +3,12 @@ import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
 import { User, Organization, Event } from "../../models";
 import {
-  IN_PRODUCTION,
-  USER_NOT_FOUND,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
-  ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_PARAM,
-  EVENT_NOT_FOUND,
   EVENT_NOT_FOUND_PARAM,
   EVENT_NOT_FOUND_CODE,
   EVENT_NOT_FOUND_MESSAGE,
@@ -30,9 +26,7 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
   // Checks whether event exists.
   if (!event) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? EVENT_NOT_FOUND
-        : requestContext.translate(EVENT_NOT_FOUND_MESSAGE),
+      requestContext.translate(EVENT_NOT_FOUND_MESSAGE),
       EVENT_NOT_FOUND_CODE,
       EVENT_NOT_FOUND_PARAM
     );
@@ -45,9 +39,7 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
   // Checks whether organization exists.
   if (!organization) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? ORGANIZATION_NOT_FOUND
-        : requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
+      requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
       ORGANIZATION_NOT_FOUND_CODE,
       ORGANIZATION_NOT_FOUND_PARAM
     );
@@ -60,9 +52,7 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
   // Checks whether currentUser exists.
   if (!currentUser) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND
-        : requestContext.translate(USER_NOT_FOUND_MESSAGE),
+      requestContext.translate(USER_NOT_FOUND_MESSAGE),
       USER_NOT_FOUND_CODE,
       USER_NOT_FOUND_PARAM
     );

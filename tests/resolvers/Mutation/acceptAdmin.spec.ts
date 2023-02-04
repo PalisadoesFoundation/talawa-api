@@ -5,7 +5,6 @@ import { connect, disconnect } from "../../../src/db";
 import { acceptAdmin as acceptAdminResolver } from "../../../src/resolvers/Mutation/acceptAdmin";
 import {
   USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import {

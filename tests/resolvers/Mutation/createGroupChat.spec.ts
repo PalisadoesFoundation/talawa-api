@@ -3,8 +3,11 @@ import { Types } from "mongoose";
 import { MutationCreateGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { createGroupChat as createGroupChatResolver } from "../../../src/resolvers/Mutation/createGroupChat";
-import { ORGANIZATION_NOT_FOUND, USER_NOT_FOUND } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  ORGANIZATION_NOT_FOUND_MESSAGE,
+  USER_NOT_FOUND_MESSAGE,
+} from "../../../src/constants";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
   testOrganizationType,
   testUserType,
@@ -20,6 +23,10 @@ beforeAll(async () => {
 
   testUser = resultsArray[0];
   testOrganization = resultsArray[1];
+  const { requestContext } = await import("../../../src/libraries");
+  vi.spyOn(requestContext, "translate").mockImplementation(
+    (message) => message
+  );
 });
 
 afterAll(async () => {
@@ -43,7 +50,7 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
 
       await createGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -63,7 +70,7 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
 
       await createGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -83,7 +90,7 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
 
       await createGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 

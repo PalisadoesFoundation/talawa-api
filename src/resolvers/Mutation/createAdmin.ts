@@ -3,17 +3,12 @@ import { User, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import { creatorCheck } from "../../utilities";
 import {
-  IN_PRODUCTION,
-  ORGANIZATION_NOT_FOUND,
-  USER_NOT_FOUND,
-  USER_NOT_AUTHORIZED,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_PARAM,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-  ORGANIZATION_MEMBER_NOT_FOUND,
   ORGANIZATION_MEMBER_NOT_FOUND_CODE,
   ORGANIZATION_MEMBER_NOT_FOUND_MESSAGE,
   ORGANIZATION_MEMBER_NOT_FOUND_PARAM,
@@ -34,9 +29,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   // Checks whether organization exists.
   if (!organization) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? ORGANIZATION_NOT_FOUND
-        : requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
+      requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
       ORGANIZATION_NOT_FOUND_CODE,
       ORGANIZATION_NOT_FOUND_PARAM
     );
@@ -52,9 +45,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   // Checks whether user with _id === args.data.userId exists.
   if (userExists === false) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND
-        : requestContext.translate(USER_NOT_FOUND_MESSAGE),
+      requestContext.translate(USER_NOT_FOUND_MESSAGE),
       USER_NOT_FOUND_CODE,
       USER_NOT_FOUND_PARAM
     );
@@ -67,9 +58,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   // Checks whether user with _id === args.data.userId is not a member of organization.
   if (userIsOrganizationMember === false) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? ORGANIZATION_MEMBER_NOT_FOUND
-        : requestContext.translate(ORGANIZATION_MEMBER_NOT_FOUND_MESSAGE),
+      requestContext.translate(ORGANIZATION_MEMBER_NOT_FOUND_MESSAGE),
       ORGANIZATION_MEMBER_NOT_FOUND_CODE,
       ORGANIZATION_MEMBER_NOT_FOUND_PARAM
     );
@@ -82,9 +71,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   // Checks whether user with _id === args.data.userId is already an admin of organization.
   if (userIsOrganizationAdmin === true) {
     throw new errors.UnauthorizedError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_AUTHORIZED
-        : requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
+      requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
       USER_NOT_AUTHORIZED_CODE,
       USER_NOT_AUTHORIZED_PARAM
     );
