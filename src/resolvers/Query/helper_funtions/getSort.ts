@@ -96,6 +96,54 @@ export const getSort = (orderBy: any) => {
       return {
         deadline: -1,
       };
+    } else if (orderBy === "name_ASC") {
+      return {
+        name: 1,
+      };
+    } else if (orderBy === "name_DESC") {
+      return {
+        name: -1,
+      };
+    } else if (orderBy === "apiUrl_ASC") {
+      return {
+        apiUrl: 1,
+      };
+    } else if (orderBy === "apiUrl_DESC") {
+      return {
+        apiUrl: -1,
+      };
+    } else if (orderBy === "firstName_ASC") {
+      return {
+        firstName: 1,
+      };
+    } else if (orderBy === "firstName_DESC") {
+      return {
+        firstName: -1,
+      };
+    } else if (orderBy === "lastName_ASC") {
+      return {
+        lastName: 1,
+      };
+    } else if (orderBy === "lastName_DESC") {
+      return {
+        lastName: -1,
+      };
+    } else if (orderBy === "appLanguageCode_ASC") {
+      return {
+        appLanguageCode: 1,
+      };
+    } else if (orderBy === "appLanguageCode_DESC") {
+      return {
+        appLanguageCode: -1,
+      };
+    } else if (orderBy === "email_ASC") {
+      return {
+        email: 1,
+      };
+    } else if (orderBy === "email_DESC") {
+      return {
+        email: -1,
+      };
     }
   }
 
