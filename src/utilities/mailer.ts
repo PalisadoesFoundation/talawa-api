@@ -1,5 +1,9 @@
 import nodemailer from "nodemailer";
-import { ERROR_IN_SENDING_MAIL, MAIL_PASSWORD, MAIL_USERNAME } from "../constants";
+import {
+  ERROR_IN_SENDING_MAIL,
+  MAIL_PASSWORD,
+  MAIL_USERNAME,
+} from "../constants";
 
 export interface Interface_MailFields {
   emailTo: string;

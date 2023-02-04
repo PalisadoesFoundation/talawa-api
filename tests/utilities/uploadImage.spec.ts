@@ -24,7 +24,7 @@ beforeAll(async () => {
   const testUserObj = await createTestUserAndOrganization();
   testUser = testUserObj[0];
 
-if (!fs.existsSync(path.join(__dirname, "../../src/images"))) {
+  if (!fs.existsSync(path.join(__dirname, "../../src/images"))) {
     fs.mkdir(path.join(__dirname, "../../src/images"), (err) => {
       if (err) {
         throw err;
