@@ -33,7 +33,7 @@ const testArgs: MutationAddLanguageTranslationArgs[] = [
 ];
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESING_DB");
 });
 
 afterAll(async () => {

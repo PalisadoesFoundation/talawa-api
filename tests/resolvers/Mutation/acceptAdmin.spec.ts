@@ -11,7 +11,7 @@ import { User } from "../../../src/models";
 let testUser: testUserType;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESING_DB");
   testUser = await createTestUser();
 });
 

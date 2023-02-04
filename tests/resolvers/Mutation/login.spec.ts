@@ -22,7 +22,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 let testUser: Interface_User & Document<any, any, Interface_User>;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESING_DB");
 
   const hashedTestPassword = await bcrypt.hash("password", 12);
 

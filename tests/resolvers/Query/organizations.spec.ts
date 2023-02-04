@@ -16,7 +16,7 @@ let testOrganization1: Interface_Organization &
   Document<any, any, Interface_Organization>;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESING_DB");
 
   const testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,

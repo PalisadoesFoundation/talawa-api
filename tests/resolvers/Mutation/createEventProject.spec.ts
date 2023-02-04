@@ -31,7 +31,7 @@ let testOrganization: testOrganizationType;
 let testEvent: testEventType;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESING_DB");
 
   testUser = await createTestUser();
   testAdminUser = await createTestUser();

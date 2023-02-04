@@ -22,7 +22,7 @@ let testOrganization: testOrganizationType;
 let testMembershipRequest: testMembershipRequestType;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESING_DB");
   const resultsArray = await createTestMembershipRequestAsNew();
 
   testUser = resultsArray[0];

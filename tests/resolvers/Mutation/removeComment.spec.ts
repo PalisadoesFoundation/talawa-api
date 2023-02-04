@@ -30,7 +30,7 @@ let testComment:
   | null;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESING_DB");
 
   testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,

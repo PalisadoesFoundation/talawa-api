@@ -22,7 +22,7 @@ let testOrganization: testOrganizationType;
 let testGroupChat: testGroupChatType;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESING_DB");
   const resultsArray = await createTestGroupChat();
 
   testUser = resultsArray[0];

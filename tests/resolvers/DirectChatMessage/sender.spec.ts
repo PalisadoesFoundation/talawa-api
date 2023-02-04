@@ -10,7 +10,7 @@ import {
 
 let testDirectChatMessage: testDirectChatType;
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   const temp = await createTestDirectChat();
   testDirectChatMessage = temp[2];
 });

@@ -12,7 +12,7 @@ import * as mongoose from "mongoose";
 let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESING_DB");
 });
 
 afterAll(async () => {

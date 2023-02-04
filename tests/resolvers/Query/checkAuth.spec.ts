@@ -8,7 +8,7 @@ import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESING_DB");
 });
 
 afterAll(async () => {

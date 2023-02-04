@@ -10,7 +10,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESING_DB");
 
   testUsers = await User.insertMany([
     {

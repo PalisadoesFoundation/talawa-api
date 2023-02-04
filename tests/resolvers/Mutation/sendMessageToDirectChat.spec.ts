@@ -20,7 +20,7 @@ let testDirectChat: Interface_DirectChat &
   Document<any, any, Interface_DirectChat>;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESING_DB");
 
   testUsers = await User.insertMany([
     {

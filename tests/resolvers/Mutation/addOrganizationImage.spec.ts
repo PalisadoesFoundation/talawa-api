@@ -36,7 +36,7 @@ vi.mock("../../utilities", () => ({
 }));
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESING_DB");
   const resultArray = await createTestUserAndOrganization();
   testUser = resultArray[0];
   testOrganization = resultArray[1];

@@ -11,7 +11,7 @@ import {
 let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESING_DB");
   const userAndOrg = await createTestUserAndOrganization();
   testOrganization = userAndOrg[1];
 });
