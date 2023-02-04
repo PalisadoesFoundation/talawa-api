@@ -11,6 +11,13 @@ export const connect = async (dbName: string | undefined = undefined) => {
       process.exit(1);
     }
 
+    if (dbName && process.env.NODE_ENV !== "testing") {
+      logger.error(
+        "You are trying to connect to a non-production database, but no custom environment [like `testing`] is set."
+      );
+      process.exit(1);
+    }
+
     const connectionOptions: mongoose.ConnectOptions = {
       useCreateIndex: true,
       useUnifiedTopology: true,
