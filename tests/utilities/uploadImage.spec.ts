@@ -23,8 +23,8 @@ beforeAll(async () => {
   await connect();
   const testUserObj = await createTestUserAndOrganization();
   testUser = testUserObj[0];
-  if (!fs.existsSync(path.join(__dirname, "../../src/images"))) {
-    fs.mkdir(path.join(__dirname, "../../src/images"), (err) => {
+  if (!fs.existsSync(path.join(__dirname, "../../images"))) {
+    fs.mkdir(path.join(__dirname, "../../images"), (err) => {
       if (err) {
         throw err;
       }
@@ -37,7 +37,7 @@ beforeAll(async () => {
   const data = img.replace(/^data:image\/\w+;base64,/, "");
   const buf = Buffer.from(data, "base64");
   await fs.writeFile(
-    path.join(__dirname, "../../src/images/image.png"),
+    path.join(__dirname, "../../images/image.png"),
     buf,
     (error) => {
       if (error) console.log(error);
@@ -46,7 +46,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  fs.unlink(path.join(__dirname, "../../src/images/image.png"), (err) => {
+  fs.unlink(path.join(__dirname, "../../images/image.png"), (err) => {
     if (err) throw err;
   });
   await disconnect();
@@ -63,7 +63,7 @@ describe("utilities -> uploadImage", () => {
       filename: "image.png",
       createReadStream: () => {
         return fs.createReadStream(
-          path.join(__dirname, "../../src/images/image.png")
+          path.join(__dirname, "../../images/image.png")
         );
       },
     };
@@ -107,10 +107,7 @@ describe("utilities -> uploadImage", () => {
     expect(uploadImagePayload?.newImagePath).toEqual(testUserObj?.image);
 
     fs.unlink(
-      path.join(
-        __dirname,
-        "../../src/".concat(uploadImagePayload.newImagePath)
-      ),
+      path.join(__dirname, "../../".concat(uploadImagePayload.newImagePath)),
       (err) => {
         if (err) throw err;
       }
@@ -122,7 +119,7 @@ describe("utilities -> uploadImage", () => {
       filename: "image.png",
       createReadStream: () => {
         return fs.createReadStream(
-          path.join(__dirname, "../../src/images/image.png")
+          path.join(__dirname, "../../images/image.png")
         );
       },
     };
@@ -179,10 +176,7 @@ describe("utilities -> uploadImage", () => {
     );
     expect(uploadImagePayload?.newImagePath).toEqual(testUserObj?.image);
     fs.unlink(
-      path.join(
-        __dirname,
-        "../../src/".concat(uploadImagePayload.newImagePath)
-      ),
+      path.join(__dirname, "../../".concat(uploadImagePayload.newImagePath)),
       (err) => {
         if (err) throw err;
       }

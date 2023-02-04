@@ -22,7 +22,7 @@ export const uploadImage = async (
     createReadStream()
       .pipe(
         createWriteStream(
-          path.join(__dirname, "../images", `/${id}-${filename}`)
+          path.join(__dirname, "../../images", `/${id}-${filename}`)
         )
       )
       .on("close", resolve)
