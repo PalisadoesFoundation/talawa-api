@@ -118,8 +118,8 @@ It must be noted that that talawa-api actually uses **2** databases. You only ha
 one database and provide it's URL in the .env file. This will be `primary database` and would
 be used to store all your data.
 
-In addition, we would automatically create a new database with the name `YOUR_DB_NAME` + `_TEST`,
-which would be exclusively used for storing all the testing data generated during the testing process so that it does not bloat the main database with un-necesary data.
+In addition, we would automatically create a new database with the name `TALAWA_TESTING_DB`,
+which would be exclusively used for storing all the test data generated during the testing process so that it does not bloat the main database with unnecessary data.
 
 <br/>
 
