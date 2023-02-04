@@ -4,14 +4,10 @@ import { Organization, GroupChat } from "../../../src/models";
 import { MutationAddUserToGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import {
-  CHAT_NOT_FOUND,
   CHAT_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_MESSAGE,
-  USER_ALREADY_MEMBER,
   USER_ALREADY_MEMBER_MESSAGE,
   USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import {
@@ -52,25 +48,6 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
   });
 
   it(`throws NotFoundError if no groupChat exists with _id === args.chatId`, async () => {
-    const args: MutationAddUserToGroupChatArgs = {
-      chatId: Types.ObjectId().toString(),
-      userId: testUser!.id,
-    };
-
-    const context = {
-      userId: testUser!.id,
-    };
-
-    const { addUserToGroupChat } = await import(
-      "../../../src/resolvers/Mutation/addUserToGroupChat"
-    );
-
-    expect(async () => {
-      await addUserToGroupChat?.({}, args, context);
-    }).rejects.toThrowError(CHAT_NOT_FOUND);
-  });
-
-  it(`throws NotFoundError if no groupChat exists with _id === args.chatId and IN_PRODUCTION is true`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -90,7 +67,6 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
       const { addUserToGroupChat } = await import(
@@ -105,35 +81,6 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
 
   it(`throws NotFoundError if no organization exists with _id === groupChat.organization
   for groupChat with _id === args.chatId`, async () => {
-    await GroupChat.updateOne(
-      {
-        _id: testGroupChat!._id,
-      },
-      {
-        $set: {
-          organization: Types.ObjectId().toString(),
-        },
-      }
-    );
-
-    const args: MutationAddUserToGroupChatArgs = {
-      chatId: testGroupChat!.id,
-      userId: testUser!.id,
-    };
-
-    const context = {
-      userId: testUser!.id,
-    };
-    const { addUserToGroupChat } = await import(
-      "../../../src/resolvers/Mutation/addUserToGroupChat"
-    );
-    expect(async () => {
-      await addUserToGroupChat?.({}, args, context);
-    }).rejects.toThrowError(ORGANIZATION_NOT_FOUND);
-  });
-
-  it(`throws NotFoundError if no organization exists with _id === groupChat.organization
-  for groupChat with _id === args.chatId and IN_PRODUCTION is true`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -164,7 +111,6 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
       const { addUserToGroupChat } = await import(
@@ -221,34 +167,6 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
   });
 
   it(`throws NotFoundError if no user exists with _id === args.userId`, async () => {
-    await Organization.updateOne(
-      {
-        _id: testOrganization!._id,
-      },
-      {
-        $push: {
-          admins: testUser!._id,
-        },
-      }
-    );
-
-    const args: MutationAddUserToGroupChatArgs = {
-      chatId: testGroupChat!.id,
-      userId: Types.ObjectId().toString(),
-    };
-
-    const context = {
-      userId: testUser!.id,
-    };
-    const { addUserToGroupChat } = await import(
-      "../../../src/resolvers/Mutation/addUserToGroupChat"
-    );
-    expect(async () => {
-      await addUserToGroupChat?.({}, args, context);
-    }).rejects.toThrowError(USER_NOT_FOUND);
-  });
-
-  it(`throws NotFoundError if no user exists with _id === args.userId and IN_PRODUCTION is true`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -279,7 +197,6 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
       const { addUserToGroupChat } = await import(
@@ -294,25 +211,6 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
 
   it(`throws ConflictError if user with _id === args.userId is already a member 
   of groupChat with _id === args.chatId`, async () => {
-    const args: MutationAddUserToGroupChatArgs = {
-      chatId: testGroupChat!.id,
-      userId: testUser!.id,
-    };
-
-    const context = {
-      userId: testUser!.id,
-    };
-    const { addUserToGroupChat } = await import(
-      "../../../src/resolvers/Mutation/addUserToGroupChat"
-    );
-
-    expect(async () => {
-      await addUserToGroupChat?.({}, args, context);
-    }).rejects.toThrowError(USER_ALREADY_MEMBER);
-  });
-
-  it(`throws ConflictError if user with _id === args.userId is already a member 
-  of groupChat with _id === args.chatId and IN_PRODUCTION is true`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -332,7 +230,6 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
       const { addUserToGroupChat } = await import(

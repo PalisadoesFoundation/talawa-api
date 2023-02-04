@@ -2,8 +2,6 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, MessageChat } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
-  IN_PRODUCTION,
-  USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
@@ -25,9 +23,7 @@ export const createMessageChat: MutationResolvers["createMessageChat"] = async (
   // Checks whether receiverUser exists.
   if (!receiverUser) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND
-        : requestContext.translate(USER_NOT_FOUND_MESSAGE),
+      requestContext.translate(USER_NOT_FOUND_MESSAGE),
       USER_NOT_FOUND_CODE,
       USER_NOT_FOUND_PARAM
     );

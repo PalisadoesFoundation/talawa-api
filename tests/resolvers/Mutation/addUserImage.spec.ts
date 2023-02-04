@@ -2,8 +2,7 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { connect, disconnect } from "../../../src/db";
 import { MutationAddUserImageArgs } from "../../../src/types/generatedGraphQLTypes";
-import { addUserImage as addUserImageResolver } from "../../../src/resolvers/Mutation/addUserImage";
-import { USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import { USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
 import {
   beforeAll,
   afterAll,
@@ -32,21 +31,6 @@ describe("resolvers -> Mutation -> addUserImage", () => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
-  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
-    try {
-      const args: MutationAddUserImageArgs = {
-        file: "",
-      };
-
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-
-      await addUserImageResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
-    }
-  });
   it(`throws NotFoundError if no user exists with _id === context.userId // IN_PRODUCTION=true`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
@@ -69,7 +53,6 @@ describe("resolvers -> Mutation -> addUserImage", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
       const { addUserImage: addUserImageResolverUserError } = await import(
