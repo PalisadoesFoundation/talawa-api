@@ -1,17 +1,9 @@
 import "dotenv/config";
 import { connect, disconnect } from "../../../src/db";
 import { commentsByPost as commentsByPostResolver } from "../../../src/resolvers/Query/commentsByPost";
-import {
-  Comment,
-  User,
-  Post,
-  Organization,
-  Interface_Post,
-  Interface_Organization,
-  Interface_User,
-} from "../../../src/models";
-import { nanoid } from "nanoid";
-import { Document, Types } from "mongoose";
+import { Comment, Post, User, Organization } from "../../../src/models";
+
+import { Types } from "mongoose";
 import {
   COMMENT_NOT_FOUND,
   ORGANIZATION_NOT_FOUND,
@@ -20,70 +12,15 @@ import {
 } from "../../../src/constants";
 import { QueryCommentsByPostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { createPostwithComment } from "../../helpers/posts";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
-let testPost: Interface_Post & Document<any, any, Interface_Post>;
 
 beforeAll(async () => {
   await connect();
 
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  testPost = await Post.create({
-    text: "text",
-    creator: testUser._id,
-    organization: testOrganization._id,
-  });
-
-  const testComment = await Comment.create({
-    text: "text",
-    creator: testUser._id,
-    post: testPost._id,
-  });
-
-  await Post.updateOne(
-    {
-      _id: testPost._id,
-    },
-    {
-      $push: {
-        comments: [testComment._id],
-      },
-      $inc: {
-        commentCount: 1,
-      },
-    }
-  );
+  const [testUser, testOrganization] = await createTestUserAndOrganization();
+  const [testPost, testComment] = await createPostwithComment(testUser._id, testOrganization._id);
 });
 
 afterAll(async () => {

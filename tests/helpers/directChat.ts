@@ -44,3 +44,25 @@ export const createTestDirectChatMessage = async (): Promise<
 
   return [testUser, testOrganization, testDirectChat];
 };
+
+export const createTestDirectMessageForMultipleUser = async(
+  sender_id: string,
+  receiver_id: string,
+  organization_id: string,
+): Promise<testDirectChatType> => {
+  const testDirectChat = await DirectChat.create({
+    creator: sender_id,
+    users: [sender_id],
+    organization: organization_id,
+  });
+
+  await DirectChatMessage.create({
+    directChatMessageBelongsTo: testDirectChat._id,
+    sender: sender_id,
+    receiver: receiver_id,
+    createdAt: new Date(),
+    messageContent: `messageContent${nanoid().toLowerCase()}`,
+  });
+
+  return testDirectChat;
+}
