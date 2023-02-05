@@ -1,171 +1,285 @@
 export const getSort = (orderBy: any) => {
-  if (orderBy !== null) {
-    if (orderBy === "id_ASC") {
-      return {
+  let sortPayload = {};
+
+  switch (orderBy) {
+    case "id_ASC":
+      sortPayload = {
         _id: 1,
       };
-    } else if (orderBy === "id_DESC") {
-      return {
+      break;
+
+    case "id_DESC":
+      sortPayload = {
         _id: -1,
       };
-    } else if (orderBy === "title_ASC") {
-      return {
+      break;
+
+    case "title_ASC":
+      sortPayload = {
         title: 1,
       };
-    } else if (orderBy === "title_DESC") {
-      return {
+      break;
+
+    case "title_DESC":
+      sortPayload = {
         title: -1,
       };
-    } else if (orderBy === "description_ASC") {
-      return {
+      break;
+
+    case "description_ASC":
+      sortPayload = {
         description: 1,
       };
-    } else if (orderBy === "description_DESC") {
-      return {
+      break;
+
+    case "description_DESC":
+      sortPayload = {
         description: -1,
       };
-    } else if (orderBy === "startDate_ASC") {
-      return {
+      break;
+
+    case "startDate_ASC":
+      sortPayload = {
         startDate: 1,
       };
-    } else if (orderBy === "startDate_DESC") {
-      return {
+      break;
+
+    case "startDate_DESC":
+      sortPayload = {
         startDate: -1,
       };
-    } else if (orderBy === "endDate_ASC") {
-      return {
+      break;
+
+    case "endDate_ASC":
+      sortPayload = {
         endDate: 1,
       };
-    } else if (orderBy === "endDate_DESC") {
-      return {
+      break;
+
+    case "endDate_DESC":
+      sortPayload = {
         endDate: -1,
       };
-    } else if (orderBy === "allDay_ASC") {
-      return {
+      break;
+
+    case "allDay_ASC":
+      sortPayload = {
         allDay: 1,
       };
-    } else if (orderBy === "allDay_DESC") {
-      return {
+      break;
+
+    case "allDay_DESC":
+      sortPayload = {
         allDay: -1,
       };
-    } else if (orderBy === "startTime_ASC") {
-      return {
+      break;
+
+    case "startTime_ASC":
+      sortPayload = {
         startTime: 1,
       };
-    } else if (orderBy === "startTime_DESC") {
-      return {
+      break;
+
+    case "startTime_DESC":
+      sortPayload = {
         startTime: -1,
       };
-    } else if (orderBy === "endTime_ASC") {
-      return {
+      break;
+
+    case "endTime_ASC":
+      sortPayload = {
         endTime: 1,
       };
-    } else if (orderBy === "endTime_DESC") {
-      return {
+      break;
+
+    case "endTime_DESC":
+      sortPayload = {
         endTime: -1,
       };
-    } else if (orderBy === "recurrance_ASC") {
-      return {
+      break;
+
+    case "recurrance_ASC":
+      sortPayload = {
         recurrance: 1,
       };
-    } else if (orderBy === "recurrance_DESC") {
-      return {
+      break;
+
+    case "recurrance_DESC":
+      sortPayload = {
         recurrance: -1,
       };
-    } else if (orderBy === "location_ASC") {
-      return {
+      break;
+
+    case "location_ASC":
+      sortPayload = {
         location: 1,
       };
-    } else if (orderBy === "location_DESC") {
-      return {
+      break;
+
+    case "location_DESC":
+      sortPayload = {
         location: -1,
       };
-    } else if (orderBy === "createdAt_ASC") {
-      return {
+      break;
+
+    case "createdAt_ASC":
+      sortPayload = {
         createdAt: 1,
       };
-    } else if (orderBy === "createdAt_DESC") {
-      return {
+      break;
+
+    case "createdAt_DESC":
+      sortPayload = {
         createdAt: -1,
       };
-    } else if (orderBy === "deadline_ASC") {
-      return {
+      break;
+
+    case "deadline_ASC":
+      sortPayload = {
         deadline: 1,
       };
-    } else if (orderBy === "deadline_DESC") {
-      return {
+      break;
+
+    case "deadline_DESC":
+      sortPayload = {
         deadline: -1,
       };
-    } else if (orderBy === "name_ASC") {
-      return {
+      break;
+
+    case "name_ASC":
+      sortPayload = {
         name: 1,
       };
-    } else if (orderBy === "name_DESC") {
-      return {
+      break;
+
+    case "name_DESC":
+      sortPayload = {
         name: -1,
       };
-    } else if (orderBy === "apiUrl_ASC") {
-      return {
+      break;
+
+    case "apiUrl_ASC":
+      sortPayload = {
         apiUrl: 1,
       };
-    } else if (orderBy === "apiUrl_DESC") {
-      return {
+      break;
+
+    case "apiUrl_DESC":
+      sortPayload = {
         apiUrl: -1,
       };
-    } else if (orderBy === "firstName_ASC") {
-      return {
+      break;
+
+    case "firstName_ASC":
+      sortPayload = {
         firstName: 1,
       };
-    } else if (orderBy === "firstName_DESC") {
-      return {
+      break;
+
+    case "firstName_DESC":
+      sortPayload = {
         firstName: -1,
       };
-    } else if (orderBy === "lastName_ASC") {
-      return {
+      break;
+
+    case "lastName_ASC":
+      sortPayload = {
         lastName: 1,
       };
-    } else if (orderBy === "lastName_DESC") {
-      return {
+      break;
+
+    case "lastName_DESC":
+      sortPayload = {
         lastName: -1,
       };
-    } else if (orderBy === "appLanguageCode_ASC") {
-      return {
+      break;
+
+    case "appLanguageCode_ASC":
+      sortPayload = {
         appLanguageCode: 1,
       };
-    } else if (orderBy === "appLanguageCode_DESC") {
-      return {
+      break;
+
+    case "appLanguageCode_DESC":
+      sortPayload = {
         appLanguageCode: -1,
       };
-    } else if (orderBy === "email_ASC") {
-      return {
+      break;
+
+    case "email_ASC":
+      sortPayload = {
         email: 1,
       };
-    } else if (orderBy === "email_DESC") {
-      return {
+      break;
+
+    case "email_DESC":
+      sortPayload = {
         email: -1,
       };
-    } else if (orderBy === "text_ASC") {
-      return { text: 1 };
-    } else if (orderBy === "text_DESC") {
-      return { text: -1 };
-    } else if (orderBy === "imageUrl_ASC") {
-      return { imageUrl: 1 };
-    } else if (orderBy === "imageUrl_DESC") {
-      return { imageUrl: -1 };
-    } else if (orderBy === "videoUrl_ASC") {
-      return { videoUrl: 1 };
-    } else if (orderBy === "videoUrl_DESC") {
-      return { videoUrl: -1 };
-    } else if (orderBy === "likeCount_ASC") {
-      return { likeCount: 1 };
-    } else if (orderBy === "likeCount_DESC") {
-      return { likeCount: -1 };
-    } else if (orderBy === "commentCount_ASC") {
-      return { commentCount: 1 };
-    } else if (orderBy === "commentCount_DESC") {
-      return { commentCount: -1 };
-    }
+      break;
+
+    case "text_ASC":
+      sortPayload = {
+        text: 1,
+      };
+      break;
+
+    case "text_DESC":
+      sortPayload = {
+        text: -1,
+      };
+      break;
+
+    case "imageUrl_ASC":
+      sortPayload = {
+        imageUrl: 1,
+      };
+      break;
+
+    case "imageUrl_DESC":
+      sortPayload = {
+        imageUrl: -1,
+      };
+      break;
+
+    case "videoUrl_ASC":
+      sortPayload = {
+        videoUrl: 1,
+      };
+      break;
+
+    case "videoUrl_DESC":
+      sortPayload = {
+        videoUrl: -1,
+      };
+      break;
+
+    case "likeCount_ASC":
+      sortPayload = {
+        likeCount: 1,
+      };
+      break;
+
+    case "likeCount_DESC":
+      sortPayload = {
+        likeCount: -1,
+      };
+      break;
+
+    case "commentCount_ASC":
+      sortPayload = {
+        commentCount: 1,
+      };
+      break;
+
+    case "commentCount_DESC":
+      sortPayload = {
+        commentCount: -1,
+      };
+      break;
+    default:
+      break;
   }
 
-  return {};
+  return sortPayload;
 };
