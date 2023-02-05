@@ -23,6 +23,7 @@ export const createTestEventWithRegistrants = async (): Promise<
       {
         userId: testUser!._id,
         user: testUser!._id,
+        status: "ACTIVE",
       },
     ],
     admins: [testUser!._id],

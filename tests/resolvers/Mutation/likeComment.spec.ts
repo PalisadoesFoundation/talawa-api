@@ -1,72 +1,33 @@
 import "dotenv/config";
 import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Post,
-  Comment,
-  Interface_Comment,
-} from "../../../src/models";
+import { Post, Comment, Interface_Comment } from "../../../src/models";
 import { MutationLikeCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { likeComment as likeCommentResolver } from "../../../src/resolvers/Mutation/likeComment";
 import { COMMENT_NOT_FOUND, USER_NOT_FOUND } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { testUserType } from "../../helpers/userAndOrg";
+import { createTestPost } from "../../helpers/posts";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: testUserType;
 let testComment: Interface_Comment & Document<any, any, Interface_Comment>;
 
 beforeAll(async () => {
   await connect();
+  const temp = await createTestPost();
+  testUser = temp[0];
 
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-    visibleInSearch: true,
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  const testPost = await Post.create({
-    text: "text",
-    creator: testUser._id,
-    organization: testOrganization._id,
-  });
+  const testPost = temp[2];
 
   testComment = await Comment.create({
     text: "text",
-    creator: testUser._id,
-    post: testPost._id,
+    creator: testUser!._id,
+    post: testPost!._id,
   });
 
   await Post.updateOne(
     {
-      _id: testPost._id,
+      _id: testPost!._id,
     },
     {
       $push: {
@@ -107,7 +68,7 @@ describe("resolvers -> Mutation -> likeComment", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await likeCommentResolver?.({}, args, context);
@@ -123,12 +84,12 @@ describe("resolvers -> Mutation -> likeComment", () => {
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const likeCommentPayload = await likeCommentResolver?.({}, args, context);
 
-    expect(likeCommentPayload?.likedBy).toEqual([testUser._id]);
+    expect(likeCommentPayload?.likedBy).toEqual([testUser!._id]);
     expect(likeCommentPayload?.likeCount).toEqual(1);
   });
 
@@ -139,12 +100,12 @@ describe("resolvers -> Mutation -> likeComment", () => {
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const likeCommentPayload = await likeCommentResolver?.({}, args, context);
 
-    expect(likeCommentPayload?.likedBy).toEqual([testUser._id]);
+    expect(likeCommentPayload?.likedBy).toEqual([testUser!._id]);
     expect(likeCommentPayload?.likeCount).toEqual(1);
   });
 });

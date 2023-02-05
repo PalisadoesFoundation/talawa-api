@@ -1,15 +1,6 @@
 import "dotenv/config";
 import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Interface_Organization,
-  Comment,
-  Interface_Post,
-  Interface_Comment,
-  Post,
-} from "../../../src/models";
+import { Comment, Interface_Comment, Post } from "../../../src/models";
 import { MutationRemoveCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { removeComment as removeCommentResolver } from "../../../src/resolvers/Mutation/removeComment";
@@ -18,65 +9,30 @@ import {
   USER_NOT_AUTHORIZED,
   USER_NOT_FOUND,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { testUserType } from "../../helpers/userAndOrg";
+import { createTestPost, testPostType } from "../../helpers/posts";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
-let testPost: (Interface_Post & Document<any, any, Interface_Post>) | null;
+let testUser: testUserType;
+let testPost: testPostType;
 let testComment:
   | (Interface_Comment & Document<any, any, Interface_Comment>)
   | null;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        createdOrganizations: testOrganization._id,
-        adminFor: testOrganization._id,
-        joinedOrganizations: testOrganization._id,
-      },
-    }
-  );
-
-  testPost = await Post.create({
-    text: "text",
-    creator: testUser._id,
-    organization: testOrganization._id,
-  });
-
+  const temp = await createTestPost();
+  testUser = temp[0];
+  testPost = temp[2];
   testComment = await Comment.create({
     text: "text",
-    creator: testUser._id,
-    post: testPost._id,
+    creator: testUser!._id,
+    post: testPost!._id,
   });
 
   testPost = await Post.findOneAndUpdate(
     {
-      _id: testPost._id,
+      _id: testPost!._id,
     },
     {
       $push: {
@@ -120,7 +76,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await removeCommentResolver?.({}, args, context);
@@ -148,7 +104,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await removeCommentResolver?.({}, args, context);
@@ -164,7 +120,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
       },
       {
         $set: {
-          creator: testUser._id,
+          creator: testUser!._id,
         },
       }
     );
@@ -174,7 +130,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const removeCommentPayload = await removeCommentResolver?.(

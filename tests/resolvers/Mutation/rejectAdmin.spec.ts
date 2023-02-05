@@ -1,25 +1,18 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import { Interface_User, User } from "../../../src/models";
+import { Types } from "mongoose";
+import { User } from "../../../src/models";
 import { MutationRejectAdminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { rejectAdmin as rejectAdminResolver } from "../../../src/resolvers/Mutation/rejectAdmin";
 import { USER_NOT_AUTHORIZED, USER_NOT_FOUND } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { createTestUserFunc, testUserType } from "../../helpers/user";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: testUserType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
+  testUser = await createTestUserFunc();
 });
 
 afterAll(async () => {
@@ -50,7 +43,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await rejectAdminResolver?.({}, args, context);
@@ -63,7 +56,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
     try {
       await User.updateOne(
         {
-          _id: testUser._id,
+          _id: testUser!._id,
         },
         {
           $set: {
@@ -77,7 +70,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await rejectAdminResolver?.({}, args, context);
@@ -88,11 +81,11 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
 
   it(`deletes the user with _id === args.id and returns true`, async () => {
     const args: MutationRejectAdminArgs = {
-      id: testUser.id,
+      id: testUser!.id,
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const rejectAdminPayload = await rejectAdminResolver?.({}, args, context);
@@ -100,7 +93,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
     expect(rejectAdminPayload).toEqual(true);
 
     const deletedTestUser = await User.findOne({
-      _id: testUser._id,
+      _id: testUser!._id,
     }).lean();
 
     expect(deletedTestUser).toEqual(null);
