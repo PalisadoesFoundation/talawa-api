@@ -10,7 +10,7 @@ This document provides instructions on how to set up and start a running instanc
 - [Table of contents](#table-of-contents)
   - [Install node.js](#install-nodejs)
   - [Install git](#install-git)
-  - [Setting up the repository](#setting-up-the-repository)
+  - [Setting up this repository](#setting-up-this-repository)
   - [Creating .env file](#creating-env-file)
   - [Access/refresh token secrets](#accessrefresh-token-secrets)
     - [Setting up ACCESS\_TOKEN\_SECRET in .env file](#setting-up-access_token_secret-in-env-file)
@@ -45,7 +45,9 @@ Follow the setup guide for `git` on official [git docs](https://git-scm.com/down
 
 <br/>
 
-## Setting up the repository
+## Setting up this repository
+First you need a local copy of talawa-api. Run the following command in the directory of choice on your local system.
+
 
 1. Navigate to the folder where you want to setup the repository. Here, I will set it up in a folder called `talawa`.
 
@@ -65,27 +67,10 @@ Follow the setup guide for `git` on official [git docs](https://git-scm.com/down
 $ git clone https://github.com/{{GITHUB USERNAME}}/talawa-api.git
 ```
 
-Now your origin remote is pointing to your fork (`{{GITHUB USERNAME}}/talawa-api`). To stay up to date with the main `PalisadoesFoundation/talawa-api` repository, add it as a remote called upstream. You'll first need to move into the `talawa-api` directory that was created by the clone operation.
+This will setup the repository and the code files locally for you. For more detailed instructios on contributing code, and managing the versions of this repository with Git, checkout [CONTRIBUTING.md here](./CONTRIBUTING.md)
 
-```
-$ cd talawa-api
-$ git remote add upstream https://github.com/PalisadoesFoundation/talawa-api.git
-$ git remote -v
-origin     https://github.com/{{GITHUB USERNAME}}/talawa-api.git (fetch)
-origin     https://github.com/{{GITHUB USERNAME}}/talawa-api (push)
-upstream   https://github.com/PalisadoesFoundation/talawa-api.git (fetch)
-upstream   https://github.com/PalisadoesFoundation/talawa-api.git (push)
-```
+`NOTE:- All the commands we're going to execute in the following instructions will assume you are in the root directory of the project. If you fail to do so, the commands will not work.`
 
-The git remote -v command at the end shows all your current remotes.
-
-Now you can pull in changes from `PalisadoesFoundation/talawa-api` by running `git pull upstream {{branch}}` and push your changes to your fork by running `git push origin {{branch}}`.
-
-We have established a clean setup now. We can make any changes we like and push it to this forked repository, and then make a pull request for getting the changes merged into the original repository. Here's a nice picture explaining the process ([image source](https://github.com/Rafase282/My-FreeCodeCamp-Code/wiki/Lesson-Save-your-Code-Revisions-Forever-with-Git)).
-
-![Diagram of the fork-and-clone workflow](./image/install3.png)
-
-For making any changes to original repository, we first sync our cloned repository with original repository. We merge `develop` with `upstream/develop` to do this. Now we make a new branch, do the changes on the branch, push the branch to forked repository, and make a PR from Github interface. We use a different branch to make changes so that we can work on multiple issues while still having a clean version in develop branch.
 
 ## Creating .env file
 
