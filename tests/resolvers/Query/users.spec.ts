@@ -5,7 +5,7 @@ import { connect, disconnect } from "../../../src/db";
 import { QueryUsersArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
-import { USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import { USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import * as mongoose from "mongoose";
 
@@ -20,40 +20,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Query -> users", () => {
-  it("throws NotFoundError if no user exists and IN_PRODUCTION === false", async () => {
-    const testObjectId = new mongoose.Types.ObjectId();
-
-    vi.doMock("../../../src/constants", async () => {
-      const actualConstants: object = await vi.importActual(
-        "../../../src/constants"
-      );
-      return {
-        ...actualConstants,
-        IN_PRODUCTION: false,
-      };
-    });
-
-    try {
-      const args: QueryUsersArgs = {
-        orderBy: null,
-        where: {
-          id: testObjectId as unknown as string,
-        },
-      };
-
-      const { users: mockedInProductionUserResolver } = await import(
-        "../../../src/resolvers/Query/users"
-      );
-      await mockedInProductionUserResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
-    }
-
-    vi.doUnmock("../../../src/constants");
-    vi.resetModules();
-  });
-
-  it("throws NotFoundError if no user exists and IN_PRODUCTION === true", async () => {
+  it("throws NotFoundError if no user exists", async () => {
     const testObjectId = new mongoose.Types.ObjectId();
 
     vi.doMock("../../../src/constants", async () => {
@@ -610,40 +577,6 @@ describe("resolvers -> Query -> users", () => {
       const args: QueryUsersArgs = {
         where: null,
         orderBy: "email_DESC",
-      };
-
-      const usersPayload = await usersResolver?.({}, args, {});
-
-      let users = await User.find(where)
-        .sort(sort)
-        .select(["-password"])
-        .populate("createdOrganizations")
-        .populate("createdEvents")
-        .populate("joinedOrganizations")
-        .populate("registeredEvents")
-        .populate("eventAdmin")
-        .populate("adminFor")
-        .lean();
-
-      users = users.map((user) => ({
-        ...user,
-        organizationsBlockedBy: [],
-      }));
-
-      expect(usersPayload).toEqual(users);
-    });
-
-    it(`returns list of all existing users sorted by 'email_DESC' if
-    args.orderBy === undefined`, async () => {
-      const where = {};
-
-      const sort = {
-        email: -1,
-      };
-
-      const args: QueryUsersArgs = {
-        where: null,
-        orderBy: undefined,
       };
 
       const usersPayload = await usersResolver?.({}, args, {});

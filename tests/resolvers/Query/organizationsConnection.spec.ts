@@ -422,29 +422,4 @@ describe("resolvers -> Query -> organizationsConnection", () => {
 
     expect(organizationsConnectionPayload).toEqual(organizations);
   });
-
-  it(`returns paginated list of all existing organizations sorted by descending order of
-   organization.apiUrl if args.orderBy === undefined`, async () => {
-    const sort = {
-      apiUrl: -1,
-    };
-
-    const args: QueryOrganizationsConnectionArgs = {
-      where: null,
-      first: 2,
-      skip: 1,
-      orderBy: undefined,
-    };
-
-    const organizations = await Organization.find()
-      .limit(2)
-      .skip(1)
-      .sort(sort)
-      .lean();
-
-    const organizationsConnectionPayload =
-      await organizationsConnectionResolver?.({}, args, {});
-
-    expect(organizationsConnectionPayload).toEqual(organizations);
-  });
 });

@@ -1,8 +1,4 @@
-import {
-  InputMaybe,
-  OrganizationOrderByInput,
-  QueryResolvers,
-} from "../../types/generatedGraphQLTypes";
+import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
@@ -12,6 +8,7 @@ import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_PARAM,
 } from "../../constants";
+import { getSort } from "./helperFunctions/getSort";
 
 export const organizations: QueryResolvers["organizations"] = async (
   _parent,
@@ -40,28 +37,4 @@ export const organizations: QueryResolvers["organizations"] = async (
   } else {
     return await Organization.find().sort(sort).limit(100).lean();
   }
-};
-
-const getSort = (orderBy: InputMaybe<OrganizationOrderByInput> | undefined) => {
-  if (orderBy !== null) {
-    if (orderBy === "id_ASC") {
-      return { _id: 1 };
-    } else if (orderBy === "id_DESC") {
-      return { _id: -1 };
-    } else if (orderBy === "name_ASC") {
-      return { name: 1 };
-    } else if (orderBy === "name_DESC") {
-      return { name: -1 };
-    } else if (orderBy === "description_ASC") {
-      return { description: 1 };
-    } else if (orderBy === "description_DESC") {
-      return { description: -1 };
-    } else if (orderBy === "apiUrl_ASC") {
-      return { apiUrl: 1 };
-    } else {
-      return { apiUrl: -1 };
-    }
-  }
-
-  return {};
 };

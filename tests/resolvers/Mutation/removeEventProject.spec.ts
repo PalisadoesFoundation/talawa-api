@@ -56,6 +56,7 @@ beforeAll(async () => {
     members: [testUser!._id],
     event: testEvent!._id,
   });
+
 });
 
 afterAll(async () => {
@@ -136,6 +137,7 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
 
     const context = {
       userId: testUser!._id,
+
     };
 
     const { removeEventProject } = await import(
@@ -153,6 +155,7 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
 
     const context = {
       userId: testUser!._id,
+
     };
 
     const { requestContext } = await import("../../../src/libraries");
@@ -191,6 +194,7 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
 
     const context = {
       userId: testUserNotCreatorOfEventProject!._id,
+
     };
 
     const { removeEventProject } = await import(
@@ -208,6 +212,7 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
 
     const context = {
       userId: testUserNotCreatorOfEventProject!._id,
+
     };
 
     const { requestContext } = await import("../../../src/libraries");
@@ -244,6 +249,7 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
 
     const context = {
       userId: testUser!._id,
+
     };
 
     const { removeEventProject } = await import(
