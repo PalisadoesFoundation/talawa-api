@@ -21,7 +21,7 @@ let testOrganization: testOrganizationType;
 let testGroupChat: testGroupChatType;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   const temp = await createTestGroupChatMessage();
   testUser = temp[0];
   testOrganization = temp[1];

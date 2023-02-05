@@ -19,7 +19,7 @@ let testOrganization: testOrganizationType;
 let testEvent: testEventType;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   const resultsArray = await createTestEvent();
 
   testUser = resultsArray[0];

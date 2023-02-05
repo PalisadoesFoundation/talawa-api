@@ -11,7 +11,7 @@ import {
 let testDirectChat: testDirectChatType;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   const userOrgChat = await createTestDirectChat();
   testDirectChat = userOrgChat[2];
 });

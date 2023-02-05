@@ -13,7 +13,7 @@ let testUser: testUserType;
 let testComment: Interface_Comment & Document<any, any, Interface_Comment>;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   const temp = await createTestPost();
   testUser = temp[0];
   const testPost = temp[2];

@@ -11,7 +11,7 @@ import {
 let testGroupChatMessage: testGroupChatMessageType;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   const resultArray = await createTestGroupChatMessage();
   testGroupChatMessage = resultArray[3];
 });

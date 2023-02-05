@@ -20,7 +20,7 @@ let testComment:
   | null;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   const temp = await createTestPost();
   testUser = temp[0];
   testPost = temp[2];

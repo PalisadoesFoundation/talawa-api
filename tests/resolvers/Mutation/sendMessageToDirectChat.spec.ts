@@ -20,7 +20,7 @@ let testDirectChat: Interface_DirectChat &
   Document<any, any, Interface_DirectChat>;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   const tempUser1 = await createTestUserFunc();
   const tempUser2 = await createTestUserFunc();
   testUsers = [tempUser1, tempUser2];

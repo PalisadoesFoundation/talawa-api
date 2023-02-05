@@ -19,7 +19,7 @@ import {
 let testUser: Interface_User & Document<any, any, Interface_User>;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
 
   testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,

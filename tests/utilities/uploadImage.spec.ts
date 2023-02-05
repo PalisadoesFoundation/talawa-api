@@ -20,7 +20,7 @@ import {
 let testUser: testUserType;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   const testUserObj = await createTestUserAndOrganization();
   testUser = testUserObj[0];
   if (!fs.existsSync(path.join(__dirname, "../../images"))) {

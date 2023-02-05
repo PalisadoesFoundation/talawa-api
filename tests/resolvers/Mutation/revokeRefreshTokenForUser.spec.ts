@@ -9,7 +9,7 @@ import { createTestUserFunc, testUserType } from "../../helpers/user";
 let testUser: testUserType;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   testUser = await createTestUserFunc();
 });
 

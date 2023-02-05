@@ -34,7 +34,7 @@ let testOrganization: testOrganizationType;
 let testDirectChat: testDirectChatType;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   const temp = await createTestDirectChat();
   testUser = temp[0];
   testOrganization = temp[1];
