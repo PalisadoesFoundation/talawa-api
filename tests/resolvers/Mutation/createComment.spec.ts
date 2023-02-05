@@ -4,8 +4,8 @@ import { Post } from "../../../src/models";
 import { MutationCreateCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { createComment as createCommentResolver } from "../../../src/resolvers/Mutation/createComment";
-import { USER_NOT_FOUND } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestPost, testPostType } from "../../helpers/posts";
 import { testUserType } from "../../helpers/userAndOrg";
 
@@ -17,6 +17,10 @@ beforeAll(async () => {
   const resultsArray = await createTestPost();
   testUser = resultsArray[0];
   testPost = resultsArray[2];
+  const { requestContext } = await import("../../../src/libraries");
+  vi.spyOn(requestContext, "translate").mockImplementation(
+    (message) => message
+  );
 });
 
 afterAll(async () => {
@@ -39,7 +43,7 @@ describe("resolvers -> Mutation -> createComment", () => {
 
       await createCommentResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 

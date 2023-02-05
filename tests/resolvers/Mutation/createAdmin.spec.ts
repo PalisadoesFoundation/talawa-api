@@ -5,12 +5,13 @@ import { MutationCreateAdminArgs } from "../../../src/types/generatedGraphQLType
 import { connect, disconnect } from "../../../src/db";
 import { createAdmin as createAdminResolver } from "../../../src/resolvers/Mutation/createAdmin";
 import {
-  ORGANIZATION_MEMBER_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND,
+  ORGANIZATION_MEMBER_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
+  USER_NOT_AUTHORIZED_MESSAGE,
+  USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
   createTestUserAndOrganization,
   testOrganizationType,
@@ -26,6 +27,10 @@ beforeAll(async () => {
 
   testUser = resultsArray[0];
   testOrganization = resultsArray[1];
+  const { requestContext } = await import("../../../src/libraries");
+  vi.spyOn(requestContext, "translate").mockImplementation(
+    (message) => message
+  );
 });
 
 afterAll(async () => {
@@ -48,7 +53,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
       await createAdminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -109,7 +114,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
       await createAdminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -129,7 +134,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
       await createAdminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_MEMBER_NOT_FOUND);
+      expect(error.message).toEqual(ORGANIZATION_MEMBER_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -160,7 +165,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
       await createAdminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
     }
   });
 

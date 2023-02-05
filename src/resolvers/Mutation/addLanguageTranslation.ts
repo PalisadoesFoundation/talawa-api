@@ -1,4 +1,3 @@
-import { IN_PRODUCTION } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { Language } from "../../models";
@@ -15,9 +14,7 @@ export const addLanguageTranslation: MutationResolvers["addLanguageTranslation"]
         // Checks whether the translation already exists.
         if (element.lang_code === args.data.translation_lang_code) {
           throw new errors.ConflictError(
-            IN_PRODUCTION !== true
-              ? "Translation already present"
-              : requestContext.translate("translation.alreadyPresent"),
+            requestContext.translate("translation.alreadyPresent"),
             "translation.alreadyPresent",
             "translationAlreadyPresent"
           );

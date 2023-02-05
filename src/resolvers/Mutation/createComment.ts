@@ -2,8 +2,6 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Post, Comment } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
-  IN_PRODUCTION,
-  USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
@@ -21,9 +19,7 @@ export const createComment: MutationResolvers["createComment"] = async (
   // Checks whether currentUser with _id === context.userId exists.
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND
-        : requestContext.translate(USER_NOT_FOUND_MESSAGE),
+      requestContext.translate(USER_NOT_FOUND_MESSAGE),
       USER_NOT_FOUND_CODE,
       USER_NOT_FOUND_PARAM
     );

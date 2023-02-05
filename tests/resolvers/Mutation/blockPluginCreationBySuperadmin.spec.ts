@@ -4,8 +4,11 @@ import { Types } from "mongoose";
 import { MutationBlockPluginCreationBySuperadminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { blockPluginCreationBySuperadmin as blockPluginCreationBySuperadminResolver } from "../../../src/resolvers/Mutation/blockPluginCreationBySuperadmin";
-import { USER_NOT_AUTHORIZED, USER_NOT_FOUND } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  USER_NOT_AUTHORIZED_MESSAGE,
+  USER_NOT_FOUND_MESSAGE,
+} from "../../../src/constants";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { testUserType, createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: testUserType;
@@ -13,6 +16,10 @@ let testUser: testUserType;
 beforeAll(async () => {
   await connect();
   testUser = await createTestUser();
+  const { requestContext } = await import("../../../src/libraries");
+  vi.spyOn(requestContext, "translate").mockImplementation(
+    (message) => message
+  );
 });
 
 afterAll(async () => {
@@ -33,7 +40,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
 
       await blockPluginCreationBySuperadminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -50,7 +57,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
 
       await blockPluginCreationBySuperadminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -68,7 +75,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
 
       await blockPluginCreationBySuperadminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
     }
   });
 

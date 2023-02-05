@@ -1,11 +1,6 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Interface_Organization,
-} from "../../../src/models";
+import { Types } from "mongoose";
+import { User, Organization } from "../../../src/models";
 import { MutationRemoveMemberArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { removeMember as removeMemberResolver } from "../../../src/resolvers/Mutation/removeMember";
@@ -15,52 +10,31 @@ import {
   USER_NOT_AUTHORIZED,
   USER_NOT_FOUND,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { testOrganizationType, testUserType } from "../../helpers/userAndOrg";
+import { createTestUserFunc } from "../../helpers/user";
 
-let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
+let testUsers: testUserType[];
+let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
-
-  testUsers = await User.insertMany([
-    {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: "firstName",
-      lastName: "lastName",
-      appLanguageCode: "en",
-    },
-    {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: "firstName",
-      lastName: "lastName",
-      appLanguageCode: "en",
-    },
-    {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: "firstName",
-      lastName: "lastName",
-      appLanguageCode: "en",
-    },
-  ]);
-
+  const tempUser1 = await createTestUserFunc();
+  const tempUser2 = await createTestUserFunc();
+  const tempUser3 = await createTestUserFunc();
+  testUsers = [tempUser1, tempUser2, tempUser3];
   testOrganization = await Organization.create({
     name: "name",
     description: "description",
     isPublic: true,
-    creator: testUsers[1]._id,
-    admins: [testUsers[0]._id],
-    members: [testUsers[0]._id, testUsers[1]._id],
+    creator: testUsers[1]!._id,
+    admins: [testUsers[0]!._id],
+    members: [testUsers[0]!._id, testUsers[1]!._id],
   });
 
   await User.updateOne(
     {
-      _id: testUsers[0]._id,
+      _id: testUsers[0]!._id,
     },
     {
       $push: {
@@ -73,7 +47,7 @@ beforeAll(async () => {
 
   await User.updateOne(
     {
-      _id: testUsers[1]._id,
+      _id: testUsers[1]!._id,
     },
     {
       $push: {
@@ -85,7 +59,7 @@ beforeAll(async () => {
 
   await User.updateOne(
     {
-      _id: testUsers[2]._id,
+      _id: testUsers[2]!._id,
     },
     {
       $push: {
@@ -110,7 +84,7 @@ describe("resolvers -> Mutation -> removeMember", () => {
       };
 
       const context = {
-        userId: testUsers[0].id,
+        userId: testUsers[0]!.id,
       };
 
       await removeMemberResolver?.({}, args, context);
@@ -124,13 +98,13 @@ describe("resolvers -> Mutation -> removeMember", () => {
     try {
       const args: MutationRemoveMemberArgs = {
         data: {
-          organizationId: testOrganization.id,
+          organizationId: testOrganization!.id,
           userIds: [],
         },
       };
 
       const context = {
-        userId: testUsers[2].id,
+        userId: testUsers[2]!.id,
       };
 
       await removeMemberResolver?.({}, args, context);
@@ -143,13 +117,13 @@ describe("resolvers -> Mutation -> removeMember", () => {
     try {
       const args: MutationRemoveMemberArgs = {
         data: {
-          organizationId: testOrganization.id,
+          organizationId: testOrganization!.id,
           userIds: [Types.ObjectId().toString(), Types.ObjectId().toString()],
         },
       };
 
       const context = {
-        userId: testUsers[0].id,
+        userId: testUsers[0]!.id,
       };
 
       await removeMemberResolver?.({}, args, context);
@@ -163,13 +137,13 @@ describe("resolvers -> Mutation -> removeMember", () => {
     try {
       const args: MutationRemoveMemberArgs = {
         data: {
-          organizationId: testOrganization.id,
-          userIds: [testUsers[2].id],
+          organizationId: testOrganization!.id,
+          userIds: [testUsers[2]!.id],
         },
       };
 
       const context = {
-        userId: testUsers[0].id,
+        userId: testUsers[0]!.id,
       };
 
       await removeMemberResolver?.({}, args, context);
@@ -183,13 +157,13 @@ describe("resolvers -> Mutation -> removeMember", () => {
     try {
       const args: MutationRemoveMemberArgs = {
         data: {
-          organizationId: testOrganization.id,
-          userIds: [testUsers[0].id],
+          organizationId: testOrganization!.id,
+          userIds: [testUsers[0]!.id],
         },
       };
 
       const context = {
-        userId: testUsers[0].id,
+        userId: testUsers[0]!.id,
       };
 
       await removeMemberResolver?.({}, args, context);
@@ -205,13 +179,13 @@ describe("resolvers -> Mutation -> removeMember", () => {
     try {
       const args: MutationRemoveMemberArgs = {
         data: {
-          organizationId: testOrganization.id,
-          userIds: [testUsers[1].id],
+          organizationId: testOrganization!.id,
+          userIds: [testUsers[1]!.id],
         },
       };
 
       const context = {
-        userId: testUsers[0].id,
+        userId: testUsers[0]!.id,
       };
 
       await removeMemberResolver?.({}, args, context);
@@ -226,36 +200,36 @@ describe("resolvers -> Mutation -> removeMember", () => {
   organization with _id === args.data.organizationId and returns the updated organization`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization._id,
+        _id: testOrganization!._id,
       },
       {
         $set: {
-          creator: testUsers[0]._id,
+          creator: testUsers[0]!._id,
         },
       }
     );
 
     const args: MutationRemoveMemberArgs = {
       data: {
-        organizationId: testOrganization.id,
-        userIds: [testUsers[1].id],
+        organizationId: testOrganization!.id,
+        userIds: [testUsers[1]!.id],
       },
     };
 
     const context = {
-      userId: testUsers[0].id,
+      userId: testUsers[0]!.id,
     };
 
     const removeMemberPayload = await removeMemberResolver?.({}, args, context);
 
     const testRemoveMemberPayload = await Organization.findOne({
-      _id: testOrganization._id,
+      _id: testOrganization!._id,
     }).lean();
 
     expect(removeMemberPayload).toEqual(testRemoveMemberPayload);
 
     const testUpdatedUser = await User.findOne({
-      _id: testUsers[1]._id,
+      _id: testUsers[1]!._id,
     })
       .select("joinedOrganizations")
       .lean();

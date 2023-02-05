@@ -1,6 +1,6 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import { Interface_User, User } from "../../../src/models";
+import { Types } from "mongoose";
+import { User } from "../../../src/models";
 import { MutationCreateOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { createOrganization as createOrganizationResolver } from "../../../src/resolvers/Mutation/createOrganization";
@@ -16,9 +16,10 @@ import {
   vi,
   afterEach,
 } from "vitest";
+import { createTestUserFunc, testUserType } from "../../helpers/user";
 
 const testImagePath: string = `${nanoid().toLowerCase()}test.png`;
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: testUserType;
 
 vi.mock("../../utilities", () => ({
   uploadImage: vi.fn(),
@@ -26,14 +27,7 @@ vi.mock("../../utilities", () => ({
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
+  testUser = await createTestUserFunc();
 });
 
 afterAll(async () => {
@@ -130,7 +124,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       file: testImagePath,
     };
     const context = {
-      userId: testUser._id,
+      userId: testUser!._id,
     };
 
     const createOrganizationPayload = await createOrganizationResolver?.(
@@ -146,16 +140,16 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         visibleInSearch: true,
         apiUrl: "apiUrl",
         location: "location",
-        creator: testUser._id,
-        admins: [testUser._id],
-        members: [testUser._id],
+        creator: testUser!._id,
+        admins: [testUser!._id],
+        members: [testUser!._id],
         image: testImagePath,
       })
     );
     expect(createOrganizationPayload?.image).toEqual(testImagePath);
 
     const updatedTestUser = await User.findOne({
-      _id: testUser._id,
+      _id: testUser!._id,
     })
       .select(["joinedOrganizations", "createdOrganizations", "adminFor"])
       .lean();
@@ -188,7 +182,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       file: null,
     };
     const context = {
-      userId: testUser._id,
+      userId: testUser!._id,
     };
 
     const createOrganizationPayload = await createOrganizationResolver?.(
@@ -204,9 +198,9 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         visibleInSearch: true,
         apiUrl: "apiUrl",
         location: "location",
-        creator: testUser._id,
-        admins: [testUser._id],
-        members: [testUser._id],
+        creator: testUser!._id,
+        admins: [testUser!._id],
+        members: [testUser!._id],
       })
     );
     expect(createOrganizationPayload?.image).toBe(null);

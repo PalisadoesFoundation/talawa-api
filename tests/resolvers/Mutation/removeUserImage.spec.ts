@@ -1,9 +1,8 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import { Interface_User, User } from "../../../src/models";
+import { Types } from "mongoose";
+import { User } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
 import { USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import {
   beforeAll,
   afterAll,
@@ -13,20 +12,14 @@ import {
   afterEach,
   vi,
 } from "vitest";
+import { createTestUserFunc, testUserType } from "../../helpers/user";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: testUserType;
 const testImage: string = "testImage";
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
+  testUser = await createTestUserFunc();
 });
 
 afterAll(async () => {
@@ -101,7 +94,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
   with _id === context.userId and IN_PRODUCTION === false`, async () => {
     try {
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       vi.doMock("../../../src/constants", async () => {
@@ -133,7 +126,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
 
     try {
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       vi.doMock("../../../src/constants", async () => {
@@ -169,7 +162,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
 
     await User.updateOne(
       {
-        _id: testUser._id,
+        _id: testUser!._id,
       },
       {
         $set: {
@@ -179,7 +172,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
     );
 
     const context = {
-      userId: testUser._id,
+      userId: testUser!._id,
     };
 
     const { removeUserImage: removeUserImageResolver } = await import(
@@ -193,7 +186,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
     );
 
     const updatedTestUser = await User.findOne({
-      _id: testUser._id,
+      _id: testUser!._id,
     }).lean();
 
     expect(removeUserImagePayload).toEqual(updatedTestUser);

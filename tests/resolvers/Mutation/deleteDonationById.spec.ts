@@ -1,59 +1,28 @@
 import "dotenv/config";
 import { Document, Types } from "mongoose";
-import {
-  User,
-  Organization,
-  Interface_Donation,
-  Donation,
-} from "../../../src/models";
+import { Interface_Donation, Donation } from "../../../src/models";
 import { MutationDeleteDonationByIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { deleteDonationById as deleteDonationByIdResolver } from "../../../src/resolvers/Mutation/deleteDonationById";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let testDonation: Interface_Donation & Document<any, any, Interface_Donation>;
 
 beforeAll(async () => {
   await connect();
+  const temp = await createTestUserAndOrganization();
+  const testUser = temp[0];
 
-  const testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        createdOrganizations: testOrganization._id,
-        adminFor: testOrganization._id,
-        joinedOrganizations: testOrganization._id,
-      },
-    }
-  );
+  const testOrganization = temp[1];
 
   testDonation = await Donation.create({
     amount: 1,
-    nameOfOrg: testOrganization.name,
-    nameOfUser: `${testUser.firstName} ${testUser.lastName}`,
-    orgId: testOrganization._id,
+    nameOfOrg: testOrganization!.name,
+    nameOfUser: `${testUser!.firstName} ${testUser!.lastName}`,
+    orgId: testOrganization!._id,
     payPalId: "payPalId",
-    userId: testUser._id,
+    userId: testUser!._id,
   });
 });
 

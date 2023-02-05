@@ -11,11 +11,8 @@ import {
   vi,
 } from "vitest";
 import {
-  EVENT_NOT_FOUND,
   EVENT_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_FOUND,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import { testEventType } from "../../helpers/events";
@@ -85,21 +82,6 @@ afterEach(async () => {
 
 describe("resolvers -> Mutation -> createEventProject", () => {
   it("Should throw an error if the user is not found", async () => {
-    const args = {
-      data: {
-        eventId: null,
-      },
-    };
-
-    const { createEventProject } = await import(
-      "../../../src/resolvers/Mutation/createEventProject"
-    );
-
-    expect(async () => {
-      await createEventProject(null, args, { user: null });
-    }).rejects.toThrowError(USER_NOT_FOUND);
-  });
-  it("Should throw an error if the user is not found and IN_PRODUCTION is true", async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -118,7 +100,6 @@ describe("resolvers -> Mutation -> createEventProject", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
 
@@ -132,26 +113,8 @@ describe("resolvers -> Mutation -> createEventProject", () => {
       expect(err.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
     }
   });
+
   it("Should throw an error if the event is not found", async () => {
-    const args = {
-      data: {
-        eventId: null,
-      },
-    };
-
-    const context = {
-      userId: testUser!._id,
-    };
-
-    const { createEventProject } = await import(
-      "../../../src/resolvers/Mutation/createEventProject"
-    );
-
-    expect(async () => {
-      await createEventProject(null, args, context);
-    }).rejects.toThrowError(EVENT_NOT_FOUND);
-  });
-  it("Should throw an error if the event is not found and IN_PRODUCTION is true", async () => {
     const args = {
       data: {
         eventId: null,
@@ -174,7 +137,6 @@ describe("resolvers -> Mutation -> createEventProject", () => {
       );
       return {
         ...actualConstants,
-        IN_PRODUCTION: true,
       };
     });
 
@@ -189,26 +151,8 @@ describe("resolvers -> Mutation -> createEventProject", () => {
       expect(error.message).toEqual(`Translated ${EVENT_NOT_FOUND_MESSAGE}`);
     }
   });
+
   it("Should throw an error if the user is not an admin of the event", async () => {
-    const args = {
-      data: {
-        eventId: testEvent!._id,
-      },
-    };
-
-    const context = {
-      userId: testUser!._id,
-    };
-
-    const { createEventProject } = await import(
-      "../../../src/resolvers/Mutation/createEventProject"
-    );
-
-    expect(async () => {
-      await createEventProject(null, args, context);
-    }).rejects.toThrowError(USER_NOT_AUTHORIZED);
-  });
-  it("Should throw an error if the user is not an admin of the event and IN_PRODUCTION is true", async () => {
     const args = {
       data: {
         eventId: testEvent!._id,
@@ -231,7 +175,6 @@ describe("resolvers -> Mutation -> createEventProject", () => {
       );
       return {
         ...actualConstants,
-        IN_PRODUCTION: true,
       };
     });
 

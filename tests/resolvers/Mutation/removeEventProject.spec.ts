@@ -1,12 +1,9 @@
 import "dotenv/config";
 import { Document } from "mongoose";
 import {
-  Interface_User,
   User,
   Organization,
-  Interface_Organization,
   Event,
-  Interface_Event,
   EventProject,
   Interface_EventProject,
 } from "../../../src/models";
@@ -29,26 +26,19 @@ import {
   EVENT_PROJECT_NOT_FOUND,
   EVENT_PROJECT_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
+import { testUserType } from "../../helpers/userAndOrg";
+import { createTestEvent, testEventType } from "../../helpers/events";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testUserNotCreatorOfEventProject: Interface_User &
-  Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
-let testEvent: Interface_Event & Document<any, any, Interface_Event>;
+let testUser: testUserType;
+let testUserNotCreatorOfEventProject: testUserType;
+let testEvent: testEventType;
 let testEventProject: Interface_EventProject &
   Document<any, any, Interface_EventProject>;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
+  const temp = await createTestEvent();
+  testUser = temp[0];
 
   testUserNotCreatorOfEventProject = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,
@@ -57,49 +47,16 @@ beforeAll(async () => {
     lastName: "lastName",
     appLanguageCode: "en",
   });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  testEvent = await Event.create({
-    title: "title",
-    description: "description",
-    allDay: true,
-    startDate: new Date(),
-    recurring: true,
-    isPublic: true,
-    isRegisterable: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    registrants: [],
-    organization: testOrganization._id,
-  });
-
+  testEvent = temp[2];
   testEventProject = await EventProject.create({
     title: "title",
     description: "description",
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-    event: testEvent._id,
+    creator: testUser!._id,
+    admins: [testUser!._id],
+    members: [testUser!._id],
+    event: testEvent!._id,
   });
 
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        adminFor: testOrganization._id,
-      },
-    }
-  );
 });
 
 afterAll(async () => {
@@ -179,7 +136,8 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     };
 
     const context = {
-      userId: testUser._id,
+      userId: testUser!._id,
+
     };
 
     const { removeEventProject } = await import(
@@ -196,7 +154,8 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     };
 
     const context = {
-      userId: testUser._id,
+      userId: testUser!._id,
+
     };
 
     const { requestContext } = await import("../../../src/libraries");
@@ -234,7 +193,8 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     };
 
     const context = {
-      userId: testUserNotCreatorOfEventProject._id,
+      userId: testUserNotCreatorOfEventProject!._id,
+
     };
 
     const { removeEventProject } = await import(
@@ -251,7 +211,8 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     };
 
     const context = {
-      userId: testUserNotCreatorOfEventProject._id,
+      userId: testUserNotCreatorOfEventProject!._id,
+
     };
 
     const { requestContext } = await import("../../../src/libraries");
@@ -287,7 +248,8 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     };
 
     const context = {
-      userId: testUser._id,
+      userId: testUser!._id,
+
     };
 
     const { removeEventProject } = await import(
