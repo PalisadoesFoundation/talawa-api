@@ -1,6 +1,6 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Post } from "../../models";
-import { getSort } from "./helper_funtions/getSort";
+import { getSort } from "./helperFunctions/getSort";
 
 export const posts: QueryResolvers["posts"] = async (_parent, args) => {
   const sort = getSort(args.orderBy);

@@ -1,4 +1,13 @@
-export const getSort = (orderBy: any) => {
+import { EventOrderByInput, InputMaybe, OrganizationOrderByInput, PostOrderByInput, TaskOrderByInput, UserOrderByInput } from "../../../types/generatedGraphQLTypes";
+
+export const getSort = (orderBy: | InputMaybe<
+  | EventOrderByInput
+  | OrganizationOrderByInput
+  | PostOrderByInput
+  | TaskOrderByInput
+  | UserOrderByInput
+>
+| undefined) => {
   let sortPayload = {};
 
   switch (orderBy) {

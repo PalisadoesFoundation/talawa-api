@@ -6,7 +6,7 @@ import {
 import { Post } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import { IN_PRODUCTION } from "../../constants";
-import { getSort } from "./helper_funtions/getSort";
+import { getSort } from "./helperFunctions/getSort";
 
 export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationConnection"] =
   async (_parent, args) => {

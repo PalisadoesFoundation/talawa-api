@@ -4,7 +4,7 @@ import {
   UserWhereInput,
 } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
-import { getSort } from "./helper_funtions/getSort";
+import { getSort } from "./helperFunctions/getSort";
 
 // @ts-ignore
 export const organizationsMemberConnection: QueryResolvers["organizationsMemberConnection"] =

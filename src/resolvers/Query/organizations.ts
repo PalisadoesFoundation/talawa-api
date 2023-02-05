@@ -8,7 +8,7 @@ import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_PARAM,
 } from "../../constants";
-import { getSort } from "./helper_funtions/getSort";
+import { getSort } from "./helperFunctions/getSort";
 
 export const organizations: QueryResolvers["organizations"] = async (
   _parent,

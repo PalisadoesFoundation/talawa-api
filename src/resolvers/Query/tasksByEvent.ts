@@ -1,6 +1,6 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Task } from "../../models";
-import { getSort } from "./helper_funtions/getSort";
+import { getSort } from "./helperFunctions/getSort";
 
 export const tasksByEvent: QueryResolvers["tasksByEvent"] = async (
   _parent,

@@ -1,7 +1,7 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Event, Interface_UserAttende } from "../../models";
 import { STATUS_ACTIVE } from "../../constants";
-import { getSort } from "./helper_funtions/getSort";
+import { getSort } from "./helperFunctions/getSort";
 
 export const eventsByOrganization: QueryResolvers["eventsByOrganization"] =
   async (_parent, args) => {

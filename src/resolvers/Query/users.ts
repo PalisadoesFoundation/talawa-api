@@ -12,7 +12,7 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
 } from "../../constants";
-import { getSort } from "./helper_funtions/getSort";
+import { getSort } from "./helperFunctions/getSort";
 
 export const users: QueryResolvers["users"] = async (_parent, args) => {
   const inputArg = getInputArg(args.where);

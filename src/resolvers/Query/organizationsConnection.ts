@@ -4,7 +4,7 @@ import {
   QueryResolvers,
 } from "../../types/generatedGraphQLTypes";
 import { Organization } from "../../models";
-import { getSort } from "./helper_funtions/getSort";
+import { getSort } from "./helperFunctions/getSort";
 
 export const organizationsConnection: QueryResolvers["organizationsConnection"] =
   async (_parent, args) => {

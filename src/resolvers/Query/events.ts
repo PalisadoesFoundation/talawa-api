@@ -1,6 +1,6 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Event } from "../../models";
-import { getSort } from "./helper_funtions/getSort";
+import { getSort } from "./helperFunctions/getSort";
 
 export const events: QueryResolvers["events"] = async (_parent, args) => {
   const sort = getSort(args.orderBy);
