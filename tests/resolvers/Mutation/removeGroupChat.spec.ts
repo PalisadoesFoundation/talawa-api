@@ -1,14 +1,6 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Interface_Organization,
-  GroupChat,
-  Interface_GroupChat,
-  GroupChatMessage,
-} from "../../../src/models";
+import { Types } from "mongoose";
+import { Organization, GroupChat, GroupChatMessage } from "../../../src/models";
 import { MutationRemoveGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { removeGroupChat as removeGroupChatResolver } from "../../../src/resolvers/Mutation/removeGroupChat";
@@ -17,70 +9,31 @@ import {
   ORGANIZATION_NOT_FOUND,
   USER_NOT_AUTHORIZED,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { testOrganizationType, testUserType } from "../../helpers/userAndOrg";
+import {
+  createTestGroupChatMessage,
+  testGroupChatType,
+} from "../../helpers/groupChat";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
-let testGroupChat:
-  | (Interface_GroupChat & Document<any, any, Interface_GroupChat>)
-  | null;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
+let testGroupChat: testGroupChatType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        createdOrganizations: testOrganization._id,
-        adminFor: testOrganization._id,
-        joinedOrganizations: testOrganization._id,
-      },
-    }
-  );
-
-  testGroupChat = await GroupChat.create({
-    title: "title",
-    users: [testUser._id],
-    creator: testUser._id,
-    organization: testOrganization._id,
-  });
-
-  const testGroupChatMessage = await GroupChatMessage.create({
-    groupChatMessageBelongsTo: testGroupChat._id,
-    sender: testUser._id,
-    createdAt: new Date(),
-    messageContent: "messageContent",
-  });
-
+  const temp = await createTestGroupChatMessage();
+  testUser = temp[0];
+  testOrganization = temp[1];
+  testGroupChat = temp[2];
+  const testGroupChatMessage = temp[3];
   testGroupChat = await GroupChat.findOneAndUpdate(
     {
-      _id: testGroupChat._id,
+      _id: testGroupChat!._id,
     },
     {
       $push: {
-        messages: testGroupChatMessage._id,
+        messages: testGroupChatMessage!._id,
       },
     },
     {
@@ -101,7 +54,7 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await removeGroupChatResolver?.({}, args, context);
@@ -129,7 +82,7 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await removeGroupChatResolver?.({}, args, context);
@@ -148,14 +101,14 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
         },
         {
           $set: {
-            organization: testOrganization._id,
+            organization: testOrganization!._id,
           },
         }
       );
 
       await Organization.updateOne(
         {
-          _id: testOrganization._id,
+          _id: testOrganization!._id,
         },
         {
           $set: {
@@ -169,7 +122,7 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await removeGroupChatResolver?.({}, args, context);
@@ -182,11 +135,11 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
   associated to it and returns it`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization._id,
+        _id: testOrganization!._id,
       },
       {
         $push: {
-          admins: testUser._id,
+          admins: testUser!._id,
         },
       }
     );
@@ -196,7 +149,7 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const removeGroupChatPayload = await removeGroupChatResolver?.(

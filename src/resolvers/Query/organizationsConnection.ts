@@ -1,10 +1,10 @@
 import {
   InputMaybe,
-  OrganizationOrderByInput,
   OrganizationWhereInput,
   QueryResolvers,
 } from "../../types/generatedGraphQLTypes";
 import { Organization } from "../../models";
+import { getSort } from "./helperFunctions/getSort";
 
 export const organizationsConnection: QueryResolvers["organizationsConnection"] =
   async (_parent, args) => {
@@ -224,44 +224,4 @@ const getInputArg = (where: InputMaybe<OrganizationWhereInput> | undefined) => {
   }
 
   return inputArg;
-};
-
-const getSort = (orderBy: InputMaybe<OrganizationOrderByInput> | undefined) => {
-  if (orderBy !== null) {
-    if (orderBy === "id_ASC") {
-      return {
-        _id: 1,
-      };
-    } else if (orderBy === "id_DESC") {
-      return {
-        _id: -1,
-      };
-    } else if (orderBy === "name_ASC") {
-      return {
-        name: 1,
-      };
-    } else if (orderBy === "name_DESC") {
-      return {
-        name: -1,
-      };
-    } else if (orderBy === "description_ASC") {
-      return {
-        description: 1,
-      };
-    } else if (orderBy === "description_DESC") {
-      return {
-        description: -1,
-      };
-    } else if (orderBy === "apiUrl_ASC") {
-      return {
-        apiUrl: 1,
-      };
-    } else {
-      return {
-        apiUrl: -1,
-      };
-    }
-  }
-
-  return {};
 };

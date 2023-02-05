@@ -1,7 +1,6 @@
 import "dotenv/config";
 import { Document, Types } from "mongoose";
 import {
-  Interface_User,
   User,
   Organization,
   DirectChat,
@@ -12,46 +11,33 @@ import { MutationSendMessageToDirectChatArgs } from "../../../src/types/generate
 import { connect, disconnect } from "../../../src/db";
 import { sendMessageToDirectChat as sendMessageToDirectChatResolver } from "../../../src/resolvers/Mutation/sendMessageToDirectChat";
 import { CHAT_NOT_FOUND, USER_NOT_FOUND } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { createTestUserFunc } from "../../helpers/user";
+import { testUserType } from "../../helpers/userAndOrg";
 
-let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
+let testUsers: testUserType[];
 let testDirectChat: Interface_DirectChat &
   Document<any, any, Interface_DirectChat>;
 
 beforeAll(async () => {
   await connect();
-
-  testUsers = await User.insertMany([
-    {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: "firstName",
-      lastName: "lastName",
-      appLanguageCode: "en",
-    },
-    {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: "firstName",
-      lastName: "lastName",
-      appLanguageCode: "en",
-    },
-  ]);
+  const tempUser1 = await createTestUserFunc();
+  const tempUser2 = await createTestUserFunc();
+  testUsers = [tempUser1, tempUser2];
 
   const testOrganization = await Organization.create({
     name: "name",
     description: "description",
     isPublic: true,
-    creator: testUsers[0]._id,
-    admins: [testUsers[0]._id],
-    members: [testUsers[0]._id],
+    creator: testUsers[0]!._id,
+    admins: [testUsers[0]!._id],
+    members: [testUsers[0]!._id],
     visibleInSearch: true,
   });
 
   await User.updateOne(
     {
-      _id: testUsers[0]._id,
+      _id: testUsers[0]!._id,
     },
     {
       $set: {
@@ -64,9 +50,9 @@ beforeAll(async () => {
 
   testDirectChat = await DirectChat.create({
     title: "title",
-    creator: testUsers[0]._id,
+    creator: testUsers[0]!._id,
     organization: testOrganization._id,
-    users: [testUsers[0]._id, testUsers[1]._id],
+    users: [testUsers[0]!._id, testUsers[1]!._id],
   });
 });
 
@@ -82,7 +68,7 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         messageContent: "",
       };
 
-      const context = { userId: testUsers[0].id };
+      const context = { userId: testUsers[0]!.id };
 
       await sendMessageToDirectChatResolver?.({}, args, context);
     } catch (error: any) {
@@ -114,7 +100,7 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
       },
       {
         $push: {
-          users: testUsers[0]._id,
+          users: testUsers[0]!._id,
         },
       }
     );
@@ -136,7 +122,7 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
     };
 
     const context = {
-      userId: testUsers[0].id,
+      userId: testUsers[0]!.id,
       pubsub,
     };
 
@@ -146,8 +132,8 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
     expect(sendMessageToDirectChatPayload).toEqual(
       expect.objectContaining({
         directChatMessageBelongsTo: testDirectChat._id,
-        sender: testUsers[0]._id,
-        receiver: testUsers[1]._id,
+        sender: testUsers[0]!._id,
+        receiver: testUsers[1]!._id,
         messageContent: "messageContent",
       })
     );
