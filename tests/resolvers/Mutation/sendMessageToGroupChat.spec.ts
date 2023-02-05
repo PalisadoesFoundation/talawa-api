@@ -1,9 +1,6 @@
 import "dotenv/config";
 import { Document, Types } from "mongoose";
 import {
-  Interface_User,
-  User,
-  Organization,
   GroupChat,
   Interface_GroupChat,
   Interface_GroupChatMessage,
@@ -16,50 +13,26 @@ import {
   USER_NOT_AUTHORIZED,
   USER_NOT_FOUND,
 } from "../../../src/constants";
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: testUserType;
 let testGroupChat: Interface_GroupChat &
   Document<any, any, Interface_GroupChat>;
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  createTestUserAndOrganization,
+  testUserType,
+} from "../../helpers/userAndOrg";
 
 beforeAll(async () => {
   await connect();
+  const temp = await createTestUserAndOrganization();
+  testUser = temp[0];
 
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-    visibleInSearch: true,
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
+  const testOrganization = temp[1];
 
   testGroupChat = await GroupChat.create({
     title: "title",
-    creator: testUser._id,
-    organization: testOrganization._id,
+    creator: testUser!._id,
+    organization: testOrganization!._id,
   });
 });
 
@@ -75,7 +48,7 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
         messageContent: "",
       };
 
-      const context = { userId: testUser.id };
+      const context = { userId: testUser!.id };
 
       await sendMessageToGroupChatResolver?.({}, args, context);
     } catch (error: any) {
@@ -109,7 +82,7 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await sendMessageToGroupChatResolver?.({}, args, context);
@@ -125,7 +98,7 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
       },
       {
         $push: {
-          users: testUser._id,
+          users: testUser!._id,
         },
       }
     );
@@ -147,7 +120,7 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
       pubsub,
     };
 
@@ -157,7 +130,7 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
     expect(sendMessageToGroupChatPayload).toEqual(
       expect.objectContaining({
         groupChatMessageBelongsTo: testGroupChat._id,
-        sender: testUser._id,
+        sender: testUser!._id,
         messageContent: "messageContent",
       })
     );

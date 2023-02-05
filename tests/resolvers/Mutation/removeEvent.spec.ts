@@ -1,13 +1,6 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Interface_Organization,
-  Interface_Event,
-  Event,
-} from "../../../src/models";
+import { Types } from "mongoose";
+import { User, Event } from "../../../src/models";
 import { MutationRemoveEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { removeEvent as removeEventResolver } from "../../../src/resolvers/Mutation/removeEvent";
@@ -16,73 +9,20 @@ import {
   USER_NOT_AUTHORIZED,
   USER_NOT_FOUND,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { testOrganizationType, testUserType } from "../../helpers/userAndOrg";
+import { createTestEvent, testEventType } from "../../helpers/events";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
-let testEvent: (Interface_Event & Document<any, any, Interface_Event>) | null;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
+let testEvent: testEventType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        createdOrganizations: testOrganization._id,
-        adminFor: testOrganization._id,
-        joinedOrganizations: testOrganization._id,
-      },
-    }
-  );
-
-  testEvent = await Event.create({
-    title: "title",
-    description: "description",
-    allDay: true,
-    startDate: new Date(),
-    recurring: true,
-    isPublic: true,
-    isRegisterable: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    registrants: [],
-    organization: testOrganization._id,
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        eventAdmin: testEvent._id,
-        createdEvents: testEvent._id,
-        registeredEvents: testEvent._id,
-      },
-    }
-  );
+  const temp = await createTestEvent();
+  testUser = temp[0];
+  testOrganization = temp[1];
+  testEvent = temp[2];
 });
 
 afterAll(async () => {
@@ -113,7 +53,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await removeEventResolver?.({}, args, context);
@@ -128,7 +68,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
     try {
       await User.updateOne(
         {
-          _id: testUser._id,
+          _id: testUser!._id,
         },
         {
           $set: {
@@ -153,7 +93,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await removeEventResolver?.({}, args, context);
@@ -165,11 +105,11 @@ describe("resolvers -> Mutation -> removeEvent", () => {
   it(`removes event with _id === args.id and returns it`, async () => {
     await User.updateOne(
       {
-        _id: testUser._id,
+        _id: testUser!._id,
       },
       {
         $push: {
-          adminFor: testOrganization._id,
+          adminFor: testOrganization!._id,
         },
       }
     );
@@ -180,7 +120,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       },
       {
         $push: {
-          admins: testUser._id,
+          admins: testUser!._id,
         },
       }
     );
@@ -190,7 +130,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const removeEventPayload = await removeEventResolver?.({}, args, context);
@@ -198,7 +138,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
     expect(removeEventPayload).toEqual(testEvent!.toObject());
 
     const updatedTestUser = await User.findOne({
-      _id: testUser._id,
+      _id: testUser!._id,
     })
       .select(["createdEvents", "eventAdmin"])
       .lean();
