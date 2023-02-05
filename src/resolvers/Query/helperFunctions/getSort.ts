@@ -1,13 +1,23 @@
-import { EventOrderByInput, InputMaybe, OrganizationOrderByInput, PostOrderByInput, TaskOrderByInput, UserOrderByInput } from "../../../types/generatedGraphQLTypes";
+import {
+  EventOrderByInput,
+  InputMaybe,
+  OrganizationOrderByInput,
+  PostOrderByInput,
+  TaskOrderByInput,
+  UserOrderByInput,
+} from "../../../types/generatedGraphQLTypes";
 
-export const getSort = (orderBy: | InputMaybe<
-  | EventOrderByInput
-  | OrganizationOrderByInput
-  | PostOrderByInput
-  | TaskOrderByInput
-  | UserOrderByInput
->
-| undefined) => {
+export const getSort = (
+  orderBy:
+    | InputMaybe<
+        | EventOrderByInput
+        | OrganizationOrderByInput
+        | PostOrderByInput
+        | TaskOrderByInput
+        | UserOrderByInput
+      >
+    | undefined
+) => {
   let sortPayload = {};
 
   switch (orderBy) {
