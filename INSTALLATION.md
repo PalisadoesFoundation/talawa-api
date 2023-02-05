@@ -13,15 +13,15 @@ This document provides instructions on how to set up and start a running instanc
   - [Setting up this repository](#setting-up-this-repository)
   - [Creating .env file](#creating-env-file)
   - [Access/refresh token secrets](#accessrefresh-token-secrets)
-    - [Setting up ACCESS\_TOKEN\_SECRET in .env file](#setting-up-access_token_secret-in-env-file)
-    - [Setting up REFRESH\_TOKEN\_SECRET in .env file](#setting-up-refresh_token_secret-in-env-file)
+    - [Setting up ACCESS_TOKEN_SECRET in .env file](#setting-up-access_token_secret-in-env-file)
+    - [Setting up REFRESH_TOKEN_SECRET in .env file](#setting-up-refresh_token_secret-in-env-file)
   - [MongoDB](#mongodb)
     - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
-    - [Setting up MONGODB\_URL in .env file](#setting-up-mongodb_url-in-env-file)
+    - [Setting up MONGODB_URL in .env file](#setting-up-mongodb_url-in-env-file)
     - [Optional:- Managing mongodb database using VSCode extension](#optional--managing-mongodb-database-using-vscode-extension)
   - [Google/firebase](#googlefirebase)
-    - [Setting up RECAPTCHA\_SECRET\_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
-    - [Setting up MAIL\_USERNAME/MAIL\_PASSWORD in .env file](#setting-up-mail_usernamemail_password-in-env-file)
+    - [Setting up RECAPTCHA_SECRET_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
+    - [Setting up MAIL_USERNAME/MAIL_PASSWORD in .env file](#setting-up-mail_usernamemail_password-in-env-file)
     - [Generate Firebase Keys for the Talawa Notification Service](#generate-firebase-keys-for-the-talawa-notification-service)
     - [Apply the Firebase Keys to the Talawa Mobile App](#apply-the-firebase-keys-to-the-talawa-mobile-app)
   - [Installing required packages](#installing-required-packages)
@@ -46,8 +46,8 @@ Follow the setup guide for `git` on official [git docs](https://git-scm.com/down
 <br/>
 
 ## Setting up this repository
-First you need a local copy of talawa-api. Run the following command in the directory of choice on your local system.
 
+First you need a local copy of talawa-api. Run the following command in the directory of choice on your local system.
 
 1. Navigate to the folder where you want to setup the repository. Here, I will set it up in a folder called `talawa`.
 
@@ -70,7 +70,6 @@ $ git clone https://github.com/{{GITHUB USERNAME}}/talawa-api.git
 This will setup the repository and the code files locally for you. For more detailed instructios on contributing code, and managing the versions of this repository with Git, checkout [CONTRIBUTING.md here](./CONTRIBUTING.md)
 
 `NOTE:- All the commands we're going to execute in the following instructions will assume you are in the root directory of the project. If you fail to do so, the commands will not work.`
-
 
 ## Creating .env file
 
@@ -118,6 +117,14 @@ Run the following command and copy/paste the result to the variable named `REFRE
 ## MongoDB
 
 Talawa-api makes use of `mongoDB` for its database needs. We make use of `mongoose ODM` to interact with the mongoDB database from within the code.
+
+**NOTE :**
+It must be noted that that talawa-api actually uses **2** databases. You only have to setup
+one database and provide it's URL in the .env file. This will be `primary database` and would
+be used to store all your data.
+
+In addition, we would automatically create a new database with the name `TALAWA_TESTING_DB`,
+which would be exclusively used for storing all the test data generated during the testing process so that it does not bloat the main database with unnecessary data.
 
 <br/>
 
@@ -397,6 +404,10 @@ Talawa-api makes use of `vitest` to run tests because it is much faster than `je
 You can run the tests for talawa-api using this command:-
 
         npm run test
+
+**NOTE :** STRICTLY only use the `test` script to run the tests as this script sets the `NODE_ENV` to `testing` and thus connects to the testing database instead of the main database.
+
+Using other ways to run tests (like using `npx vitest`) may result in the bloating of the main database with testing data. Before using such methods, do ensure the `NODE_ENV` is set to `testing` to avoid the aforementioned.
 
 <br/>
 
