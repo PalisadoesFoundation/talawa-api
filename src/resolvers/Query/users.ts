@@ -1,7 +1,6 @@
 import {
   InputMaybe,
   QueryResolvers,
-  UserOrderByInput,
   UserWhereInput,
 } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
@@ -13,6 +12,7 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
 } from "../../constants";
+import { getSort } from "./helperFunctions/getSort";
 
 export const users: QueryResolvers["users"] = async (_parent, args) => {
   const inputArg = getInputArg(args.where);
@@ -321,52 +321,4 @@ const getInputArg = (where: InputMaybe<UserWhereInput> | undefined) => {
   }
 
   return inputArg;
-};
-
-const getSort = (orderBy: InputMaybe<UserOrderByInput> | undefined) => {
-  if (orderBy !== null) {
-    if (orderBy === "id_ASC") {
-      return {
-        _id: 1,
-      };
-    } else if (orderBy === "id_DESC") {
-      return {
-        _id: -1,
-      };
-    } else if (orderBy === "firstName_ASC") {
-      return {
-        firstName: 1,
-      };
-    } else if (orderBy === "firstName_DESC") {
-      return {
-        firstName: -1,
-      };
-    } else if (orderBy === "lastName_ASC") {
-      return {
-        lastName: 1,
-      };
-    } else if (orderBy === "lastName_DESC") {
-      return {
-        lastName: -1,
-      };
-    } else if (orderBy === "appLanguageCode_ASC") {
-      return {
-        appLanguageCode: 1,
-      };
-    } else if (orderBy === "appLanguageCode_DESC") {
-      return {
-        appLanguageCode: -1,
-      };
-    } else if (orderBy === "email_ASC") {
-      return {
-        email: 1,
-      };
-    } else {
-      return {
-        email: -1,
-      };
-    }
-  }
-
-  return {};
 };

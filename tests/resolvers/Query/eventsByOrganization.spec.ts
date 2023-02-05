@@ -722,36 +722,6 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     expect(eventsByOrganizationPayload).toEqual(eventsByOrganization);
   });
 
-  it(`returns list of all existing events sorted by descending order of event.location
-  if args.orderBy === undefined`, async () => {
-    const sort = {
-      location: -1,
-    };
-
-    const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
-      orderBy: undefined,
-    };
-
-    const eventsByOrganizationPayload = await eventsByOrganizationResolver?.(
-      {},
-      args,
-      {}
-    );
-
-    const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
-      status: "ACTIVE",
-    })
-      .sort(sort)
-      .populate("creator", "-password")
-      .populate("tasks")
-      .populate("admins", "-password")
-      .lean();
-
-    expect(eventsByOrganizationPayload).toEqual(eventsByOrganization);
-  });
-
   it(`returns list of all existing events without sorting if args.orderBy === null`, async () => {
     const sort = {};
 

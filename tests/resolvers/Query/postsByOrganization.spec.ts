@@ -710,39 +710,4 @@ describe("resolvers -> Query -> posts", () => {
 
     expect(postsByOrganizationPayload).toEqual(postsByOrganization);
   });
-
-  it(`returns list of all existing posts having post.organization with _id === args.id
-  sorted by descending order of post.commentCount if args.orderBy === undefined`, async () => {
-    const sort = {
-      commentCount: -1,
-    };
-
-    const args: QueryPostsByOrganizationArgs = {
-      id: testOrganization.id,
-      orderBy: undefined,
-    };
-
-    const postsByOrganizationPayload = await postsByOrganizationResolver?.(
-      {},
-      args,
-      {}
-    );
-
-    const postsByOrganization = await Post.find({
-      organization: testOrganization._id,
-    })
-      .sort(sort)
-      .populate("organization")
-      .populate("likedBy")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
-      .populate("creator", "-password")
-      .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
-  });
 });

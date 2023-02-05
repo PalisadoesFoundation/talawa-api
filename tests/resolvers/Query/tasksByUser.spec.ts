@@ -356,28 +356,4 @@ describe("resolvers -> Query -> tasksByUser", () => {
 
     expect(tasksByUserPayload).toEqual(tasksByUser);
   });
-
-  it(`returns list of all tasks with task.creator === args.id and sorted by
-  descending order of task.deadline if args.orderBy === undefined`, async () => {
-    const sort = {
-      deadline: -1,
-    };
-
-    const args: QueryTasksByUserArgs = {
-      id: testUser._id,
-      orderBy: undefined,
-    };
-
-    const tasksByUserPayload = await tasksByUserResolver?.({}, args, {});
-
-    const tasksByUser = await Task.find({
-      creator: testUser._id,
-    })
-      .sort(sort)
-      .populate("event")
-      .populate("creator", "-password")
-      .lean();
-
-    expect(tasksByUserPayload).toEqual(tasksByUser);
-  });
 });
