@@ -4,15 +4,15 @@ import { connect, disconnect } from "../../../src/db";
 import { User } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
-  createTestDirectChat,
-  testDirectChatType,
+  createTestDirectChatMessage,
+  TestDirectChatMessageType,
 } from "../../helpers/directChat";
 
-let testDirectChatMessage: testDirectChatType;
+let testDirectChatMessage: TestDirectChatMessageType;
 beforeAll(async () => {
   await connect();
-  const temp = await createTestDirectChat();
-  testDirectChatMessage = temp[2];
+  const temp = await createTestDirectChatMessage();
+  testDirectChatMessage = temp[3];
 });
 
 afterAll(async () => {
