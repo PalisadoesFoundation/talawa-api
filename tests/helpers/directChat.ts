@@ -3,6 +3,7 @@ import {
   DirectChat,
   DirectChatMessage,
   Interface_DirectChat,
+  Interface_DirectChatMessage,
 } from "../../src/models";
 import {
   createTestUserAndOrganization,
@@ -13,6 +14,11 @@ import { Document } from "mongoose";
 
 export type testDirectChatType =
   | (Interface_DirectChat & Document<any, any, Interface_DirectChat>)
+  | null;
+
+export type TestDirectChatMessageType =
+  | (Interface_DirectChatMessage &
+      Document<any, any, Interface_DirectChatMessage>)
   | null;
 
 export const createTestDirectChat = async (): Promise<
@@ -29,12 +35,17 @@ export const createTestDirectChat = async (): Promise<
 };
 
 export const createTestDirectChatMessage = async (): Promise<
-  [testUserType, testOrganizationType, testDirectChatType]
+  [
+    testUserType,
+    testOrganizationType,
+    testDirectChatType,
+    TestDirectChatMessageType
+  ]
 > => {
   const [testUser, testOrganization, testDirectChat] =
     await createTestDirectChat();
 
-  await DirectChatMessage.create({
+  const testDirectChatMessage = await DirectChatMessage.create({
     directChatMessageBelongsTo: testDirectChat!._id,
     sender: testUser!._id,
     receiver: testUser!._id,
@@ -42,5 +53,5 @@ export const createTestDirectChatMessage = async (): Promise<
     messageContent: `msgContent${nanoid().toLowerCase()}`,
   });
 
-  return [testUser, testOrganization, testDirectChat];
+  return [testUser, testOrganization, testDirectChat, testDirectChatMessage];
 };
