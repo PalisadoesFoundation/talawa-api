@@ -1,11 +1,6 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Interface_Organization,
-} from "../../../src/models";
+import { Types } from "mongoose";
+import { User, Organization } from "../../../src/models";
 import { MutationUpdateOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { updateOrganization as updateOrganizationResolver } from "../../../src/resolvers/Mutation/updateOrganization";
@@ -13,44 +8,21 @@ import {
   ORGANIZATION_NOT_FOUND,
   USER_NOT_AUTHORIZED,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  createTestUserAndOrganization,
+  testOrganizationType,
+  testUserType,
+} from "../../helpers/userAndOrg";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    members: [testUser._id],
-    visibleInSearch: true,
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
+  const temp = await createTestUserAndOrganization();
+  testUser = temp[0];
+  testOrganization = temp[1];
 });
 
 afterAll(async () => {
@@ -65,7 +37,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
       };
 
       const context = {
-        userId: testUser._id,
+        userId: testUser!._id,
       };
 
       await updateOrganizationResolver?.({}, args, context);
@@ -78,11 +50,11 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
   of organization with _id === args.id`, async () => {
     try {
       const args: MutationUpdateOrganizationArgs = {
-        id: testOrganization._id,
+        id: testOrganization!._id,
       };
 
       const context = {
-        userId: testUser._id,
+        userId: testUser!._id,
       };
 
       await updateOrganizationResolver?.({}, args, context);
@@ -94,28 +66,28 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
   it(`updates the organization with _id === args.id and returns the updated organization`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization._id,
+        _id: testOrganization!._id,
       },
       {
         $set: {
-          admins: [testUser._id],
+          admins: [testUser!._id],
         },
       }
     );
 
     await User.updateOne(
       {
-        _id: testUser._id,
+        _id: testUser!._id,
       },
       {
         $set: {
-          adminFor: [testOrganization._id],
+          adminFor: [testOrganization!._id],
         },
       }
     );
 
     const args: MutationUpdateOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization!._id,
       data: {
         description: "newDescription",
         isPublic: false,
@@ -125,7 +97,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
     };
 
     const context = {
-      userId: testUser._id,
+      userId: testUser!._id,
     };
 
     const updateOrganizationPayload = await updateOrganizationResolver?.(
@@ -135,7 +107,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
     );
 
     const testUpdateOrganizationPayload = await Organization.findOne({
-      _id: testOrganization._id,
+      _id: testOrganization!._id,
     }).lean();
 
     expect(updateOrganizationPayload).toEqual(testUpdateOrganizationPayload);

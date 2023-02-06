@@ -1,60 +1,29 @@
 import "dotenv/config";
 import { Document } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Plugin,
-  Interface_Plugin,
-} from "../../../src/models";
+import { Plugin, Interface_Plugin } from "../../../src/models";
 import { MutationUpdatePluginStatusArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { updatePluginStatus as updatePluginStatusResolver } from "../../../src/resolvers/Mutation/updatePluginStatus";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  createTestUserAndOrganization,
+  testUserType,
+} from "../../helpers/userAndOrg";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: testUserType;
 let testPlugin: Interface_Plugin & Document<any, any, Interface_Plugin>;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
+  const temp = await createTestUserAndOrganization();
+  testUser = temp[0];
+  const testOrganization = temp[1];
   testPlugin = await Plugin.create({
     pluginName: "pluginName",
-    pluginCreatedBy: `${testUser.firstName} ${testUser.lastName}`,
+    pluginCreatedBy: `${testUser!.firstName} ${testUser!.lastName}`,
     pluginDesc: "pluginDesc",
     pluginInstallStatus: false,
-    installedOrgs: [testOrganization._id],
+    installedOrgs: [testOrganization!._id],
   });
 });
 
@@ -71,7 +40,7 @@ describe("resolvers -> Mutation -> updatePluginStatus", () => {
     };
 
     const context = {
-      userId: testUser._id,
+      userId: testUser!._id,
     };
 
     const updatePluginStatusPayload = await updatePluginStatusResolver?.(
