@@ -11,8 +11,8 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
     const _parent = {};
     const context = {
       pubsub: {
-        asyncInterator: () => {
-          return "string";
+        asyncInterator: (_action: "MESSAGE_SENT_TO_DIRECT_CHAT") => {
+          return;
         },
       },
       context: "currentUserId",
@@ -46,8 +46,8 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
     const _parent = {};
     const context = {
       pubsub: {
-        asyncInterator: () => {
-          return "string";
+        asyncInterator: (_action: "MESSAGE_SENT_TO_DIRECT_CHAT") => {
+          return;
         },
       },
       context: "currentUserId",
