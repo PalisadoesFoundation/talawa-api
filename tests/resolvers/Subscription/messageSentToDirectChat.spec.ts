@@ -54,9 +54,20 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
     };
     const payload = {
       messageSentToDirectChat: {
-        reciever: "currentUsrId",
+        reciever: "receiverId",
         sender: "senderId",
       },
     };
+    // @ts-ignore
+    messageSentToDirectChatPayload._parent = _parent;
+    // @ts-ignore
+    messageSentToDirectChatPayload._args = _args;
+    // @ts-ignore
+    messageSentToDirectChatPayload.payload = payload;
+    // @ts-ignore
+    messageSentToDirectChatPayload.context = context;
+    // @ts-ignore
+    const x = messageSentToDirectChatPayload?.subscribe;
+    expect(x()).not.toBe(true);
   });
 });
