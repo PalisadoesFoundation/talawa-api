@@ -1,34 +1,20 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import { nanoid } from "nanoid";
-import { Interface_User, User } from "../../../src/models";
+import { Types } from "mongoose";
+import { User } from "../../../src/models";
 import { MutationUpdateUserTypeArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { updateUserType as updateUserTypeResolver } from "../../../src/resolvers/Mutation/updateUserType";
 import { USER_NOT_AUTHORIZED, USER_NOT_FOUND } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { createTestUserFunc, testUserType } from "../../helpers/user";
 
-let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
+let testUsers: testUserType[];
 
 beforeAll(async () => {
   await connect();
-
-  testUsers = await User.insertMany([
-    {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: "firstName",
-      lastName: "lastName",
-      appLanguageCode: "en",
-    },
-    {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: "firstName",
-      lastName: "lastName",
-      appLanguageCode: "en",
-    },
-  ]);
+  const user1 = await createTestUserFunc();
+  const user2 = await createTestUserFunc();
+  testUsers = [user1, user2];
 });
 
 afterAll(async () => {
@@ -43,7 +29,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
       };
 
       const context = {
-        userId: testUsers[0]._id,
+        userId: testUsers[0]!._id,
       };
 
       await updateUserTypeResolver?.({}, args, context);
@@ -56,7 +42,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
     try {
       await User.updateOne(
         {
-          _id: testUsers[0]._id,
+          _id: testUsers[0]!._id,
         },
         {
           userType: "SUPERADMIN",
@@ -69,7 +55,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
       const args: MutationUpdateUserTypeArgs = {
         data: { id: Types.ObjectId().toString() },
       };
-      const context = { userId: testUsers[0]._id };
+      const context = { userId: testUsers[0]!._id };
 
       await updateUserTypeResolver?.({}, args, context);
     } catch (error: any) {
@@ -79,9 +65,9 @@ describe("resolvers -> Mutation -> updateUserType", () => {
 
   it(`updates user.userType of user with _id === args.data.id to args.data.userType`, async () => {
     const args: MutationUpdateUserTypeArgs = {
-      data: { id: testUsers[1]._id, userType: "BLOCKED" },
+      data: { id: testUsers[1]!._id, userType: "BLOCKED" },
     };
-    const context = { userId: testUsers[0]._id };
+    const context = { userId: testUsers[0]!._id };
 
     const updateUserTypePayload = await updateUserTypeResolver?.(
       {},
@@ -92,7 +78,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
     expect(updateUserTypePayload).toEqual(true);
 
     const updatedTestUser = await User.findOne({
-      _id: testUsers[1]._id,
+      _id: testUsers[1]!._id,
     })
       .select("userType")
       .lean();

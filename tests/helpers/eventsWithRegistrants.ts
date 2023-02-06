@@ -10,9 +10,9 @@ export type testEventType =
   | (Interface_Event & Document<any, any, Interface_Event>)
   | null;
 
-export const createTestEventWithRegistrants = async (): Promise<
-  [testUserType, testOrganizationType, testEventType]
-> => {
+export const createTestEventWithRegistrants = async (
+  isAdmin = true
+): Promise<[testUserType, testOrganizationType, testEventType]> => {
   const resultsArray = await createTestUserAndOrganization();
   const testUser = resultsArray[0];
   const testOrganization = resultsArray[1];
@@ -42,7 +42,7 @@ export const createTestEventWithRegistrants = async (): Promise<
     },
     {
       $push: {
-        eventAdmin: testEvent._id,
+        eventAdmin: isAdmin ? testEvent._id : [],
         createdEvents: testEvent._id,
         registeredEvents: testEvent._id,
       },
