@@ -22,7 +22,7 @@ import {
 let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
 
   testUsers = await User.insertMany([
     {

@@ -22,7 +22,7 @@ import { User } from "../../../src/models";
 let testUser: testUserType;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   testUser = await createTestUser();
 });
 

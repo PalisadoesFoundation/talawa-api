@@ -17,7 +17,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 let testEvent: Interface_Event & Document<any, any, Interface_Event>;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
 
   const testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,

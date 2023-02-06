@@ -21,7 +21,7 @@ let testUser: testUserType;
 let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
   testOrganization = temp[1];

@@ -20,7 +20,7 @@ let testUser: testUserType;
 let refreshToken: string;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   testUser = await createTestUserFunc();
 });
 

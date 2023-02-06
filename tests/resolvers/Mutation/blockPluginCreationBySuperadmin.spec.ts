@@ -14,7 +14,7 @@ import { testUserType, createTestUser } from "../../helpers/userAndOrg";
 let testUser: testUserType;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   testUser = await createTestUser();
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(

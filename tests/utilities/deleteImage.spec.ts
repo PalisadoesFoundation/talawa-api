@@ -24,7 +24,7 @@ vi.mock("fs", () => ({
 }));
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   testHash = await ImageHash.create({
     fileName: testImageToBeDeleted,
     hashValue: testHashString,

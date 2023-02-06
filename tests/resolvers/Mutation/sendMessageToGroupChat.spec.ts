@@ -23,7 +23,7 @@ import {
 } from "../../helpers/userAndOrg";
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
 

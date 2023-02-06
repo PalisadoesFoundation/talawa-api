@@ -18,7 +18,7 @@ let testUser: testUserType;
 let testEvent: testEventType;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   const temp = await createTestEventWithRegistrants();
   testUser = temp[0];
   const testOrganization = temp[1];

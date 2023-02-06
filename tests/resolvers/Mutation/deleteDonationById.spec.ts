@@ -10,7 +10,7 @@ import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 let testDonation: Interface_Donation & Document<any, any, Interface_Donation>;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   const temp = await createTestUserAndOrganization();
   const testUser = temp[0];
 

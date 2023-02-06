@@ -17,7 +17,7 @@ import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistra
 let testUser: testUserType;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   const temp = await createTestEventWithRegistrants();
   const hashedTestPassword = await bcrypt.hash("password", 12);
   testUser = temp[0];

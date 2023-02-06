@@ -19,7 +19,7 @@ let testUsers: testUserType[];
 let testTask: Interface_Task & Document<any, any, Interface_Task>;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
 
   const tempUser1 = await createTestUserFunc();
   const tempUser2 = await createTestUserFunc();

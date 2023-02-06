@@ -17,7 +17,7 @@ let testUser: testUserType;
 let testEvent: testEventType;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
     (message) => message

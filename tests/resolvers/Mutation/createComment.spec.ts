@@ -13,7 +13,7 @@ let testUser: testUserType;
 let testPost: testPostType;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   const resultsArray = await createTestPost();
   testUser = resultsArray[0];
   testPost = resultsArray[2];

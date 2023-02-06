@@ -39,7 +39,7 @@ let testEventProject: Interface_EventProject &
   Document<any, any, Interface_EventProject>;
 
 beforeAll(async () => {
-  await connect();
+  await connect("TALAWA_TESTING_DB");
   testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,
     password: "password",
