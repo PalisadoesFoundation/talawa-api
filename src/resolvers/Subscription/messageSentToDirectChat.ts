@@ -8,14 +8,14 @@ export const messageSentToDirectChat: SubscriptionResolvers["messageSentToDirect
     // @ts-ignore
     subscribe: withFilter(
       (_parent, _args, context) =>
-        context.pubsub.asyncIterator([MESSAGE_SENT_TO_DIRECT_CHAT]),
+        context?.pubsub?.asyncIterator(MESSAGE_SENT_TO_DIRECT_CHAT),
 
-      (payload, _variables, context) => {
-        const { currentUserId } = context.context;
+      async (payload, _variables, context) => {
+        const currentUserId = context?.context;
 
         return (
-          currentUserId === payload.messageSentToDirectChat.receiver ||
-          currentUserId === payload.messageSentToDirectChat.sender
+          currentUserId === payload?.messageSentToDirectChat?.receiver ||
+          currentUserId === payload?.messageSentToDirectChat?.sender
         );
       }
     ),
