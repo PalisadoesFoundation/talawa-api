@@ -1,78 +1,33 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Interface_Post,
-  Post,
-  Interface_Organization,
-} from "../../../src/models";
+import { Types } from "mongoose";
+import { Organization } from "../../../src/models";
 import { MutationAdminRemovePostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { adminRemovePost as adminRemovePostResolver } from "../../../src/resolvers/Mutation/adminRemovePost";
 import {
-  ORGANIZATION_NOT_FOUND,
-  POST_NOT_FOUND,
+  ORGANIZATION_NOT_FOUND_MESSAGE,
+  POST_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
+  USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
+import { testPostType, createTestPost } from "../../helpers/posts";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
-let testPost: Interface_Post & Document<any, any, Interface_Post>;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
+let testPost: testPostType;
 
 beforeAll(async () => {
   await connect();
+  const resultsArray = await createTestPost();
 
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  testPost = await Post.create({
-    text: "text",
-    creator: testUser._id,
-    organization: testOrganization._id,
-  });
-
-  await Organization.updateOne(
-    {
-      _id: testOrganization._id,
-    },
-    {
-      $push: {
-        posts: testPost._id,
-      },
-    }
+  testUser = resultsArray[0];
+  testOrganization = resultsArray[1];
+  testPost = resultsArray[2];
+  const { requestContext } = await import("../../../src/libraries");
+  vi.spyOn(requestContext, "translate").mockImplementation(
+    (message) => message
   );
 });
 
@@ -89,20 +44,20 @@ describe("resolvers -> Mutation -> adminRemovePost", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await adminRemovePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationAdminRemovePostArgs = {
-        organizationId: testOrganization.id,
-        postId: testPost.id,
+        organizationId: testOrganization!.id,
+        postId: testPost!.id,
       };
 
       const context = {
@@ -111,7 +66,7 @@ describe("resolvers -> Mutation -> adminRemovePost", () => {
 
       await adminRemovePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -120,7 +75,7 @@ describe("resolvers -> Mutation -> adminRemovePost", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization._id,
+          _id: testOrganization!._id,
         },
         {
           $set: {
@@ -130,12 +85,12 @@ describe("resolvers -> Mutation -> adminRemovePost", () => {
       );
 
       const args: MutationAdminRemovePostArgs = {
-        organizationId: testOrganization.id,
-        postId: testPost.id,
+        organizationId: testOrganization!.id,
+        postId: testPost!.id,
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await adminRemovePostResolver?.({}, args, context);
@@ -148,38 +103,38 @@ describe("resolvers -> Mutation -> adminRemovePost", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization._id,
+          _id: testOrganization!._id,
         },
         {
           $push: {
-            admins: testUser._id,
+            admins: testUser!._id,
           },
         }
       );
 
       const args: MutationAdminRemovePostArgs = {
-        organizationId: testOrganization.id,
+        organizationId: testOrganization!.id,
         postId: Types.ObjectId().toString(),
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await adminRemovePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(POST_NOT_FOUND);
+      expect(error.message).toEqual(POST_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`deletes the post and returns it`, async () => {
     const args: MutationAdminRemovePostArgs = {
-      organizationId: testOrganization.id,
-      postId: testPost.id,
+      organizationId: testOrganization!.id,
+      postId: testPost!.id,
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const adminRemovePostPayload = await adminRemovePostResolver?.(
@@ -189,13 +144,13 @@ describe("resolvers -> Mutation -> adminRemovePost", () => {
     );
 
     const updatedTestOrganization = await Organization.findOne({
-      _id: testOrganization._id,
+      _id: testOrganization!._id,
     })
       .select(["posts"])
       .lean();
 
     expect(updatedTestOrganization?.posts).toEqual([]);
 
-    expect(adminRemovePostPayload).toEqual(testPost.toObject());
+    expect(adminRemovePostPayload).toEqual(testPost!.toObject());
   });
 });

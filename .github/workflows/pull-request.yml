@@ -61,7 +61,7 @@ jobs:
         if: env.RUN_JSDOCS == 'True'
         run: echo "Run JSdocs :${{ env.RUN_JSDOCS }}"
 
-  Code-Coverage:
+  Test-Application:
     name: Testing Application
     runs-on: ubuntu-latest
     needs: Code-Formatter
@@ -112,4 +112,4 @@ jobs:
         uses: VeryGoodOpenSource/very_good_coverage@v2
         with:
           path: './coverage/lcov.info'
-          min_coverage: 89.0
+          min_coverage: 93.2

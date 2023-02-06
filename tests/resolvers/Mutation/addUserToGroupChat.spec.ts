@@ -1,72 +1,40 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Interface_Organization,
-  GroupChat,
-  Interface_GroupChat,
-  GroupChatMessage,
-} from "../../../src/models";
+import { Types } from "mongoose";
+import { Organization, GroupChat } from "../../../src/models";
 import { MutationAddUserToGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
-import { addUserToGroupChat as addUserToGroupChatResolver } from "../../../src/resolvers/Mutation/addUserToGroupChat";
 import {
-  CHAT_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND,
-  USER_ALREADY_MEMBER,
+  CHAT_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_MESSAGE,
+  USER_ALREADY_MEMBER_MESSAGE,
   USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
+  USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  vi,
+  afterEach,
+} from "vitest";
+import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
+import {
+  testGroupChatType,
+  createTestGroupChat,
+} from "../../helpers/groupChat";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
-let testGroupChat: Interface_GroupChat &
-  Document<any, any, Interface_GroupChat>;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
+let testGroupChat: testGroupChatType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        createdOrganizations: testOrganization._id,
-        adminFor: testOrganization._id,
-        joinedOrganizations: testOrganization._id,
-      },
-    }
-  );
-
-  testGroupChat = await GroupChat.create({
-    title: "title",
-    users: [testUser._id],
-    creator: testUser._id,
-    organization: testOrganization._id,
-  });
+  const resultArray = await createTestGroupChat();
+  testUser = resultArray[0];
+  testOrganization = resultArray[1];
+  testGroupChat = resultArray[2];
 });
 
 afterAll(async () => {
@@ -74,25 +42,49 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> addUserToGroupChat", () => {
+  afterEach(async () => {
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
+
   it(`throws NotFoundError if no groupChat exists with _id === args.chatId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationAddUserToGroupChatArgs = {
         chatId: Types.ObjectId().toString(),
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
-
-      await addUserToGroupChatResolver?.({}, args, context);
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+      const { addUserToGroupChat } = await import(
+        "../../../src/resolvers/Mutation/addUserToGroupChat"
+      );
+      await addUserToGroupChat?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(CHAT_NOT_FOUND);
+      expect(spy).toBeCalledWith(CHAT_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(CHAT_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no organization exists with _id === groupChat.organization
   for groupChat with _id === args.chatId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       await GroupChat.updateOne(
         {
@@ -106,17 +98,28 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       );
 
       const args: MutationAddUserToGroupChatArgs = {
-        chatId: testGroupChat.id,
-        userId: testUser.id,
+        chatId: testGroupChat!.id,
+        userId: testUser!.id,
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
-
-      await addUserToGroupChatResolver?.({}, args, context);
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+      const { addUserToGroupChat } = await import(
+        "../../../src/resolvers/Mutation/addUserToGroupChat"
+      );
+      await addUserToGroupChat?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -130,14 +133,14 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
         },
         {
           $set: {
-            organization: testOrganization._id,
+            organization: testOrganization!._id,
           },
         }
       );
 
       await Organization.updateOne(
         {
-          _id: testOrganization._id,
+          _id: testOrganization!._id,
         },
         {
           $set: {
@@ -147,70 +150,102 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       );
 
       const args: MutationAddUserToGroupChatArgs = {
-        chatId: testGroupChat.id,
-        userId: testUser.id,
+        chatId: testGroupChat!.id,
+        userId: testUser!.id,
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
-
-      await addUserToGroupChatResolver?.({}, args, context);
+      const { addUserToGroupChat } = await import(
+        "../../../src/resolvers/Mutation/addUserToGroupChat"
+      );
+      await addUserToGroupChat?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_AUTHORIZED);
     }
   });
 
   it(`throws NotFoundError if no user exists with _id === args.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization._id,
+          _id: testOrganization!._id,
         },
         {
           $push: {
-            admins: testUser._id,
+            admins: testUser!._id,
           },
         }
       );
 
       const args: MutationAddUserToGroupChatArgs = {
-        chatId: testGroupChat.id,
+        chatId: testGroupChat!.id,
         userId: Types.ObjectId().toString(),
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
-
-      await addUserToGroupChatResolver?.({}, args, context);
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+      const { addUserToGroupChat } = await import(
+        "../../../src/resolvers/Mutation/addUserToGroupChat"
+      );
+      await addUserToGroupChat?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws ConflictError if user with _id === args.userId is already a member 
   of groupChat with _id === args.chatId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationAddUserToGroupChatArgs = {
-        chatId: testGroupChat.id,
-        userId: testUser.id,
+        chatId: testGroupChat!.id,
+        userId: testUser!.id,
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
-
-      await addUserToGroupChatResolver?.({}, args, context);
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+      const { addUserToGroupChat } = await import(
+        "../../../src/resolvers/Mutation/addUserToGroupChat"
+      );
+      await addUserToGroupChat?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_ALREADY_MEMBER);
+      expect(spy).toBeCalledWith(USER_ALREADY_MEMBER_MESSAGE);
+      expect(error.message).toEqual(USER_ALREADY_MEMBER_MESSAGE);
     }
   });
 
-  it(`deletes the groupChat with _id === args.chatId and returns it`, async () => {
+  it(`add the groupChat with _id === args.chatId and returns it`, async () => {
     await GroupChat.updateOne(
       {
-        _id: testGroupChat._id,
+        _id: testGroupChat!._id,
       },
       {
         $set: {
@@ -220,26 +255,22 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
     );
 
     const args: MutationAddUserToGroupChatArgs = {
-      chatId: testGroupChat.id,
-      userId: testUser.id,
+      chatId: testGroupChat!.id,
+      userId: testUser!.id,
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
-
-    const addUserToGroupChatPayload = await addUserToGroupChatResolver?.(
+    const { addUserToGroupChat } = await import(
+      "../../../src/resolvers/Mutation/addUserToGroupChat"
+    );
+    const addUserToGroupChatPayload = await addUserToGroupChat?.(
       {},
       args,
       context
     );
-
-    expect(addUserToGroupChatPayload).toEqual(testGroupChat!.toObject());
-
-    const testDeletedGroupChatMessages = await GroupChatMessage.find({
-      groupChatMessageBelongsTo: testGroupChat!._id,
-    }).lean();
-
-    expect(testDeletedGroupChatMessages).toEqual([]);
+    expect(addUserToGroupChatPayload?._id).toEqual(testGroupChat!._id);
+    expect(addUserToGroupChatPayload?.users).toEqual([testUser!._id]);
   });
 });

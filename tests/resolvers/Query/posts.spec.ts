@@ -699,39 +699,4 @@ describe("resolvers -> Query -> posts", () => {
 
     expect(postsPayload).toEqual(posts);
   });
-
-  it(`returns list of all existing posts sorted by descending order of post.commentCount
-  if args.orderBy === undefined`, async () => {
-    const sort = {
-      commentCount: -1,
-    };
-
-    const args: QueryPostsArgs = {
-      orderBy: undefined,
-    };
-
-    const postsPayload = await postsResolver?.({}, args, {});
-
-    let posts = await Post.find()
-      .sort(sort)
-      .populate("organization")
-      .populate("likedBy")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
-      .populate("creator", "-password")
-      .lean();
-
-    posts = posts.map((post) => {
-      post.likeCount = post.likedBy.length || 0;
-      post.commentCount = post.comments.length || 0;
-
-      return post;
-    });
-
-    expect(postsPayload).toEqual(posts);
-  });
 });

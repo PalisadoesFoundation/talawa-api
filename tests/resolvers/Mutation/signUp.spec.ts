@@ -1,11 +1,6 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Interface_Organization,
-} from "../../../src/models";
+import { Types } from "mongoose";
+import { User } from "../../../src/models";
 import { MutationSignUpArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import {
@@ -26,44 +21,20 @@ import {
   expect,
   afterEach,
 } from "vitest";
+import {
+  createTestUserAndOrganization,
+  testOrganizationType,
+  testUserType,
+} from "../../helpers/userAndOrg";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-    visibleInSearch: true,
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
+  const temp = await createTestUserAndOrganization();
+  testUser = temp[0];
+  testOrganization = temp[1];
 });
 
 afterAll(async () => {
@@ -80,7 +51,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     try {
       const args: MutationSignUpArgs = {
         data: {
-          email: testUser.email,
+          email: testUser!.email,
           firstName: "firstName",
           lastName: "lastName",
           password: "password",
@@ -180,7 +151,7 @@ describe("resolvers -> Mutation -> signUp", () => {
         lastName: "lastName",
         password: "password",
         appLanguageCode: "en",
-        organizationUserBelongsToId: testOrganization.id,
+        organizationUserBelongsToId: testOrganization!.id,
         userType: "USER",
       },
     };
@@ -237,7 +208,7 @@ describe("resolvers -> Mutation -> signUp", () => {
         lastName: "lastName",
         password: "password",
         appLanguageCode: "en",
-        organizationUserBelongsToId: testOrganization.id,
+        organizationUserBelongsToId: testOrganization!.id,
         userType: "USER",
       },
       file: newImageFile,
@@ -280,7 +251,7 @@ describe("resolvers -> Mutation -> signUp", () => {
         lastName: "lastName",
         password: "password",
         appLanguageCode: "en",
-        organizationUserBelongsToId: testOrganization.id,
+        organizationUserBelongsToId: testOrganization!.id,
         userType: "USER",
       },
       file: newImageFile,
@@ -315,7 +286,7 @@ describe("resolvers -> Mutation -> signUp - [IN_PRODUCTION === TRUE]", () => {
     try {
       const args: MutationSignUpArgs = {
         data: {
-          email: testUser.email,
+          email: testUser!.email,
           firstName: "firstName",
           lastName: "lastName",
           password: "password",

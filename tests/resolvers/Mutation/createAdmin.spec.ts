@@ -1,57 +1,35 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Interface_Organization,
-} from "../../../src/models";
+import { Types } from "mongoose";
+import { User, Organization } from "../../../src/models";
 import { MutationCreateAdminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { createAdmin as createAdminResolver } from "../../../src/resolvers/Mutation/createAdmin";
 import {
-  ORGANIZATION_MEMBER_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND,
+  ORGANIZATION_MEMBER_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
+  USER_NOT_AUTHORIZED_MESSAGE,
+  USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import {
+  createTestUserAndOrganization,
+  testOrganizationType,
+  testUserType,
+} from "../../helpers/userAndOrg";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
+  const resultsArray = await createTestUserAndOrganization(false);
 
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        createdOrganizations: testOrganization._id,
-        adminFor: testOrganization._id,
-        joinedOrganizations: testOrganization._id,
-      },
-    }
+  testUser = resultsArray[0];
+  testOrganization = resultsArray[1];
+  const { requestContext } = await import("../../../src/libraries");
+  vi.spyOn(requestContext, "translate").mockImplementation(
+    (message) => message
   );
 });
 
@@ -70,12 +48,12 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await createAdminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -84,7 +62,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization._id,
+          _id: testOrganization!._id,
         },
         {
           $set: {
@@ -95,13 +73,13 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
       const args: MutationCreateAdminArgs = {
         data: {
-          organizationId: testOrganization.id,
-          userId: testUser.id,
+          organizationId: testOrganization!.id,
+          userId: testUser!.id,
         },
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await createAdminResolver?.({}, args, context);
@@ -114,29 +92,29 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization._id,
+          _id: testOrganization!._id,
         },
         {
           $set: {
-            creator: testUser._id,
+            creator: testUser!._id,
           },
         }
       );
 
       const args: MutationCreateAdminArgs = {
         data: {
-          organizationId: testOrganization.id,
+          organizationId: testOrganization!.id,
           userId: Types.ObjectId().toString(),
         },
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await createAdminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -145,18 +123,18 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     try {
       const args: MutationCreateAdminArgs = {
         data: {
-          organizationId: testOrganization.id,
-          userId: testUser.id,
+          organizationId: testOrganization!.id,
+          userId: testUser!.id,
         },
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await createAdminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_MEMBER_NOT_FOUND);
+      expect(error.message).toEqual(ORGANIZATION_MEMBER_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -165,36 +143,36 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization._id,
+          _id: testOrganization!._id,
         },
         {
           $push: {
-            members: testUser._id,
+            members: testUser!._id,
           },
         }
       );
 
       const args: MutationCreateAdminArgs = {
         data: {
-          organizationId: testOrganization.id,
-          userId: testUser.id,
+          organizationId: testOrganization!.id,
+          userId: testUser!.id,
         },
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await createAdminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
     }
   });
 
   it(`creates the admin and returns admin's user object`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization._id,
+        _id: testOrganization!._id,
       },
       {
         $set: {
@@ -205,19 +183,19 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
     const args: MutationCreateAdminArgs = {
       data: {
-        organizationId: testOrganization.id,
-        userId: testUser.id,
+        organizationId: testOrganization!.id,
+        userId: testUser!.id,
       },
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const createAdminPayload = await createAdminResolver?.({}, args, context);
 
     const updatedTestUser = await User.findOne({
-      _id: testUser._id,
+      _id: testUser!._id,
     })
       .select(["-password"])
       .lean();
@@ -225,11 +203,11 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     expect(createAdminPayload).toEqual(updatedTestUser);
 
     const updatedTestOrganization = await Organization.findOne({
-      _id: testOrganization._id,
+      _id: testOrganization!._id,
     })
       .select(["admins"])
       .lean();
 
-    expect(updatedTestOrganization!.admins).toEqual([testUser._id]);
+    expect(updatedTestOrganization!.admins).toEqual([testUser!._id]);
   });
 });

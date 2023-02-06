@@ -1,63 +1,26 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Interface_Organization,
-  Interface_Post,
-  Post,
-} from "../../../src/models";
+import { Types } from "mongoose";
+import { Post } from "../../../src/models";
 import { MutationCreateCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { createComment as createCommentResolver } from "../../../src/resolvers/Mutation/createComment";
-import { USER_NOT_FOUND } from "../../../src/constants";
-import { nanoid } from "nanoid";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import { createTestPost, testPostType } from "../../helpers/posts";
+import { testUserType } from "../../helpers/userAndOrg";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
-let testPost: (Interface_Post & Document<any, any, Interface_Post>) | null;
+let testUser: testUserType;
+let testPost: testPostType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        createdOrganizations: testOrganization._id,
-        adminFor: testOrganization._id,
-        joinedOrganizations: testOrganization._id,
-      },
-    }
+  const resultsArray = await createTestPost();
+  testUser = resultsArray[0];
+  testPost = resultsArray[2];
+  const { requestContext } = await import("../../../src/libraries");
+  vi.spyOn(requestContext, "translate").mockImplementation(
+    (message) => message
   );
-
-  testPost = await Post.create({
-    text: "text",
-    creator: testUser._id,
-    organization: testOrganization._id,
-  });
 });
 
 afterAll(async () => {
@@ -80,7 +43,7 @@ describe("resolvers -> Mutation -> createComment", () => {
 
       await createCommentResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -93,7 +56,7 @@ describe("resolvers -> Mutation -> createComment", () => {
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const createCommentPayload = await createCommentResolver?.(
@@ -105,7 +68,7 @@ describe("resolvers -> Mutation -> createComment", () => {
     expect(createCommentPayload).toEqual(
       expect.objectContaining({
         text: "text",
-        creator: testUser._id,
+        creator: testUser!._id,
         post: testPost!._id,
       })
     );

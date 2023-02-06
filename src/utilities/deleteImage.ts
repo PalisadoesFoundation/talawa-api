@@ -7,7 +7,7 @@ export const deleteImage = async (
   imageToBeDeleted: string,
   imageBelongingToItem?: string
 ) => {
-  let imageIsDuplicate = false;
+  let imageIsDuplicate: boolean = false;
 
   if (imageBelongingToItem) {
     imageIsDuplicate = await reuploadDuplicateCheck(
@@ -16,7 +16,7 @@ export const deleteImage = async (
     );
   }
 
-  if (imageIsDuplicate === false) {
+  if (!imageIsDuplicate) {
     /* 
     Only remove the old image if its different from the new one
     Ensure image hash isn't used by multiple users/organization before deleting it
@@ -25,7 +25,7 @@ export const deleteImage = async (
       fileName: imageToBeDeleted,
     }).lean();
 
-    if (imageHash && imageHash.numberOfUses > 1) {
+    if (imageHash && imageHash?.numberOfUses > 1) {
       // Image can only be deleted if imageHash.numberOfUses === 1
       logger.info("Image cannot be deleted");
     } else {

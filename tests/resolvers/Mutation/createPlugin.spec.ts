@@ -1,24 +1,15 @@
 import "dotenv/config";
-import { Document } from "mongoose";
-import { Interface_User, User } from "../../../src/models";
 import { MutationCreatePluginArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { createPlugin as createPluginResolver } from "../../../src/resolvers/Mutation/createPlugin";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { createTestUserFunc, testUserType } from "../../helpers/user";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: testUserType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
+  testUser = await createTestUserFunc();
 });
 
 afterAll(async () => {
@@ -36,7 +27,7 @@ describe("resolvers -> Mutation -> createPlugin", () => {
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const createPluginPayload = await createPluginResolver?.({}, args, context);

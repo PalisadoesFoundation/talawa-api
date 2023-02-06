@@ -15,7 +15,7 @@ import cors from "cors";
 import requestLogger from "morgan";
 import i18n from "i18n";
 import * as database from "./db";
-import { logger, requestContext, requestTracing } from "./libraries";
+import { logger, requestContext, requestTracing, stream } from "./libraries";
 import { appConfig } from "./config";
 import { isAuth } from "./middleware";
 import {
@@ -25,6 +25,7 @@ import {
 import { typeDefs } from "./typeDefs";
 import { resolvers } from "./resolvers";
 import { Interface_JwtTokenPayload } from "./utilities";
+import { ACCESS_TOKEN_SECRET } from "./constants";
 
 const app = express();
 
@@ -67,17 +68,18 @@ app.use(
 app.use(mongoSanitize());
 app.use(cors());
 
-// Invalid code. Needs fix.
+// Fix added to stream
 app.use(
   requestLogger(
     // @ts-ignore
     ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms',
     {
-      stream: logger.stream,
+      stream: stream,
     }
   )
 );
-app.use("/images", express.static(path.join(__dirname, "./images")));
+
+app.use("/images", express.static(path.join(__dirname, "./../images")));
 app.use(requestContext.middleware());
 
 app.get("/", (req, res) =>
@@ -139,7 +141,7 @@ const apolloServer = new ApolloServer({
       if (token) {
         const decodedToken = jwt.verify(
           token,
-          process.env.ACCESS_TOKEN_SECRET as string
+          ACCESS_TOKEN_SECRET as string
         ) as Interface_JwtTokenPayload;
         userId = decodedToken.userId;
       }

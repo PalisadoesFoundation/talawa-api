@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from "../constants";
 import { Interface_User } from "../models";
 
 export interface Interface_JwtTokenPayload {
@@ -18,7 +19,7 @@ export const createAccessToken = async (user: Interface_User) => {
       lastName: user.lastName,
       email: user.email,
     },
-    process.env.ACCESS_TOKEN_SECRET!,
+    ACCESS_TOKEN_SECRET!,
     {
       expiresIn: "15m",
     }
@@ -34,7 +35,7 @@ export const createRefreshToken = async (user: Interface_User) => {
       lastName: user.lastName,
       email: user.email,
     },
-    process.env.REFRESH_TOKEN_SECRET!,
+    REFRESH_TOKEN_SECRET!,
     {
       expiresIn: "30d",
     }

@@ -1,12 +1,6 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Event,
-  Interface_Event,
-} from "../../../src/models";
+import { Types } from "mongoose";
+import { User, Event } from "../../../src/models";
 import { MutationRegisterForEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { registerForEvent as registerForEventResolver } from "../../../src/resolvers/Mutation/registerForEvent";
@@ -15,47 +9,23 @@ import {
   REGISTRANT_ALREADY_EXIST,
   USER_NOT_FOUND,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { testUserType } from "../../helpers/userAndOrg";
+import { testEventType } from "../../helpers/events";
+import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testEvent: Interface_Event & Document<any, any, Interface_Event>;
+let testUser: testUserType;
+let testEvent: testEventType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    members: [testUser._id],
-    visibleInSearch: true,
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
+  const temp = await createTestEventWithRegistrants();
+  testUser = temp[0];
+  const testOrganization = temp[1];
 
   testEvent = await Event.create({
-    creator: testUser._id,
-    organization: testOrganization._id,
+    creator: testUser!._id,
+    organization: testOrganization!._id,
     isRegisterable: true,
     isPublic: true,
     title: "title",
@@ -64,8 +34,8 @@ beforeAll(async () => {
     startDate: new Date().toString(),
     registrants: [
       {
-        userId: testUser.id,
-        user: testUser._id,
+        userId: testUser!.id,
+        user: testUser!._id,
         status: "ACTIVE",
       },
     ],
@@ -73,7 +43,7 @@ beforeAll(async () => {
 
   await User.updateOne(
     {
-      _id: testUser._id,
+      _id: testUser!._id,
     },
     {
       $set: {
@@ -111,7 +81,7 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
       };
 
       const context = {
-        userId: testUser._id,
+        userId: testUser!._id,
       };
 
       await registerForEventResolver?.({}, args, context);
@@ -126,11 +96,11 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
   `, async () => {
     try {
       const args: MutationRegisterForEventArgs = {
-        id: testEvent._id,
+        id: testEvent!._id,
       };
 
       const context = {
-        userId: testUser._id,
+        userId: testUser!._id,
       };
 
       await registerForEventResolver?.({}, args, context);
@@ -144,14 +114,14 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
   _id === context.userId`, async () => {
     await Event.updateOne(
       {
-        _id: testEvent._id,
+        _id: testEvent!._id,
       },
       {
         $set: {
           registrants: [
             {
-              userId: testUser.id,
-              user: testUser._id,
+              userId: testUser!.id,
+              user: testUser!._id,
               status: "BLOCKED",
             },
           ],
@@ -160,11 +130,11 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
     );
 
     const args: MutationRegisterForEventArgs = {
-      id: testEvent._id,
+      id: testEvent!._id,
     };
 
     const context = {
-      userId: testUser._id,
+      userId: testUser!._id,
     };
 
     const registerForEventPayload = await registerForEventResolver?.(
@@ -174,7 +144,7 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
     );
 
     const testRegisterForEventPayload = await Event.findOne({
-      _id: testEvent._id,
+      _id: testEvent!._id,
     }).lean();
 
     expect(registerForEventPayload).toEqual(testRegisterForEventPayload);
@@ -184,7 +154,7 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
   _id === args.id`, async () => {
     await Event.updateOne(
       {
-        _id: testEvent._id,
+        _id: testEvent!._id,
       },
       {
         $set: {
@@ -195,7 +165,7 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
 
     await User.updateOne(
       {
-        _id: testUser._id,
+        _id: testUser!._id,
       },
       {
         $set: {
@@ -205,11 +175,11 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
     );
 
     const args: MutationRegisterForEventArgs = {
-      id: testEvent._id,
+      id: testEvent!._id,
     };
 
     const context = {
-      userId: testUser._id,
+      userId: testUser!._id,
     };
 
     const registerForEventPayload = await registerForEventResolver?.(
@@ -219,17 +189,17 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
     );
 
     const testRegisterForEventPayload = await Event.findOne({
-      _id: testEvent._id,
+      _id: testEvent!._id,
     }).lean();
 
     expect(registerForEventPayload).toEqual(testRegisterForEventPayload);
 
     const updatedTestUser = await User.findOne({
-      _id: testUser._id,
+      _id: testUser!._id,
     })
       .select(["registeredEvents"])
       .lean();
 
-    expect(updatedTestUser?.registeredEvents).toEqual([testEvent._id]);
+    expect(updatedTestUser?.registeredEvents).toEqual([testEvent!._id]);
   });
 });

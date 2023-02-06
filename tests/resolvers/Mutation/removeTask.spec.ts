@@ -1,7 +1,6 @@
 import "dotenv/config";
 import { Document, Types } from "mongoose";
 import {
-  Interface_User,
   User,
   Organization,
   Event,
@@ -12,44 +11,32 @@ import { MutationRemoveTaskArgs } from "../../../src/types/generatedGraphQLTypes
 import { connect, disconnect } from "../../../src/db";
 import { removeTask as removeTaskResolver } from "../../../src/resolvers/Mutation/removeTask";
 import { USER_NOT_AUTHORIZED, USER_NOT_FOUND } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { createTestUserFunc } from "../../helpers/user";
+import { testUserType } from "../../helpers/userAndOrg";
 
-let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
+let testUsers: testUserType[];
 let testTask: Interface_Task & Document<any, any, Interface_Task>;
 
 beforeAll(async () => {
   await connect();
 
-  testUsers = await User.insertMany([
-    {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: "firstName",
-      lastName: "lastName",
-      appLanguageCode: "en",
-    },
-    {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: "firstName",
-      lastName: "lastName",
-      appLanguageCode: "en",
-    },
-  ]);
+  const tempUser1 = await createTestUserFunc();
+  const tempUser2 = await createTestUserFunc();
+  testUsers = [tempUser1, tempUser2];
 
   const testOrganization = await Organization.create({
     name: "name",
     description: "description",
     isPublic: true,
-    creator: testUsers[0]._id,
-    admins: [testUsers[0]._id],
-    members: [testUsers[0]._id],
+    creator: testUsers[0]!._id,
+    admins: [testUsers[0]!._id],
+    members: [testUsers[0]!._id],
   });
 
   await User.updateOne(
     {
-      _id: testUsers[0]._id,
+      _id: testUsers[0]!._id,
     },
     {
       $set: {
@@ -61,14 +48,14 @@ beforeAll(async () => {
   );
 
   const testEvent = await Event.create({
-    creator: testUsers[0]._id,
+    creator: testUsers[0]!._id,
     registrants: [
       {
-        userId: testUsers[0]._id,
-        user: testUsers[0]._id,
+        userId: testUsers[0]!._id,
+        user: testUsers[0]!._id,
       },
     ],
-    admins: [testUsers[0]._id],
+    admins: [testUsers[0]!._id],
     organization: testOrganization._id,
     isRegisterable: true,
     isPublic: true,
@@ -80,7 +67,7 @@ beforeAll(async () => {
 
   await User.updateOne(
     {
-      _id: testUsers[0]._id,
+      _id: testUsers[0]!._id,
     },
     {
       $set: {
@@ -94,7 +81,7 @@ beforeAll(async () => {
   testTask = await Task.create({
     title: "title",
     event: testEvent._id,
-    creator: testUsers[0]._id,
+    creator: testUsers[0]!._id,
   });
 
   await Event.updateOne(
@@ -137,7 +124,7 @@ describe("resolvers -> Mutation -> removeTask", () => {
       };
 
       const context = {
-        userId: testUsers[0]._id,
+        userId: testUsers[0]!._id,
       };
 
       await removeTaskResolver?.({}, args, context);
@@ -153,7 +140,7 @@ describe("resolvers -> Mutation -> removeTask", () => {
       };
 
       const context = {
-        userId: testUsers[1]._id,
+        userId: testUsers[1]!._id,
       };
 
       await removeTaskResolver?.({}, args, context);
@@ -168,7 +155,7 @@ describe("resolvers -> Mutation -> removeTask", () => {
     };
 
     const context = {
-      userId: testUsers[0]._id,
+      userId: testUsers[0]!._id,
     };
 
     const removeTaskPayload = await removeTaskResolver?.({}, args, context);

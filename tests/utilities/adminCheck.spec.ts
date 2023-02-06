@@ -1,6 +1,4 @@
 import "dotenv/config";
-import { Document } from "mongoose";
-import { nanoid } from "nanoid";
 import {
   afterAll,
   afterEach,
@@ -12,40 +10,23 @@ import {
 } from "vitest";
 import { connect, disconnect } from "../../src/db";
 import {
-  Interface_Organization,
-  Interface_User,
-  Organization,
-  User,
-} from "../../src/models";
-import {
   USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_MESSAGE,
 } from "../../src/constants";
+import {
+  createTestUserAndOrganization,
+  testOrganizationType,
+  testUserType,
+} from "../helpers/userAndOrg";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
-const testUserEmail: string = `email${nanoid().toLowerCase()}@gmail.com`;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   connect();
-
-  testUser = await User.create({
-    email: testUserEmail,
-    password: "testPassword",
-    firstName: "testFirstName",
-    lastName: "testLastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "testName",
-    description: "testDescription",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [],
-    members: [testUser._id],
-  });
+  const userAndOrg = await createTestUserAndOrganization(false, false);
+  testUser = userAndOrg[0];
+  testOrganization = userAndOrg[1];
 });
 
 afterAll(async () => {
@@ -71,7 +52,7 @@ describe("utilities -> adminCheck", () => {
 
     try {
       const { adminCheck } = await import("../../src/utilities");
-      adminCheck(testUser._id, testOrganization);
+      adminCheck(testUser!._id, testOrganization!);
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_AUTHORIZED);
     }
@@ -96,7 +77,7 @@ describe("utilities -> adminCheck", () => {
 
     try {
       const { adminCheck } = await import("../../src/utilities");
-      adminCheck(testUser._id, testOrganization);
+      adminCheck(testUser!._id, testOrganization!);
     } catch (error: any) {
       expect(error.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
