@@ -3,15 +3,14 @@ import { directChats as directChatsResolver } from "../../../src/resolvers/Query
 import { connect, disconnect } from "../../../src/db";
 import { DirectChat } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestUser, createTestOrganizationWithAdmin } from "../../helpers/uerAndOrgs.ts";
-import { createTestDirectMessageForMultipleUser } from "../../helpers/directChat.ts";
+import { createTestUser, createTestOrganizationWithAdmin } from "../../helpers/uerAndOrgs";
+import { createTestDirectMessageForMultipleUser } from "../../helpers/directChat";
 beforeAll(async () => {
   await connect();
 
   const testUser1 = await createTestUser();
   const testUser2 = await createTestUser();
   const testOrganization = await createTestOrganizationWithAdmin(testUser1._id);
-
   const testDirectChat = await createTestDirectMessageForMultipleUser(testUser1._id, testUser2._id, testOrganization._id);
 });
 

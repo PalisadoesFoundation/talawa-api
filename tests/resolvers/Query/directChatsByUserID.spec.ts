@@ -1,57 +1,15 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
+import { Types } from "mongoose";
 import { connect, disconnect } from "../../../src/db";
 import { directChatsByUserID as directChatsByUserIDResolver } from "../../../src/resolvers/Query/directChatsByUserID";
-import {
-  User,
-  Organization,
-  DirectChat,
-  Interface_User,
-} from "../../../src/models";
-import { nanoid } from "nanoid";
+import { DirectChat } from "../../../src/models";
 import { QueryDirectChatsByUserIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-
-let testUser: Interface_User & Document<any, any, Interface_User>;
+import { createTestDirectChat } from "../../helpers/directChat"
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  await DirectChat.create({
-    creator: testUser._id,
-    organization: testOrganization._id,
-    users: [testUser._id],
-  });
+  const [ testUser, testOrganization, testDirectChat ] = await createTestDirectChat();
 });
 
 afterAll(async () => {

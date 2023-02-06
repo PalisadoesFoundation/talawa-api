@@ -13,6 +13,8 @@ import {
 import { nanoid } from "nanoid";
 import { QueryDirectChatsMessagesByChatIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { createTestUser,createTestUserAndOrganization} from "../../helpers/userAndOrg";
+import { createTestDirectChatwithUsers, createDirectChatMessage} from "../../helpers/directChat";
 
 let testDirectChats: (Interface_DirectChat &
   Document<any, any, Interface_DirectChat>)[];
@@ -20,65 +22,14 @@ let testDirectChats: (Interface_DirectChat &
 beforeAll(async () => {
   await connect();
 
-  const testUsers = await User.insertMany([
-    {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: "firstName",
-      lastName: "lastName",
-      appLanguageCode: "en",
-    },
-    {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: "firstName",
-      lastName: "lastName",
-      appLanguageCode: "en",
-    },
-  ]);
+  const [testUser1, testOrganization] = await createTestUserAndOrganization();
+  const testUser2 = await createTestUser();
 
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUsers[0]._id,
-    admins: [testUsers[0]._id],
-    members: [testUsers[0]._id],
-  });
+  const testDirectChat1 = await createTestDirectChatwithUsers(testUser1._id,testOrganization._id,[testUser1._id, testUser2._id]);
+  const testDirectChat2 = await createTestDirectChatwithUsers(testUser2._id,testOrganization._id,[testUser2._id]);
 
-  await User.updateOne(
-    {
-      _id: testUsers[0]._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  testDirectChats = await DirectChat.insertMany([
-    {
-      creator: testUsers[0]._id,
-      organization: testOrganization._id,
-      users: [testUsers[0]._id, testUsers[1]._id],
-    },
-    {
-      creator: testUsers[1]._id,
-      organization: testOrganization._id,
-      users: [testUsers[1]._id],
-    },
-  ]);
-
-  await DirectChatMessage.create({
-    directChatMessageBelongsTo: testDirectChats[0]._id,
-    sender: testUsers[0]._id,
-    receiver: testUsers[1]._id,
-    createdAt: new Date(),
-    messageContent: "messageContent",
-  });
+  testDirectChats = [testDirectChat1, testDirectChat2];
+  const testDirectChatMessage = await createDirectChatMessage(testUser1._id,testUser2._id,testDirectChats[0]._id);
 });
 
 afterAll(async () => {
