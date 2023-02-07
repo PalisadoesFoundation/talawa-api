@@ -7,5 +7,5 @@ npm run format:fix
 
 # Check for linting and formatting errors
 npm run typecheck
-npm run lint:check
+npm run format:check
 npm run lint:check
