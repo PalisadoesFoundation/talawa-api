@@ -10,19 +10,13 @@
   ],
   "overrides": [
     {
-      "files": [
-        "*.ts"
-      ],
+      "files": ["*.ts"],
       "processor": "@graphql-eslint/graphql"
     },
     {
-      "files": [
-        "*.graphql"
-      ],
+      "files": ["*.graphql"],
       "parser": "@graphql-eslint/eslint-plugin",
-      "plugins": [
-        "@graphql-eslint"
-      ]
+      "plugins": ["@graphql-eslint"]
     }
   ],
   "parser": "@typescript-eslint/parser",
@@ -30,19 +24,11 @@
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "plugins": [
-    "@typescript-eslint"
-  ],
+  "plugins": ["@typescript-eslint"],
   "root": true,
   "rules": {
-    "eqeqeq": [
-      "error",
-      "always"
-    ],
-    "linebreak-style": [
-      "error",
-      "unix"
-    ],
+    "eqeqeq": ["error", "always"],
+    "linebreak-style": ["error", "unix"],
     "no-unused-vars": [
       "error",
       {

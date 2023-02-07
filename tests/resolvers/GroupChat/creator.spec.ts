@@ -5,16 +5,16 @@ import { User } from "../../../src/models";
 
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
-  createTestGroupChatMessage,
-  testGroupChatMessageType,
+  createTestGroupChat,
+  testGroupChatType,
 } from "../../helpers/groupChat";
 
-let testGroupChat: testGroupChatMessageType;
+let testGroupChat: testGroupChatType;
 
 beforeAll(async () => {
   await connect("TALAWA_TESTING_DB");
-  const resultArray = await createTestGroupChatMessage();
-  testGroupChat = resultArray[3];
+  const resultArray = await createTestGroupChat();
+  testGroupChat = resultArray[2];
 });
 
 afterAll(async () => {

@@ -1,98 +1,39 @@
 import "dotenv/config";
 import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Event,
-  Task,
-  Interface_Task,
-} from "../../../src/models";
+import { Event, Task, Interface_Task } from "../../../src/models";
 import { MutationUpdateTaskArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { updateTask as updateTaskResolver } from "../../../src/resolvers/Mutation/updateTask";
 import { USER_NOT_AUTHORIZED, USER_NOT_FOUND } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { testUserType } from "../../helpers/userAndOrg";
+import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: testUserType;
 let testTasks: (Interface_Task & Document<any, any, Interface_Task>)[];
 
 beforeAll(async () => {
   await connect("TALAWA_TESTING_DB");
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  const testEvent = await Event.create({
-    creator: testUser._id,
-    registrants: [{ userId: testUser._id, user: testUser._id }],
-    admins: [testUser._id],
-    organization: testOrganization._id,
-    isRegisterable: true,
-    isPublic: true,
-    title: "title",
-    description: "description",
-    allDay: true,
-    startDate: new Date().toString(),
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdEvents: [testEvent._id],
-        registeredEvents: [testEvent._id],
-        eventAdmin: [testEvent._id],
-      },
-    }
-  );
+  const temp = await createTestEventWithRegistrants();
+  testUser = temp[0];
+  const testEvent = temp[2];
 
   testTasks = await Task.insertMany([
     {
       title: "title",
-      event: testEvent._id,
-      creator: testUser._id,
+      event: testEvent!._id,
+      creator: testUser!._id,
     },
     {
       title: "title",
-      event: testEvent._id,
+      event: testEvent!._id,
       creator: Types.ObjectId().toString(),
     },
   ]);
 
   await Event.updateOne(
     {
-      _id: testEvent._id,
+      _id: testEvent!._id,
     },
     {
       $push: {
@@ -129,7 +70,7 @@ describe("resolvers -> Mutation -> updateTask", () => {
         data: {},
       };
 
-      const context = { userId: testUser._id };
+      const context = { userId: testUser!._id };
 
       await updateTaskResolver?.({}, args, context);
     } catch (error: any) {
@@ -145,7 +86,7 @@ describe("resolvers -> Mutation -> updateTask", () => {
       };
 
       const context = {
-        userId: testUser._id,
+        userId: testUser!._id,
       };
 
       await updateTaskResolver?.({}, args, context);
@@ -164,7 +105,7 @@ describe("resolvers -> Mutation -> updateTask", () => {
       },
     };
 
-    const context = { userId: testUser._id };
+    const context = { userId: testUser!._id };
 
     const updateTaskPayload = await updateTaskResolver?.({}, args, context);
 

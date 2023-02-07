@@ -1,12 +1,6 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Event,
-  Interface_Event,
-} from "../../../src/models";
+import { Types } from "mongoose";
+import { User, Event } from "../../../src/models";
 import { MutationUpdateEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { updateEvent as updateEventResolver } from "../../../src/resolvers/Mutation/updateEvent";
@@ -15,48 +9,25 @@ import {
   USER_NOT_AUTHORIZED,
   USER_NOT_FOUND,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  createTestUserAndOrganization,
+  testUserType,
+} from "../../helpers/userAndOrg";
+import { testEventType } from "../../helpers/events";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testEvent: Interface_Event & Document<any, any, Interface_Event>;
+let testUser: testUserType;
+let testEvent: testEventType;
 
 beforeAll(async () => {
   await connect("TALAWA_TESTING_DB");
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    members: [testUser._id],
-    visibleInSearch: true,
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
+  const temp = await createTestUserAndOrganization();
+  testUser = temp[0];
+  const testOrganization = temp[1];
   testEvent = await Event.create({
-    creator: testUser._id,
-    registrants: [{ userId: testUser._id, user: testUser._id }],
-    organization: testOrganization._id,
+    creator: testUser!._id,
+    registrants: [{ userId: testUser!._id, user: testUser!._id }],
+    organization: testOrganization!._id,
     isRegisterable: true,
     isPublic: true,
     title: "title",
@@ -67,7 +38,7 @@ beforeAll(async () => {
 
   await User.updateOne(
     {
-      _id: testUser._id,
+      _id: testUser!._id,
     },
     {
       $set: {
@@ -106,7 +77,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       };
 
       const context = {
-        userId: testUser._id,
+        userId: testUser!._id,
       };
 
       await updateEventResolver?.({}, args, context);
@@ -119,11 +90,11 @@ describe("resolvers -> Mutation -> updateEvent", () => {
   not an admin of event with _id === args.id`, async () => {
     try {
       const args: MutationUpdateEventArgs = {
-        id: testEvent._id,
+        id: testEvent!._id,
       };
 
       const context = {
-        userId: testUser._id,
+        userId: testUser!._id,
       };
 
       await updateEventResolver?.({}, args, context);
@@ -135,28 +106,28 @@ describe("resolvers -> Mutation -> updateEvent", () => {
   it(`updates the event with _id === args.id and returns the updated event`, async () => {
     await Event.updateOne(
       {
-        _id: testEvent._id,
+        _id: testEvent!._id,
       },
       {
         $push: {
-          admins: testUser._id,
+          admins: testUser!._id,
         },
       }
     );
 
     await User.updateOne(
       {
-        _id: testUser._id,
+        _id: testUser!._id,
       },
       {
         $push: {
-          eventAdmin: testEvent._id,
+          eventAdmin: testEvent!._id,
         },
       }
     );
 
     const args: MutationUpdateEventArgs = {
-      id: testEvent._id,
+      id: testEvent!._id,
       data: {
         allDay: false,
         description: "newDescription",
@@ -176,13 +147,13 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     };
 
     const context = {
-      userId: testUser._id,
+      userId: testUser!._id,
     };
 
     const updateEventPayload = await updateEventResolver?.({}, args, context);
 
     const testUpdateEventPayload = await Event.findOne({
-      _id: testEvent._id,
+      _id: testEvent!._id,
     }).lean();
 
     expect(updateEventPayload).toEqual(testUpdateEventPayload);

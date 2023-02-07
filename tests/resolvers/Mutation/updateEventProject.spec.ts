@@ -1,16 +1,12 @@
 import "dotenv/config";
 import { Document, Types } from "mongoose";
 import {
-  Interface_User,
   User,
   Organization,
-  Interface_Organization,
   Event,
-  Interface_Event,
   Interface_EventProject,
   EventProject,
 } from "../../../src/models";
-import { nanoid } from "nanoid";
 import { connect, disconnect } from "../../../src/db";
 import {
   beforeAll,
@@ -30,71 +26,27 @@ import {
   USER_NOT_AUTHORIZED_MESSAGE,
 } from "../../../src/constants";
 import { updateEventProject } from "../../../src/resolvers/Mutation/updateEventProject";
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
-let testAdminUser: Interface_User & Document<any, any, Interface_User>;
-let testEvent: Interface_Event & Document<any, any, Interface_Event>;
+import { createTestUserFunc, testUserType } from "../../helpers/user";
+import { createTestEvent, testEventType } from "../../helpers/events";
+let testUser: testUserType;
+let testAdminUser: testUserType;
+let testEvent: testEventType;
 let testEventProject: Interface_EventProject &
   Document<any, any, Interface_EventProject>;
 
 beforeAll(async () => {
   await connect("TALAWA_TESTING_DB");
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-  testAdminUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testAdminUser._id],
-    members: [testUser._id, testAdminUser._id],
-  });
-
-  testEvent = await Event.create({
-    title: "Event title",
-    description: "description",
-    allDay: true,
-    startDate: new Date(),
-    recurring: true,
-    isPublic: true,
-    isRegisterable: true,
-    creator: testUser._id,
-    admins: [testAdminUser._id],
-    registrants: [],
-    organization: testOrganization._id,
-  });
+  const temp = await createTestEvent();
+  testUser = await createTestUserFunc();
+  testAdminUser = temp[0];
+  testEvent = temp[2];
 
   testEventProject = await EventProject.create({
     title: "Event Project title",
     description: "Event Project Description",
-    event: testEvent._id,
-    creator: testAdminUser._id,
+    event: testEvent!._id,
+    creator: testAdminUser!._id,
   });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        adminFor: testOrganization._id,
-      },
-    }
-  );
 });
 
 afterAll(async () => {
@@ -180,7 +132,7 @@ describe("resolvers -> Mutation -> createEventProject", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
       vi.doMock("../../../src/constants", async () => {
         const actualConstants: object = await vi.importActual(
@@ -211,7 +163,7 @@ describe("resolvers -> Mutation -> createEventProject", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       vi.doMock("../../../src/constants", async () => {
@@ -241,7 +193,7 @@ describe("resolvers -> Mutation -> createEventProject", () => {
         id: testEventProject.id.toString(),
       };
       const context = {
-        userId: testUser._id,
+        userId: testUser!._id,
       };
 
       await updateEventProject?.({}, args, context);
@@ -262,7 +214,7 @@ describe("resolvers -> Mutation -> createEventProject", () => {
         id: testEventProject.id.toString(),
       };
       const context = {
-        userId: testUser._id,
+        userId: testUser!._id,
       };
       vi.doMock("../../../src/constants", async () => {
         const actualConstants: object = await vi.importActual(
@@ -294,7 +246,7 @@ describe("resolvers -> Mutation -> createEventProject", () => {
       id: testEventProject.id.toString(),
     };
     const context = {
-      userId: testAdminUser._id,
+      userId: testAdminUser!._id,
     };
 
     const updatedEventProjectObj = await updateEventProject?.(
