@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Try to fix linting and formatting automatically
+npm run lint:fix
+npm run format:fix
+
+# Check for linting and formatting errors
+npm run typecheck
+npm run lint:check
+npm run lint:check
