@@ -404,4 +404,4 @@ You can run the tests for talawa-api using this command:-
 
 You can lint your code files using this command:-
 
-        npm run lint
+        npm run lint:fix
