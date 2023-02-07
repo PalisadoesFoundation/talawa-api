@@ -47,3 +47,47 @@ export const createTestEvent = async (): Promise<
 
   return [testUser, testOrganization, testEvent];
 };
+
+export const createEventWithRegistrant = async(
+  user_id: string,
+  organization_id: string,
+  allDay: boolean,
+  recurrance: string,
+): Promise<testEventType> => {
+  const testEvent = await Event.create({
+    creator: user_id,
+    registrants: [
+      {
+        userId: user_id,
+        user: user_id,
+      },
+    ],
+    admins: [user_id],
+    organization: organization_id,
+    isRegisterable: true,
+    isPublic: true,
+    title: `title${nanoid()}`,
+    description: `description${nanoid()}`,
+    allDay: allDay,
+    startDate: new Date().toString(),
+    endDate: new Date().toString(),
+    startTime: new Date().toString(),
+    endTime: new Date().toString(),
+    recurrance: recurrance,
+    location: `location${nanoid()}`,
+  });
+
+  await User.updateOne(
+    {
+      _id: user_id,
+    },
+    {
+      $push: {
+        eventAdmin: testEvent._id,
+        createdEvents: testEvent._id,
+        registeredEvents: testEvent._id,
+      },
+    }
+  );
+  return testEvent;
+}

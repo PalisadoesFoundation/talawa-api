@@ -5,11 +5,16 @@ import { directChatsByUserID as directChatsByUserIDResolver } from "../../../src
 import { DirectChat } from "../../../src/models";
 import { QueryDirectChatsByUserIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestDirectChat } from "../../helpers/directChat"
+import { createTestDirectChat, testDirectChatType } from "../../helpers/directChat"
+import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
+
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
+let testDirectChat: testDirectChatType;
 
 beforeAll(async () => {
   await connect();
-  const [ testUser, testOrganization, testDirectChat ] = await createTestDirectChat();
+  [testUser, testOrganization, testDirectChat] = await createTestDirectChat();
 });
 
 afterAll(async () => {

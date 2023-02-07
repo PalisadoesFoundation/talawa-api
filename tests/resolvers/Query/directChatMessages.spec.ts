@@ -6,7 +6,7 @@ import {
   DirectChatMessage,
 } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestDirectChatMessage } from "../../helpers/directChat.ts"
+import { createTestDirectChatMessage } from "../../helpers/directChat"
 
 beforeAll(async () => {
   await connect();

@@ -10,111 +10,22 @@ import {
 import { connect, disconnect } from "../../../src/db";
 import { nanoid } from "nanoid";
 import { QueryEventsByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
-import { Document } from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { createTestUserAndOrganization, testUserType, testOrganizationType} from "../../helpers/userAndOrg";
+import { createEventWithRegistrant } from "../../helpers/events";
+import { createTestTask } from "../../helpers/task";
 
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
-
-  const testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  const testEvents = await Event.insertMany([
-    {
-      creator: testUser._id,
-      registrants: [
-        {
-          userId: testUser._id,
-          user: testUser._id,
-        },
-      ],
-      admins: [testUser._id],
-      organization: testOrganization._id,
-      isRegisterable: true,
-      isPublic: true,
-      title: `title${nanoid()}`,
-      description: `description${nanoid()}`,
-      allDay: true,
-      startDate: new Date().toString(),
-      endDate: new Date().toString(),
-      startTime: new Date().toString(),
-      endTime: new Date().toString(),
-      recurrance: "ONCE",
-      location: `location${nanoid()}`,
-    },
-    {
-      creator: testUser._id,
-      registrants: [
-        {
-          userId: testUser._id,
-          user: testUser._id,
-        },
-      ],
-      admins: [testUser._id],
-      organization: testOrganization._id,
-      isRegisterable: true,
-      isPublic: true,
-      title: `title${nanoid()}`,
-      description: `description${nanoid()}`,
-      allDay: true,
-      startDate: new Date().toString(),
-      endDate: new Date().toString(),
-      startTime: new Date().toString(),
-      endTime: new Date().toString(),
-      recurrance: "ONCE",
-      location: `location${nanoid()}`,
-    },
-  ]);
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-        createdEvents: [testEvents[0]._id, testEvents[1]._id],
-        registeredEvents: [testEvents[0]._id, testEvents[1]._id],
-        eventAdmin: [testEvents[0]._id, testEvents[1]._id],
-      },
-    }
-  );
-
-  const testTask = await Task.create({
-    title: "title",
-    event: testEvents[0]._id,
-    creator: testUser._id,
-  });
-
-  await Event.updateOne(
-    {
-      _id: testEvents[0]._id,
-    },
-    {
-      $set: {
-        tasks: [testTask._id],
-      },
-    }
-  );
+  [ testUser, testOrganization ] = await createTestUserAndOrganization();
+  const testEvent1 = await createEventWithRegistrant(testUser._id, testOrganization._id, true, "ONCE");
+  const testEvent2 = await createEventWithRegistrant(testUser._id, testOrganization._id, true, "ONCE");
+  
+  const testEvents = [ testEvent1, testEvent2 ];
+  const testTask = await createTestTask(testEvents[0]._id, testUser._id);
 });
 
 afterAll(async () => {
