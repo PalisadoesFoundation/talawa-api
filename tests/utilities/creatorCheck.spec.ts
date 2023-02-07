@@ -74,8 +74,6 @@ describe("src -> resolvers -> utilities -> creatorCheck.ts", () => {
       creatorCheckResolver(testUser2?._id, testOrganization!);
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_AUTHORIZED);
-      // expect(error.code).toEqual(USER_NOT_AUTHORIZED_CODE);
-      // expect(error.params).toEqual(USER_NOT_AUTHORIZED_PARAM);
     }
   });
 

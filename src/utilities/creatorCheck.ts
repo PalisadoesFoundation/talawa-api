@@ -14,8 +14,6 @@ export const creatorCheck = (
   organization: Interface_Organization
 ) => {
   const userIsCreator = userId.toString() === organization.creator.toString();
-  // console.log(userId.toString());
-  // console.log(organization);
 
   if (userIsCreator === false) {
     throw new errors.UnauthorizedError(
