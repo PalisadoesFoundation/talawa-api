@@ -11,12 +11,10 @@ import {
 import { connect, disconnect } from "../../src/db";
 import {
   USER_NOT_AUTHORIZED,
-  USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_AUTHORIZED_PARAM,
 } from "../../src/constants";
 import {
-    createTestUser,
+  createTestUser,
   createTestUserAndOrganization,
   testOrganizationType,
   testUserType,
@@ -40,123 +38,106 @@ afterAll(async () => {
   disconnect();
 });
 
-describe('src -> resolvers -> utilities -> creatorCheck.ts', () => {
-    
-    afterEach(() => {
-        vi.doUnmock("../../src/constants");
-        vi.resetModules();
+describe("src -> resolvers -> utilities -> creatorCheck.ts", () => {
+  afterEach(() => {
+    vi.doUnmock("../../src/constants");
+    vi.resetModules();
+  });
+
+  it("should throw error when user is not creator of organization IN_PRODUCTION = false", async () => {
+    await Organization.findByIdAndUpdate(
+      {
+        _id: testOrganization?._id,
+      },
+      {
+        $set: {
+          creator: Types.ObjectId().toString(),
+        },
+      }
+    );
+
+    vi.doMock("../../src/constants", async () => {
+      const actualConstants: object = await vi.importActual(
+        "../../src/constants"
+      );
+      return {
+        ...actualConstants,
+        IN_PRODUCTION: false,
+      };
     });
 
+    try {
+      const { creatorCheck: creatorCheckResolver } = await import(
+        "../../src/utilities"
+      );
 
-    it('should throw error when user is not creator of organization IN_PRODUCTION = false', async () => {
-        
-        await Organization.findByIdAndUpdate(
-            {
-                _id : testOrganization?._id
-            } , 
-            {
-                $set : {
-                    creator : Types.ObjectId().toString()
-                }
-            }
-        )        
+      creatorCheckResolver(testUser2?._id, testOrganization!);
+    } catch (error: any) {
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      // expect(error.code).toEqual(USER_NOT_AUTHORIZED_CODE);
+      // expect(error.params).toEqual(USER_NOT_AUTHORIZED_PARAM);
+    }
+  });
 
-        vi.doMock("../../src/constants", async () => {
-            const actualConstants: object = await vi.importActual(
-              "../../src/constants"
-            );
-            return {
-              ...actualConstants,
-              IN_PRODUCTION: false,
-            };
-        });
+  it("should throw error when user is not creator of organization IN_PRODUCTION = true", async () => {
+    await Organization.findByIdAndUpdate(
+      {
+        _id: testOrganization?._id,
+      },
+      {
+        $set: {
+          creator: Types.ObjectId().toString(),
+        },
+      }
+    );
 
-       
-        try {
-
-           
-            const {creatorCheck : creatorCheckResolver} = await import('../../src/utilities');
-            
-            creatorCheckResolver(testUser2?._id , testOrganization!)
-            
-        } catch (error:any) {
-            expect(error.message).toEqual(
-                USER_NOT_AUTHORIZED
-              );
-            // expect(error.code).toEqual(USER_NOT_AUTHORIZED_CODE);
-            // expect(error.params).toEqual(USER_NOT_AUTHORIZED_PARAM);
-
-        }
-
-       
+    vi.doMock("../../src/constants", async () => {
+      const actualConstants: object = await vi.importActual(
+        "../../src/constants"
+      );
+      return {
+        ...actualConstants,
+        IN_PRODUCTION: true,
+      };
     });
 
-    it('should throw error when user is not creator of organization IN_PRODUCTION = true', async () => {
-        
-        await Organization.findByIdAndUpdate(
-            {
-                _id : testOrganization?._id
-            } , 
-            {
-                $set : {
-                    creator : Types.ObjectId().toString()
-                }
-            }
-        )
+    const { requestContext } = await import("../../src/libraries");
 
-        vi.doMock("../../src/constants", async () => {
-            const actualConstants: object = await vi.importActual(
-              "../../src/constants"
-            );
-            return {
-              ...actualConstants,
-              IN_PRODUCTION: true,
-            };
-        });
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
 
-        const { requestContext } = await import("../../src/libraries");
+    try {
+      const { creatorCheck: creatorCheckResolver } = await import(
+        "../../src/utilities"
+      );
 
-        const spy = vi
-        .spyOn(requestContext, "translate")
-        .mockImplementationOnce((message) => `Translated ${message}`);
+      creatorCheckResolver(testUser2?._id, testOrganization!);
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
+      );
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+    }
+  });
 
-        try {
+  it("should not throw error when user is creator of organization ", async () => {
+    await Organization.findByIdAndUpdate(
+      {
+        _id: testOrganization?._id,
+      },
+      {
+        $set: {
+          creator: testUser?.id,
+        },
+      }
+    );
 
-           
-            const {creatorCheck : creatorCheckResolver} = await import('../../src/utilities');
-            
-            creatorCheckResolver(testUser2?._id , testOrganization!)
-            
-        } catch (error:any) {
-            expect(error.message).toEqual(
-                `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
-              );
-              expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
-            
-        }
+    const { creatorCheck: creatorCheckResolver } = await import(
+      "../../src/utilities"
+    );
 
-       
-    });
-
-    it('should not throw error when user is creator of organization ', async () => {
-        
-        await Organization.findByIdAndUpdate(
-            {
-                _id : testOrganization?._id
-            } , 
-            {
-                $set : {
-                    creator : testUser?.id
-                }
-            }
-        )     
-        
-        
-        const {creatorCheck : creatorCheckResolver} = await import('../../src/utilities');
-            
-        expect(creatorCheckResolver(testUser?._id , testOrganization!)).not.toThrowError;
-            
-
-       
-    });
+    expect(creatorCheckResolver(testUser?._id, testOrganization!)).not
+      .toThrowError;
+  });
 });
