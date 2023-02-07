@@ -10,7 +10,7 @@
     "prod": "cross-env NODE_ENV=production pm2-runtime start ./build/server.js",
     "start": "cross-env pm2-runtime start ./build/server.js --watch",
     "test": "NODE_ENV=testing vitest run --no-threads --coverage",
-    "typecheck": "graphql-codegen && tsc --noEmit --pretty"
+    "typecheck": "graphql-codegen && tsc --noEmit --pretty",
     "lint:check": "eslint . --max-warnings=0",
     "lint:fix": "eslint . --fix",
     "format:fix": "prettier --write \"**/*.{ts,tsx,json,scss,css}\"",
