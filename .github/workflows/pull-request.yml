@@ -28,8 +28,6 @@ jobs:
         run: npm ci
       - name: Run ESLint to check for linting errors
         run: npm run lint:check
-      - name: Run Typescript Type-Checker
-        run: npm run typecheck 
 
   Code-Formatter:
     name: Check for formatting errors
@@ -41,12 +39,24 @@ jobs:
       - name: Install Dependencies
         run: npm ci
       - name: Check for fomatting errors
-        run: npm run format:check
+        run: npm run format:check 
 
+  Type-Checker:
+    name: Check for formatting errors
+    runs-on: ubuntu-latest     
+    needs: [Linter, Code-Formatter]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Dependencies
+        run: npm ci
+      - name: Run Typescript Type-Checker
+        run: npm run typecheck 
+  
   Test-Application:
     name: Testing Application
     runs-on: ubuntu-latest
-    needs: [Linter, Code-Formatter]
+    needs: [Linter, Code-Formatter, Type-Checker]
     strategy:
       matrix:
         node-version: [14.x]
