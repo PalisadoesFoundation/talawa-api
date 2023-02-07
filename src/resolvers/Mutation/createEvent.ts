@@ -106,7 +106,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     const user = await User.findOne({
       _id: organization.members[i],
     }).lean();
-    
+
     // Checks whether both user and user.token exist.
     if (user && user.token) {
       await admin.messaging().send({

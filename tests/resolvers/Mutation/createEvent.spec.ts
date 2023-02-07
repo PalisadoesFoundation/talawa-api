@@ -8,13 +8,12 @@ import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi, afterEach } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
   testUserType,
   testOrganizationType,
   createTestUser,
 } from "../../helpers/userAndOrg";
-import { getApps } from "firebase-admin/app";
 
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
@@ -53,7 +52,6 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> createEvent", () => {
-
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationCreateEventArgs = {};
@@ -62,7 +60,9 @@ describe("resolvers -> Mutation -> createEvent", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      const { createEvent: createEventResolverError } = await import('../../../src/resolvers/Mutation/createEvent')
+      const { createEvent: createEventResolverError } = await import(
+        "../../../src/resolvers/Mutation/createEvent"
+      );
 
       await createEventResolverError?.({}, args, context);
     } catch (error: any) {
@@ -96,7 +96,9 @@ describe("resolvers -> Mutation -> createEvent", () => {
         userId: testUser?.id,
       };
 
-      const { createEvent: createEventResolverError } = await import('../../../src/resolvers/Mutation/createEvent')
+      const { createEvent: createEventResolverError } = await import(
+        "../../../src/resolvers/Mutation/createEvent"
+      );
 
       await createEventResolverError?.({}, args, context);
     } catch (error: any) {
@@ -131,7 +133,9 @@ describe("resolvers -> Mutation -> createEvent", () => {
         userId: testUser!.id,
       };
 
-      const { createEvent: createEventResolverError } = await import('../../../src/resolvers/Mutation/createEvent')
+      const { createEvent: createEventResolverError } = await import(
+        "../../../src/resolvers/Mutation/createEvent"
+      );
 
       await createEventResolverError?.({}, args, context);
     } catch (error: any) {
@@ -175,10 +179,11 @@ describe("resolvers -> Mutation -> createEvent", () => {
     const context = {
       userId: testUser!.id,
     };
-    const { createEvent: createEventResolver} = await import('../../../src/resolvers/Mutation/createEvent')
+    const { createEvent: createEventResolver } = await import(
+      "../../../src/resolvers/Mutation/createEvent"
+    );
 
-    const createEventPayload =       await createEventResolver?.({}, args, context);
-
+    const createEventPayload = await createEventResolver?.({}, args, context);
 
     expect(createEventPayload).toEqual(
       expect.objectContaining({
@@ -218,19 +223,17 @@ describe("resolvers -> Mutation -> createEvent", () => {
       })
     );
   });
-  it('should send a message when user and user.token exists', async() => {
-
+  it("should send a message when user and user.token exists", async () => {
     await User.updateOne(
       {
         _id: testUser!._id,
       },
       {
         $set: {
-          token: 'random'
-        }
+          token: "random",
+        },
       }
     );
-   
 
     const args: MutationCreateEventArgs = {
       data: {
@@ -256,36 +259,34 @@ describe("resolvers -> Mutation -> createEvent", () => {
       userId: testUser!.id,
     };
 
-    const  admin  = await import('firebase-admin')
+    const admin = await import("firebase-admin");
 
     const spy = vi
-      .spyOn(admin.messaging(), 'send')
-      .mockImplementationOnce(async ({}) => `Message sent`);
+      .spyOn(admin.messaging(), "send")
+      .mockImplementationOnce(async () => `Message sent`);
 
-
-    const { createEvent: createEventResolver} = await import('../../../src/resolvers/Mutation/createEvent')
+    const { createEvent: createEventResolver } = await import(
+      "../../../src/resolvers/Mutation/createEvent"
+    );
 
     await createEventResolver?.({}, args, context);
+    expect(spy).toHaveBeenCalledOnce();
 
     vi.restoreAllMocks();
     vi.resetModules();
-
-
   });
 
-  it('should send a message when user and user.token exists', async() => {
-
+  it("should send a message when user and user.token exists", async () => {
     await User.updateOne(
       {
         _id: testUser!._id,
       },
       {
         $set: {
-          token: 'random'
-        }
+          token: "random",
+        },
       }
     );
-   
 
     const args: MutationCreateEventArgs = {
       data: {
@@ -311,23 +312,20 @@ describe("resolvers -> Mutation -> createEvent", () => {
       userId: testUser!.id,
     };
 
-    const  admin  = await import('firebase-admin')
+    const admin = await import("firebase-admin");
 
     const spy = vi
-      .spyOn(admin.messaging(), 'send')
-      .mockImplementationOnce(async ({}) => `Message sent`);
+      .spyOn(admin.messaging(), "send")
+      .mockImplementationOnce(async () => `Message sent`);
 
-   
-
-  
-
-    const { createEvent: createEventResolver} = await import('../../../src/resolvers/Mutation/createEvent')
+    const { createEvent: createEventResolver } = await import(
+      "../../../src/resolvers/Mutation/createEvent"
+    );
 
     await createEventResolver?.({}, args, context);
+    expect(spy).toHaveBeenCalledOnce();
 
     vi.restoreAllMocks();
     vi.resetModules();
-
-
   });
 });
