@@ -42,7 +42,7 @@ jobs:
         run: npm run format:check 
 
   Type-Checker:
-    name: Check for formatting errors
+    name: Check for type errors
     runs-on: ubuntu-latest     
     needs: [Linter, Code-Formatter]
     steps:
