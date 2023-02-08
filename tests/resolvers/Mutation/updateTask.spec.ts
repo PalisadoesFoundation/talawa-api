@@ -8,15 +8,7 @@ import {
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  vi,
-  afterEach,
-} from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { testUserType } from "../../helpers/userAndOrg";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 
@@ -59,12 +51,6 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> updateTask", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-    vi.doUnmock("../../../src/constants");
-    vi.resetModules();
-  });
-
   it(`throws NotFoundError if no user exists with _id === context.userId `, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
@@ -78,16 +64,6 @@ describe("resolvers -> Mutation -> updateTask", () => {
         data: {},
       };
       const context = { userId: Types.ObjectId().toString() };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
 
       const { updateTask: updateTaskResolverNotFoundError } = await import(
         "../../../src/resolvers/Mutation/updateTask"
@@ -116,16 +92,6 @@ describe("resolvers -> Mutation -> updateTask", () => {
         userId: testUser?.id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
-
       const { updateTask: updateTaskResolverNotFoundError } = await import(
         "../../../src/resolvers/Mutation/updateTask"
       );
@@ -153,16 +119,6 @@ describe("resolvers -> Mutation -> updateTask", () => {
       const context = {
         userId: testUser!._id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
 
       const { updateTask: updateTaskResolverNotFoundError } = await import(
         "../../../src/resolvers/Mutation/updateTask"
