@@ -4,8 +4,21 @@ import { Event, Task, Interface_Task } from "../../../src/models";
 import { MutationUpdateTaskArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { updateTask as updateTaskResolver } from "../../../src/resolvers/Mutation/updateTask";
-import { USER_NOT_AUTHORIZED, USER_NOT_FOUND } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  USER_NOT_AUTHORIZED,
+  USER_NOT_AUTHORIZED_MESSAGE,
+  USER_NOT_FOUND,
+  USER_NOT_FOUND_MESSAGE,
+} from "../../../src/constants";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  vi,
+  afterEach,
+} from "vitest";
 import { testUserType } from "../../helpers/userAndOrg";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 
@@ -48,6 +61,12 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> updateTask", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
+
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationUpdateTaskArgs = {
@@ -60,6 +79,41 @@ describe("resolvers -> Mutation -> updateTask", () => {
       await updateTaskResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_FOUND);
+    }
+  });
+
+  it(`throws NotFoundError if no user exists with _id === context.userId IN_PRODUCTION = true`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationUpdateTaskArgs = {
+        id: testUser?.id,
+        data: {},
+      };
+      const context = { userId: Types.ObjectId().toString() };
+
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+          IN_PRODUCTION: true,
+        };
+      });
+
+      const { updateTask: updateTaskResolverNotFoundError } = await import(
+        "../../../src/resolvers/Mutation/updateTask"
+      );
+
+      await updateTaskResolverNotFoundError?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -78,7 +132,44 @@ describe("resolvers -> Mutation -> updateTask", () => {
     }
   });
 
-  it(`throws NotAuthorizedError if post.creator !== context.userId post with _id === args.id, `, async () => {
+  it(`throws NotFoundError if no task exists with _id === args.id IN_PRODUCTION = true`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationUpdateTaskArgs = {
+        id: Types.ObjectId().toString(),
+        data: {},
+      };
+      const context = {
+        userId: testUser?.id,
+      };
+
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+          IN_PRODUCTION: true,
+        };
+      });
+
+      const { updateTask: updateTaskResolverNotFoundError } = await import(
+        "../../../src/resolvers/Mutation/updateTask"
+      );
+
+      await updateTaskResolverNotFoundError?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(`Translated task.notFound`);
+      expect(spy).toHaveBeenLastCalledWith("task.notFound");
+    }
+  });
+
+  it(`throws NotAuthorizedError if task.creator !== context.userId task with _id === args.id, `, async () => {
     try {
       const args: MutationUpdateTaskArgs = {
         id: testTasks[1]._id,
@@ -95,6 +186,46 @@ describe("resolvers -> Mutation -> updateTask", () => {
     }
   });
 
+  it(`throws NotAuthorizedError if task.creator !== context.userId task with _id === args.id IN_PRODUCTION = true`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationUpdateTaskArgs = {
+        id: testTasks[1]._id,
+        data: {},
+      };
+
+      const context = {
+        userId: testUser!._id,
+      };
+
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+          IN_PRODUCTION: true,
+        };
+      });
+
+      const { updateTask: updateTaskResolverNotFoundError } = await import(
+        "../../../src/resolvers/Mutation/updateTask"
+      );
+
+      await updateTaskResolverNotFoundError?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
+      );
+      expect(spy).toHaveBeenLastCalledWith(`${USER_NOT_AUTHORIZED_MESSAGE}`);
+    }
+  });
+
   it(`updates the task with _id === args.id and returns it`, async () => {
     const args: MutationUpdateTaskArgs = {
       id: testTasks[0]._id,
@@ -105,7 +236,7 @@ describe("resolvers -> Mutation -> updateTask", () => {
       },
     };
 
-    const context = { userId: testUser!._id };
+    const context = { userId: testUser?._id };
 
     const updateTaskPayload = await updateTaskResolver?.({}, args, context);
 
