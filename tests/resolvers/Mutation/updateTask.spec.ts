@@ -5,9 +5,7 @@ import { MutationUpdateTaskArgs } from "../../../src/types/generatedGraphQLTypes
 import { connect, disconnect } from "../../../src/db";
 import { updateTask as updateTaskResolver } from "../../../src/resolvers/Mutation/updateTask";
 import {
-  USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_FOUND,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import {
@@ -67,21 +65,6 @@ describe("resolvers -> Mutation -> updateTask", () => {
     vi.resetModules();
   });
 
-  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
-    try {
-      const args: MutationUpdateTaskArgs = {
-        id: "",
-        data: {},
-      };
-
-      const context = { userId: Types.ObjectId().toString() };
-
-      await updateTaskResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
-    }
-  });
-
   it(`throws NotFoundError if no user exists with _id === context.userId IN_PRODUCTION = true`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
@@ -114,21 +97,6 @@ describe("resolvers -> Mutation -> updateTask", () => {
     } catch (error: any) {
       expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_MESSAGE);
-    }
-  });
-
-  it(`throws NotFoundError if no task exists with _id === args.id`, async () => {
-    try {
-      const args: MutationUpdateTaskArgs = {
-        id: Types.ObjectId().toString(),
-        data: {},
-      };
-
-      const context = { userId: testUser!._id };
-
-      await updateTaskResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual("Task not found");
     }
   });
 
@@ -166,23 +134,6 @@ describe("resolvers -> Mutation -> updateTask", () => {
     } catch (error: any) {
       expect(error.message).toEqual(`Translated task.notFound`);
       expect(spy).toHaveBeenLastCalledWith("task.notFound");
-    }
-  });
-
-  it(`throws NotAuthorizedError if task.creator !== context.userId task with _id === args.id, `, async () => {
-    try {
-      const args: MutationUpdateTaskArgs = {
-        id: testTasks[1]._id,
-        data: {},
-      };
-
-      const context = {
-        userId: testUser!._id,
-      };
-
-      await updateTaskResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
     }
   });
 
