@@ -65,7 +65,7 @@ describe("resolvers -> Mutation -> updateTask", () => {
     vi.resetModules();
   });
 
-  it(`throws NotFoundError if no user exists with _id === context.userId IN_PRODUCTION = true`, async () => {
+  it(`throws NotFoundError if no user exists with _id === context.userId `, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
@@ -100,7 +100,7 @@ describe("resolvers -> Mutation -> updateTask", () => {
     }
   });
 
-  it(`throws NotFoundError if no task exists with _id === args.id IN_PRODUCTION = true`, async () => {
+  it(`throws NotFoundError if no task exists with _id === args.id `, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
@@ -137,7 +137,7 @@ describe("resolvers -> Mutation -> updateTask", () => {
     }
   });
 
-  it(`throws NotAuthorizedError if task.creator !== context.userId task with _id === args.id IN_PRODUCTION = true`, async () => {
+  it(`throws NotAuthorizedError if task.creator !== context.userId task with _id === args.id`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
