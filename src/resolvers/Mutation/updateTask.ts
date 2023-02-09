@@ -1,10 +1,7 @@
 import {
-  IN_PRODUCTION,
-  USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_PARAM,
-  USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
@@ -24,9 +21,7 @@ export const updateTask: MutationResolvers["updateTask"] = async (
 
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND
-        : requestContext.translate(USER_NOT_FOUND_MESSAGE),
+      requestContext.translate(USER_NOT_FOUND_MESSAGE),
       USER_NOT_FOUND_CODE,
       USER_NOT_FOUND_PARAM
     );
@@ -38,9 +33,7 @@ export const updateTask: MutationResolvers["updateTask"] = async (
 
   if (!task) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? "Task not found"
-        : requestContext.translate("task.notFound"),
+      requestContext.translate("task.notFound"),
       "task.notFound",
       "task"
     );
@@ -48,9 +41,7 @@ export const updateTask: MutationResolvers["updateTask"] = async (
 
   if (task.creator.toString() !== context.userId.toString()) {
     throw new errors.UnauthorizedError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_AUTHORIZED
-        : requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
+      requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
       USER_NOT_AUTHORIZED_CODE,
       USER_NOT_AUTHORIZED_PARAM
     );

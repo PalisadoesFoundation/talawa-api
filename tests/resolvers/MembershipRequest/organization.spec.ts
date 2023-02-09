@@ -1,56 +1,19 @@
 import "dotenv/config";
 import { organization as organizationResolver } from "../../../src/resolvers/MembershipRequest/organization";
 import { connect, disconnect } from "../../../src/db";
-import {
-  User,
-  Organization,
-  MembershipRequest,
-  Interface_MembershipRequest,
-} from "../../../src/models";
-import { Document } from "mongoose";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  testMembershipRequestType,
+  createTestMembershipRequest,
+} from "../../helpers/membershipRequests";
+import { Organization } from "../../../src/models";
 
-let testMembershipRequest: Interface_MembershipRequest &
-  Document<any, any, Interface_MembershipRequest>;
+let testMembershipRequest: testMembershipRequestType;
 
 beforeAll(async () => {
   await connect();
-
-  const testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        createdOrganizations: testOrganization._id,
-        adminFor: testOrganization._id,
-        joinedOrganizations: testOrganization._id,
-      },
-    }
-  );
-
-  testMembershipRequest = await MembershipRequest.create({
-    organization: testOrganization._id,
-    user: testUser._id,
-  });
+  const temp = await createTestMembershipRequest();
+  testMembershipRequest = temp[2];
 });
 
 afterAll(async () => {
@@ -59,12 +22,12 @@ afterAll(async () => {
 
 describe("resolvers -> MembershipRequest -> organization", () => {
   it(`returns organization object for parent.organization`, async () => {
-    const parent = testMembershipRequest.toObject();
+    const parent = testMembershipRequest!.toObject();
 
     const organizationPayload = await organizationResolver?.(parent, {}, {});
 
     const organization = await Organization.findOne({
-      _id: testMembershipRequest.organization,
+      _id: testMembershipRequest!.organization,
     }).lean();
 
     expect(organizationPayload).toEqual(organization);
