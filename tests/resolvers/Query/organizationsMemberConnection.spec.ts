@@ -8,24 +8,40 @@ import {
 } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
 import { QueryOrganizationsMemberConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
-import { Types } from "mongoose";
+import { Document, Types } from "mongoose";
+import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import {createTestUser, testOrganizationType, testUserType} from "../../helpers/userAndOrg";
 
-let testUsers: (testUserType)[];
-let testOrganization: testOrganizationType;
+let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
+let testOrganization: Interface_Organization &
+  Document<any, any, Interface_Organization>;
 
 beforeAll(async () => {
   await connect();
 
-  const testUser1: testUserType = await createTestUser();
-  const testUser2: testUserType = await createTestUser();
-  const testUser3: testUserType = await createTestUser();
-  testUsers = [
-    testUser1,
-    testUser2,
-    testUser3
-  ];
+  testUsers = await User.insertMany([
+    {
+      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      password: "password",
+      firstName: `1firstName${nanoid()}`,
+      lastName: `lastName${nanoid()}`,
+      appLanguageCode: `en${nanoid().toLowerCase()}`,
+    },
+    {
+      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      password: "password",
+      firstName: `2firstName${nanoid()}`,
+      lastName: `lastName${nanoid()}`,
+      appLanguageCode: `en${nanoid().toLowerCase()}`,
+    },
+    {
+      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      password: "password",
+      firstName: `3firstName${nanoid()}`,
+      lastName: `lastName${nanoid()}`,
+      appLanguageCode: `en${nanoid().toLowerCase()}`,
+    },
+  ]);
 
   testOrganization = await Organization.create({
     name: "name",

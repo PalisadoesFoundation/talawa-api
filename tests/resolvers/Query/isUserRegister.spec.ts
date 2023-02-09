@@ -6,8 +6,8 @@ import { Types } from "mongoose";
 import { QueryIsUserRegisterArgs } from "../../../src/types/generatedGraphQLTypes";
 import { EVENT_NOT_FOUND } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { testUserType, testOrganizationType} from "../../helpers/userAndOrg";
-import { createTestEvent, testEventType} from "../../helpers/events";
+import { testUserType, testOrganizationType, createTestUserAndOrganization} from "../../helpers/userAndOrg";
+import { createTestEvent, testEventType, createEventWithRegistrant} from "../../helpers/events";
 import { createTestTask } from "../../helpers/task";
 
 let testEvent: testEventType;
@@ -16,8 +16,10 @@ let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
-  [testUser, testOrganization, testEvent] = await createTestEvent();
-  const testTask = await createTestTask(testEvent?._id, testUser?._id);
+  [testUser, testOrganization] = await createTestUserAndOrganization();
+  testEvent = await createEventWithRegistrant(testUser._id,testOrganization._id,true,"ONCE");
+
+  const testTask = await createTestTask(testEvent._id, testUser._id);
 });
 
 afterAll(async () => {

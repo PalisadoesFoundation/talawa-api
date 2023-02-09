@@ -1,586 +1,625 @@
 import "dotenv/config";
-import { postsByOrganizationConnection as postsByOrganizationConnectionResolver } from "../../../src/resolvers/Query/postsByOrganizationConnection";
+import { postsByOrganization as postsByOrganizationResolver } from "../../../src/resolvers/Query/postsByOrganization";
 import {
-  Comment,
-  Interface_Organization,
+  User,
   Organization,
   Post,
-  User,
+  Comment,
+  Interface_Organization,
 } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
-import { Document, Types } from "mongoose";
 import { nanoid } from "nanoid";
-import { QueryPostsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
+import { QueryPostsByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
+import { Document } from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { testUserType, testOrganizationType, createTestUserAndOrganization} from "../../helpers/userAndOrg";
+import { createSinglePostwithComment } from "../../helpers/posts";
 
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
+let testOrganization: testOrganizationType;
+let testUser: testUserType;
 
 beforeAll(async () => {
   await connect();
+  [testUser, testOrganization] = await createTestUserAndOrganization();
 
-  const testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-    apiUrl: "apiUrl",
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  const testPosts = await Post.insertMany([
-    {
-      text: `text${nanoid().toLowerCase()}`,
-      title: `title${nanoid().toLowerCase()}`,
-      imageUrl: `imageUrl${nanoid().toLowerCase()}`,
-      videoUrl: `videoUrl${nanoid().toLowerCase()}`,
-      creator: testUser._id,
-      organization: testOrganization._id,
-    },
-    {
-      text: `text${nanoid().toLowerCase()}`,
-      title: `title${nanoid().toLowerCase()}`,
-      imageUrl: `imageUrl${nanoid().toLowerCase()}`,
-      videoUrl: `videoUrl${nanoid().toLowerCase()}`,
-      creator: testUser._id,
-      organization: testOrganization._id,
-    },
-    {
-      text: `text${nanoid().toLowerCase()}`,
-      title: `title${nanoid().toLowerCase()}`,
-      imageUrl: `imageUrl${nanoid().toLowerCase()}`,
-      videoUrl: `videoUrl${nanoid().toLowerCase()}`,
-      creator: testUser._id,
-      organization: testOrganization._id,
-    },
-  ]);
-
-  const testComment = await Comment.create({
-    text: "text",
-    creator: testUser._id,
-    post: testPosts[0]._id,
-  });
-
-  await Post.updateOne(
-    {
-      _id: testPosts[0]._id,
-    },
-    {
-      $push: {
-        likedBy: testUser._id,
-        comments: testComment._id,
-      },
-      $inc: {
-        likeCount: 1,
-        commentCount: 1,
-      },
-    }
-  );
+  const [testPost1,testComment1] = await createSinglePostwithComment(testUser._id, testOrganization._id);
+  const [testPost2, testComment2] = await createSinglePostwithComment(testUser._id, testOrganization._id);
 });
 
 afterAll(async () => {
   await disconnect();
 });
 
-describe("resolvers -> Query -> users", () => {
-  it(`when no organization exists with _id === args.id`, async () => {
-    const args: QueryPostsByOrganizationConnectionArgs = {
-      id: Types.ObjectId().toString(),
-      first: 2,
-      skip: 1,
-      where: null,
+describe("resolvers -> Query -> posts", () => {
+  it(`returns list of all existing posts without sorting if args.orderBy === null`, async () => {
+    const sort = {};
+
+    const args: QueryPostsByOrganizationArgs = {
+      id: testOrganization.id,
       orderBy: null,
     };
 
-    const postsByOrganizationConnectionPayload =
-      await postsByOrganizationConnectionResolver?.({}, args, {});
+    const postsByOrganizationPayload = await postsByOrganizationResolver?.(
+      {},
+      args,
+      {}
+    );
 
-    expect(postsByOrganizationConnectionPayload).toEqual({
-      pageInfo: {
-        hasNextPage: false,
-        hasPreviousPage: false,
-        totalPages: 1,
-        nextPageNo: null,
-        prevPageNo: null,
-        currPageNo: 1,
-      },
-      edges: [],
-      aggregate: { count: 0 },
-    });
+    const postsByOrganization = await Post.find({
+      organization: testOrganization._id,
+    })
+      .sort(sort)
+      .populate("organization")
+      .populate("likedBy")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "creator",
+        },
+      })
+      .populate("creator", "-password")
+      .lean();
+
+    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
   });
 
-  // it(`returns paginated list of users filtered by
-  // args.where === { id_not: testUsers[2]._id, firstName_not: testUsers[2].firstName,
-  // lastName_not: testUsers[2].lastName, email_not: testUsers[2].email,
-  // appLanguageCode_not: testUsers[2].appLanguageCode } and
-  // sorted by args.orderBy === 'id_Desc'`, async () => {
-  //   const where = {
-  //     _id: {
-  //       $ne: testUsers[2]._id,
-  //     },
-  //     firstName: {
-  //       $ne: testUsers[2].firstName,
-  //     },
-  //     lastName: {
-  //       $ne: testUsers[2].lastName,
-  //     },
-  //     email: {
-  //       $ne: testUsers[2].email,
-  //     },
-  //     appLanguageCode: {
-  //       $ne: testUsers[2].appLanguageCode,
-  //     },
-  //   };
+  it(`returns list of all existing posts having post.organization with _id === args.id
+  sorted by ascending order of post._id if args.orderBy === 'id_ASC'`, async () => {
+    const sort = {
+      _id: 1,
+    };
 
-  //   const sort = {
-  //     _id: -1,
-  //   };
+    const args: QueryPostsByOrganizationArgs = {
+      id: testOrganization.id,
+      orderBy: "id_ASC",
+    };
 
-  //   const args: QueryPostsByOrganizationConnectionArgs = {
-  //     first: 2,
-  //     skip: 1,
-  //     where: {
-  //       id_not: testUsers[2]._id,
-  //       firstName_not: testUsers[2].firstName,
-  //       lastName_not: testUsers[2].lastName,
-  //       email_not: testUsers[2].email,
-  //       appLanguageCode_not: testUsers[2].appLanguageCode,
-  //     },
-  //     orderBy: "id_DESC",
-  //   };
+    const postsByOrganizationPayload = await postsByOrganizationResolver?.(
+      {},
+      args,
+      {}
+    );
 
-  //   const postsByOrganizationConnectionPayload =
-  //     await postsByOrganizationConnectionResolver?.({}, args, {});
+    const postsByOrganization = await Post.find({
+      organization: testOrganization._id,
+    })
+      .sort(sort)
+      .populate("organization")
+      .populate("likedBy")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "creator",
+        },
+      })
+      .populate("creator", "-password")
+      .lean();
 
-  //   const users = await User.find(where)
-  //     .limit(2)
-  //     .skip(1)
-  //     .sort(sort)
-  //     .select(['-password'])
-  //     .populate('createdOrganizations')
-  //     .populate('createdEvents')
-  //     .populate('joinedOrganizations')
-  //     .populate('registeredEvents')
-  //     .populate('eventAdmin')
-  //     .populate('adminFor')
-  //     .lean();
+    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+  });
 
-  //   expect(postsByOrganizationConnectionPayload).toEqual(users);
-  // });
+  it(`returns list of all existing posts having post.organization with _id === args.id
+  sorted by descending order of post._id if args.orderBy === 'id_DESC'`, async () => {
+    const sort = {
+      _id: -1,
+    };
 
-  // it(`returns paginated list of users filtered by
-  // args.where === { id_in: [testUsers[1].id], firstName_in: [testUsers[1].firstName],
-  // lastName_in: [testUsers[1].lastName], email_in: [testUsers[1].email],
-  // appLanguageCode_in: [testUsers[1].appLanguageCode] } and
-  // sorted by args.orderBy === 'firstName_ASC'`, async () => {
-  //   const where = {
-  //     _id: {
-  //       $in: [testUsers[1].id],
-  //     },
-  //     firstName: {
-  //       $in: [testUsers[1].firstName],
-  //     },
-  //     lastName: {
-  //       $in: [testUsers[1].lastName],
-  //     },
-  //     email: {
-  //       $in: [testUsers[1].email],
-  //     },
-  //     appLanguageCode: {
-  //       $in: [testUsers[1].appLanguageCode],
-  //     },
-  //   };
+    const args: QueryPostsByOrganizationArgs = {
+      id: testOrganization.id,
+      orderBy: "id_DESC",
+    };
 
-  //   const sort = {
-  //     firstName: 1,
-  //   };
+    const postsByOrganizationPayload = await postsByOrganizationResolver?.(
+      {},
+      args,
+      {}
+    );
 
-  //   const args: QueryPostsByOrganizationConnectionArgs = {
-  //     first: 2,
-  //     skip: 1,
-  //     where: {
-  //       id_in: [testUsers[1].id],
-  //       firstName_in: [testUsers[1].firstName],
-  //       lastName_in: [testUsers[1].lastName],
-  //       email_in: [testUsers[1].email],
-  //       appLanguageCode_in: [testUsers[1].appLanguageCode],
-  //     },
-  //     orderBy: "firstName_ASC",
-  //   };
+    const postsByOrganization = await Post.find({
+      organization: testOrganization._id,
+    })
+      .sort(sort)
+      .populate("organization")
+      .populate("likedBy")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "creator",
+        },
+      })
+      .populate("creator", "-password")
+      .lean();
 
-  //   const postsByOrganizationConnectionPayload =
-  //     await postsByOrganizationConnectionResolver?.({}, args, {});
+    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+  });
 
-  //   const users = await User.find(where)
-  //     .limit(2)
-  //     .skip(1)
-  //     .sort(sort)
-  //     .select(['-password'])
-  //     .populate('createdOrganizations')
-  //     .populate('createdEvents')
-  //     .populate('joinedOrganizations')
-  //     .populate('registeredEvents')
-  //     .populate('eventAdmin')
-  //     .populate('adminFor')
-  //     .lean();
+  it(`returns list of all existing posts having post.organization with _id === args.id
+  sorted by ascending order of post.text if args.orderBy === 'text_ASC'`, async () => {
+    const sort = {
+      text: 1,
+    };
 
-  //   expect(postsByOrganizationConnectionPayload).toEqual(users);
-  // });
+    const args: QueryPostsByOrganizationArgs = {
+      id: testOrganization.id,
+      orderBy: "text_ASC",
+    };
 
-  // it(`returns paginated list of users filtered by
-  // args.where === { id_not_in: [testUsers[2]._id], firstName_not_in: [testUsers[2].firstName],
-  // lastName_not_in: [testUsers[2].lastName], email_not_in: [testUsers[2].email],
-  // appLanguageCode_not_in: [testUsers[2].appLanguageCode] } and
-  // sorted by args.orderBy === 'firstName_DESC'`, async () => {
-  //   const where = {
-  //     _id: {
-  //       $nin: [testUsers[2]._id],
-  //     },
-  //     firstName: {
-  //       $nin: [testUsers[2].firstName],
-  //     },
-  //     lastName: {
-  //       $nin: [testUsers[2].lastName],
-  //     },
-  //     email: {
-  //       $nin: [testUsers[2].email],
-  //     },
-  //     appLanguageCode: {
-  //       $nin: [testUsers[2].appLanguageCode],
-  //     },
-  //   };
+    const postsByOrganizationPayload = await postsByOrganizationResolver?.(
+      {},
+      args,
+      {}
+    );
 
-  //   const sort = {
-  //     firstName: -1,
-  //   };
+    const postsByOrganization = await Post.find({
+      organization: testOrganization._id,
+    })
+      .sort(sort)
+      .populate("organization")
+      .populate("likedBy")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "creator",
+        },
+      })
+      .populate("creator", "-password")
+      .lean();
 
-  //   const args: QueryPostsByOrganizationConnectionArgs = {
-  //     first: 2,
-  //     skip: 1,
-  //     where: {
-  //       id_not_in: [testUsers[2]._id],
-  //       firstName_not_in: [testUsers[2].firstName],
-  //       lastName_not_in: [testUsers[2].lastName],
-  //       email_not_in: [testUsers[2].email],
-  //       appLanguageCode_not_in: [testUsers[2].appLanguageCode],
-  //     },
-  //     orderBy: "firstName_DESC",
-  //   };
+    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+  });
 
-  //   const postsByOrganizationConnectionPayload =
-  //     await postsByOrganizationConnectionResolver?.({}, args, {});
+  it(`returns list of all existing posts having post.organization with _id === args.id
+  sorted by descending order of post.text if args.orderBy === 'text_DESC'`, async () => {
+    const sort = {
+      text: -1,
+    };
 
-  //   const users = await User.find(where)
-  //     .limit(2)
-  //     .skip(1)
-  //     .sort(sort)
-  //     .select(['-password'])
-  //     .populate('createdOrganizations')
-  //     .populate('createdEvents')
-  //     .populate('joinedOrganizations')
-  //     .populate('registeredEvents')
-  //     .populate('eventAdmin')
-  //     .populate('adminFor')
-  //     .lean();
+    const args: QueryPostsByOrganizationArgs = {
+      id: testOrganization.id,
+      orderBy: "text_DESC",
+    };
 
-  //   expect(postsByOrganizationConnectionPayload).toEqual(users);
-  // });
+    const postsByOrganizationPayload = await postsByOrganizationResolver?.(
+      {},
+      args,
+      {}
+    );
 
-  // it(`returns paginated list of users filtered by
-  // args.where === { firstName_contains: testUsers[1].firstName,
-  // lastName_contains: testUsers[1].lastName, email_contains: testUsers[1].email,
-  // appLanguageCode_contains: testUsers[1].appLanguageCode } and
-  // sorted by args.orderBy === 'lastName_ASC'`, async () => {
-  //   const where = {
-  //     firstName: {
-  //       $regex: testUsers[1].firstName,
-  //       $options: 'i',
-  //     },
-  //     lastName: {
-  //       $regex: testUsers[1].lastName,
-  //       $options: 'i',
-  //     },
-  //     email: {
-  //       $regex: testUsers[1].email,
-  //       $options: 'i',
-  //     },
-  //     appLanguageCode: {
-  //       $regex: testUsers[1].appLanguageCode,
-  //       $options: 'i',
-  //     },
-  //   };
+    const postsByOrganization = await Post.find({
+      organization: testOrganization._id,
+    })
+      .sort(sort)
+      .populate("organization")
+      .populate("likedBy")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "creator",
+        },
+      })
+      .populate("creator", "-password")
+      .lean();
 
-  //   const sort = {
-  //     lastName: 1,
-  //   };
+    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+  });
 
-  //   const args: QueryPostsByOrganizationConnectionArgs = {
-  //     first: 2,
-  //     skip: 1,
-  //     where: {
-  //       firstName_contains: testUsers[1].firstName,
-  //       lastName_contains: testUsers[1].lastName,
-  //       email_contains: testUsers[1].email,
-  //       appLanguageCode_contains: testUsers[1].appLanguageCode,
-  //     },
-  //     orderBy: "lastName_ASC",
-  //   };
+  it(`returns list of all existing posts having post.organization with _id === args.id
+  sorted by ascending order of post.title if args.orderBy === 'title_ASC'`, async () => {
+    const sort = {
+      title: 1,
+    };
 
-  //   const postsByOrganizationConnectionPayload =
-  //     await postsByOrganizationConnectionResolver?.({}, args, {});
+    const args: QueryPostsByOrganizationArgs = {
+      id: testOrganization.id,
+      orderBy: "title_ASC",
+    };
 
-  //   const users = await User.find(where)
-  //     .limit(2)
-  //     .skip(1)
-  //     .sort(sort)
-  //     .select(['-password'])
-  //     .populate('createdOrganizations')
-  //     .populate('createdEvents')
-  //     .populate('joinedOrganizations')
-  //     .populate('registeredEvents')
-  //     .populate('eventAdmin')
-  //     .populate('adminFor')
-  //     .lean();
+    const postsByOrganizationPayload = await postsByOrganizationResolver?.(
+      {},
+      args,
+      {}
+    );
 
-  //   expect(postsByOrganizationConnectionPayload).toEqual(users);
-  // });
+    const postsByOrganization = await Post.find({
+      organization: testOrganization._id,
+    })
+      .sort(sort)
+      .populate("organization")
+      .populate("likedBy")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "creator",
+        },
+      })
+      .populate("creator", "-password")
+      .lean();
 
-  // it(`returns paginated list of users filtered by
-  // args.where === { firstName_starts_with: testUsers[1].firstName,
-  // lastName_starts_with: testUsers[1].lastName, email_starts_with: testUsers[1].email,
-  // appLanguageCode_starts_with: testUsers[1].appLanguageCode } and
-  // sorted by args.orderBy === 'lastName_DESC'`, async () => {
-  //   const where = {
-  //     firstName: new RegExp('^' + testUsers[1].firstName),
-  //     lastName: new RegExp('^' + testUsers[1].lastName),
-  //     email: new RegExp('^' + testUsers[1].email),
-  //     appLanguageCode: new RegExp('^' + testUsers[1].appLanguageCode),
-  //   };
+    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+  });
 
-  //   const sort = {
-  //     lastName: -1,
-  //   };
+  it(`returns list of all existing posts having post.organization with _id === args.id
+  sorted by descending order of post.title if args.orderBy === 'title_DESC'`, async () => {
+    const sort = {
+      title: -1,
+    };
 
-  //   const args: QueryPostsByOrganizationConnectionArgs = {
-  //     first: 2,
-  //     skip: 1,
-  //     where: {
-  //       firstName_starts_with: testUsers[1].firstName,
-  //       lastName_starts_with: testUsers[1].lastName,
-  //       email_starts_with: testUsers[1].email,
-  //       appLanguageCode_starts_with: testUsers[1].appLanguageCode,
-  //     },
-  //     orderBy: "lastName_DESC",
-  //   };
+    const args: QueryPostsByOrganizationArgs = {
+      id: testOrganization.id,
+      orderBy: "title_DESC",
+    };
 
-  //   const postsByOrganizationConnectionPayload =
-  //     await postsByOrganizationConnectionResolver?.({}, args, {});
+    const postsByOrganizationPayload = await postsByOrganizationResolver?.(
+      {},
+      args,
+      {}
+    );
 
-  //   const users = await User.find(where)
-  //     .limit(2)
-  //     .skip(1)
-  //     .sort(sort)
-  //     .select(['-password'])
-  //     .populate('createdOrganizations')
-  //     .populate('createdEvents')
-  //     .populate('joinedOrganizations')
-  //     .populate('registeredEvents')
-  //     .populate('eventAdmin')
-  //     .populate('adminFor')
-  //     .lean();
+    const postsByOrganization = await Post.find({
+      organization: testOrganization._id,
+    })
+      .sort(sort)
+      .populate("organization")
+      .populate("likedBy")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "creator",
+        },
+      })
+      .populate("creator", "-password")
+      .lean();
 
-  //   expect(postsByOrganizationConnectionPayload).toEqual(users);
-  // });
+    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+  });
 
-  // it(`returns paginated list of users sorted by
-  // args.orderBy === 'appLanguageCode_ASC'`, async () => {
-  //   const where = {};
+  it(`returns list of all existing posts having post.organization with _id === args.id
+  sorted by ascending order of post.createdAt if args.orderBy === 'createdAt_ASC'`, async () => {
+    const sort = {
+      createdAt: 1,
+    };
 
-  //   const sort = {
-  //     appLanguageCode: 1,
-  //   };
+    const args: QueryPostsByOrganizationArgs = {
+      id: testOrganization.id,
+      orderBy: "createdAt_ASC",
+    };
 
-  //   const args: QueryPostsByOrganizationConnectionArgs = {
-  //     first: 2,
-  //     skip: 1,
-  //     where: null,
-  //     orderBy: "appLanguageCode_ASC",
-  //   };
+    const postsByOrganizationPayload = await postsByOrganizationResolver?.(
+      {},
+      args,
+      {}
+    );
 
-  //   const postsByOrganizationConnectionPayload =
-  //     await postsByOrganizationConnectionResolver?.({}, args, {});
+    const postsByOrganization = await Post.find({
+      organization: testOrganization._id,
+    })
+      .sort(sort)
+      .populate("organization")
+      .populate("likedBy")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "creator",
+        },
+      })
+      .populate("creator", "-password")
+      .lean();
 
-  //   const users = await User.find(where)
-  //     .limit(2)
-  //     .skip(1)
-  //     .sort(sort)
-  //     .select(['-password'])
-  //     .populate('createdOrganizations')
-  //     .populate('createdEvents')
-  //     .populate('joinedOrganizations')
-  //     .populate('registeredEvents')
-  //     .populate('eventAdmin')
-  //     .populate('adminFor')
-  //     .lean();
+    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+  });
 
-  //   expect(postsByOrganizationConnectionPayload).toEqual(users);
-  // });
+  it(`returns list of all existing posts having post.organization with _id === args.id
+  sorted by descending order of post.createdAt if args.orderBy === 'createdAt_DESC'`, async () => {
+    const sort = {
+      createdAt: -1,
+    };
 
-  // it(`returns paginated list of users sorted by
-  //  args.orderBy === 'appLanguageCode_DESC'`, async () => {
-  //   const where = {};
+    const args: QueryPostsByOrganizationArgs = {
+      id: testOrganization.id,
+      orderBy: "createdAt_DESC",
+    };
 
-  //   const sort = {
-  //     appLanguageCode: -1,
-  //   };
+    const postsByOrganizationPayload = await postsByOrganizationResolver?.(
+      {},
+      args,
+      {}
+    );
 
-  //   const args: QueryPostsByOrganizationConnectionArgs = {
-  //     first: 2,
-  //     skip: 1,
-  //     where: null,
-  //     orderBy: "appLanguageCode_DESC",
-  //   };
+    const postsByOrganization = await Post.find({
+      organization: testOrganization._id,
+    })
+      .sort(sort)
+      .populate("organization")
+      .populate("likedBy")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "creator",
+        },
+      })
+      .populate("creator", "-password")
+      .lean();
 
-  //   const postsByOrganizationConnectionPayload =
-  //     await postsByOrganizationConnectionResolver?.({}, args, {});
+    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+  });
 
-  //   const users = await User.find(where)
-  //     .limit(2)
-  //     .skip(1)
-  //     .sort(sort)
-  //     .select(['-password'])
-  //     .populate('createdOrganizations')
-  //     .populate('createdEvents')
-  //     .populate('joinedOrganizations')
-  //     .populate('registeredEvents')
-  //     .populate('eventAdmin')
-  //     .populate('adminFor')
-  //     .lean();
+  it(`returns list of all existing posts having post.organization with _id === args.id
+  sorted by ascending order of post.imageUrl if args.orderBy === 'imageUrl_ASC'`, async () => {
+    const sort = {
+      imageUrl: 1,
+    };
 
-  //   expect(postsByOrganizationConnectionPayload).toEqual(users);
-  // });
+    const args: QueryPostsByOrganizationArgs = {
+      id: testOrganization.id,
+      orderBy: "imageUrl_ASC",
+    };
 
-  // it(`returns paginated list of users
-  // sorted by args.orderBy === 'email_ASC'`, async () => {
-  //   const where = {};
+    const postsByOrganizationPayload = await postsByOrganizationResolver?.(
+      {},
+      args,
+      {}
+    );
 
-  //   const sort = {
-  //     email: 1,
-  //   };
+    const postsByOrganization = await Post.find({
+      organization: testOrganization._id,
+    })
+      .sort(sort)
+      .populate("organization")
+      .populate("likedBy")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "creator",
+        },
+      })
+      .populate("creator", "-password")
+      .lean();
 
-  //   const args: QueryPostsByOrganizationConnectionArgs = {
-  //     first: 2,
-  //     skip: 1,
-  //     where: null,
-  //     orderBy: "email_ASC",
-  //   };
+    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+  });
 
-  //   const postsByOrganizationConnectionPayload =
-  //     await postsByOrganizationConnectionResolver?.({}, args, {});
+  it(`returns list of all existing posts having post.organization with _id === args.id
+  sorted by descending order of post.imageUrl if args.orderBy === 'imageUrl_DESC'`, async () => {
+    const sort = {
+      imageUrl: -1,
+    };
 
-  //   const users = await User.find(where)
-  //     .limit(2)
-  //     .skip(1)
-  //     .sort(sort)
-  //     .select(['-password'])
-  //     .populate('createdOrganizations')
-  //     .populate('createdEvents')
-  //     .populate('joinedOrganizations')
-  //     .populate('registeredEvents')
-  //     .populate('eventAdmin')
-  //     .populate('adminFor')
-  //     .lean();
+    const args: QueryPostsByOrganizationArgs = {
+      id: testOrganization.id,
+      orderBy: "imageUrl_DESC",
+    };
 
-  //   expect(postsByOrganizationConnectionPayload).toEqual(users);
-  // });
+    const postsByOrganizationPayload = await postsByOrganizationResolver?.(
+      {},
+      args,
+      {}
+    );
 
-  // it(`returns paginated list of users
-  // sorted by args.orderBy === 'email_DESC'`, async () => {
-  //   const where = {};
+    const postsByOrganization = await Post.find({
+      organization: testOrganization._id,
+    })
+      .sort(sort)
+      .populate("organization")
+      .populate("likedBy")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "creator",
+        },
+      })
+      .populate("creator", "-password")
+      .lean();
 
-  //   const sort = {
-  //     email: -1,
-  //   };
+    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+  });
 
-  //   const args: QueryPostsByOrganizationConnectionArgs = {
-  //     first: 2,
-  //     skip: 1,
-  //     where: null,
-  //     orderBy: "email_DESC",
-  //   };
+  it(`returns list of all existing posts having post.organization with _id === args.id
+  sorted by ascending order of post.videoUrl if args.orderBy === 'videoUrl_ASC'`, async () => {
+    const sort = {
+      videoUrl: 1,
+    };
 
-  //   const postsByOrganizationConnectionPayload =
-  //     await postsByOrganizationConnectionResolver?.({}, args, {});
+    const args: QueryPostsByOrganizationArgs = {
+      id: testOrganization.id,
+      orderBy: "videoUrl_ASC",
+    };
 
-  //   const users = await User.find(where)
-  //     .limit(2)
-  //     .skip(1)
-  //     .sort(sort)
-  //     .select(['-password'])
-  //     .populate('createdOrganizations')
-  //     .populate('createdEvents')
-  //     .populate('joinedOrganizations')
-  //     .populate('registeredEvents')
-  //     .populate('eventAdmin')
-  //     .populate('adminFor')
-  //     .lean();
+    const postsByOrganizationPayload = await postsByOrganizationResolver?.(
+      {},
+      args,
+      {}
+    );
 
-  //   expect(postsByOrganizationConnectionPayload).toEqual(users);
-  // });
+    const postsByOrganization = await Post.find({
+      organization: testOrganization._id,
+    })
+      .sort(sort)
+      .populate("organization")
+      .populate("likedBy")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "creator",
+        },
+      })
+      .populate("creator", "-password")
+      .lean();
 
-  // it(`returns paginated list of users sorted by 'email_DESC' if
-  // args.orderBy === undefined`, async () => {
-  //   const where = {};
+    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+  });
 
-  //   const sort = {
-  //     email: -1,
-  //   };
+  it(`returns list of all existing posts having post.organization with _id === args.id
+  sorted by descending order of post.videoUrl if args.orderBy === 'videoUrl_DESC'`, async () => {
+    const sort = {
+      videoUrl: -1,
+    };
 
-  //   const args: QueryPostsByOrganizationConnectionArgs = {
-  //     first: 2,
-  //     skip: 1,
-  //     where: null,
-  //     orderBy: undefined,
-  //   };
+    const args: QueryPostsByOrganizationArgs = {
+      id: testOrganization.id,
+      orderBy: "videoUrl_DESC",
+    };
 
-  //   const postsByOrganizationConnectionPayload =
-  //     await postsByOrganizationConnectionResolver?.({}, args, {});
+    const postsByOrganizationPayload = await postsByOrganizationResolver?.(
+      {},
+      args,
+      {}
+    );
 
-  //   const users = await User.find(where)
-  //     .limit(2)
-  //     .skip(1)
-  //     .sort(sort)
-  //     .select(['-password'])
-  //     .populate('createdOrganizations')
-  //     .populate('createdEvents')
-  //     .populate('joinedOrganizations')
-  //     .populate('registeredEvents')
-  //     .populate('eventAdmin')
-  //     .populate('adminFor')
-  //     .lean();
+    const postsByOrganization = await Post.find({
+      organization: testOrganization._id,
+    })
+      .sort(sort)
+      .populate("organization")
+      .populate("likedBy")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "creator",
+        },
+      })
+      .populate("creator", "-password")
+      .lean();
 
-  //   expect(postsByOrganizationConnectionPayload).toEqual(users);
-  // });
+    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+  });
+
+  it(`returns list of all existing posts having post.organization with _id === args.id
+  sorted by ascending order of post.likeCount if args.orderBy === 'likeCount_ASC'`, async () => {
+    const sort = {
+      likeCount: 1,
+    };
+
+    const args: QueryPostsByOrganizationArgs = {
+      id: testOrganization.id,
+      orderBy: "likeCount_ASC",
+    };
+
+    const postsByOrganizationPayload = await postsByOrganizationResolver?.(
+      {},
+      args,
+      {}
+    );
+
+    const postsByOrganization = await Post.find({
+      organization: testOrganization._id,
+    })
+      .sort(sort)
+      .populate("organization")
+      .populate("likedBy")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "creator",
+        },
+      })
+      .populate("creator", "-password")
+      .lean();
+
+    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+  });
+
+  it(`returns list of all existing posts having post.organization with _id === args.id
+  sorted by descending order of post.likeCount if args.orderBy === 'likeCount_DESC'`, async () => {
+    const sort = {
+      likeCount: -1,
+    };
+
+    const args: QueryPostsByOrganizationArgs = {
+      id: testOrganization.id,
+      orderBy: "likeCount_DESC",
+    };
+
+    const postsByOrganizationPayload = await postsByOrganizationResolver?.(
+      {},
+      args,
+      {}
+    );
+
+    const postsByOrganization = await Post.find({
+      organization: testOrganization._id,
+    })
+      .sort(sort)
+      .populate("organization")
+      .populate("likedBy")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "creator",
+        },
+      })
+      .populate("creator", "-password")
+      .lean();
+
+    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+  });
+
+  it(`returns list of all existing posts having post.organization with _id === args.id
+  sorted by ascending order of post.commentCount if args.orderBy === 'commentCount_ASC'`, async () => {
+    const sort = {
+      commentCount: 1,
+    };
+
+    const args: QueryPostsByOrganizationArgs = {
+      id: testOrganization.id,
+      orderBy: "commentCount_ASC",
+    };
+
+    const postsByOrganizationPayload = await postsByOrganizationResolver?.(
+      {},
+      args,
+      {}
+    );
+
+    const postsByOrganization = await Post.find({
+      organization: testOrganization._id,
+    })
+      .sort(sort)
+      .populate("organization")
+      .populate("likedBy")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "creator",
+        },
+      })
+      .populate("creator", "-password")
+      .lean();
+
+    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+  });
+
+  it(`returns list of all existing posts having post.organization with _id === args.id
+  sorted by descending order of post.commentCount if args.orderBy === 'commentCount_DESC'`, async () => {
+    const sort = {
+      commentCount: -1,
+    };
+
+    const args: QueryPostsByOrganizationArgs = {
+      id: testOrganization.id,
+      orderBy: "commentCount_DESC",
+    };
+
+    const postsByOrganizationPayload = await postsByOrganizationResolver?.(
+      {},
+      args,
+      {}
+    );
+
+    const postsByOrganization = await Post.find({
+      organization: testOrganization._id,
+    })
+      .sort(sort)
+      .populate("organization")
+      .populate("likedBy")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "creator",
+        },
+      })
+      .populate("creator", "-password")
+      .lean();
+
+    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+  });
 });
