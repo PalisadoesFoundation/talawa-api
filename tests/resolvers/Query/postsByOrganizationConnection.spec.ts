@@ -1,103 +1,25 @@
 import "dotenv/config";
 import { postsByOrganizationConnection as postsByOrganizationConnectionResolver } from "../../../src/resolvers/Query/postsByOrganizationConnection";
-import {
-  Comment,
-  Interface_Organization,
-  Organization,
-  Post,
-  User,
-} from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
-import { Document, Types } from "mongoose";
-import { nanoid } from "nanoid";
+import {Types } from "mongoose";
 import { QueryPostsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
+import { testPostType, testCommentType, createPostwithComment, createTestSinglePost} from "../../helpers/posts";
 
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
+let testOrganization: testOrganizationType;
+let testUser: testUserType;
+let testPost1: testPostType;
+let testComment: testCommentType;
 
 beforeAll(async () => {
   await connect();
+  [testUser, testOrganization, testPost1, testComment] = await createPostwithComment();
 
-  const testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
+  const testPost2 = await createTestSinglePost(testUser._id,testOrganization._id);
+  const testPost3 = await createTestSinglePost(testUser._id,testOrganization._id);
 
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-    apiUrl: "apiUrl",
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  const testPosts = await Post.insertMany([
-    {
-      text: `text${nanoid().toLowerCase()}`,
-      title: `title${nanoid().toLowerCase()}`,
-      imageUrl: `imageUrl${nanoid().toLowerCase()}`,
-      videoUrl: `videoUrl${nanoid().toLowerCase()}`,
-      creator: testUser._id,
-      organization: testOrganization._id,
-    },
-    {
-      text: `text${nanoid().toLowerCase()}`,
-      title: `title${nanoid().toLowerCase()}`,
-      imageUrl: `imageUrl${nanoid().toLowerCase()}`,
-      videoUrl: `videoUrl${nanoid().toLowerCase()}`,
-      creator: testUser._id,
-      organization: testOrganization._id,
-    },
-    {
-      text: `text${nanoid().toLowerCase()}`,
-      title: `title${nanoid().toLowerCase()}`,
-      imageUrl: `imageUrl${nanoid().toLowerCase()}`,
-      videoUrl: `videoUrl${nanoid().toLowerCase()}`,
-      creator: testUser._id,
-      organization: testOrganization._id,
-    },
-  ]);
-
-  const testComment = await Comment.create({
-    text: "text",
-    creator: testUser._id,
-    post: testPosts[0]._id,
-  });
-
-  await Post.updateOne(
-    {
-      _id: testPosts[0]._id,
-    },
-    {
-      $push: {
-        likedBy: testUser._id,
-        comments: testComment._id,
-      },
-      $inc: {
-        likeCount: 1,
-        commentCount: 1,
-      },
-    }
-  );
+  const testPosts = [testPost1, testPost2, testPost3];
 });
 
 afterAll(async () => {

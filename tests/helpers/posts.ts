@@ -44,33 +44,31 @@ export const createTestPost = async (): Promise<
   return [testUser, testOrganization, testPost];
 };
 
+export const createPostwithComment = async (): Promise<
+[testUserType, testOrganizationType,testPostType, testCommentType]> => {
+  const resultArray = await createTestPost();
+  const testUser = resultArray[0];
+  const testOrganization = resultArray[1];
+  const testPost = resultArray[2];
 
-export const createPostwithComment = async (
-  user_id: string,
-  organization_id: string
-): Promise<[testPostType, testCommentType]> => {
-  const testPost = await Post.create({
-      text: `postName${nanoid().toLowerCase()}`,
-      creator: user_id,
-      organization: organization_id,
-  });
-  
   const testComment = await Comment.create({
-  text: `commentName${nanoid().toLowerCase()}`,
-  creator: user_id,
-  post: testPost._id,
+    text: `commentName${nanoid().toLowerCase()}`,
+    creator: testUser?._id,
+    post: testPost?._id,
   });
 
   await Post.updateOne(
   {
-      _id: testPost._id,
+      _id: testPost?._id,
   },
   {
       $push: {
-      comments: [testComment._id],
+        likedBy: testUser?._id,
+        comments: [testComment._id],
       },
       $inc: {
-      commentCount: 1,
+        likeCount: 1,
+        commentCount: 1,
       },
   }
   );
@@ -81,12 +79,64 @@ export const createPostwithComment = async (
   },
   {
       $push: {
-      likedBy: user_id,
+        likedBy: testUser?._id,
       },
       $inc: {
-      likeCount: 1,
+        likeCount: 1,
       },
   }
   );
-  return [testPost, testComment];
+  return [testUser, testOrganization, testPost, testComment];
+}
+
+export const createSinglePostwithComment = async(
+  userId: string,
+  organizationId: string
+): Promise<[testPostType, testCommentType]> => {
+  const testPost = await Post.create({
+    text: `text${nanoid().toLowerCase()}`,
+    title: `title${nanoid()}`,
+    imageUrl: `imageUrl${nanoid()}`,
+    videoUrl: `videoUrl${nanoid()}`,
+    creator: userId,
+    organization: organizationId,
+  });
+
+  const testComment = await Comment.create({
+    text: `commentName${nanoid().toLowerCase()}`,
+    creator: userId,
+    post: testPost._id,
+  });
+
+  await Post.updateOne(
+    {
+        _id: testPost._id,
+    },
+    {
+        $push: {
+          likedBy: userId,
+          comments: [testComment._id],
+        },
+        $inc: {
+          likeCount: 1,
+          commentCount: 1,
+        },
+    }
+  );
+  return [testPost,testComment];
+}
+
+export const createTestSinglePost = async (
+  userId: string,
+  organizationId: string
+): Promise<testPostType> => {
+  const testPost = await Post.create({
+    text: `text${nanoid().toLowerCase()}`,
+    title: `title${nanoid()}`,
+    imageUrl: `imageUrl${nanoid()}`,
+    videoUrl: `videoUrl${nanoid()}`,
+    creator: userId,
+    organization: organizationId,
+  });
+  return testPost;
 }

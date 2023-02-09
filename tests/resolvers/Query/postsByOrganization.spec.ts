@@ -12,106 +12,17 @@ import { nanoid } from "nanoid";
 import { QueryPostsByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Document } from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { testUserType, testOrganizationType, createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { createSinglePostwithComment } from "../../helpers/posts";
 
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
+let testUserType: testUserType;
+let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
-
-  const testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  const testPosts = await Post.insertMany([
-    {
-      text: `text${nanoid()}`,
-      title: `title${nanoid()}`,
-      imageUrl: `imageUrl${nanoid()}`,
-      videoUrl: `videoUrl${nanoid()}`,
-      creator: testUser._id,
-      organization: testOrganization._id,
-    },
-    {
-      text: `text${nanoid()}`,
-      title: `title${nanoid()}`,
-      imageUrl: `imageUrl${nanoid()}`,
-      videoUrl: `videoUrl${nanoid()}`,
-      creator: testUser._id,
-      organization: testOrganization._id,
-    },
-  ]);
-
-  const testComments = await Comment.insertMany([
-    {
-      text: "text",
-      creator: testUser._id,
-      post: testPosts[0]._id,
-    },
-    {
-      text: "text",
-      creator: testUser._id,
-      post: testPosts[1]._id,
-    },
-  ]);
-
-  await Post.updateOne(
-    {
-      _id: testPosts[0]._id,
-    },
-    {
-      $push: {
-        likedBy: testUser._id,
-        comments: testComments[0]._id,
-      },
-      $inc: {
-        likeCount: 1,
-        commentCount: 1,
-      },
-    }
-  );
-
-  await Post.updateOne(
-    {
-      _id: testPosts[1]._id,
-    },
-    {
-      $push: {
-        likedBy: testUser._id,
-        comments: testComments[1]._id,
-      },
-      $inc: {
-        likeCount: 1,
-        commentCount: 1,
-      },
-    }
-  );
+  [testUser, testOrganization] = await createTestUserAndOrganization();
+  const [testPost1, testComment1] = await createSinglePostwithComment(testUser._id,testOrganization._id);
+  const [testPost2, testComment2] = await createSinglePostwithComment(testUser._id,testOrganization._id);
 });
 
 afterAll(async () => {

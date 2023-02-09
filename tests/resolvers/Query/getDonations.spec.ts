@@ -17,9 +17,7 @@ afterAll(async () => {
 describe("resolvers -> Mutation -> getDonations", () => {
   it(`returns a list of all existing donations`, async () => {
     const getDonationsPayload = await getDonationsResolver?.({}, {}, {});
-
     const donations = await Donation.find().lean();
-
     expect(getDonationsPayload).toEqual(donations);
   });
 });

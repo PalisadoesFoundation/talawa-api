@@ -13,69 +13,18 @@ import { Document, Types } from "mongoose";
 import { POST_NOT_FOUND } from "../../../src/constants";
 import { QueryPostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { testUserType, testOrganizationType} from "../../helpers/userAndOrg";
+import { testPostType, testCommentType, createPostwithComment } from "../../helpers/posts";
 
-let testPost: Interface_Post & Document<any, any, Interface_Post>;
+
+let testPost: testPostType;
+let testComment: testCommentType;
+let testUser: testUserType;
+let testOrganization: testUserType;
 
 beforeAll(async () => {
   await connect();
-
-  const testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  testPost = await Post.create({
-    text: "text",
-    creator: testUser._id,
-    organization: testOrganization._id,
-  });
-
-  const testComment = await Comment.create({
-    text: "text",
-    creator: testUser._id,
-    post: testPost._id,
-  });
-
-  await Post.updateOne(
-    {
-      _id: testPost._id,
-    },
-    {
-      $push: {
-        likedBy: testUser._id,
-        comments: testComment._id,
-      },
-      $inc: {
-        likeCount: 1,
-        commentCount: 1,
-      },
-    }
-  );
+  [testUser, testOrganization, testPost, testComment] = await createPostwithComment();
 });
 
 afterAll(async () => {

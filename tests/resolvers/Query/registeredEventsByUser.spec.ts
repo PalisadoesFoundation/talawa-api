@@ -1,147 +1,28 @@
 import "dotenv/config";
 import { registeredEventsByUser as registeredEventsByUserResolver } from "../../../src/resolvers/Query/registeredEventsByUser";
-import {
-  Event,
-  User,
-  Organization,
-  Interface_User,
-  Task,
-} from "../../../src/models";
+import { Event } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
-import { nanoid } from "nanoid";
 import { QueryRegisteredEventsByUserArgs } from "../../../src/types/generatedGraphQLTypes";
-import { Document } from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
+import { createEventWithRegistrant } from "../../helpers/events";
+import { createTestTask } from "../../helpers/task";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
+  [ testUser, testOrganization ] = await createTestUserAndOrganization();
+  const testEvents = [
+    await createEventWithRegistrant(testUser._id, testOrganization._id, true, "ONCE"),
+    await createEventWithRegistrant(testUser._id, testOrganization._id, true, "ONCE")
+  ];
 
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  const testEvents = await Event.insertMany([
-    {
-      creator: testUser._id,
-      registrants: [
-        {
-          userId: testUser._id,
-          user: testUser._id,
-        },
-      ],
-      admins: [testUser._id],
-      organization: testOrganization._id,
-      isRegisterable: true,
-      isPublic: true,
-      title: `title${nanoid()}`,
-      description: `description${nanoid()}`,
-      allDay: true,
-      startDate: new Date().toString(),
-      endDate: new Date().toString(),
-      startTime: new Date().toString(),
-      endTime: new Date().toString(),
-      recurrance: "ONCE",
-      location: `location${nanoid()}`,
-    },
-    {
-      creator: testUser._id,
-      registrants: [
-        {
-          userId: testUser._id,
-          user: testUser._id,
-        },
-      ],
-      admins: [testUser._id],
-      organization: testOrganization._id,
-      isRegisterable: true,
-      isPublic: true,
-      title: `title${nanoid()}`,
-      description: `description${nanoid()}`,
-      allDay: true,
-      startDate: new Date().toString(),
-      endDate: new Date().toString(),
-      startTime: new Date().toString(),
-      endTime: new Date().toString(),
-      recurrance: "ONCE",
-      location: `location${nanoid()}`,
-    },
-  ]);
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdEvents: [testEvents[0]._id, testEvents[1]._id],
-        registeredEvents: [testEvents[0]._id],
-        eventAdmin: [testEvents[0]._id, testEvents[1]._id],
-      },
-    }
-  );
-
-  const testTasks = await Task.insertMany([
-    {
-      title: "title",
-      event: testEvents[0]._id,
-      creator: testUser._id,
-    },
-    {
-      title: "title",
-      event: testEvents[1]._id,
-      creator: testUser._id,
-    },
-  ]);
-
-  await Event.updateOne(
-    {
-      _id: testEvents[0]._id,
-    },
-    {
-      $set: {
-        tasks: [testTasks[0]._id],
-      },
-    }
-  );
-
-  await Event.updateOne(
-    {
-      _id: testEvents[1]._id,
-    },
-    {
-      $set: {
-        tasks: [testTasks[1]._id],
-      },
-    }
-  );
+  const testTasks = [
+    await createTestTask(testEvents[0]._id, testUser._id),
+    await createTestTask(testEvents[1]._id, testUser._id)
+  ];
 });
 
 afterAll(async () => {

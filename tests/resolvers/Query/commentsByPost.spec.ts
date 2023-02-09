@@ -12,7 +12,6 @@ import {
 } from "../../../src/constants";
 import { QueryCommentsByPostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestUserAndOrganization, testUserType, testOrganizationType } from "../../helpers/userAndOrg";
 import { createPostwithComment, testPostType, testCommentType } from "../../helpers/posts";
 
 
@@ -24,9 +23,7 @@ let testComment: testCommentType;
 
 beforeAll(async () => {
   await connect();
-
-  [testUser, testOrganization] = await createTestUserAndOrganization();
-  [testPost, testComment] = await createPostwithComment(testUser._id, testOrganization._id);
+  [testUser, testOrganization, testPost, testComment] = await createPostwithComment();
 });
 
 afterAll(async () => {

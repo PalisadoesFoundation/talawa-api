@@ -1,87 +1,20 @@
 import "dotenv/config";
 import { organizationsConnection as organizationsConnectionResolver } from "../../../src/resolvers/Query/organizationsConnection";
-import {
-  Interface_Organization,
-  Organization,
-  User,
-} from "../../../src/models";
+import { Organization } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
 import { QueryOrganizationsConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
-import { nanoid } from "nanoid";
-import { Document } from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {createTestUser, testOrganizationType, createOrganizationwithVisibility} from "../../helpers/userAndOrg";
 
-let testOrganizations: (Interface_Organization &
-  Document<any, any, Interface_Organization>)[];
-
+let testOrganizations: testOrganizationType[];
 beforeAll(async () => {
   await connect();
-
-  const testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganizations = await Organization.insertMany([
-    {
-      name: `name${nanoid()}`,
-      description: `description${nanoid()}`,
-      isPublic: true,
-      creator: testUser._id,
-      admins: [testUser._id],
-      members: [testUser._id],
-      apiUrl: `apiUrl${nanoid()}`,
-      visibleInSearch: true,
-    },
-    {
-      name: `name${nanoid()}`,
-      description: `description${nanoid()}`,
-      isPublic: false,
-      creator: testUser._id,
-      admins: [testUser._id],
-      members: [testUser._id],
-      apiUrl: `apiUrl${nanoid()}`,
-      visibleInSearch: false,
-    },
-    {
-      name: `name${nanoid()}`,
-      description: `description${nanoid()}`,
-      isPublic: true,
-      creator: testUser._id,
-      admins: [testUser._id],
-      members: [testUser._id],
-      apiUrl: `apiUrl${nanoid()}`,
-      visibleInSearch: true,
-    },
-  ]);
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [
-          testOrganizations[0]._id,
-          testOrganizations[1]._id,
-          testOrganizations[2]._id,
-        ],
-        adminFor: [
-          testOrganizations[0]._id,
-          testOrganizations[1]._id,
-          testOrganizations[2]._id,
-        ],
-        joinedOrganizations: [
-          testOrganizations[0]._id,
-          testOrganizations[1]._id,
-          testOrganizations[2]._id,
-        ],
-      },
-    }
-  );
+  const testUser = await createTestUser();
+  testOrganizations = [
+    await createOrganizationwithVisibility(testUser._id, true),
+    await createOrganizationwithVisibility(testUser._id, false),
+    await createOrganizationwithVisibility(testUser._id, true),
+  ];
 });
 
 afterAll(async () => {

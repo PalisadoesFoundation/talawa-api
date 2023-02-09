@@ -1,14 +1,7 @@
 import "dotenv/config";
 import { eventsByOrganization as eventsByOrganizationResolver } from "../../../src/resolvers/Query/eventsByOrganization";
-import {
-  Event,
-  User,
-  Organization,
-  Task,
-  Interface_Organization,
-} from "../../../src/models";
+import { Event } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
-import { nanoid } from "nanoid";
 import { QueryEventsByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestUserAndOrganization, testUserType, testOrganizationType} from "../../helpers/userAndOrg";

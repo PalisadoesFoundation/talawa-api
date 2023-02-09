@@ -70,3 +70,34 @@ export const createTestUserAndOrganization = async (
   );
   return [testUser, testOrganization];
 };
+
+export const createOrganizationwithVisibility = async(
+  userID: string,
+  visibleInSearch: boolean
+): Promise<testOrganizationType> => {
+  const testOrganization = await Organization.create({
+    name: `orgName${nanoid().toLowerCase()}`,
+    description: `orgDesc${nanoid().toLowerCase()}`,
+    isPublic: true,
+    creator: userID,
+    admins: [userID],
+    members: [userID],
+    apiUrl: `apiUrl${nanoid()}`,
+    visibleInSearch: visibleInSearch,
+  });
+
+  await User.updateOne(
+    {
+      _id: userID,
+    },
+    {
+      $push: {
+        createdOrganizations: testOrganization._id,
+        adminFor: testOrganization._id,
+        joinedOrganizations: testOrganization._id,
+      },
+    }
+  );
+
+  return testOrganization;
+}

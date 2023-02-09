@@ -1,72 +1,21 @@
 import "dotenv/config";
 import { organizations as organizationsResolver } from "../../../src/resolvers/Query/organizations";
 import { ORGANIZATION_NOT_FOUND } from "../../../src/constants";
-import {
-  Interface_Organization,
-  Organization,
-  User,
-} from "../../../src/models";
+import { Organization } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
 import { QueryOrganizationsArgs } from "../../../src/types/generatedGraphQLTypes";
-import { Document, Types } from "mongoose";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { testUserType, testOrganizationType, createTestUserAndOrganization, createTestOrganizationWithAdmin } from "../../helpers/userAndOrg";
+import { Types } from "mongoose";
 
-let testOrganization1: Interface_Organization &
-  Document<any, any, Interface_Organization>;
+let testUser: testUserType;
+let testOrganization1: testOrganizationType;
+let testOrganization2: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
-
-  const testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganizations = await Organization.insertMany([
-    {
-      name: `name${nanoid()}`,
-      description: `description${nanoid()}`,
-      isPublic: true,
-      creator: testUser._id,
-      admins: [testUser._id],
-      members: [testUser._id],
-      apiUrl: `apiUrl${nanoid()}`,
-    },
-    {
-      name: `name${nanoid()}`,
-      description: `description${nanoid()}`,
-      isPublic: true,
-      creator: testUser._id,
-      admins: [testUser._id],
-      members: [testUser._id],
-      apiUrl: `apiUrl${nanoid()}`,
-    },
-  ]);
-
-  testOrganization1 = testOrganizations[0];
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [
-          testOrganizations[0]._id,
-          testOrganizations[1]._id,
-        ],
-        adminFor: [testOrganizations[0]._id, testOrganizations[1]._id],
-        joinedOrganizations: [
-          testOrganizations[0]._id,
-          testOrganizations[1]._id,
-        ],
-      },
-    }
-  );
+  const [testUser, testOrganization1] = await createTestUserAndOrganization();
+  const testOrganization2 = await createTestOrganizationWithAdmin(testUser._id);
 });
 
 afterAll(async () => {
