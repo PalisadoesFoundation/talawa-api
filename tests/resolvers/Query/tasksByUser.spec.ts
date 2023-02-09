@@ -1,13 +1,7 @@
 import "dotenv/config";
 import { tasksByUser as tasksByUserResolver } from "../../../src/resolvers/Query/tasksByUser";
 import { connect, disconnect } from "../../../src/db";
-import {
-  User,
-  Organization,
-  Event,
-  Task,
-  Interface_User,
-} from "../../../src/models";
+import { Task } from "../../../src/models";
 import { QueryTasksByUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { testUserType, testOrganizationType, createTestUserAndOrganization } from "../../helpers/userAndOrg";
@@ -16,9 +10,10 @@ import { createTestTask } from "../../helpers/task";
 
 let testUser: testUserType;
 let testOrganization:testOrganizationType; 
+
 beforeAll(async () => {
   await connect();
-  const [testUser, testOrganization] = await createTestUserAndOrganization();
+  [testUser, testOrganization] = await createTestUserAndOrganization();
   const testEvent = await createEventWithRegistrant(testUser._id, testOrganization._id,true,"ONCE");
   const testTasks = [
     await createTestTask(testEvent._id, testUser._id),

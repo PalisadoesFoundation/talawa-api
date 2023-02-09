@@ -17,7 +17,7 @@ let testOrganization: testOrganizationType;
 beforeAll(async () => {
   await connect();
   [testUser, testOrganization, testEvent] = await createTestEvent();
-  const testTask = await createTestTask(testEvent._id, testUser._id);
+  const testTask = await createTestTask(testEvent?._id, testUser?._id);
 });
 
 afterAll(async () => {

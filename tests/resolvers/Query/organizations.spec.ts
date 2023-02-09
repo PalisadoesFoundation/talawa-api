@@ -14,8 +14,8 @@ let testOrganization2: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
-  const [testUser, testOrganization1] = await createTestUserAndOrganization();
-  const testOrganization2 = await createTestOrganizationWithAdmin(testUser._id);
+  [testUser, testOrganization1] = await createTestUserAndOrganization();
+  testOrganization2 = await createTestOrganizationWithAdmin(testUser._id);
 });
 
 afterAll(async () => {

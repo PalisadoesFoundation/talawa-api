@@ -1,20 +1,74 @@
 import "dotenv/config";
 import { organizationsConnection as organizationsConnectionResolver } from "../../../src/resolvers/Query/organizationsConnection";
-import { Organization } from "../../../src/models";
+import { Organization, User, Interface_Organization} from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
 import { QueryOrganizationsConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import {createTestUser, testOrganizationType, createOrganizationwithVisibility} from "../../helpers/userAndOrg";
+import {createTestUser, testOrganizationType, testUserType } from "../../helpers/userAndOrg";
+import { nanoid } from "nanoid";
+import { Document } from "mongoose";
 
-let testOrganizations: testOrganizationType[];
+let testOrganizations: (Interface_User & Document<any, any, Interface_User>)[];
 beforeAll(async () => {
   await connect();
-  const testUser = await createTestUser();
-  testOrganizations = [
-    await createOrganizationwithVisibility(testUser._id, true),
-    await createOrganizationwithVisibility(testUser._id, false),
-    await createOrganizationwithVisibility(testUser._id, true),
-  ];
+  const testUser: testUserType = await createTestUser();
+  testOrganizations = await Organization.insertMany([
+    {
+      name: `name${nanoid()}`,
+      description: `description${nanoid()}`,
+      isPublic: true,
+      creator: testUser._id,
+      admins: [testUser._id],
+      members: [testUser._id],
+      apiUrl: `apiUrl${nanoid()}`,
+      visibleInSearch: true,
+    },
+    {
+      name: `name${nanoid()}`,
+      description: `description${nanoid()}`,
+      isPublic: false,
+      creator: testUser._id,
+      admins: [testUser._id],
+      members: [testUser._id],
+      apiUrl: `apiUrl${nanoid()}`,
+      visibleInSearch: false,
+    },
+    {
+      name: `name${nanoid()}`,
+      description: `description${nanoid()}`,
+      isPublic: true,
+      creator: testUser._id,
+      admins: [testUser._id],
+      members: [testUser._id],
+      apiUrl: `apiUrl${nanoid()}`,
+      visibleInSearch: true,
+    },
+  ]);
+
+  await User.updateOne(
+    {
+      _id: testUser._id,
+    },
+    {
+      $set: {
+        createdOrganizations: [
+          testOrganizations[0]._id,
+          testOrganizations[1]._id,
+          testOrganizations[2]._id,
+        ],
+        adminFor: [
+          testOrganizations[0]._id,
+          testOrganizations[1]._id,
+          testOrganizations[2]._id,
+        ],
+        joinedOrganizations: [
+          testOrganizations[0]._id,
+          testOrganizations[1]._id,
+          testOrganizations[2]._id,
+        ],
+      },
+    }
+  );
 });
 
 afterAll(async () => {

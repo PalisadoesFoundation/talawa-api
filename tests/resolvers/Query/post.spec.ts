@@ -1,26 +1,18 @@
 import "dotenv/config";
 import { post as postResolver } from "../../../src/resolvers/Query/post";
-import {
-  User,
-  Organization,
-  Post,
-  Comment,
-  Interface_Post,
-} from "../../../src/models";
+import { Post } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
-import { nanoid } from "nanoid";
-import { Document, Types } from "mongoose";
+import { Types } from "mongoose";
 import { POST_NOT_FOUND } from "../../../src/constants";
 import { QueryPostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { testUserType, testOrganizationType} from "../../helpers/userAndOrg";
 import { testPostType, testCommentType, createPostwithComment } from "../../helpers/posts";
 
-
 let testPost: testPostType;
 let testComment: testCommentType;
 let testUser: testUserType;
-let testOrganization: testUserType;
+let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();

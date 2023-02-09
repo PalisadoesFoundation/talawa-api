@@ -14,15 +14,16 @@ let testOrganization: testOrganizationType;
 beforeAll(async () => {
   await connect();
   [ testUser, testOrganization ] = await createTestUserAndOrganization();
-  const testEvents = [
-    await createEventWithRegistrant(testUser._id, testOrganization._id, true, "ONCE"),
-    await createEventWithRegistrant(testUser._id, testOrganization._id, true, "ONCE")
-  ];
 
-  const testTasks = [
-    await createTestTask(testEvents[0]._id, testUser._id),
-    await createTestTask(testEvents[1]._id, testUser._id)
-  ];
+  // let testEvent1 =  await createTestEvent(testUser._id, testOrganization._id, true, "ONCE");
+  // let testEvent2 = await createEventWithRegistrant(testUser._id, testOrganization._id, true, "ONCE");
+
+  // const testEvents = [ testEvent1, testEvent2 ];
+
+  // const testTasks = [
+  //   await createTestTask(testEvents[0]._id, testUser._id),
+  //   await createTestTask(testEvents[1]._id, testUser._id)
+  // ];
 });
 
 afterAll(async () => {

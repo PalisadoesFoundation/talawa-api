@@ -17,10 +17,14 @@ let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
+
+  const testUser1: testUserType = await createTestUser();
+  const testUser2: testUserType = await createTestUser();
+  const testUser3: testUserType = await createTestUser();
   testUsers = [
-    await createTestUser(),
-    await createTestUser(),
-    await createTestUser()
+    testUser1,
+    testUser2,
+    testUser3
   ];
 
   testOrganization = await Organization.create({

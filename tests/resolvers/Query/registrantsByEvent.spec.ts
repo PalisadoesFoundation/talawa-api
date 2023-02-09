@@ -6,14 +6,16 @@ import { Document, Types } from "mongoose";
 import { QueryRegistrantsByEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { EVENT_NOT_FOUND } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { testUserType, testOrganizationType, createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { testEventType, createEventWithRegistrant } from "../../helpers/events";
 
 let testEvent: testEventType;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
-  const [testUser, testOrganization] = await createTestUserAndOrganization();
+  [testUser, testOrganization] = await createTestUserAndOrganization();
   testEvent = await createEventWithRegistrant(testUser._id, testOrganization._id,true,"ONCE");
 });
 
