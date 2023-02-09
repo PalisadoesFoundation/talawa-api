@@ -2,8 +2,7 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-
-    setupFiles: ['./setupFile.ts'],
+    setupFiles: ["./setupFile.ts"],
 
     coverage: {
       // This tells vitest to include all files from ./src in test coverage.
