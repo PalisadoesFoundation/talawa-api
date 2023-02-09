@@ -5,12 +5,20 @@ import { MutationRejectMembershipRequestArgs } from "../../../src/types/generate
 import { connect, disconnect } from "../../../src/db";
 import { rejectMembershipRequest as rejectMembershipRequestResolver } from "../../../src/resolvers/Mutation/rejectMembershipRequest";
 import {
-  MEMBERSHIP_REQUEST_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND,
+  MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
+  USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  afterEach,
+  vi,
+} from "vitest";
 import { testOrganizationType, testUserType } from "../../helpers/userAndOrg";
 import {
   createTestMembershipRequest,
@@ -34,7 +42,16 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
+  afterEach(() => {
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
+
   it(`throws NotFoundError if no membershipRequest exists with _id === args.membershipRequestId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRejectMembershipRequestArgs = {
         membershipRequestId: Types.ObjectId().toString(),
@@ -44,14 +61,31 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
         userId: testUser!.id,
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { rejectMembershipRequest: rejectMembershipRequestResolver } =
+        await import("../../../src/resolvers/Mutation/rejectMembershipRequest");
+
       await rejectMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(MEMBERSHIP_REQUEST_NOT_FOUND);
+      expect(spy).toBeCalledWith(MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no organization exists with _id === membershipRequest.organzation
   for membershipRequest with _id === args.membershipRequestId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       await MembershipRequest.updateOne(
         {
@@ -71,15 +105,31 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
       const context = {
         userId: testUser!.id,
       };
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { rejectMembershipRequest: rejectMembershipRequestResolver } =
+        await import("../../../src/resolvers/Mutation/rejectMembershipRequest");
 
       await rejectMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no user exists with _id === membershipRequest.user
   for membershipRequest with _id === args.membershipRequestId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       await MembershipRequest.updateOne(
         {
@@ -110,10 +160,22 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
       const context = {
         userId: testUser!.id,
       };
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { rejectMembershipRequest: rejectMembershipRequestResolver } =
+        await import("../../../src/resolvers/Mutation/rejectMembershipRequest");
 
       await rejectMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 

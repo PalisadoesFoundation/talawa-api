@@ -3,8 +3,16 @@ import { Types } from "mongoose";
 import { User } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
 import { logout as logoutResolver } from "../../../src/resolvers/Mutation/logout";
-import { USER_NOT_FOUND } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  afterEach,
+  vi,
+} from "vitest";
 import {
   createTestUserAndOrganization,
   testUserType,
@@ -23,15 +31,35 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> logout", () => {
+  afterEach(() => {
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const context = {
         userId: Types.ObjectId().toString(),
       };
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+      const { logout: logoutResolver } = await import(
+        "../../../src/resolvers/Mutation/logout"
+      );
 
       await logoutResolver?.({}, {}, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 

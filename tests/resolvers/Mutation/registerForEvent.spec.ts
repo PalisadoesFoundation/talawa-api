@@ -5,11 +5,19 @@ import { MutationRegisterForEventArgs } from "../../../src/types/generatedGraphQ
 import { connect, disconnect } from "../../../src/db";
 import { registerForEvent as registerForEventResolver } from "../../../src/resolvers/Mutation/registerForEvent";
 import {
-  EVENT_NOT_FOUND,
-  REGISTRANT_ALREADY_EXIST,
-  USER_NOT_FOUND,
+  EVENT_NOT_FOUND_MESSAGE,
+  REGISTRANT_ALREADY_EXIST_MESSAGE,
+  USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  afterEach,
+  vi,
+} from "vitest";
 import { testUserType } from "../../helpers/userAndOrg";
 import { testEventType } from "../../helpers/events";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
@@ -58,7 +66,16 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> registerForEvent", () => {
+  afterEach(() => {
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
+
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRegisterForEventArgs = {
         id: "",
@@ -68,13 +85,31 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { registerForEvent: registerForEventResolver } = await import(
+        "../../../src/resolvers/Mutation/registerForEvent"
+      );
+
       await registerForEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no event exists with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRegisterForEventArgs = {
         id: Types.ObjectId().toString(),
@@ -84,9 +119,23 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
         userId: testUser!._id,
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { registerForEvent: registerForEventResolver } = await import(
+        "../../../src/resolvers/Mutation/registerForEvent"
+      );
+
       await registerForEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(EVENT_NOT_FOUND);
+      expect(spy).toBeCalledWith(EVENT_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(EVENT_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -94,6 +143,10 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
   registrant of event with _id === args.id and event.registrant.status === "ACTIVE"
   for the registrant with registrant.userId === context.userId
   `, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRegisterForEventArgs = {
         id: testEvent!._id,
@@ -102,10 +155,23 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
       const context = {
         userId: testUser!._id,
       };
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { registerForEvent: registerForEventResolver } = await import(
+        "../../../src/resolvers/Mutation/registerForEvent"
+      );
 
       await registerForEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(REGISTRANT_ALREADY_EXIST);
+      expect(spy).toBeCalledWith(REGISTRANT_ALREADY_EXIST_MESSAGE);
+      expect(error.message).toEqual(REGISTRANT_ALREADY_EXIST_MESSAGE);
     }
   });
 

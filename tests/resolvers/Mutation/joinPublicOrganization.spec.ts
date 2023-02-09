@@ -4,13 +4,9 @@ import { User, Organization } from "../../../src/models";
 import { MutationJoinPublicOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import {
-  ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_MESSAGE,
-  USER_ALREADY_MEMBER,
   USER_ALREADY_MEMBER_MESSAGE,
-  USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_FOUND,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import {
@@ -48,25 +44,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     vi.resetModules();
   });
 
-  it(`throws NotFoundError if no organization exists with _id === args.organizationId`, async () => {
-    try {
-      const args: MutationJoinPublicOrganizationArgs = {
-        organizationId: Types.ObjectId().toString(),
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-      const { joinPublicOrganization: joinPublicOrganizationResolver } =
-        await import("../../../src/resolvers/Mutation/joinPublicOrganization");
-
-      await joinPublicOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
-    }
-  });
-
-  it(`throws NotFoundError message if no organization exists with _id === args.organizationId when [IN_PRODUCTION === TRUE]`, async () => {
+  it(`throws NotFoundError message if no organization exists with _id === args.organizationId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -85,7 +63,6 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
 
@@ -99,25 +76,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     }
   });
 
-  it(`throws UnauthorizedError if organization with _id === args.organizationId is not public`, async () => {
-    try {
-      const args: MutationJoinPublicOrganizationArgs = {
-        organizationId: testOrganization!.id,
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-      const { joinPublicOrganization: joinPublicOrganizationResolver } =
-        await import("../../../src/resolvers/Mutation/joinPublicOrganization");
-
-      await joinPublicOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
-    }
-  });
-
-  it(`throws UnauthorizedError message if organization with _id === args.organizationId is not public when [IN_PRODUCTION === TRUE]`, async () => {
+  it(`throws UnauthorizedError message if organization with _id === args.organizationId is not public`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -136,7 +95,6 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
       const { joinPublicOrganization: joinPublicOrganizationResolver } =
@@ -149,36 +107,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     }
   });
 
-  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
-    try {
-      await Organization.updateOne(
-        {
-          _id: testOrganization!._id,
-        },
-        {
-          $set: {
-            isPublic: true,
-          },
-        }
-      );
-
-      const args: MutationJoinPublicOrganizationArgs = {
-        organizationId: testOrganization!.id,
-      };
-
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-      const { joinPublicOrganization: joinPublicOrganizationResolver } =
-        await import("../../../src/resolvers/Mutation/joinPublicOrganization");
-
-      await joinPublicOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
-    }
-  });
-
-  it(`throws NotFoundError message if no user exists with _id === context.userId  when [IN_PRODUCTION === TRUE]`, async () => {
+  it(`throws NotFoundError message if no user exists with _id === context.userId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -208,7 +137,6 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
 
@@ -222,26 +150,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     }
   });
 
-  it(`throws ConflictError if user with _id === context.userId is already a member
-  of organization with _id === args.organizationId`, async () => {
-    try {
-      const args: MutationJoinPublicOrganizationArgs = {
-        organizationId: testOrganization!.id,
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-      const { joinPublicOrganization: joinPublicOrganizationResolver } =
-        await import("../../../src/resolvers/Mutation/joinPublicOrganization");
-
-      await joinPublicOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_ALREADY_MEMBER);
-    }
-  });
-
-  it(`throws ConflictError message if user with _id === context.userId is already a member of organization with _id === args.organizationId when [IN_PRODUCTION === TRUE]`, async () => {
+  it(`throws ConflictError message if user with _id === context.userId is already a member of organization with _id === args.organizationId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -260,7 +169,6 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
       const { joinPublicOrganization: joinPublicOrganizationResolver } =
