@@ -3,10 +3,6 @@ import { errors, requestContext } from "../../libraries";
 import { User, Organization, MembershipRequest } from "../../models";
 import { adminCheck } from "../../utilities";
 import {
-  MEMBERSHIP_REQUEST_NOT_FOUND,
-  IN_PRODUCTION,
-  ORGANIZATION_NOT_FOUND,
-  USER_NOT_FOUND,
   MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
   MEMBERSHIP_REQUEST_NOT_FOUND_PARAM,
   ORGANIZATION_NOT_FOUND_CODE,
@@ -27,9 +23,7 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
     // Checks whether membershipRequest exists.
     if (!membershipRequest) {
       throw new errors.NotFoundError(
-        IN_PRODUCTION !== true
-          ? MEMBERSHIP_REQUEST_NOT_FOUND
-          : requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE),
+        requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE),
         MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
         MEMBERSHIP_REQUEST_NOT_FOUND_PARAM
       );
@@ -42,9 +36,7 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
     // Checks whether organization exists.
     if (!organzation) {
       throw new errors.NotFoundError(
-        IN_PRODUCTION !== true
-          ? ORGANIZATION_NOT_FOUND
-          : requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
+        requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
         ORGANIZATION_NOT_FOUND_CODE,
         ORGANIZATION_NOT_FOUND_PARAM
       );
@@ -57,9 +49,7 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
     // Checks whether user exists.
     if (!user) {
       throw new errors.NotFoundError(
-        IN_PRODUCTION !== true
-          ? USER_NOT_FOUND
-          : requestContext.translate(USER_NOT_FOUND_MESSAGE),
+        requestContext.translate(USER_NOT_FOUND_MESSAGE),
         USER_NOT_FOUND_CODE,
         USER_NOT_FOUND_PARAM
       );
