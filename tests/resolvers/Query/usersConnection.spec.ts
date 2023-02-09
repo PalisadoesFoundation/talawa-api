@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { usersConnection as usersConnectionResolver } from "../../../src/resolvers/Query/usersConnection";
-import { Event, User } from "../../../src/models";
+import { User } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
 import { QueryUsersConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -10,13 +10,13 @@ let testUsers: (testUserType)[];
 
 beforeAll(async () => {
   await connect();
-  const [testUser1, testOrganization] = createTestUserAndOrganization();
+  const [testUser1, testOrganization] = await createTestUserAndOrganization();
   testUsers = [
     testUser1,
     await createTestUser(),
     await createTestUser()
   ];
-  const testEvent = createEventWithRegistrant(testUsers[0]._id, testOrganization._id,true,"ONCE");
+  const testEvent = await createEventWithRegistrant(testUsers[0]._id, testOrganization._id,true,"ONCE");
 });
 
 afterAll(async () => {

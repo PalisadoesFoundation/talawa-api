@@ -1,13 +1,12 @@
 import "dotenv/config";
 import { getPlugins as getPluginsResolver } from "../../../src/resolvers/Query/getPlugins";
 import { connect, disconnect } from "../../../src/db";
-import { Organization, Plugin, User } from "../../../src/models";
-import { nanoid } from "nanoid";
+import { Plugin } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestPlugin } from "../../helpers/plugins";
 beforeAll(async () => {
   await connect();
-  const [testUser, testOrganization, testPlugin] = createTestPlugin();
+  const [testUser, testOrganization, testPlugin] = await createTestPlugin();
 });
 
 afterAll(async () => {

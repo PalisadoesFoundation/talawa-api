@@ -4,7 +4,7 @@ import { Event } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
 import { QueryRegisteredEventsByUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
+import { testUserType, testOrganizationType, createTestUserAndOrganization} from "../../helpers/userAndOrg";
 import { createEventWithRegistrant } from "../../helpers/events";
 import { createTestTask } from "../../helpers/task";
 

@@ -7,7 +7,7 @@ import { createTestGroupChat } from "../../helpers/groupChat";
 
 beforeAll(async () => {
   await connect();
-  const [testUser, testOrganization, testGroupChat] = createTestGroupChat()
+  const [testUser, testOrganization, testGroupChat] = await createTestGroupChat()
 });
 
 afterAll(async () => {
