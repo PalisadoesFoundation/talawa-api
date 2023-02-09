@@ -18,7 +18,6 @@ beforeAll(async () => {
 
   const testPost2 = await createTestSinglePost(testUser._id,testOrganization._id);
   const testPost3 = await createTestSinglePost(testUser._id,testOrganization._id);
-
   const testPosts = [testPost1, testPost2, testPost3];
 });
 

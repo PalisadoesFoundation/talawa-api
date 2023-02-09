@@ -1,85 +1,22 @@
 import "dotenv/config";
 import { usersConnection as usersConnectionResolver } from "../../../src/resolvers/Query/usersConnection";
-import { Event, Interface_User, Organization, User } from "../../../src/models";
+import { Event, User } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
 import { QueryUsersConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
-import { Document } from "mongoose";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-
-let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
+import { testUserType, createTestUserAndOrganization, createTestUser} from "../../helpers/userAndOrg";
+import { createEventWithRegistrant } from "../../helpers/events";
+let testUsers: (testUserType)[];
 
 beforeAll(async () => {
   await connect();
-
-  testUsers = await User.insertMany([
-    {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: `firstName${nanoid()}`,
-      lastName: `lastName${nanoid()}`,
-      appLanguageCode: `en${nanoid()}`,
-    },
-    {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: `firstName${nanoid()}`,
-      lastName: `lastName${nanoid()}`,
-      appLanguageCode: `en${nanoid()}`,
-    },
-    {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: `firstName${nanoid()}`,
-      lastName: `lastName${nanoid()}`,
-      appLanguageCode: `en${nanoid()}`,
-    },
-  ]);
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUsers[0]._id,
-    admins: [testUsers[0]._id],
-    members: [testUsers[0]._id],
-    apiUrl: "apiUrl",
-  });
-
-  const testEvent = await Event.create({
-    title: "title",
-    description: "description",
-    recurring: true,
-    allDay: true,
-    startDate: new Date().toString(),
-    isPublic: true,
-    isRegisterable: true,
-    creator: testUsers[0]._id,
-    registrants: [
-      {
-        userId: testUsers[0]._id,
-        user: testUsers[0]._id,
-      },
-    ],
-    admins: [testUsers[0]._id],
-    organization: testOrganization._id,
-  });
-
-  await User.updateOne(
-    {
-      _id: testUsers[0]._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-        createdEvents: [testEvent._id],
-        registeredEvents: [testEvent._id],
-        eventAdmin: [testEvent._id],
-      },
-    }
-  );
+  const [testUser1, testOrganization] = createTestUserAndOrganization();
+  testUsers = [
+    testUser1,
+    await createTestUser(),
+    await createTestUser()
+  ];
+  const testEvent = createEventWithRegistrant(testUsers[0]._id, testOrganization._id,true,"ONCE");
 });
 
 afterAll(async () => {
