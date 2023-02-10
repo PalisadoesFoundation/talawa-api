@@ -4,7 +4,11 @@ import { Interface_User, User } from "../../../src/models";
 import { MutationUpdateUserProfileArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { updateUserProfile as updateUserProfileResolver } from "../../../src/resolvers/Mutation/updateUserProfile";
-import { USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import {
+  EMAIL_ALREADY_EXISTS_MESSAGE,
+  USER_NOT_FOUND,
+  USER_NOT_FOUND_MESSAGE,
+} from "../../../src/constants";
 import { nanoid } from "nanoid";
 import {
   beforeAll,
@@ -140,8 +144,10 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
         await import("../../../src/resolvers/Mutation/updateUserProfile");
       await updateUserProfileResolverEmailError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith("email.alreadyExists");
-      expect(error.message).toEqual(`Translated ${"email.alreadyExists"}`);
+      expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${EMAIL_ALREADY_EXISTS_MESSAGE}`
+      );
     }
   });
 
