@@ -30,11 +30,11 @@ describe("resolvers -> Query -> checkAuth", () => {
     const testUser = await createTestUser();
 
     const context = {
-      userId: testUser._id,
+      userId: testUser?._id,
     };
 
     const user = await checkAuthResolver?.({}, {}, context);
 
-    expect(user).toEqual(testUser.toObject());
+    expect(user).toEqual(testUser?.toObject());
   });
 });

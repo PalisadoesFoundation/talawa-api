@@ -150,19 +150,19 @@ describe("resolvers -> Query -> usersConnection", () => {
   sorted by args.orderBy === 'firstName_ASC'`, async () => {
     const where = {
       _id: {
-        $in: [testUsers[1]?.id],
+        $in: [testUsers[1]!.id],
       },
       firstName: {
-        $in: [testUsers[1]?.firstName],
+        $in: [testUsers[1]!.firstName],
       },
       lastName: {
-        $in: [testUsers[1]?.lastName],
+        $in: [testUsers[1]!.lastName],
       },
       email: {
-        $in: [testUsers[1]?.email],
+        $in: [testUsers[1]!.email],
       },
       appLanguageCode: {
-        $in: [testUsers[1]?.appLanguageCode],
+        $in: [testUsers[1]!.appLanguageCode],
       },
     };
 
@@ -212,19 +212,19 @@ describe("resolvers -> Query -> usersConnection", () => {
   sorted by args.orderBy === 'firstName_DESC'`, async () => {
     const where = {
       _id: {
-        $nin: [testUsers[2]?._id],
+        $nin: [testUsers[2]!._id],
       },
       firstName: {
-        $nin: [testUsers[2]?.firstName],
+        $nin: [testUsers[2]!.firstName],
       },
       lastName: {
-        $nin: [testUsers[2]?.lastName],
+        $nin: [testUsers[2]!.lastName],
       },
       email: {
-        $nin: [testUsers[2]?.email],
+        $nin: [testUsers[2]!.email],
       },
       appLanguageCode: {
-        $nin: [testUsers[2]?.appLanguageCode],
+        $nin: [testUsers[2]!.appLanguageCode],
       },
     };
 
