@@ -6,8 +6,12 @@ import { Types } from "mongoose";
 import { QueryIsUserRegisterArgs } from "../../../src/types/generatedGraphQLTypes";
 import { EVENT_NOT_FOUND } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { testUserType, testOrganizationType, createTestUserAndOrganization} from "../../helpers/userAndOrg";
-import { createTestEvent, testEventType, createEventWithRegistrant} from "../../helpers/events";
+import {
+  testUserType,
+  testOrganizationType,
+  createTestUserAndOrganization,
+} from "../../helpers/userAndOrg";
+import { testEventType, createEventWithRegistrant } from "../../helpers/events";
 import { createTestTask } from "../../helpers/task";
 
 let testEvent: testEventType;
@@ -17,9 +21,14 @@ let testOrganization: testOrganizationType;
 beforeAll(async () => {
   await connect();
   [testUser, testOrganization] = await createTestUserAndOrganization();
-  testEvent = await createEventWithRegistrant(testUser._id,testOrganization._id,true,"ONCE");
+  testEvent = await createEventWithRegistrant(
+    testUser?._id,
+    testOrganization?._id,
+    true,
+    "ONCE"
+  );
 
-  const testTask = await createTestTask(testEvent._id, testUser._id);
+  await createTestTask(testEvent?._id, testUser?._id);
 });
 
 afterAll(async () => {
@@ -46,7 +55,7 @@ describe("resolvers -> Query -> isUserRegister", () => {
   if user with _id === context.userId is not a registrant to the event and
   user's registrant status === 'ACTIVE'`, async () => {
     const args: QueryIsUserRegisterArgs = {
-      eventId: testEvent.id,
+      eventId: testEvent?.id,
     };
 
     const context = {
@@ -54,7 +63,7 @@ describe("resolvers -> Query -> isUserRegister", () => {
     };
 
     const event = await Event.findOne({
-      _id: testEvent._id,
+      _id: testEvent?._id,
       status: "ACTIVE",
     })
       .populate("creator", "-password")
@@ -78,17 +87,17 @@ describe("resolvers -> Query -> isUserRegister", () => {
   if user with _id === context.userId is a registrant to the event and
   user's registrant status !== 'ACTIVE'`, async () => {
     const args: QueryIsUserRegisterArgs = {
-      eventId: testEvent.id,
+      eventId: testEvent?.id,
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser?.id,
     };
 
     const event = await Event.findOneAndUpdate(
       {
-        _id: testEvent._id,
-        "registrants.userId": testUser._id,
+        _id: testEvent?._id,
+        "registrants.userId": testUser?._id,
       },
       {
         $set: {
@@ -120,17 +129,17 @@ describe("resolvers -> Query -> isUserRegister", () => {
   if user with _id === context.userId is a registrant to the event and
   user's registrant status === 'ACTIVE'`, async () => {
     const args: QueryIsUserRegisterArgs = {
-      eventId: testEvent.id,
+      eventId: testEvent?.id,
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser?.id,
     };
 
     const event = await Event.findOneAndUpdate(
       {
-        _id: testEvent._id,
-        "registrants.userId": testUser._id,
+        _id: testEvent?._id,
+        "registrants.userId": testUser?._id,
       },
       {
         $set: {

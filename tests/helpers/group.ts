@@ -10,7 +10,6 @@ export type testGroupType =
   | (Interface_Group & Document<any, any, Interface_Group>)
   | null;
 
-
 export const createTestGroup = async (): Promise<
   [testUserType, testOrganizationType, testGroupType]
 > => {

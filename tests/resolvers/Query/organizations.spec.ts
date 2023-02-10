@@ -5,17 +5,21 @@ import { Organization } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
 import { QueryOrganizationsArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { testUserType, testOrganizationType, createTestUserAndOrganization, createTestOrganizationWithAdmin } from "../../helpers/userAndOrg";
+import {
+  testUserType,
+  testOrganizationType,
+  createTestUserAndOrganization,
+  createTestOrganizationWithAdmin,
+} from "../../helpers/userAndOrg";
 import { Types } from "mongoose";
 
 let testUser: testUserType;
 let testOrganization1: testOrganizationType;
-let testOrganization2: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
   [testUser, testOrganization1] = await createTestUserAndOrganization();
-  testOrganization2 = await createTestOrganizationWithAdmin(testUser._id);
+  await createTestOrganizationWithAdmin(testUser?._id);
 });
 
 afterAll(async () => {
@@ -37,12 +41,12 @@ describe("resolvers -> Query -> organizations", () => {
 
   it("returns organization object with _id === args.id", async () => {
     const args: QueryOrganizationsArgs = {
-      id: testOrganization1._id,
+      id: testOrganization1?._id,
     };
 
     const organizationsPayload = await organizationsResolver?.({}, args, {});
 
-    expect(organizationsPayload).toEqual([testOrganization1.toObject()]);
+    expect(organizationsPayload).toEqual([testOrganization1?.toObject()]);
   });
 
   it(`returns list of at most 100 organizations sorted by ascending order of

@@ -4,7 +4,11 @@ import { Event } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
 import { QueryEventsByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestUserAndOrganization, testUserType, testOrganizationType} from "../../helpers/userAndOrg";
+import {
+  createTestUserAndOrganization,
+  testUserType,
+  testOrganizationType,
+} from "../../helpers/userAndOrg";
 import { createEventWithRegistrant } from "../../helpers/events";
 import { createTestTask } from "../../helpers/task";
 
@@ -13,12 +17,22 @@ let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
-  [ testUser, testOrganization ] = await createTestUserAndOrganization();
-  const testEvent1 = await createEventWithRegistrant(testUser._id, testOrganization._id, true, "ONCE");
-  const testEvent2 = await createEventWithRegistrant(testUser._id, testOrganization._id, true, "ONCE");
-  
-  const testEvents = [ testEvent1, testEvent2 ];
-  const testTask = await createTestTask(testEvents[0]._id, testUser._id);
+  [testUser, testOrganization] = await createTestUserAndOrganization();
+  const testEvent1 = await createEventWithRegistrant(
+    testUser?._id,
+    testOrganization?._id,
+    true,
+    "ONCE"
+  );
+  const testEvent2 = await createEventWithRegistrant(
+    testUser?._id,
+    testOrganization?._id,
+    true,
+    "ONCE"
+  );
+
+  const testEvents = [testEvent1, testEvent2];
+  await createTestTask(testEvents[0]?._id, testUser?._id);
 });
 
 afterAll(async () => {
@@ -33,7 +47,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: "id_ASC",
     };
 
@@ -44,7 +58,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -63,7 +77,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: "id_DESC",
     };
 
@@ -74,7 +88,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -93,7 +107,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: "title_ASC",
     };
 
@@ -104,7 +118,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -123,7 +137,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: "title_DESC",
     };
 
@@ -134,7 +148,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -153,7 +167,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: "description_ASC",
     };
 
@@ -164,7 +178,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -183,7 +197,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: "description_DESC",
     };
 
@@ -194,7 +208,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -213,7 +227,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: "startDate_ASC",
     };
 
@@ -224,7 +238,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -243,7 +257,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: "startDate_DESC",
     };
 
@@ -254,7 +268,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -273,7 +287,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: "endDate_ASC",
     };
 
@@ -284,7 +298,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -303,7 +317,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: "endDate_DESC",
     };
 
@@ -314,7 +328,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -333,7 +347,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: "allDay_ASC",
     };
 
@@ -344,7 +358,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -363,7 +377,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: "allDay_DESC",
     };
 
@@ -374,7 +388,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -393,7 +407,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: "startTime_ASC",
     };
 
@@ -404,7 +418,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -423,7 +437,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: "startTime_DESC",
     };
 
@@ -434,7 +448,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -453,7 +467,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: "endTime_ASC",
     };
 
@@ -464,7 +478,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -483,7 +497,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: "endTime_DESC",
     };
 
@@ -494,7 +508,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -513,7 +527,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: "recurrance_ASC",
     };
 
@@ -524,7 +538,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -543,7 +557,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: "recurrance_DESC",
     };
 
@@ -554,7 +568,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -573,7 +587,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: "location_ASC",
     };
 
@@ -584,7 +598,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -603,7 +617,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: "location_DESC",
     };
 
@@ -614,7 +628,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -633,7 +647,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     };
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: undefined,
     };
 
@@ -644,7 +658,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)
@@ -660,7 +674,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     const sort = {};
 
     const args: QueryEventsByOrganizationArgs = {
-      id: testOrganization._id,
+      id: testOrganization?._id,
       orderBy: null,
     };
 
@@ -671,7 +685,7 @@ describe("resolvers -> Query -> eventsByOrganization", () => {
     );
 
     const eventsByOrganization = await Event.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
       status: "ACTIVE",
     })
       .sort(sort)

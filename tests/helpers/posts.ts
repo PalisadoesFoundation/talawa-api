@@ -3,7 +3,13 @@ import {
   testOrganizationType,
   testUserType,
 } from "./userAndOrg";
-import { Interface_Post, Post, Organization, Comment,  Interface_Comment} from "../../src/models";
+import {
+  Interface_Post,
+  Post,
+  Organization,
+  Comment,
+  Interface_Comment,
+} from "../../src/models";
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
@@ -11,11 +17,9 @@ export type testPostType =
   | (Interface_Post & Document<any, any, Interface_Post>)
   | null;
 
-
-export type testCommentType = 
+export type testCommentType =
   | (Interface_Comment & Document<any, any, Interface_Comment>)
   | null;
-
 
 export const createTestPost = async (): Promise<
   [testUserType, testOrganizationType, testPostType]
@@ -45,7 +49,8 @@ export const createTestPost = async (): Promise<
 };
 
 export const createPostwithComment = async (): Promise<
-[testUserType, testOrganizationType,testPostType, testCommentType]> => {
+  [testUserType, testOrganizationType, testPostType, testCommentType]
+> => {
   const resultArray = await createTestPost();
   const testUser = resultArray[0];
   const testOrganization = resultArray[1];
@@ -58,10 +63,10 @@ export const createPostwithComment = async (): Promise<
   });
 
   await Post.updateOne(
-  {
+    {
       _id: testPost?._id,
-  },
-  {
+    },
+    {
       $push: {
         likedBy: testUser?._id,
         comments: [testComment._id],
@@ -70,26 +75,26 @@ export const createPostwithComment = async (): Promise<
         likeCount: 1,
         commentCount: 1,
       },
-  }
+    }
   );
 
   await Comment.updateOne(
-  {
+    {
       _id: testComment._id,
-  },
-  {
+    },
+    {
       $push: {
         likedBy: testUser?._id,
       },
       $inc: {
         likeCount: 1,
       },
-  }
+    }
   );
   return [testUser, testOrganization, testPost, testComment];
-}
+};
 
-export const createSinglePostwithComment = async(
+export const createSinglePostwithComment = async (
   userId: string,
   organizationId: string
 ): Promise<[testPostType, testCommentType]> => {
@@ -110,21 +115,21 @@ export const createSinglePostwithComment = async(
 
   await Post.updateOne(
     {
-        _id: testPost._id,
+      _id: testPost._id,
     },
     {
-        $push: {
-          likedBy: userId,
-          comments: [testComment._id],
-        },
-        $inc: {
-          likeCount: 1,
-          commentCount: 1,
-        },
+      $push: {
+        likedBy: userId,
+        comments: [testComment._id],
+      },
+      $inc: {
+        likeCount: 1,
+        commentCount: 1,
+      },
     }
   );
-  return [testPost,testComment];
-}
+  return [testPost, testComment];
+};
 
 export const createTestSinglePost = async (
   userId: string,
@@ -139,4 +144,4 @@ export const createTestSinglePost = async (
     organization: organizationId,
   });
   return testPost;
-}
+};

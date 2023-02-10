@@ -1,12 +1,11 @@
 import {
-    createTestUserAndOrganization,
-    testOrganizationType,
-    testUserType,
+  createTestUserAndOrganization,
+  testOrganizationType,
+  testUserType,
 } from "./userAndOrg";
 import { Plugin, Interface_Plugin } from "../../src/models";
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
-
 
 export type testPluginType =
   | (Interface_Plugin & Document<any, any, Interface_Plugin>)
@@ -28,5 +27,3 @@ export const createTestPlugin = async (): Promise<
   });
   return [testUser, testOrganization, testPlugin];
 };
-
-

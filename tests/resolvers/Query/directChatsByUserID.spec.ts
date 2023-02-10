@@ -5,16 +5,15 @@ import { directChatsByUserID as directChatsByUserIDResolver } from "../../../src
 import { DirectChat } from "../../../src/models";
 import { QueryDirectChatsByUserIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestDirectChat, testDirectChatType } from "../../helpers/directChat"
-import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
+import { createTestDirectChat } from "../../helpers/directChat";
+import { testUserType } from "../../helpers/userAndOrg";
 
 let testUser: testUserType;
-let testOrganization: testOrganizationType;
-let testDirectChat: testDirectChatType;
 
 beforeAll(async () => {
   await connect();
-  [testUser, testOrganization, testDirectChat] = await createTestDirectChat();
+  const resultArray = await createTestDirectChat();
+  testUser = resultArray[0];
 });
 
 afterAll(async () => {
@@ -38,7 +37,7 @@ describe("resolvers -> Query -> directChatsByUserID", () => {
   it(`returns list of all directChats with directChat.users containing the user
   with _id === args.id`, async () => {
     const args: QueryDirectChatsByUserIdArgs = {
-      id: testUser._id,
+      id: testUser?._id,
     };
 
     const directChatsByUserIdPayload = await directChatsByUserIDResolver?.(
@@ -48,7 +47,7 @@ describe("resolvers -> Query -> directChatsByUserID", () => {
     );
 
     const directChatsByUserId = await DirectChat.find({
-      users: testUser._id,
+      users: testUser?._id,
     }).lean();
 
     expect(directChatsByUserIdPayload).toEqual(directChatsByUserId);

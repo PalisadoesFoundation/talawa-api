@@ -4,19 +4,24 @@ import { User } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
 import { QueryUsersConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { testUserType, createTestUserAndOrganization, createTestUser} from "../../helpers/userAndOrg";
+import {
+  testUserType,
+  createTestUserAndOrganization,
+  createTestUser,
+} from "../../helpers/userAndOrg";
 import { createEventWithRegistrant } from "../../helpers/events";
-let testUsers: (testUserType)[];
+let testUsers: testUserType[];
 
 beforeAll(async () => {
   await connect();
   const [testUser1, testOrganization] = await createTestUserAndOrganization();
-  testUsers = [
-    testUser1,
-    await createTestUser(),
-    await createTestUser()
-  ];
-  const testEvent = await createEventWithRegistrant(testUsers[0]._id, testOrganization._id,true,"ONCE");
+  testUsers = [testUser1, await createTestUser(), await createTestUser()];
+  await createEventWithRegistrant(
+    testUsers[0]?._id,
+    testOrganization?._id,
+    true,
+    "ONCE"
+  );
 });
 
 afterAll(async () => {
@@ -30,11 +35,11 @@ describe("resolvers -> Query -> usersConnection", () => {
   appLanguageCode: testUsers[1].appLanguageCode } and sorted by
   args.orderBy === 'id_ASC'`, async () => {
     const where = {
-      _id: testUsers[1].id,
-      firstName: testUsers[1].firstName,
-      lastName: testUsers[1].lastName,
-      email: testUsers[1].email,
-      appLanguageCode: testUsers[1].appLanguageCode,
+      _id: testUsers[1]?.id,
+      firstName: testUsers[1]?.firstName,
+      lastName: testUsers[1]?.lastName,
+      email: testUsers[1]?.email,
+      appLanguageCode: testUsers[1]?.appLanguageCode,
     };
 
     const sort = {
@@ -45,11 +50,11 @@ describe("resolvers -> Query -> usersConnection", () => {
       first: 2,
       skip: 1,
       where: {
-        id: testUsers[1].id,
-        firstName: testUsers[1].firstName,
-        lastName: testUsers[1].lastName,
-        email: testUsers[1].email,
-        appLanguageCode: testUsers[1].appLanguageCode,
+        id: testUsers[1]?.id,
+        firstName: testUsers[1]?.firstName,
+        lastName: testUsers[1]?.lastName,
+        email: testUsers[1]?.email,
+        appLanguageCode: testUsers[1]?.appLanguageCode,
       },
       orderBy: "id_ASC",
     };
@@ -83,19 +88,19 @@ describe("resolvers -> Query -> usersConnection", () => {
   sorted by args.orderBy === 'id_Desc'`, async () => {
     const where = {
       _id: {
-        $ne: testUsers[2]._id,
+        $ne: testUsers[2]?._id,
       },
       firstName: {
-        $ne: testUsers[2].firstName,
+        $ne: testUsers[2]?.firstName,
       },
       lastName: {
-        $ne: testUsers[2].lastName,
+        $ne: testUsers[2]?.lastName,
       },
       email: {
-        $ne: testUsers[2].email,
+        $ne: testUsers[2]?.email,
       },
       appLanguageCode: {
-        $ne: testUsers[2].appLanguageCode,
+        $ne: testUsers[2]?.appLanguageCode,
       },
     };
 
@@ -107,11 +112,11 @@ describe("resolvers -> Query -> usersConnection", () => {
       first: 2,
       skip: 1,
       where: {
-        id_not: testUsers[2]._id,
-        firstName_not: testUsers[2].firstName,
-        lastName_not: testUsers[2].lastName,
-        email_not: testUsers[2].email,
-        appLanguageCode_not: testUsers[2].appLanguageCode,
+        id_not: testUsers[2]?._id,
+        firstName_not: testUsers[2]?.firstName,
+        lastName_not: testUsers[2]?.lastName,
+        email_not: testUsers[2]?.email,
+        appLanguageCode_not: testUsers[2]?.appLanguageCode,
       },
       orderBy: "id_DESC",
     };
@@ -145,19 +150,19 @@ describe("resolvers -> Query -> usersConnection", () => {
   sorted by args.orderBy === 'firstName_ASC'`, async () => {
     const where = {
       _id: {
-        $in: [testUsers[1].id],
+        $in: [testUsers[1]?.id],
       },
       firstName: {
-        $in: [testUsers[1].firstName],
+        $in: [testUsers[1]?.firstName],
       },
       lastName: {
-        $in: [testUsers[1].lastName],
+        $in: [testUsers[1]?.lastName],
       },
       email: {
-        $in: [testUsers[1].email],
+        $in: [testUsers[1]?.email],
       },
       appLanguageCode: {
-        $in: [testUsers[1].appLanguageCode],
+        $in: [testUsers[1]?.appLanguageCode],
       },
     };
 
@@ -169,11 +174,11 @@ describe("resolvers -> Query -> usersConnection", () => {
       first: 2,
       skip: 1,
       where: {
-        id_in: [testUsers[1].id],
-        firstName_in: [testUsers[1].firstName],
-        lastName_in: [testUsers[1].lastName],
-        email_in: [testUsers[1].email],
-        appLanguageCode_in: [testUsers[1].appLanguageCode],
+        id_in: [testUsers[1]?.id],
+        firstName_in: [testUsers[1]?.firstName!],
+        lastName_in: [testUsers[1]?.lastName!],
+        email_in: [testUsers[1]?.email!],
+        appLanguageCode_in: [testUsers[1]?.appLanguageCode!],
       },
       orderBy: "firstName_ASC",
     };
@@ -207,19 +212,19 @@ describe("resolvers -> Query -> usersConnection", () => {
   sorted by args.orderBy === 'firstName_DESC'`, async () => {
     const where = {
       _id: {
-        $nin: [testUsers[2]._id],
+        $nin: [testUsers[2]?._id],
       },
       firstName: {
-        $nin: [testUsers[2].firstName],
+        $nin: [testUsers[2]?.firstName],
       },
       lastName: {
-        $nin: [testUsers[2].lastName],
+        $nin: [testUsers[2]?.lastName],
       },
       email: {
-        $nin: [testUsers[2].email],
+        $nin: [testUsers[2]?.email],
       },
       appLanguageCode: {
-        $nin: [testUsers[2].appLanguageCode],
+        $nin: [testUsers[2]?.appLanguageCode],
       },
     };
 
@@ -231,11 +236,11 @@ describe("resolvers -> Query -> usersConnection", () => {
       first: 2,
       skip: 1,
       where: {
-        id_not_in: [testUsers[2]._id],
-        firstName_not_in: [testUsers[2].firstName],
-        lastName_not_in: [testUsers[2].lastName],
-        email_not_in: [testUsers[2].email],
-        appLanguageCode_not_in: [testUsers[2].appLanguageCode],
+        id_not_in: [testUsers[2]?._id],
+        firstName_not_in: [testUsers[2]?.firstName!],
+        lastName_not_in: [testUsers[2]?.lastName!],
+        email_not_in: [testUsers[2]?.email!],
+        appLanguageCode_not_in: [testUsers[2]?.appLanguageCode!],
       },
       orderBy: "firstName_DESC",
     };
@@ -269,19 +274,19 @@ describe("resolvers -> Query -> usersConnection", () => {
   sorted by args.orderBy === 'lastName_ASC'`, async () => {
     const where = {
       firstName: {
-        $regex: testUsers[1].firstName,
+        $regex: testUsers[1]?.firstName,
         $options: "i",
       },
       lastName: {
-        $regex: testUsers[1].lastName,
+        $regex: testUsers[1]?.lastName,
         $options: "i",
       },
       email: {
-        $regex: testUsers[1].email,
+        $regex: testUsers[1]?.email,
         $options: "i",
       },
       appLanguageCode: {
-        $regex: testUsers[1].appLanguageCode,
+        $regex: testUsers[1]?.appLanguageCode,
         $options: "i",
       },
     };
@@ -294,10 +299,10 @@ describe("resolvers -> Query -> usersConnection", () => {
       first: 2,
       skip: 1,
       where: {
-        firstName_contains: testUsers[1].firstName,
-        lastName_contains: testUsers[1].lastName,
-        email_contains: testUsers[1].email,
-        appLanguageCode_contains: testUsers[1].appLanguageCode,
+        firstName_contains: testUsers[1]?.firstName,
+        lastName_contains: testUsers[1]?.lastName,
+        email_contains: testUsers[1]?.email,
+        appLanguageCode_contains: testUsers[1]?.appLanguageCode,
       },
       orderBy: "lastName_ASC",
     };
@@ -330,10 +335,10 @@ describe("resolvers -> Query -> usersConnection", () => {
   appLanguageCode_starts_with: testUsers[1].appLanguageCode } and
   sorted by args.orderBy === 'lastName_DESC'`, async () => {
     const where = {
-      firstName: new RegExp("^" + testUsers[1].firstName),
-      lastName: new RegExp("^" + testUsers[1].lastName),
-      email: new RegExp("^" + testUsers[1].email),
-      appLanguageCode: new RegExp("^" + testUsers[1].appLanguageCode),
+      firstName: new RegExp("^" + testUsers[1]?.firstName),
+      lastName: new RegExp("^" + testUsers[1]?.lastName),
+      email: new RegExp("^" + testUsers[1]?.email),
+      appLanguageCode: new RegExp("^" + testUsers[1]?.appLanguageCode),
     };
 
     const sort = {
@@ -344,10 +349,10 @@ describe("resolvers -> Query -> usersConnection", () => {
       first: 2,
       skip: 1,
       where: {
-        firstName_starts_with: testUsers[1].firstName,
-        lastName_starts_with: testUsers[1].lastName,
-        email_starts_with: testUsers[1].email,
-        appLanguageCode_starts_with: testUsers[1].appLanguageCode,
+        firstName_starts_with: testUsers[1]?.firstName,
+        lastName_starts_with: testUsers[1]?.lastName,
+        email_starts_with: testUsers[1]?.email,
+        appLanguageCode_starts_with: testUsers[1]?.appLanguageCode,
       },
       orderBy: "lastName_DESC",
     };

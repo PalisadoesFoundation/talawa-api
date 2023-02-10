@@ -1,17 +1,16 @@
 import {
-    createTestUserAndOrganization,
-    testOrganizationType,
-    testUserType,
+  createTestUserAndOrganization,
+  testOrganizationType,
+  testUserType,
 } from "./userAndOrg";
 
-import { Donation,Interface_Donation } from "../../src/models";
+import { Donation, Interface_Donation } from "../../src/models";
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
-export type testDonationType = 
+export type testDonationType =
   | (Interface_Donation & Document<any, any, Interface_Donation>)
   | null;
-
 
 export const createTestDonation = async (): Promise<
   [testUserType, testOrganizationType, testDonationType]
@@ -28,6 +27,6 @@ export const createTestDonation = async (): Promise<
     payPalId: `payPalId${nanoid().toLowerCase()}`,
     userId: testUser._id,
   });
- 
+
   return [testUser, testOrganization, testDonation];
 };

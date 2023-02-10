@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { events as eventsResolver } from "../../../src/resolvers/Query/events";
-import { Event, User, Organization, Task } from "../../../src/models";
+import { Event } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
 import { QueryEventsArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -10,12 +10,22 @@ import { createTestTask } from "../../helpers/task";
 
 beforeAll(async () => {
   await connect();
-  const [ testUser, testOrganization ] = await createTestUserAndOrganization();
-  const testEvent1 = await createEventWithRegistrant(testUser._id, testOrganization._id, true, "ONCE");
-  const testEvent2 = await createEventWithRegistrant(testUser._id, testOrganization._id, false, "DAILY");
-  
-  const testEvents = [ testEvent1, testEvent2 ];
-  const testTask = await createTestTask(testEvents[0]._id, testUser._id);
+  const [testUser, testOrganization] = await createTestUserAndOrganization();
+  const testEvent1 = await createEventWithRegistrant(
+    testUser?._id,
+    testOrganization?._id,
+    true,
+    "ONCE"
+  );
+  const testEvent2 = await createEventWithRegistrant(
+    testUser?._id,
+    testOrganization?._id,
+    false,
+    "DAILY"
+  );
+
+  const testEvents = [testEvent1, testEvent2];
+  await createTestTask(testEvents[0]?._id, testUser?._id);
 });
 
 afterAll(async () => {

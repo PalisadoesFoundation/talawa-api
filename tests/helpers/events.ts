@@ -48,11 +48,11 @@ export const createTestEvent = async (): Promise<
   return [testUser, testOrganization, testEvent];
 };
 
-export const createEventWithRegistrant = async(
+export const createEventWithRegistrant = async (
   user_id: string,
   organization_id: string,
   allDay: boolean,
-  recurrance: string,
+  recurrance: string
 ): Promise<testEventType> => {
   const testEvent = await Event.create({
     creator: user_id,
@@ -90,4 +90,4 @@ export const createEventWithRegistrant = async(
     }
   );
   return testEvent;
-}
+};

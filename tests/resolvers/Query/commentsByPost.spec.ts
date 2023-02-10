@@ -2,7 +2,6 @@ import "dotenv/config";
 import { connect, disconnect } from "../../../src/db";
 import { commentsByPost as commentsByPostResolver } from "../../../src/resolvers/Query/commentsByPost";
 import { Comment, Post, User, Organization } from "../../../src/models";
-
 import { Types } from "mongoose";
 import {
   COMMENT_NOT_FOUND,
@@ -12,18 +11,19 @@ import {
 } from "../../../src/constants";
 import { QueryCommentsByPostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createPostwithComment, testPostType, testCommentType } from "../../helpers/posts";
-
+import { createPostwithComment, testPostType } from "../../helpers/posts";
+import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
 
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
 let testPost: testPostType;
-let testComment: testCommentType;
-
 
 beforeAll(async () => {
   await connect();
-  [testUser, testOrganization, testPost, testComment] = await createPostwithComment();
+  const resultArray = await createPostwithComment();
+  testUser = resultArray[0];
+  testOrganization = resultArray[1];
+  testPost = resultArray[2];
 });
 
 afterAll(async () => {
@@ -34,13 +34,13 @@ describe("resolvers -> Query -> commentsByPost", () => {
   it(`returns list of all comments for post with _id === args.id
   populated with creator, post and likedBy`, async () => {
     const args: QueryCommentsByPostArgs = {
-      id: testPost._id,
+      id: testPost?._id,
     };
 
     const commentsByPostPayload = await commentsByPostResolver?.({}, args, {});
 
     const commentsByPost = await Comment.find({
-      post: testPost._id,
+      post: testPost?._id,
     })
       .populate("creator", "-password")
       .populate("post")
@@ -54,11 +54,11 @@ describe("resolvers -> Query -> commentsByPost", () => {
   for post with _id === args.id`, async () => {
     try {
       await Organization.deleteOne({
-        _id: testOrganization._id,
+        _id: testOrganization?._id,
       });
 
       const args: QueryCommentsByPostArgs = {
-        id: testPost._id,
+        id: testPost?._id,
       };
 
       await commentsByPostResolver?.({}, args, {});
@@ -70,11 +70,11 @@ describe("resolvers -> Query -> commentsByPost", () => {
   it(`throws NotFoundError if no post exists with _id === args.id`, async () => {
     try {
       await Post.deleteOne({
-        _id: testPost._id,
+        _id: testPost?._id,
       });
 
       const args: QueryCommentsByPostArgs = {
-        id: testPost._id,
+        id: testPost?._id,
       };
 
       await commentsByPostResolver?.({}, args, {});
@@ -87,11 +87,11 @@ describe("resolvers -> Query -> commentsByPost", () => {
    post with id === args.id`, async () => {
     try {
       await User.deleteOne({
-        _id: testUser._id,
+        _id: testUser?._id,
       });
 
       const args: QueryCommentsByPostArgs = {
-        id: testPost._id,
+        id: testPost?._id,
       };
 
       await commentsByPostResolver?.({}, args, {});

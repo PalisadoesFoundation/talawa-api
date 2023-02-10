@@ -1,13 +1,13 @@
 import "dotenv/config";
 import { groups as groupsResolver } from "../../../src/resolvers/Query/groups";
 import { connect, disconnect } from "../../../src/db";
-import { User, Organization, Group } from "../../../src/models";
+import { Group } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestGroup } from "../../helpers/group";
 
 beforeAll(async () => {
   await connect();
-  const [testUser, testOrganization, testGroup] = await createTestGroup();
+  await createTestGroup();
 });
 
 afterAll(async () => {

@@ -11,9 +11,8 @@ beforeAll(async () => {
   await connect();
 
   const [testUser, testOrganization] = await createTestUserAndOrganization();
-  const [testPost1, testComment1] = await createSinglePostwithComment(testUser._id,testOrganization._id);
-  const [testPost2, testComment2] = await createSinglePostwithComment(testUser._id,testOrganization._id);
-
+  await createSinglePostwithComment(testUser?._id, testOrganization?._id);
+  await createSinglePostwithComment(testUser?._id, testOrganization?._id);
 });
 
 afterAll(async () => {

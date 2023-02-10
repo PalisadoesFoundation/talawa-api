@@ -4,21 +4,29 @@ import { connect, disconnect } from "../../../src/db";
 import { Task } from "../../../src/models";
 import { QueryTasksByUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { testUserType, testOrganizationType, createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import { createEventWithRegistrant} from "../../helpers/events";
+import {
+  testUserType,
+  testOrganizationType,
+  createTestUserAndOrganization,
+} from "../../helpers/userAndOrg";
+import { createEventWithRegistrant } from "../../helpers/events";
 import { createTestTask } from "../../helpers/task";
 
 let testUser: testUserType;
-let testOrganization:testOrganizationType; 
+let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
   [testUser, testOrganization] = await createTestUserAndOrganization();
-  const testEvent = await createEventWithRegistrant(testUser._id, testOrganization._id,true,"ONCE");
-  const testTasks = [
-    await createTestTask(testEvent._id, testUser._id),
-    await createTestTask(testEvent._id, testUser._id)
-  ];
+  const testEvent = await createEventWithRegistrant(
+    testUser?._id,
+    testOrganization?._id,
+    true,
+    "ONCE"
+  );
+
+  await createTestTask(testEvent?._id, testUser?._id);
+  await createTestTask(testEvent?._id, testUser?._id);
 });
 
 afterAll(async () => {
@@ -29,14 +37,14 @@ describe("resolvers -> Query -> tasksByUser", () => {
   it(`returns list of all tasks with task.creator === args.id without sorting
   if args.orderBy === null`, async () => {
     const args: QueryTasksByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: null,
     };
 
     const tasksByUserPayload = await tasksByUserResolver?.({}, args, {});
 
     const tasksByUser = await Task.find({
-      creator: testUser._id,
+      creator: testUser?._id,
     })
       .populate("event")
       .populate("creator", "-password")
@@ -52,14 +60,14 @@ describe("resolvers -> Query -> tasksByUser", () => {
     };
 
     const args: QueryTasksByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "id_ASC",
     };
 
     const tasksByUserPayload = await tasksByUserResolver?.({}, args, {});
 
     const tasksByUser = await Task.find({
-      creator: testUser._id,
+      creator: testUser?._id,
     })
       .sort(sort)
       .populate("event")
@@ -76,14 +84,14 @@ describe("resolvers -> Query -> tasksByUser", () => {
     };
 
     const args: QueryTasksByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "id_DESC",
     };
 
     const tasksByUserPayload = await tasksByUserResolver?.({}, args, {});
 
     const tasksByUser = await Task.find({
-      creator: testUser._id,
+      creator: testUser?._id,
     })
       .sort(sort)
       .populate("event")
@@ -100,14 +108,14 @@ describe("resolvers -> Query -> tasksByUser", () => {
     };
 
     const args: QueryTasksByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "title_ASC",
     };
 
     const tasksByUserPayload = await tasksByUserResolver?.({}, args, {});
 
     const tasksByUser = await Task.find({
-      creator: testUser._id,
+      creator: testUser?._id,
     })
       .sort(sort)
       .populate("event")
@@ -124,14 +132,14 @@ describe("resolvers -> Query -> tasksByUser", () => {
     };
 
     const args: QueryTasksByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "title_DESC",
     };
 
     const tasksByUserPayload = await tasksByUserResolver?.({}, args, {});
 
     const tasksByUser = await Task.find({
-      creator: testUser._id,
+      creator: testUser?._id,
     })
       .sort(sort)
       .populate("event")
@@ -148,14 +156,14 @@ describe("resolvers -> Query -> tasksByUser", () => {
     };
 
     const args: QueryTasksByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "description_ASC",
     };
 
     const tasksByUserPayload = await tasksByUserResolver?.({}, args, {});
 
     const tasksByUser = await Task.find({
-      creator: testUser._id,
+      creator: testUser?._id,
     })
       .sort(sort)
       .populate("event")
@@ -172,14 +180,14 @@ describe("resolvers -> Query -> tasksByUser", () => {
     };
 
     const args: QueryTasksByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "description_DESC",
     };
 
     const tasksByUserPayload = await tasksByUserResolver?.({}, args, {});
 
     const tasksByUser = await Task.find({
-      creator: testUser._id,
+      creator: testUser?._id,
     })
       .sort(sort)
       .populate("event")
@@ -196,14 +204,14 @@ describe("resolvers -> Query -> tasksByUser", () => {
     };
 
     const args: QueryTasksByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "createdAt_ASC",
     };
 
     const tasksByUserPayload = await tasksByUserResolver?.({}, args, {});
 
     const tasksByUser = await Task.find({
-      creator: testUser._id,
+      creator: testUser?._id,
     })
       .sort(sort)
       .populate("event")
@@ -220,14 +228,14 @@ describe("resolvers -> Query -> tasksByUser", () => {
     };
 
     const args: QueryTasksByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "createdAt_DESC",
     };
 
     const tasksByUserPayload = await tasksByUserResolver?.({}, args, {});
 
     const tasksByUser = await Task.find({
-      creator: testUser._id,
+      creator: testUser?._id,
     })
       .sort(sort)
       .populate("event")
@@ -244,14 +252,14 @@ describe("resolvers -> Query -> tasksByUser", () => {
     };
 
     const args: QueryTasksByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "deadline_ASC",
     };
 
     const tasksByUserPayload = await tasksByUserResolver?.({}, args, {});
 
     const tasksByUser = await Task.find({
-      creator: testUser._id,
+      creator: testUser?._id,
     })
       .sort(sort)
       .populate("event")
@@ -268,14 +276,14 @@ describe("resolvers -> Query -> tasksByUser", () => {
     };
 
     const args: QueryTasksByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "deadline_DESC",
     };
 
     const tasksByUserPayload = await tasksByUserResolver?.({}, args, {});
 
     const tasksByUser = await Task.find({
-      creator: testUser._id,
+      creator: testUser?._id,
     })
       .sort(sort)
       .populate("event")
@@ -292,14 +300,14 @@ describe("resolvers -> Query -> tasksByUser", () => {
     };
 
     const args: QueryTasksByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: undefined,
     };
 
     const tasksByUserPayload = await tasksByUserResolver?.({}, args, {});
 
     const tasksByUser = await Task.find({
-      creator: testUser._id,
+      creator: testUser?._id,
     })
       .sort(sort)
       .populate("event")

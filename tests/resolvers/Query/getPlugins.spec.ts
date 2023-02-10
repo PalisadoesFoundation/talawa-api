@@ -6,7 +6,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestPlugin } from "../../helpers/plugins";
 beforeAll(async () => {
   await connect();
-  const [testUser, testOrganization, testPlugin] = await createTestPlugin();
+  await createTestPlugin();
 });
 
 afterAll(async () => {

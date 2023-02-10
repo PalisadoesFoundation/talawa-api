@@ -1,12 +1,16 @@
 import "dotenv/config";
 import { registrantsByEvent as registrantsByEventResolver } from "../../../src/resolvers/Query/registrantsByEvent";
 import { connect, disconnect } from "../../../src/db";
-import { Event, Interface_Event } from "../../../src/models";
-import { Document, Types } from "mongoose";
+import { Event } from "../../../src/models";
+import { Types } from "mongoose";
 import { QueryRegistrantsByEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { EVENT_NOT_FOUND } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { testUserType, testOrganizationType, createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import {
+  testUserType,
+  testOrganizationType,
+  createTestUserAndOrganization,
+} from "../../helpers/userAndOrg";
 import { testEventType, createEventWithRegistrant } from "../../helpers/events";
 
 let testEvent: testEventType;
@@ -16,7 +20,12 @@ let testOrganization: testOrganizationType;
 beforeAll(async () => {
   await connect();
   [testUser, testOrganization] = await createTestUserAndOrganization();
-  testEvent = await createEventWithRegistrant(testUser._id, testOrganization._id,true,"ONCE");
+  testEvent = await createEventWithRegistrant(
+    testUser?._id,
+    testOrganization?._id,
+    true,
+    "ONCE"
+  );
 });
 
 afterAll(async () => {
@@ -37,7 +46,7 @@ describe("resolvers -> Query -> registrantsByEvent", () => {
   });
 
   it("returns list of all registrants for event with _id === args.id", async () => {
-    const args: QueryRegistrantsByEventArgs = { id: testEvent._id };
+    const args: QueryRegistrantsByEventArgs = { id: testEvent?._id };
 
     const registrantsByEventPayload = await registrantsByEventResolver?.(
       {},
@@ -46,7 +55,7 @@ describe("resolvers -> Query -> registrantsByEvent", () => {
     );
 
     const event = await Event.findOne({
-      _id: testEvent._id,
+      _id: testEvent?._id,
     })
       .populate("registrants.user", "-password")
       .lean();

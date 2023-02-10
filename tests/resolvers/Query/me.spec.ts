@@ -2,19 +2,17 @@ import "dotenv/config";
 import { me as meResolver } from "../../../src/resolvers/Query/me";
 import { connect, disconnect } from "../../../src/db";
 import { USER_NOT_FOUND } from "../../../src/constants";
-import { User} from "../../../src/models";
+import { User } from "../../../src/models";
 import { Types } from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { testUserType, testOrganizationType} from "../../helpers/userAndOrg";
-import { createTestEvent, testEventType} from "../../helpers/events";
+import { testUserType } from "../../helpers/userAndOrg";
+import { createTestEvent } from "../../helpers/events";
 
-let testEvent: testEventType;
 let testUser: testUserType;
-let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
-  [testUser, testOrganization, testEvent] = await createTestEvent();
+  testUser = (await createTestEvent())[0];
 });
 
 afterAll(async () => {

@@ -6,14 +6,16 @@ import { User } from "../../../src/models";
 import { Types } from "mongoose";
 import { QueryUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { testUserType, testOrganizationType, createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import {
+  testUserType,
+  createTestUserAndOrganization,
+} from "../../helpers/userAndOrg";
 
 let testUser: testUserType;
-let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
-  [testUser, testOrganization] = await createTestUserAndOrganization();
+  testUser = (await createTestUserAndOrganization())[0];
 });
 
 afterAll(async () => {
@@ -35,17 +37,17 @@ describe("resolvers -> Query -> user", () => {
 
   it(`returns user object`, async () => {
     const args: QueryUserArgs = {
-      id: testUser.id,
+      id: testUser?.id,
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser?.id,
     };
 
     const userPayload = await userResolver?.({}, args, context);
 
     const user = await User.findOne({
-      _id: testUser._id,
+      _id: testUser?._id,
     })
       .populate("adminFor")
       .lean();

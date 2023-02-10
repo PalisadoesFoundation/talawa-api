@@ -27,7 +27,6 @@ export const createTestUser = async (): Promise<testUserType> => {
   return testUser;
 };
 
-
 export const createTestOrganizationWithAdmin = async (
   userID: string,
   isMember = true,
@@ -71,7 +70,7 @@ export const createTestUserAndOrganization = async (
   return [testUser, testOrganization];
 };
 
-export const createOrganizationwithVisibility = async(
+export const createOrganizationwithVisibility = async (
   userID: string,
   visibleInSearch: boolean
 ): Promise<testOrganizationType> => {
@@ -100,4 +99,4 @@ export const createOrganizationwithVisibility = async(
   );
 
   return testOrganization;
-}
+};

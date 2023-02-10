@@ -1,24 +1,26 @@
 import "dotenv/config";
 import { postsByOrganizationConnection as postsByOrganizationConnectionResolver } from "../../../src/resolvers/Query/postsByOrganizationConnection";
 import { connect, disconnect } from "../../../src/db";
-import {Types } from "mongoose";
+import { Types } from "mongoose";
 import { QueryPostsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
-import { testPostType, testCommentType, createPostwithComment, createTestSinglePost} from "../../helpers/posts";
+import {
+  createPostwithComment,
+  createTestSinglePost,
+} from "../../helpers/posts";
 
 let testOrganization: testOrganizationType;
 let testUser: testUserType;
-let testPost1: testPostType;
-let testComment: testCommentType;
 
 beforeAll(async () => {
   await connect();
-  [testUser, testOrganization, testPost1, testComment] = await createPostwithComment();
 
-  const testPost2 = await createTestSinglePost(testUser._id,testOrganization._id);
-  const testPost3 = await createTestSinglePost(testUser._id,testOrganization._id);
-  const testPosts = [testPost1, testPost2, testPost3];
+  const resultArray = await createPostwithComment();
+  testUser = resultArray[0];
+  testOrganization = resultArray[1];
+  await createTestSinglePost(testUser?._id, testOrganization?._id);
+  await createTestSinglePost(testUser?._id, testOrganization?._id);
 });
 
 afterAll(async () => {

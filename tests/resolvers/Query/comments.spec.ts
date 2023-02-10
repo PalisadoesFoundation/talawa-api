@@ -1,13 +1,13 @@
 import "dotenv/config";
 import { comments as commentsResolver } from "../../../src/resolvers/Query/comments";
 import { connect, disconnect } from "../../../src/db";
-import { Comment} from "../../../src/models";
+import { Comment } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createPostwithComment } from "../../helpers/posts";
 
 beforeAll(async () => {
   await connect();
-  const [testUser, testOrganization, testPost, testComment] = await createPostwithComment();
+  await createPostwithComment();
 });
 
 afterAll(async () => {

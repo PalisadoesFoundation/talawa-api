@@ -1,18 +1,14 @@
 import "dotenv/config";
 import { postsByOrganization as postsByOrganizationResolver } from "../../../src/resolvers/Query/postsByOrganization";
-import {
-  User,
-  Organization,
-  Post,
-  Comment,
-  Interface_Organization,
-} from "../../../src/models";
+import { Post } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
-import { nanoid } from "nanoid";
 import { QueryPostsByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
-import { Document } from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { testUserType, testOrganizationType, createTestUserAndOrganization} from "../../helpers/userAndOrg";
+import {
+  testUserType,
+  testOrganizationType,
+  createTestUserAndOrganization,
+} from "../../helpers/userAndOrg";
 import { createSinglePostwithComment } from "../../helpers/posts";
 
 let testOrganization: testOrganizationType;
@@ -22,8 +18,8 @@ beforeAll(async () => {
   await connect();
   [testUser, testOrganization] = await createTestUserAndOrganization();
 
-  const [testPost1,testComment1] = await createSinglePostwithComment(testUser._id, testOrganization._id);
-  const [testPost2, testComment2] = await createSinglePostwithComment(testUser._id, testOrganization._id);
+  await createSinglePostwithComment(testUser?._id, testOrganization?._id);
+  await createSinglePostwithComment(testUser?._id, testOrganization?._id);
 });
 
 afterAll(async () => {
@@ -35,7 +31,7 @@ describe("resolvers -> Query -> posts", () => {
     const sort = {};
 
     const args: QueryPostsByOrganizationArgs = {
-      id: testOrganization.id,
+      id: testOrganization?.id,
       orderBy: null,
     };
 
@@ -46,7 +42,7 @@ describe("resolvers -> Query -> posts", () => {
     );
 
     const postsByOrganization = await Post.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
     })
       .sort(sort)
       .populate("organization")
@@ -70,7 +66,7 @@ describe("resolvers -> Query -> posts", () => {
     };
 
     const args: QueryPostsByOrganizationArgs = {
-      id: testOrganization.id,
+      id: testOrganization?.id,
       orderBy: "id_ASC",
     };
 
@@ -81,7 +77,7 @@ describe("resolvers -> Query -> posts", () => {
     );
 
     const postsByOrganization = await Post.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
     })
       .sort(sort)
       .populate("organization")
@@ -105,7 +101,7 @@ describe("resolvers -> Query -> posts", () => {
     };
 
     const args: QueryPostsByOrganizationArgs = {
-      id: testOrganization.id,
+      id: testOrganization?.id,
       orderBy: "id_DESC",
     };
 
@@ -116,7 +112,7 @@ describe("resolvers -> Query -> posts", () => {
     );
 
     const postsByOrganization = await Post.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
     })
       .sort(sort)
       .populate("organization")
@@ -140,7 +136,7 @@ describe("resolvers -> Query -> posts", () => {
     };
 
     const args: QueryPostsByOrganizationArgs = {
-      id: testOrganization.id,
+      id: testOrganization?.id,
       orderBy: "text_ASC",
     };
 
@@ -151,7 +147,7 @@ describe("resolvers -> Query -> posts", () => {
     );
 
     const postsByOrganization = await Post.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
     })
       .sort(sort)
       .populate("organization")
@@ -175,7 +171,7 @@ describe("resolvers -> Query -> posts", () => {
     };
 
     const args: QueryPostsByOrganizationArgs = {
-      id: testOrganization.id,
+      id: testOrganization?.id,
       orderBy: "text_DESC",
     };
 
@@ -186,7 +182,7 @@ describe("resolvers -> Query -> posts", () => {
     );
 
     const postsByOrganization = await Post.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
     })
       .sort(sort)
       .populate("organization")
@@ -210,7 +206,7 @@ describe("resolvers -> Query -> posts", () => {
     };
 
     const args: QueryPostsByOrganizationArgs = {
-      id: testOrganization.id,
+      id: testOrganization?.id,
       orderBy: "title_ASC",
     };
 
@@ -221,7 +217,7 @@ describe("resolvers -> Query -> posts", () => {
     );
 
     const postsByOrganization = await Post.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
     })
       .sort(sort)
       .populate("organization")
@@ -245,7 +241,7 @@ describe("resolvers -> Query -> posts", () => {
     };
 
     const args: QueryPostsByOrganizationArgs = {
-      id: testOrganization.id,
+      id: testOrganization?.id,
       orderBy: "title_DESC",
     };
 
@@ -256,7 +252,7 @@ describe("resolvers -> Query -> posts", () => {
     );
 
     const postsByOrganization = await Post.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
     })
       .sort(sort)
       .populate("organization")
@@ -280,7 +276,7 @@ describe("resolvers -> Query -> posts", () => {
     };
 
     const args: QueryPostsByOrganizationArgs = {
-      id: testOrganization.id,
+      id: testOrganization?.id,
       orderBy: "createdAt_ASC",
     };
 
@@ -291,7 +287,7 @@ describe("resolvers -> Query -> posts", () => {
     );
 
     const postsByOrganization = await Post.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
     })
       .sort(sort)
       .populate("organization")
@@ -315,7 +311,7 @@ describe("resolvers -> Query -> posts", () => {
     };
 
     const args: QueryPostsByOrganizationArgs = {
-      id: testOrganization.id,
+      id: testOrganization?.id,
       orderBy: "createdAt_DESC",
     };
 
@@ -326,7 +322,7 @@ describe("resolvers -> Query -> posts", () => {
     );
 
     const postsByOrganization = await Post.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
     })
       .sort(sort)
       .populate("organization")
@@ -350,7 +346,7 @@ describe("resolvers -> Query -> posts", () => {
     };
 
     const args: QueryPostsByOrganizationArgs = {
-      id: testOrganization.id,
+      id: testOrganization?.id,
       orderBy: "imageUrl_ASC",
     };
 
@@ -361,7 +357,7 @@ describe("resolvers -> Query -> posts", () => {
     );
 
     const postsByOrganization = await Post.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
     })
       .sort(sort)
       .populate("organization")
@@ -385,7 +381,7 @@ describe("resolvers -> Query -> posts", () => {
     };
 
     const args: QueryPostsByOrganizationArgs = {
-      id: testOrganization.id,
+      id: testOrganization?.id,
       orderBy: "imageUrl_DESC",
     };
 
@@ -396,7 +392,7 @@ describe("resolvers -> Query -> posts", () => {
     );
 
     const postsByOrganization = await Post.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
     })
       .sort(sort)
       .populate("organization")
@@ -420,7 +416,7 @@ describe("resolvers -> Query -> posts", () => {
     };
 
     const args: QueryPostsByOrganizationArgs = {
-      id: testOrganization.id,
+      id: testOrganization?.id,
       orderBy: "videoUrl_ASC",
     };
 
@@ -431,7 +427,7 @@ describe("resolvers -> Query -> posts", () => {
     );
 
     const postsByOrganization = await Post.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
     })
       .sort(sort)
       .populate("organization")
@@ -455,7 +451,7 @@ describe("resolvers -> Query -> posts", () => {
     };
 
     const args: QueryPostsByOrganizationArgs = {
-      id: testOrganization.id,
+      id: testOrganization?.id,
       orderBy: "videoUrl_DESC",
     };
 
@@ -466,7 +462,7 @@ describe("resolvers -> Query -> posts", () => {
     );
 
     const postsByOrganization = await Post.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
     })
       .sort(sort)
       .populate("organization")
@@ -490,7 +486,7 @@ describe("resolvers -> Query -> posts", () => {
     };
 
     const args: QueryPostsByOrganizationArgs = {
-      id: testOrganization.id,
+      id: testOrganization?.id,
       orderBy: "likeCount_ASC",
     };
 
@@ -501,7 +497,7 @@ describe("resolvers -> Query -> posts", () => {
     );
 
     const postsByOrganization = await Post.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
     })
       .sort(sort)
       .populate("organization")
@@ -525,7 +521,7 @@ describe("resolvers -> Query -> posts", () => {
     };
 
     const args: QueryPostsByOrganizationArgs = {
-      id: testOrganization.id,
+      id: testOrganization?.id,
       orderBy: "likeCount_DESC",
     };
 
@@ -536,7 +532,7 @@ describe("resolvers -> Query -> posts", () => {
     );
 
     const postsByOrganization = await Post.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
     })
       .sort(sort)
       .populate("organization")
@@ -560,7 +556,7 @@ describe("resolvers -> Query -> posts", () => {
     };
 
     const args: QueryPostsByOrganizationArgs = {
-      id: testOrganization.id,
+      id: testOrganization?.id,
       orderBy: "commentCount_ASC",
     };
 
@@ -571,7 +567,7 @@ describe("resolvers -> Query -> posts", () => {
     );
 
     const postsByOrganization = await Post.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
     })
       .sort(sort)
       .populate("organization")
@@ -595,7 +591,7 @@ describe("resolvers -> Query -> posts", () => {
     };
 
     const args: QueryPostsByOrganizationArgs = {
-      id: testOrganization.id,
+      id: testOrganization?.id,
       orderBy: "commentCount_DESC",
     };
 
@@ -606,7 +602,7 @@ describe("resolvers -> Query -> posts", () => {
     );
 
     const postsByOrganization = await Post.find({
-      organization: testOrganization._id,
+      organization: testOrganization?._id,
     })
       .sort(sort)
       .populate("organization")

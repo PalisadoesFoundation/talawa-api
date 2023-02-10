@@ -6,17 +6,13 @@ import { Types } from "mongoose";
 import { POST_NOT_FOUND } from "../../../src/constants";
 import { QueryPostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { testUserType, testOrganizationType} from "../../helpers/userAndOrg";
-import { testPostType, testCommentType, createPostwithComment } from "../../helpers/posts";
+import { testPostType, createPostwithComment } from "../../helpers/posts";
 
 let testPost: testPostType;
-let testComment: testCommentType;
-let testUser: testUserType;
-let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
-  [testUser, testOrganization, testPost, testComment] = await createPostwithComment();
+  testPost = (await createPostwithComment())[2];
 });
 
 afterAll(async () => {
@@ -38,12 +34,12 @@ describe("resolvers -> Query -> post", () => {
 
   it(`returns post object`, async () => {
     const args: QueryPostArgs = {
-      id: testPost._id,
+      id: testPost?._id,
     };
 
     const postPayload = await postResolver?.({}, args, {});
 
-    const post = await Post.findOne({ _id: testPost._id })
+    const post = await Post.findOne({ _id: testPost?._id })
       .populate("organization")
       .populate({
         path: "comments",
@@ -61,7 +57,7 @@ describe("resolvers -> Query -> post", () => {
   it(`returns post object with post.likeCount === 0 and post.commentCount === 0`, async () => {
     await Post.updateOne(
       {
-        _id: testPost._id,
+        _id: testPost?._id,
       },
       {
         $set: {
@@ -76,12 +72,12 @@ describe("resolvers -> Query -> post", () => {
     );
 
     const args: QueryPostArgs = {
-      id: testPost._id,
+      id: testPost?._id,
     };
 
     const postPayload = await postResolver?.({}, args, {});
 
-    const post = await Post.findOne({ _id: testPost._id })
+    const post = await Post.findOne({ _id: testPost?._id })
       .populate("organization")
       .populate({
         path: "comments",

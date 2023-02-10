@@ -3,11 +3,11 @@ import { Donation } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
 import { getDonations as getDonationsResolver } from "../../../src/resolvers/Query/getDonations";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestDonation} from "../../helpers/donation";
+import { createTestDonation } from "../../helpers/donation";
 
 beforeAll(async () => {
   await connect();
-  const [testUser, testOrganization, testDonation] = await createTestDonation();
+  await createTestDonation();
 });
 
 afterAll(async () => {
