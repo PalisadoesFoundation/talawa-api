@@ -38,11 +38,6 @@ afterEach(() => {
 
 describe("resolvers -> Mutation -> updateUserType", () => {
   it(`throws UnauthorizedError if user with _id === context.userId is not a SUPERADMIN`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementation((message) => `Translated ${message}`);
-
     try {
       const args: MutationUpdateUserTypeArgs = {
         data: {},
