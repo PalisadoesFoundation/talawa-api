@@ -58,11 +58,6 @@ afterEach(() => {
 });
 
 describe("resolvers -> Mutation -> createEventProject", () => {
-  afterEach(() => {
-    vi.doUnmock("../../../src/constants");
-    vi.resetModules();
-  });
-
   it("Should throw an error if the user is not found /IN_PRODUCTION=false ", async () => {
     const { requestContext } = await import("../../../src/libraries");
 
