@@ -29,9 +29,6 @@ This document provides instructions on how to set up and start a running instanc
   - [Accessing talawa-api](#accessing-talawa-api)
   - [Changing default talawa-api port](#changing-default-talawa-api-port)
   - [Running tests](#running-tests)
-  - [Checking typescript type errors](#checking-typescript-type-errors)
-  - [Linting code files](#linting-code-files)
-  - [Formatting code files](#formatting-code-files)
 
 <br/>
 
@@ -399,43 +396,3 @@ Talawa-api makes use of `vitest` to run tests because it is much faster than `je
 You can run the tests for talawa-api using this command:-
 
         npm run test
-
-<br/>
-
-## Checking typescript type errors
-
-We make use of official typescript compiler(tsc) to check the codebase for type errors.
-
-To check for type errors use this command:-
-
-        npm run typecheck
-
-<br/>
-
-## Linting code files
-
-We make use of `eslint` to enforce a strict linting convention in code.
-
-To check code for linting issues use this command:-
-
-        npm run lint:check
-        
-To check and fix lint errors in code use this command:-
-
-        npm run lint:fix
-        
-Eslint might throw lint errors even after running the `lint:fix` command as those lint errors require manual intervention to be fixed. You have to fix those lint errors manually.
-
-<br/>
-        
-## Formatting code files
-
-We make use of `prettier` to enforce a strict formatting convention in code.
-
-To check code for formatting issues use this command:-
-
-        npm run format:check
-
-To fix formatting issues in code use this command:-
-
-        npm run format:fix
