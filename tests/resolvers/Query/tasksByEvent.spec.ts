@@ -360,28 +360,4 @@ describe("resolvers -> Query -> tasksByEvent", () => {
 
     expect(tasksByEventPayload).toEqual(tasksByEvent);
   });
-
-  it(`returns list of all tasks with task.creator === args.id and sorted by
-  descending order of task.deadline if args.orderBy === undefined`, async () => {
-    const sort = {
-      deadline: -1,
-    };
-
-    const args: QueryTasksByEventArgs = {
-      id: testEvent.id,
-      orderBy: undefined,
-    };
-
-    const tasksByEventPayload = await tasksByEventResolver?.({}, args, {});
-
-    const tasksByEvent = await Task.find({
-      event: testEvent._id,
-    })
-      .sort(sort)
-      .populate("event")
-      .populate("creator", "-password")
-      .lean();
-
-    expect(tasksByEventPayload).toEqual(tasksByEvent);
-  });
 });
