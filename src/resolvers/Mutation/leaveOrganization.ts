@@ -12,13 +12,8 @@ import {
   ORGANIZATION_NOT_FOUND_PARAM,
   USER_NOT_AUTHORIZED_PARAM,
   MEMBER_NOT_FOUND_CODE,
-  USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_CODE,
-  IN_PRODUCTION,
-  ORGANIZATION_NOT_FOUND,
-  USER_NOT_FOUND,
   USER_NOT_AUTHORIZED_MESSAGE,
-  MEMBER_NOT_FOUND,
 } from "../../constants";
 
 export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
@@ -33,9 +28,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   // Checks whether organization exists.
   if (!organization) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? ORGANIZATION_NOT_FOUND
-        : requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
+      requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
       ORGANIZATION_NOT_FOUND_CODE,
       ORGANIZATION_NOT_FOUND_PARAM
     );
@@ -48,9 +41,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   // Checks whether currentUser exists.
   if (!currentUser) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND
-        : requestContext.translate(USER_NOT_FOUND_MESSAGE),
+      requestContext.translate(USER_NOT_FOUND_MESSAGE),
       USER_NOT_FOUND_CODE,
       USER_NOT_FOUND_PARAM
     );
@@ -59,9 +50,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   // Checks whether currentUser is the creator of organzation.
   if (currentUser._id.toString() === organization.creator.toString()) {
     throw new errors.UnauthorizedError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_AUTHORIZED
-        : requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
+      requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
       USER_NOT_AUTHORIZED_CODE,
       USER_NOT_AUTHORIZED_PARAM
     );
@@ -74,9 +63,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   // Checks whether currentUser is not a member of organzation.
   if (currentUserIsOrganizationMember === false) {
     throw new errors.ConflictError(
-      IN_PRODUCTION !== true
-        ? MEMBER_NOT_FOUND
-        : requestContext.translate(MEMBER_NOT_FOUND_MESSAGE),
+      requestContext.translate(MEMBER_NOT_FOUND_MESSAGE),
       MEMBER_NOT_FOUND_CODE,
       MEMBER_NOT_FOUND_PARAM
     );

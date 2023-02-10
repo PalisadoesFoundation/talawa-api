@@ -5,11 +5,19 @@ import { MutationRemoveCommentArgs } from "../../../src/types/generatedGraphQLTy
 import { connect, disconnect } from "../../../src/db";
 import { removeComment as removeCommentResolver } from "../../../src/resolvers/Mutation/removeComment";
 import {
-  COMMENT_NOT_FOUND,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
+  COMMENT_NOT_FOUND_MESSAGE,
+  USER_NOT_AUTHORIZED_MESSAGE,
+  USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  afterEach,
+  vi,
+} from "vitest";
 import { testUserType } from "../../helpers/userAndOrg";
 import { createTestPost, testPostType } from "../../helpers/posts";
 
@@ -53,7 +61,16 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> removeComment", () => {
+  afterEach(() => {
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
+
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveCommentArgs = {
         id: "",
@@ -63,13 +80,31 @@ describe("resolvers -> Mutation -> removeComment", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { removeComment: removeCommentResolver } = await import(
+        "../../../src/resolvers/Mutation/removeComment"
+      );
+
       await removeCommentResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no comment exists with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveCommentArgs = {
         id: Types.ObjectId().toString(),
@@ -79,14 +114,32 @@ describe("resolvers -> Mutation -> removeComment", () => {
         userId: testUser!.id,
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { removeComment: removeCommentResolver } = await import(
+        "../../../src/resolvers/Mutation/removeComment"
+      );
+
       await removeCommentResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(COMMENT_NOT_FOUND);
+      expect(spy).toBeCalledWith(COMMENT_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(COMMENT_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws UnauthorizedError if user with _id === context.userId is not the creator
   of comment with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       await Comment.updateOne(
         {
@@ -106,10 +159,23 @@ describe("resolvers -> Mutation -> removeComment", () => {
       const context = {
         userId: testUser!.id,
       };
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { removeComment: removeCommentResolver } = await import(
+        "../../../src/resolvers/Mutation/removeComment"
+      );
 
       await removeCommentResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
     }
   });
 

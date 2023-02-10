@@ -5,12 +5,20 @@ import { MutationLeaveOrganizationArgs } from "../../../src/types/generatedGraph
 import { connect, disconnect } from "../../../src/db";
 import { leaveOrganization as leaveOrganizationResolver } from "../../../src/resolvers/Mutation/leaveOrganization";
 import {
-  MEMBER_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
+  MEMBER_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_MESSAGE,
+  USER_NOT_AUTHORIZED_MESSAGE,
+  USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  afterEach,
+  vi,
+} from "vitest";
 import {
   createTestUserAndOrganization,
   testOrganizationType,
@@ -32,7 +40,15 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> leaveOrganization", () => {
+  afterEach(() => {
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
   it(`throws NotFoundError if no organization exists with _id === args.organizationId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationLeaveOrganizationArgs = {
         organizationId: Types.ObjectId().toString(),
@@ -41,14 +57,30 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       const context = {
         userId: testUser!.id,
       };
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+      const { leaveOrganization: leaveOrganizationResolver } = await import(
+        "../../../src/resolvers/Mutation/leaveOrganization"
+      );
 
       await leaveOrganizationResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationLeaveOrganizationArgs = {
         organizationId: testOrganization!.id,
@@ -57,15 +89,31 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       const context = {
         userId: Types.ObjectId().toString(),
       };
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+      const { leaveOrganization: leaveOrganizationResolver } = await import(
+        "../../../src/resolvers/Mutation/leaveOrganization"
+      );
 
       await leaveOrganizationResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws UnauthorizedError if user with _id === context.userId is the creator
   of organization with _id === args.organizationId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationLeaveOrganizationArgs = {
         organizationId: testOrganization!.id,
@@ -74,15 +122,31 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       const context = {
         userId: testUser!.id,
       };
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+      const { leaveOrganization: leaveOrganizationResolver } = await import(
+        "../../../src/resolvers/Mutation/leaveOrganization"
+      );
 
       await leaveOrganizationResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
     }
   });
 
   it(`throws ConflictError if user with _id === context.userId is not a member
   of organization with _id === args.organizationId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       await Organization.updateOne(
         {
@@ -103,10 +167,22 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       const context = {
         userId: testUser!.id,
       };
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+      const { leaveOrganization: leaveOrganizationResolver } = await import(
+        "../../../src/resolvers/Mutation/leaveOrganization"
+      );
 
       await leaveOrganizationResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(MEMBER_NOT_FOUND);
+      expect(spy).toBeCalledWith(MEMBER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(MEMBER_NOT_FOUND_MESSAGE);
     }
   });
 

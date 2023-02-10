@@ -3,8 +3,6 @@ import { Types } from "mongoose";
 import { MutationCreatePostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import {
-  ORGANIZATION_NOT_FOUND,
-  USER_NOT_FOUND,
   USER_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
@@ -42,42 +40,8 @@ describe("resolvers -> Mutation -> createPost", () => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
-  it(`throws NotFoundError if no user exists with _id === context.userId and IN_PRODUCTION === false`, async () => {
-    try {
-      const args: MutationCreatePostArgs = {
-        data: {
-          organizationId: "",
-          text: "",
-          videoUrl: "",
-          title: "",
-        },
-      };
 
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: false,
-        };
-      });
-
-      const { createPost: createPostResolver } = await import(
-        "../../../src/resolvers/Mutation/createPost"
-      );
-
-      await createPostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
-    }
-  });
-
-  it(`throws NotFoundError if no user exists with _id === context.userId and IN_PRODUCTION === true`, async () => {
+  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -117,42 +81,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     }
   });
 
-  it(`throws NotFoundError if no organization exists with _id === args.data.organizationId and IN_PRODUCTION === false`, async () => {
-    try {
-      const args: MutationCreatePostArgs = {
-        data: {
-          organizationId: Types.ObjectId().toString(),
-          text: "",
-          videoUrl: "",
-          title: "",
-        },
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: false,
-        };
-      });
-
-      const { createPost: createPostResolver } = await import(
-        "../../../src/resolvers/Mutation/createPost"
-      );
-
-      await createPostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
-    }
-  });
-
-  it(`throws NotFoundError if no organization exists with _id === args.data.organizationId and IN_PRODUCTION === true`, async () => {
+  it(`throws NotFoundError if no organization exists with _id === args.data.organizationId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
