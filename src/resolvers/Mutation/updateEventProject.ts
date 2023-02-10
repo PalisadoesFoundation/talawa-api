@@ -2,15 +2,11 @@ import { User, EventProject } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
   EVENT_NOT_FOUND_CODE,
-  EVENT_PROJECT_NOT_FOUND,
   EVENT_PROJECT_NOT_FOUND_MESSAGE,
   EVENT_PROJECT_NOT_FOUND_PARAM,
-  IN_PRODUCTION,
-  USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_PARAM,
-  USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
@@ -27,9 +23,7 @@ export const updateEventProject = async (
 
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND
-        : requestContext.translate(USER_NOT_FOUND_MESSAGE),
+      requestContext.translate(USER_NOT_FOUND_MESSAGE),
       USER_NOT_FOUND_CODE,
       USER_NOT_FOUND_PARAM
     );
@@ -41,9 +35,7 @@ export const updateEventProject = async (
 
   if (!eventProject) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? EVENT_PROJECT_NOT_FOUND
-        : requestContext.translate(EVENT_PROJECT_NOT_FOUND_MESSAGE),
+      requestContext.translate(EVENT_PROJECT_NOT_FOUND_MESSAGE),
       EVENT_NOT_FOUND_CODE,
       EVENT_PROJECT_NOT_FOUND_PARAM
     );
@@ -52,9 +44,7 @@ export const updateEventProject = async (
   // toString() method converts mongodb's objectId to a javascript string for comparision
   if (eventProject.creator.toString() !== context.userId.toString()) {
     throw new errors.UnauthorizedError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_AUTHORIZED
-        : requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
+      requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
       USER_NOT_AUTHORIZED_CODE,
       USER_NOT_AUTHORIZED_PARAM
     );
