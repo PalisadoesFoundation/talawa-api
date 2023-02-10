@@ -19,6 +19,10 @@ If you are new to contributing to open source, please read the Open Source Guide
       - [Setting up Upstream and Origin](#setting-up-upstream-and-origin)
       - [Creating a Pull Request - Process Overview](#creating-a-pull-request---process-overview)
   - [Type checking and code quality](#type-checking-and-code-quality)
+      - [Type checking code files](#type-checking-code-files)
+      - [Linting code files](#linting-code-files)
+      - [Formatting code files](#formatting-code-files)
+      - [Automation using husky](#automation-using-husky)
   - [Internships](#internships)
     - [GSoC](#gsoc)
   - [Community](#community)
@@ -165,11 +169,63 @@ We use a different branch to make changes so that we can work on multiple issues
 
 ## Type checking and code quality
 
-On making a PR, we use GitHub actions to check that your code is properly formatted, doesn't have typescript type errors and is properly linted. More information about these checks is provided in `INSTALLATION.md` file.
+On making a PR, we use GitHub actions to check that your code is properly formatted, doesn't have typescript type errors and is properly linted. Here are the checks:- 
 
-We are using the package `Husky` to run a pre-commit hook which automatically runs these checks and also fixes some of them for you each time you make a commit, so that you don't have to manually run them.
+<br/>
 
-If you don't want to run these pre-commit checks, you can use manually opt out of it using the `--no-verify` flag with your commit message as follows:
+### Type checking code files
+
+<br/>
+
+We make use of official typescript compiler(tsc) to check the codebase for type errors.
+
+To check for type errors use this command:-
+
+        npm run typecheck
+
+<br/>
+
+### Linting code files
+
+<br/>
+
+We make use of `eslint` to enforce a strict linting convention in code.
+
+To check code for linting issues use this command:-
+
+        npm run lint:check
+        
+To check and fix lint errors in code use this command:-
+
+        npm run lint:fix
+        
+Eslint might throw lint errors even after running the `lint:fix` command as those lint errors require manual intervention to be fixed. You have to fix those lint errors manually.
+
+<br/>
+
+### Formatting code files
+
+<br/>
+
+We make use of `prettier` to enforce a strict formatting convention in code.
+
+To check code for formatting issues use this command:-
+
+        npm run format:check
+
+To fix formatting issues in code use this command:-
+
+        npm run format:fix
+
+<br/>
+
+### Automation using husky
+
+<br/>
+
+We are using the package `Husky` to run a pre-commit hook which automatically runs these checks each time you make a commit and also fixes some of the issues. This way you don't have to run them manually each time.
+
+If you don't want these pre-commit checks running on each commit, you can manually opt out of it using the `--no-verify` flag with your commit message as shown:-
 
         git commit -m "commit message" --no-verify
 
