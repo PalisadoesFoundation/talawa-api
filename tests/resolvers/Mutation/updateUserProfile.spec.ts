@@ -6,7 +6,6 @@ import { connect, disconnect } from "../../../src/db";
 import { updateUserProfile as updateUserProfileResolver } from "../../../src/resolvers/Mutation/updateUserProfile";
 import {
   EMAIL_ALREADY_EXISTS_MESSAGE,
-  USER_NOT_FOUND,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import { nanoid } from "nanoid";
@@ -38,14 +37,20 @@ afterAll(async () => {
   await disconnect();
 });
 
-describe("resolvers -> Mutation -> updateUserProfile", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-    vi.doUnmock("../../../src/constants");
-    vi.resetModules();
-  });
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.doUnmock("../../../src/constants");
+  vi.resetModules();
+});
 
+describe("resolvers -> Mutation -> updateUserProfile", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
     try {
       const args: MutationUpdateUserProfileArgs = {
         data: {},
@@ -55,9 +60,14 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      const { updateUserProfile: updateUserProfileResolver } = await import(
+        "../../../src/resolvers/Mutation/updateUserProfile"
+      );
+
       await updateUserProfileResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
     }
   });
 
@@ -81,13 +91,16 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
         const actualConstants: object = await vi.importActual(
           "../../../src/constants"
         );
+
         return {
           ...actualConstants,
           IN_PRODUCTION: true,
         };
       });
+
       const { updateUserProfile: updateUserProfileResolverUserError } =
         await import("../../../src/resolvers/Mutation/updateUserProfile");
+
       await updateUserProfileResolverUserError?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_MESSAGE);
@@ -96,6 +109,12 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
   });
 
   it(`throws ConflictError if args.data.email is already registered for another user'`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
     try {
       const args: MutationUpdateUserProfileArgs = {
         data: {
@@ -107,9 +126,16 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
         userId: testUser._id,
       };
 
+      const { updateUserProfile: updateUserProfileResolver } = await import(
+        "../../../src/resolvers/Mutation/updateUserProfile"
+      );
+
       await updateUserProfileResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual("Email already exists");
+      expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${EMAIL_ALREADY_EXISTS_MESSAGE}`
+      );
     }
   });
 
@@ -135,13 +161,16 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
         const actualConstants: object = await vi.importActual(
           "../../../src/constants"
         );
+
         return {
           ...actualConstants,
           IN_PRODUCTION: true,
         };
       });
+
       const { updateUserProfile: updateUserProfileResolverEmailError } =
         await import("../../../src/resolvers/Mutation/updateUserProfile");
+
       await updateUserProfileResolverEmailError?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_MESSAGE);
