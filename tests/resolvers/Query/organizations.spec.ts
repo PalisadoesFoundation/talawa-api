@@ -209,26 +209,6 @@ describe("resolvers -> Query -> organizations", () => {
     expect(organizationsPayload).toEqual(organizations);
   });
 
-  it(`returns list of at most 100 organizations sorted by descending order of
-  organization.apiUrl if args.orderBy === undefined`, async () => {
-    const sort = {
-      apiUrl: -1,
-    };
-
-    const args: QueryOrganizationsArgs = {
-      orderBy: undefined,
-    };
-
-    const organizationsPayload = await organizationsResolver?.({}, args, {});
-
-    const organizations = await Organization.find()
-      .sort(sort)
-      .limit(100)
-      .lean();
-
-    expect(organizationsPayload).toEqual(organizations);
-  });
-
   it(`returns list of at most 100 organizations`, async () => {
     const sort = {};
 

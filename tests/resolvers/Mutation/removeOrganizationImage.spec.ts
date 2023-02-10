@@ -1,11 +1,6 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Interface_Organization,
-} from "../../../src/models";
+import { Types } from "mongoose";
+import { User, Organization } from "../../../src/models";
 import { MutationRemoveOrganizationImageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { removeOrganizationImage as removeOrganizationImageResolver } from "../../../src/resolvers/Mutation/removeOrganizationImage";
@@ -17,7 +12,6 @@ import {
   USER_NOT_FOUND,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import {
   beforeAll,
   afterAll,
@@ -27,44 +21,33 @@ import {
   vi,
   afterEach,
 } from "vitest";
+import { testOrganizationType, testUserType } from "../../helpers/userAndOrg";
+import { createTestUserFunc } from "../../helpers/user";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testAdminUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
+let testUser: testUserType;
+let testAdminUser: testUserType;
+let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
 
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
+  testUser = await createTestUserFunc();
 
-  testAdminUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
+  testAdminUser = await createTestUserFunc();
 
   testOrganization = await Organization.create({
     name: "name",
     description: "description",
     isPublic: true,
-    admins: [testAdminUser._id],
-    creator: testAdminUser._id,
-    members: [testUser._id],
-    blockedUsers: [testUser._id],
+    admins: [testAdminUser!._id],
+    creator: testAdminUser!._id,
+    members: [testUser!._id],
+    blockedUsers: [testUser!._id],
   });
 
   await User.updateOne(
     {
-      _id: testUser._id,
+      _id: testUser!._id,
     },
     {
       $set: {
@@ -145,7 +128,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await removeOrganizationImageResolver?.({}, args, context);
@@ -165,7 +148,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
       vi.doMock("../../../src/constants", async () => {
         const actualConstants: object = await vi.importActual(
@@ -192,11 +175,11 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
   is not an admin of organization with _id === args.organizationId`, async () => {
     try {
       const args: MutationRemoveOrganizationImageArgs = {
-        organizationId: testOrganization.id,
+        organizationId: testOrganization!.id,
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await removeOrganizationImageResolver?.({}, args, context);
@@ -213,11 +196,11 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
 
     try {
       const args: MutationRemoveOrganizationImageArgs = {
-        organizationId: testOrganization.id,
+        organizationId: testOrganization!.id,
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       vi.doMock("../../../src/constants", async () => {
@@ -245,11 +228,11 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
   with _id === args.organizationId`, async () => {
     try {
       const args: MutationRemoveOrganizationImageArgs = {
-        organizationId: testOrganization.id,
+        organizationId: testOrganization!.id,
       };
 
       const context = {
-        userId: testAdminUser.id,
+        userId: testAdminUser!.id,
       };
 
       await removeOrganizationImageResolver?.({}, args, context);
@@ -267,11 +250,11 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
 
     try {
       const args: MutationRemoveOrganizationImageArgs = {
-        organizationId: testOrganization.id,
+        organizationId: testOrganization!.id,
       };
 
       const context = {
-        userId: testAdminUser.id,
+        userId: testAdminUser!.id,
       };
       vi.doMock("../../../src/constants", async () => {
         const actualConstants: object = await vi.importActual(
@@ -305,14 +288,14 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       });
 
     const args: MutationRemoveOrganizationImageArgs = {
-      organizationId: testOrganization._id,
+      organizationId: testOrganization!._id,
     };
 
     const testImage: string = "testImage";
 
     await Organization.updateOne(
       {
-        _id: testOrganization._id,
+        _id: testOrganization!._id,
       },
       {
         $set: {
@@ -322,7 +305,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
     );
 
     const context = {
-      userId: testAdminUser._id,
+      userId: testAdminUser!._id,
     };
 
     const { removeOrganizationImage: removeOrganizationImageResolver } =
@@ -332,7 +315,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       await removeOrganizationImageResolver?.({}, args, context);
 
     const updatedTestOrg = await Organization.findOne({
-      _id: testOrganization._id,
+      _id: testOrganization!._id,
     }).lean();
 
     expect(removeOrganizationImagePayload).toEqual(updatedTestOrg);

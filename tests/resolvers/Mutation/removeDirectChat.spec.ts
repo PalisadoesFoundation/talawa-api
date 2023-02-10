@@ -1,11 +1,7 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
+import { Types } from "mongoose";
 import {
-  Interface_User,
-  User,
   Organization,
-  Interface_Organization,
-  Interface_DirectChat,
   DirectChat,
   DirectChatMessage,
 } from "../../../src/models";
@@ -18,7 +14,6 @@ import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   CHAT_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import {
   beforeAll,
   afterAll,
@@ -28,60 +23,29 @@ import {
   vi,
   afterEach,
 } from "vitest";
+import { testOrganizationType, testUserType } from "../../helpers/userAndOrg";
+import {
+  createTestDirectChat,
+  testDirectChatType,
+} from "../../helpers/directChat";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
-let testDirectChat:
-  | (Interface_DirectChat & Document<any, any, Interface_DirectChat>)
-  | null;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
+let testDirectChat: testDirectChatType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        createdOrganizations: testOrganization._id,
-        adminFor: testOrganization._id,
-        joinedOrganizations: testOrganization._id,
-      },
-    }
-  );
+  const temp = await createTestDirectChat();
+  testUser = temp[0];
+  testOrganization = temp[1];
 
   testDirectChat = await DirectChat.create({
-    users: [testUser._id],
-    creator: testUser._id,
-    organization: testOrganization._id,
+    users: [testUser!._id],
+    creator: testUser!._id,
+    organization: testOrganization!._id,
   });
 
-  const testDirectChatMessage = await DirectChatMessage.create({
-    directChatMessageBelongsTo: testDirectChat._id,
-    sender: testUser._id,
-    receiver: testUser._id,
-    messageContent: "messageContent",
-    createdAt: new Date(),
-  });
+  const testDirectChatMessage = temp[2];
 
   testDirectChat = await DirectChat.findOneAndUpdate(
     {
@@ -89,7 +53,7 @@ beforeAll(async () => {
     },
     {
       $push: {
-        messages: testDirectChatMessage._id,
+        messages: testDirectChatMessage!._id,
       },
     },
     {
@@ -116,7 +80,7 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       vi.doMock("../../../src/constants", async () => {
@@ -151,7 +115,7 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       vi.doMock("../../../src/constants", async () => {
@@ -180,11 +144,11 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
     try {
       const args: MutationRemoveDirectChatArgs = {
         chatId: Types.ObjectId().toString(),
-        organizationId: testOrganization.id,
+        organizationId: testOrganization!.id,
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       vi.doMock("../../../src/constants", async () => {
@@ -215,11 +179,11 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
     try {
       const args: MutationRemoveDirectChatArgs = {
         chatId: Types.ObjectId().toString(),
-        organizationId: testOrganization.id,
+        organizationId: testOrganization!.id,
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       vi.doMock("../../../src/constants", async () => {
@@ -247,7 +211,7 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization._id,
+          _id: testOrganization!._id,
         },
         {
           $set: {
@@ -258,11 +222,11 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
 
       const args: MutationRemoveDirectChatArgs = {
         chatId: testDirectChat!.id,
-        organizationId: testOrganization.id,
+        organizationId: testOrganization!.id,
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       const { removeDirectChat: removeDirectChatResolver } = await import(
@@ -277,22 +241,22 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
   it(`deletes the directChat with _id === args.chatId`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization._id,
+        _id: testOrganization!._id,
       },
       {
         $push: {
-          admins: testUser._id,
+          admins: testUser!._id,
         },
       }
     );
 
     const args: MutationRemoveDirectChatArgs = {
       chatId: testDirectChat!.id,
-      organizationId: testOrganization.id,
+      organizationId: testOrganization!.id,
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const { removeDirectChat: removeDirectChatResolver } = await import(

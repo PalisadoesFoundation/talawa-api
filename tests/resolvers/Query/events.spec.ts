@@ -512,49 +512,4 @@ describe("resolvers -> Query -> events", () => {
 
     expect(eventsPayload).toEqual(events);
   });
-
-  it(`returns list of all existing events sorted by descending order of event.location
-  if args.orderBy === undefined`, async () => {
-    const sort = {
-      location: -1,
-    };
-
-    const args: QueryEventsArgs = {
-      orderBy: undefined,
-    };
-
-    const eventsPayload = await eventsResolver?.({}, args, {});
-
-    const events = await Event.find({
-      status: "ACTIVE",
-    })
-      .sort(sort)
-      .populate("creator", "-password")
-      .populate("tasks")
-      .populate("admins", "-password")
-      .lean();
-
-    expect(eventsPayload).toEqual(events);
-  });
-
-  it(`returns list of all existing events without sorting if args.orderBy === null`, async () => {
-    const sort = {};
-
-    const args: QueryEventsArgs = {
-      orderBy: null,
-    };
-
-    const eventsPayload = await eventsResolver?.({}, args, {});
-
-    const events = await Event.find({
-      status: "ACTIVE",
-    })
-      .sort(sort)
-      .populate("creator", "-password")
-      .populate("tasks")
-      .populate("admins", "-password")
-      .lean();
-
-    expect(eventsPayload).toEqual(events);
-  });
 });

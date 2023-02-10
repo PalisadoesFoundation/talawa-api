@@ -1,20 +1,11 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Interface_Organization,
-} from "../../../src/models";
+import { Types } from "mongoose";
 import { MutationCreatePostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import {
-  ORGANIZATION_NOT_FOUND,
-  USER_NOT_FOUND,
   USER_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import {
   beforeAll,
   afterAll,
@@ -24,44 +15,20 @@ import {
   afterEach,
   vi,
 } from "vitest";
+import {
+  createTestUserAndOrganization,
+  testOrganizationType,
+  testUserType,
+} from "../../helpers/userAndOrg";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-    visibleInSearch: true,
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
+  const temp = await createTestUserAndOrganization();
+  testUser = temp[0];
+  testOrganization = temp[1];
 });
 
 afterAll(async () => {
@@ -73,42 +40,8 @@ describe("resolvers -> Mutation -> createPost", () => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
-  it(`throws NotFoundError if no user exists with _id === context.userId and IN_PRODUCTION === false`, async () => {
-    try {
-      const args: MutationCreatePostArgs = {
-        data: {
-          organizationId: "",
-          text: "",
-          videoUrl: "",
-          title: "",
-        },
-      };
 
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: false,
-        };
-      });
-
-      const { createPost: createPostResolver } = await import(
-        "../../../src/resolvers/Mutation/createPost"
-      );
-
-      await createPostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
-    }
-  });
-
-  it(`throws NotFoundError if no user exists with _id === context.userId and IN_PRODUCTION === true`, async () => {
+  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -148,42 +81,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     }
   });
 
-  it(`throws NotFoundError if no organization exists with _id === args.data.organizationId and IN_PRODUCTION === false`, async () => {
-    try {
-      const args: MutationCreatePostArgs = {
-        data: {
-          organizationId: Types.ObjectId().toString(),
-          text: "",
-          videoUrl: "",
-          title: "",
-        },
-      };
-
-      const context = {
-        userId: testUser.id,
-      };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: false,
-        };
-      });
-
-      const { createPost: createPostResolver } = await import(
-        "../../../src/resolvers/Mutation/createPost"
-      );
-
-      await createPostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
-    }
-  });
-
-  it(`throws NotFoundError if no organization exists with _id === args.data.organizationId and IN_PRODUCTION === true`, async () => {
+  it(`throws NotFoundError if no organization exists with _id === args.data.organizationId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -200,7 +98,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       vi.doMock("../../../src/constants", async () => {
@@ -229,7 +127,7 @@ describe("resolvers -> Mutation -> createPost", () => {
   it(`creates the post and returns it when image is not provided`, async () => {
     const args: MutationCreatePostArgs = {
       data: {
-        organizationId: testOrganization.id,
+        organizationId: testOrganization!.id,
         text: "text",
         videoUrl: "videoUrl",
         title: "title",
@@ -237,7 +135,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const { createPost: createPostResolver } = await import(
@@ -250,8 +148,8 @@ describe("resolvers -> Mutation -> createPost", () => {
       expect.objectContaining({
         title: "title",
         videoUrl: "videoUrl",
-        creator: testUser._id,
-        organization: testOrganization._id,
+        creator: testUser!._id,
+        organization: testOrganization!._id,
         imageUrl: "",
       })
     );
@@ -277,7 +175,7 @@ describe("resolvers -> Mutation -> createPost", () => {
 
     const args: MutationCreatePostArgs = {
       data: {
-        organizationId: testOrganization.id,
+        organizationId: testOrganization!.id,
         text: "text",
         videoUrl: "videoUrl",
         title: "title",
@@ -286,7 +184,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const { createPost: createPostResolver } = await import(
@@ -300,8 +198,8 @@ describe("resolvers -> Mutation -> createPost", () => {
       expect.objectContaining({
         title: "title",
         videoUrl: "videoUrl",
-        creator: testUser._id,
-        organization: testOrganization._id,
+        creator: testUser!._id,
+        organization: testOrganization!._id,
         imageUrl: returnImageFile.newImagePath,
       })
     );

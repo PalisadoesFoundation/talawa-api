@@ -1,12 +1,6 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Interface_Post,
-  Post,
-} from "../../../src/models";
+import { Types } from "mongoose";
+import { User, Organization, Post } from "../../../src/models";
 import { MutationRemovePostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { removePost as removePostResolver } from "../../../src/resolvers/Mutation/removePost";
@@ -15,45 +9,33 @@ import {
   USER_NOT_AUTHORIZED,
   USER_NOT_FOUND,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { testUserType } from "../../helpers/userAndOrg";
+import { testPostType } from "../../helpers/posts";
+import { createTestUserFunc } from "../../helpers/user";
 
-let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
-let testPost: Interface_Post & Document<any, any, Interface_Post>;
+let testUsers: testUserType[];
+let testPost: testPostType;
 
 beforeAll(async () => {
   await connect();
-
-  testUsers = await User.insertMany([
-    {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: "firstName",
-      lastName: "lastName",
-      appLanguageCode: "en",
-    },
-    {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: "firstName",
-      lastName: "lastName",
-      appLanguageCode: "en",
-    },
-  ]);
+  const tempUser1 = await createTestUserFunc();
+  const tempUser2 = await createTestUserFunc();
+  testUsers = [tempUser1, tempUser2];
 
   const testOrganization = await Organization.create({
     name: "name",
     description: "description",
     isPublic: true,
-    creator: testUsers[0]._id,
-    admins: [testUsers[0]._id],
-    members: [testUsers[0]._id],
+    creator: testUsers[0]!._id,
+    admins: [testUsers[0]!._id],
+    members: [testUsers[0]!._id],
     visibleInSearch: true,
   });
 
   await User.updateOne(
     {
-      _id: testUsers[0]._id,
+      _id: testUsers[0]!._id,
     },
     {
       $set: {
@@ -66,9 +48,9 @@ beforeAll(async () => {
 
   testPost = await Post.create({
     text: "text",
-    creator: testUsers[0]._id,
+    creator: testUsers[0]!._id,
     organization: testOrganization._id,
-    likedBy: [testUsers[0]._id],
+    likedBy: [testUsers[0]!._id],
     likeCount: 1,
   });
 });
@@ -101,7 +83,7 @@ describe("resolvers -> Mutation -> removePost", () => {
       };
 
       const context = {
-        userId: testUsers[0].id,
+        userId: testUsers[0]!.id,
       };
 
       await removePostResolver?.({}, args, context);
@@ -114,11 +96,11 @@ describe("resolvers -> Mutation -> removePost", () => {
   user._id !== context.userId`, async () => {
     try {
       const args: MutationRemovePostArgs = {
-        id: testPost.id,
+        id: testPost!.id,
       };
 
       const context = {
-        userId: testUsers[1].id,
+        userId: testUsers[1]!.id,
       };
 
       await removePostResolver?.({}, args, context);
@@ -129,15 +111,15 @@ describe("resolvers -> Mutation -> removePost", () => {
 
   it(`deletes the post with _id === args.id and returns it`, async () => {
     const args: MutationRemovePostArgs = {
-      id: testPost.id,
+      id: testPost!.id,
     };
 
     const context = {
-      userId: testUsers[0].id,
+      userId: testUsers[0]!.id,
     };
 
     const removePostPayload = await removePostResolver?.({}, args, context);
 
-    expect(removePostPayload).toEqual(testPost.toObject());
+    expect(removePostPayload).toEqual(testPost!.toObject());
   });
 });

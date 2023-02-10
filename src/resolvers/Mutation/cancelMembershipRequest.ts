@@ -2,10 +2,6 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization, MembershipRequest } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
-  IN_PRODUCTION,
-  ORGANIZATION_NOT_FOUND,
-  USER_NOT_FOUND,
-  USER_NOT_AUTHORIZED,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_PARAM,
@@ -15,7 +11,6 @@ import {
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_PARAM,
-  MEMBERSHIP_REQUEST_NOT_FOUND,
   MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
   MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
   MEMBERSHIP_REQUEST_NOT_FOUND_PARAM,
@@ -30,9 +25,7 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
     // Checks whether membershipRequest exists.
     if (!membershipRequest) {
       throw new errors.NotFoundError(
-        IN_PRODUCTION !== true
-          ? MEMBERSHIP_REQUEST_NOT_FOUND
-          : requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE),
+        requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE),
         MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
         MEMBERSHIP_REQUEST_NOT_FOUND_PARAM
       );
@@ -45,9 +38,7 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
     // Checks whether organization exists.
     if (!organization) {
       throw new errors.NotFoundError(
-        IN_PRODUCTION !== true
-          ? ORGANIZATION_NOT_FOUND
-          : requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
+        requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
         ORGANIZATION_NOT_FOUND_CODE,
         ORGANIZATION_NOT_FOUND_PARAM
       );
@@ -60,9 +51,7 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
     // Checks whether currentUser exists.
     if (!currentUser) {
       throw new errors.NotFoundError(
-        IN_PRODUCTION !== true
-          ? USER_NOT_FOUND
-          : requestContext.translate(USER_NOT_FOUND_MESSAGE),
+        requestContext.translate(USER_NOT_FOUND_MESSAGE),
         USER_NOT_FOUND_CODE,
         USER_NOT_FOUND_PARAM
       );
@@ -74,9 +63,7 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
     // Checks whether currentUser is the creator of membershipRequest.
     if (currentUserCreatedMembershipRequest === false) {
       throw new errors.UnauthorizedError(
-        IN_PRODUCTION !== true
-          ? USER_NOT_AUTHORIZED
-          : requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
+        requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
         USER_NOT_AUTHORIZED_CODE,
         USER_NOT_AUTHORIZED_PARAM
       );

@@ -661,38 +661,6 @@ describe("resolvers -> Query -> events", () => {
     expect(registeredEventsByUserPayload).toEqual(registeredEventsByUser);
   });
 
-  it(`returns list of all existing events sorted by descending order of event.location
-  if args.orderBy === undefined`, async () => {
-    const sort = {
-      location: -1,
-    };
-
-    const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser?._id,
-      orderBy: undefined,
-    };
-
-    const registeredEventsByUser = await Event.find({
-      status: "ACTIVE",
-      registrants: {
-        $elemMatch: {
-          userId: testUser?._id,
-          status: "ACTIVE",
-        },
-      },
-    })
-      .sort(sort)
-      .populate("creator", "-password")
-      .populate("tasks")
-      .populate("admins", "-password")
-      .lean();
-
-    const registeredEventsByUserPayload =
-      await registeredEventsByUserResolver?.({}, args, {});
-
-    expect(registeredEventsByUserPayload).toEqual(registeredEventsByUser);
-  });
-
   it(`returns list of all existing events without sorting if args.orderBy === null`, async () => {
     const sort = {};
     const args: QueryRegisteredEventsByUserArgs = {

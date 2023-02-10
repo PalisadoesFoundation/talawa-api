@@ -1,16 +1,12 @@
 import { User, EventProject, Event } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
-  IN_PRODUCTION,
-  USER_NOT_FOUND,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
-  USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_PARAM,
-  EVENT_NOT_FOUND,
   EVENT_NOT_FOUND_MESSAGE,
   EVENT_NOT_FOUND_CODE,
   EVENT_NOT_FOUND_PARAM,
@@ -28,9 +24,7 @@ export const createEventProject = async (
   // Checks whether currentUser with _id === context.userId exists.
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND
-        : requestContext.translate(USER_NOT_FOUND_MESSAGE),
+      requestContext.translate(USER_NOT_FOUND_MESSAGE),
       USER_NOT_FOUND_CODE,
       USER_NOT_FOUND_PARAM
     );
@@ -43,9 +37,7 @@ export const createEventProject = async (
   // Checks whether event exists.
   if (!event) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? EVENT_NOT_FOUND
-        : requestContext.translate(EVENT_NOT_FOUND_MESSAGE),
+      requestContext.translate(EVENT_NOT_FOUND_MESSAGE),
       EVENT_NOT_FOUND_CODE,
       EVENT_NOT_FOUND_PARAM
     );
@@ -58,9 +50,7 @@ export const createEventProject = async (
   // Checks whether currentUser with _id === context.userId is an admin of event.
   if (currentUserIsEventAdmin === false) {
     throw new errors.UnauthorizedError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_AUTHORIZED
-        : requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
+      requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
       USER_NOT_AUTHORIZED_CODE,
       USER_NOT_AUTHORIZED_PARAM
     );

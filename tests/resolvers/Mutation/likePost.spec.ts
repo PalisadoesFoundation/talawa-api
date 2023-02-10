@@ -1,61 +1,32 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Post,
-  Interface_Post,
-} from "../../../src/models";
+import { Types } from "mongoose";
 import { MutationLikePostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { likePost as likePostResolver } from "../../../src/resolvers/Mutation/likePost";
-import { POST_NOT_FOUND, USER_NOT_FOUND } from "../../../src/constants";
-import { nanoid } from "nanoid";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  POST_NOT_FOUND_MESSAGE,
+  USER_NOT_FOUND_MESSAGE,
+} from "../../../src/constants";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  afterEach,
+  vi,
+} from "vitest";
+import { testUserType } from "../../helpers/userAndOrg";
+import { createTestPost, testPostType } from "../../helpers/posts";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testPost: Interface_Post & Document<any, any, Interface_Post>;
+let testUser: testUserType;
+let testPost: testPostType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-    visibleInSearch: true,
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  testPost = await Post.create({
-    text: "text",
-    creator: testUser._id,
-    organization: testOrganization._id,
-  });
+  const temp = await createTestPost();
+  testUser = temp[0];
+  testPost = temp[2];
 });
 
 afterAll(async () => {
@@ -63,7 +34,15 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> likePost", () => {
+  afterEach(() => {
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationLikePostArgs = {
         id: "",
@@ -72,58 +51,87 @@ describe("resolvers -> Mutation -> likePost", () => {
       const context = {
         userId: Types.ObjectId().toString(),
       };
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+      const { likePost: likePostResolver } = await import(
+        "../../../src/resolvers/Mutation/likePost"
+      );
 
       await likePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no post exists with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationLikePostArgs = {
         id: Types.ObjectId().toString(),
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { likePost: likePostResolver } = await import(
+        "../../../src/resolvers/Mutation/likePost"
+      );
 
       await likePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(POST_NOT_FOUND);
+      expect(spy).toBeCalledWith(POST_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(POST_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`updates likedBy and likeCount fields on post object with _id === args.id and
   returns it `, async () => {
     const args: MutationLikePostArgs = {
-      id: testPost.id,
+      id: testPost!.id,
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const likePostPayload = await likePostResolver?.({}, args, context);
 
-    expect(likePostPayload?.likedBy).toEqual([testUser._id]);
+    expect(likePostPayload?.likedBy).toEqual([testUser!._id]);
     expect(likePostPayload?.likeCount).toEqual(1);
   });
 
   it(`returns post object with _id === args.id without liking the post if user with
   _id === context.userId has already liked it.`, async () => {
     const args: MutationLikePostArgs = {
-      id: testPost.id,
+      id: testPost!.id,
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const likePostPayload = await likePostResolver?.({}, args, context);
 
-    expect(likePostPayload?.likedBy).toEqual([testUser._id]);
+    expect(likePostPayload?.likedBy).toEqual([testUser!._id]);
     expect(likePostPayload?.likeCount).toEqual(1);
   });
 });

@@ -1,25 +1,29 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import { Interface_User, User } from "../../../src/models";
+import { Types } from "mongoose";
+import { User } from "../../../src/models";
 import { MutationRejectAdminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { rejectAdmin as rejectAdminResolver } from "../../../src/resolvers/Mutation/rejectAdmin";
-import { USER_NOT_AUTHORIZED, USER_NOT_FOUND } from "../../../src/constants";
-import { nanoid } from "nanoid";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  USER_NOT_AUTHORIZED,
+  USER_NOT_FOUND_MESSAGE,
+} from "../../../src/constants";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  afterEach,
+  vi,
+} from "vitest";
+import { createTestUserFunc, testUserType } from "../../helpers/user";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: testUserType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
+  testUser = await createTestUserFunc();
 });
 
 afterAll(async () => {
@@ -27,7 +31,16 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> rejectAdmin", () => {
+  afterEach(() => {
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
+
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRejectAdminArgs = {
         id: "",
@@ -37,9 +50,23 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { rejectAdmin: rejectAdminResolver } = await import(
+        "../../../src/resolvers/Mutation/rejectAdmin"
+      );
+
       await rejectAdminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -50,7 +77,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await rejectAdminResolver?.({}, args, context);
@@ -60,10 +87,14 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
   });
 
   it(`throws NotFoundError if no user exists with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       await User.updateOne(
         {
-          _id: testUser._id,
+          _id: testUser!._id,
         },
         {
           $set: {
@@ -77,22 +108,35 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { rejectAdmin: rejectAdminResolver } = await import(
+        "../../../src/resolvers/Mutation/rejectAdmin"
+      );
       await rejectAdminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`deletes the user with _id === args.id and returns true`, async () => {
     const args: MutationRejectAdminArgs = {
-      id: testUser.id,
+      id: testUser!.id,
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const rejectAdminPayload = await rejectAdminResolver?.({}, args, context);
@@ -100,7 +144,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
     expect(rejectAdminPayload).toEqual(true);
 
     const deletedTestUser = await User.findOne({
-      _id: testUser._id,
+      _id: testUser!._id,
     }).lean();
 
     expect(deletedTestUser).toEqual(null);

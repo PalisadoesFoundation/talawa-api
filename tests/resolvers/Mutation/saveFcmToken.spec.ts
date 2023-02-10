@@ -1,25 +1,18 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import { Interface_User, User } from "../../../src/models";
+import { Types } from "mongoose";
+import { User } from "../../../src/models";
 import { MutationSaveFcmTokenArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { saveFcmToken as saveFcmTokenResolver } from "../../../src/resolvers/Mutation/saveFcmToken";
 import { USER_NOT_FOUND } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { createTestUserFunc, testUserType } from "../../helpers/user";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: testUserType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
+  testUser = await createTestUserFunc();
 });
 
 afterAll(async () => {
@@ -49,7 +42,7 @@ describe("resolvers -> Mutation -> saveFcmToken", () => {
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const saveFcmTokenPayload = await saveFcmTokenResolver?.({}, args, context);
@@ -57,7 +50,7 @@ describe("resolvers -> Mutation -> saveFcmToken", () => {
     expect(saveFcmTokenPayload).toEqual(true);
 
     const testSaveFcmTokenPayload = await User.findOne({
-      _id: testUser._id,
+      _id: testUser!._id,
     })
       .select("token")
       .lean();

@@ -7,7 +7,7 @@ import {
 } from "../../../src/models";
 import { MutationCreateMessageChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
-import { USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import { USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
 import { nanoid } from "nanoid";
 import {
   beforeAll,
@@ -52,39 +52,7 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
     vi.resetModules();
   });
 
-  it(`throws NotFoundError if no user exists with _id === args.data.receiver and IN_PRODUCTION === false`, async () => {
-    try {
-      const args: MutationCreateMessageChatArgs = {
-        data: {
-          message: "",
-          receiver: Types.ObjectId().toString(),
-        },
-      };
-
-      const context = {
-        userId: testUsers[0].id,
-      };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: false,
-        };
-      });
-
-      const { createMessageChat: createMessageChatResolver } = await import(
-        "../../../src/resolvers/Mutation/createMessageChat"
-      );
-      await createMessageChatResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
-    }
-  });
-
-  it(`throws NotFoundError if no user exists with _id === args.data.receiver and IN_PRODUCTION === true`, async () => {
+  it(`throws NotFoundError if no user exists with _id === args.data.receiver`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -108,7 +76,6 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
 

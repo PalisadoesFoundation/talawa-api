@@ -6,9 +6,7 @@ import { connect, disconnect } from "../../../src/db";
 import { addOrganizationImage as addOrganizationImageResolver } from "../../../src/resolvers/Mutation/addOrganizationImage";
 import * as uploadImage from "../../../src/utilities/uploadImage";
 import {
-  ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import { nanoid } from "nanoid";
@@ -51,22 +49,7 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
-  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
-    const args: MutationAddOrganizationImageArgs = {
-      organizationId: "",
-      file: "",
-    };
-    const context = {
-      userId: Types.ObjectId().toString(),
-    };
-    const { addOrganizationImage } = await import(
-      "../../../src/resolvers/Mutation/addOrganizationImage"
-    );
-    expect(async () => {
-      await addOrganizationImage?.({}, args, context);
-    }).rejects.toThrowError(USER_NOT_FOUND);
-  });
-  it("throws NotFoundError if no user exists with _id === context.userId and IN_PRODUCTION is true", async () => {
+  it("throws NotFoundError if no user exists with _id === context.userId", async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -85,7 +68,6 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
       const { addOrganizationImage } = await import(
@@ -98,21 +80,6 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
     }
   });
   it(`throws NotFoundError if no organization exists with _id === args.organizationId`, async () => {
-    const args: MutationAddOrganizationImageArgs = {
-      organizationId: Types.ObjectId().toString(),
-      file: "",
-    };
-    const context = {
-      userId: testUser!.id,
-    };
-    const { addOrganizationImage } = await import(
-      "../../../src/resolvers/Mutation/addOrganizationImage"
-    );
-    expect(async () => {
-      await addOrganizationImage?.({}, args, context);
-    }).rejects.toThrowError(ORGANIZATION_NOT_FOUND);
-  });
-  it(`throws NotFoundError if no organization exists with _id === args.organizationId and IN_PRODUCTION is true`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -131,7 +98,6 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
       const { addOrganizationImage } = await import(

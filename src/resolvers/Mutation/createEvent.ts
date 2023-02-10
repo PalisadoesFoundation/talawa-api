@@ -2,16 +2,12 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Organization, Event } from "../../models";
 import {
-  IN_PRODUCTION,
-  USER_NOT_FOUND,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
-  ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_PARAM,
-  ORGANIZATION_NOT_AUTHORIZED,
   ORGANIZATION_NOT_AUTHORIZED_MESSAGE,
   ORGANIZATION_NOT_AUTHORIZED_CODE,
   ORGANIZATION_NOT_AUTHORIZED_PARAM,
@@ -37,9 +33,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   // Checks whether currentUser exists.
   if (!currentUser) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND
-        : requestContext.translate(USER_NOT_FOUND_MESSAGE),
+      requestContext.translate(USER_NOT_FOUND_MESSAGE),
       USER_NOT_FOUND_CODE,
       USER_NOT_FOUND_PARAM
     );
@@ -52,9 +46,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   // Checks whether organization exists.
   if (!organization) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? ORGANIZATION_NOT_FOUND
-        : requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
+      requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
       ORGANIZATION_NOT_FOUND_CODE,
       ORGANIZATION_NOT_FOUND_PARAM
     );
@@ -73,9 +65,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   // Checks whether currentUser neither created nor joined the organization.
   if (!(userCreatedOrganization || userJoinedOrganization)) {
     throw new errors.UnauthorizedError(
-      IN_PRODUCTION !== true
-        ? ORGANIZATION_NOT_AUTHORIZED
-        : requestContext.translate(ORGANIZATION_NOT_AUTHORIZED_MESSAGE),
+      requestContext.translate(ORGANIZATION_NOT_AUTHORIZED_MESSAGE),
       ORGANIZATION_NOT_AUTHORIZED_CODE,
       ORGANIZATION_NOT_AUTHORIZED_PARAM
     );

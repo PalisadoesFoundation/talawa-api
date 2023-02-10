@@ -1,58 +1,37 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Organization,
-  Interface_Organization,
-} from "../../../src/models";
+import { Types } from "mongoose";
+import { User, Organization } from "../../../src/models";
 import { MutationRemoveAdminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { removeAdmin as removeAdminResolver } from "../../../src/resolvers/Mutation/removeAdmin";
 import {
-  ORGANIZATION_NOT_FOUND,
+  ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
+  USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  afterEach,
+  vi,
+} from "vitest";
+import {
+  createTestUserAndOrganization,
+  testOrganizationType,
+  testUserType,
+} from "../../helpers/userAndOrg";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        createdOrganizations: testOrganization._id,
-        adminFor: testOrganization._id,
-        joinedOrganizations: testOrganization._id,
-      },
-    }
-  );
+  const temp = await createTestUserAndOrganization();
+  testUser = temp[0];
+  testOrganization = temp[1];
 });
 
 afterAll(async () => {
@@ -60,7 +39,16 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> removeAdmin", () => {
+  afterEach(() => {
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
+
   it(`throws NotFoundError if no organization exists with _id === args.data.organizationId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveAdminArgs = {
         data: {
@@ -70,31 +58,63 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
+
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { removeAdmin: removeAdminResolver } = await import(
+        "../../../src/resolvers/Mutation/removeAdmin"
+      );
 
       await removeAdminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no user exists with _id === args.data.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveAdminArgs = {
         data: {
-          organizationId: testOrganization.id,
+          organizationId: testOrganization!.id,
           userId: Types.ObjectId().toString(),
         },
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
+
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { removeAdmin: removeAdminResolver } = await import(
+        "../../../src/resolvers/Mutation/removeAdmin"
+      );
 
       await removeAdminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -103,7 +123,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization._id,
+          _id: testOrganization!._id,
         },
         {
           $set: {
@@ -114,13 +134,13 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
 
       const args: MutationRemoveAdminArgs = {
         data: {
-          organizationId: testOrganization.id,
-          userId: testUser.id,
+          organizationId: testOrganization!.id,
+          userId: testUser!.id,
         },
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await removeAdminResolver?.({}, args, context);
@@ -134,11 +154,11 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization._id,
+          _id: testOrganization!._id,
         },
         {
           $push: {
-            admins: testUser._id,
+            admins: testUser!._id,
           },
           $set: {
             creator: Types.ObjectId().toString(),
@@ -148,13 +168,13 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
 
       const args: MutationRemoveAdminArgs = {
         data: {
-          organizationId: testOrganization.id,
-          userId: testUser.id,
+          organizationId: testOrganization!.id,
+          userId: testUser!.id,
         },
       };
 
       const context = {
-        userId: testUser.id,
+        userId: testUser!.id,
       };
 
       await removeAdminResolver?.({}, args, context);
@@ -167,30 +187,30 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
   with _id === args.data.organizationId`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization._id,
+        _id: testOrganization!._id,
       },
       {
         $set: {
-          creator: testUser._id,
+          creator: testUser!._id,
         },
       }
     );
 
     const args: MutationRemoveAdminArgs = {
       data: {
-        organizationId: testOrganization.id,
-        userId: testUser.id,
+        organizationId: testOrganization!.id,
+        userId: testUser!.id,
       },
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser!.id,
     };
 
     const removeAdminPayload = await removeAdminResolver?.({}, args, context);
 
     const updatedTestUser = await User.findOne({
-      _id: testUser._id,
+      _id: testUser!._id,
     })
       .select(["-password"])
       .lean();

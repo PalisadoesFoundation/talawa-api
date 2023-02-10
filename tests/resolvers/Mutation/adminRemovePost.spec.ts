@@ -5,12 +5,12 @@ import { MutationAdminRemovePostArgs } from "../../../src/types/generatedGraphQL
 import { connect, disconnect } from "../../../src/db";
 import { adminRemovePost as adminRemovePostResolver } from "../../../src/resolvers/Mutation/adminRemovePost";
 import {
-  ORGANIZATION_NOT_FOUND,
-  POST_NOT_FOUND,
+  ORGANIZATION_NOT_FOUND_MESSAGE,
+  POST_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
+  USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
 import { testPostType, createTestPost } from "../../helpers/posts";
 
@@ -25,6 +25,10 @@ beforeAll(async () => {
   testUser = resultsArray[0];
   testOrganization = resultsArray[1];
   testPost = resultsArray[2];
+  const { requestContext } = await import("../../../src/libraries");
+  vi.spyOn(requestContext, "translate").mockImplementation(
+    (message) => message
+  );
 });
 
 afterAll(async () => {
@@ -45,7 +49,7 @@ describe("resolvers -> Mutation -> adminRemovePost", () => {
 
       await adminRemovePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -62,7 +66,7 @@ describe("resolvers -> Mutation -> adminRemovePost", () => {
 
       await adminRemovePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
@@ -119,7 +123,7 @@ describe("resolvers -> Mutation -> adminRemovePost", () => {
 
       await adminRemovePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(POST_NOT_FOUND);
+      expect(error.message).toEqual(POST_NOT_FOUND_MESSAGE);
     }
   });
 

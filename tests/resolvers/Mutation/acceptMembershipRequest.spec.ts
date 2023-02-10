@@ -5,13 +5,13 @@ import { MutationAcceptMembershipRequestArgs } from "../../../src/types/generate
 import { connect, disconnect } from "../../../src/db";
 import { acceptMembershipRequest as acceptMembershipRequestResolver } from "../../../src/resolvers/Mutation/acceptMembershipRequest";
 import {
-  MEMBERSHIP_REQUEST_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND,
-  USER_ALREADY_MEMBER,
+  MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_MESSAGE,
+  USER_ALREADY_MEMBER_MESSAGE,
   USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
+  USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
 import {
   testMembershipRequestType,
@@ -36,6 +36,10 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
   it(`throws NotFoundError if no membershipRequest exists with _id === args.membershipRequestId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
     try {
       const args: MutationAcceptMembershipRequestArgs = {
         membershipRequestId: Types.ObjectId().toString(),
@@ -47,12 +51,19 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
 
       await acceptMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(MEMBERSHIP_REQUEST_NOT_FOUND);
+      expect(spy).toHaveBeenCalledWith(MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE}`
+      );
     }
   });
 
   it(`throws NotFoundError if no organization exists with _id === membershipRequest.organization
   for membershipRequest with _id === args.membershipRequestId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
     try {
       await MembershipRequest.updateOne(
         {
@@ -75,12 +86,19 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
 
       await acceptMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${ORGANIZATION_NOT_FOUND_MESSAGE}`
+      );
     }
   });
 
   it(`throws NotFoundError if no user exists with _id === membershipRequest.user
   for membershipRequest with _id === args.membershipRequestId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
     try {
       await MembershipRequest.updateOne(
         {
@@ -104,7 +122,8 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
 
       await acceptMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
     }
   });
 
@@ -151,6 +170,10 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
   it(`throws ConflictError if user with _id === membershipRequest.user is already
   a member of organization with _id === membershipRequest.organization for membershipRequest
   with _id === args.membershipRequestId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
     try {
       await Organization.updateOne(
         {
@@ -174,7 +197,10 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
 
       await acceptMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_ALREADY_MEMBER);
+      expect(spy).toHaveBeenCalledWith(USER_ALREADY_MEMBER_MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_ALREADY_MEMBER_MESSAGE}`
+      );
     }
   });
 

@@ -1,7 +1,6 @@
 import "dotenv/config";
 import { Document, Types } from "mongoose";
 import {
-  Interface_User,
   User,
   Organization,
   Interface_Organization,
@@ -19,10 +18,11 @@ import {
   USER_NOT_AUTHORIZED,
   USER_NOT_FOUND,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { createTestUserFunc } from "../../helpers/user";
+import { testUserType } from "../../helpers/userAndOrg";
 
-let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
+let testUsers: testUserType[];
 let testOrganization: Interface_Organization &
   Document<any, any, Interface_Organization>;
 let testPost: Interface_Post & Document<any, any, Interface_Post>;
@@ -30,37 +30,23 @@ let testComment: Interface_Comment & Document<any, any, Interface_Comment>;
 
 beforeAll(async () => {
   await connect();
-
-  testUsers = await User.insertMany([
-    {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: "firstName",
-      lastName: "lastName",
-      appLanguageCode: "en",
-    },
-    {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: "firstName",
-      lastName: "lastName",
-      appLanguageCode: "en",
-    },
-  ]);
+  const tempUser1 = await createTestUserFunc();
+  const tempUser2 = await createTestUserFunc();
+  testUsers = [tempUser1, tempUser2];
 
   testOrganization = await Organization.create({
     name: "name",
     description: "description",
     isPublic: true,
-    creator: testUsers[0]._id,
-    admins: [testUsers[0]._id],
-    members: [testUsers[1]._id],
-    blockedUsers: [testUsers[0]._id],
+    creator: testUsers[0]!._id,
+    admins: [testUsers[0]!._id],
+    members: [testUsers[1]!._id],
+    blockedUsers: [testUsers[0]!._id],
   });
 
   await User.updateOne(
     {
-      _id: testUsers[0]._id,
+      _id: testUsers[0]!._id,
     },
     {
       $set: {
@@ -74,7 +60,7 @@ beforeAll(async () => {
 
   await User.updateOne(
     {
-      _id: testUsers[1]._id,
+      _id: testUsers[1]!._id,
     },
     {
       $set: {
@@ -85,12 +71,12 @@ beforeAll(async () => {
 
   const testMembershipRequest = await MembershipRequest.create({
     organization: testOrganization._id,
-    user: testUsers[0]._id,
+    user: testUsers[0]!._id,
   });
 
   await User.updateOne(
     {
-      _id: testUsers[0]._id,
+      _id: testUsers[0]!._id,
     },
     {
       $push: {
@@ -101,7 +87,7 @@ beforeAll(async () => {
 
   testPost = await Post.create({
     text: "text",
-    creator: testUsers[0]._id,
+    creator: testUsers[0]!._id,
     organization: testOrganization._id,
   });
 
@@ -119,7 +105,7 @@ beforeAll(async () => {
 
   testComment = await Comment.create({
     text: "text",
-    creator: testUsers[0]._id,
+    creator: testUsers[0]!._id,
     post: testPost._id,
   });
 
@@ -163,7 +149,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       };
 
       const context = {
-        userId: testUsers[0].id,
+        userId: testUsers[0]!.id,
       };
 
       await removeOrganizationResolver?.({}, args, context);
@@ -191,7 +177,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       };
 
       const context = {
-        userId: testUsers[0].id,
+        userId: testUsers[0]!.id,
       };
 
       await removeOrganizationResolver?.({}, args, context);
@@ -207,7 +193,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       },
       {
         $set: {
-          creator: testUsers[0]._id,
+          creator: testUsers[0]!._id,
         },
       }
     );
@@ -217,7 +203,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     };
 
     const context = {
-      userId: testUsers[0]._id,
+      userId: testUsers[0]!._id,
     };
 
     const removeOrganizationPayload = await removeOrganizationResolver?.(
@@ -227,7 +213,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     );
 
     const updatedTestUser = await User.findOne({
-      _id: testUsers[0]._id,
+      _id: testUsers[0]!._id,
     })
       .select(["-password"])
       .lean();
@@ -235,7 +221,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     expect(removeOrganizationPayload).toEqual(updatedTestUser);
 
     const updatedTestUser1 = await User.findOne({
-      _id: testUsers[1]._id,
+      _id: testUsers[1]!._id,
     })
       .select(["joinedOrganizations"])
       .lean();

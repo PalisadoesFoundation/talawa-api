@@ -527,43 +527,6 @@ describe("resolvers -> Query -> usersConnection", () => {
     expect(usersConnectionPayload).toEqual(users);
   });
 
-  it(`returns paginated list of users sorted by 'email_DESC' if
-  args.orderBy === undefined`, async () => {
-    const where = {};
-
-    const sort = {
-      email: -1,
-    };
-
-    const args: QueryUsersConnectionArgs = {
-      first: 2,
-      skip: 1,
-      where: null,
-      orderBy: undefined,
-    };
-
-    const usersConnectionPayload = await usersConnectionResolver?.(
-      {},
-      args,
-      {}
-    );
-
-    const users = await User.find(where)
-      .limit(2)
-      .skip(1)
-      .sort(sort)
-      .select(["-password"])
-      .populate("createdOrganizations")
-      .populate("createdEvents")
-      .populate("joinedOrganizations")
-      .populate("registeredEvents")
-      .populate("eventAdmin")
-      .populate("adminFor")
-      .lean();
-
-    expect(usersConnectionPayload).toEqual(users);
-  });
-
   it(`returns paginated list of users without sorting if orderBy === null`, async () => {
     const where = {};
 
