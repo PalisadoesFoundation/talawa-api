@@ -1,4 +1,7 @@
 import {
+  TASK_NOT_FOUND_CODE,
+  TASK_NOT_FOUND_MESSAGE,
+  TASK_NOT_FOUND_PARAM,
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_PARAM,
@@ -33,9 +36,9 @@ export const updateTask: MutationResolvers["updateTask"] = async (
 
   if (!task) {
     throw new errors.NotFoundError(
-      requestContext.translate("task.notFound"),
-      "task.notFound",
-      "task"
+      requestContext.translate(TASK_NOT_FOUND_MESSAGE),
+      TASK_NOT_FOUND_CODE,
+      TASK_NOT_FOUND_PARAM
     );
   }
 
