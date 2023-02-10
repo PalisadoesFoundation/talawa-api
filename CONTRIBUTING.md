@@ -18,7 +18,7 @@ If you are new to contributing to open source, please read the Open Source Guide
   - [Upgrading Code](#upgrading-code)
       - [Setting up Upstream and Origin](#setting-up-upstream-and-origin)
       - [Creating a Pull Request - Process Overview](#creating-a-pull-request---process-overview)
-  - [Code Quality and Typechecking](#code-quality-and-typechecking)
+  - [Type checking and code quality](#type-checking-and-code-quality)
   - [Internships](#internships)
     - [GSoC](#gsoc)
   - [Community](#community)
@@ -163,16 +163,15 @@ Now we make a new branch (with `git checkout -b {{ BRANCH_NAME }}` ), do the cha
 
 We use a different branch to make changes so that we can work on multiple issues while still having a clean version in develop branch.
 
-## Code Quality and Typechecking
+## Type checking and code quality
 
-On making a PR, we use GitHub actions to check that your code is properly formatted, linted and doesn't have type errors. You can manually check the above mentioned using the commands `npm run format:check`, `npm run lint:check` and `npm run typecheck`.
+On making a PR, we use GitHub actions to check that your code is properly formatted, doesn't have typescript type errors and is properly linted. More information about these checks is provided in `INSTALLATION.md` file.
 
-We are using the package `Husky` to automatically run these commands for you each time you make a commit, so that you don't have to worry about them! 
+We are using the package `Husky` to run a pre-commit hook which automatically runs these checks and also fixes some of them for you each time you make a commit, so that you don't have to manually run them.
 
-If you don't want to run these scripts pre-commit, you can use the `--no-verify` flag with your commit message as follows:
-```
-git commit -m "commit message" --no-verify
-```
+If you don't want to run these pre-commit checks, you can use manually opt out of it using the `--no-verify` flag with your commit message as follows:
+
+        git commit -m "commit message" --no-verify
 
 ## Internships
 
