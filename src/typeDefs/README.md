@@ -14,7 +14,7 @@ Try to use alphabetical structuring whereever possible. This saves the mental ov
 
 # Documentation
 
-GraphQL allows developers to document their whole graphQL api within the schema. This is done through the use of a pair of `"""` symbols. Any text enclosed within these symbols becomes a description for the field it precedes.
+GraphQL allows developers to document their whole graphQL api within the schema. This is done using of a pair of `"""` symbols. Any text enclosed within these symbols becomes a description for the field it precedes.
 
 Here's a good example:-
 
