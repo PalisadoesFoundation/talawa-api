@@ -92,6 +92,37 @@ export const USER_NOT_FOUND_CODE = "user.notFound";
 export const USER_NOT_FOUND_MESSAGE = "user.notFound";
 export const USER_NOT_FOUND_PARAM = "user";
 
+export const TRANSLATION_ALREADY_PRESENT = "Translation Already Present";
+export const TRANSLATION_ALREADY_PRESENT_CODE = "translation.alreadyPresent";
+export const TRANSLATION_ALREADY_PRESENT_MESSAGE = "translation.alreadyPresent";
+export const TRANSLATION_ALREADY_PRESENT_PARAM = "translationAlreadyPresent";
+
+export const INVALID_CREDENTIALS = "Invalid credentials";
+export const INVALID_CREDENTIALS_CODE = "invalid.credentials";
+export const INVALID_CREDENTIALS_MESSAGE = "invalid.credentials";
+export const INVALID_CREDENTIALS_PARAM = "credentials";
+
+export const INVALID_REFRESH_TOKEN = "Invalid refresh token";
+export const INVALID_REFRESH_TOKEN_CODE = "invalid.refreshToken";
+export const INVALID_REFRESH_TOKEN_MESSAGE = "invalid.refreshToken";
+export const INVALID_REFRESH_TOKEN_PARAM = "refreshToken";
+
+export const TASK_NOT_FOUND = "Task not found";
+export const TASK_NOT_FOUND_CODE = "task.notFound";
+export const TASK_NOT_FOUND_MESSAGE = "task.notFound";
+export const TASK_NOT_FOUND_PARAM = "task";
+
+export const USER_PROFILE_IMAGE_NOT_FOUND = "User profile image not found";
+export const USER_PROFILE_IMAGE_NOT_FOUND_CODE = "user.profileImage.notFound";
+export const USER_PROFILE_IMAGE_NOT_FOUND_MESSAGE =
+  "user.profileImage.notFound";
+export const USER_PROFILE_IMAGE_NOT_FOUND_PARAM = "userProfileImage";
+
+export const EMAIL_ALREADY_EXISTS = "Email already exists";
+export const EMAIL_ALREADY_EXISTS_CODE = "email.alreadyExists";
+export const EMAIL_ALREADY_EXISTS_MESSAGE = "email.alreadyExists";
+export const EMAIL_ALREADY_EXISTS_PARAM = "email";
+
 export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 
 export const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;

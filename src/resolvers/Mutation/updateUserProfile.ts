@@ -1,4 +1,8 @@
 import {
+  EMAIL_ALREADY_EXISTS,
+  EMAIL_ALREADY_EXISTS_CODE,
+  EMAIL_ALREADY_EXISTS_MESSAGE,
+  EMAIL_ALREADY_EXISTS_PARAM,
   IN_PRODUCTION,
   USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
@@ -37,10 +41,10 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
     if (userWithEmailExists === true) {
       throw new errors.ConflictError(
         IN_PRODUCTION !== true
-          ? "Email already exists"
-          : requestContext.translate("email.alreadyExists"),
-        "email.alreadyExists",
-        "email"
+          ? EMAIL_ALREADY_EXISTS
+          : requestContext.translate(EMAIL_ALREADY_EXISTS_MESSAGE),
+        EMAIL_ALREADY_EXISTS_CODE,
+        EMAIL_ALREADY_EXISTS_PARAM
       );
     }
   } // Upload file
