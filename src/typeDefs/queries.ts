@@ -1,6 +1,7 @@
 import { gql } from "apollo-server-core";
 
-export const query = gql`
+// Place fields alphabetically to ensure easier lookup and navigation.
+export const queries = gql`
   type Query {
     adminPlugin(orgId: ID!): [Plugin]
 
