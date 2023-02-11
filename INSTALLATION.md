@@ -29,7 +29,6 @@ This document provides instructions on how to set up and start a running instanc
   - [Accessing talawa-api](#accessing-talawa-api)
   - [Changing default talawa-api port](#changing-default-talawa-api-port)
   - [Running tests](#running-tests)
-  - [Linting code files](#linting-code-files)
 
 <br/>
 
@@ -397,11 +396,3 @@ Talawa-api makes use of `vitest` to run tests because it is much faster than `je
 You can run the tests for talawa-api using this command:-
 
         npm run test
-
-<br/>
-
-## Linting code files
-
-You can lint your code files using this command:-
-
-        npm run lint
