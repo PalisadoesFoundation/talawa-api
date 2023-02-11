@@ -1,7 +1,6 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
+import { errors } from "../../libraries";
 import { DirectChat } from "../../models";
-import { IN_PRODUCTION } from "../../constants";
 
 export const directChatsByUserID: QueryResolvers["directChatsByUserID"] =
   async (_parent, args) => {
@@ -11,9 +10,7 @@ export const directChatsByUserID: QueryResolvers["directChatsByUserID"] =
 
     if (directChats.length === 0) {
       throw new errors.NotFoundError(
-        IN_PRODUCTION !== true
-          ? "DirectChats not found"
-          : requestContext.translate("directChats.notFound"),
+        "DirectChats not found",
         "directChats.notFound",
         "directChats"
       );

@@ -1,8 +1,6 @@
 import {
-  IN_PRODUCTION,
   USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
 } from "../../constants";
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
@@ -16,9 +14,7 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
 
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND
-        : requestContext.translate(USER_NOT_FOUND_MESSAGE),
+      USER_NOT_FOUND,
       USER_NOT_FOUND_CODE,
       USER_NOT_FOUND_PARAM
     );
