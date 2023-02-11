@@ -101,4 +101,11 @@ export const newsfeed = gql`
     commentCount_ASC
     commentCount_DESC
   }
+
+  input PostUpdateInput {
+    text: String
+    title: String
+    imageUrl: String
+    videoUrl: String
+  }
 `;
