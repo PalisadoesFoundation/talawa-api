@@ -1,7 +1,8 @@
 import { RoleAuthorizationDirective } from "../../src/directives/roleDirective";
 import { Interface_User, User } from "../../src/models";
 import { beforeAll, afterAll, it, expect } from "vitest";
-import { connect, disconnect } from "../../src/db";
+import { connect, disconnect } from "../helpers/db";
+import mongoose from "mongoose";
 import { ApolloServer, gql } from "apollo-server-express";
 import { errors } from "../../src/libraries";
 import { Document, Types } from "mongoose";
@@ -11,6 +12,8 @@ import { USER_NOT_FOUND_MESSAGE } from "../../src/constants";
 import i18n from "i18n";
 import express from "express";
 import { appConfig } from "../../src/config";
+
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 const app = express();
 i18n.configure({
@@ -48,7 +51,8 @@ const resolvers = {
 };
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
+
   testUser = await User.create({
     userId: Types.ObjectId().toString(),
     email: `email${nanoid().toLowerCase()}@gmail.com`,
@@ -62,7 +66,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await testUser.remove();
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 it("throws NotFoundError if no user exists with _id === context.userId", async () => {

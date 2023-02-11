@@ -2,7 +2,8 @@ import "dotenv/config";
 import { User } from "../../../src/models";
 import { Types } from "mongoose";
 import { MutationBlockPluginCreationBySuperadminArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { blockPluginCreationBySuperadmin as blockPluginCreationBySuperadminResolver } from "../../../src/resolvers/Mutation/blockPluginCreationBySuperadmin";
 import {
   USER_NOT_AUTHORIZED_MESSAGE,
@@ -12,9 +13,10 @@ import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { testUserType, createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: testUserType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
@@ -23,7 +25,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {

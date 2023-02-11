@@ -2,7 +2,8 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { User } from "../../../src/models";
 import { MutationUpdateLanguageArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { updateLanguage as updateLanguageResolver } from "../../../src/resolvers/Mutation/updateLanguage";
 import { USER_NOT_FOUND } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -11,16 +12,17 @@ import {
   testUserType,
 } from "../../helpers/userAndOrg";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> updateLanguage", () => {

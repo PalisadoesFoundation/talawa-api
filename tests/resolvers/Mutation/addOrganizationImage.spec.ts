@@ -2,7 +2,8 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { Organization } from "../../../src/models";
 import { MutationAddOrganizationImageArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { addOrganizationImage as addOrganizationImageResolver } from "../../../src/resolvers/Mutation/addOrganizationImage";
 import * as uploadImage from "../../../src/utilities/uploadImage";
 import {
@@ -28,20 +29,21 @@ import {
 const testImagePath: string = `${nanoid().toLowerCase()}test.png`;
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 vi.mock("../../utilities", () => ({
   uploadImage: vi.fn(),
 }));
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const resultArray = await createTestUserAndOrganization();
   testUser = resultArray[0];
   testOrganization = resultArray[1];
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> addOrganizationImage", () => {

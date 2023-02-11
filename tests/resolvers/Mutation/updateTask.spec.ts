@@ -2,7 +2,8 @@ import "dotenv/config";
 import { Document, Types } from "mongoose";
 import { Event, Task, Interface_Task } from "../../../src/models";
 import { MutationUpdateTaskArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { updateTask as updateTaskResolver } from "../../../src/resolvers/Mutation/updateTask";
 import {
   USER_NOT_AUTHORIZED_MESSAGE,
@@ -12,11 +13,12 @@ import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { testUserType } from "../../helpers/userAndOrg";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 let testTasks: (Interface_Task & Document<any, any, Interface_Task>)[];
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestEventWithRegistrants();
   testUser = temp[0];
   const testEvent = temp[2];
@@ -47,7 +49,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> updateTask", () => {

@@ -2,7 +2,8 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { User, Event } from "../../../src/models";
 import { MutationRegisterForEventArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { registerForEvent as registerForEventResolver } from "../../../src/resolvers/Mutation/registerForEvent";
 import {
   EVENT_NOT_FOUND_MESSAGE,
@@ -23,10 +24,11 @@ import { testEventType } from "../../helpers/events";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 
 let testUser: testUserType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testEvent: testEventType;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestEventWithRegistrants();
   testUser = temp[0];
   const testOrganization = temp[1];
@@ -62,7 +64,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> registerForEvent", () => {

@@ -9,7 +9,8 @@ import {
   it,
   vi,
 } from "vitest";
-import { connect, disconnect } from "../../src/db";
+import { connect, disconnect } from "../helpers/db";
+import mongoose from "mongoose";
 import { User } from "../../src/models";
 import path from "path";
 import {
@@ -18,10 +19,11 @@ import {
 } from "../helpers/userAndOrg";
 
 let testUser: testUserType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 try {
   beforeAll(async () => {
-    await connect();
+    MONGOOSE_INSTANCE = await connect();
     const testUserObj = await createTestUserAndOrganization();
     testUser = testUserObj[0];
 
@@ -60,7 +62,7 @@ try {
       console.log(error);
     }
 
-    await disconnect();
+    await disconnect(MONGOOSE_INSTANCE!);
   });
 
   describe("utilities -> uploadImage", () => {

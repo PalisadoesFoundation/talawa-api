@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { tasksByUser as tasksByUserResolver } from "../../../src/resolvers/Query/tasksByUser";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import {
   User,
   Organization,
@@ -13,10 +14,11 @@ import { Document } from "mongoose";
 import { QueryTasksByUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: Interface_User & Document<any, any, Interface_User>;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 
   testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,
@@ -94,7 +96,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> tasksByUser", () => {

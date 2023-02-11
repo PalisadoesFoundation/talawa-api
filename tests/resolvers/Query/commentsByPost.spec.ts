@@ -1,5 +1,6 @@
 import "dotenv/config";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { commentsByPost as commentsByPostResolver } from "../../../src/resolvers/Query/commentsByPost";
 import {
   Comment,
@@ -21,13 +22,14 @@ import {
 import { QueryCommentsByPostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: Interface_User & Document<any, any, Interface_User>;
 let testOrganization: Interface_Organization &
   Document<any, any, Interface_Organization>;
 let testPost: Interface_Post & Document<any, any, Interface_Post>;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 
   testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,
@@ -87,7 +89,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> commentsByPost", () => {

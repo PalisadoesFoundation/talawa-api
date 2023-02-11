@@ -2,7 +2,8 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { User, Organization, MembershipRequest } from "../../../src/models";
 import { MutationSendMembershipRequestArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { sendMembershipRequest as sendMembershipRequestResolver } from "../../../src/resolvers/Mutation/sendMembershipRequest";
 import { ORGANIZATION_NOT_FOUND, USER_NOT_FOUND } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -12,12 +13,13 @@ import {
   testMembershipRequestType,
 } from "../../helpers/membershipRequests";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
 let testMembershipRequest: testMembershipRequestType;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestMembershipRequest();
   testUser = temp[0];
   testOrganization = temp[1];
@@ -25,7 +27,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> sendMembershipRequest", () => {

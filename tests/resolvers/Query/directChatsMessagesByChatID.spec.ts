@@ -1,7 +1,8 @@
 import "dotenv/config";
 import { CHAT_NOT_FOUND } from "../../../src/constants";
 import { directChatsMessagesByChatID as directChatsMessagesByChatIDResolver } from "../../../src/resolvers/Query/directChatsMessagesByChatID";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { Document, Types } from "mongoose";
 import {
   User,
@@ -14,11 +15,12 @@ import { nanoid } from "nanoid";
 import { QueryDirectChatsMessagesByChatIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testDirectChats: (Interface_DirectChat &
   Document<any, any, Interface_DirectChat>)[];
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 
   const testUsers = await User.insertMany([
     {
@@ -82,7 +84,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> directChatsMessagesByChatID", () => {

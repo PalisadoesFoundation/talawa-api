@@ -12,7 +12,7 @@ export const connect = async () => {
     });
   } catch (error) {
     logger.error("Error while connecting to mongo database", error);
-    process.exit(1);
+    // process.exit(1);
   }
 };
 

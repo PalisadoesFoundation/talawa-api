@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { Types } from "mongoose";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { MutationAddUserImageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
 import {
@@ -15,14 +16,15 @@ import {
 import { testUserType, createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: testUserType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> addUserImage", () => {

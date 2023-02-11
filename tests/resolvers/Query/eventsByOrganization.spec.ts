@@ -7,17 +7,19 @@ import {
   Task,
   Interface_Organization,
 } from "../../../src/models";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { nanoid } from "nanoid";
 import { QueryEventsByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Document } from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testOrganization: Interface_Organization &
   Document<any, any, Interface_Organization>;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 
   const testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,
@@ -118,7 +120,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> eventsByOrganization", () => {

@@ -1,7 +1,8 @@
 import "dotenv/config";
 import { User, Organization, MembershipRequest } from "../../../src/models";
 import { MutationLoginArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { login as loginResolver } from "../../../src/resolvers/Mutation/login";
 import {
   androidFirebaseOptions,
@@ -15,9 +16,10 @@ import { testUserType } from "../../helpers/userAndOrg";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 
 let testUser: testUserType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestEventWithRegistrants();
   const hashedTestPassword = await bcrypt.hash("password", 12);
   testUser = temp[0];
@@ -61,7 +63,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> login", () => {

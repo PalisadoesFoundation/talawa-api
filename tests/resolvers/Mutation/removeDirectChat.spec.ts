@@ -6,7 +6,8 @@ import {
   DirectChatMessage,
 } from "../../../src/models";
 import { MutationRemoveDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import {
   CHAT_NOT_FOUND,
   ORGANIZATION_NOT_FOUND,
@@ -29,12 +30,13 @@ import {
   testDirectChatType,
 } from "../../helpers/directChat";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
 let testDirectChat: testDirectChatType;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestDirectChat();
   testUser = temp[0];
   testOrganization = temp[1];
@@ -63,7 +65,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> removeDirectChat", () => {

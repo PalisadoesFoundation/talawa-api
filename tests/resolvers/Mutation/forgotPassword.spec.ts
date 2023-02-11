@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { MutationForgotPasswordArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { forgotPassword as forgotPasswordResolver } from "../../../src/resolvers/Mutation/forgotPassword";
 import { INVALID_OTP } from "../../../src/constants";
 import jwt from "jsonwebtoken";
@@ -11,14 +12,15 @@ import { createTestUserFunc } from "../../helpers/user";
 import { User } from "../../../src/models";
 
 let testUser: testUserType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUserFunc();
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> forgotPassword", () => {

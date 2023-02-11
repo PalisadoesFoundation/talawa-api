@@ -5,18 +5,20 @@ import {
   Donation,
   Interface_Organization,
 } from "../../../src/models";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { getDonationByOrgId as getDonationByOrgIdResolver } from "../../../src/resolvers/Query/getDonationByOrgId";
 import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { QueryGetDonationByOrgIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Document } from "mongoose";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testOrganization: Interface_Organization &
   Document<any, any, Interface_Organization>;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 
   const testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,
@@ -59,7 +61,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> getDonationByOrgId", () => {

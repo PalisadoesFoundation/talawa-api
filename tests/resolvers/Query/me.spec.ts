@@ -1,16 +1,18 @@
 import "dotenv/config";
 import { me as meResolver } from "../../../src/resolvers/Query/me";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { USER_NOT_FOUND } from "../../../src/constants";
 import { Interface_User, User, Organization, Event } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { Document, Types } from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: (Interface_User & Document<any, any, Interface_User>) | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 
   testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,
@@ -70,7 +72,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> me", () => {

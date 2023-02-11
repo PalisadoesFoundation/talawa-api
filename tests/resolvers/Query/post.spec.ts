@@ -7,17 +7,19 @@ import {
   Comment,
   Interface_Post,
 } from "../../../src/models";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { nanoid } from "nanoid";
 import { Document, Types } from "mongoose";
 import { POST_NOT_FOUND } from "../../../src/constants";
 import { QueryPostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testPost: Interface_Post & Document<any, any, Interface_Post>;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 
   const testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,
@@ -79,7 +81,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> post", () => {

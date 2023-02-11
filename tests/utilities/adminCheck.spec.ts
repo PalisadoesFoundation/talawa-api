@@ -8,7 +8,7 @@ import {
   it,
   vi,
 } from "vitest";
-import { connect, disconnect } from "../../src/db";
+import { connect, disconnect } from "../helpers/db";
 import {
   USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_MESSAGE,
@@ -18,19 +18,21 @@ import {
   testOrganizationType,
   testUserType,
 } from "../helpers/userAndOrg";
+import mongoose from "mongoose";
 
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  connect();
+  MONGOOSE_INSTANCE = await connect();
   const userAndOrg = await createTestUserAndOrganization(false, false);
   testUser = userAndOrg[0];
   testOrganization = userAndOrg[1];
 });
 
 afterAll(async () => {
-  disconnect();
+  disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("utilities -> adminCheck", () => {

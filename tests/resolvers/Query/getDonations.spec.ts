@@ -1,12 +1,15 @@
 import "dotenv/config";
 import { User, Organization, Donation } from "../../../src/models";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { getDonations as getDonationsResolver } from "../../../src/resolvers/Query/getDonations";
 import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
+
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 
   const testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,
@@ -49,7 +52,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> getDonations", () => {
