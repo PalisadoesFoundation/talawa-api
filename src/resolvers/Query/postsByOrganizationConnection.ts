@@ -4,7 +4,6 @@ import {
   QueryResolvers,
 } from "../../types/generatedGraphQLTypes";
 import { Post } from "../../models";
-import { errors } from "../../libraries";
 import { getSort } from "./helperFunctions/getSort";
 
 // @ts-ignore

@@ -1,6 +1,6 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
-import { errors, requestContext } from "../../libraries";
+import { errors } from "../../libraries";
 import {
   USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,

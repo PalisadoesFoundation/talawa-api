@@ -4,7 +4,7 @@ import {
   USER_NOT_FOUND_PARAM,
 } from "../../constants";
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
+import { errors } from "../../libraries";
 import { User } from "../../models";
 
 export const user: QueryResolvers["user"] = async (_parent, args, context) => {
