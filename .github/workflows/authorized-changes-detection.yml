@@ -13,7 +13,8 @@ name: Checking workflow files
 on:
   pull_request:
     paths:
-      - '.github/**'     
+      - '.github/**'
+      - '.husky/**'
       - '.env.sample'
       - 'package.json'
       - 'tsconfig.json'
