@@ -29,7 +29,7 @@ export const MEMBER_NOT_FOUND_CODE = "member.notFound";
 export const MEMBER_NOT_FOUND_MESSAGE = "member.notFound";
 export const MEMBER_NOT_FOUND_PARAM = "member";
 
-export const MEMBERSHIP_REQUEST_NOT_FOUND = "Membership Request not found";
+export const MEMBERSHIP_REQUEST_NOT_FOUND = "MembershipRequest already exists";
 export const MEMBERSHIP_REQUEST_NOT_FOUND_CODE = "membershipRequest.notFound";
 export const MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE =
   "membershipRequest.notFound";
@@ -102,7 +102,7 @@ export const INVALID_CREDENTIALS_CODE = "invalid.credentials";
 export const INVALID_CREDENTIALS_MESSAGE = "invalid.credentials";
 export const INVALID_CREDENTIALS_PARAM = "credentials";
 
-export const INVALID_REFRESH_TOKEN = "Invalid refresh token";
+export const INVALID_REFRESH_TOKEN = "Invalid refreshToken";
 export const INVALID_REFRESH_TOKEN_CODE = "invalid.refreshToken";
 export const INVALID_REFRESH_TOKEN_MESSAGE = "invalid.refreshToken";
 export const INVALID_REFRESH_TOKEN_PARAM = "refreshToken";

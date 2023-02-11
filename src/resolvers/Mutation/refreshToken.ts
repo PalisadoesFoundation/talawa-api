@@ -28,15 +28,15 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
         {
           message:
             IN_PRODUCTION !== true
-              ? "Invalid refreshToken"
-              : requestContext.translate("invalid.refreshToken"),
-          code: "invalid.refreshToken",
-          param: "refreshToken",
+              ? INVALID_REFRESH_TOKEN
+              : requestContext.translate(INVALID_REFRESH_TOKEN_MESSAGE),
+          code: INVALID_REFRESH_TOKEN_CODE,
+          param: INVALID_REFRESH_TOKEN_PARAM,
         },
       ],
       IN_PRODUCTION !== true
-        ? "Invalid refreshToken"
-        : requestContext.translate("invalid.refreshToken")
+        ? INVALID_REFRESH_TOKEN
+        : requestContext.translate(INVALID_REFRESH_TOKEN_MESSAGE)
     );
   }
 
