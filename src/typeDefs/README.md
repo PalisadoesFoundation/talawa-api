@@ -4,12 +4,6 @@ Talawa-api uses schema-first approach for its graphQL implementation and this di
 
 <br/>
 
-# Schema represents a contract
-
-A graphQL schema represents a contract between the server and the clients. Be very careful when editing the schema as you can unknowingly edit stuff which breaks functionality for all clients relying on the schema. Read the [graphQL spec](https://spec.graphql.org/October2021/) for more information.
-
-<br/>
-
 # Structuring
 
 Most of the files in this directory represent a collection of some distinct type within the graphQL [SDL(Schema Definition Language)](https://graphql.org/learn/). All these collections are then imported into the `index.ts` file, merged into a list and exported under a variable named `typeDefs`.
@@ -79,3 +73,9 @@ You can use `#` symbol to comment out stuff in the graphQL schema as shown for t
         # type RandomType{
         #     randomField: String!
         # }
+
+<br/>
+
+# Schema represents a contract
+
+A graphQL schema represents a contract between the server and the clients. Be very careful when editing the schema as you can unknowingly edit stuff which breaks functionality for all clients relying on the schema. Read the [graphQL spec](https://spec.graphql.org/October2021/) for more information.
