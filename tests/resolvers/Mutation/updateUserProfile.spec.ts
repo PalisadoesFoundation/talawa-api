@@ -71,7 +71,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     }
   });
 
-  it(`throws NotFoundError if no user exists with _id === context.userId // IN_PRODUCTION=true`, async () => {
+  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
@@ -87,17 +87,6 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
-
       const { updateUserProfile: updateUserProfileResolverUserError } =
         await import("../../../src/resolvers/Mutation/updateUserProfile");
 
@@ -108,7 +97,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     }
   });
 
-  it(`throws ConflictError if args.data.email is already registered for another user'`, async () => {
+  it(`throws ConflictError if args.data.email is already registered for another user`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
@@ -139,7 +128,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     }
   });
 
-  it(`throws ConflictError if args.data.email is already registered for another user'// IN_PRODUCTION=true `, async () => {
+  it(`throws ConflictError if args.data.email is already registered for another user`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
@@ -156,17 +145,6 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       const context = {
         userId: testUser._id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
 
       const { updateUserProfile: updateUserProfileResolverEmailError } =
         await import("../../../src/resolvers/Mutation/updateUserProfile");
