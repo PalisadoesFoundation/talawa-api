@@ -45,8 +45,8 @@ Follow the setup guide for `git` on official [git docs](https://git-scm.com/down
 <br/>
 
 ## Setting up this repository
-First you need a local copy of talawa-api. Run the following command in the directory of choice on your local system.
 
+First you need a local copy of talawa-api. Run the following command in the directory of choice on your local system.
 
 1. Navigate to the folder where you want to setup the repository. Here, I will set it up in a folder called `talawa`.
 
@@ -69,7 +69,6 @@ $ git clone https://github.com/{{GITHUB USERNAME}}/talawa-api.git
 This will setup the repository and the code files locally for you. For more detailed instructios on contributing code, and managing the versions of this repository with Git, checkout [CONTRIBUTING.md here](./CONTRIBUTING.md)
 
 `NOTE:- All the commands we're going to execute in the following instructions will assume you are in the root directory of the project. If you fail to do so, the commands will not work.`
-
 
 ## Creating .env file
 
@@ -117,6 +116,14 @@ Run the following command and copy/paste the result to the variable named `REFRE
 ## MongoDB
 
 Talawa-api makes use of `mongoDB` for its database needs. We make use of `mongoose ODM` to interact with the mongoDB database from within the code.
+
+**NOTE :**
+It must be noted that that talawa-api actually uses **2** databases. You only have to setup
+one database and provide it's URL in the .env file. This will be `primary database` and would
+be used to store all your data.
+
+In addition, we would automatically create a new database with the name `TALAWA_API_TEST_DATABASE`,
+which would be exclusively used for storing all the test data generated during the testing process so that it does not bloat the main database with unnecessary data.
 
 <br/>
 
