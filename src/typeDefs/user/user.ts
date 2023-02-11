@@ -39,7 +39,6 @@ export const user = gql`
     lastName: String!
     email: String!
     password: String!
-    userType: UserType
     appLanguageCode: String
     organizationUserBelongsToId: ID
   }
