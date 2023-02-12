@@ -1,7 +1,7 @@
 import type { CodegenConfig } from "@graphql-codegen/cli";
 
 const config: CodegenConfig = {
-  schema: ["./src/typeDefs/**/*.ts", "scalar Upload"],
+  schema: ["./src/typeDefs/**/*.ts"],
 
   generates: {
     "./src/types/generatedGraphQLTypes.ts": {
@@ -21,9 +21,8 @@ const config: CodegenConfig = {
         mapperTypeSuffix: "Model",
 
         // Mappers lets us provide database model types to be used in generated typescript types instead of graphql types. This
-        // is because what we retrieve from the database and what we choose to return from a graphql server could be completely
-        // different fields. This also helps in seperating out resolver logic for nested relation fields into their own resolvers
-        // instead of resolving them in the root resolver itself.
+        // functionality is useful because what we retrieve from the database and what we choose to return from a graphql server
+        // could be completely different fields. Address to models here is relative to the location of generated types.
         mappers: {
           MessageChat: "../models/MessageChat#Interface_MessageChat",
 
