@@ -9,14 +9,14 @@ import {
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import { testUserType } from "../../helpers/userAndOrg";
 import { createTestPost, testPostType } from "../../helpers/posts";
 
 let testUser: testUserType;
 let testPost: testPostType;
 
-beforeAll(async () => {
+beforeEach(async () => {
   await connect();
   const temp = await createTestPost();
   testUser = temp[0];
@@ -26,7 +26,7 @@ beforeAll(async () => {
     (message) => message
   );
 });
-afterAll(async () => {
+afterEach(async () => {
   await disconnect();
 });
 
@@ -63,7 +63,8 @@ describe("resolvers -> Mutation -> updatePost", () => {
     }
   });
 
-  it(`throws UnauthorizedError as current user with _id === context.userId is an admin of post with _id === args.id`, async () => {
+  it(`throws UnauthorizedError as current user with _id === context.userId is
+  not an creator of post with _id === args.id`, async () => {
     try {
       const args: MutationUpdatePostArgs = {
         id: testPost!._id,
@@ -72,6 +73,11 @@ describe("resolvers -> Mutation -> updatePost", () => {
       const context = {
         userId: testUser!._id,
       };
+
+      await Post.updateOne(
+        { _id: testPost!._id },
+        { $set: { creator: Types.ObjectId().toString() } }
+      );
 
       await updatePostResolver?.({}, args, context);
     } catch (error: any) {
@@ -99,27 +105,5 @@ describe("resolvers -> Mutation -> updatePost", () => {
     }).lean();
 
     expect(updatePostPayload).toEqual(testUpdatePostPayload);
-  });
-
-  it(`throws UnauthorizedError as current user with _id === context.userId is
-  not an admin of post with _id === args.id`, async () => {
-    try {
-      const args: MutationUpdatePostArgs = {
-        id: testPost!._id,
-      };
-
-      const context = {
-        userId: testUser!._id,
-      };
-
-      await Post.updateOne(
-        { _id: testPost!._id },
-        { $set: { creator: Types.ObjectId().toString() } }
-      );
-
-      await updatePostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
-    }
   });
 });

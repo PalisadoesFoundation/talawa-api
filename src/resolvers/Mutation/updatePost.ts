@@ -44,11 +44,11 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     );
   }
 
-  const currentUserIsPostAdmin =
+  const currentUserIsPostCreator =
     post.creator.toString() === context.userId.toString();
 
-  // checks if current user is an admin of the post with _id === args.id
-  if (currentUserIsPostAdmin === false) {
+  // checks if current user is an creator of the post with _id === args.id
+  if (currentUserIsPostCreator === false) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
       USER_NOT_AUTHORIZED_CODE,
