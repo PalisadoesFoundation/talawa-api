@@ -18,6 +18,7 @@ This document provides instructions on how to set up and start a running instanc
   - [MongoDB](#mongodb)
     - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
     - [Setting up MONGODB\_URL in .env file](#setting-up-mongodb_url-in-env-file)
+    - [Instructions to setup local instance of MongoDB via MongoDB Compass and MongoShell](#instructions-to-setup-local-instance-of-mongodb-via-mongodb-compass-and-          mongoshell)
     - [Optional:- Managing mongodb database using VSCode extension](#optional--managing-mongodb-database-using-vscode-extension)
   - [Google/firebase](#googlefirebase)
     - [Setting up RECAPTCHA\_SECRET\_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
@@ -136,13 +137,19 @@ We're listing some common approaches to set up a running instance of mongodb dat
 
 Which approach you choose to set up your mongodb database does not matter. What matters is the `connection string` to that database using which talawa-api can connect to it. `Connection string` can differ depending on the approach you used to set up your database instance. Please read the official [mongodb docs](https://www.mongodb.com/docs/manual/reference/connection-string/) on `connection string`. Copy/paste this `connection string` to the variable named `MONGO_DB_URL` in `.env` file.
 
-Your MongoDB installation may include either the `mongo` or `mongosh` command line utility. An easy way of determining the `connection string` is to:
+### Instructions to setup local instance of MongoDB via MongoDB Compass and MongoShell
 
-1. Run the command line utility
-1. Note the `connection string` in the first lines of the output.
-1. Add the first section of the `connection string` to the `MONGO_DB_URL` section of the `.env` file. In this case it is `mongodb://127.0.0.1:27017/`
+**It is recommended to have a local instance of MongoDB database instead of a cloud-based one, as it enhances the development experience and provides a more streamlined experience.**
 
-```
+1. Download the latest version of MongoDB Community Server, which includes MongoDB Compass, from the following link:[MongoDB Community Server]( https://www.mongodb.com/try/download/community)
+2. Separately download the MongoDB Shell from the tools section at the following link:[Mongo Shell](https://www.mongodb.com/try/download/shell)
+3. Extract the downloaded shell folder, locate the "mongosh" application, and paste it to the following location: `Program Files` -> `MongoDB` -> `bin`.
+    [Note: **You will find the mongosh application inside the `bin` folder**]
+4. Add the path of the location where you pasted the "mongosh" application to your system's environment variables.
+5. Create a folder named "data" in the C drive and within it create a new folder named "db".
+6. Open a terminal and run the "mongosh" command.
+7. In the `.env` file of talawa-api, add the first section of the connection string (mongodb://127.0.0.1:27017/) to the MONGO_DB_URL section.
+ ```
 $ mongosh
 
 Current Mongosh Log ID: e6ab4232a963d456920b3736
@@ -152,12 +159,9 @@ Using Mongosh:          1.6.2
 
 For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 
-...
-...
-...
-...
-
 ```
+8. In a separate terminal, run the "mongod" command to start the local instance of the database.
+9. Open MongoDB Compass and click on "Connect." You will now be able to access the graphical user interface of the local database.
 
 <br/>
 
