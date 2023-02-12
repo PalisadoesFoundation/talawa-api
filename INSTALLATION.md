@@ -125,7 +125,7 @@ Talawa-api makes use of `mongoDB` for its database needs. We make use of `mongoo
 
 We're listing some common approaches to set up a running instance of mongodb database:-
 
-1. `Hosted database approach:-` MongoDB Atlas is the easiest way to get a running instance of mongodb database. It is a hosted(remote) mongodb database provided by mongodb itself. If you're a beginner and don't want too much of a hassle setting up the database you should use this approach. Follow the setup guide on official [mongodb atlas docs](https://www.mongodb.com/docs/atlas/getting-started/). Mongodb Atlas is just one of the many hosted database solutions. If you want to use something else please do your own research.
+1. `Hosted database approach:-` MongoDB Atlas is the easiest way to get a running instance of mongodb database. It is a hosted(remote) mongodb database provided by mongodb itself. If you're a beginner and don't want too much of a hassle setting up the database you should use this approach but you should eventually switch to local instance. Follow the setup guide on official [mongodb atlas docs](https://www.mongodb.com/docs/atlas/getting-started/). Mongodb Atlas is just one of the many hosted database solutions. Some issues that you might face while using this are slower tests, slower API requests, dependence on Internet connection etc.
 
 2. `System native database approach:-` You can install mongodb natively on your system and create/connect to the database. Follow the setup guide on official [mongodb docs](https://www.mongodb.com/docs/manual/administration/install-community/) for your respective operating system.
 
@@ -164,6 +164,8 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 ```
 8. In a separate terminal, run the "mongod" command to start the local instance of the database.
 9. Open MongoDB Compass and click on "Connect." You will now be able to access the graphical user interface of the local database.
+
+**NOTE**:These instructions are for Windows only you can do the same in macOS and linux with minor tweaks. This has been provided to give a brief overview for beginners to setup their own local instance.
 
 <br/>
 
