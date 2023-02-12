@@ -29,7 +29,7 @@ describe("utilities -> adminCheck", () => {
     vi.resetModules();
   });
 
-  it("throws error if userType===`SUPERADMIN` is false and IN_PRODUCTION === true", async () => {
+  it("throws error if userType===`SUPERADMIN` is false", async () => {
     const { requestContext } = await import("../../src/libraries");
 
     const spy = vi
