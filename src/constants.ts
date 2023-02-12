@@ -63,6 +63,18 @@ export const REGISTRANT_ALREADY_EXIST_CODE = "registrant.alreadyExist";
 export const REGISTRANT_ALREADY_EXIST_MESSAGE = "registrant.alreadyExist";
 export const REGISTRANT_ALREADY_EXIST_PARAM = "registrant";
 
+export const INTERNAL_SERVER_ERROR = {
+  message: "Internal Server Error!",
+  code: "internalServerError",
+  param: "internalServerError",
+};
+
+export const UNAUTHENTICATED_ERROR = {
+  message: "UnauthenticatedError",
+  code: "user.notAuthenticated",
+  param: "userAuthentication",
+};
+
 export const STATUS_ACTIVE = "ACTIVE";
 
 export const URL =

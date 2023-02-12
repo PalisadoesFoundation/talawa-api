@@ -1,6 +1,7 @@
 import { gql } from "apollo-server-core";
 
-export const mutation = gql`
+// Place fields alphabetically to ensure easier lookup and navigation.
+export const mutations = gql`
   type Mutation {
     acceptAdmin(id: ID!): Boolean! @auth
 
