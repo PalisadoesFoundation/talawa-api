@@ -19,11 +19,13 @@ import {
 import { createTestUser, testUserType } from "../../helpers/userAndOrg";
 import { User } from "../../../src/models";
 
-let testUser: testUserType;
+let testUserSuperAdmin: testUserType;
+let testUserAdmin: testUserType;
 
 beforeAll(async () => {
   await connect();
-  testUser = await createTestUser();
+  testUserSuperAdmin = await createTestUser();
+  testUserAdmin = await createTestUser();
 });
 
 afterAll(async () => {
@@ -73,7 +75,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUserSuperAdmin?.id,
       };
 
       const { acceptAdmin } = await import(
@@ -91,7 +93,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
   it(`makes user with _id === args.id adminApproved and returns true`, async () => {
     await User.updateOne(
       {
-        _id: testUser?._id,
+        _id: testUserSuperAdmin?._id,
       },
       {
         $set: {
@@ -102,11 +104,11 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     );
 
     const args: MutationAcceptAdminArgs = {
-      id: testUser!.id,
+      id: testUserAdmin!.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUserSuperAdmin!.id,
     };
 
     const acceptAdminPayload = await acceptAdminResolver?.({}, args, context);
@@ -114,11 +116,36 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     expect(acceptAdminPayload).toEqual(true);
 
     const updatedTestUser = await User.findOne({
-      _id: testUser!._id,
+      _id: testUserAdmin!._id,
     })
       .select(["adminApproved"])
       .lean();
 
     expect(updatedTestUser?.adminApproved).toEqual(true);
+  });
+
+  it(`throws not found error when user with _id === args._id is null`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationAcceptAdminArgs = {
+        id: Types.ObjectId().toString(),
+      };
+
+      const context = {
+        userId: testUserSuperAdmin?.id,
+      };
+
+      const { acceptAdmin } = await import(
+        "../../../src/resolvers/Mutation/acceptAdmin"
+      );
+      await acceptAdmin?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+    }
   });
 });
