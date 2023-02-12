@@ -29,11 +29,14 @@ export const MEMBER_NOT_FOUND_CODE = "member.notFound";
 export const MEMBER_NOT_FOUND_MESSAGE = "member.notFound";
 export const MEMBER_NOT_FOUND_PARAM = "member";
 
-export const MEMBERSHIP_REQUEST_NOT_FOUND = "MembershipRequest already exists";
+export const MEMBERSHIP_REQUEST_NOT_FOUND = "Membership Request not found";
 export const MEMBERSHIP_REQUEST_NOT_FOUND_CODE = "membershipRequest.notFound";
 export const MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE =
   "membershipRequest.notFound";
 export const MEMBERSHIP_REQUEST_NOT_FOUND_PARAM = "membershipRequest";
+
+export const MEMBERSHIP_REQUEST_ALREADY_EXISTS =
+  "Membership Request already exists";
 
 export const ORGANIZATION_MEMBER_NOT_FOUND =
   "Organization's user is not a member";

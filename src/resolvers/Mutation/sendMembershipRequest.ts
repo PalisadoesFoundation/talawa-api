@@ -1,6 +1,6 @@
 import {
   IN_PRODUCTION,
-  MEMBERSHIP_REQUEST_NOT_FOUND,
+  MEMBERSHIP_REQUEST_ALREADY_EXISTS,
   MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
   MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
   MEMBERSHIP_REQUEST_NOT_FOUND_PARAM,
@@ -55,7 +55,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
     if (membershipRequestExists === true) {
       throw new errors.ConflictError(
         IN_PRODUCTION !== true
-          ? MEMBERSHIP_REQUEST_NOT_FOUND
+          ? MEMBERSHIP_REQUEST_ALREADY_EXISTS
           : requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE),
         MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
         MEMBERSHIP_REQUEST_NOT_FOUND_PARAM

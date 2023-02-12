@@ -74,7 +74,7 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
 
       await sendMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual("MembershipRequest already exists");
+      expect(error.message).toEqual("Membership Request already exists");
     }
   });
 
