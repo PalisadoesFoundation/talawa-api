@@ -1,13 +1,13 @@
 import { directives } from "./directives";
 import { enums } from "./enums";
 import { inputs } from "./inputs";
-import { interfaces } from "./interfaces";
+// import { interfaces } from "./interfaces";
 import { mutations } from "./mutations";
 import { queries } from "./queries";
 import { scalars } from "./scalars";
 import { subscriptions } from "./subscriptions";
 import { types } from "./types";
-import { unions } from "./unions";
+// import { unions } from "./unions";
 
 // 'gql' tag creates a value of type DocumentNode. Here typeDefs is an array of those DocumentNode type variables
 // that can be directly consumed by apollo-server. This is done to have our type-defintions defined inside
@@ -19,11 +19,11 @@ export const typeDefs = [
   directives,
   enums,
   inputs,
-  interfaces,
+  // interfaces,
   mutations,
   queries,
   scalars,
   subscriptions,
   types,
-  unions,
+  // unions,
 ];
