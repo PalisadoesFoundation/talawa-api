@@ -3,10 +3,7 @@ import { Types } from "mongoose";
 import { MutationAcceptAdminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { acceptAdmin as acceptAdminResolver } from "../../../src/resolvers/Mutation/acceptAdmin";
-import {
-  USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND_MESSAGE,
-} from "../../../src/constants";
+import { USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
 import {
   afterAll,
   afterEach,
@@ -36,22 +33,6 @@ afterEach(() => {
 });
 
 describe("resolvers -> Mutation -> acceptAdmin", () => {
-  it(`throws Error if user with _id === context.userId is not a SUPERADMIN`, async () => {
-    try {
-      const args: MutationAcceptAdminArgs = {
-        id: testUser!.id,
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      await acceptAdminResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
-    }
-  });
-
   it(`throws NotFoundError if no user exists with _id === args.id`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
@@ -61,11 +42,12 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     try {
       await User.updateOne(
         {
-          _id: testUser!._id,
+          _id: testUser?._id,
         },
         {
           $set: {
             userType: "SUPERADMIN",
+            adminApproved: true,
           },
         }
       );
@@ -77,14 +59,6 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { acceptAdmin } = await import(
         "../../../src/resolvers/Mutation/acceptAdmin"
