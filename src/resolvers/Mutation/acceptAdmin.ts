@@ -27,18 +27,6 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
 
   superAdminCheck(currentUser!);
 
-  const userExists = await User.exists({
-    _id: args.id,
-  });
-
-  if (userExists === false) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
-    );
-  }
-
   await User.updateOne(
     {
       _id: args.id,
