@@ -3,9 +3,19 @@ import { Types } from "mongoose";
 import { User } from "../../../src/models";
 import { MutationUpdateUserTypeArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
-import { updateUserType as updateUserTypeResolver } from "../../../src/resolvers/Mutation/updateUserType";
-import { USER_NOT_AUTHORIZED, USER_NOT_FOUND } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  USER_NOT_AUTHORIZED,
+  USER_NOT_FOUND_MESSAGE,
+} from "../../../src/constants";
+import {
+  beforeAll,
+  afterAll,
+  afterEach,
+  describe,
+  it,
+  vi,
+  expect,
+} from "vitest";
 import { createTestUserFunc, testUserType } from "../../helpers/user";
 
 let testUsers: testUserType[];
@@ -21,6 +31,11 @@ afterAll(async () => {
   await disconnect();
 });
 
+afterEach(() => {
+  vi.doUnmock("../../../src/constants");
+  vi.resetModules();
+});
+
 describe("resolvers -> Mutation -> updateUserType", () => {
   it(`throws UnauthorizedError if user with _id === context.userId is not a SUPERADMIN`, async () => {
     try {
@@ -32,6 +47,10 @@ describe("resolvers -> Mutation -> updateUserType", () => {
         userId: testUsers[0]!._id,
       };
 
+      const { updateUserType: updateUserTypeResolver } = await import(
+        "../../../src/resolvers/Mutation/updateUserType"
+      );
+
       await updateUserTypeResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_AUTHORIZED);
@@ -39,6 +58,11 @@ describe("resolvers -> Mutation -> updateUserType", () => {
   });
 
   it(`throws NotFoundError if no user exists with _id === args.data.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
     try {
       await User.updateOne(
         {
@@ -55,11 +79,17 @@ describe("resolvers -> Mutation -> updateUserType", () => {
       const args: MutationUpdateUserTypeArgs = {
         data: { id: Types.ObjectId().toString() },
       };
+
       const context = { userId: testUsers[0]!._id };
+
+      const { updateUserType: updateUserTypeResolver } = await import(
+        "../../../src/resolvers/Mutation/updateUserType"
+      );
 
       await updateUserTypeResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
     }
   });
 
@@ -68,6 +98,10 @@ describe("resolvers -> Mutation -> updateUserType", () => {
       data: { id: testUsers[1]!._id, userType: "BLOCKED" },
     };
     const context = { userId: testUsers[0]!._id };
+
+    const { updateUserType: updateUserTypeResolver } = await import(
+      "../../../src/resolvers/Mutation/updateUserType"
+    );
 
     const updateUserTypePayload = await updateUserTypeResolver?.(
       {},

@@ -3,13 +3,20 @@ import { Types } from "mongoose";
 import { User, Event } from "../../../src/models";
 import { MutationUnregisterForEventByUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
-import { unregisterForEventByUser as unregisterForEventByUserResolver } from "../../../src/resolvers/Mutation/unregisterForEventByUser";
 import {
-  EVENT_NOT_FOUND,
-  USER_ALREADY_UNREGISTERED,
-  USER_NOT_FOUND,
+  EVENT_NOT_FOUND_MESSAGE,
+  USER_ALREADY_UNREGISTERED_MESSAGE,
+  USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  vi,
+  afterEach,
+} from "vitest";
 import { testUserType } from "../../helpers/userAndOrg";
 import { createTestEvent, testEventType } from "../../helpers/events";
 
@@ -27,8 +34,18 @@ afterAll(async () => {
   await disconnect();
 });
 
+afterEach(() => {
+  vi.doUnmock("../../../src/constants");
+  vi.resetModules();
+});
+
 describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
     try {
       const args: MutationUnregisterForEventByUserArgs = {
         id: "",
@@ -38,13 +55,24 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      const { unregisterForEventByUser: unregisterForEventByUserResolver } =
+        await import(
+          "../../../src/resolvers/Mutation/unregisterForEventByUser"
+        );
+
       await unregisterForEventByUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
     }
   });
 
   it(`throws NotFoundError if no event exists with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
     try {
       const args: MutationUnregisterForEventByUserArgs = {
         id: Types.ObjectId().toString(),
@@ -54,14 +82,25 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
         userId: testUser!._id,
       };
 
+      const { unregisterForEventByUser: unregisterForEventByUserResolver } =
+        await import(
+          "../../../src/resolvers/Mutation/unregisterForEventByUser"
+        );
+
       await unregisterForEventByUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(EVENT_NOT_FOUND);
+      expect(spy).toHaveBeenCalledWith(EVENT_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(`Translated ${EVENT_NOT_FOUND_MESSAGE}`);
     }
   });
 
   it(`throws NotFoundError if current user with _id === context.userId is
   not a registrant of event with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
     try {
       const args: MutationUnregisterForEventByUserArgs = {
         id: testEvent!._id,
@@ -71,9 +110,15 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
         userId: testUser!._id,
       };
 
+      const { unregisterForEventByUser: unregisterForEventByUserResolver } =
+        await import(
+          "../../../src/resolvers/Mutation/unregisterForEventByUser"
+        );
+
       await unregisterForEventByUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
     }
   });
 
@@ -113,6 +158,9 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
       userId: testUser!._id,
     };
 
+    const { unregisterForEventByUser: unregisterForEventByUserResolver } =
+      await import("../../../src/resolvers/Mutation/unregisterForEventByUser");
+
     const unregisterForEventByUserPayload =
       await unregisterForEventByUserResolver?.({}, args, context);
 
@@ -127,6 +175,11 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
 
   it(`throws NotFoundError if current user with _id === context.userId has
   already unregistered from the event with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
     try {
       const args: MutationUnregisterForEventByUserArgs = {
         id: testEvent!._id,
@@ -136,9 +189,17 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
         userId: testUser!._id,
       };
 
+      const { unregisterForEventByUser: unregisterForEventByUserResolver } =
+        await import(
+          "../../../src/resolvers/Mutation/unregisterForEventByUser"
+        );
+
       await unregisterForEventByUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_ALREADY_UNREGISTERED);
+      expect(spy).toHaveBeenCalledWith(USER_ALREADY_UNREGISTERED_MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_ALREADY_UNREGISTERED_MESSAGE}`
+      );
     }
   });
 });
