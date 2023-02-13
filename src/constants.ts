@@ -75,6 +75,18 @@ export const UNAUTHENTICATED_ERROR = {
   param: "userAuthentication",
 };
 
+export const LENGTH_VALIDATION_ERROR = {
+  message: "Error: Length must be greater than 0 and less than",
+  code: "string.notValid",
+  param: "stringValidation",
+};
+
+export const REGEX_VALIDATION_ERROR = {
+  message: "Error: Entered value must be a valid string",
+  code: "string.notValid",
+  param: "stringValidation",
+};
+
 export const TASK_NOT_FOUND = "Task not found";
 export const TASK_NOT_FOUND_CODE = "task.notFound";
 export const TASK_NOT_FOUND_MESSAGE = "task.notFound";
