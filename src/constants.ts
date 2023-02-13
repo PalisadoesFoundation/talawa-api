@@ -63,6 +63,23 @@ export const REGISTRANT_ALREADY_EXIST_CODE = "registrant.alreadyExist";
 export const REGISTRANT_ALREADY_EXIST_MESSAGE = "registrant.alreadyExist";
 export const REGISTRANT_ALREADY_EXIST_PARAM = "registrant";
 
+export const INTERNAL_SERVER_ERROR = {
+  message: "Internal Server Error!",
+  code: "internalServerError",
+  param: "internalServerError",
+};
+
+export const UNAUTHENTICATED_ERROR = {
+  message: "UnauthenticatedError",
+  code: "user.notAuthenticated",
+  param: "userAuthentication",
+};
+
+export const TASK_NOT_FOUND = "Task not found";
+export const TASK_NOT_FOUND_CODE = "task.notFound";
+export const TASK_NOT_FOUND_MESSAGE = "task.notFound";
+export const TASK_NOT_FOUND_PARAM = "task";
+
 export const STATUS_ACTIVE = "ACTIVE";
 
 export const URL =
@@ -91,6 +108,11 @@ export const USER_NOT_FOUND = "User not found";
 export const USER_NOT_FOUND_CODE = "user.notFound";
 export const USER_NOT_FOUND_MESSAGE = "user.notFound";
 export const USER_NOT_FOUND_PARAM = "user";
+
+export const EMAIL_ALREADY_EXISTS = "Email already exists";
+export const EMAIL_ALREADY_EXISTS_CODE = "email.alreadyExists";
+export const EMAIL_ALREADY_EXISTS_MESSAGE = "email.alreadyExists";
+export const EMAIL_ALREADY_EXISTS_PARAM = "email";
 
 export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 

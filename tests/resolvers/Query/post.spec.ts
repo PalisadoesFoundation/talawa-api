@@ -1,87 +1,24 @@
 import "dotenv/config";
 import { post as postResolver } from "../../../src/resolvers/Query/post";
 import {
-  User,
-  Organization,
-  Post,
-  Comment,
-  Interface_Post,
-} from "../../../src/models";
-import {
   connect,
   disconnect,
   dropAllCollectionsFromDatabase,
 } from "../../helpers/db";
-import mongoose from "mongoose";
-import { nanoid } from "nanoid";
-import { Document, Types } from "mongoose";
+import { Post } from "../../../src/models";
+import { Types } from "mongoose";
 import { POST_NOT_FOUND } from "../../../src/constants";
 import { QueryPostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { testPostType, createPostwithComment } from "../../helpers/posts";
+import mongoose from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testPost: Interface_Post & Document<any, any, Interface_Post>;
+let testPost: testPostType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-
-  const testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  testPost = await Post.create({
-    text: "text",
-    creator: testUser._id,
-    organization: testOrganization._id,
-  });
-
-  const testComment = await Comment.create({
-    text: "text",
-    creator: testUser._id,
-    post: testPost._id,
-  });
-
-  await Post.updateOne(
-    {
-      _id: testPost._id,
-    },
-    {
-      $push: {
-        likedBy: testUser._id,
-        comments: testComment._id,
-      },
-      $inc: {
-        likeCount: 1,
-        commentCount: 1,
-      },
-    }
-  );
+  testPost = (await createPostwithComment())[2];
 });
 
 afterAll(async () => {
@@ -104,12 +41,12 @@ describe("resolvers -> Query -> post", () => {
 
   it(`returns post object`, async () => {
     const args: QueryPostArgs = {
-      id: testPost._id,
+      id: testPost?._id,
     };
 
     const postPayload = await postResolver?.({}, args, {});
 
-    const post = await Post.findOne({ _id: testPost._id })
+    const post = await Post.findOne({ _id: testPost?._id })
       .populate("organization")
       .populate({
         path: "comments",
@@ -127,7 +64,7 @@ describe("resolvers -> Query -> post", () => {
   it(`returns post object with post.likeCount === 0 and post.commentCount === 0`, async () => {
     await Post.updateOne(
       {
-        _id: testPost._id,
+        _id: testPost?._id,
       },
       {
         $set: {
@@ -142,12 +79,12 @@ describe("resolvers -> Query -> post", () => {
     );
 
     const args: QueryPostArgs = {
-      id: testPost._id,
+      id: testPost?._id,
     };
 
     const postPayload = await postResolver?.({}, args, {});
 
-    const post = await Post.findOne({ _id: testPost._id })
+    const post = await Post.findOne({ _id: testPost?._id })
       .populate("organization")
       .populate({
         path: "comments",

@@ -10,6 +10,7 @@ import {
 import mongoose from "mongoose";
 import { updateTask as updateTaskResolver } from "../../../src/resolvers/Mutation/updateTask";
 import {
+  TASK_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
@@ -70,6 +71,7 @@ describe("resolvers -> Mutation -> updateTask", () => {
         id: testUser?.id,
         data: {},
       };
+
       const context = { userId: Types.ObjectId().toString() };
 
       const { updateTask: updateTaskResolverNotFoundError } = await import(
@@ -95,6 +97,7 @@ describe("resolvers -> Mutation -> updateTask", () => {
         id: Types.ObjectId().toString(),
         data: {},
       };
+
       const context = {
         userId: testUser?.id,
       };
@@ -105,8 +108,8 @@ describe("resolvers -> Mutation -> updateTask", () => {
 
       await updateTaskResolverNotFoundError?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(`Translated task.notFound`);
-      expect(spy).toHaveBeenLastCalledWith("task.notFound");
+      expect(spy).toHaveBeenLastCalledWith(TASK_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(`Translated ${TASK_NOT_FOUND_MESSAGE}`);
     }
   });
 

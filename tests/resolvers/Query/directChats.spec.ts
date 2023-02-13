@@ -6,72 +6,26 @@ import {
   dropAllCollectionsFromDatabase,
 } from "../../helpers/db";
 import mongoose from "mongoose";
-import {
-  User,
-  Organization,
-  DirectChat,
-  DirectChatMessage,
-} from "../../../src/models";
-import { nanoid } from "nanoid";
+import { DirectChat } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  createTestUser,
+  createTestUserAndOrganization,
+} from "../../helpers/userAndOrg";
+import { createTestDirectMessageForMultipleUser } from "../../helpers/directChat";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
-  const testUsers = await User.insertMany([
-    {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: "firstName",
-      lastName: "lastName",
-      appLanguageCode: "en",
-    },
-    {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: "firstName",
-      lastName: "lastName",
-      appLanguageCode: "en",
-    },
-  ]);
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUsers[0]._id,
-    admins: [testUsers[0]._id],
-    members: [testUsers[0]._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUsers[0]._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
+  const [testUser1, testOrganization] = await createTestUserAndOrganization();
+  const testUser2 = await createTestUser();
+  await createTestDirectMessageForMultipleUser(
+    testUser1?._id,
+    testUser2?._id,
+    testOrganization?._id
   );
-
-  const testDirectChat = await DirectChat.create({
-    creator: testUsers[0]._id,
-    organization: testOrganization._id,
-    users: [testUsers[0]._id],
-  });
-
-  await DirectChatMessage.create({
-    directChatMessageBelongsTo: testDirectChat._id,
-    sender: testUsers[0]._id,
-    receiver: testUsers[1]._id,
-    createdAt: new Date(),
-    messageContent: "messageContent",
-  });
 });
 
 afterAll(async () => {

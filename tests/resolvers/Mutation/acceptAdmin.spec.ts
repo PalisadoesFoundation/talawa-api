@@ -9,7 +9,7 @@ import {
 import mongoose from "mongoose";
 import { acceptAdmin as acceptAdminResolver } from "../../../src/resolvers/Mutation/acceptAdmin";
 import {
-  USER_NOT_AUTHORIZED,
+  USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import {
@@ -24,12 +24,14 @@ import {
 import { createTestUser, testUserType } from "../../helpers/userAndOrg";
 import { User } from "../../../src/models";
 
-let testUser: testUserType;
+let testUserSuperAdmin: testUserType;
+let testUserAdmin: testUserType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  testUser = await createTestUser();
+  testUserSuperAdmin = await createTestUser();
+  testUserAdmin = await createTestUser();
 });
 
 afterAll(async () => {
@@ -43,55 +45,20 @@ afterEach(() => {
 });
 
 describe("resolvers -> Mutation -> acceptAdmin", () => {
-  it(`throws Error if user with _id === context.userId is not a SUPERADMIN`, async () => {
-    try {
-      const args: MutationAcceptAdminArgs = {
-        id: testUser!.id,
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      await acceptAdminResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
-    }
-  });
-
-  it(`throws NotFoundError if no user exists with _id === args.id`, async () => {
+  it(`throws not found error when user with _id === context.userId is null`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementation((message) => `Translated ${message}`);
 
     try {
-      await User.updateOne(
-        {
-          _id: testUser!._id,
-        },
-        {
-          $set: {
-            userType: "SUPERADMIN",
-          },
-        }
-      );
-
       const args: MutationAcceptAdminArgs = {
         id: Types.ObjectId().toString(),
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: Types.ObjectId().toString(),
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { acceptAdmin } = await import(
         "../../../src/resolvers/Mutation/acceptAdmin"
@@ -103,31 +70,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     }
   });
 
-  it(`makes user with _id === args.id adminApproved and returns true`, async () => {
-    const args: MutationAcceptAdminArgs = {
-      id: testUser!.id,
-    };
-
-    const context = {
-      userId: testUser!.id,
-    };
-
-    const acceptAdminPayload = await acceptAdminResolver?.({}, args, context);
-
-    expect(acceptAdminPayload).toEqual(true);
-
-    const updatedTestUser = await User.findOne({
-      _id: testUser!._id,
-    })
-      .select(["adminApproved"])
-      .lean();
-
-    expect(updatedTestUser?.adminApproved).toEqual(true);
-  });
-});
-
-describe("resolvers -> Mutation -> acceptAdmin [IN_PRODUCTION]", () => {
-  it(`throws NotFoundError if no user exists with _id === context.userId [IN_PRODUCTION]`, async () => {
+  it(`throws user is not Authorised Error if user is not SuperAdmin`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -135,21 +78,73 @@ describe("resolvers -> Mutation -> acceptAdmin [IN_PRODUCTION]", () => {
 
     try {
       const args: MutationAcceptAdminArgs = {
-        id: testUser!.id,
+        id: Types.ObjectId().toString(),
       };
 
       const context = {
-        userId: Types.ObjectId().toString(),
+        userId: testUserSuperAdmin?.id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+      const { acceptAdmin } = await import(
+        "../../../src/resolvers/Mutation/acceptAdmin"
+      );
+      await acceptAdmin?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
+      );
+    }
+  });
+
+  it(`makes user with _id === args.id adminApproved and returns true`, async () => {
+    await User.updateOne(
+      {
+        _id: testUserSuperAdmin?._id,
+      },
+      {
+        $set: {
+          userType: "SUPERADMIN",
+          adminApproved: true,
+        },
+      }
+    );
+
+    const args: MutationAcceptAdminArgs = {
+      id: testUserAdmin!.id,
+    };
+
+    const context = {
+      userId: testUserSuperAdmin!.id,
+    };
+
+    const acceptAdminPayload = await acceptAdminResolver?.({}, args, context);
+
+    expect(acceptAdminPayload).toEqual(true);
+
+    const updatedTestUser = await User.findOne({
+      _id: testUserAdmin!._id,
+    })
+      .select(["adminApproved"])
+      .lean();
+
+    expect(updatedTestUser?.adminApproved).toEqual(true);
+  });
+
+  it(`throws not found error when user with _id === args._id is null`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationAcceptAdminArgs = {
+        id: Types.ObjectId().toString(),
+      };
+
+      const context = {
+        userId: testUserSuperAdmin?.id,
+      };
 
       const { acceptAdmin } = await import(
         "../../../src/resolvers/Mutation/acceptAdmin"

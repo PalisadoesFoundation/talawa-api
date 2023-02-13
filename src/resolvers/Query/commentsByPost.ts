@@ -1,23 +1,18 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { requestContext, errors } from "../../libraries";
+import { errors } from "../../libraries";
 import { Comment, Organization } from "../../models";
 import {
   COMMENT_NOT_FOUND,
   COMMENT_NOT_FOUND_CODE,
-  COMMENT_NOT_FOUND_MESSAGE,
   COMMENT_NOT_FOUND_PARAM,
-  IN_PRODUCTION,
   ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_PARAM,
   POST_NOT_FOUND,
   POST_NOT_FOUND_CODE,
-  POST_NOT_FOUND_MESSAGE,
   POST_NOT_FOUND_PARAM,
   USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
 } from "../../constants";
 
@@ -37,9 +32,7 @@ export const commentsByPost: QueryResolvers["commentsByPost"] = async (
   // Throws error if comments list is empty.
   if (comments.length === 0) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? COMMENT_NOT_FOUND
-        : requestContext.translate(COMMENT_NOT_FOUND_MESSAGE),
+      COMMENT_NOT_FOUND,
       COMMENT_NOT_FOUND_CODE,
       COMMENT_NOT_FOUND_PARAM
     );
@@ -48,9 +41,7 @@ export const commentsByPost: QueryResolvers["commentsByPost"] = async (
   // Throws error if no user exists for comments[0].creator.
   if (!comments[0].creator) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND
-        : requestContext.translate(USER_NOT_FOUND_MESSAGE),
+      USER_NOT_FOUND,
       USER_NOT_FOUND_CODE,
       USER_NOT_FOUND_PARAM
     );
@@ -59,9 +50,7 @@ export const commentsByPost: QueryResolvers["commentsByPost"] = async (
   // Throws error if no post exists for comments[0].post.
   if (!comments[0].post) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? POST_NOT_FOUND
-        : requestContext.translate(POST_NOT_FOUND_MESSAGE),
+      POST_NOT_FOUND,
       POST_NOT_FOUND_CODE,
       POST_NOT_FOUND_PARAM
     );
@@ -73,9 +62,7 @@ export const commentsByPost: QueryResolvers["commentsByPost"] = async (
 
   if (organizationExists === false) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? ORGANIZATION_NOT_FOUND
-        : requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
+      ORGANIZATION_NOT_FOUND,
       ORGANIZATION_NOT_FOUND_CODE,
       ORGANIZATION_NOT_FOUND_PARAM
     );

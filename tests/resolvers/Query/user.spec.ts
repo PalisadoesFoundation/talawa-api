@@ -7,47 +7,21 @@ import {
 } from "../../helpers/db";
 import mongoose from "mongoose";
 import { USER_NOT_FOUND } from "../../../src/constants";
-import { Interface_User, Organization, User } from "../../../src/models";
-import { nanoid } from "nanoid";
-import { Document, Types } from "mongoose";
+import { User } from "../../../src/models";
+import { Types } from "mongoose";
 import { QueryUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  testUserType,
+  createTestUserAndOrganization,
+} from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: testUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        createdOrganizations: testOrganization._id,
-        adminFor: testOrganization._id,
-        joinedOrganizations: testOrganization._id,
-      },
-    }
-  );
+  testUser = (await createTestUserAndOrganization())[0];
 });
 
 afterAll(async () => {
@@ -70,17 +44,17 @@ describe("resolvers -> Query -> user", () => {
 
   it(`returns user object`, async () => {
     const args: QueryUserArgs = {
-      id: testUser.id,
+      id: testUser?.id,
     };
 
     const context = {
-      userId: testUser.id,
+      userId: testUser?.id,
     };
 
     const userPayload = await userResolver?.({}, args, context);
 
     const user = await User.findOne({
-      _id: testUser._id,
+      _id: testUser?._id,
     })
       .populate("adminFor")
       .lean();

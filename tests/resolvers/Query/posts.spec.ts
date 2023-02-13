@@ -1,114 +1,25 @@
 import "dotenv/config";
 import { posts as postsResolver } from "../../../src/resolvers/Query/posts";
-import { User, Organization, Post, Comment } from "../../../src/models";
 import {
   connect,
   disconnect,
   dropAllCollectionsFromDatabase,
 } from "../../helpers/db";
 import mongoose from "mongoose";
-import { nanoid } from "nanoid";
+import { Post } from "../../../src/models";
 import { QueryPostsArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { createSinglePostwithComment } from "../../helpers/posts";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
-  const testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  const testPosts = await Post.insertMany([
-    {
-      text: `text${nanoid()}`,
-      title: `title${nanoid()}`,
-      imageUrl: `imageUrl${nanoid()}`,
-      videoUrl: `videoUrl${nanoid()}`,
-      creator: testUser._id,
-      organization: testOrganization._id,
-    },
-    {
-      text: `text${nanoid()}`,
-      title: `title${nanoid()}`,
-      imageUrl: `imageUrl${nanoid()}`,
-      videoUrl: `videoUrl${nanoid()}`,
-      creator: testUser._id,
-      organization: testOrganization._id,
-    },
-  ]);
-
-  const testComments = await Comment.insertMany([
-    {
-      text: "text",
-      creator: testUser._id,
-      post: testPosts[0]._id,
-    },
-    {
-      text: "text",
-      creator: testUser._id,
-      post: testPosts[1]._id,
-    },
-  ]);
-
-  await Post.updateOne(
-    {
-      _id: testPosts[0]._id,
-    },
-    {
-      $push: {
-        likedBy: testUser._id,
-        comments: testComments[0]._id,
-      },
-      $inc: {
-        likeCount: 1,
-        commentCount: 1,
-      },
-    }
-  );
-
-  await Post.updateOne(
-    {
-      _id: testPosts[1]._id,
-    },
-    {
-      $push: {
-        likedBy: testUser._id,
-        comments: testComments[1]._id,
-      },
-      $inc: {
-        likeCount: 1,
-        commentCount: 1,
-      },
-    }
-  );
+  const [testUser, testOrganization] = await createTestUserAndOrganization();
+  await createSinglePostwithComment(testUser?._id, testOrganization?._id);
+  await createSinglePostwithComment(testUser?._id, testOrganization?._id);
 });
 
 afterAll(async () => {

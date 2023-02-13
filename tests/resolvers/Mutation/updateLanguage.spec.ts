@@ -8,9 +8,16 @@ import {
   dropAllCollectionsFromDatabase,
 } from "../../helpers/db";
 import mongoose from "mongoose";
-import { updateLanguage as updateLanguageResolver } from "../../../src/resolvers/Mutation/updateLanguage";
-import { USER_NOT_FOUND } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import {
+  beforeAll,
+  afterAll,
+  afterEach,
+  describe,
+  it,
+  vi,
+  expect,
+} from "vitest";
 import {
   createTestUserAndOrganization,
   testUserType,
@@ -30,8 +37,19 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE!);
 });
 
+afterEach(() => {
+  vi.doUnmock("../../../src/constants");
+  vi.resetModules();
+});
+
 describe("resolvers -> Mutation -> updateLanguage", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
     try {
       const args: MutationUpdateLanguageArgs = {
         languageCode: "newLanguageCode",
@@ -41,9 +59,14 @@ describe("resolvers -> Mutation -> updateLanguage", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      const { updateLanguage: updateLanguageResolver } = await import(
+        "../../../src/resolvers/Mutation/updateLanguage"
+      );
+
       await updateLanguageResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
     }
   });
 
@@ -55,6 +78,10 @@ describe("resolvers -> Mutation -> updateLanguage", () => {
     const context = {
       userId: testUser!._id,
     };
+
+    const { updateLanguage: updateLanguageResolver } = await import(
+      "../../../src/resolvers/Mutation/updateLanguage"
+    );
 
     const updateLanguagePayload = await updateLanguageResolver?.(
       {},

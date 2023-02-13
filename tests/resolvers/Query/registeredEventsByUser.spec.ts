@@ -1,153 +1,25 @@
 import "dotenv/config";
 import { registeredEventsByUser as registeredEventsByUserResolver } from "../../../src/resolvers/Query/registeredEventsByUser";
 import {
-  Event,
-  User,
-  Organization,
-  Interface_User,
-  Task,
-} from "../../../src/models";
-import {
   connect,
   disconnect,
   dropAllCollectionsFromDatabase,
 } from "../../helpers/db";
 import mongoose from "mongoose";
-import { nanoid } from "nanoid";
+import { Event } from "../../../src/models";
 import { QueryRegisteredEventsByUserArgs } from "../../../src/types/generatedGraphQLTypes";
-import { Document } from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  testUserType,
+  createTestUserAndOrganization,
+} from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: testUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  const testEvents = await Event.insertMany([
-    {
-      creator: testUser._id,
-      registrants: [
-        {
-          userId: testUser._id,
-          user: testUser._id,
-        },
-      ],
-      admins: [testUser._id],
-      organization: testOrganization._id,
-      isRegisterable: true,
-      isPublic: true,
-      title: `title${nanoid()}`,
-      description: `description${nanoid()}`,
-      allDay: true,
-      startDate: new Date().toString(),
-      endDate: new Date().toString(),
-      startTime: new Date().toString(),
-      endTime: new Date().toString(),
-      recurrance: "ONCE",
-      location: `location${nanoid()}`,
-    },
-    {
-      creator: testUser._id,
-      registrants: [
-        {
-          userId: testUser._id,
-          user: testUser._id,
-        },
-      ],
-      admins: [testUser._id],
-      organization: testOrganization._id,
-      isRegisterable: true,
-      isPublic: true,
-      title: `title${nanoid()}`,
-      description: `description${nanoid()}`,
-      allDay: true,
-      startDate: new Date().toString(),
-      endDate: new Date().toString(),
-      startTime: new Date().toString(),
-      endTime: new Date().toString(),
-      recurrance: "ONCE",
-      location: `location${nanoid()}`,
-    },
-  ]);
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdEvents: [testEvents[0]._id, testEvents[1]._id],
-        registeredEvents: [testEvents[0]._id],
-        eventAdmin: [testEvents[0]._id, testEvents[1]._id],
-      },
-    }
-  );
-
-  const testTasks = await Task.insertMany([
-    {
-      title: "title",
-      event: testEvents[0]._id,
-      creator: testUser._id,
-    },
-    {
-      title: "title",
-      event: testEvents[1]._id,
-      creator: testUser._id,
-    },
-  ]);
-
-  await Event.updateOne(
-    {
-      _id: testEvents[0]._id,
-    },
-    {
-      $set: {
-        tasks: [testTasks[0]._id],
-      },
-    }
-  );
-
-  await Event.updateOne(
-    {
-      _id: testEvents[1]._id,
-    },
-    {
-      $set: {
-        tasks: [testTasks[1]._id],
-      },
-    }
-  );
+  testUser = (await createTestUserAndOrganization())[0];
 });
 
 afterAll(async () => {
@@ -163,7 +35,7 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "id_ASC",
     };
 
@@ -171,7 +43,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },
@@ -195,7 +67,7 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "id_DESC",
     };
 
@@ -203,7 +75,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },
@@ -227,7 +99,7 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "title_ASC",
     };
 
@@ -235,7 +107,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },
@@ -259,7 +131,7 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "title_DESC",
     };
 
@@ -267,7 +139,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },
@@ -291,7 +163,7 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "description_ASC",
     };
 
@@ -299,7 +171,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },
@@ -323,7 +195,7 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "description_DESC",
     };
 
@@ -331,7 +203,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },
@@ -355,7 +227,7 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "startDate_ASC",
     };
 
@@ -363,7 +235,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },
@@ -387,7 +259,7 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "startDate_DESC",
     };
 
@@ -395,7 +267,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },
@@ -419,7 +291,7 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "endDate_ASC",
     };
 
@@ -427,7 +299,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },
@@ -451,7 +323,7 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "endDate_DESC",
     };
 
@@ -459,7 +331,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },
@@ -483,7 +355,7 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "allDay_ASC",
     };
 
@@ -491,7 +363,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },
@@ -515,7 +387,7 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "allDay_DESC",
     };
 
@@ -523,7 +395,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },
@@ -547,7 +419,7 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "startTime_ASC",
     };
 
@@ -555,7 +427,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },
@@ -579,7 +451,7 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "startTime_DESC",
     };
 
@@ -587,7 +459,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },
@@ -611,7 +483,7 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "endTime_ASC",
     };
 
@@ -619,7 +491,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },
@@ -643,7 +515,7 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "endTime_DESC",
     };
 
@@ -651,7 +523,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },
@@ -675,7 +547,7 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "recurrance_ASC",
     };
 
@@ -683,7 +555,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },
@@ -707,7 +579,7 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "recurrance_DESC",
     };
 
@@ -715,7 +587,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },
@@ -739,7 +611,7 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "location_ASC",
     };
 
@@ -747,7 +619,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },
@@ -771,7 +643,7 @@ describe("resolvers -> Query -> events", () => {
     };
 
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: "location_DESC",
     };
 
@@ -779,7 +651,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },
@@ -799,7 +671,7 @@ describe("resolvers -> Query -> events", () => {
   it(`returns list of all existing events without sorting if args.orderBy === null`, async () => {
     const sort = {};
     const args: QueryRegisteredEventsByUserArgs = {
-      id: testUser._id,
+      id: testUser?._id,
       orderBy: null,
     };
 
@@ -807,7 +679,7 @@ describe("resolvers -> Query -> events", () => {
       status: "ACTIVE",
       registrants: {
         $elemMatch: {
-          userId: testUser._id,
+          userId: testUser?._id,
           status: "ACTIVE",
         },
       },

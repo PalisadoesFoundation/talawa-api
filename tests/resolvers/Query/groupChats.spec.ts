@@ -6,51 +6,15 @@ import {
   dropAllCollectionsFromDatabase,
 } from "../../helpers/db";
 import mongoose from "mongoose";
-import { GroupChat, Organization, User } from "../../../src/models";
-import { nanoid } from "nanoid";
+import { GroupChat } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { createTestGroupChat } from "../../helpers/groupChat";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-
-  const testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  await GroupChat.create({
-    title: "title",
-    users: [testUser._id],
-    creator: testUser._id,
-    organization: testOrganization._id,
-  });
+  await createTestGroupChat();
 });
 
 afterAll(async () => {

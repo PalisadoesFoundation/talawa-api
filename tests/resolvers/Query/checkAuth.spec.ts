@@ -7,13 +7,12 @@ import {
 import mongoose from "mongoose";
 import { checkAuth as checkAuthResolver } from "../../../src/resolvers/Query/checkAuth";
 import { Types } from "mongoose";
-import { User } from "../../../src/models";
 import { USER_NOT_FOUND } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
+import { createTestUser } from "../../helpers/userAndOrg";
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 });
@@ -37,20 +36,14 @@ describe("resolvers -> Query -> checkAuth", () => {
   });
 
   it("returns user object", async () => {
-    const testUser = await User.create({
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      password: "password",
-      firstName: "firstName",
-      lastName: "lastName",
-      appLanguageCode: "en",
-    });
+    const testUser = await createTestUser();
 
     const context = {
-      userId: testUser._id,
+      userId: testUser?._id,
     };
 
     const user = await checkAuthResolver?.({}, {}, context);
 
-    expect(user).toEqual(testUser.toObject());
+    expect(user).toEqual(testUser?.toObject());
   });
 });

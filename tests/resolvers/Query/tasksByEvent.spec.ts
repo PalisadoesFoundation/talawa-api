@@ -6,102 +6,28 @@ import {
   dropAllCollectionsFromDatabase,
 } from "../../helpers/db";
 import mongoose from "mongoose";
-import {
-  User,
-  Organization,
-  Event,
-  Task,
-  Interface_Event,
-} from "../../../src/models";
-import { nanoid } from "nanoid";
-import { Document } from "mongoose";
+import { Task } from "../../../src/models";
 import { QueryTasksByEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { createEventWithRegistrant, testEventType } from "../../helpers/events";
+import { createTestTask } from "../../helpers/task";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testEvent: Interface_Event & Document<any, any, Interface_Event>;
+let testEvent: testEventType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-
-  const testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  testEvent = await Event.create({
-    creator: testUser._id,
-    registrants: [
-      {
-        userId: testUser._id,
-        user: testUser._id,
-      },
-    ],
-    admins: [testUser._id],
-    organization: testOrganization._id,
-    isRegisterable: true,
-    isPublic: true,
-    title: "title",
-    description: "description",
-    allDay: true,
-    startDate: new Date().toString(),
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $push: {
-        createdOrganizations: testOrganization._id,
-        adminFor: testOrganization._id,
-        joinedOrganizations: testOrganization._id,
-        createdEvents: testEvent._id,
-        registeredEvents: testEvent._id,
-        eventAdmin: testEvent._id,
-      },
-    }
+  const [testUser, testOrganization] = await createTestUserAndOrganization();
+  testEvent = await createEventWithRegistrant(
+    testUser?._id,
+    testOrganization?._id,
+    true,
+    "ONCE"
   );
 
-  const testTasks = await Task.insertMany([
-    {
-      title: `title${nanoid()}`,
-      description: `description${nanoid()}`,
-      event: testEvent._id,
-      creator: testUser._id,
-      deadline: new Date(),
-    },
-    {
-      title: `title${nanoid()}`,
-      description: `description${nanoid()}`,
-      event: testEvent._id,
-      creator: testUser._id,
-      deadline: new Date(),
-    },
-  ]);
-
-  await Event.updateOne(
-    {
-      _id: testEvent._id,
-    },
-    {
-      $set: {
-        tasks: [testTasks[0]._id, testTasks[1]._id],
-      },
-    }
-  );
+  await createTestTask(testEvent?._id, testUser?._id);
+  await createTestTask(testEvent?._id, testUser?._id);
 });
 
 afterAll(async () => {
@@ -112,14 +38,14 @@ afterAll(async () => {
 describe("resolvers -> Query -> tasksByEvent", () => {
   it("returns list of all tasks with task.creator === args.id", async () => {
     const args: QueryTasksByEventArgs = {
-      id: testEvent.id,
+      id: testEvent?.id,
       orderBy: null,
     };
 
     const tasksByEventPayload = await tasksByEventResolver?.({}, args, {});
 
     const tasksByEvent = await Task.find({
-      event: testEvent._id,
+      event: testEvent?._id,
     })
       .populate("event")
       .populate("creator", "-password")
@@ -135,14 +61,14 @@ describe("resolvers -> Query -> tasksByEvent", () => {
     };
 
     const args: QueryTasksByEventArgs = {
-      id: testEvent.id,
+      id: testEvent?.id,
       orderBy: "id_ASC",
     };
 
     const tasksByEventPayload = await tasksByEventResolver?.({}, args, {});
 
     const tasksByEvent = await Task.find({
-      event: testEvent._id,
+      event: testEvent?._id,
     })
       .sort(sort)
       .populate("event")
@@ -159,14 +85,14 @@ describe("resolvers -> Query -> tasksByEvent", () => {
     };
 
     const args: QueryTasksByEventArgs = {
-      id: testEvent.id,
+      id: testEvent?.id,
       orderBy: "id_DESC",
     };
 
     const tasksByEventPayload = await tasksByEventResolver?.({}, args, {});
 
     const tasksByEvent = await Task.find({
-      event: testEvent._id,
+      event: testEvent?._id,
     })
       .sort(sort)
       .populate("event")
@@ -183,14 +109,14 @@ describe("resolvers -> Query -> tasksByEvent", () => {
     };
 
     const args: QueryTasksByEventArgs = {
-      id: testEvent.id,
+      id: testEvent?.id,
       orderBy: "title_ASC",
     };
 
     const tasksByEventPayload = await tasksByEventResolver?.({}, args, {});
 
     const tasksByEvent = await Task.find({
-      event: testEvent._id,
+      event: testEvent?._id,
     })
       .sort(sort)
       .populate("event")
@@ -207,14 +133,14 @@ describe("resolvers -> Query -> tasksByEvent", () => {
     };
 
     const args: QueryTasksByEventArgs = {
-      id: testEvent.id,
+      id: testEvent?.id,
       orderBy: "title_DESC",
     };
 
     const tasksByEventPayload = await tasksByEventResolver?.({}, args, {});
 
     const tasksByEvent = await Task.find({
-      event: testEvent._id,
+      event: testEvent?._id,
     })
       .sort(sort)
       .populate("event")
@@ -231,14 +157,14 @@ describe("resolvers -> Query -> tasksByEvent", () => {
     };
 
     const args: QueryTasksByEventArgs = {
-      id: testEvent.id,
+      id: testEvent?.id,
       orderBy: "description_ASC",
     };
 
     const tasksByEventPayload = await tasksByEventResolver?.({}, args, {});
 
     const tasksByEvent = await Task.find({
-      event: testEvent._id,
+      event: testEvent?._id,
     })
       .sort(sort)
       .populate("event")
@@ -255,14 +181,14 @@ describe("resolvers -> Query -> tasksByEvent", () => {
     };
 
     const args: QueryTasksByEventArgs = {
-      id: testEvent.id,
+      id: testEvent?.id,
       orderBy: "description_DESC",
     };
 
     const tasksByEventPayload = await tasksByEventResolver?.({}, args, {});
 
     const tasksByEvent = await Task.find({
-      event: testEvent._id,
+      event: testEvent?._id,
     })
       .sort(sort)
       .populate("event")
@@ -279,14 +205,14 @@ describe("resolvers -> Query -> tasksByEvent", () => {
     };
 
     const args: QueryTasksByEventArgs = {
-      id: testEvent.id,
+      id: testEvent?.id,
       orderBy: "createdAt_ASC",
     };
 
     const tasksByEventPayload = await tasksByEventResolver?.({}, args, {});
 
     const tasksByEvent = await Task.find({
-      event: testEvent._id,
+      event: testEvent?._id,
     })
       .sort(sort)
       .populate("event")
@@ -303,14 +229,14 @@ describe("resolvers -> Query -> tasksByEvent", () => {
     };
 
     const args: QueryTasksByEventArgs = {
-      id: testEvent.id,
+      id: testEvent?.id,
       orderBy: "createdAt_DESC",
     };
 
     const tasksByEventPayload = await tasksByEventResolver?.({}, args, {});
 
     const tasksByEvent = await Task.find({
-      event: testEvent._id,
+      event: testEvent?._id,
     })
       .sort(sort)
       .populate("event")
@@ -327,14 +253,14 @@ describe("resolvers -> Query -> tasksByEvent", () => {
     };
 
     const args: QueryTasksByEventArgs = {
-      id: testEvent.id,
+      id: testEvent?.id,
       orderBy: "deadline_ASC",
     };
 
     const tasksByEventPayload = await tasksByEventResolver?.({}, args, {});
 
     const tasksByEvent = await Task.find({
-      event: testEvent._id,
+      event: testEvent?._id,
     })
       .sort(sort)
       .populate("event")
@@ -351,14 +277,38 @@ describe("resolvers -> Query -> tasksByEvent", () => {
     };
 
     const args: QueryTasksByEventArgs = {
-      id: testEvent.id,
+      id: testEvent?.id,
       orderBy: "deadline_DESC",
     };
 
     const tasksByEventPayload = await tasksByEventResolver?.({}, args, {});
 
     const tasksByEvent = await Task.find({
-      event: testEvent._id,
+      event: testEvent?._id,
+    })
+      .sort(sort)
+      .populate("event")
+      .populate("creator", "-password")
+      .lean();
+
+    expect(tasksByEventPayload).toEqual(tasksByEvent);
+  });
+
+  it(`returns list of all tasks with task.creator === args.id and sorted by
+  descending order of task.deadline if args.orderBy === undefined`, async () => {
+    const sort = {
+      deadline: -1,
+    };
+
+    const args: QueryTasksByEventArgs = {
+      id: testEvent?.id,
+      orderBy: undefined,
+    };
+
+    const tasksByEventPayload = await tasksByEventResolver?.({}, args, {});
+
+    const tasksByEvent = await Task.find({
+      event: testEvent?._id,
     })
       .sort(sort)
       .populate("event")

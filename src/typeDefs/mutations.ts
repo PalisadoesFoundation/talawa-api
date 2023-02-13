@@ -1,6 +1,7 @@
 import { gql } from "apollo-server-core";
 
-export const mutation = gql`
+// Place fields alphabetically to ensure easier lookup and navigation.
+export const mutations = gql`
   type Mutation {
     acceptAdmin(id: ID!): Boolean! @auth
 
@@ -53,6 +54,7 @@ export const mutation = gql`
 
     createOrganization(data: OrganizationInput, file: Upload): Organization!
       @auth
+      @role(requires: SUPERADMIN)
 
     createPlugin(
       pluginName: String!
@@ -145,6 +147,8 @@ export const mutation = gql`
     unregisterForEventByUser(id: ID!): Event! @auth
 
     updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
+
+    updatePost(id: ID!, data: PostUpdateInput): Post! @auth
 
     updateLanguage(languageCode: String!): User! @auth
 

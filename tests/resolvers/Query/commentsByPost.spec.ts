@@ -6,17 +6,8 @@ import {
 } from "../../helpers/db";
 import mongoose from "mongoose";
 import { commentsByPost as commentsByPostResolver } from "../../../src/resolvers/Query/commentsByPost";
-import {
-  Comment,
-  User,
-  Post,
-  Organization,
-  Interface_Post,
-  Interface_Organization,
-  Interface_User,
-} from "../../../src/models";
-import { nanoid } from "nanoid";
-import { Document, Types } from "mongoose";
+import { Comment, Post, User, Organization } from "../../../src/models";
+import { Types } from "mongoose";
 import {
   COMMENT_NOT_FOUND,
   ORGANIZATION_NOT_FOUND,
@@ -25,71 +16,20 @@ import {
 } from "../../../src/constants";
 import { QueryCommentsByPostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { createPostwithComment, testPostType } from "../../helpers/posts";
+import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: Interface_User & Document<any, any, Interface_User>;
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
-let testPost: Interface_Post & Document<any, any, Interface_Post>;
+let testUser: testUserType;
+let testOrganization: testOrganizationType;
+let testPost: testPostType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  testPost = await Post.create({
-    text: "text",
-    creator: testUser._id,
-    organization: testOrganization._id,
-  });
-
-  const testComment = await Comment.create({
-    text: "text",
-    creator: testUser._id,
-    post: testPost._id,
-  });
-
-  await Post.updateOne(
-    {
-      _id: testPost._id,
-    },
-    {
-      $push: {
-        comments: [testComment._id],
-      },
-      $inc: {
-        commentCount: 1,
-      },
-    }
-  );
+  const resultArray = await createPostwithComment();
+  testUser = resultArray[0];
+  testOrganization = resultArray[1];
+  testPost = resultArray[2];
 });
 
 afterAll(async () => {
@@ -101,13 +41,13 @@ describe("resolvers -> Query -> commentsByPost", () => {
   it(`returns list of all comments for post with _id === args.id
   populated with creator, post and likedBy`, async () => {
     const args: QueryCommentsByPostArgs = {
-      id: testPost._id,
+      id: testPost?._id,
     };
 
     const commentsByPostPayload = await commentsByPostResolver?.({}, args, {});
 
     const commentsByPost = await Comment.find({
-      post: testPost._id,
+      post: testPost?._id,
     })
       .populate("creator", "-password")
       .populate("post")
@@ -121,11 +61,11 @@ describe("resolvers -> Query -> commentsByPost", () => {
   for post with _id === args.id`, async () => {
     try {
       await Organization.deleteOne({
-        _id: testOrganization._id,
+        _id: testOrganization?._id,
       });
 
       const args: QueryCommentsByPostArgs = {
-        id: testPost._id,
+        id: testPost?._id,
       };
 
       await commentsByPostResolver?.({}, args, {});
@@ -137,11 +77,11 @@ describe("resolvers -> Query -> commentsByPost", () => {
   it(`throws NotFoundError if no post exists with _id === args.id`, async () => {
     try {
       await Post.deleteOne({
-        _id: testPost._id,
+        _id: testPost?._id,
       });
 
       const args: QueryCommentsByPostArgs = {
-        id: testPost._id,
+        id: testPost?._id,
       };
 
       await commentsByPostResolver?.({}, args, {});
@@ -154,11 +94,11 @@ describe("resolvers -> Query -> commentsByPost", () => {
    post with id === args.id`, async () => {
     try {
       await User.deleteOne({
-        _id: testUser._id,
+        _id: testUser?._id,
       });
 
       const args: QueryCommentsByPostArgs = {
-        id: testPost._id,
+        id: testPost?._id,
       };
 
       await commentsByPostResolver?.({}, args, {});

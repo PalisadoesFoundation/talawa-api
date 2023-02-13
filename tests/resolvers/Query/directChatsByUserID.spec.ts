@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
+import { Types } from "mongoose";
 import {
   connect,
   disconnect,
@@ -7,57 +7,19 @@ import {
 } from "../../helpers/db";
 import mongoose from "mongoose";
 import { directChatsByUserID as directChatsByUserIDResolver } from "../../../src/resolvers/Query/directChatsByUserID";
-import {
-  User,
-  Organization,
-  DirectChat,
-  Interface_User,
-} from "../../../src/models";
-import { nanoid } from "nanoid";
+import { DirectChat } from "../../../src/models";
 import { QueryDirectChatsByUserIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { createTestDirectChat } from "../../helpers/directChat";
+import { testUserType } from "../../helpers/userAndOrg";
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: testUserType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  await DirectChat.create({
-    creator: testUser._id,
-    organization: testOrganization._id,
-    users: [testUser._id],
-  });
+  const resultArray = await createTestDirectChat();
+  testUser = resultArray[0];
 });
 
 afterAll(async () => {
@@ -82,7 +44,7 @@ describe("resolvers -> Query -> directChatsByUserID", () => {
   it(`returns list of all directChats with directChat.users containing the user
   with _id === args.id`, async () => {
     const args: QueryDirectChatsByUserIdArgs = {
-      id: testUser._id,
+      id: testUser?._id,
     };
 
     const directChatsByUserIdPayload = await directChatsByUserIDResolver?.(
@@ -92,7 +54,7 @@ describe("resolvers -> Query -> directChatsByUserID", () => {
     );
 
     const directChatsByUserId = await DirectChat.find({
-      users: testUser._id,
+      users: testUser?._id,
     }).lean();
 
     expect(directChatsByUserIdPayload).toEqual(directChatsByUserId);

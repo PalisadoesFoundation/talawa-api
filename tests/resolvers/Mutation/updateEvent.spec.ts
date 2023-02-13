@@ -10,11 +10,19 @@ import {
 import mongoose from "mongoose";
 import { updateEvent as updateEventResolver } from "../../../src/resolvers/Mutation/updateEvent";
 import {
-  EVENT_NOT_FOUND,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
+  EVENT_NOT_FOUND_MESSAGE,
+  USER_NOT_AUTHORIZED_MESSAGE,
+  USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  vi,
+  afterEach,
+} from "vitest";
 import {
   createTestUserAndOrganization,
   testUserType,
@@ -60,8 +68,18 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE!);
 });
 
+afterEach(() => {
+  vi.doUnmock("../../../src/constants");
+  vi.resetModules();
+});
+
 describe("resolvers -> Mutation -> updateEvent", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
     try {
       const args: MutationUpdateEventArgs = {
         id: "",
@@ -71,13 +89,23 @@ describe("resolvers -> Mutation -> updateEvent", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      const { updateEvent: updateEventResolver } = await import(
+        "../../../src/resolvers/Mutation/updateEvent"
+      );
+
       await updateEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
     }
   });
 
   it(`throws NotFoundError if no event exists with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
     try {
       const args: MutationUpdateEventArgs = {
         id: Types.ObjectId().toString(),
@@ -87,14 +115,24 @@ describe("resolvers -> Mutation -> updateEvent", () => {
         userId: testUser!._id,
       };
 
+      const { updateEvent: updateEventResolver } = await import(
+        "../../../src/resolvers/Mutation/updateEvent"
+      );
+
       await updateEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(EVENT_NOT_FOUND);
+      expect(spy).toHaveBeenCalledWith(EVENT_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(`Translated ${EVENT_NOT_FOUND_MESSAGE}`);
     }
   });
 
   it(`throws UnauthorizedError if current user with _id === context.userId is
   not an admin of event with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
     try {
       const args: MutationUpdateEventArgs = {
         id: testEvent!._id,
@@ -104,9 +142,16 @@ describe("resolvers -> Mutation -> updateEvent", () => {
         userId: testUser!._id,
       };
 
+      const { updateEvent: updateEventResolver } = await import(
+        "../../../src/resolvers/Mutation/updateEvent"
+      );
+
       await updateEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
+      );
     }
   });
 
@@ -156,6 +201,10 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     const context = {
       userId: testUser!._id,
     };
+
+    const { updateEvent: updateEventResolver } = await import(
+      "../../../src/resolvers/Mutation/updateEvent"
+    );
 
     const updateEventPayload = await updateEventResolver?.({}, args, context);
 

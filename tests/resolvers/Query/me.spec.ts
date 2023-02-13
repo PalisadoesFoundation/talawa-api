@@ -7,72 +7,18 @@ import {
 } from "../../helpers/db";
 import mongoose from "mongoose";
 import { USER_NOT_FOUND } from "../../../src/constants";
-import { Interface_User, User, Organization, Event } from "../../../src/models";
-import { nanoid } from "nanoid";
-import { Document, Types } from "mongoose";
+import { User } from "../../../src/models";
+import { Types } from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { testUserType } from "../../helpers/userAndOrg";
+import { createTestEvent } from "../../helpers/events";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: (Interface_User & Document<any, any, Interface_User>) | null;
+let testUser: testUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-
-  testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUser._id,
-    admins: [testUser._id],
-    members: [testUser._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  const testEvent = await Event.create({
-    creator: testUser._id,
-    registrants: [{ userId: testUser._id, user: testUser._id }],
-    admins: [testUser._id],
-    organization: testOrganization._id,
-    isRegisterable: true,
-    isPublic: true,
-    title: "title",
-    description: "description",
-    allDay: true,
-    startDate: new Date().toString(),
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser._id,
-    },
-    {
-      $set: {
-        createdEvents: [testEvent._id],
-        registeredEvents: [testEvent._id],
-        eventAdmin: [testEvent._id],
-      },
-    }
-  );
+  testUser = (await createTestEvent())[0];
 });
 
 afterAll(async () => {
