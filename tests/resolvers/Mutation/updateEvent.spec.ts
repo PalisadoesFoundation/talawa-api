@@ -8,7 +8,6 @@ import {
   dropAllCollectionsFromDatabase,
 } from "../../helpers/db";
 import mongoose from "mongoose";
-import { updateEvent as updateEventResolver } from "../../../src/resolvers/Mutation/updateEvent";
 import {
   EVENT_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED_MESSAGE,

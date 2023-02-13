@@ -8,7 +8,6 @@ import {
   dropAllCollectionsFromDatabase,
 } from "../../helpers/db";
 import mongoose from "mongoose";
-import { unregisterForEventByUser as unregisterForEventByUserResolver } from "../../../src/resolvers/Mutation/unregisterForEventByUser";
 import {
   EVENT_NOT_FOUND_MESSAGE,
   USER_ALREADY_UNREGISTERED_MESSAGE,
