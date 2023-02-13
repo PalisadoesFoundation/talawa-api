@@ -54,6 +54,7 @@ export const mutations = gql`
 
     createOrganization(data: OrganizationInput, file: Upload): Organization!
       @auth
+      @role(requires: SUPERADMIN)
 
     createPlugin(
       pluginName: String!

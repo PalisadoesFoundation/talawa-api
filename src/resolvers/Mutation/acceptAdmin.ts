@@ -1,12 +1,12 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import {
-  USER_NOT_AUTHORIZED,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
 } from "../../constants";
 import { User } from "../../models";
 import { errors, requestContext } from "../../libraries";
+import { superAdminCheck } from "../../utilities/superAdminCheck";
 
 export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
   _parent,
@@ -25,9 +25,7 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
     );
   }
 
-  if (currentUser.userType !== "SUPERADMIN") {
-    throw new Error(USER_NOT_AUTHORIZED);
-  }
+  superAdminCheck(currentUser!);
 
   const userExists = await User.exists({
     _id: args.id,
