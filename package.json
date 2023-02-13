@@ -9,7 +9,7 @@
     "prebuild": "graphql-codegen && rimraf ./build",
     "prod": "cross-env NODE_ENV=production pm2-runtime start ./build/server.js",
     "start": "cross-env pm2-runtime start ./build/server.js --watch",
-    "test": "node ./tests/helpers/purgeDatabase.ts && vitest run --no-threads --coverage && node ./tests/helpers/purgeDatabase.ts",
+    "test": "vitest run --no-threads --coverage",
     "typecheck": "graphql-codegen && tsc --noEmit --pretty",
     "lint:check": "eslint . --max-warnings=0",
     "lint:fix": "eslint . --fix",

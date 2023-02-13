@@ -1,6 +1,10 @@
 import "dotenv/config";
 import { groups as groupsResolver } from "../../../src/resolvers/Query/groups";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { User, Organization, Group } from "../../../src/models";
 import { nanoid } from "nanoid";
@@ -49,6 +53,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

@@ -1,6 +1,10 @@
 import "dotenv/config";
 import { directChats as directChatsResolver } from "../../../src/resolvers/Query/directChats";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import {
   User,
@@ -71,6 +75,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

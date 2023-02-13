@@ -2,7 +2,11 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { User, Organization, MembershipRequest } from "../../../src/models";
 import { MutationRejectMembershipRequestArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { rejectMembershipRequest as rejectMembershipRequestResolver } from "../../../src/resolvers/Mutation/rejectMembershipRequest";
 import {
@@ -40,6 +44,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

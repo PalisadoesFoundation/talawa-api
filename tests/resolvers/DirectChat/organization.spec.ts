@@ -1,6 +1,10 @@
 import "dotenv/config";
 import { organization as organizationResolver } from "../../../src/resolvers/DirectChat/organization";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { Organization } from "../../../src/models";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -19,6 +23,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

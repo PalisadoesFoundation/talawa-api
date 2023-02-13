@@ -1,6 +1,10 @@
 import "dotenv/config";
 import { groupChats as groupChatsResolver } from "../../../src/resolvers/Query/groupChats";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { GroupChat, Organization, User } from "../../../src/models";
 import { nanoid } from "nanoid";
@@ -50,6 +54,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

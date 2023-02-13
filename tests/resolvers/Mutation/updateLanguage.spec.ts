@@ -2,7 +2,11 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { User } from "../../../src/models";
 import { MutationUpdateLanguageArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { updateLanguage as updateLanguageResolver } from "../../../src/resolvers/Mutation/updateLanguage";
 import { USER_NOT_FOUND } from "../../../src/constants";
@@ -22,6 +26,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

@@ -2,7 +2,11 @@ import "dotenv/config";
 import { Document } from "mongoose";
 import { Plugin, Interface_Plugin } from "../../../src/models";
 import { MutationUpdatePluginStatusArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { updatePluginStatus as updatePluginStatusResolver } from "../../../src/resolvers/Mutation/updatePluginStatus";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -30,6 +34,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

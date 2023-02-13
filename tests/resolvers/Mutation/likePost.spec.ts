@@ -1,7 +1,11 @@
 import "dotenv/config";
 import { Types } from "mongoose";
 import { MutationLikePostArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { likePost as likePostResolver } from "../../../src/resolvers/Mutation/likePost";
 import {
@@ -32,6 +36,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

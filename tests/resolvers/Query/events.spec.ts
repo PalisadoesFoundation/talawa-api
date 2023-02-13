@@ -1,7 +1,11 @@
 import "dotenv/config";
 import { events as eventsResolver } from "../../../src/resolvers/Query/events";
 import { Event, User, Organization, Task } from "../../../src/models";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { nanoid } from "nanoid";
 import { QueryEventsArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -111,6 +115,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

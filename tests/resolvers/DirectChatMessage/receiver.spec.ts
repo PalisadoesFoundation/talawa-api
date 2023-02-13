@@ -1,6 +1,10 @@
 import "dotenv/config";
 import { receiver as receiverResolver } from "../../../src/resolvers/DirectChatMessage/receiver";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { User } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -19,6 +23,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

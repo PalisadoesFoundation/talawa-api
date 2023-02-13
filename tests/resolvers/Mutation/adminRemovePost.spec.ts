@@ -2,7 +2,11 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { Organization } from "../../../src/models";
 import { MutationAdminRemovePostArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { adminRemovePost as adminRemovePostResolver } from "../../../src/resolvers/Mutation/adminRemovePost";
 import {
@@ -34,6 +38,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

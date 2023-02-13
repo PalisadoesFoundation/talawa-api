@@ -1,6 +1,10 @@
 import "dotenv/config";
 import { tasksByEvent as tasksByEventResolver } from "../../../src/resolvers/Query/tasksByEvent";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import {
   User,
@@ -101,6 +105,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

@@ -2,7 +2,11 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { Organization, GroupChat, GroupChatMessage } from "../../../src/models";
 import { MutationRemoveGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { removeGroupChat as removeGroupChatResolver } from "../../../src/resolvers/Mutation/removeGroupChat";
 import {
@@ -45,6 +49,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

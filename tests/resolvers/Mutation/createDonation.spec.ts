@@ -1,6 +1,10 @@
 import "dotenv/config";
 import { MutationCreateDonationArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { createDonation as createDonationResolver } from "../../../src/resolvers/Mutation/createDonation";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -23,6 +27,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

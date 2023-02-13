@@ -2,7 +2,11 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { User } from "../../../src/models";
 import { MutationUpdateUserTypeArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { updateUserType as updateUserTypeResolver } from "../../../src/resolvers/Mutation/updateUserType";
 import { USER_NOT_AUTHORIZED, USER_NOT_FOUND } from "../../../src/constants";
@@ -20,6 +24,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

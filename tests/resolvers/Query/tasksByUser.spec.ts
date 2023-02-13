@@ -1,6 +1,10 @@
 import "dotenv/config";
 import { tasksByUser as tasksByUserResolver } from "../../../src/resolvers/Query/tasksByUser";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import {
   User,
@@ -96,6 +100,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

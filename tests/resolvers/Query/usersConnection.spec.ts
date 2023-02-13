@@ -1,7 +1,11 @@
 import "dotenv/config";
 import { usersConnection as usersConnectionResolver } from "../../../src/resolvers/Query/usersConnection";
 import { Event, Interface_User, Organization, User } from "../../../src/models";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { QueryUsersConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Document } from "mongoose";
@@ -85,6 +89,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

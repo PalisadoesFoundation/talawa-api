@@ -2,7 +2,11 @@ import "dotenv/config";
 import { Document, Types } from "mongoose";
 import { Interface_Donation, Donation } from "../../../src/models";
 import { MutationDeleteDonationByIdArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { deleteDonationById as deleteDonationByIdResolver } from "../../../src/resolvers/Mutation/deleteDonationById";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -29,6 +33,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

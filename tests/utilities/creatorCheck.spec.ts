@@ -8,7 +8,11 @@ import {
   it,
   vi,
 } from "vitest";
-import { connect, disconnect } from "../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../helpers/db";
 import mongoose from "mongoose";
 import {
   USER_NOT_AUTHORIZED,
@@ -37,7 +41,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  disconnect(MONGOOSE_INSTANCE!);
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("src -> resolvers -> utilities -> creatorCheck.ts", () => {

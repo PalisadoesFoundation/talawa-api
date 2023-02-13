@@ -7,7 +7,11 @@ import {
   Interface_EventProject,
   EventProject,
 } from "../../../src/models";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import {
   beforeAll,
@@ -56,6 +60,7 @@ afterAll(async () => {
   await User.deleteMany({});
   await Organization.deleteMany({});
   await Event.deleteMany({});
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

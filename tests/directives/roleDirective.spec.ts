@@ -1,7 +1,11 @@
 import { RoleAuthorizationDirective } from "../../src/directives/roleDirective";
 import { Interface_User, User } from "../../src/models";
 import { beforeAll, afterAll, it, expect } from "vitest";
-import { connect, disconnect } from "../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../helpers/db";
 import mongoose from "mongoose";
 import { ApolloServer, gql } from "apollo-server-express";
 import { errors } from "../../src/libraries";
@@ -66,6 +70,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await testUser.remove();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

@@ -1,6 +1,10 @@
 import "dotenv/config";
 import { creator as creatorResolver } from "../../../src/resolvers/GroupChat/creator";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { User } from "../../../src/models";
 
@@ -20,6 +24,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

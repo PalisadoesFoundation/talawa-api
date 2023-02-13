@@ -1,6 +1,10 @@
 import "dotenv/config";
 import { User, Organization, Donation } from "../../../src/models";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { getDonations as getDonationsResolver } from "../../../src/resolvers/Query/getDonations";
 import { nanoid } from "nanoid";
@@ -52,6 +56,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

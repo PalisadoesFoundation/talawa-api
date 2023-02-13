@@ -8,7 +8,11 @@ import {
   it,
   vi,
 } from "vitest";
-import { connect, disconnect } from "../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../helpers/db";
 import {
   USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_MESSAGE,
@@ -32,7 +36,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  disconnect(MONGOOSE_INSTANCE!);
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("utilities -> adminCheck", () => {

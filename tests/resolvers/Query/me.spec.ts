@@ -1,6 +1,10 @@
 import "dotenv/config";
 import { me as meResolver } from "../../../src/resolvers/Query/me";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { USER_NOT_FOUND } from "../../../src/constants";
 import { Interface_User, User, Organization, Event } from "../../../src/models";
@@ -72,6 +76,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

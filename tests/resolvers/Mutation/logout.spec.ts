@@ -1,7 +1,11 @@
 import "dotenv/config";
 import { Types } from "mongoose";
 import { User } from "../../../src/models";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { logout as logoutResolver } from "../../../src/resolvers/Mutation/logout";
 import { USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
@@ -29,6 +33,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

@@ -9,7 +9,11 @@ import {
   it,
   vi,
 } from "vitest";
-import { connect, disconnect } from "../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../helpers/db";
 import mongoose from "mongoose";
 import { nanoid } from "nanoid";
 
@@ -33,6 +37,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

@@ -1,6 +1,10 @@
 import "dotenv/config";
 import { myLanguage as myLanguageResolver } from "../../../src/resolvers/Query/myLanguage";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { USER_NOT_FOUND } from "../../../src/constants";
 import { User } from "../../../src/models";
@@ -15,6 +19,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

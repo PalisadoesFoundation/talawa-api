@@ -5,7 +5,11 @@ import {
   Donation,
   Interface_Donation,
 } from "../../../src/models";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { getDonationById as getDonationByIdResolver } from "../../../src/resolvers/Query/getDonationById";
 import { nanoid } from "nanoid";
@@ -60,6 +64,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

@@ -1,6 +1,10 @@
 import "dotenv/config";
 import { membershipRequests as membershipRequestsResolver } from "../../../src/resolvers/Organization/membershipRequests";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { User, Organization, MembershipRequest } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -55,6 +59,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

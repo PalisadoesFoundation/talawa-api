@@ -7,7 +7,11 @@ import {
   Comment,
   Interface_Organization,
 } from "../../../src/models";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { nanoid } from "nanoid";
 import { QueryPostsByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -117,6 +121,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

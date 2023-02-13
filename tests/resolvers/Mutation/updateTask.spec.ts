@@ -2,7 +2,11 @@ import "dotenv/config";
 import { Document, Types } from "mongoose";
 import { Event, Task, Interface_Task } from "../../../src/models";
 import { MutationUpdateTaskArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { updateTask as updateTaskResolver } from "../../../src/resolvers/Mutation/updateTask";
 import {
@@ -49,6 +53,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

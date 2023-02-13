@@ -2,7 +2,11 @@ import "dotenv/config";
 import { Document, Types } from "mongoose";
 import { Post, Comment, Interface_Comment } from "../../../src/models";
 import { MutationLikeCommentArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { likeComment as likeCommentResolver } from "../../../src/resolvers/Mutation/likeComment";
 import {
@@ -54,6 +58,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

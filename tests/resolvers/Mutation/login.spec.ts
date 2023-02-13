@@ -1,7 +1,11 @@
 import "dotenv/config";
 import { User, Organization, MembershipRequest } from "../../../src/models";
 import { MutationLoginArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { login as loginResolver } from "../../../src/resolvers/Mutation/login";
 import {
@@ -63,6 +67,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

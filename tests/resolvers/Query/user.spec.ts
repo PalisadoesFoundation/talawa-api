@@ -1,6 +1,10 @@
 import "dotenv/config";
 import { user as userResolver } from "../../../src/resolvers/Query/user";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { USER_NOT_FOUND } from "../../../src/constants";
 import { Interface_User, Organization, User } from "../../../src/models";
@@ -47,6 +51,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

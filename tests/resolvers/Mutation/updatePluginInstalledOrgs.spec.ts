@@ -7,7 +7,11 @@ import {
   Interface_Plugin,
 } from "../../../src/models";
 import { MutationUpdatePluginInstalledOrgsArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { updatePluginInstalledOrgs as updatePluginInstalledOrgsResolver } from "../../../src/resolvers/Mutation/updatePluginInstalledOrgs";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -40,6 +44,7 @@ afterAll(async () => {
   await User.deleteMany({});
   await Organization.deleteMany({});
   await Plugin.deleteMany({});
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

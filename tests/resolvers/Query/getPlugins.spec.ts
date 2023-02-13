@@ -1,6 +1,10 @@
 import "dotenv/config";
 import { getPlugins as getPluginsResolver } from "../../../src/resolvers/Query/getPlugins";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { Organization, Plugin, User } from "../../../src/models";
 import { nanoid } from "nanoid";
@@ -38,6 +42,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

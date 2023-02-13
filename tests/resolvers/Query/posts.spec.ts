@@ -1,7 +1,11 @@
 import "dotenv/config";
 import { posts as postsResolver } from "../../../src/resolvers/Query/posts";
 import { User, Organization, Post, Comment } from "../../../src/models";
-import { connect, disconnect } from "../../helpers/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../../helpers/db";
 import mongoose from "mongoose";
 import { nanoid } from "nanoid";
 import { QueryPostsArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -108,6 +112,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 
