@@ -1327,7 +1327,6 @@ export type UserInput = {
   lastName: Scalars['String'];
   organizationUserBelongsToId?: InputMaybe<Scalars['ID']>;
   password: Scalars['String'];
-  userType?: InputMaybe<UserType>;
 };
 
 export type UserOrderByInput =
