@@ -147,6 +147,8 @@ export const mutations = gql`
 
     updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
 
+    updatePost(id: ID!, data: PostUpdateInput): Post! @auth
+
     updateLanguage(languageCode: String!): User! @auth
 
     updateOrganization(id: ID!, data: UpdateOrganizationInput): Organization!

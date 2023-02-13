@@ -276,4 +276,10 @@ export const inputs = gql`
     appLanguageCode_contains: String
     appLanguageCode_starts_with: String
   }
+  input PostUpdateInput {
+    text: String
+    title: String
+    imageUrl: String
+    videoUrl: String
+  }
 `;
