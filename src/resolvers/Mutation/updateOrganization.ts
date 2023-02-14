@@ -2,8 +2,6 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { Organization } from "../../models";
 import {
-  IN_PRODUCTION,
-  ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_PARAM,
@@ -19,9 +17,7 @@ export const updateOrganization: MutationResolvers["updateOrganization"] =
     // Checks if organization with _id === args.id exists.
     if (!organization) {
       throw new errors.NotFoundError(
-        IN_PRODUCTION !== true
-          ? ORGANIZATION_NOT_FOUND
-          : requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
+        requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
         ORGANIZATION_NOT_FOUND_CODE,
         ORGANIZATION_NOT_FOUND_PARAM
       );

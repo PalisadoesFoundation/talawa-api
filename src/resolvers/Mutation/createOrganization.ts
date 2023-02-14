@@ -8,6 +8,7 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
 } from "../../constants";
+import { superAdminCheck } from "../../utilities/superAdminCheck";
 
 export const createOrganization: MutationResolvers["createOrganization"] =
   async (_parent, args, context) => {
@@ -24,6 +25,10 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       );
     }
 
+    const currentUser = await User.findById({
+      _id: context.userId,
+    });
+    superAdminCheck(currentUser!);
     //Upload file
     let uploadImageObj;
     if (args.file) {

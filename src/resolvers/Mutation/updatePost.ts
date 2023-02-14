@@ -1,19 +1,19 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Event } from "../../models";
+import { User, Post } from "../../models";
 import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
-  EVENT_NOT_FOUND_MESSAGE,
-  EVENT_NOT_FOUND_CODE,
-  EVENT_NOT_FOUND_PARAM,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_PARAM,
+  POST_NOT_FOUND_MESSAGE,
+  POST_NOT_FOUND_CODE,
+  POST_NOT_FOUND_PARAM,
 } from "../../constants";
 
-export const updateEvent: MutationResolvers["updateEvent"] = async (
+export const updatePost: MutationResolvers["updatePost"] = async (
   _parent,
   args,
   context
@@ -31,25 +31,24 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     );
   }
 
-  const event = await Event.findOne({
+  const post = await Post.findOne({
     _id: args.id,
   }).lean();
 
-  // checks if there exists an event with _id === args.id
-  if (!event) {
+  // checks if there exists a post with _id === args.id
+  if (!post) {
     throw new errors.NotFoundError(
-      requestContext.translate(EVENT_NOT_FOUND_MESSAGE),
-      EVENT_NOT_FOUND_CODE,
-      EVENT_NOT_FOUND_PARAM
+      requestContext.translate(POST_NOT_FOUND_MESSAGE),
+      POST_NOT_FOUND_CODE,
+      POST_NOT_FOUND_PARAM
     );
   }
 
-  const currentUserIsEventAdmin = event.admins.some(
-    (admin) => admin.toString() === context.userId.toString()
-  );
+  const currentUserIsPostCreator =
+    post.creator.toString() === context.userId.toString();
 
-  // checks if current user is an admin of the event with _id === args.id
-  if (currentUserIsEventAdmin === false) {
+  // checks if current user is an creator of the post with _id === args.id
+  if (currentUserIsPostCreator === false) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
       USER_NOT_AUTHORIZED_CODE,
@@ -57,7 +56,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     );
   }
 
-  return await Event.findOneAndUpdate(
+  return await Post.findOneAndUpdate(
     {
       _id: args.id,
     },

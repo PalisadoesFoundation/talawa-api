@@ -6,6 +6,9 @@ import {
   GraphQLObjectType,
 } from "graphql";
 import {
+  USER_NOT_AUTHORIZED_CODE,
+  USER_NOT_AUTHORIZED_MESSAGE,
+  USER_NOT_AUTHORIZED_PARAM,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
@@ -44,9 +47,9 @@ export class RoleAuthorizationDirective extends SchemaDirectiveVisitor {
 
       if (currentUser.userType !== requires) {
         throw new errors.UnauthenticatedError(
-          requestContext.translate("user.notAuthenticated"),
-          "user.notAuthenticated",
-          "userAuthentication"
+          requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
+          USER_NOT_AUTHORIZED_CODE,
+          USER_NOT_AUTHORIZED_PARAM
         );
       }
 

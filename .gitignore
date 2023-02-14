@@ -17,3 +17,7 @@ serviceAccountKey.json
 
 # Added FNM configuration files
 .node-version
+
+# MacOS
+
+.DS_STORE

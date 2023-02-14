@@ -1,10 +1,6 @@
 import {
-  EMAIL_ALREADY_EXISTS,
-  EMAIL_ALREADY_EXISTS_CODE,
   EMAIL_ALREADY_EXISTS_MESSAGE,
   EMAIL_ALREADY_EXISTS_PARAM,
-  IN_PRODUCTION,
-  USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
@@ -25,9 +21,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
 
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND
-        : requestContext.translate(USER_NOT_FOUND_MESSAGE),
+      requestContext.translate(USER_NOT_FOUND_MESSAGE),
       USER_NOT_FOUND_CODE,
       USER_NOT_FOUND_PARAM
     );
@@ -40,10 +34,8 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
 
     if (userWithEmailExists === true) {
       throw new errors.ConflictError(
-        IN_PRODUCTION !== true
-          ? EMAIL_ALREADY_EXISTS
-          : requestContext.translate(EMAIL_ALREADY_EXISTS_MESSAGE),
-        EMAIL_ALREADY_EXISTS_CODE,
+        requestContext.translate(EMAIL_ALREADY_EXISTS_MESSAGE),
+        EMAIL_ALREADY_EXISTS_MESSAGE,
         EMAIL_ALREADY_EXISTS_PARAM
       );
     }

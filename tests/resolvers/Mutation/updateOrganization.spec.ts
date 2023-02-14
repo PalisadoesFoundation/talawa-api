@@ -3,12 +3,19 @@ import { Types } from "mongoose";
 import { User, Organization } from "../../../src/models";
 import { MutationUpdateOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
-import { updateOrganization as updateOrganizationResolver } from "../../../src/resolvers/Mutation/updateOrganization";
 import {
-  ORGANIZATION_NOT_FOUND,
-  USER_NOT_AUTHORIZED,
+  ORGANIZATION_NOT_FOUND_MESSAGE,
+  USER_NOT_AUTHORIZED_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  afterEach,
+  describe,
+  it,
+  vi,
+  expect,
+} from "vitest";
 import {
   createTestUserAndOrganization,
   testOrganizationType,
@@ -29,8 +36,19 @@ afterAll(async () => {
   await disconnect();
 });
 
+afterEach(() => {
+  vi.doUnmock("../../../src/constants");
+  vi.resetModules();
+});
+
 describe("resolvers -> Mutation -> updateOrganization", () => {
   it(`throws NotFoundError if no organization exists with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
     try {
       const args: MutationUpdateOrganizationArgs = {
         id: Types.ObjectId().toString(),
@@ -40,14 +58,27 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
         userId: testUser!._id,
       };
 
+      const { updateOrganization: updateOrganizationResolver } = await import(
+        "../../../src/resolvers/Mutation/updateOrganization"
+      );
+
       await updateOrganizationResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${ORGANIZATION_NOT_FOUND_MESSAGE}`
+      );
     }
   });
 
   it(`throws UnauthorizedError if user with _id === context.userId is not an admin
   of organization with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
     try {
       const args: MutationUpdateOrganizationArgs = {
         id: testOrganization!._id,
@@ -57,9 +88,16 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
         userId: testUser!._id,
       };
 
+      const { updateOrganization: updateOrganizationResolver } = await import(
+        "../../../src/resolvers/Mutation/updateOrganization"
+      );
+
       await updateOrganizationResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
+      );
     }
   });
 
@@ -99,6 +137,10 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
     const context = {
       userId: testUser!._id,
     };
+
+    const { updateOrganization: updateOrganizationResolver } = await import(
+      "../../../src/resolvers/Mutation/updateOrganization"
+    );
 
     const updateOrganizationPayload = await updateOrganizationResolver?.(
       {},

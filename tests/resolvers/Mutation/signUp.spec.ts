@@ -57,7 +57,6 @@ describe("resolvers -> Mutation -> signUp", () => {
           password: "password",
           appLanguageCode: "en",
           organizationUserBelongsToId: undefined,
-          userType: "USER",
         },
       };
       const { signUp: signUpResolver } = await import(
@@ -82,7 +81,6 @@ describe("resolvers -> Mutation -> signUp", () => {
         password: "password",
         appLanguageCode: "en",
         organizationUserBelongsToId: undefined,
-        userType: "USER",
       },
     };
     const { signUp: signUpResolver } = await import(
@@ -126,7 +124,6 @@ describe("resolvers -> Mutation -> signUp", () => {
           password: "password",
           appLanguageCode: "en",
           organizationUserBelongsToId: Types.ObjectId().toString(),
-          userType: "USER",
         },
       };
       const { signUp: signUpResolver } = await import(
@@ -152,7 +149,6 @@ describe("resolvers -> Mutation -> signUp", () => {
         password: "password",
         appLanguageCode: "en",
         organizationUserBelongsToId: testOrganization!.id,
-        userType: "USER",
       },
     };
     const { signUp: signUpResolver } = await import(
@@ -209,7 +205,6 @@ describe("resolvers -> Mutation -> signUp", () => {
         password: "password",
         appLanguageCode: "en",
         organizationUserBelongsToId: testOrganization!.id,
-        userType: "USER",
       },
       file: newImageFile,
     };
@@ -252,7 +247,6 @@ describe("resolvers -> Mutation -> signUp", () => {
         password: "password",
         appLanguageCode: "en",
         organizationUserBelongsToId: testOrganization!.id,
-        userType: "USER",
       },
       file: newImageFile,
     };
@@ -292,7 +286,6 @@ describe("resolvers -> Mutation -> signUp - [IN_PRODUCTION === TRUE]", () => {
           password: "password",
           appLanguageCode: "en",
           organizationUserBelongsToId: undefined,
-          userType: "USER",
         },
       };
       vi.doMock("../../../src/constants", async () => {
@@ -330,7 +323,6 @@ describe("resolvers -> Mutation -> signUp - [IN_PRODUCTION === TRUE]", () => {
           password: "password",
           appLanguageCode: "en",
           organizationUserBelongsToId: Types.ObjectId().toString(),
-          userType: "USER",
         },
       };
       vi.doMock("../../../src/constants", async () => {

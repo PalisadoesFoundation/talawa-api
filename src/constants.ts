@@ -78,6 +78,7 @@ export const UNAUTHENTICATED_ERROR = {
   param: "userAuthentication",
 };
 
+
 export const STATUS_ACTIVE = "ACTIVE";
 
 export const URL =
@@ -107,6 +108,7 @@ export const USER_NOT_FOUND_CODE = "user.notFound";
 export const USER_NOT_FOUND_MESSAGE = "user.notFound";
 export const USER_NOT_FOUND_PARAM = "user";
 
+
 export const TRANSLATION_ALREADY_PRESENT = "Translation Already Present";
 export const TRANSLATION_ALREADY_PRESENT_CODE = "translation.alreadyPresent";
 export const TRANSLATION_ALREADY_PRESENT_MESSAGE = "translation.alreadyPresent";
@@ -132,6 +134,7 @@ export const USER_PROFILE_IMAGE_NOT_FOUND_CODE = "user.profileImage.notFound";
 export const USER_PROFILE_IMAGE_NOT_FOUND_MESSAGE =
   "user.profileImage.notFound";
 export const USER_PROFILE_IMAGE_NOT_FOUND_PARAM = "userProfileImage";
+
 
 export const EMAIL_ALREADY_EXISTS = "Email already exists";
 export const EMAIL_ALREADY_EXISTS_CODE = "email.alreadyExists";
