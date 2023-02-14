@@ -118,13 +118,13 @@ Run the following command and copy/paste the result to the variable named `REFRE
 
 ## MongoDB
 
-Talawa-api makes use of `mongoDB` for its database needs. We make use of `mongoose ODM` to interact with the mongoDB database from within the code.
+Talawa-api makes use of `MongoDB` for its database needs. We make use of `mongoose ODM` to interact with the MongoDB database from within the code.
 
 <br/>
 
 ### Setting up the mongoDB database
 
-We're listing some common approaches to set up a running instance of mongodb database:-
+We're listing some common approaches to set up a running instance of MongoDB database:-
 
 1. `Hosted database approach:-` MongoDB Atlas is the easiest way to get a running instance of mongodb database. It is a hosted(remote) mongodb database provided by mongodb itself. If you're a beginner and don't want too much of a hassle setting up the database you should use this approach but you should eventually switch to local instance. Follow the setup guide on official [mongodb atlas docs](https://www.mongodb.com/docs/atlas/getting-started/). Mongodb Atlas is just one of the many hosted database solutions. Some issues that you might face while using this are slower tests, slower API requests, dependence on Internet connection etc.
 
