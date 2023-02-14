@@ -78,11 +78,6 @@ export const UNAUTHENTICATED_ERROR = {
   param: "userAuthentication",
 };
 
-export const TASK_NOT_FOUND = "Task not found";
-export const TASK_NOT_FOUND_CODE = "task.notFound";
-export const TASK_NOT_FOUND_MESSAGE = "task.notFound";
-export const TASK_NOT_FOUND_PARAM = "task";
-
 export const STATUS_ACTIVE = "ACTIVE";
 
 export const URL =
