@@ -18,7 +18,7 @@ This document provides instructions on how to set up and start a running instanc
   - [MongoDB](#mongodb)
     - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
     - [Setting up MONGODB\_URL in .env file](#setting-up-mongodb_url-in-env-file)
-    - [Windows Specific- Instructions to setup local instance of MongoDb](#windows-specific--instructions-to-setup-local-instance-of-mongodb)
+    - [Windows Specific- Instructions to setup local instance of MongoDB](#windows-specific--instructions-to-setup-local-instance-of-mongodb)
     - [Optional:- Managing mongodb database using VSCode extension](#optional--managing-mongodb-database-using-vscode-extension)
     - [Instructions to edit records for ADMIN user](#instructions-to-edit-records-for-admin-user)
   - [Google/firebase](#googlefirebase)
@@ -164,7 +164,7 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 
 </br>
 
-### Windows Specific- Instructions to setup local instance of MongoDb
+### Windows Specific- Instructions to setup local instance of MongoDB
 
 **It is recommended to have a local instance of MongoDB database instead of a cloud-based one, as it enhances the development experience and provides a more streamlined experience.**
 
@@ -207,7 +207,7 @@ This guide is for `VSCode` users to easily manage their `mongoDB` databases:-
 
 ### Instructions to edit records for ADMIN user
 
-**Note**: You can skip these instructions for now if you don't have running instance of talawa-admin. These instructions are for later and are to be followed only when you've have running instance of local MongoDB database.
+**Note**: You can skip these instructions for now if you don't have running instance of Talawa-Admin.
 
 #### I. MongoDB Compass
 
