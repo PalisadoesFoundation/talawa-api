@@ -18,8 +18,9 @@ This document provides instructions on how to set up and start a running instanc
   - [MongoDB](#mongodb)
     - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
     - [Setting up MONGODB\_URL in .env file](#setting-up-mongodb_url-in-env-file)
-    - [Instructions to setup local instance of MongoDB via MongoDB Compass and MongoShell](#instructions-to-setup-local-instance-of-mongodb-via-mongodb-compass-and-mongoshell)
+    - [Windows Specific- Instructions to setup local instance of MongoDb](#windows-specific--instructions-to-setup-local-instance-of-mongodb)
     - [Optional:- Managing mongodb database using VSCode extension](#optional--managing-mongodb-database-using-vscode-extension)
+    - [Instructions to edit records for ADMIN user](#instructions-to-edit-records-for-admin-user)
   - [Google/firebase](#googlefirebase)
     - [Setting up RECAPTCHA\_SECRET\_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
     - [Setting up MAIL\_USERNAME/MAIL\_PASSWORD in .env file](#setting-up-mail_usernamemail_password-in-env-file)
@@ -137,9 +138,33 @@ We're listing some common approaches to set up a running instance of mongodb dat
 
 Which approach you choose to set up your mongodb database does not matter. What matters is the `connection string` to that database using which talawa-api can connect to it. `Connection string` can differ depending on the approach you used to set up your database instance. Please read the official [mongodb docs](https://www.mongodb.com/docs/manual/reference/connection-string/) on `connection string`. Copy/paste this `connection string` to the variable named `MONGO_DB_URL` in `.env` file.
 
-<br/>
+Your MongoDB installation may include either the `mongo` or `mongosh` command line utility. An easy way of determining the `connection string` is to:
 
-### Instructions to setup local instance of MongoDB via MongoDB Compass and MongoShell
+1. Run the command line utility
+1. Note the `connection string` in the first lines of the output.
+1. Add the first section of the `connection string` to the `MONGO_DB_URL` section of the `.env` file. In this case it is `mongodb://127.0.0.1:27017/`
+
+```
+$ mongosh
+
+Current Mongosh Log ID: e6ab4232a963d456920b3736
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2
+Using MongoDB:          6.0.4
+Using Mongosh:          1.6.2
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+...
+...
+...
+...
+
+```
+**Note**: Windows user may proceed to next section of this documentation. In order to complete step 7 of process, please follow instructions outlined in this section which is universal for all operating systems.
+
+</br>
+
+### Windows Specific- Instructions to setup local instance of MongoDb
 
 **It is recommended to have a local instance of MongoDB database instead of a cloud-based one, as it enhances the development experience and provides a more streamlined experience.**
 
@@ -151,21 +176,10 @@ Which approach you choose to set up your mongodb database does not matter. What 
 5. Create a folder named "data" in the C drive and within it create a new folder named "db".
 6. Open a terminal and run the "mongosh" command.
 7. In the `.env` file of talawa-api, add the first section of the connection string (mongodb://127.0.0.1:27017/) to the MONGO_DB_URL section.
- ```
-$ mongosh
-
-Current Mongosh Log ID: e6ab4232a963d456920b3736
-Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2
-Using MongoDB:          6.0.4
-Using Mongosh:          1.6.2
-
-For mongosh info see: https://docs.mongodb.com/mongodb-shell/
-
-```
 8. In a separate terminal, run the "mongod" command to start the local instance of the database.
 9. Open MongoDB Compass and click on "Connect." You will now be able to access the graphical user interface of the local database.
 
-**NOTE**:These instructions are for Windows only you can do the same in macOS and linux with minor tweaks. This has been provided to give a brief overview for beginners to setup their own local instance.
+**NOTE**: You can do the same in macOS and linux with minor tweaks. This has been provided to give a brief overview for beginners to setup their own local instance.
 
 <br/>
 
@@ -190,6 +204,33 @@ This guide is for `VSCode` users to easily manage their `mongoDB` databases:-
 3. Now you can manage the database you are using for `talawa-api` through this extension within `VSCode`.
 
 <br/>
+
+### Instructions to edit records for ADMIN user
+
+**Note**: You can skip these instructions for now if you don't have running instance of talawa-admin. These instructions are for later and are to be followed only when you've have running instance of local MongoDB database.
+
+#### I. MongoDB Compass
+
+1. Open a terminal and run `mongod` command.
+2. Open MongoDB Compass and click on `Connect`.
+3. Select `user` collections and edit the data. Change:
+     1. `userType` from ADMIN to SUPERADMIN
+     2. `adminApproved` from false to true
+     ![Screenshot_251](https://user-images.githubusercontent.com/121368112/218772135-da412ac2-042f-4695-9a84-df3f39b4b0d2.png)
+
+#### II. Mongo Shell
+
+1. Open a terminal and run `mongod` command.
+2. Open a separate terminal and run `mongosh` command.
+3. You can use the following command to edit the `user` collections and edit the data:
+   ```
+    db.users.updateOne({userType: "ADMIN"}, {$set: {userType: "SUPERADMIN", adminApproved: true}})
+   
+   ```
+   
+**Note**: You can do the edits via any of the two methods.
+
+</br>
 
 ## Google/firebase
 
