@@ -1,5 +1,3 @@
-import { requestContext } from "./libraries";
-
 export const CHAT_NOT_FOUND = "Chat not found";
 export const CHAT_NOT_FOUND_CODE = "chat.notFound";
 export const CHAT_NOT_FOUND_MESSAGE = "chat.notFound";
@@ -66,7 +64,7 @@ export const REGISTRANT_ALREADY_EXIST_MESSAGE = "registrant.alreadyExist";
 export const REGISTRANT_ALREADY_EXIST_PARAM = "registrant";
 
 export const INVALID_FILE_TYPE = {
-  message: requestContext.translate("invalid.fileType"),
+  message: "invalid.fileType",
   code: "internalServerError",
   param: "internalServerError",
 };

@@ -15,7 +15,7 @@ export const imageExtensionCheck = async (filename: string) => {
     throw new errors.ValidationError(
       [
         {
-          message: INVALID_FILE_TYPE.message,
+          message: requestContext.translate(INVALID_FILE_TYPE.message),
           code: INVALID_FILE_TYPE.code,
           param: INVALID_FILE_TYPE.param,
         },
