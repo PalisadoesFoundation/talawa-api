@@ -216,16 +216,17 @@ This guide is for `VSCode` users to easily manage their `mongoDB` databases:-
 3. Select `user` collections and edit the data. Change:
      1. `userType` from ADMIN to SUPERADMIN
      2. `adminApproved` from false to true
-     ![Screenshot_251](https://user-images.githubusercontent.com/121368112/218772135-da412ac2-042f-4695-9a84-df3f39b4b0d2.png)
+     
+     * ![Screenshot_251](https://user-images.githubusercontent.com/121368112/218772135-da412ac2-042f-4695-9a84-df3f39b4b0d2.png)
 
 #### II. Mongo Shell
 
 1. Open a terminal and run `mongod` command.
 2. Open a separate terminal and run `mongosh` command.
 3. You can use the following command to edit the `user` collections and edit the data:
+
    ```
     db.users.updateOne({userType: "ADMIN"}, {$set: {userType: "SUPERADMIN", adminApproved: true}})
-   
    ```
    
 **Note**: You can do the edits via any of the two methods.
