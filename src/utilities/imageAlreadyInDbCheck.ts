@@ -3,6 +3,7 @@ import { ImageHash } from "../models";
 import { deleteDuplicatedImage } from "./deleteDuplicatedImage";
 import { reuploadDuplicateCheck } from "./reuploadDuplicateCheck";
 import { errors, requestContext } from "../libraries";
+import { INVALID_FILE_TYPE } from "../../src/constants";
 
 /*
 Check to see if image already exists in db using hash
@@ -70,9 +71,9 @@ export const imageAlreadyInDbCheck = async (
     throw new errors.ValidationError(
       [
         {
-          message: requestContext.translate("invalid.fileType"),
-          code: "invalid.fileType",
-          param: "fileType",
+          message: INVALID_FILE_TYPE.message,
+          code: INVALID_FILE_TYPE.code,
+          param: INVALID_FILE_TYPE.param,
         },
       ],
       requestContext.translate("invalid.fileType")
