@@ -12,3 +12,5 @@ export * from "./unauthenticatedError";
 export * from "./unauthorizedError";
 // Used for basic sanity checks
 export * from "./validationError";
+// Used for basic input sanity checks
+export * from "./inputValidationError";

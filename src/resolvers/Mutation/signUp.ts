@@ -1,10 +1,12 @@
 import bcrypt from "bcryptjs";
 import {
   IN_PRODUCTION,
+  //LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_PARAM,
+  //REGEX_VALIDATION_ERROR,
 } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
@@ -16,6 +18,8 @@ import {
   copyToClipboard,
 } from "../../utilities";
 import { androidFirebaseOptions, iosFirebaseOptions } from "../../config";
+//import { isValidString } from "../../libraries/validators/validateString";
+//import { validatePassword } from "../../libraries/validators/validatePassword";
 
 export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   const userWithEmailExists = await User.exists({
@@ -49,6 +53,51 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
       );
     }
   }
+
+  // // Checks if the recieved arguments are valid according to standard input norms
+  // const validationResult_firstName = isValidString(args.data!.firstName, 50);
+  // const validationResult_lastName = isValidString(args.data!.lastName, 50);
+  // const validationResult_Password = validatePassword(args.data!.password!);
+  // if (!validationResult_firstName.isFollowingPattern) {
+  //   throw new errors.InputValidationError(
+  //     requestContext.translate(
+  //       `${REGEX_VALIDATION_ERROR.message} in first name`
+  //     ),
+  //     REGEX_VALIDATION_ERROR.code
+  //   );
+  // }
+  // if (!validationResult_firstName.isLessThanMaxLength) {
+  //   throw new errors.InputValidationError(
+  //     requestContext.translate(
+  //       `${LENGTH_VALIDATION_ERROR.message} 50 characters in first name`
+  //     ),
+  //     LENGTH_VALIDATION_ERROR.code
+  //   );
+  // }
+  // if (!validationResult_lastName.isFollowingPattern) {
+  //   throw new errors.InputValidationError(
+  //     requestContext.translate(
+  //       `${REGEX_VALIDATION_ERROR.message} in last name`
+  //     ),
+  //     REGEX_VALIDATION_ERROR.code
+  //   );
+  // }
+  // if (!validationResult_lastName.isLessThanMaxLength) {
+  //   throw new errors.InputValidationError(
+  //     requestContext.translate(
+  //       `${LENGTH_VALIDATION_ERROR.message} 50 characters in last name`
+  //     ),
+  //     LENGTH_VALIDATION_ERROR.code
+  //   );
+  // }
+  // if (!validationResult_Password) {
+  //   throw new errors.InputValidationError(
+  //     requestContext.translate(
+  //       `The password must contain a mixture of uppercase, lowercase, numbers, and symbols and must be greater than 8, and less than 50 characters`
+  //     ),
+  //     `Invalid Password`
+  //   );
+  // }
 
   const hashedPassword = await bcrypt.hash(args.data.password, 12);
 
