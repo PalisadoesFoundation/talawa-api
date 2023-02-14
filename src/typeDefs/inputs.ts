@@ -235,7 +235,6 @@ export const inputs = gql`
     lastName: String!
     email: String!
     password: String!
-    userType: UserType
     appLanguageCode: String
     organizationUserBelongsToId: ID
   }
@@ -275,5 +274,11 @@ export const inputs = gql`
     appLanguageCode_not_in: [String!]
     appLanguageCode_contains: String
     appLanguageCode_starts_with: String
+  }
+  input PostUpdateInput {
+    text: String
+    title: String
+    imageUrl: String
+    videoUrl: String
   }
 `;

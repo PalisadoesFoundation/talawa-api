@@ -54,6 +54,7 @@ export const mutations = gql`
 
     createOrganization(data: OrganizationInput, file: Upload): Organization!
       @auth
+      @role(requires: SUPERADMIN)
 
     createPlugin(
       pluginName: String!
@@ -146,6 +147,8 @@ export const mutations = gql`
     unregisterForEventByUser(id: ID!): Event! @auth
 
     updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
+
+    updatePost(id: ID!, data: PostUpdateInput): Post! @auth
 
     updateLanguage(languageCode: String!): User! @auth
 

@@ -4,4 +4,5 @@ export * from "./copyToClipboard";
 export * from "./creatorCheck";
 export * from "./deleteImage";
 export * from "./mailer";
+export * from "./superAdminCheck";
 export * from "./uploadImage";

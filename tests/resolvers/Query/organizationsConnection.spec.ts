@@ -1,38 +1,30 @@
 import "dotenv/config";
 import { organizationsConnection as organizationsConnectionResolver } from "../../../src/resolvers/Query/organizationsConnection";
 import {
-  Interface_Organization,
   Organization,
   User,
+  Interface_Organization,
 } from "../../../src/models";
 import { connect, disconnect } from "../../../src/db";
 import { QueryOrganizationsConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
+import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { createTestUser, testUserType } from "../../helpers/userAndOrg";
 import { nanoid } from "nanoid";
 import { Document } from "mongoose";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
 let testOrganizations: (Interface_Organization &
   Document<any, any, Interface_Organization>)[];
-
 beforeAll(async () => {
   await connect();
-
-  const testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: "password",
-    firstName: "firstName",
-    lastName: "lastName",
-    appLanguageCode: "en",
-  });
-
+  const testUser: testUserType = await createTestUser();
   testOrganizations = await Organization.insertMany([
     {
       name: `name${nanoid()}`,
       description: `description${nanoid()}`,
       isPublic: true,
-      creator: testUser._id,
-      admins: [testUser._id],
-      members: [testUser._id],
+      creator: testUser?._id,
+      admins: [testUser?._id],
+      members: [testUser?._id],
       apiUrl: `apiUrl${nanoid()}`,
       visibleInSearch: true,
     },
@@ -40,9 +32,9 @@ beforeAll(async () => {
       name: `name${nanoid()}`,
       description: `description${nanoid()}`,
       isPublic: false,
-      creator: testUser._id,
-      admins: [testUser._id],
-      members: [testUser._id],
+      creator: testUser?._id,
+      admins: [testUser?._id],
+      members: [testUser?._id],
       apiUrl: `apiUrl${nanoid()}`,
       visibleInSearch: false,
     },
@@ -50,9 +42,9 @@ beforeAll(async () => {
       name: `name${nanoid()}`,
       description: `description${nanoid()}`,
       isPublic: true,
-      creator: testUser._id,
-      admins: [testUser._id],
-      members: [testUser._id],
+      creator: testUser?._id,
+      admins: [testUser?._id],
+      members: [testUser?._id],
       apiUrl: `apiUrl${nanoid()}`,
       visibleInSearch: true,
     },
@@ -60,7 +52,7 @@ beforeAll(async () => {
 
   await User.updateOne(
     {
-      _id: testUser._id,
+      _id: testUser?._id,
     },
     {
       $set: {
