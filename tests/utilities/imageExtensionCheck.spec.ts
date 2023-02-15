@@ -2,14 +2,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { imageExtensionCheck } from "../../src/utilities/imageExtensionCheck";
 import * as deleteImage from "../../src/utilities/deleteImage";
 import { requestContext } from "../../src/libraries";
+import { INVALID_FILE_TYPE } from "../../src/constants";
 
 const testFilename: string = "test.anyOtherExtension";
 
 const testErrors = [
   {
-    message: "invalid.fileType",
-    code: "invalid.fileType",
-    param: "fileType",
+    message: INVALID_FILE_TYPE.message,
+    code: INVALID_FILE_TYPE.code,
+    param: INVALID_FILE_TYPE.param,
   },
 ];
 
