@@ -174,8 +174,8 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
     [Note: **You will find the mongosh application inside the `bin` folder**]
 4. Add the path of the location where you pasted the "mongosh" application to your system's environment variables.
 5. Create a folder named "data" in the C drive and within it create a new folder named "db".
-6. Open a terminal and run the "mongosh" command.
-7. In the `.env` file of talawa-api, add the first section of the connection string (mongodb://127.0.0.1:27017/) to the MONGO_DB_URL section.
+6. Open a terminal and run the "mongosh" command in the terminal you will get the connection string.
+7. In the `.env` file of talawa-api, add the connection string to the MONGO_DB_URL section.You can refer to previous section for more clarity.
 8. In a separate terminal, run the "mongod" command to start the local instance of the database.
 9. Open MongoDB Compass and click on "Connect." You will now be able to access the graphical user interface of the local database.
 
@@ -211,24 +211,31 @@ This guide is for `VSCode` users to easily manage their `mongoDB` databases:-
 
 #### I. MongoDB Compass
 
-1. Open a terminal and run `mongod` command.
+1. Open a terminal and run `mongod` command to the start the MongoDB server.
 2. Open MongoDB Compass and click on `Connect`.
 3. Select `user` collections and edit the data. Change:
      1. `userType` from ADMIN to SUPERADMIN
      2. `adminApproved` from false to true
      
-     * ![Screenshot_251](https://user-images.githubusercontent.com/121368112/218772135-da412ac2-042f-4695-9a84-df3f39b4b0d2.png)
-
 #### II. Mongo Shell
 
-1. Open a terminal and run `mongod` command.
-2. Open a separate terminal and run `mongosh` command.
-3. You can use the following command to edit the `user` collections and edit the data:
-
-   ```
-    db.users.updateOne({userType: "ADMIN"}, {$set: {userType: "SUPERADMIN", adminApproved: true}})
-   ```
-   
+1. Open a terminal and run `mongod` command to start the MongoDB server.
+2. Open a separate terminal and run `mongosh` command to open interactive command line interface to work with MongoDB database.
+3. You can use the following command to edit the `user` collections data:
+      i. Find all users of the type ADMIN
+      ```
+      db.users.find({userType: 'ADMIN'})
+      ```
+      ii. Identify the user whose data you want to edit and note their email address
+      iii. Elevate permission of the user from ADMIN to SUPERADMIN and set `adminApproved` to true
+      ```
+      db.users.updateOne({ email: '<user's email address>' },{ $set: { userType: 'SUPERADMIN', adminApproved: true }})
+      ```
+      iv. To verify the details were updated correctly use:
+      ```
+      db.users.find({email:'<user's email address>' })
+      ```
+           
 **Note**: You can do the edits via any of the two methods.
 
 </br>
