@@ -222,15 +222,15 @@ This guide is for `VSCode` users to easily manage their `MongoDB` databases:-
 1. Open a terminal and run `mongod` command to start the MongoDB server.
 2. Open a separate terminal and run `mongosh` command to open interactive command line interface to work with MongoDB database.
 3. You can use the following command to edit the `user` collections data:
-      i. Find all users of the type ADMIN
+      1. Find all users of the type `ADMIN`
       ```
       db.users.find({userType: 'ADMIN'})
       ```
-      ii. Identify the user whose data you want to edit note its email address.Elevate permission of the user from ADMIN to SUPERADMIN and set `adminApproved` to true
+      2. Identify the `user` whose data you want to edit note its email address. Elevate permission of the user from `ADMIN` to `SUPERADMIN` and set `adminApproved` to `true`
       ```
       db.users.updateOne({ email: '<user's email address>' },{ $set: { userType: 'SUPERADMIN', adminApproved: true }})
-      ```
-      iii. To verify the details were updated correctly use:
+      ``` 
+      3. To verify the details were updated correctly use:
       ```
       db.users.find({email:'<user's email address>' })
       ```
