@@ -126,9 +126,9 @@ Talawa-api makes use of `MongoDB` for its database needs. We make use of `mongoo
 
 We're listing some common approaches to set up a running instance of MongoDB database:-
 
-1. `Hosted database approach:-` MongoDB Atlas is the easiest way to get a running instance of mongodb database. It is a hosted(remote) mongodb database provided by mongodb itself. If you're a beginner and don't want too much of a hassle setting up the database you should use this approach but you should eventually switch to local instance. Follow the setup guide on official [mongodb atlas docs](https://www.mongodb.com/docs/atlas/getting-started/). Mongodb Atlas is just one of the many hosted database solutions. Some issues that you might face while using this are slower tests, slower API requests, dependence on Internet connection etc.
+1. `Hosted database approach:-` MongoDB Atlas is the easiest way to get a running instance of mongodb database. It is a hosted(remote) mongodb database provided by mongodb itself. If you're a beginner and don't want too much of a hassle setting up the database you should use this approach but you should eventually switch to local instance. Follow the setup guide on official [MongoDB Atlas Docs](https://www.mongodb.com/docs/atlas/getting-started/). Mongodb Atlas is just one of the many hosted database solutions. Some issues that you might face while using this are slower tests, slower API requests, dependence on Internet connection etc.
 
-2. `System native database approach:-` You can install mongodb natively on your system and create/connect to the database. Follow the setup guide on official [mongodb docs](https://www.mongodb.com/docs/manual/administration/install-community/) for your respective operating system.
+2. `System native database approach:-` You can install mongodb natively on your system and create/connect to the database. Follow the setup guide on official [MongoDB Docs](https://www.mongodb.com/docs/manual/administration/install-community/) for your respective operating system.
 
 3. `Docker container approach:-` If you are fluent in working with docker you should use this approach. Docker is a great way to manage and run applications without natively installing anything on your system. With this you can set up the mongodb database inside a docker container and manage it as per your will. Follow this [video tutorial](https://www.youtube.com/watch?v=uklyCSKQ1Po) to set up a mongodb docker container.
 
@@ -183,9 +183,9 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 
 <br/>
 
-### Optional:- Managing mongodb database using VSCode extension
+### Optional:- Managing MongoDB database using VSCode extension
 
-This guide is for `VSCode` users to easily manage their `mongoDB` databases:-
+This guide is for `VSCode` users to easily manage their `MongoDB` databases:-
 
 1.  Install the offical `MongoDB` extension for `VSCode` named `MongoDB for VS Code`.
 
@@ -193,7 +193,7 @@ This guide is for `VSCode` users to easily manage their `mongoDB` databases:-
 
 <br/>
 
-2. Connect your `mongoDB` database to the extension.
+2. Connect your `MongoDB` database to the extension.
 
    ![Connect your mongoDB database to the extension](./image/connect_extension_to_mongodb_step_1.webp)
 
@@ -226,12 +226,11 @@ This guide is for `VSCode` users to easily manage their `mongoDB` databases:-
       ```
       db.users.find({userType: 'ADMIN'})
       ```
-      ii. Identify the user whose data you want to edit and note their email address
-      iii. Elevate permission of the user from ADMIN to SUPERADMIN and set `adminApproved` to true
+      ii. Identify the user whose data you want to edit note its email address.Elevate permission of the user from ADMIN to SUPERADMIN and set `adminApproved` to true
       ```
       db.users.updateOne({ email: '<user's email address>' },{ $set: { userType: 'SUPERADMIN', adminApproved: true }})
       ```
-      iv. To verify the details were updated correctly use:
+      iii. To verify the details were updated correctly use:
       ```
       db.users.find({email:'<user's email address>' })
       ```
