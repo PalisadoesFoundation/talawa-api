@@ -6,6 +6,7 @@
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended"
   ],
   "overrides": [
@@ -21,10 +22,16 @@
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
+    "project": "./tsconfig.json",
+    "tsconfigRootDir": ".",
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "plugins": ["@typescript-eslint"],
+  "plugins": [
+    "@typescript-eslint",
+    "@typescript-eslint/eslint-plugin",
+    "eslint-plugin-tsdoc"
+  ],
   "root": true,
   "rules": {
     "eqeqeq": ["error", "always"],
@@ -45,6 +52,7 @@
         "allowTemplateLiterals": true,
         "avoidEscape": true
       }
-    ]
+    ],
+    "tsdoc/syntax": "warn"
   }
 }
