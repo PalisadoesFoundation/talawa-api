@@ -11,7 +11,10 @@ import {
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_PARAM,
+  LENGTH_VALIDATION_ERROR,
+  REGEX_VALIDATION_ERROR,
 } from "../../constants";
+import { isValidString } from "../../libraries/validators/validateString";
 
 export const updateEvent: MutationResolvers["updateEvent"] = async (
   _parent,
@@ -54,6 +57,58 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
       requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
       USER_NOT_AUTHORIZED_CODE,
       USER_NOT_AUTHORIZED_PARAM
+    );
+  }
+
+  // Checks if the recieved arguments are valid according to standard input norms
+  const validationResult_Title = isValidString(args.data!.title!, 256);
+  const validationResult_Description = isValidString(
+    args.data!.description!,
+    500
+  );
+  const validationResult_Location = isValidString(args.data!.location!, 50);
+  if (!validationResult_Title.isFollowingPattern) {
+    throw new errors.InputValidationError(
+      requestContext.translate(`${REGEX_VALIDATION_ERROR.message} in title`),
+      REGEX_VALIDATION_ERROR.code
+    );
+  }
+  if (!validationResult_Title.isLessThanMaxLength) {
+    throw new errors.InputValidationError(
+      requestContext.translate(
+        `${LENGTH_VALIDATION_ERROR.message} 256 characters in title`
+      ),
+      LENGTH_VALIDATION_ERROR.code
+    );
+  }
+  if (!validationResult_Description.isFollowingPattern) {
+    throw new errors.InputValidationError(
+      requestContext.translate(
+        `${REGEX_VALIDATION_ERROR.message} in description`
+      ),
+      REGEX_VALIDATION_ERROR.code
+    );
+  }
+  if (!validationResult_Description.isLessThanMaxLength) {
+    throw new errors.InputValidationError(
+      requestContext.translate(
+        `${LENGTH_VALIDATION_ERROR.message} 500 characters in description`
+      ),
+      LENGTH_VALIDATION_ERROR.code
+    );
+  }
+  if (!validationResult_Location.isFollowingPattern) {
+    throw new errors.InputValidationError(
+      requestContext.translate(`${REGEX_VALIDATION_ERROR.message} in location`),
+      REGEX_VALIDATION_ERROR.code
+    );
+  }
+  if (!validationResult_Location.isLessThanMaxLength) {
+    throw new errors.InputValidationError(
+      requestContext.translate(
+        `${LENGTH_VALIDATION_ERROR.message} 50 characters in location`
+      ),
+      LENGTH_VALIDATION_ERROR.code
     );
   }
 
