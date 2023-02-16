@@ -169,14 +169,40 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 **It is recommended to have a local instance of MongoDB database instead of a cloud-based one, as it enhances the development experience and provides a more streamlined experience.**
 
 1. Download the latest version of MongoDB Community Server, which includes MongoDB Compass, from the following link:[MongoDB Community Server]( https://www.mongodb.com/try/download/community)
+
 2. Separately download the MongoDB Shell from the tools section at the following link:[Mongo Shell](https://www.mongodb.com/try/download/shell)
+
 3. Extract the downloaded shell folder, locate the "mongosh" application, and paste it to the following location: `Program Files` -> `MongoDB` -> `bin`.
     [Note: **You will find the mongosh application inside the `bin` folder**]
+    
 4. Add the path of the location where you pasted the "mongosh" application to your system's environment variables.
+
 5. Create a folder named "data" in the C drive and within it create a new folder named "db".
+
 6. Open a terminal and run the "mongosh" command in the terminal you will get the connection string.
-7. In the `.env` file of talawa-api, add the connection string to the MONGO_DB_URL section.You can refer to previous section for more clarity.
+
+7. In the `.env` file of talawa-api, add the connection string to the MONGO_DB_URL section.
+
+```
+$ mongosh
+
+Current Mongosh Log ID: e6ab4232a963d456920b3736
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2
+Using MongoDB:          6.0.4
+Using Mongosh:          1.6.2
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+...
+...
+...
+...
+
+```
+For eg. here-`mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2` is your connection string.
+
 8. In a separate terminal, run the "mongod" command to start the local instance of the database.
+
 9. Open MongoDB Compass and click on "Connect." You will now be able to access the graphical user interface of the local database.
 
 **NOTE**: You can do the same in macOS and linux with minor tweaks. This has been provided to give a brief overview for beginners to setup their own local instance.
@@ -209,19 +235,27 @@ This guide is for `VSCode` users to easily manage their `MongoDB` databases:-
 
 **Note**: You can skip these instructions for now if you don't have running instance of Talawa-Admin.
 
+1. This step is for mandatory Linux specific users others can skip to next step:
+
+    1. You need to start `mongod` [Mongo daemon process] for `mongosh` to work use the following command for the same:
+    - `sudo service mongod start` **[System V init(service)]** or `sudo systemctl start mongod` **[systemd(systemctl)]**
+    2. To verify whether `mongod`[Mongo daemon process] is running you can use either:
+    - `sudo systemctl status mongod` **[systemd(systemctl)]** or `sudo service mongod status` **[System V init(service)]**
+
 #### I. MongoDB Compass
 
-1. Open a terminal and run `mongod` command to the start the MongoDB server.
-2. Open MongoDB Compass and click on `Connect`.
-3. Select `user` collections and edit the data. Change:
+1. Open MongoDB Compass and click on `Connect`.
+
+2. Select `user` collections and edit the data. Change:
      1. `userType` from ADMIN to SUPERADMIN
      2. `adminApproved` from false to true
+     - ![Illustration for ADMIN user edit ](./image/mongodb_compass_admin_user_edit.png)
      
 #### II. Mongo Shell
+    
+1. Open a terminal and run `mongosh` command to open interactive command line interface to work with MongoDB database.
 
-1. Open a terminal and run `mongod` command to start the MongoDB server.
-2. Open a separate terminal and run `mongosh` command to open interactive command line interface to work with MongoDB database.
-3. You can use the following command to edit the `user` collections data:
+2. In the `mongosh` terminal use the following command to edit the `users` collections data:
       1. Find all users of the type `ADMIN`
       ```
       db.users.find({userType: 'ADMIN'})
