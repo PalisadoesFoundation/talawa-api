@@ -112,6 +112,21 @@ export type Donation = {
   userId: Scalars['ID'];
 };
 
+export type DonationWhereInput = {
+  id?: InputMaybe<Scalars['ID']>;
+  id_contains?: InputMaybe<Scalars['ID']>;
+  id_in?: InputMaybe<Array<Scalars['ID']>>;
+  id_not?: InputMaybe<Scalars['ID']>;
+  id_not_in?: InputMaybe<Array<Scalars['ID']>>;
+  id_starts_with?: InputMaybe<Scalars['ID']>;
+  name_of_user?: InputMaybe<Scalars['String']>;
+  name_of_user_contains?: InputMaybe<Scalars['String']>;
+  name_of_user_in?: InputMaybe<Array<Scalars['String']>>;
+  name_of_user_not?: InputMaybe<Scalars['String']>;
+  name_of_user_not_in?: InputMaybe<Array<Scalars['String']>>;
+  name_of_user_starts_with?: InputMaybe<Scalars['String']>;
+};
+
 export type Event = {
   __typename?: 'Event';
   _id: Scalars['ID'];
@@ -186,6 +201,34 @@ export type EventRegistrants = {
   __typename?: 'EventRegistrants';
   event: Event;
   isRegistered: Scalars['Boolean'];
+};
+
+export type EventWhereInput = {
+  description?: InputMaybe<Scalars['String']>;
+  description_contains?: InputMaybe<Scalars['String']>;
+  description_in?: InputMaybe<Array<Scalars['String']>>;
+  description_not?: InputMaybe<Scalars['String']>;
+  description_not_in?: InputMaybe<Array<Scalars['String']>>;
+  description_starts_with?: InputMaybe<Scalars['String']>;
+  id?: InputMaybe<Scalars['ID']>;
+  id_contains?: InputMaybe<Scalars['ID']>;
+  id_in?: InputMaybe<Array<Scalars['ID']>>;
+  id_not?: InputMaybe<Scalars['ID']>;
+  id_not_in?: InputMaybe<Array<Scalars['ID']>>;
+  id_starts_with?: InputMaybe<Scalars['ID']>;
+  location?: InputMaybe<Scalars['String']>;
+  location_contains?: InputMaybe<Scalars['String']>;
+  location_in?: InputMaybe<Array<Scalars['String']>>;
+  location_not?: InputMaybe<Scalars['String']>;
+  location_not_in?: InputMaybe<Array<Scalars['String']>>;
+  location_starts_with?: InputMaybe<Scalars['String']>;
+  organization_id?: InputMaybe<Scalars['ID']>;
+  title?: InputMaybe<Scalars['String']>;
+  title_contains?: InputMaybe<Scalars['String']>;
+  title_in?: InputMaybe<Array<Scalars['String']>>;
+  title_not?: InputMaybe<Scalars['String']>;
+  title_not_in?: InputMaybe<Array<Scalars['String']>>;
+  title_starts_with?: InputMaybe<Scalars['String']>;
 };
 
 export type ExtendSession = {
@@ -970,8 +1013,10 @@ export type Query = {
   event?: Maybe<Event>;
   events?: Maybe<Array<Maybe<Event>>>;
   eventsByOrganization?: Maybe<Array<Maybe<Event>>>;
+  eventsByOrganizationConnection: Array<Maybe<Event>>;
   getDonationById: Donation;
   getDonationByOrgId?: Maybe<Array<Maybe<Donation>>>;
+  getDonationByOrgIdConnection: Array<Maybe<Donation>>;
   getDonations?: Maybe<Array<Maybe<Donation>>>;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
@@ -1037,6 +1082,14 @@ export type QueryEventsByOrganizationArgs = {
 };
 
 
+export type QueryEventsByOrganizationConnectionArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<EventOrderByInput>;
+  skip?: InputMaybe<Scalars['Int']>;
+  where?: InputMaybe<EventWhereInput>;
+};
+
+
 export type QueryGetDonationByIdArgs = {
   id: Scalars['ID'];
 };
@@ -1044,6 +1097,14 @@ export type QueryGetDonationByIdArgs = {
 
 export type QueryGetDonationByOrgIdArgs = {
   orgId: Scalars['ID'];
+};
+
+
+export type QueryGetDonationByOrgIdConnectionArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+  orgId: Scalars['ID'];
+  skip?: InputMaybe<Scalars['Int']>;
+  where?: InputMaybe<DonationWhereInput>;
 };
 
 
@@ -1334,6 +1395,7 @@ export type UserType =
   | 'USER';
 
 export type UserWhereInput = {
+  admin_for?: InputMaybe<Scalars['ID']>;
   appLanguageCode?: InputMaybe<Scalars['String']>;
   appLanguageCode_contains?: InputMaybe<Scalars['String']>;
   appLanguageCode_in?: InputMaybe<Array<Scalars['String']>>;
@@ -1346,6 +1408,7 @@ export type UserWhereInput = {
   email_not?: InputMaybe<Scalars['String']>;
   email_not_in?: InputMaybe<Array<Scalars['String']>>;
   email_starts_with?: InputMaybe<Scalars['String']>;
+  event_title_contains?: InputMaybe<Scalars['String']>;
   firstName?: InputMaybe<Scalars['String']>;
   firstName_contains?: InputMaybe<Scalars['String']>;
   firstName_in?: InputMaybe<Array<Scalars['String']>>;
@@ -1453,10 +1516,12 @@ export type ResolversTypes = {
   DirectChat: ResolverTypeWrapper<Interface_DirectChatModel>;
   DirectChatMessage: ResolverTypeWrapper<Interface_DirectChatMessageModel>;
   Donation: ResolverTypeWrapper<Interface_DonationModel>;
+  DonationWhereInput: DonationWhereInput;
   Event: ResolverTypeWrapper<Interface_EventModel>;
   EventInput: EventInput;
   EventOrderByInput: EventOrderByInput;
   EventRegistrants: ResolverTypeWrapper<Omit<EventRegistrants, 'event'> & { event: ResolversTypes['Event'] }>;
+  EventWhereInput: EventWhereInput;
   ExtendSession: ResolverTypeWrapper<ExtendSession>;
   Float: ResolverTypeWrapper<Scalars['Float']>;
   ForgotPasswordData: ForgotPasswordData;
@@ -1536,9 +1601,11 @@ export type ResolversParentTypes = {
   DirectChat: Interface_DirectChatModel;
   DirectChatMessage: Interface_DirectChatMessageModel;
   Donation: Interface_DonationModel;
+  DonationWhereInput: DonationWhereInput;
   Event: Interface_EventModel;
   EventInput: EventInput;
   EventRegistrants: Omit<EventRegistrants, 'event'> & { event: ResolversParentTypes['Event'] };
+  EventWhereInput: EventWhereInput;
   ExtendSession: ExtendSession;
   Float: Scalars['Float'];
   ForgotPasswordData: ForgotPasswordData;
@@ -1972,8 +2039,10 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<QueryEventArgs, 'id'>>;
   events?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryEventsArgs>>;
   eventsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryEventsByOrganizationArgs>>;
+  eventsByOrganizationConnection?: Resolver<Array<Maybe<ResolversTypes['Event']>>, ParentType, ContextType, Partial<QueryEventsByOrganizationConnectionArgs>>;
   getDonationById?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<QueryGetDonationByIdArgs, 'id'>>;
   getDonationByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Donation']>>>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdArgs, 'orgId'>>;
+  getDonationByOrgIdConnection?: Resolver<Array<Maybe<ResolversTypes['Donation']>>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdConnectionArgs, 'orgId'>>;
   getDonations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Donation']>>>, ParentType, ContextType>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
