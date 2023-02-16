@@ -256,7 +256,7 @@ This guide is for `VSCode` users to easily manage their `MongoDB` databases:-
 1. Open a terminal and run `mongosh` command to open interactive command line interface to work with MongoDB database.
 
 2. In the `mongosh` terminal use the following command to edit the `users` collections data:
-      1. Find all users of the type `ADMIN`
+      1. Find all users of the type `ADMIN`.
       ```
       db.users.find({userType: 'ADMIN'})
       ```
