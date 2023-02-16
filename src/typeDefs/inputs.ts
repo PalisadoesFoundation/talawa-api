@@ -283,7 +283,6 @@ export const inputs = gql`
     lastName: String!
     email: String!
     password: String!
-    userType: UserType
     appLanguageCode: String
     organizationUserBelongsToId: ID
   }
@@ -327,5 +326,11 @@ export const inputs = gql`
     admin_for: ID
 
     event_title_contains: String
+  }
+  input PostUpdateInput {
+    text: String
+    title: String
+    imageUrl: String
+    videoUrl: String
   }
 `;

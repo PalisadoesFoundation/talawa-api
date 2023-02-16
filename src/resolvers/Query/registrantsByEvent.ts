@@ -1,11 +1,9 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Event, Interface_User, Interface_UserAttende } from "../../models";
-import { errors, requestContext } from "../../libraries";
+import { errors } from "../../libraries";
 import {
-  IN_PRODUCTION,
   EVENT_NOT_FOUND,
   EVENT_NOT_FOUND_CODE,
-  EVENT_NOT_FOUND_MESSAGE,
   EVENT_NOT_FOUND_PARAM,
 } from "../../constants";
 
@@ -22,9 +20,7 @@ export const registrantsByEvent: QueryResolvers["registrantsByEvent"] = async (
 
   if (!event) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? EVENT_NOT_FOUND
-        : requestContext.translate(EVENT_NOT_FOUND_MESSAGE),
+      EVENT_NOT_FOUND,
       EVENT_NOT_FOUND_CODE,
       EVENT_NOT_FOUND_PARAM
     );

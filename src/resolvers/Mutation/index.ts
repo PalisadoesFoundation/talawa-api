@@ -63,6 +63,7 @@ import { updateLanguage } from "./updateLanguage";
 import { updateOrganization } from "./updateOrganization";
 import { updatePluginInstalledOrgs } from "./updatePluginInstalledOrgs";
 import { updatePluginStatus } from "./updatePluginStatus";
+import { updatePost } from "./updatePost";
 import { updateTask } from "./updateTask";
 import { updateUserProfile } from "./updateUserProfile";
 import { updateUserType } from "./updateUserType";
@@ -135,4 +136,5 @@ export const Mutation: MutationResolvers = {
   updateTask,
   updateUserProfile,
   updateUserType,
+  updatePost,
 };

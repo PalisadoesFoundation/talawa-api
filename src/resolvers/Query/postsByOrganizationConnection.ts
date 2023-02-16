@@ -4,10 +4,9 @@ import {
   QueryResolvers,
 } from "../../types/generatedGraphQLTypes";
 import { Post } from "../../models";
-import { errors, requestContext } from "../../libraries";
-import { IN_PRODUCTION } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
 
+// @ts-ignore
 export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationConnection"] =
   async (_parent, args) => {
     const sort = getSort(args.orderBy);
@@ -17,12 +16,7 @@ export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationC
     let options = {};
     if (args.first) {
       if (args.skip === null) {
-        throw new errors.ValidationError(
-          IN_PRODUCTION !== true
-            ? "Parameter is missing"
-            : requestContext.translate("parameter.missing"),
-          "parameter.missing"
-        );
+        throw "parameter.missing";
       }
 
       options = {
@@ -41,7 +35,6 @@ export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationC
       };
     }
 
-    // Set of posts
     const postsmodel = await Post.paginate(
       {
         organization: args.id,
