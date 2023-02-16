@@ -903,12 +903,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
   });
 
   it(`returns non-paginated list of admins if args.first === undefined and where.event_title_contains !== undefined`, async () => {
-    const where = {
-      joinedOrganizations: {
-        $in: testOrganization._id,
-      },
-    };
-
     const args: QueryOrganizationsMemberConnectionArgs = {
       orgId: testOrganization._id,
       skip: 1,

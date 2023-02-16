@@ -7,7 +7,6 @@ import { Event, Interface_Event, Interface_UserAttende } from "../../models";
 import { STATUS_ACTIVE } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
 
-
 /**
  * @name eventsByOrganizationConnection a GraphQL Query
  * @description returns list of events of an organization that matches all the query parameters
@@ -18,9 +17,9 @@ export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizatio
     const sort = getSort(args.orderBy);
 
     inputArg = {
-        ...inputArg,
-        status: "ACTIVE"
-    }
+      ...inputArg,
+      status: "ACTIVE",
+    };
 
     const events = await Event.find(inputArg as Interface_Event)
       .sort(sort)
@@ -180,10 +179,10 @@ const getInputArg = (where: InputMaybe<EventWhereInput> | undefined) => {
 
     // Returns events of a specific organization
     if (where.organization_id) {
-        inputArg = {
-            ...inputArg,
-            organization: where.organization_id,
-        }
+      inputArg = {
+        ...inputArg,
+        organization: where.organization_id,
+      };
     }
 
     // Returns provided location events
