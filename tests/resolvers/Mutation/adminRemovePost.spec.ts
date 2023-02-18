@@ -7,7 +7,6 @@ import { adminRemovePost as adminRemovePostResolver } from "../../../src/resolve
 import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   POST_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";

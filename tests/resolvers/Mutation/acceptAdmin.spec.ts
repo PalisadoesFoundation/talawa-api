@@ -4,7 +4,6 @@ import { MutationAcceptAdminArgs } from "../../../src/types/generatedGraphQLType
 import { connect, disconnect } from "../../../src/db";
 import { acceptAdmin as acceptAdminResolver } from "../../../src/resolvers/Mutation/acceptAdmin";
 import {
-  USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";

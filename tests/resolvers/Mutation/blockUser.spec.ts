@@ -6,7 +6,6 @@ import { connect, disconnect } from "../../../src/db";
 import { blockUser as blockUserResolver } from "../../../src/resolvers/Mutation/blockUser";
 import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_FOUND_MESSAGE,

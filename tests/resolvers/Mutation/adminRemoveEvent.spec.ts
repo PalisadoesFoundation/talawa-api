@@ -7,7 +7,6 @@ import { adminRemoveEvent as adminRemoveEventResolver } from "../../../src/resol
 import {
   EVENT_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
