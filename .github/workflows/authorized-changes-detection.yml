@@ -23,6 +23,7 @@ on:
       - '.eslintignore'
       - 'vite.config.ts'
       - 'CODEOWNERS'
+      - 'LICENSE'
       
 jobs:
   Checking-for-unauthorized-file-changes:
