@@ -6,11 +6,19 @@ import { connect, disconnect } from "../../../src/db";
 import { removeMember as removeMemberResolver } from "../../../src/resolvers/Mutation/removeMember";
 import {
   MEMBER_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND,
-  USER_NOT_AUTHORIZED,
+  ORGANIZATION_NOT_FOUND_MESSAGE,
+  USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  afterEach,
+  vi,
+} from "vitest";
 import { testOrganizationType, testUserType } from "../../helpers/userAndOrg";
 import { createTestUserFunc } from "../../helpers/user";
 
@@ -74,7 +82,17 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> removeMember", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
   it(`throws NotFoundError if no organization exists with _id === args.data.organizationId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
     try {
       const args: MutationRemoveMemberArgs = {
         data: {
@@ -87,14 +105,22 @@ describe("resolvers -> Mutation -> removeMember", () => {
         userId: testUsers[0]!.id,
       };
 
-      await removeMemberResolver?.({}, args, context);
+      const { removeMember: removeMemberResolverOrgNotFoundError } =
+        await import("../../../src/resolvers/Mutation/removeMember");
+
+      await removeMemberResolverOrgNotFoundError?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws UnauthorizedError if current user with _id === context.userId is
   not an admin of the organization with _id === args.data.organizationId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
     try {
       const args: MutationRemoveMemberArgs = {
         data: {
@@ -107,9 +133,16 @@ describe("resolvers -> Mutation -> removeMember", () => {
         userId: testUsers[2]!.id,
       };
 
-      await removeMemberResolver?.({}, args, context);
+      const { removeMember: removeMemberResolverAdminError } = await import(
+        "../../../src/resolvers/Mutation/removeMember"
+      );
+
+      await removeMemberResolverAdminError?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ADMIN.message);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.message}`
+      );
     }
   });
 
@@ -128,7 +161,7 @@ describe("resolvers -> Mutation -> removeMember", () => {
 
       await removeMemberResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toBe(USER_NOT_FOUND);
     }
   });
 

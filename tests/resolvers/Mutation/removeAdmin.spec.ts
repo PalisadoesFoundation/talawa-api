@@ -7,6 +7,7 @@ import { removeAdmin as removeAdminResolver } from "../../../src/resolvers/Mutat
 import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED,
+  USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import {
@@ -120,6 +121,11 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
 
   it(`throws UnauthorizedError if user with _id === args.data.userId is not an admin
   of organzation with _id === args.data.organizationId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
     try {
       await Organization.updateOne(
         {
@@ -143,9 +149,16 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
         userId: testUser!.id,
       };
 
-      await removeAdminResolver?.({}, args, context);
+      const { removeAdmin: removeAdminAdminError } = await import(
+        "../../../src/resolvers/Mutation/removeAdmin"
+      );
+
+      await removeAdminAdminError?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ADMIN.message);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.message}`
+      );
     }
   });
 

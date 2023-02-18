@@ -26,9 +26,7 @@ export const removeGroupChat: MutationResolvers["removeGroupChat"] = async (
   // Checks if a groupChat with _id === args.chatId exists.
   if (!groupChat) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? CHAT_NOT_FOUND
-        : requestContext.translate(CHAT_NOT_FOUND_MESSAGE),
+      requestContext.translate(CHAT_NOT_FOUND_MESSAGE),
       CHAT_NOT_FOUND_CODE,
       CHAT_NOT_FOUND_PARAM
     );
@@ -41,9 +39,7 @@ export const removeGroupChat: MutationResolvers["removeGroupChat"] = async (
   // Checks if an organization with _id === groupChat.organization exists.
   if (!organization) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? ORGANIZATION_NOT_FOUND
-        : requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
+      requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
       ORGANIZATION_NOT_FOUND_CODE,
       ORGANIZATION_NOT_FOUND_PARAM
     );

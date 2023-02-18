@@ -238,7 +238,7 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
 
       await rejectMembershipRequestResolverAdminError?.({}, args, context);
     } catch (error: any) {
-      // expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ADMIN.message);
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ADMIN.message);
       expect(error.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ADMIN.message}`
       );
