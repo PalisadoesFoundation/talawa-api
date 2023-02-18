@@ -27,7 +27,7 @@ export const rejectAdmin: MutationResolvers["rejectAdmin"] = async (
   }
 
   // Checks whether currentUser is not a SUPERADMIN.
-  superAdminCheck(currentUser);
+  superAdminCheck(currentUser!);
 
   const userExists = await User.exists({
     _id: args.id,

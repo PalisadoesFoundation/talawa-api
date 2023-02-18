@@ -20,15 +20,18 @@ beforeAll(async () => {
   testUser = await createTestUserFunc();
 });
 
-afterAll(async () => {
-  vi.restoreAllMocks();
+afterAll(async()=>{
   disconnect();
+})
+
+afterEach(() => {
+  vi.resetModules();
+  vi.resetAllMocks();
 });
 
+
 describe("utilities -> adminCheck", () => {
-  afterEach(() => {
-    vi.resetModules();
-  });
+
 
   it("throws error if userType===`SUPERADMIN` is false", async () => {
     const { requestContext } = await import("../../src/libraries");

@@ -26,38 +26,19 @@ beforeAll(async () => {
   testUser = await createTestUserFunc();
 });
 
+afterAll(async()=>{
+  await disconnect();
+})
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.doUnmock("../../../src/constants");
+  vi.resetModules();
+});
+
 
 
 describe("resolvers -> Mutation -> rejectAdmin", () => {
-  afterEach(() => {
-    vi.doUnmock("../../../src/constants");
-    vi.resetModules();
-  });
-
-  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
-    try {
-      const args: MutationRejectAdminArgs = {
-        id: "",
-      };
-
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-
-      const { rejectAdmin: rejectAdminResolver } = await import(
-        "../../../src/resolvers/Mutation/rejectAdmin"
-      );
-
-      await rejectAdminResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
-    }
-  });
 
   it(`throws Error if userType of user with _id === context.userId is not SUPERADMIN`, async () => {
     const { requestContext } = await import("../../../src/libraries");
@@ -90,6 +71,32 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.message);
     }
   });
+
+  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+    try {
+      const args: MutationRejectAdminArgs = {
+        id: "",
+      };
+
+      const context = {
+        userId: Types.ObjectId().toString(),
+      };
+
+      const { rejectAdmin: rejectAdminResolver } = await import(
+        "../../../src/resolvers/Mutation/rejectAdmin"
+      );
+
+      await rejectAdminResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+    }
+  });
+
 
   it(`throws NotFoundError if no user exists with _id === args.id`, async () => {
     const { requestContext } = await import("../../../src/libraries");
