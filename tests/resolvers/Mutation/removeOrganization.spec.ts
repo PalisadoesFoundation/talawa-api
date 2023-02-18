@@ -14,11 +14,20 @@ import { MutationRemoveOrganizationArgs } from "../../../src/types/generatedGrap
 import { connect, disconnect } from "../../../src/db";
 import { removeOrganization as removeOrganizationResolver } from "../../../src/resolvers/Mutation/removeOrganization";
 import {
-  ORGANIZATION_NOT_FOUND,
+  ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
+  USER_NOT_AUTHORIZED_SUPERADMIN,
+  USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  vi,
+  afterEach,
+} from "vitest";
 import { createTestUserFunc } from "../../helpers/user";
 import { testUserType } from "../../helpers/userAndOrg";
 
@@ -126,7 +135,17 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> removeOrganization", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
     try {
       const args: MutationRemoveOrganizationArgs = {
         id: "",
@@ -136,13 +155,23 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      const { removeOrganization: removeOrganizationResolver } = await import(
+        "../../../src/resolvers/Mutation/removeOrganization"
+      );
+
       await removeOrganizationResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
     }
   });
 
   it(`throws NotFoundError if no organization exists with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
     try {
       const args: MutationRemoveOrganizationArgs = {
         id: Types.ObjectId().toString(),
@@ -152,9 +181,55 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
         userId: testUsers[0]!.id,
       };
 
+      const { removeOrganization: removeOrganizationResolver } = await import(
+        "../../../src/resolvers/Mutation/removeOrganization"
+      );
+
       await removeOrganizationResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${ORGANIZATION_NOT_FOUND_MESSAGE}`
+      );
+    }
+  });
+
+  it(`throws User is not SUPERADMIN error if current user with _id === context.userId
+  is not a SUPERADMIN`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
+    try {
+      await Organization.updateOne(
+        {
+          _id: testOrganization._id,
+        },
+        {
+          $set: {
+            creator: Types.ObjectId().toString(),
+          },
+        }
+      );
+
+      const args: MutationRemoveOrganizationArgs = {
+        id: testOrganization.id,
+      };
+
+      const context = {
+        userId: testUsers[0]!.id,
+      };
+
+      const { removeOrganization: removeOrganizationResolverAdminError } =
+        await import("../../../src/resolvers/Mutation/removeOrganization");
+
+      await removeOrganizationResolverAdminError?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.message);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.message}`
+      );
     }
   });
 
@@ -168,6 +243,17 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
         {
           $set: {
             creator: Types.ObjectId().toString(),
+          },
+        }
+      );
+
+      await User.updateOne(
+        {
+          _id: testUsers[0]?._id,
+        },
+        {
+          $set: {
+            userType: "SUPERADMIN",
           },
         }
       );
