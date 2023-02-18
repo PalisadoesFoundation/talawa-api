@@ -5,7 +5,7 @@ import { MutationRejectAdminArgs } from "../../../src/types/generatedGraphQLType
 import { connect, disconnect } from "../../../src/db";
 import { rejectAdmin as rejectAdminResolver } from "../../../src/resolvers/Mutation/rejectAdmin";
 import {
-  USER_NOT_AUTHORIZED,
+  USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import {
@@ -32,8 +32,7 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> rejectAdmin", () => {
   afterEach(() => {
-    vi.doUnmock("../../../src/constants");
-    vi.resetModules();
+    vi.resetAllMocks();
   });
 
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
@@ -50,15 +49,6 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { rejectAdmin: rejectAdminResolver } = await import(
         "../../../src/resolvers/Mutation/rejectAdmin"
       );
@@ -71,6 +61,11 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
   });
 
   it(`throws Error if userType of user with _id === context.userId is not SUPERADMIN`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
     try {
       const args: MutationRejectAdminArgs = {
         id: "",
@@ -79,10 +74,21 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       const context = {
         userId: testUser!.id,
       };
-
+      await User.findByIdAndUpdate(
+        {
+          _id: testUser?._id,
+        },
+        {
+          userType: "USER",
+        }
+      );
       await rejectAdminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.message}`
+      );
+
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.message);
     }
   });
 
@@ -110,15 +116,6 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { rejectAdmin: rejectAdminResolver } = await import(
         "../../../src/resolvers/Mutation/rejectAdmin"

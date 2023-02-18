@@ -3,7 +3,7 @@ import { gql } from "apollo-server-core";
 // Place fields alphabetically to ensure easier lookup and navigation.
 export const mutations = gql`
   type Mutation {
-    acceptAdmin(id: ID!): Boolean! @auth
+    acceptAdmin(id: ID!): Boolean! @auth @role(requires: SUPERADMIN)
 
     acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
@@ -92,11 +92,13 @@ export const mutations = gql`
 
     registerForEvent(id: ID!): Event! @auth
 
-    rejectAdmin(id: ID!): Boolean! @auth
+    rejectAdmin(id: ID!): Boolean! @auth @role(requires: SUPERADMIN)
 
     rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
-    removeAdmin(data: UserAndOrganizationInput!): User! @auth
+    removeAdmin(data: UserAndOrganizationInput!): User!
+      @auth
+      @role(requires: SUPERADMIN)
 
     removeComment(id: ID!): Comment @auth
 

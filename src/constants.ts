@@ -93,6 +93,18 @@ export const REGEX_VALIDATION_ERROR = {
   param: "stringValidation",
 };
 
+export const USER_NOT_AUTHORIZED_SUPERADMIN = {
+  message: "Error: Current user must be a SUPERADMIN",
+  code: "role.notValid.superadmin",
+  param: "roleValidationSuperAdmin",
+};
+
+export const USER_NOT_AUTHORIZED_ADMIN = {
+  message: "Error: Current user must be an ADMIN",
+  code: "role.notValid.admin",
+  param: "roleValidationAdmin",
+};
+
 export const TASK_NOT_FOUND = "Task not found";
 export const TASK_NOT_FOUND_CODE = "task.notFound";
 export const TASK_NOT_FOUND_MESSAGE = "task.notFound";
