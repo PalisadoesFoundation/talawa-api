@@ -21,6 +21,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  vi.restoreAllMocks();
   disconnect();
 });
 

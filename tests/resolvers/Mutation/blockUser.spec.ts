@@ -7,6 +7,7 @@ import { blockUser as blockUserResolver } from "../../../src/resolvers/Mutation/
 import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED,
+  USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
@@ -105,7 +106,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
 
       await blockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.message);
     }
   });
 

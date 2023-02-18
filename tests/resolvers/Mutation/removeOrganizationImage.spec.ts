@@ -8,6 +8,7 @@ import {
   ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED,
+  USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_FOUND,
   USER_NOT_FOUND_MESSAGE,
@@ -217,9 +218,9 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
 
       await removeOrganizationImageResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ADMIN.message);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.message}`
       );
     }
   });

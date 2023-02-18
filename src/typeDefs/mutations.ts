@@ -110,7 +110,7 @@ export const mutations = gql`
 
     removeMember(data: MultipleUsersAndOrganizationInput!): Organization! @auth
 
-    removeOrganization(id: ID!): User! @auth
+    removeOrganization(id: ID!): User! @auth @role(requires: SUPERADMIN)
 
     removeOrganizationImage(organizationId: String!): Organization! @auth
 

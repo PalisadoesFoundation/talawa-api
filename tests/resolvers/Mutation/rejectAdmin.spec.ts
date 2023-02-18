@@ -26,13 +26,12 @@ beforeAll(async () => {
   testUser = await createTestUserFunc();
 });
 
-afterAll(async () => {
-  await disconnect();
-});
+
 
 describe("resolvers -> Mutation -> rejectAdmin", () => {
   afterEach(() => {
-    vi.resetAllMocks();
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
   });
 
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
