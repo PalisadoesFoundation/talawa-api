@@ -20,7 +20,8 @@ on:
       - 'tsconfig.json'
       - '.gitignore'
       - '.eslintrc.json'
-      - '.eslintignore '
+      - '.eslintignore'
+      - 'vite.config.ts'
       - 'CODEOWNERS'
       
 jobs:
