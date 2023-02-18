@@ -8,6 +8,7 @@ import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_ALREADY_MEMBER_MESSAGE,
   USER_NOT_AUTHORIZED,
+  USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import {
@@ -126,6 +127,12 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
   it(`throws UnauthorizedError if current user with _id === context.userId is
   not an admin of organization with _id === groupChat.organization for groupChat
   with _id === args.chatId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
     try {
       await GroupChat.updateOne(
         {
@@ -162,7 +169,11 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       );
       await addUserToGroupChat?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.message}`
+      );
+
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.message);
     }
   });
 

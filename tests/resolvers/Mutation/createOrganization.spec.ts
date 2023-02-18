@@ -111,7 +111,9 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       );
       await createOrganization?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.message);
+      expect(spy).toHaveBeenLastCalledWith(
+        USER_NOT_AUTHORIZED_SUPERADMIN.message
+      );
       expect(error.message).toEqual(USER_NOT_AUTHORIZED_SUPERADMIN.message);
     }
   });

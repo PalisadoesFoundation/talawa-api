@@ -34,6 +34,7 @@ afterAll(async () => {
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   vi.doUnmock("../../../src/constants");
   vi.resetModules();
 });

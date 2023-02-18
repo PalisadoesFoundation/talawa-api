@@ -9,7 +9,6 @@ import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_ALREADY_MEMBER_MESSAGE,
   USER_NOT_AUTHORIZED,
-  USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
@@ -164,7 +163,7 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
 
       await acceptMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.message);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
     }
   });
 

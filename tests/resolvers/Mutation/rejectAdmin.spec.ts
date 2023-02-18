@@ -26,20 +26,16 @@ beforeAll(async () => {
   testUser = await createTestUserFunc();
 });
 
-afterAll(async()=>{
+afterAll(async () => {
   await disconnect();
-})
-
-afterEach(() => {
-  vi.restoreAllMocks();
-  vi.doUnmock("../../../src/constants");
-  vi.resetModules();
 });
 
-
-
 describe("resolvers -> Mutation -> rejectAdmin", () => {
-
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
   it(`throws Error if userType of user with _id === context.userId is not SUPERADMIN`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
@@ -96,7 +92,6 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
-
 
   it(`throws NotFoundError if no user exists with _id === args.id`, async () => {
     const { requestContext } = await import("../../../src/libraries");
