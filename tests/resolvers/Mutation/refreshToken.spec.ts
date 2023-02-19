@@ -3,7 +3,12 @@ import { Types } from "mongoose";
 import { User } from "../../../src/models";
 import { MutationRefreshTokenArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
-import { USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import {
+  INVALID_REFRESH_TOKEN,
+  INVALID_REFRESH_TOKEN_MESSAGE,
+  USER_NOT_FOUND,
+  USER_NOT_FOUND_MESSAGE,
+} from "../../../src/constants";
 import { createRefreshToken } from "../../../src/utilities";
 import {
   beforeAll,
@@ -55,7 +60,7 @@ describe("resolvers -> Mutation -> refreshToken", () => {
 
       await refreshTokenResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual("Invalid refreshToken");
+      expect(error.message).toEqual(INVALID_REFRESH_TOKEN);
     }
   });
 
@@ -85,8 +90,10 @@ describe("resolvers -> Mutation -> refreshToken", () => {
 
       await refreshTokenResolver?.({}, args, {});
     } catch (error: any) {
-      expect(spy).toBeCalledWith("invalid.refreshToken");
-      expect(error.message).toEqual("Translated invalid.refreshToken");
+      expect(spy).toBeCalledWith(INVALID_REFRESH_TOKEN_MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${INVALID_REFRESH_TOKEN_MESSAGE}`
+      );
     }
   });
 
@@ -197,7 +204,7 @@ describe("resolvers -> Mutation -> refreshToken", () => {
 
       await refreshTokenResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual("Invalid refreshToken");
+      expect(error.message).toEqual(INVALID_REFRESH_TOKEN);
     }
   });
 
@@ -241,8 +248,10 @@ describe("resolvers -> Mutation -> refreshToken", () => {
 
       await refreshTokenResolver?.({}, args, {});
     } catch (error: any) {
-      expect(spy).toBeCalledWith("invalid.refreshToken");
-      expect(error.message).toEqual("Translated invalid.refreshToken");
+      expect(spy).toBeCalledWith(INVALID_REFRESH_TOKEN_MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${INVALID_REFRESH_TOKEN_MESSAGE}`
+      );
     }
   });
 
