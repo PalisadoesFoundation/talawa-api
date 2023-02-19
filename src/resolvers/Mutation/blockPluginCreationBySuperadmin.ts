@@ -5,10 +5,8 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_AUTHORIZED_CODE,
-  USER_NOT_AUTHORIZED_PARAM,
 } from "../../constants";
+import { superAdminCheck } from "../../utilities";
 
 export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCreationBySuperadmin"] =
   async (_parent, args, context) => {
@@ -39,15 +37,7 @@ export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCrea
     }
 
     // Checks whether currentUser is a SUPERADMIN.
-    const currentUserIsSuperAdmin = currentUser.userType === "SUPERADMIN";
-
-    if (currentUserIsSuperAdmin === false) {
-      throw new errors.UnauthorizedError(
-        requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
-        USER_NOT_AUTHORIZED_CODE,
-        USER_NOT_AUTHORIZED_PARAM
-      );
-    }
+    superAdminCheck(currentUser!);
 
     /*
     Sets pluginCreationAllowed field on document of user with _id === args.userId
