@@ -11,6 +11,7 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
+  USER_BLOCKING_SELF,
 } from "../../constants";
 import { Organization, User } from "../../models";
 
@@ -42,6 +43,14 @@ export const blockUser: MutationResolvers["blockUser"] = async (
       requestContext.translate(USER_NOT_FOUND_MESSAGE),
       USER_NOT_FOUND_CODE,
       USER_NOT_FOUND_PARAM
+    );
+  }
+
+  if (args.userId === context.userId) {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_BLOCKING_SELF.message),
+      USER_BLOCKING_SELF.code,
+      USER_BLOCKING_SELF.param
     );
   }
 

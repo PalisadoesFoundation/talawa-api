@@ -105,6 +105,12 @@ export const USER_NOT_AUTHORIZED_ADMIN = {
   param: "roleValidationAdmin",
 };
 
+export const USER_BLOCKING_SELF = {
+  message: "Error: Current user cannot block self",
+  code: "user.selfBlock",
+  param: "userSelfBlock",
+};
+
 export const TASK_NOT_FOUND = "Task not found";
 export const TASK_NOT_FOUND_CODE = "task.notFound";
 export const TASK_NOT_FOUND_MESSAGE = "task.notFound";
