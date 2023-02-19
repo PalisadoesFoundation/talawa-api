@@ -24,12 +24,15 @@ export const mutations = gql`
 
     blockPluginCreationBySuperadmin(userId: ID!, blockUser: Boolean!): User!
       @auth
+      @role(requires: SUPERADMIN)
 
     blockUser(organizationId: ID!, userId: ID!): User! @auth
 
     cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
-    createAdmin(data: UserAndOrganizationInput!): User! @auth
+    createAdmin(data: UserAndOrganizationInput!): User!
+      @auth
+      @role(requires: SUPERADMIN)
 
     createComment(postId: ID!, data: CommentInput!): Comment @auth
 
