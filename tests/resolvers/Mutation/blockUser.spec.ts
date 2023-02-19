@@ -5,6 +5,7 @@ import { MutationBlockUserArgs } from "../../../src/types/generatedGraphQLTypes"
 import { connect, disconnect } from "../../../src/db";
 import { blockUser as blockUserResolver } from "../../../src/resolvers/Mutation/blockUser";
 import {
+  MEMBER_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_BLOCKING_SELF,
   USER_NOT_AUTHORIZED_ADMIN,
@@ -107,6 +108,31 @@ describe("resolvers -> Mutation -> blockUser", () => {
     }
   });
 
+  it(`throws member not found error if user with args.userId is not a member of the organization`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message
+    );
+
+    try {
+      const args: MutationBlockUserArgs = {
+        organizationId: testOrganization!.id,
+        userId: testUser2!.id,
+      };
+
+      const context = {
+        userId: testUser!.id,
+      };
+      const { blockUser: blockUserResolverError } = await import(
+        "../../../src/resolvers/Mutation/blockUser"
+      );
+
+      await blockUserResolverError?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(MEMBER_NOT_FOUND_MESSAGE);
+    }
+  });
+
   it(`throws cannot block self error if  context.userId === args.userId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
@@ -135,6 +161,17 @@ describe("resolvers -> Mutation -> blockUser", () => {
   it(`throws UnauthorizedError if current user with _id === context.userId is not
   an admin of the organization with _id === args.organizationId`, async () => {
     try {
+      await Organization.findByIdAndUpdate(
+        {
+          _id: testOrganization?._id,
+        },
+        {
+          $push: {
+            members: testUser2?.id,
+          },
+        }
+      );
+
       const args: MutationBlockUserArgs = {
         organizationId: testOrganization!.id,
         userId: testUser2!.id,

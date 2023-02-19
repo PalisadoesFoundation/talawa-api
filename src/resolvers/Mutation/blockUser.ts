@@ -8,10 +8,13 @@ import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_PARAM,
+  MEMBER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
   USER_BLOCKING_SELF,
+  MEMBER_NOT_FOUND_CODE,
+  MEMBER_NOT_FOUND_PARAM,
 } from "../../constants";
 import { Organization, User } from "../../models";
 
@@ -43,6 +46,19 @@ export const blockUser: MutationResolvers["blockUser"] = async (
       requestContext.translate(USER_NOT_FOUND_MESSAGE),
       USER_NOT_FOUND_CODE,
       USER_NOT_FOUND_PARAM
+    );
+  }
+
+  // Check whether the user - args.userId is a member of the organization before blocking
+  const userIsOrganizationMember = organization?.members.some(
+    (member) => member.toString() === args.userId.toString()
+  );
+
+  if (!userIsOrganizationMember) {
+    throw new errors.NotFoundError(
+      requestContext.translate(MEMBER_NOT_FOUND_MESSAGE),
+      MEMBER_NOT_FOUND_CODE,
+      MEMBER_NOT_FOUND_PARAM
     );
   }
 
