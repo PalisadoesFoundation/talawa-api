@@ -42,10 +42,17 @@ export const rejectAdmin: MutationResolvers["rejectAdmin"] = async (
     );
   }
 
-  // Deletes the user.
-  await User.deleteOne({
-    _id: args.id,
-  });
+  // Rejects the user as admin.
+  await User.updateOne(
+    {
+      _id: args.id,
+    },
+    {
+      $set: {
+        adminApproved: false,
+      },
+    }
+  );
 
   // Returns true if operation is successful.
   return true;

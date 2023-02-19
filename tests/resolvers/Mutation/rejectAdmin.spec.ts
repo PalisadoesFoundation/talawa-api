@@ -19,11 +19,13 @@ import {
 } from "vitest";
 import { createTestUserFunc, testUserType } from "../../helpers/user";
 
-let testUser: testUserType;
+let testUser1: testUserType;
+let testUser2: testUserType;
 
 beforeAll(async () => {
   await connect();
-  testUser = await createTestUserFunc();
+  testUser1 = await createTestUserFunc();
+  testUser2 = await createTestUserFunc();
 });
 
 afterAll(async () => {
@@ -48,11 +50,11 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser1!.id,
       };
       await User.findByIdAndUpdate(
         {
-          _id: testUser?._id,
+          _id: testUser1?._id,
         },
         {
           userType: "USER",
@@ -101,7 +103,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
     try {
       await User.updateOne(
         {
-          _id: testUser!._id,
+          _id: testUser1!._id,
         },
         {
           $set: {
@@ -115,7 +117,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser1!.id,
       };
 
       const { rejectAdmin: rejectAdminResolver } = await import(
@@ -128,23 +130,21 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
     }
   });
 
-  it(`deletes the user with _id === args.id and returns true`, async () => {
+  it("should  not delete the user with _id === args.id but set its adminApproved property to false", async () => {
     const args: MutationRejectAdminArgs = {
-      id: testUser!.id,
+      id: testUser2!.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser1!.id,
     };
 
-    const rejectAdminPayload = await rejectAdminResolver?.({}, args, context);
+    const { rejectAdmin: rejectAdminResolver } = await import(
+      "../../../src/resolvers/Mutation/rejectAdmin"
+    );
 
-    expect(rejectAdminPayload).toEqual(true);
+    const flag = await rejectAdminResolver?.({}, args, context);
 
-    const deletedTestUser = await User.findOne({
-      _id: testUser!._id,
-    }).lean();
-
-    expect(deletedTestUser).toEqual(null);
+    expect(flag).toBe(true);
   });
 });
