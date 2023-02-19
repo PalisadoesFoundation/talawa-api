@@ -76,7 +76,7 @@ export const imageAlreadyInDbCheck = async (
           param: INVALID_FILE_TYPE.param,
         },
       ],
-      requestContext.translate("invalid.fileType")
+      requestContext.translate(INVALID_FILE_TYPE.message)
     );
   }
 };
