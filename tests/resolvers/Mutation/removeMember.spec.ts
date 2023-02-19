@@ -7,6 +7,7 @@ import { removeMember as removeMemberResolver } from "../../../src/resolvers/Mut
 import {
   MEMBER_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_MESSAGE,
+  USER_BLOCKING_SELF,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND,
 } from "../../../src/constants";
@@ -185,6 +186,28 @@ describe("resolvers -> Mutation -> removeMember", () => {
     }
   });
 
+  it(`throws Userblocking self error when args.userIds contains context.userId`, async () => {
+    try {
+      const args: MutationRemoveMemberArgs = {
+        data: {
+          organizationId: testOrganization!.id,
+          userIds: [testUsers[0]!.id],
+        },
+      };
+
+      const context = {
+        userId: testUsers[0]!.id,
+      };
+
+      await removeMemberResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        USER_BLOCKING_SELF.message +
+          ",Administrators cannot remove members who are also Administrators"
+      );
+    }
+  });
+
   it(`throws Error if user with one of the ids in args.data.userIds is an admin
   of organization with _id === args.data.organizationId`, async () => {
     try {
@@ -202,7 +225,8 @@ describe("resolvers -> Mutation -> removeMember", () => {
       await removeMemberResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        "Administrators cannot remove members who are also Administrators"
+        USER_BLOCKING_SELF.message +
+          ",Administrators cannot remove members who are also Administrators"
       );
     }
   });

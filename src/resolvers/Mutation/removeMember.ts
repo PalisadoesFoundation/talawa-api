@@ -8,6 +8,7 @@ import {
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_PARAM,
+  USER_BLOCKING_SELF,
 } from "../../constants";
 
 export const removeMember: MutationResolvers["removeMember"] = async (
@@ -25,6 +26,10 @@ export const removeMember: MutationResolvers["removeMember"] = async (
       ORGANIZATION_NOT_FOUND_CODE,
       ORGANIZATION_NOT_FOUND_PARAM;
   }
+
+  const currentUser = await User.findOne({
+    _id: context.userId,
+  });
 
   // Checks whether current user making the request is an admin of organization.
   adminCheck(context.userId, organization!);
@@ -61,6 +66,11 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     if (userIsOrganizationMember === false) {
       errorsToThrow.push(MEMBER_NOT_FOUND);
       break;
+    }
+
+    // Check if the current user is removing self
+    if (user._id.toString() === currentUser?._id.toString()) {
+      errorsToThrow.push(USER_BLOCKING_SELF.message);
     }
 
     // Boolean to determine whether user is an admin of organization.
