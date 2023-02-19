@@ -25,13 +25,13 @@ export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationC
         pagination: true,
         page: args.skip,
         limit: args.first,
-        populate: ["organization", "likedBy", "comments"],
+        populate: ["organization", "likedBy", "comments", "creator"],
       };
     } else {
       options = {
         sort: sort,
         pagination: false,
-        populate: ["organization", "likedBy", "comments"],
+        populate: ["organization", "likedBy", "comments", "creator"],
       };
     }
 
