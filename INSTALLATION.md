@@ -18,7 +18,9 @@ This document provides instructions on how to set up and start a running instanc
   - [MongoDB](#mongodb)
     - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
     - [Setting up MONGODB\_URL in .env file](#setting-up-mongodb_url-in-env-file)
+    - [Windows Specific- Instructions to setup local instance of MongoDB](#windows-specific--instructions-to-setup-local-instance-of-mongodb)
     - [Optional:- Managing mongodb database using VSCode extension](#optional--managing-mongodb-database-using-vscode-extension)
+    - [Instructions to edit records for ADMIN user](#instructions-to-edit-records-for-admin-user)
   - [Google/firebase](#googlefirebase)
     - [Setting up RECAPTCHA\_SECRET\_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
     - [Setting up MAIL\_USERNAME/MAIL\_PASSWORD in .env file](#setting-up-mail_usernamemail_password-in-env-file)
@@ -116,17 +118,17 @@ Run the following command and copy/paste the result to the variable named `REFRE
 
 ## MongoDB
 
-Talawa-api makes use of `mongoDB` for its database needs. We make use of `mongoose ODM` to interact with the mongoDB database from within the code.
+Talawa-api makes use of `MongoDB` for its database needs. We make use of `mongoose ODM` to interact with the MongoDB database from within the code.
 
 <br/>
 
 ### Setting up the mongoDB database
 
-We're listing some common approaches to set up a running instance of mongodb database:-
+We're listing some common approaches to set up a running instance of MongoDB database:-
 
-1. `Hosted database approach:-` MongoDB Atlas is the easiest way to get a running instance of mongodb database. It is a hosted(remote) mongodb database provided by mongodb itself. If you're a beginner and don't want too much of a hassle setting up the database you should use this approach. Follow the setup guide on official [mongodb atlas docs](https://www.mongodb.com/docs/atlas/getting-started/). Mongodb Atlas is just one of the many hosted database solutions. If you want to use something else please do your own research.
+1. `Hosted database approach:-` MongoDB Atlas is the easiest way to get a running instance of mongodb database. It is a hosted(remote) mongodb database provided by mongodb itself. If you're a beginner and don't want too much of a hassle setting up the database you should use this approach but you should eventually switch to local instance. Follow the setup guide on official [MongoDB Atlas Docs](https://www.mongodb.com/docs/atlas/getting-started/). Mongodb Atlas is just one of the many hosted database solutions. Some issues that you might face while using this are slower tests, slower API requests, dependence on Internet connection etc.
 
-2. `System native database approach:-` You can install mongodb natively on your system and create/connect to the database. Follow the setup guide on official [mongodb docs](https://www.mongodb.com/docs/manual/administration/install-community/) for your respective operating system.
+2. `System native database approach:-` You can install mongodb natively on your system and create/connect to the database. Follow the setup guide on official [MongoDB Docs](https://www.mongodb.com/docs/manual/administration/install-community/) for your respective operating system.
 
 3. `Docker container approach:-` If you are fluent in working with docker you should use this approach. Docker is a great way to manage and run applications without natively installing anything on your system. With this you can set up the mongodb database inside a docker container and manage it as per your will. Follow this [video tutorial](https://www.youtube.com/watch?v=uklyCSKQ1Po) to set up a mongodb docker container.
 
@@ -158,12 +160,58 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 ...
 
 ```
+**Note**: Windows user may proceed to next section of this documentation. In order to complete step 7 of process, please follow instructions outlined in this section which is universal for all operating systems.
+
+</br>
+
+### Windows Specific- Instructions to setup local instance of MongoDB
+
+**It is recommended to have a local instance of MongoDB database instead of a cloud-based one, as it enhances the development experience and provides a more streamlined experience.**
+
+1. Download the latest version of MongoDB Community Server, which includes MongoDB Compass, from the following link:[MongoDB Community Server]( https://www.mongodb.com/try/download/community)
+
+2. Separately download the MongoDB Shell from the tools section at the following link:[Mongo Shell](https://www.mongodb.com/try/download/shell)
+
+3. Extract the downloaded shell folder, locate the "mongosh" application, and paste it to the following location: `Program Files` -> `MongoDB` -> `bin`.
+    [Note: **You will find the mongosh application inside the `bin` folder**]
+    
+4. Add the path of the location where you pasted the "mongosh" application to your system's environment variables.
+
+5. Create a folder named "data" in the C drive and within it create a new folder named "db".
+
+6. Open a terminal and run the "mongosh" command in the terminal you will get the connection string.
+
+7. In the `.env` file of talawa-api, add the connection string to the MONGO_DB_URL section.
+
+```
+$ mongosh
+
+Current Mongosh Log ID: e6ab4232a963d456920b3736
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2
+Using MongoDB:          6.0.4
+Using Mongosh:          1.6.2
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+...
+...
+...
+...
+
+```
+For eg. here-`mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.6.2` is your connection string.
+
+8. In a separate terminal, run the "mongod" command to start the local instance of the database.
+
+9. Open MongoDB Compass and click on "Connect." You will now be able to access the graphical user interface of the local database.
+
+**NOTE**: You can do the same in macOS and linux with minor tweaks. This has been provided to give a brief overview for beginners to setup their own local instance.
 
 <br/>
 
-### Optional:- Managing mongodb database using VSCode extension
+### Optional:- Managing MongoDB database using VSCode extension
 
-This guide is for `VSCode` users to easily manage their `mongoDB` databases:-
+This guide is for `VSCode` users to easily manage their `MongoDB` databases:-
 
 1.  Install the offical `MongoDB` extension for `VSCode` named `MongoDB for VS Code`.
 
@@ -171,7 +219,7 @@ This guide is for `VSCode` users to easily manage their `mongoDB` databases:-
 
 <br/>
 
-2. Connect your `mongoDB` database to the extension.
+2. Connect your `MongoDB` database to the extension.
 
    ![Connect your mongoDB database to the extension](./image/connect_extension_to_mongodb_step_1.webp)
 
@@ -182,6 +230,48 @@ This guide is for `VSCode` users to easily manage their `mongoDB` databases:-
 3. Now you can manage the database you are using for `talawa-api` through this extension within `VSCode`.
 
 <br/>
+
+### Instructions to edit records for ADMIN user
+
+**Note**: You can skip these instructions for now if you don't have running instance of Talawa-Admin.
+
+1. This step is for mandatory Linux specific users others can skip to next step:
+
+    1. You need to start `mongod` [Mongo daemon process] for `mongosh` to work use the following command for the same:
+    - `sudo service mongod start` **[System V init(service)]** or `sudo systemctl start mongod` **[systemd(systemctl)]**
+    2. To verify whether `mongod`[Mongo daemon process] is running you can use either:
+    - `sudo systemctl status mongod` **[systemd(systemctl)]** or `sudo service mongod status` **[System V init(service)]**
+
+#### I. MongoDB Compass
+
+1. Open MongoDB Compass and click on `Connect`.
+
+2. Select `user` collections and edit the data. Change:
+     1. `userType` from ADMIN to SUPERADMIN
+     2. `adminApproved` from false to true
+     - ![Illustration for ADMIN user edit ](./image/mongodb_compass_admin_user_edit.png)
+     
+#### II. Mongo Shell
+    
+1. Open a terminal and run `mongosh` command to open interactive command line interface to work with MongoDB database.
+
+2. In the `mongosh` terminal use the following command to edit the `users` collections data:
+      1. Find all users of the type `ADMIN`.
+      ```
+      db.users.find({userType: 'ADMIN'})
+      ```
+      2. Identify the `user` whose data you want to edit note its email address. Elevate permission of the user from `ADMIN` to `SUPERADMIN` and set `adminApproved` to `true`
+      ```
+      db.users.updateOne({ email: '<user's email address>' },{ $set: { userType: 'SUPERADMIN', adminApproved: true }})
+      ``` 
+      3. To verify the details were updated correctly use:
+      ```
+      db.users.find({email:'<user's email address>' })
+      ```
+           
+**Note**: You can do the edits via any of the two methods.
+
+</br>
 
 ## Google/firebase
 
