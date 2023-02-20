@@ -3,6 +3,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     setupFiles: ["./setupFile.ts"],
+    globalSetup: ["./tests/helpers/globalSetup.ts"],
 
     coverage: {
       // This tells vitest to include all files from ./src in test coverage.
