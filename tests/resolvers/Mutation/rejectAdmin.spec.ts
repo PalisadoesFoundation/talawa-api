@@ -5,7 +5,7 @@ import { MutationRejectAdminArgs } from "../../../src/types/generatedGraphQLType
 import { connect, disconnect } from "../../../src/db";
 import { rejectAdmin as rejectAdminResolver } from "../../../src/resolvers/Mutation/rejectAdmin";
 import {
-  USER_NOT_AUTHORIZED,
+  USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import {
@@ -19,11 +19,13 @@ import {
 } from "vitest";
 import { createTestUserFunc, testUserType } from "../../helpers/user";
 
-let testUser: testUserType;
+let testUser1: testUserType;
+let testUser2: testUserType;
 
 beforeAll(async () => {
   await connect();
-  testUser = await createTestUserFunc();
+  testUser1 = await createTestUserFunc();
+  testUser2 = await createTestUserFunc();
 });
 
 afterAll(async () => {
@@ -32,8 +34,40 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> rejectAdmin", () => {
   afterEach(() => {
+    vi.restoreAllMocks();
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
+  });
+  it(`throws Error if userType of user with _id === context.userId is not SUPERADMIN`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationRejectAdminArgs = {
+        id: "",
+      };
+
+      const context = {
+        userId: testUser1!.id,
+      };
+      await User.findByIdAndUpdate(
+        {
+          _id: testUser1?._id,
+        },
+        {
+          userType: "USER",
+        }
+      );
+      await rejectAdminResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.message}`
+      );
+
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.message);
+    }
   });
 
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
@@ -50,15 +84,6 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { rejectAdmin: rejectAdminResolver } = await import(
         "../../../src/resolvers/Mutation/rejectAdmin"
       );
@@ -70,22 +95,6 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
     }
   });
 
-  it(`throws Error if userType of user with _id === context.userId is not SUPERADMIN`, async () => {
-    try {
-      const args: MutationRejectAdminArgs = {
-        id: "",
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      await rejectAdminResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
-    }
-  });
-
   it(`throws NotFoundError if no user exists with _id === args.id`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
@@ -94,7 +103,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
     try {
       await User.updateOne(
         {
-          _id: testUser!._id,
+          _id: testUser1!._id,
         },
         {
           $set: {
@@ -108,17 +117,8 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser1!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { rejectAdmin: rejectAdminResolver } = await import(
         "../../../src/resolvers/Mutation/rejectAdmin"
@@ -130,23 +130,21 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
     }
   });
 
-  it(`deletes the user with _id === args.id and returns true`, async () => {
+  it("should  not delete the user with _id === args.id but set its adminApproved property to false", async () => {
     const args: MutationRejectAdminArgs = {
-      id: testUser!.id,
+      id: testUser2!.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser1!.id,
     };
 
-    const rejectAdminPayload = await rejectAdminResolver?.({}, args, context);
+    const { rejectAdmin: rejectAdminResolver } = await import(
+      "../../../src/resolvers/Mutation/rejectAdmin"
+    );
 
-    expect(rejectAdminPayload).toEqual(true);
+    const flag = await rejectAdminResolver?.({}, args, context);
 
-    const deletedTestUser = await User.findOne({
-      _id: testUser!._id,
-    }).lean();
-
-    expect(deletedTestUser).toEqual(null);
+    expect(flag).toBe(true);
   });
 });

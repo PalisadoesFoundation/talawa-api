@@ -7,7 +7,7 @@ import { rejectMembershipRequest as rejectMembershipRequestResolver } from "../.
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED,
+  USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import {
@@ -43,6 +43,7 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
   afterEach(() => {
+    vi.restoreAllMocks();
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
@@ -182,8 +183,13 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
   it(`throws UnauthorizedError if user with _id === context.userId is not an admin
   of organzation with _id === membershipRequest.organzation for membershipRequest 
   with _id === args.membershipRequestId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
     try {
-      await MembershipRequest.updateOne(
+      await MembershipRequest.findByIdAndUpdate(
         {
           _id: testMembershipRequest!._id,
         },
@@ -194,7 +200,7 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
         }
       );
 
-      await Organization.updateOne(
+      await Organization.findByIdAndUpdate(
         {
           _id: testOrganization!._id,
         },
@@ -205,17 +211,37 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
         }
       );
 
+      await User.findByIdAndUpdate(
+        {
+          _id: testUser!._id,
+        },
+        {
+          $set: {
+            userType: "USER",
+          },
+        }
+      );
+
       const args: MutationRejectMembershipRequestArgs = {
-        membershipRequestId: testMembershipRequest!.id,
+        membershipRequestId: testMembershipRequest?._id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?._id,
       };
 
-      await rejectMembershipRequestResolver?.({}, args, context);
+      const {
+        rejectMembershipRequest: rejectMembershipRequestResolverAdminError,
+      } = await import(
+        "../../../src/resolvers/Mutation/rejectMembershipRequest"
+      );
+
+      await rejectMembershipRequestResolverAdminError?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ADMIN.message);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.message}`
+      );
     }
   });
 

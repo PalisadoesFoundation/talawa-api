@@ -7,7 +7,7 @@ import { adminRemovePost as adminRemovePostResolver } from "../../../src/resolve
 import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   POST_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED,
+  USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
@@ -95,7 +95,7 @@ describe("resolvers -> Mutation -> adminRemovePost", () => {
 
       await adminRemovePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.message);
     }
   });
 

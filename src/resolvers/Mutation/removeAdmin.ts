@@ -1,5 +1,5 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { adminCheck, creatorCheck } from "../../utilities";
+import { adminCheck, creatorCheck, superAdminCheck } from "../../utilities";
 import { User, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
@@ -33,6 +33,10 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
     _id: args.data.userId,
   }).lean();
 
+  const currentUser = await User.findOne({
+    _id: context.userId,
+  });
+
   // Checks whether user exists.
   if (!user) {
     throw new errors.NotFoundError(
@@ -44,6 +48,9 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
 
   // Checks whether user is an admin of organization.
   adminCheck(user._id, organization);
+
+  // Checks whether the current user is a superadmin.
+  superAdminCheck(currentUser!);
 
   // Checks whether currentUser with _id === context.userId is the creator of organization.
   creatorCheck(context.userId, organization);

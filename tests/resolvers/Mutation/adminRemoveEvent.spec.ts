@@ -7,7 +7,7 @@ import { adminRemoveEvent as adminRemoveEventResolver } from "../../../src/resol
 import {
   EVENT_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED,
+  USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
@@ -135,7 +135,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
 
       await adminRemoveEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.message);
     }
   });
 
