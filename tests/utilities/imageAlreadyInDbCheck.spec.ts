@@ -16,6 +16,7 @@ import {
 } from "../helpers/db";
 import mongoose from "mongoose";
 import { nanoid } from "nanoid";
+import { INVALID_FILE_TYPE } from "../../src/constants";
 
 const testNewImagePath: string = `${nanoid()}-testNewImagePath`;
 const testOldImagePath: string = `${nanoid()}-testOldImagePath`;
@@ -26,9 +27,9 @@ const testMessage: string = "invalid.fileType";
 
 const testErrors = [
   {
-    message: "invalid.fileType",
-    code: "invalid.fileType",
-    param: "fileType",
+    message: INVALID_FILE_TYPE.message,
+    code: INVALID_FILE_TYPE.code,
+    param: INVALID_FILE_TYPE.param,
   },
 ];
 

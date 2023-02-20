@@ -168,6 +168,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const users = await User.find(where)
       .sort(sort)
       .select(["-password"])
+      .populate(["registeredEvents"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -242,6 +243,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       .limit(2)
       .sort(sort)
       .select(["-password"])
+      .populate(["registeredEvents"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -315,6 +317,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const users = await User.find(where)
       .sort(sort)
       .select(["-password"])
+      .populate(["registeredEvents"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -391,6 +394,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const users = await User.find(where)
       .sort(sort)
       .select(["-password"])
+      .populate(["registeredEvents"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -467,6 +471,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const users = await User.find(where)
       .sort(sort)
       .select(["-password"])
+      .populate(["registeredEvents"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -531,6 +536,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const users = await User.find(where)
       .sort(sort)
       .select(["-password"])
+      .populate(["registeredEvents"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -584,6 +590,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       .sort(sort)
       .limit(2)
       .select(["-password"])
+      .populate(["registeredEvents"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -637,6 +644,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       .sort(sort)
       .limit(2)
       .select(["-password"])
+      .populate(["registeredEvents"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -690,6 +698,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       .sort(sort)
       .limit(2)
       .select(["-password"])
+      .populate(["registeredEvents"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -743,6 +752,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       .sort(sort)
       .limit(2)
       .select(["-password"])
+      .populate(["registeredEvents"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -823,6 +833,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersTestModel = await User.paginate(where, {
       pagination: false,
       sort: {},
+      populate: ["registeredEvents"],
       select: ["-password"],
     });
 
@@ -845,6 +856,84 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       edges: users,
       aggregate: {
         count: 3,
+      },
+    });
+  });
+
+  it(`returns non-paginated list of admins if args.first === undefined and where.admin_for !== undefined`, async () => {
+    const where = {
+      joinedOrganizations: {
+        $in: testOrganization._id,
+      },
+    };
+
+    const args: QueryOrganizationsMemberConnectionArgs = {
+      orgId: testOrganization._id,
+      skip: 1,
+      where: {
+        admin_for: testOrganization._id,
+      },
+      orderBy: null,
+    };
+
+    const organizationsMemberConnectionPayload =
+      await organizationsMemberConnectionResolver?.({}, args, {});
+
+    const usersTestModel = await User.paginate(where, {
+      pagination: false,
+      sort: {},
+      populate: ["registeredEvents"],
+      select: ["-password"],
+    });
+
+    const users = usersTestModel.docs.map((user) => {
+      return {
+        ...user._doc,
+        password: null,
+      };
+    });
+
+    expect(organizationsMemberConnectionPayload).toEqual({
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        totalPages: 1,
+        nextPageNo: null,
+        prevPageNo: null,
+        currPageNo: 1,
+      },
+      edges: users,
+      aggregate: {
+        count: 3,
+      },
+    });
+  });
+
+  it(`returns non-paginated list of admins if args.first === undefined and where.event_title_contains !== undefined`, async () => {
+    const args: QueryOrganizationsMemberConnectionArgs = {
+      orgId: testOrganization._id,
+      skip: 1,
+      where: {
+        event_title_contains: "testEvent",
+      },
+      orderBy: null,
+    };
+
+    const organizationsMemberConnectionPayload =
+      await organizationsMemberConnectionResolver?.({}, args, {});
+
+    expect(organizationsMemberConnectionPayload).toEqual({
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        totalPages: 1,
+        nextPageNo: null,
+        prevPageNo: null,
+        currPageNo: 1,
+      },
+      edges: [],
+      aggregate: {
+        count: 0,
       },
     });
   });

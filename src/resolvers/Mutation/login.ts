@@ -9,6 +9,10 @@ import {
 import { errors, requestContext } from "../../libraries";
 import { androidFirebaseOptions, iosFirebaseOptions } from "../../config";
 import {
+  INVALID_CREDENTIALS,
+  INVALID_CREDENTIALS_CODE,
+  INVALID_CREDENTIALS_MESSAGE,
+  INVALID_CREDENTIALS_PARAM,
   IN_PRODUCTION,
   USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
@@ -44,15 +48,15 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
         {
           message:
             IN_PRODUCTION !== true
-              ? "Invalid credentials"
-              : requestContext.translate("invalid.credentials"),
-          code: "invalid.credentials",
-          param: "credentials",
+              ? INVALID_CREDENTIALS
+              : requestContext.translate(INVALID_CREDENTIALS_MESSAGE),
+          code: INVALID_CREDENTIALS_CODE,
+          param: INVALID_CREDENTIALS_PARAM,
         },
       ],
       IN_PRODUCTION !== true
-        ? "Invalid credentials"
-        : requestContext.translate("invalid.credentials")
+        ? INVALID_CREDENTIALS
+        : requestContext.translate(INVALID_CREDENTIALS_MESSAGE)
     );
   }
 

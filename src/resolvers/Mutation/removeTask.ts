@@ -8,6 +8,10 @@ import {
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_PARAM,
+  TASK_NOT_FOUND,
+  TASK_NOT_FOUND_MESSAGE,
+  TASK_NOT_FOUND_CODE,
+  TASK_NOT_FOUND_PARAM,
 } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
@@ -41,10 +45,10 @@ export const removeTask: MutationResolvers["removeTask"] = async (
   if (!task) {
     throw new errors.NotFoundError(
       IN_PRODUCTION !== true
-        ? "Task not found"
-        : requestContext.translate("task.notFound"),
-      "task.notFound",
-      "task"
+        ? TASK_NOT_FOUND
+        : requestContext.translate(TASK_NOT_FOUND_MESSAGE),
+      TASK_NOT_FOUND_CODE,
+      TASK_NOT_FOUND_PARAM
     );
   }
 

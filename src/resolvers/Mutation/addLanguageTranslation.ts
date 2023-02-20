@@ -1,6 +1,11 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { Language } from "../../models";
+import {
+  TRANSLATION_ALREADY_PRESENT_CODE,
+  TRANSLATION_ALREADY_PRESENT_MESSAGE,
+  TRANSLATION_ALREADY_PRESENT_PARAM,
+} from "../../constants";
 
 export const addLanguageTranslation: MutationResolvers["addLanguageTranslation"] =
   async (_parent, args) => {
@@ -14,9 +19,9 @@ export const addLanguageTranslation: MutationResolvers["addLanguageTranslation"]
         // Checks whether the translation already exists.
         if (element.lang_code === args.data.translation_lang_code) {
           throw new errors.ConflictError(
-            requestContext.translate("translation.alreadyPresent"),
-            "translation.alreadyPresent",
-            "translationAlreadyPresent"
+            requestContext.translate(TRANSLATION_ALREADY_PRESENT_MESSAGE),
+            TRANSLATION_ALREADY_PRESENT_CODE,
+            TRANSLATION_ALREADY_PRESENT_PARAM
           );
         }
       });

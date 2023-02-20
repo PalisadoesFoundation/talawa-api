@@ -9,7 +9,11 @@ import {
 } from "../../helpers/db";
 import mongoose from "mongoose";
 import { sendMembershipRequest as sendMembershipRequestResolver } from "../../../src/resolvers/Mutation/sendMembershipRequest";
-import { ORGANIZATION_NOT_FOUND, USER_NOT_FOUND } from "../../../src/constants";
+import {
+  MEMBERSHIP_REQUEST_ALREADY_EXISTS,
+  ORGANIZATION_NOT_FOUND,
+  USER_NOT_FOUND,
+} from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { testOrganizationType, testUserType } from "../../helpers/userAndOrg";
 import {
@@ -81,7 +85,7 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
 
       await sendMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual("MembershipRequest already exists");
+      expect(error.message).toEqual(MEMBERSHIP_REQUEST_ALREADY_EXISTS);
     }
   });
 

@@ -17,6 +17,22 @@ export const inputs = gql`
     title: String!
   }
 
+  input DonationWhereInput {
+    id: ID
+    id_not: ID
+    id_in: [ID!]
+    id_not_in: [ID!]
+    id_contains: ID
+    id_starts_with: ID
+
+    name_of_user: String
+    name_of_user_not: String
+    name_of_user_in: [String!]
+    name_of_user_not_in: [String!]
+    name_of_user_contains: String
+    name_of_user_starts_with: String
+  }
+
   input EventInput {
     title: String!
     description: String!
@@ -33,6 +49,38 @@ export const inputs = gql`
     latitude: Float
     longitude: Float
     organizationId: ID!
+  }
+
+  input EventWhereInput {
+    id: ID
+    id_not: ID
+    id_in: [ID!]
+    id_not_in: [ID!]
+    id_contains: ID
+    id_starts_with: ID
+
+    title: String
+    title_not: String
+    title_in: [String!]
+    title_not_in: [String!]
+    title_contains: String
+    title_starts_with: String
+
+    description: String
+    description_not: String
+    description_in: [String!]
+    description_not_in: [String!]
+    description_contains: String
+    description_starts_with: String
+
+    location: String
+    location_not: String
+    location_in: [String!]
+    location_not_in: [String!]
+    location_contains: String
+    location_starts_with: String
+
+    organization_id: ID
   }
 
   # input EventProjectInput {
@@ -274,6 +322,10 @@ export const inputs = gql`
     appLanguageCode_not_in: [String!]
     appLanguageCode_contains: String
     appLanguageCode_starts_with: String
+
+    admin_for: ID
+
+    event_title_contains: String
   }
   input PostUpdateInput {
     text: String
