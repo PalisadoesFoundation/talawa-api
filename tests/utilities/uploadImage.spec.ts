@@ -47,7 +47,7 @@ try {
     await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
     await disconnect(MONGOOSE_INSTANCE!);
   });
-  
+
   describe("utilities -> uploadImage", () => {
     afterEach(async () => {
       vi.resetModules();
