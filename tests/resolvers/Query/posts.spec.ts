@@ -1,16 +1,16 @@
 import "dotenv/config";
 import { posts as postsResolver } from "../../../src/resolvers/Query/posts";
+import { Post } from "../../../src/models";
 import {
   connect,
   disconnect,
   dropAllCollectionsFromDatabase,
 } from "../../helpers/db";
-import mongoose from "mongoose";
-import { Post } from "../../../src/models";
 import { QueryPostsArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { createSinglePostwithComment } from "../../helpers/posts";
+import mongoose from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
