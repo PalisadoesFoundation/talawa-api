@@ -8,11 +8,7 @@ import {
   Interface_EventProject,
 } from "../../../src/models";
 import { nanoid } from "nanoid";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
   beforeAll,
@@ -43,7 +39,6 @@ let testEventProject: Interface_EventProject &
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const temp = await createTestEvent();
   testUser = temp[0];
 
@@ -70,7 +65,6 @@ afterAll(async () => {
   await Organization.deleteMany({});
   await Event.deleteMany({});
   await EventProject.deleteMany({});
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

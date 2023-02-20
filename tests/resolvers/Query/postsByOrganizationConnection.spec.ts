@@ -1,11 +1,7 @@
 // @ts-nocheck
 import "dotenv/config";
 import { postsByOrganizationConnection as postsByOrganizationConnectionResolver } from "../../../src/resolvers/Query/postsByOrganizationConnection";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { Document, Types } from "mongoose";
 import { QueryPostsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -25,7 +21,6 @@ let testPosts: (Interface_Post & Document<any, any, Interface_Post>)[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
 
   const resultArray = await createTestUserAndOrganization();
   testUser = resultArray[0];
@@ -60,7 +55,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

@@ -1,10 +1,6 @@
 import "dotenv/config";
 import { MutationForgotPasswordArgs } from "../../../src/types/generatedGraphQLTypes";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { forgotPassword as forgotPasswordResolver } from "../../../src/resolvers/Mutation/forgotPassword";
 import { INVALID_OTP } from "../../../src/constants";
@@ -20,12 +16,10 @@ let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   testUser = await createTestUserFunc();
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

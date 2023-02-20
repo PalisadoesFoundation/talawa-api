@@ -1,10 +1,6 @@
 import "dotenv/config";
 import { isUserRegister as isUserRegisterResolver } from "../../../src/resolvers/Query/isUserRegister";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import { Event } from "../../../src/models";
 import { Types } from "mongoose";
 import { QueryIsUserRegisterArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -26,7 +22,6 @@ let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   [testUser, testOrganization] = await createTestUserAndOrganization();
   testEvent = await createEventWithRegistrant(
     testUser?._id,
@@ -39,7 +34,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

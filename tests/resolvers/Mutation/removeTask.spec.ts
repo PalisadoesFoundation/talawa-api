@@ -8,11 +8,7 @@ import {
   Interface_Task,
 } from "../../../src/models";
 import { MutationRemoveTaskArgs } from "../../../src/types/generatedGraphQLTypes";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { removeTask as removeTaskResolver } from "../../../src/resolvers/Mutation/removeTask";
 import { USER_NOT_AUTHORIZED, USER_NOT_FOUND } from "../../../src/constants";
@@ -26,7 +22,6 @@ let testTask: Interface_Task & Document<any, any, Interface_Task>;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
 
   const tempUser1 = await createTestUserFunc();
   const tempUser2 = await createTestUserFunc();
@@ -104,7 +99,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

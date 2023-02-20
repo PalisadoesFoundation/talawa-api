@@ -8,11 +8,7 @@ import {
   it,
   vi,
 } from "vitest";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../helpers/db";
+import { connect, disconnect } from "../helpers/db";
 import mongoose from "mongoose";
 import {
   USER_NOT_AUTHORIZED,
@@ -34,7 +30,6 @@ let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const userAndOrg = await createTestUserAndOrganization(false, false);
   testUser = userAndOrg[0];
   testOrganization = userAndOrg[1];
@@ -42,7 +37,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

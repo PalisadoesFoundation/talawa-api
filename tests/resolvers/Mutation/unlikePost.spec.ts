@@ -2,11 +2,7 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { Post } from "../../../src/models";
 import { MutationUnlikePostArgs } from "../../../src/types/generatedGraphQLTypes";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { unlikePost as unlikePostResolver } from "../../../src/resolvers/Mutation/unlikePost";
 import { POST_NOT_FOUND, USER_NOT_FOUND } from "../../../src/constants";
@@ -23,7 +19,6 @@ let testPost: testPostType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
   const testOrganization = temp[1];
@@ -38,7 +33,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

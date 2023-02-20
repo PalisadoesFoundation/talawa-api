@@ -1,10 +1,6 @@
 import "dotenv/config";
 import { sender as senderResolver } from "../../../src/resolvers/GroupChatMessage/sender";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { User } from "../../../src/models";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -18,13 +14,11 @@ let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const resultArray = await createTestGroupChatMessage();
   testGroupChatMessage = resultArray[3];
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

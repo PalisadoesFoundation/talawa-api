@@ -1,11 +1,7 @@
 import "dotenv/config";
 import { events as eventsResolver } from "../../../src/resolvers/Query/events";
 import { Event } from "../../../src/models";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import { QueryEventsArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
@@ -17,7 +13,6 @@ let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const [testUser, testOrganization] = await createTestUserAndOrganization();
   const testEvent1 = await createEventWithRegistrant(
     testUser?._id,
@@ -37,7 +32,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

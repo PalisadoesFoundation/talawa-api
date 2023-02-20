@@ -6,11 +6,7 @@ import {
   DirectChatMessage,
 } from "../../../src/models";
 import { MutationRemoveDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
   CHAT_NOT_FOUND,
@@ -41,7 +37,6 @@ let testDirectChat: testDirectChatType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const temp = await createTestDirectChat();
   testUser = temp[0];
   testOrganization = temp[1];
@@ -70,7 +65,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

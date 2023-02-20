@@ -1,10 +1,6 @@
 import "dotenv/config";
 import { tasksByEvent as tasksByEventResolver } from "../../../src/resolvers/Query/tasksByEvent";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { Task } from "../../../src/models";
 import { QueryTasksByEventArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -18,7 +14,6 @@ let testEvent: testEventType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const [testUser, testOrganization] = await createTestUserAndOrganization();
   testEvent = await createEventWithRegistrant(
     testUser?._id,
@@ -32,7 +27,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

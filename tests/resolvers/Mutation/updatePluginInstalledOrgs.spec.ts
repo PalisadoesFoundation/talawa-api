@@ -7,11 +7,7 @@ import {
   Interface_Plugin,
 } from "../../../src/models";
 import { MutationUpdatePluginInstalledOrgsArgs } from "../../../src/types/generatedGraphQLTypes";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { updatePluginInstalledOrgs as updatePluginInstalledOrgsResolver } from "../../../src/resolvers/Mutation/updatePluginInstalledOrgs";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -28,7 +24,6 @@ let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
   testOrganization = temp[1];
@@ -45,7 +40,6 @@ afterAll(async () => {
   await User.deleteMany({});
   await Organization.deleteMany({});
   await Plugin.deleteMany({});
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

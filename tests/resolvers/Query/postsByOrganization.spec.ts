@@ -1,10 +1,6 @@
 import "dotenv/config";
 import { postsByOrganization as postsByOrganizationResolver } from "../../../src/resolvers/Query/postsByOrganization";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 
 import { Post } from "../../../src/models";
@@ -23,7 +19,6 @@ let testUser: testUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   [testUser, testOrganization] = await createTestUserAndOrganization();
 
   await createSinglePostwithComment(testUser?._id, testOrganization?._id);
@@ -31,7 +26,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

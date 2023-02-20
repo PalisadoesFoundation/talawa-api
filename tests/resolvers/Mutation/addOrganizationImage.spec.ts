@@ -2,11 +2,7 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { Organization } from "../../../src/models";
 import { MutationAddOrganizationImageArgs } from "../../../src/types/generatedGraphQLTypes";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { addOrganizationImage as addOrganizationImageResolver } from "../../../src/resolvers/Mutation/addOrganizationImage";
 import * as uploadImage from "../../../src/utilities/uploadImage";
@@ -41,14 +37,12 @@ vi.mock("../../utilities", () => ({
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const resultArray = await createTestUserAndOrganization();
   testUser = resultArray[0];
   testOrganization = resultArray[1];
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

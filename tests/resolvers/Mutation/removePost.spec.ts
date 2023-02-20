@@ -2,11 +2,7 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { User, Organization, Post } from "../../../src/models";
 import { MutationRemovePostArgs } from "../../../src/types/generatedGraphQLTypes";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { removePost as removePostResolver } from "../../../src/resolvers/Mutation/removePost";
 import {
@@ -25,7 +21,6 @@ let testPost: testPostType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const tempUser1 = await createTestUserFunc();
   const tempUser2 = await createTestUserFunc();
   testUsers = [tempUser1, tempUser2];
@@ -63,7 +58,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

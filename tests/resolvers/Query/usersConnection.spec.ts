@@ -1,10 +1,6 @@
 import "dotenv/config";
 import { usersConnection as usersConnectionResolver } from "../../../src/resolvers/Query/usersConnection";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { User } from "../../../src/models";
 import { QueryUsersConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -21,7 +17,6 @@ let testUsers: testUserType[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const [testUser1, testOrganization] = await createTestUserAndOrganization();
   testUsers = [testUser1, await createTestUser(), await createTestUser()];
   await createEventWithRegistrant(
@@ -33,7 +28,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

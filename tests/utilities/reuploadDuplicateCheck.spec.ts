@@ -9,11 +9,7 @@ import {
   it,
   vi,
 } from "vitest";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../helpers/db";
+import { connect, disconnect } from "../helpers/db";
 import mongoose from "mongoose";
 import { nanoid } from "nanoid";
 import { Type_ImagePath } from "../../src/utilities/reuploadDuplicateCheck";
@@ -34,11 +30,9 @@ let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

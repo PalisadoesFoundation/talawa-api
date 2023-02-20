@@ -1,10 +1,6 @@
 import { AuthenticationDirective } from "../../src/directives/authDirective";
 import { beforeAll, afterAll, it, expect } from "vitest";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../helpers/db";
+import { connect, disconnect } from "../helpers/db";
 import mongoose from "mongoose";
 import { ApolloServer, gql } from "apollo-server-express";
 import { errors } from "../../src/libraries";
@@ -54,13 +50,11 @@ let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   testUser = await createTestUserFunc();
 });
 
 afterAll(async () => {
   await testUser!.remove();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

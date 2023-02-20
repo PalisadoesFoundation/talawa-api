@@ -10,11 +10,7 @@ import {
   it,
   vi,
 } from "vitest";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../helpers/db";
+import { connect, disconnect } from "../helpers/db";
 import mongoose from "mongoose";
 import { Document } from "mongoose";
 import { ImageHash, Interface_ImageHash } from "../../src/models";
@@ -32,7 +28,6 @@ vi.mock("fs", () => ({
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   testHash = await ImageHash.create({
     fileName: testImageToBeDeleted,
     hashValue: testHashString,
@@ -42,7 +37,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await ImageHash.deleteMany({});
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

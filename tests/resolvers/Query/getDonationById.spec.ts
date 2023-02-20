@@ -1,9 +1,5 @@
 import "dotenv/config";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import { getDonationById as getDonationByIdResolver } from "../../../src/resolvers/Query/getDonationById";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { QueryGetDonationByIdArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -15,13 +11,11 @@ let testDonation: testDonationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const resultArray = await createTestDonation();
   testDonation = resultArray[2];
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

@@ -1,11 +1,7 @@
 import "dotenv/config";
 import { Types } from "mongoose";
 import { nanoid } from "nanoid";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { userLanguage as userLanguageResolver } from "../../../src/resolvers/Query/userLanguage";
 import { USER_NOT_FOUND } from "../../../src/constants";
@@ -17,11 +13,9 @@ let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

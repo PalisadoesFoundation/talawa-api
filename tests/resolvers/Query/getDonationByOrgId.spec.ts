@@ -3,11 +3,7 @@ import { Donation } from "../../../src/models";
 import { getDonationByOrgId as getDonationByOrgIdResolver } from "../../../src/resolvers/Query/getDonationByOrgId";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { QueryGetDonationByOrgIdArgs } from "../../../src/types/generatedGraphQLTypes";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { createTestDonation } from "../../helpers/donation";
 import { testOrganizationType } from "../../helpers/userAndOrg";
@@ -17,13 +13,11 @@ let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const resultArray = await createTestDonation();
   testOrganization = resultArray[1];
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

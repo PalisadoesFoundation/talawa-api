@@ -2,11 +2,7 @@ import "dotenv/config";
 import { Document } from "mongoose";
 import { Plugin, Interface_Plugin } from "../../../src/models";
 import { MutationUpdatePluginStatusArgs } from "../../../src/types/generatedGraphQLTypes";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { updatePluginStatus as updatePluginStatusResolver } from "../../../src/resolvers/Mutation/updatePluginStatus";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -21,7 +17,6 @@ let testPlugin: Interface_Plugin & Document<any, any, Interface_Plugin>;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
   const testOrganization = temp[1];
@@ -35,7 +30,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

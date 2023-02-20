@@ -1,11 +1,7 @@
 import "dotenv/config";
 import { Types } from "mongoose";
 import { User } from "../../../src/models";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
 import {
@@ -25,12 +21,10 @@ const testImage: string = "testImage";
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   testUser = await createTestUserFunc();
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

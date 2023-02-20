@@ -1,11 +1,7 @@
 import "dotenv/config";
 import { organizations as organizationsResolver } from "../../../src/resolvers/Query/organizations";
 import { ORGANIZATION_NOT_FOUND } from "../../../src/constants";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { Organization } from "../../../src/models";
 import { QueryOrganizationsArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -24,13 +20,11 @@ let testOrganization1: testOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   [testUser, testOrganization1] = await createTestUserAndOrganization();
   await createTestOrganizationWithAdmin(testUser?._id);
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

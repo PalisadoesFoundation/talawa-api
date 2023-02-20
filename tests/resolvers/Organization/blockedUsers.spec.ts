@@ -1,10 +1,6 @@
 import "dotenv/config";
 import { blockedUsers as blockedUsersResolver } from "../../../src/resolvers/Organization/blockedUsers";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { User } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -18,13 +14,11 @@ let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const userAndOrg = await createTestUserAndOrganization();
   testOrganization = userAndOrg[1];
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

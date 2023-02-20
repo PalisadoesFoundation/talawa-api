@@ -1,10 +1,6 @@
 import "dotenv/config";
 import { tasksByUser as tasksByUserResolver } from "../../../src/resolvers/Query/tasksByUser";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { Task } from "../../../src/models";
 import { QueryTasksByUserArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -23,7 +19,6 @@ let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   [testUser, testOrganization] = await createTestUserAndOrganization();
   const testEvent = await createEventWithRegistrant(
     testUser?._id,
@@ -37,7 +32,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

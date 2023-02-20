@@ -1,11 +1,7 @@
 import "dotenv/config";
 import { posts as postsResolver } from "../../../src/resolvers/Query/posts";
 import { Post } from "../../../src/models";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import { QueryPostsArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
@@ -16,7 +12,6 @@ let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
 
   const [testUser, testOrganization] = await createTestUserAndOrganization();
   await createSinglePostwithComment(testUser?._id, testOrganization?._id);
@@ -24,7 +19,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

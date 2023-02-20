@@ -1,11 +1,7 @@
 import "dotenv/config";
 import { CHAT_NOT_FOUND } from "../../../src/constants";
 import { directChatsMessagesByChatID as directChatsMessagesByChatIDResolver } from "../../../src/resolvers/Query/directChatsMessagesByChatID";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { Types } from "mongoose";
 import { DirectChatMessage } from "../../../src/models";
@@ -26,7 +22,6 @@ let testDirectChats: testDirectChatType[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
 
   const [testUser1, testOrganization] = await createTestUserAndOrganization();
   const testUser2 = await createTestUser();
@@ -51,7 +46,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

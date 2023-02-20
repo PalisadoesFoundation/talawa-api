@@ -1,10 +1,6 @@
 import "dotenv/config";
 import { membershipRequests as membershipRequestsResolver } from "../../../src/resolvers/Organization/membershipRequests";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { User, Organization, MembershipRequest } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -20,7 +16,6 @@ let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const userAndOrg = await createTestUserAndOrganization();
   testUser = userAndOrg[0];
   testOrganization = userAndOrg[1];
@@ -60,7 +55,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

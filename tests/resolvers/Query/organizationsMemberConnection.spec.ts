@@ -6,11 +6,7 @@ import {
   Organization,
   User,
 } from "../../../src/models";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { QueryOrganizationsMemberConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Document, Types } from "mongoose";
@@ -24,7 +20,6 @@ let testOrganization: Interface_Organization &
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
 
   testUsers = await User.insertMany([
     {
@@ -99,7 +94,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

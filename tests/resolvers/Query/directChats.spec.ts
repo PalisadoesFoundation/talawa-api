@@ -1,10 +1,6 @@
 import "dotenv/config";
 import { directChats as directChatsResolver } from "../../../src/resolvers/Query/directChats";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { DirectChat } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -18,7 +14,6 @@ let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
 
   const [testUser1, testOrganization] = await createTestUserAndOrganization();
   const testUser2 = await createTestUser();
@@ -30,7 +25,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

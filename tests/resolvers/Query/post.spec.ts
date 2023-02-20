@@ -1,10 +1,6 @@
 import "dotenv/config";
 import { post as postResolver } from "../../../src/resolvers/Query/post";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import { Post } from "../../../src/models";
 import { Types } from "mongoose";
 import { POST_NOT_FOUND } from "../../../src/constants";
@@ -18,12 +14,10 @@ let testPost: testPostType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   testPost = (await createPostwithComment())[2];
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

@@ -1,10 +1,6 @@
 import "dotenv/config";
 import { addLanguageTranslation as addLanguageTranslationResolver } from "../../../src/resolvers/Mutation/addLanguageTranslation";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { MutationAddLanguageTranslationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Language } from "../../../src/models";
@@ -40,11 +36,9 @@ const testArgs: MutationAddLanguageTranslationArgs[] = [
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 

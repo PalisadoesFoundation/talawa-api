@@ -8,11 +8,7 @@ import {
   Interface_DirectChatMessage,
 } from "../../../src/models";
 import { MutationSendMessageToDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
-import {
-  connect,
-  disconnect,
-  dropAllCollectionsFromDatabase,
-} from "../../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { sendMessageToDirectChat as sendMessageToDirectChatResolver } from "../../../src/resolvers/Mutation/sendMessageToDirectChat";
 import { CHAT_NOT_FOUND, USER_NOT_FOUND } from "../../../src/constants";
@@ -27,7 +23,6 @@ let testDirectChat: Interface_DirectChat &
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const tempUser1 = await createTestUserFunc();
   const tempUser2 = await createTestUserFunc();
   testUsers = [tempUser1, tempUser2];
@@ -64,7 +59,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   await disconnect(MONGOOSE_INSTANCE!);
 });
 
