@@ -31,6 +31,7 @@ let testGroupChat: Interface_GroupChat &
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
 

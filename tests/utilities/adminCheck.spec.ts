@@ -30,6 +30,7 @@ let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const userAndOrg = await createTestUserAndOrganization(false, false);
   testUser = userAndOrg[0];
   testOrganization = userAndOrg[1];

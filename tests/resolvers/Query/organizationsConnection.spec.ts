@@ -22,6 +22,7 @@ let testOrganizations: (Interface_Organization &
   Document<any, any, Interface_Organization>)[];
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const testUser: testUserType = await createTestUser();
 
   testOrganizations = await Organization.insertMany([

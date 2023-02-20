@@ -17,6 +17,7 @@ let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const resultArray = await createTestDonation();
   testOrganization = resultArray[1];
 });

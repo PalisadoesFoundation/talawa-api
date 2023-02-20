@@ -24,6 +24,7 @@ let testOrganization: Interface_Organization &
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
 
   testUsers = await User.insertMany([
     {

@@ -56,6 +56,7 @@ const resolvers = {
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
 
   testUser = await User.create({
     userId: Types.ObjectId().toString(),

@@ -36,6 +36,7 @@ let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
 
   testUser = await createTestUserFunc();
 

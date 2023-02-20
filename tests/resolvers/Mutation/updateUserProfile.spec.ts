@@ -29,6 +29,7 @@ let testUser: Interface_User & Document<any, any, Interface_User>;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
 
   testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,

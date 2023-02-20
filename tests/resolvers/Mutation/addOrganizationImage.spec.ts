@@ -41,6 +41,7 @@ vi.mock("../../utilities", () => ({
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const resultArray = await createTestUserAndOrganization();
   testUser = resultArray[0];
   testOrganization = resultArray[1];

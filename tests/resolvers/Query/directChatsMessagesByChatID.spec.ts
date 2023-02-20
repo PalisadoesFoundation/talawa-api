@@ -26,6 +26,7 @@ let testDirectChats: testDirectChatType[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
 
   const [testUser1, testOrganization] = await createTestUserAndOrganization();
   const testUser2 = await createTestUser();

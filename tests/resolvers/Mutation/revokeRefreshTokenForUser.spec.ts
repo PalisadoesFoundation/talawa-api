@@ -16,6 +16,7 @@ let testUser: testUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   testUser = await createTestUserFunc();
 });
 

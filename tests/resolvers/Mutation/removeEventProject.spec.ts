@@ -43,6 +43,7 @@ let testEventProject: Interface_EventProject &
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const temp = await createTestEvent();
   testUser = temp[0];
 

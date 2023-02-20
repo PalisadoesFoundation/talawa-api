@@ -40,6 +40,7 @@ const testArgs: MutationAddLanguageTranslationArgs[] = [
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
 });
 
 afterAll(async () => {

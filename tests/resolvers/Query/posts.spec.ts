@@ -16,6 +16,7 @@ let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
 
   const [testUser, testOrganization] = await createTestUserAndOrganization();
   await createSinglePostwithComment(testUser?._id, testOrganization?._id);

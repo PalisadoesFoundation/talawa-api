@@ -23,6 +23,7 @@ let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   [testUser, testOrganization] = await createTestUserAndOrganization();
   const testEvent = await createEventWithRegistrant(
     testUser?._id,

@@ -28,6 +28,7 @@ let testUsers: testUserType[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const user1 = await createTestUserFunc();
   const user2 = await createTestUserFunc();
   testUsers = [user1, user2];

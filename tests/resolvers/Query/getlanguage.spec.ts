@@ -22,6 +22,7 @@ const frValue = `fr ${nanoid().toLowerCase()}`;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
 
   testLanguages = await Language.insertMany([
     {

@@ -23,6 +23,7 @@ let testPost: testPostType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
   const testOrganization = temp[1];

@@ -21,6 +21,7 @@ let testUser: testUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const resultArray = await createTestEvent();
   testUser = resultArray[0];
   testEvent = resultArray[2];

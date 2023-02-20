@@ -24,6 +24,7 @@ let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const temp = await createTestEventWithRegistrants();
   const hashedTestPassword = await bcrypt.hash("password", 12);
   testUser = temp[0];

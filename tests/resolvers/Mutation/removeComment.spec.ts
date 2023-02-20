@@ -35,6 +35,7 @@ let testComment:
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const temp = await createTestPost();
   testUser = temp[0];
   testPost = temp[2];

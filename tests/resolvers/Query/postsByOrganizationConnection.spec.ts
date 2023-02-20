@@ -25,6 +25,7 @@ let testPosts: (Interface_Post & Document<any, any, Interface_Post>)[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
 
   const resultArray = await createTestUserAndOrganization();
   testUser = resultArray[0];

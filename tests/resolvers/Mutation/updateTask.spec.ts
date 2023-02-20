@@ -24,6 +24,7 @@ let testTasks: (Interface_Task & Document<any, any, Interface_Task>)[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const temp = await createTestEventWithRegistrants();
   testUser = temp[0];
   const testEvent = temp[2];

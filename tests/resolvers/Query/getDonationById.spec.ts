@@ -15,6 +15,7 @@ let testDonation: testDonationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const resultArray = await createTestDonation();
   testDonation = resultArray[2];
 });

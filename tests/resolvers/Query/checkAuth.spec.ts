@@ -15,6 +15,7 @@ let MONGOOSE_INSTANCE: typeof mongoose | null;
 import { createTestUser } from "../../helpers/userAndOrg";
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
 });
 
 afterAll(async () => {

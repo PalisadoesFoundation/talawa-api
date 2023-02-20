@@ -18,6 +18,7 @@ let testPost: testPostType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   testPost = (await createPostwithComment())[2];
 });
 

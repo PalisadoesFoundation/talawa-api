@@ -23,6 +23,7 @@ let testUser: testUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   [testUser, testOrganization] = await createTestUserAndOrganization();
 
   await createSinglePostwithComment(testUser?._id, testOrganization?._id);

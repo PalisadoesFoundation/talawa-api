@@ -20,6 +20,7 @@ let testComment: Interface_Comment & Document<any, any, Interface_Comment>;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const temp = await createTestPost();
   testUser = temp[0];
   const testPost = temp[2];

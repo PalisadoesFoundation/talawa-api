@@ -37,6 +37,7 @@ let testMembershipRequest: testMembershipRequestType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const temp = await createTestMembershipRequest();
   testUser = temp[0];
   testOrganization = temp[1];

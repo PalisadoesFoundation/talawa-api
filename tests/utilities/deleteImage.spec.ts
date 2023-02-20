@@ -32,6 +32,7 @@ vi.mock("fs", () => ({
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
+  await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   testHash = await ImageHash.create({
     fileName: testImageToBeDeleted,
     hashValue: testHashString,
