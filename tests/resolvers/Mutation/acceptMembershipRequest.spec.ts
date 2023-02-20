@@ -8,7 +8,6 @@ import {
   dropAllCollectionsFromDatabase,
 } from "../../helpers/db";
 import mongoose from "mongoose";
-import { acceptMembershipRequest as acceptMembershipRequestResolver } from "../../../src/resolvers/Mutation/acceptMembershipRequest";
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_MESSAGE,

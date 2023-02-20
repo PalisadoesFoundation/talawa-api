@@ -8,7 +8,6 @@ import {
   dropAllCollectionsFromDatabase,
 } from "../../helpers/db";
 import mongoose from "mongoose";
-import { removeGroupChat as removeGroupChatResolver } from "../../../src/resolvers/Mutation/removeGroupChat";
 import {
   CHAT_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
