@@ -46,3 +46,5 @@ An Admin of an organization is permitted to make the following Mutations in that
 ### USER -
 
 All other Mutations except those exclusive to Admin and Super Admin can be accessed by the User type.
+
+To be updated whenever new mutations are added
