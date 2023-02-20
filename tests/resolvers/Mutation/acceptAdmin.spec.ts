@@ -9,7 +9,7 @@ import {
 import mongoose from "mongoose";
 import { acceptAdmin as acceptAdminResolver } from "../../../src/resolvers/Mutation/acceptAdmin";
 import {
-  USER_NOT_AUTHORIZED_MESSAGE,
+  USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import {
@@ -41,6 +41,7 @@ afterAll(async () => {
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   vi.doUnmock("../../../src/constants");
   vi.resetModules();
 });
@@ -91,9 +92,9 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
       );
       await acceptAdmin?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.message);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.message}`
       );
     }
   });

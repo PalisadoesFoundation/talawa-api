@@ -9,7 +9,7 @@ import {
   vi,
 } from "vitest";
 import { connect, disconnect } from "../../src/db";
-import { USER_NOT_AUTHORIZED_MESSAGE } from "../../src/constants";
+import { USER_NOT_AUTHORIZED_SUPERADMIN } from "../../src/constants";
 import { testUserType } from "../helpers/userAndOrg";
 import { createTestUserFunc } from "../helpers/user";
 
@@ -27,6 +27,7 @@ afterAll(async () => {
 describe("utilities -> adminCheck", () => {
   afterEach(() => {
     vi.resetModules();
+    vi.resetAllMocks();
   });
 
   it("throws error if userType===`SUPERADMIN` is false", async () => {
@@ -41,9 +42,9 @@ describe("utilities -> adminCheck", () => {
       superAdminCheck(testUser!);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.message}`
       );
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.message);
     }
   });
 });

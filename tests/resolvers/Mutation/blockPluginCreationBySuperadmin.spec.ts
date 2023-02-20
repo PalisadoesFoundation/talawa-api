@@ -10,10 +10,18 @@ import {
 import mongoose from "mongoose";
 import { blockPluginCreationBySuperadmin as blockPluginCreationBySuperadminResolver } from "../../../src/resolvers/Mutation/blockPluginCreationBySuperadmin";
 import {
-  USER_NOT_AUTHORIZED_MESSAGE,
+  USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  vi,
+  afterEach,
+} from "vitest";
 import { testUserType, createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: testUserType;
@@ -35,6 +43,11 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
+  afterEach(async () => {
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
+
   it(`throws NotFoundError if no user exists with with _id === args.userId`, async () => {
     try {
       const args: MutationBlockPluginCreationBySuperadminArgs = {
@@ -71,6 +84,11 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
 
   it(`throws UnauthorizedError if current user with _id === context.userId is not
   a SUPERADMIN`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
     try {
       const args: MutationBlockPluginCreationBySuperadminArgs = {
         blockUser: false,
@@ -81,9 +99,18 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
         userId: testUser!.id,
       };
 
-      await blockPluginCreationBySuperadminResolver?.({}, args, context);
+      const {
+        blockPluginCreationBySuperadmin: blockPluginCreationBySuperadminError,
+      } = await import(
+        "../../../src/resolvers/Mutation/blockPluginCreationBySuperadmin"
+      );
+
+      await blockPluginCreationBySuperadminError?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.message);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.message}`
+      );
     }
   });
 

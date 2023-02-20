@@ -1,15 +1,14 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
+import { requestContext } from "../../libraries";
 import { User, Organization } from "../../models";
 import { adminCheck } from "../../utilities";
 import {
   USER_NOT_FOUND,
   MEMBER_NOT_FOUND,
-  IN_PRODUCTION,
-  ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_PARAM,
+  USER_BLOCKING_SELF,
 } from "../../constants";
 
 export const removeMember: MutationResolvers["removeMember"] = async (
@@ -23,17 +22,17 @@ export const removeMember: MutationResolvers["removeMember"] = async (
 
   // Checks if organization exists.
   if (!organization) {
-    throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? ORGANIZATION_NOT_FOUND
-        : requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
+    requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
       ORGANIZATION_NOT_FOUND_CODE,
-      ORGANIZATION_NOT_FOUND_PARAM
-    );
+      ORGANIZATION_NOT_FOUND_PARAM;
   }
 
+  const currentUser = await User.findOne({
+    _id: context.userId,
+  });
+
   // Checks whether current user making the request is an admin of organization.
-  adminCheck(context.userId, organization);
+  adminCheck(context.userId, organization!);
 
   /* 
   Errors inside a loop stop the loop it doesnt throw the error, errors have to be
@@ -67,6 +66,11 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     if (userIsOrganizationMember === false) {
       errorsToThrow.push(MEMBER_NOT_FOUND);
       break;
+    }
+
+    // Check if the current user is removing self
+    if (user._id.toString() === currentUser?._id.toString()) {
+      errorsToThrow.push(USER_BLOCKING_SELF.message);
     }
 
     // Boolean to determine whether user is an admin of organization.

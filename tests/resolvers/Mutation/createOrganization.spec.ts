@@ -12,7 +12,7 @@ import { createOrganization as createOrganizationResolver } from "../../../src/r
 import {
   LENGTH_VALIDATION_ERROR,
   REGEX_VALIDATION_ERROR,
-  USER_NOT_AUTHORIZED_MESSAGE,
+  USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import { nanoid } from "nanoid";
@@ -119,8 +119,10 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       );
       await createOrganization?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(spy).toHaveBeenLastCalledWith(
+        USER_NOT_AUTHORIZED_SUPERADMIN.message
+      );
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_SUPERADMIN.message);
     }
   });
 

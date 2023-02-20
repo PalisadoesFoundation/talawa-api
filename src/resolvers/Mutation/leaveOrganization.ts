@@ -100,6 +100,10 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
           (joinedOrganization) =>
             joinedOrganization.toString() !== organization._id.toString()
         ),
+        adminFor: currentUser.adminFor.filter(
+          (adminAtOrganization) =>
+            adminAtOrganization.toString() !== organization._id.toString()
+        ),
       },
     },
     {

@@ -1,12 +1,12 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 import {
-  USER_NOT_AUTHORIZED,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
+import { superAdminCheck } from "../../utilities";
 
 export const rejectAdmin: MutationResolvers["rejectAdmin"] = async (
   _parent,
@@ -27,9 +27,7 @@ export const rejectAdmin: MutationResolvers["rejectAdmin"] = async (
   }
 
   // Checks whether currentUser is not a SUPERADMIN.
-  if (currentUser.userType !== "SUPERADMIN") {
-    throw new Error(USER_NOT_AUTHORIZED);
-  }
+  superAdminCheck(currentUser!);
 
   const userExists = await User.exists({
     _id: args.id,
@@ -44,10 +42,17 @@ export const rejectAdmin: MutationResolvers["rejectAdmin"] = async (
     );
   }
 
-  // Deletes the user.
-  await User.deleteOne({
-    _id: args.id,
-  });
+  // Rejects the user as admin.
+  await User.updateOne(
+    {
+      _id: args.id,
+    },
+    {
+      $set: {
+        adminApproved: false,
+      },
+    }
+  );
 
   // Returns true if operation is successful.
   return true;

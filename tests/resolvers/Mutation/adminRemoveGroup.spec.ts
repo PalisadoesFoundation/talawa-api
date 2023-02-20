@@ -12,7 +12,7 @@ import { adminRemoveGroup as adminRemoveGroupResolver } from "../../../src/resol
 import {
   CHAT_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED,
+  USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
@@ -153,7 +153,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
 
       await adminRemoveGroupResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.message);
     }
   });
 

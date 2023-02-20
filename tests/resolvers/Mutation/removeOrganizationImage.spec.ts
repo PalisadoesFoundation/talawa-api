@@ -12,8 +12,7 @@ import { removeOrganizationImage as removeOrganizationImageResolver } from "../.
 import {
   ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_AUTHORIZED_MESSAGE,
+  USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
@@ -180,22 +179,6 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
   });
 
   it(`throws UnauthorizedError if current user with _id === context.userId
-  is not an admin of organization with _id === args.organizationId`, async () => {
-    try {
-      const args: MutationRemoveOrganizationImageArgs = {
-        organizationId: testOrganization!.id,
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      await removeOrganizationImageResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
-    }
-  });
-  it(`throws UnauthorizedError if current user with _id === context.userId
   is not an admin of organization with _id === args.organizationId //IN_PRODUCTION = true`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
@@ -211,23 +194,14 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
         userId: testUser!.id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
       const { removeOrganizationImage: removeOrganizationImageResolver } =
         await import("../../../src/resolvers/Mutation/removeOrganizationImage");
 
       await removeOrganizationImageResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ADMIN.message);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.message}`
       );
     }
   });

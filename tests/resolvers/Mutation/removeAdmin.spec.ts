@@ -12,6 +12,8 @@ import { removeAdmin as removeAdminResolver } from "../../../src/resolvers/Mutat
 import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED,
+  USER_NOT_AUTHORIZED_ADMIN,
+  USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import {
@@ -24,20 +26,23 @@ import {
   vi,
 } from "vitest";
 import {
+  createTestUser,
   createTestUserAndOrganization,
   testOrganizationType,
   testUserType,
 } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
+let testUserRemoved: testUserType;
+let testUserRemover: testUserType;
 let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
   const temp = await createTestUserAndOrganization();
-  testUser = temp[0];
+  testUserRemoved = temp[0];
+  testUserRemover = await createTestUser();
   testOrganization = temp[1];
 });
 
@@ -66,7 +71,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUserRemover!.id,
       };
 
       vi.doMock("../../../src/constants", async () => {
@@ -103,7 +108,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUserRemover!.id,
       };
 
       vi.doMock("../../../src/constants", async () => {
@@ -128,6 +133,11 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
 
   it(`throws UnauthorizedError if user with _id === args.data.userId is not an admin
   of organzation with _id === args.data.organizationId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
     try {
       await Organization.updateOne(
         {
@@ -143,17 +153,71 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       const args: MutationRemoveAdminArgs = {
         data: {
           organizationId: testOrganization!.id,
-          userId: testUser!.id,
+          userId: testUserRemoved!.id,
         },
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUserRemover!.id,
       };
 
-      await removeAdminResolver?.({}, args, context);
+      const { removeAdmin: removeAdminAdminError } = await import(
+        "../../../src/resolvers/Mutation/removeAdmin"
+      );
+
+      await removeAdminAdminError?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ADMIN.message);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.message}`
+      );
+    }
+  });
+
+  it(`throws Current user must be a super admin error if user with _id === args.data.userId is not a SUPERADMIN`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      await Organization.updateOne(
+        {
+          _id: testOrganization!._id,
+        },
+        {
+          $push: {
+            admins: testUserRemoved!._id,
+          },
+          $set: {
+            creator: Types.ObjectId().toString(),
+          },
+        }
+      );
+
+      const args: MutationRemoveAdminArgs = {
+        data: {
+          organizationId: testOrganization!.id,
+          userId: testUserRemoved!.id,
+        },
+      };
+
+      const context = {
+        userId: testUserRemover!.id,
+      };
+
+      const { removeAdmin: removeAdminAdminError } = await import(
+        "../../../src/resolvers/Mutation/removeAdmin"
+      );
+
+      await removeAdminAdminError?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenLastCalledWith(
+        USER_NOT_AUTHORIZED_SUPERADMIN.message
+      );
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.message}`
+      );
     }
   });
 
@@ -166,10 +230,20 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
         },
         {
           $push: {
-            admins: testUser!._id,
+            admins: testUserRemover!._id,
           },
           $set: {
             creator: Types.ObjectId().toString(),
+          },
+        }
+      );
+      await User.findOneAndUpdate(
+        {
+          _id: testUserRemover?.id,
+        },
+        {
+          $set: {
+            userType: "SUPERADMIN",
           },
         }
       );
@@ -177,12 +251,12 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       const args: MutationRemoveAdminArgs = {
         data: {
           organizationId: testOrganization!.id,
-          userId: testUser!.id,
+          userId: testUserRemoved!.id,
         },
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUserRemover!.id,
       };
 
       await removeAdminResolver?.({}, args, context);
@@ -199,7 +273,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       },
       {
         $set: {
-          creator: testUser!._id,
+          creator: testUserRemover!._id,
         },
       }
     );
@@ -207,18 +281,18 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
     const args: MutationRemoveAdminArgs = {
       data: {
         organizationId: testOrganization!.id,
-        userId: testUser!.id,
+        userId: testUserRemoved!.id,
       },
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUserRemover!.id,
     };
 
     const removeAdminPayload = await removeAdminResolver?.({}, args, context);
 
     const updatedTestUser = await User.findOne({
-      _id: testUser!._id,
+      _id: testUserRemoved!._id,
     })
       .select(["-password"])
       .lean();
