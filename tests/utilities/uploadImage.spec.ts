@@ -9,17 +9,26 @@ import {
   it,
   vi,
 } from "vitest";
-import { connect, disconnect } from "../../src/db";
+import {
+  connect,
+  disconnect,
+  dropAllCollectionsFromDatabase,
+} from "../helpers/db";
+import mongoose from "mongoose";
 import { User } from "../../src/models";
 import path from "path";
 import {
   createTestUserAndOrganization,
   testUserType,
 } from "../helpers/userAndOrg";
+
 let testUser: testUserType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
+
 try {
   beforeAll(async () => {
-    await connect();
+    MONGOOSE_INSTANCE = await connect();
+    await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
     const testUserObj = await createTestUserAndOrganization();
     testUser = testUserObj[0];
     try {
@@ -34,9 +43,12 @@ try {
       console.log(error);
     }
   });
+
   afterAll(async () => {
-    await disconnect();
+    await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
+    await disconnect(MONGOOSE_INSTANCE!);
   });
+
   describe("utilities -> uploadImage", () => {
     afterEach(async () => {
       vi.resetModules();

@@ -1,19 +1,22 @@
 import "dotenv/config";
 import { Types } from "mongoose";
 import { nanoid } from "nanoid";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { userLanguage as userLanguageResolver } from "../../../src/resolvers/Query/userLanguage";
 import { USER_NOT_FOUND } from "../../../src/constants";
 import { User } from "../../../src/models";
 import { QueryUserLanguageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
+
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> userLanguage", () => {

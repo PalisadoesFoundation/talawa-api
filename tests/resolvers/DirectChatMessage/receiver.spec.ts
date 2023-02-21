@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { receiver as receiverResolver } from "../../../src/resolvers/DirectChatMessage/receiver";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { User } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
@@ -9,15 +10,16 @@ import {
 } from "../../helpers/directChat";
 
 let testDirectChatMessage: TestDirectChatMessageType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestDirectChatMessage();
   testDirectChatMessage = temp[3];
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> DirectChatMessage -> receiver", () => {

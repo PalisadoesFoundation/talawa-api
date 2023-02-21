@@ -2,7 +2,8 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { User } from "../../../src/models";
 import { MutationCreateOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { createOrganization as createOrganizationResolver } from "../../../src/resolvers/Mutation/createOrganization";
 import {
   LENGTH_VALIDATION_ERROR,
@@ -25,18 +26,19 @@ import { createTestUserFunc, testUserType } from "../../helpers/user";
 
 const testImagePath: string = `${nanoid().toLowerCase()}test.png`;
 let testUser: testUserType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 vi.mock("../../utilities", () => ({
   uploadImage: vi.fn(),
 }));
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUserFunc();
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> createOrganization", () => {

@@ -1,5 +1,6 @@
 import "dotenv/config";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { commentsByPost as commentsByPostResolver } from "../../../src/resolvers/Query/commentsByPost";
 import { Comment, Post, User, Organization } from "../../../src/models";
 import { Types } from "mongoose";
@@ -14,12 +15,13 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createPostwithComment, testPostType } from "../../helpers/posts";
 import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
 let testPost: testPostType;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const resultArray = await createPostwithComment();
   testUser = resultArray[0];
   testOrganization = resultArray[1];
@@ -27,7 +29,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> commentsByPost", () => {

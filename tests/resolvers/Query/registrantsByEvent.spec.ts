@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { registrantsByEvent as registrantsByEventResolver } from "../../../src/resolvers/Query/registrantsByEvent";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { Event } from "../../../src/models";
 import { Types } from "mongoose";
 import { QueryRegistrantsByEventArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -13,12 +14,13 @@ import {
 } from "../../helpers/userAndOrg";
 import { testEventType, createEventWithRegistrant } from "../../helpers/events";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testEvent: testEventType;
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   [testUser, testOrganization] = await createTestUserAndOrganization();
   testEvent = await createEventWithRegistrant(
     testUser?._id,
@@ -29,7 +31,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> registrantsByEvent", () => {

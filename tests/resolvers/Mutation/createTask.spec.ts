@@ -2,7 +2,8 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { Event } from "../../../src/models";
 import { MutationCreateTaskArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { createTask as createTaskResolver } from "../../../src/resolvers/Mutation/createTask";
 import {
   EVENT_NOT_FOUND_MESSAGE,
@@ -15,9 +16,10 @@ import { testEventType } from "../../helpers/events";
 
 let testUser: testUserType;
 let testEvent: testEventType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
     (message) => message
@@ -28,7 +30,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> createTask", () => {

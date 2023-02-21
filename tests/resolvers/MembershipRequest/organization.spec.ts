@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { organization as organizationResolver } from "../../../src/resolvers/MembershipRequest/organization";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
   testMembershipRequestType,
@@ -9,15 +10,16 @@ import {
 import { Organization } from "../../../src/models";
 
 let testMembershipRequest: testMembershipRequestType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestMembershipRequest();
   testMembershipRequest = temp[2];
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> MembershipRequest -> organization", () => {

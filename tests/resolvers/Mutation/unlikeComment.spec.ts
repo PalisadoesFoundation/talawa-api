@@ -2,18 +2,20 @@ import "dotenv/config";
 import { Document, Types } from "mongoose";
 import { Post, Comment, Interface_Comment } from "../../../src/models";
 import { MutationUnlikeCommentArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { unlikeComment as unlikeCommentResolver } from "../../../src/resolvers/Mutation/unlikeComment";
 import { COMMENT_NOT_FOUND, USER_NOT_FOUND } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { testUserType } from "../../helpers/userAndOrg";
 import { createTestPost } from "../../helpers/posts";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 let testComment: Interface_Comment & Document<any, any, Interface_Comment>;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestPost();
   testUser = temp[0];
   const testPost = temp[2];
@@ -42,7 +44,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> unlikeComment", () => {

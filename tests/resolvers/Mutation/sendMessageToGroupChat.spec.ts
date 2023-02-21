@@ -6,24 +6,27 @@ import {
   Interface_GroupChatMessage,
 } from "../../../src/models";
 import { MutationSendMessageToGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { sendMessageToGroupChat as sendMessageToGroupChatResolver } from "../../../src/resolvers/Mutation/sendMessageToGroupChat";
 import {
   CHAT_NOT_FOUND,
   USER_NOT_AUTHORIZED,
   USER_NOT_FOUND,
 } from "../../../src/constants";
-let testUser: testUserType;
-let testGroupChat: Interface_GroupChat &
-  Document<any, any, Interface_GroupChat>;
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
   createTestUserAndOrganization,
   testUserType,
 } from "../../helpers/userAndOrg";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
+let testUser: testUserType;
+let testGroupChat: Interface_GroupChat &
+  Document<any, any, Interface_GroupChat>;
+
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
 
@@ -37,7 +40,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {

@@ -1,7 +1,8 @@
 import "dotenv/config";
 import { Types } from "mongoose";
 import { User } from "../../../src/models";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
 import {
   beforeAll,
@@ -14,16 +15,17 @@ import {
 } from "vitest";
 import { createTestUserFunc, testUserType } from "../../helpers/user";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 const testImage: string = "testImage";
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUserFunc();
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> removeUserImage", () => {
