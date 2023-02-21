@@ -114,6 +114,25 @@ export const USER_BLOCKING_SELF = {
   param: "userSelfBlock",
 };
 
+export const USER_REMOVING_SELF = {
+  message:
+    "Error: Current user cannot remove self, instead you can use leave Org function",
+  code: "user.selfRemove",
+  param: "userSelfRemove",
+};
+
+export const ADMIN_REMOVING_ADMIN = {
+  message: "Error: Current admin cannot remove another admin",
+  code: "admin.removeAdmin",
+  param: "admin.removeAdmin",
+};
+
+export const ADMIN_REMOVING_CREATOR = {
+  message: "Error: Current admin cannot remove the creator of the Org",
+  code: "admin.removeCreator",
+  param: "admin.removeCreator",
+};
+
 export const TASK_NOT_FOUND = "Task not found";
 export const TASK_NOT_FOUND_CODE = "task.notFound";
 export const TASK_NOT_FOUND_MESSAGE = "task.notFound";
