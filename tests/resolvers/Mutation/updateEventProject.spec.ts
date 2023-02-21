@@ -7,7 +7,8 @@ import {
   Interface_EventProject,
   EventProject,
 } from "../../../src/models";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import {
   beforeAll,
   afterAll,
@@ -24,6 +25,8 @@ import {
 } from "../../../src/constants";
 import { createTestUserFunc, testUserType } from "../../helpers/user";
 import { createTestEvent, testEventType } from "../../helpers/events";
+
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 let testAdminUser: testUserType;
 let testEvent: testEventType;
@@ -31,7 +34,7 @@ let testEventProject: Interface_EventProject &
   Document<any, any, Interface_EventProject>;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestEvent();
   testUser = await createTestUserFunc();
   testAdminUser = temp[0];
@@ -49,7 +52,7 @@ afterAll(async () => {
   await User.deleteMany({});
   await Organization.deleteMany({});
   await Event.deleteMany({});
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 afterEach(() => {

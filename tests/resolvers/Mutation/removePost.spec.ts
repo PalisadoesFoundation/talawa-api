@@ -2,7 +2,8 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { User, Organization, Post } from "../../../src/models";
 import { MutationRemovePostArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { removePost as removePostResolver } from "../../../src/resolvers/Mutation/removePost";
 import {
   POST_NOT_FOUND,
@@ -14,11 +15,12 @@ import { testUserType } from "../../helpers/userAndOrg";
 import { testPostType } from "../../helpers/posts";
 import { createTestUserFunc } from "../../helpers/user";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUsers: testUserType[];
 let testPost: testPostType;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const tempUser1 = await createTestUserFunc();
   const tempUser2 = await createTestUserFunc();
   testUsers = [tempUser1, tempUser2];
@@ -56,7 +58,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> removePost", () => {

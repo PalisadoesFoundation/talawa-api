@@ -1,7 +1,8 @@
 import "dotenv/config";
 import { registeredEventsByUser as registeredEventsByUserResolver } from "../../../src/resolvers/Query/registeredEventsByUser";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { Event } from "../../../src/models";
-import { connect, disconnect } from "../../../src/db";
 import { QueryRegisteredEventsByUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
@@ -9,15 +10,16 @@ import {
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   testUser = (await createTestUserAndOrganization())[0];
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> events", () => {

@@ -1,7 +1,8 @@
 import "dotenv/config";
 import { Types } from "mongoose";
 import { MutationCreateDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_MESSAGE,
@@ -23,9 +24,10 @@ import {
 
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const resultsArray = await createTestUserAndOrganization();
 
   testUser = resultsArray[0];
@@ -33,7 +35,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> createDirectChat", () => {

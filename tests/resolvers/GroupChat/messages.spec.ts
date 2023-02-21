@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { messages as messagesResolver } from "../../../src/resolvers/GroupChat/messages";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { GroupChatMessage } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
@@ -9,15 +10,16 @@ import {
 } from "../../helpers/groupChat";
 
 let testGroupChat: testGroupChatType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const resultArray = await createTestGroupChat();
   testGroupChat = resultArray[2];
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> GroupChat -> messages", () => {

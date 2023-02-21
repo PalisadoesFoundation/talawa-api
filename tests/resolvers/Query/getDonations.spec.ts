@@ -1,17 +1,20 @@
 import "dotenv/config";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { Donation } from "../../../src/models";
-import { connect, disconnect } from "../../../src/db";
 import { getDonations as getDonationsResolver } from "../../../src/resolvers/Query/getDonations";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestDonation } from "../../helpers/donation";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
+
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   await createTestDonation();
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> getDonations", () => {

@@ -2,7 +2,8 @@ import "dotenv/config";
 import { Document, Types } from "mongoose";
 import { Interface_User, User } from "../../../src/models";
 import { MutationUpdateUserProfileArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { updateUserProfile as updateUserProfileResolver } from "../../../src/resolvers/Mutation/updateUserProfile";
 import {
   EMAIL_ALREADY_EXISTS_MESSAGE,
@@ -19,10 +20,11 @@ import {
   afterEach,
 } from "vitest";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: Interface_User & Document<any, any, Interface_User>;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 
   testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,
@@ -34,7 +36,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 afterEach(() => {

@@ -2,7 +2,6 @@ require("dotenv").config();
 import { nanoid } from "nanoid";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { deleteDuplicatedImage } from "../../src/utilities/deleteDuplicatedImage";
-// const fs = require("fs");
 import * as fs from "fs";
 import { logger } from "../../src/libraries";
 

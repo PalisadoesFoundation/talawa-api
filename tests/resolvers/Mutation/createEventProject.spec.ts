@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { Event, Organization, User } from "../../../src/models";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import {
   afterAll,
   afterEach,
@@ -26,9 +27,10 @@ let testUser: testUserType;
 let testAdminUser: testUserType;
 let testOrganization: testOrganizationType;
 let testEvent: testEventType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 
   testUser = await createTestUser();
   testAdminUser = await createTestUser();
@@ -72,7 +74,7 @@ afterAll(async () => {
   await User.deleteMany({});
   await Organization.deleteMany({});
   await Event.deleteMany({});
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 afterEach(async () => {

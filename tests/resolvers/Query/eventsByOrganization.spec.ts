@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { Event } from "../../../src/models";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
 import { QueryEventsByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
@@ -10,12 +10,14 @@ import {
 } from "../../helpers/userAndOrg";
 import { createEventWithRegistrant } from "../../helpers/events";
 import { createTestTask } from "../../helpers/task";
+import mongoose from "mongoose";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   [testUser, testOrganization] = await createTestUserAndOrganization();
   const testEvent1 = await createEventWithRegistrant(
     testUser?._id,
@@ -35,7 +37,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> eventsByOrganization", () => {

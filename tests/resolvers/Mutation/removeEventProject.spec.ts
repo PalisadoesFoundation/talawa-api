@@ -8,7 +8,8 @@ import {
   Interface_EventProject,
 } from "../../../src/models";
 import { nanoid } from "nanoid";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import {
   beforeAll,
   afterAll,
@@ -29,6 +30,7 @@ import {
 import { testUserType } from "../../helpers/userAndOrg";
 import { createTestEvent, testEventType } from "../../helpers/events";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 let testUserNotCreatorOfEventProject: testUserType;
 let testEvent: testEventType;
@@ -36,7 +38,7 @@ let testEventProject: Interface_EventProject &
   Document<any, any, Interface_EventProject>;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestEvent();
   testUser = temp[0];
 
@@ -63,7 +65,7 @@ afterAll(async () => {
   await Organization.deleteMany({});
   await Event.deleteMany({});
   await EventProject.deleteMany({});
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 afterEach(async () => {

@@ -1,29 +1,20 @@
 import "dotenv/config";
 import { MutationOtpArgs } from "../../../src/types/generatedGraphQLTypes";
-// import { Document } from "mongoose";
-// import { Interface_User, User } from "../../../src/models";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { otp as otpResolver } from "../../../src/resolvers/Mutation/otp";
 import { USER_NOT_FOUND } from "../../../src/constants";
 import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
-// let testUser: Interface_User & Document<any, any, Interface_User>;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
-
-  // testUser = await User.create({
-  //   email: `email${nanoid().toLowerCase()}@gmail.com`,
-  //   password: "password",
-  //   firstName: "firstName",
-  //   lastName: "lastName",
-  //   appLanguageCode: "en",
-  // });
+  MONGOOSE_INSTANCE = await connect();
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 // describe('Testing otp resolver', () => {

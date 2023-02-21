@@ -1,7 +1,8 @@
 import "dotenv/config";
 import { Types } from "mongoose";
 import { MutationLikePostArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { likePost as likePostResolver } from "../../../src/resolvers/Mutation/likePost";
 import {
   POST_NOT_FOUND_MESSAGE,
@@ -21,16 +22,17 @@ import { createTestPost, testPostType } from "../../helpers/posts";
 
 let testUser: testUserType;
 let testPost: testPostType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestPost();
   testUser = temp[0];
   testPost = temp[2];
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> likePost", () => {

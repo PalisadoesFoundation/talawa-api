@@ -1,16 +1,20 @@
 import "dotenv/config";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { checkAuth as checkAuthResolver } from "../../../src/resolvers/Query/checkAuth";
 import { Types } from "mongoose";
 import { USER_NOT_FOUND } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+
+let MONGOOSE_INSTANCE: typeof mongoose | null;
+
 import { createTestUser } from "../../helpers/userAndOrg";
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> checkAuth", () => {
