@@ -4,7 +4,6 @@ import { User, Organization } from "../../../src/models";
 import { MutationRemoveMemberArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
-import { removeMember as removeMemberResolver } from "../../../src/resolvers/Mutation/removeMember";
 
 import {
   ADMIN_REMOVING_ADMIN,
