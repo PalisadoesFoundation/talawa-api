@@ -117,11 +117,6 @@ export const inputs = gql`
     receiver: ID!
   }
 
-  input MultipleUsersAndOrganizationInput {
-    organizationId: ID!
-    userIds: [ID!]!
-  }
-
   input OrganizationInput {
     name: String!
     description: String!

@@ -348,11 +348,6 @@ export type MessageChatInput = {
   receiver: Scalars['ID'];
 };
 
-export type MultipleUsersAndOrganizationInput = {
-  organizationId: Scalars['ID'];
-  userIds: Array<Scalars['ID']>;
-};
-
 export type Mutation = {
   __typename?: 'Mutation';
   acceptAdmin: Scalars['Boolean'];
@@ -657,7 +652,7 @@ export type MutationRemoveGroupChatArgs = {
 
 
 export type MutationRemoveMemberArgs = {
-  data: MultipleUsersAndOrganizationInput;
+  data: UserAndOrganizationInput;
 };
 
 
@@ -1553,7 +1548,6 @@ export type ResolversTypes = {
   Message: ResolverTypeWrapper<Interface_MessageModel>;
   MessageChat: ResolverTypeWrapper<Interface_MessageChatModel>;
   MessageChatInput: MessageChatInput;
-  MultipleUsersAndOrganizationInput: MultipleUsersAndOrganizationInput;
   Mutation: ResolverTypeWrapper<{}>;
   OTPInput: OtpInput;
   Organization: ResolverTypeWrapper<Interface_OrganizationModel>;
@@ -1638,7 +1632,6 @@ export type ResolversParentTypes = {
   Message: Interface_MessageModel;
   MessageChat: Interface_MessageChatModel;
   MessageChatInput: MessageChatInput;
-  MultipleUsersAndOrganizationInput: MultipleUsersAndOrganizationInput;
   Mutation: {};
   OTPInput: OtpInput;
   Organization: Interface_OrganizationModel;

@@ -111,7 +111,7 @@ export const mutations = gql`
 
     removeGroupChat(chatId: ID!): GroupChat! @auth
 
-    removeMember(data: MultipleUsersAndOrganizationInput!): Organization! @auth
+    removeMember(data: UserAndOrganizationInput!): Organization! @auth
 
     removeOrganization(id: ID!): User! @auth @role(requires: SUPERADMIN)
 
