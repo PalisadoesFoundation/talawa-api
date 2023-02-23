@@ -16,7 +16,6 @@ import {
   LongitudeResolver,
   PhoneNumberResolver,
   TimeResolver,
-  TimestampResolver,
   URLResolver,
 } from "graphql-scalars";
 
@@ -39,6 +38,5 @@ export const resolvers: Resolvers = {
   Longitude: LongitudeResolver,
   PhoneNumber: PhoneNumberResolver,
   Time: TimeResolver,
-  Timestamp: TimestampResolver,
   URL: URLResolver,
 };

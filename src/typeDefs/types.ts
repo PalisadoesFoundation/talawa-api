@@ -29,7 +29,7 @@ export const types = gql`
   type Comment {
     _id: ID
     text: String!
-    createdAt: Timestamp
+    createdAt: DateTime
     creator: User!
     post: Post!
     likedBy: [User]
@@ -53,7 +53,7 @@ export const types = gql`
     directChatMessageBelongsTo: DirectChat!
     sender: User!
     receiver: User!
-    createdAt: Timestamp!
+    createdAt: DateTime!
     messageContent: String!
   }
 
@@ -113,7 +113,7 @@ export const types = gql`
     _id: ID
     title: String
     description: String
-    createdAt: Timestamp
+    createdAt: DateTime
     organization: Organization!
     admins: [User]
   }
@@ -130,7 +130,7 @@ export const types = gql`
     _id: ID!
     groupChatMessageBelongsTo: GroupChat!
     sender: User!
-    createdAt: Timestamp!
+    createdAt: DateTime!
     messageContent: String!
   }
 
@@ -156,7 +156,7 @@ export const types = gql`
     lang_code: String!
     value: String!
     verified: Boolean!
-    createdAt: Timestamp!
+    createdAt: DateTime!
   }
 
   type MembershipRequest {
@@ -168,7 +168,7 @@ export const types = gql`
   type Message {
     _id: ID!
     text: String
-    createdAt: Timestamp
+    createdAt: DateTime
     imageUrl: URL
     videoUrl: URL
     creator: User
@@ -180,7 +180,7 @@ export const types = gql`
     receiver: User!
     message: String!
     languageBarrier: Boolean
-    createdAt: Timestamp!
+    createdAt: DateTime!
   }
 
   type Organization {
@@ -197,7 +197,7 @@ export const types = gql`
     blockedUsers: [User]
     visibleInSearch: Boolean!
     apiUrl: URL!
-    createdAt: Timestamp
+    createdAt: DateTime
     tags: [String!]!
   }
 
@@ -260,14 +260,14 @@ export const types = gql`
     key: String!
     value: String!
     status: Status!
-    createdAt: Timestamp
+    createdAt: DateTime
   }
 
   type Post {
     _id: ID
     text: String!
     title: String
-    createdAt: Timestamp
+    createdAt: DateTime
     imageUrl: URL
     videoUrl: URL
     creator: User!
@@ -301,7 +301,7 @@ export const types = gql`
     description: String
     event: Event!
     creator: User!
-    createdAt: Timestamp!
+    createdAt: DateTime!
     deadline: DateTime
   }
 
@@ -332,7 +332,7 @@ export const types = gql`
     organizationUserBelongsTo: Organization
     pluginCreationAllowed: Boolean
     adminApproved: Boolean
-    createdAt: Timestamp
+    createdAt: DateTime
   }
 
   type UserAttende {
@@ -340,7 +340,7 @@ export const types = gql`
     userId: String!
     user: User!
     status: Status!
-    createdAt: Timestamp
+    createdAt: DateTime
   }
 
   type UserConnection {

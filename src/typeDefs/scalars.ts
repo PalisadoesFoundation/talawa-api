@@ -9,6 +9,5 @@ export const scalars = gql`
   scalar Longitude
   scalar PhoneNumber
   scalar Time
-  scalar Timestamp
   scalar URL
 `;
