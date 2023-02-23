@@ -535,7 +535,7 @@ export type MutationCreateMessageChatArgs = {
 
 export type MutationCreateOrganizationArgs = {
   data?: InputMaybe<OrganizationInput>;
-  file?: InputMaybe<Scalars['Upload']>;
+  file?: InputMaybe<Scalars['String']>;
 };
 
 

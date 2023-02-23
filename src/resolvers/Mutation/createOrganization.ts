@@ -12,6 +12,7 @@ import {
 } from "../../constants";
 import { superAdminCheck } from "../../utilities/superAdminCheck";
 import { isValidString } from "../../libraries/validators/validateString";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 
 export const createOrganization: MutationResolvers["createOrganization"] =
   async (_parent, args, context) => {
@@ -31,11 +32,13 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     const currentUser = await User.findById({
       _id: context.userId,
     });
+
     superAdminCheck(currentUser!);
+
     //Upload file
-    let uploadImageObj;
+    let uploadImageFileName;
     if (args.file) {
-      uploadImageObj = await uploadImage(args.file, null);
+      uploadImageFileName = await uploadEncodedImage(args.file!);
     }
 
     // Checks if the recieved arguments are valid according to standard input norms
@@ -114,7 +117,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     // Creates new organization.
     const createdOrganization = await Organization.create({
       ...args.data,
-      image: uploadImageObj ? uploadImageObj.newImagePath : null,
+      image: uploadImageFileName ? uploadImage : null,
       creator: context.userId,
       admins: [context.userId],
       members: [context.userId],
