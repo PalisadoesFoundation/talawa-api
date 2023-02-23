@@ -40,6 +40,7 @@ export type Scalars = {
   Time: any;
   Timestamp: any;
   URL: any;
+  Upload: any;
 };
 
 export type AggregatePost = {
@@ -446,13 +447,13 @@ export type MutationAddLanguageTranslationArgs = {
 
 
 export type MutationAddOrganizationImageArgs = {
-  file: Scalars['String'];
+  file: Scalars['Upload'];
   organizationId: Scalars['String'];
 };
 
 
 export type MutationAddUserImageArgs = {
-  file: Scalars['String'];
+  file: Scalars['Upload'];
 };
 
 
@@ -543,7 +544,7 @@ export type MutationCreateMessageChatArgs = {
 
 export type MutationCreateOrganizationArgs = {
   data?: InputMaybe<OrganizationInput>;
-  file?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']>;
 };
 
 
@@ -558,7 +559,7 @@ export type MutationCreatePluginArgs = {
 
 export type MutationCreatePostArgs = {
   data: PostInput;
-  file?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']>;
 };
 
 
@@ -719,7 +720,7 @@ export type MutationSendMessageToGroupChatArgs = {
 
 export type MutationSignUpArgs = {
   data: UserInput;
-  file?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']>;
 };
 
 
@@ -787,7 +788,7 @@ export type MutationUpdateTaskArgs = {
 
 export type MutationUpdateUserProfileArgs = {
   data?: InputMaybe<UpdateUserInput>;
-  file?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']>;
 };
 
 
@@ -1600,6 +1601,7 @@ export type ResolversTypes = {
   UpdateTaskInput: UpdateTaskInput;
   UpdateUserInput: UpdateUserInput;
   UpdateUserTypeInput: UpdateUserTypeInput;
+  Upload: ResolverTypeWrapper<Scalars['Upload']>;
   User: ResolverTypeWrapper<Interface_UserModel>;
   UserAndOrganizationInput: UserAndOrganizationInput;
   UserAttende: ResolverTypeWrapper<Omit<UserAttende, 'user'> & { user: ResolversTypes['User'] }>;
@@ -1686,6 +1688,7 @@ export type ResolversParentTypes = {
   UpdateTaskInput: UpdateTaskInput;
   UpdateUserInput: UpdateUserInput;
   UpdateUserTypeInput: UpdateUserTypeInput;
+  Upload: Scalars['Upload'];
   User: Interface_UserModel;
   UserAndOrganizationInput: UserAndOrganizationInput;
   UserAttende: Omit<UserAttende, 'user'> & { user: ResolversParentTypes['User'] };
@@ -2164,6 +2167,10 @@ export interface UrlScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes[
   name: 'URL';
 }
 
+export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
+  name: 'Upload';
+}
+
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   adminApproved?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -2248,6 +2255,7 @@ export type Resolvers<ContextType = any> = {
   Timestamp?: GraphQLScalarType;
   Translation?: TranslationResolvers<ContextType>;
   URL?: GraphQLScalarType;
+  Upload?: GraphQLScalarType;
   User?: UserResolvers<ContextType>;
   UserAttende?: UserAttendeResolvers<ContextType>;
   UserConnection?: UserConnectionResolvers<ContextType>;
