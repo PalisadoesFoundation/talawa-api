@@ -8,6 +8,17 @@ import { Mutation } from "./Mutation";
 import { Organization } from "./Organization";
 import { Query } from "./Query";
 import { Subscription } from "./Subscription";
+import {
+  DateResolver,
+  DateTimeResolver,
+  EmailAddressResolver,
+  LatitudeResolver,
+  LongitudeResolver,
+  PhoneNumberResolver,
+  TimeResolver,
+  TimestampResolver,
+  URLResolver,
+} from "graphql-scalars";
 
 export const resolvers: Resolvers = {
   DirectChat,
@@ -19,4 +30,15 @@ export const resolvers: Resolvers = {
   Organization,
   Query,
   Subscription,
+
+  // graphql-scalar resolver
+  Date: DateResolver,
+  DateTime: DateTimeResolver,
+  EmailAddress: EmailAddressResolver,
+  Latitude: LatitudeResolver,
+  Longitude: LongitudeResolver,
+  PhoneNumber: PhoneNumberResolver,
+  Time: TimeResolver,
+  Timestamp: TimestampResolver,
+  URL: URLResolver,
 };

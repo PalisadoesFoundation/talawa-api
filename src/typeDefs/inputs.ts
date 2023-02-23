@@ -36,18 +36,18 @@ export const inputs = gql`
   input EventInput {
     title: String!
     description: String!
-    startDate: String!
-    endDate: String
-    startTime: String
-    endTime: String
+    startDate: Date!
+    endDate: Date
+    startTime: Time
+    endTime: Time
     allDay: Boolean!
     recurring: Boolean!
     recurrance: Recurrance
     isPublic: Boolean!
     isRegisterable: Boolean!
     location: String
-    latitude: Float
-    longitude: Float
+    latitude: Latitude
+    longitude: Longitude
     organizationId: ID!
   }
 
@@ -108,7 +108,7 @@ export const inputs = gql`
   }
 
   input LoginInput {
-    email: String!
+    email: EmailAddress!
     password: String!
   }
 
@@ -124,7 +124,7 @@ export const inputs = gql`
     attendees: String
     isPublic: Boolean!
     visibleInSearch: Boolean!
-    apiUrl: String
+    apiUrl: URL
     image: String
     tags: [String!]!
   }
@@ -151,12 +151,12 @@ export const inputs = gql`
     description_contains: String
     description_starts_with: String
 
-    apiUrl: String
-    apiUrl_not: String
-    apiUrl_in: [String!]
-    apiUrl_not_in: [String!]
-    apiUrl_contains: String
-    apiUrl_starts_with: String
+    apiUrl: URL
+    apiUrl_not: URL
+    apiUrl_in: [URL!]
+    apiUrl_not_in: [URL!]
+    apiUrl_contains: URL
+    apiUrl_starts_with: URL
 
     visibleInSearch: Boolean
 
@@ -164,7 +164,7 @@ export const inputs = gql`
   }
 
   input OTPInput {
-    email: String!
+    email: EmailAddress!
   }
 
   input PluginFieldInput {
@@ -184,8 +184,8 @@ export const inputs = gql`
     _id: ID
     text: String!
     title: String
-    imageUrl: String
-    videoUrl: String
+    imageUrl: URL
+    videoUrl: URL
     organizationId: ID!
   }
 
@@ -219,7 +219,7 @@ export const inputs = gql`
   input TaskInput {
     title: String!
     description: String
-    deadline: String
+    deadline: DateTime
   }
 
   input UpdateEventInput {
@@ -229,14 +229,14 @@ export const inputs = gql`
     recurrance: Recurrance
     isPublic: Boolean
     isRegisterable: Boolean
-    startDate: String
-    endDate: String
+    startDate: Date
+    endDate: Date
     location: String
-    latitude: Float
-    longitude: Float
+    latitude: Latitude
+    longitude: Longitude
     allDay: Boolean
-    startTime: String
-    endTime: String
+    startTime: Time
+    endTime: Time
   }
 
   # input UpdateEventProjectInput {
@@ -254,13 +254,13 @@ export const inputs = gql`
   input UpdateTaskInput {
     title: String
     description: String
-    deadline: String
+    deadline: DateTime
   }
 
   input UpdateUserInput {
     firstName: String
     lastName: String
-    email: String
+    email: EmailAddress
   }
 
   input UpdateUserTypeInput {
@@ -276,7 +276,7 @@ export const inputs = gql`
   input UserInput {
     firstName: String!
     lastName: String!
-    email: String!
+    email: EmailAddress!
     password: String!
     appLanguageCode: String
     organizationUserBelongsToId: ID
@@ -304,12 +304,12 @@ export const inputs = gql`
     lastName_contains: String
     lastName_starts_with: String
 
-    email: String
-    email_not: String
-    email_in: [String!]
-    email_not_in: [String!]
-    email_contains: String
-    email_starts_with: String
+    email: EmailAddress
+    email_not: EmailAddress
+    email_in: [EmailAddress!]
+    email_not_in: [EmailAddress!]
+    email_contains: EmailAddress
+    email_starts_with: EmailAddress
 
     appLanguageCode: String
     appLanguageCode_not: String
@@ -325,7 +325,7 @@ export const inputs = gql`
   input PostUpdateInput {
     text: String
     title: String
-    imageUrl: String
-    videoUrl: String
+    imageUrl: URL
+    videoUrl: URL
   }
 `;
