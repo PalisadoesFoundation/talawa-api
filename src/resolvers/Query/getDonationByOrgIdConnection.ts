@@ -16,7 +16,10 @@ export const getDonationByOrgIdConnection: QueryResolvers["getDonationByOrgIdCon
     return await Donation.find({
       orgId: args.orgId,
       ...inputArg,
-    }).lean();
+    })
+      .limit(args.first!)
+      .skip(args.skip!)
+      .lean();
   };
 
 const getInputArg = (where: InputMaybe<DonationWhereInput> | undefined) => {

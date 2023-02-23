@@ -30,7 +30,7 @@ export const queries = gql`
       first: Int
       skip: Int
       orderBy: EventOrderByInput
-    ): [Event]!
+    ): [Event!]!
 
     getDonationById(id: ID!): Donation!
 
@@ -41,7 +41,7 @@ export const queries = gql`
       where: DonationWhereInput
       first: Int
       skip: Int
-    ): [Donation]!
+    ): [Donation!]!
 
     getDonations: [Donation]
 
