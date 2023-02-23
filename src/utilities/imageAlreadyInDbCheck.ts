@@ -3,7 +3,7 @@ import { ImageHash } from "../models";
 import { deleteDuplicatedImage } from "./deleteDuplicatedImage";
 import { reuploadDuplicateCheck } from "./reuploadDuplicateCheck";
 import { errors, requestContext } from "../libraries";
-import { INVALID_FILE_TYPE } from "../../src/constants";
+import { INVALID_FILE_TYPE } from "../constants";
 
 /*
 Check to see if image already exists in db using hash

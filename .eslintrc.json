@@ -17,6 +17,12 @@
       "files": ["*.graphql"],
       "parser": "@graphql-eslint/eslint-plugin",
       "plugins": ["@graphql-eslint"]
+    },
+    {
+      "files": ["tests/**/*"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
     }
   ],
   "parser": "@typescript-eslint/parser",
@@ -28,7 +34,7 @@
   "root": true,
   "rules": {
     "eqeqeq": ["error", "always"],
-    "linebreak-style": ["error", "unix"],
+    "linebreak-style": ["error", "windows"],
     "no-unused-vars": [
       "error",
       {
@@ -44,6 +50,14 @@
       {
         "allowTemplateLiterals": true,
         "avoidEscape": true
+      }
+    ],
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          "**/src/**"
+        ]
       }
     ]
   }

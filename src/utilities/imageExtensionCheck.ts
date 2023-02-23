@@ -1,6 +1,6 @@
 import { deleteImage } from "./deleteImage";
 import { errors, requestContext } from "../libraries";
-import { INVALID_FILE_TYPE } from "../../src/constants";
+import { INVALID_FILE_TYPE } from "../constants";
 
 export const imageExtensionCheck = async (filename: string) => {
   const fileExtension = filename.split(".").pop();
