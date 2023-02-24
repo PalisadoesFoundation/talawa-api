@@ -16,9 +16,9 @@ import mongoose from "mongoose";
 import { removeOrganization as removeOrganizationResolver } from "../../../src/resolvers/Mutation/removeOrganization";
 import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_MESSAGE,
+  USER_NOT_AUTHORIZED_MESSAGE,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -237,6 +237,11 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
 
   it(`throws UnauthorizedError if current user with _id === context.userId
   is not the creator of organization with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
     try {
       await Organization.updateOne(
         {
@@ -268,9 +273,14 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
         userId: testUsers[0]!.id,
       };
 
+      const { removeOrganization: removeOrganizationResolver } = await import(
+        "../../../src/resolvers/Mutation/removeOrganization"
+      );
+
       await removeOrganizationResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(`Translated ${USER_NOT_AUTHORIZED_MESSAGE}`);
     }
   });
 
