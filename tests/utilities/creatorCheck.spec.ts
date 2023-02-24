@@ -10,10 +10,7 @@ import {
 } from "vitest";
 import { connect, disconnect } from "../helpers/db";
 import mongoose from "mongoose";
-import {
-  USER_NOT_AUTHORIZED,
-  USER_NOT_AUTHORIZED_MESSAGE,
-} from "../../src/constants";
+import { USER_NOT_AUTHORIZED_MESSAGE } from "../../src/constants";
 import {
   createTestUser,
   createTestUserAndOrganization,
@@ -42,11 +39,10 @@ afterAll(async () => {
 
 describe("src -> resolvers -> utilities -> creatorCheck.ts", () => {
   afterEach(() => {
-    vi.doUnmock("../../src/constants");
     vi.resetModules();
   });
 
-  it("should throw error when user is not creator of organization IN_PRODUCTION = false", async () => {
+  it("should throw error when user is not creator of organization ", async () => {
     await Organization.findByIdAndUpdate(
       {
         _id: testOrganization?._id,
@@ -57,49 +53,6 @@ describe("src -> resolvers -> utilities -> creatorCheck.ts", () => {
         },
       }
     );
-
-    vi.doMock("../../src/constants", async () => {
-      const actualConstants: object = await vi.importActual(
-        "../../src/constants"
-      );
-      return {
-        ...actualConstants,
-        IN_PRODUCTION: false,
-      };
-    });
-
-    try {
-      const { creatorCheck: creatorCheckResolver } = await import(
-        "../../src/utilities"
-      );
-
-      creatorCheckResolver(testUser2?._id, testOrganization!);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
-    }
-  });
-
-  it("should throw error when user is not creator of organization IN_PRODUCTION = true", async () => {
-    await Organization.findByIdAndUpdate(
-      {
-        _id: testOrganization?._id,
-      },
-      {
-        $set: {
-          creator: Types.ObjectId().toString(),
-        },
-      }
-    );
-
-    vi.doMock("../../src/constants", async () => {
-      const actualConstants: object = await vi.importActual(
-        "../../src/constants"
-      );
-      return {
-        ...actualConstants,
-        IN_PRODUCTION: true,
-      };
-    });
 
     const { requestContext } = await import("../../src/libraries");
 
