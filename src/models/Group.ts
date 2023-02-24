@@ -1,6 +1,7 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
 import { Interface_Organization } from "./Organization";
 import { Interface_User } from "./User";
+import dayjs from "dayjs";
 
 export interface Interface_Group {
   _id: Types.ObjectId;
@@ -22,7 +23,7 @@ const groupSchema = new Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now,
+    default: dayjs(Date.now()),
   },
   organization: {
     type: Schema.Types.ObjectId,

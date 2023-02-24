@@ -2,6 +2,7 @@ import { Schema, Types, model, PopulatedDoc, Document, models } from "mongoose";
 import { Interface_Organization } from "./Organization";
 import { Interface_Task } from "./Task";
 import { Interface_User } from "./User";
+import dayjs from "dayjs";
 
 export interface Interface_UserAttende {
   userId: string;
@@ -28,7 +29,7 @@ const userAttendeSchema = new Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now,
+    default: dayjs(Date.now()),
   },
 });
 

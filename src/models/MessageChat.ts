@@ -1,5 +1,6 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
 import { Interface_User } from "./User";
+import dayjs from "dayjs";
 
 export interface Interface_MessageChat {
   _id: Types.ObjectId;
@@ -33,7 +34,7 @@ const messageChatSchema = new Schema({
   createdAt: {
     type: Date,
     required: true,
-    default: Date.now,
+    default: dayjs(Date.now()),
   },
 });
 

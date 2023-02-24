@@ -2,6 +2,7 @@ import { Schema, Types, model, PopulatedDoc, Document, models } from "mongoose";
 import { Interface_Event } from "./Event";
 import { Interface_Task } from "./Task";
 import { Interface_User } from "./User";
+import dayjs from "dayjs";
 
 export interface Interface_EventProject {
   _id: Types.ObjectId;
@@ -25,7 +26,7 @@ const eventProjectSchema = new Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now,
+    default: dayjs(Date.now()),
   },
   event: {
     type: Schema.Types.ObjectId,

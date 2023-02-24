@@ -1,4 +1,5 @@
 import { Schema, model, Types, models } from "mongoose";
+import dayjs from "dayjs";
 
 export interface Interface_PluginField {
   _id: Types.ObjectId;
@@ -25,7 +26,7 @@ const pluginFieldSchema = new Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now,
+    default: dayjs(Date.now()),
   },
 });
 

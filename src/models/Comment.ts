@@ -1,6 +1,7 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
 import { Interface_Post } from "./Post";
 import { Interface_User } from "./User";
+import dayjs from "dayjs";
 
 export interface Interface_Comment {
   _id: Types.ObjectId;
@@ -20,7 +21,7 @@ const commentSchema = new Schema({
   },
   createdAt: {
     type: Date,
-    default: Date.now,
+    default: dayjs(Date.now()),
   },
   creator: {
     type: Schema.Types.ObjectId,
