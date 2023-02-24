@@ -1,7 +1,6 @@
 import "dotenv/config";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization } from "../../models";
-import { uploadImage } from "../../utilities";
 import { errors, requestContext } from "../../libraries";
 import {
   LENGTH_VALIDATION_ERROR,
@@ -36,7 +35,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     superAdminCheck(currentUser!);
 
     //Upload file
-    let uploadImageFileName;
+    let uploadImageFileName = null;
     if (args.file) {
       uploadImageFileName = await uploadEncodedImage(args.file!);
     }
@@ -117,7 +116,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     // Creates new organization.
     const createdOrganization = await Organization.create({
       ...args.data,
-      image: uploadImageFileName ? uploadImage : null,
+      image: uploadImageFileName ? uploadImageFileName : null,
       creator: context.userId,
       admins: [context.userId],
       members: [context.userId],

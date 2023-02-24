@@ -1,5 +1,6 @@
 import shortid from "shortid";
 import * as fs from "fs";
+import { writeFile } from "fs/promises";
 import { encodedImageExtentionCheck } from "./encodedImageExtensionCheck";
 import { errors, requestContext } from "../../libraries";
 import { INVALID_FILE_TYPE } from "../../constants";
@@ -20,7 +21,6 @@ export const uploadEncodedImage = async (encodedImageURL: string) => {
   const encodedImageAlreadyExist = await EncodedImage.findOne({
     content: encodedImageURL,
   });
-  console.log(encodedImageAlreadyExist);
 
   if (encodedImageAlreadyExist) {
     return encodedImageAlreadyExist.fileName;
@@ -46,9 +46,8 @@ export const uploadEncodedImage = async (encodedImageURL: string) => {
       }
     });
   }
-  fs.writeFile(path.join(__dirname, "../../../images/" + id), buf, (error) => {
-    if (error) console.log(error);
-  });
+
+  await writeFile(path.join(__dirname, "../../../" + id), buf);
 
   return uploadedEncodedImage.fileName;
 };

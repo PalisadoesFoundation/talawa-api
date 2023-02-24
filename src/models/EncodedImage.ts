@@ -21,5 +21,5 @@ const EncodedImageModel = () =>
   model<Interface_EncodedImage>("EncodedImage", encodedImageSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const EncodedImage = (models.ImageHash ||
+export const EncodedImage = (models.EncodedImage ||
   EncodedImageModel()) as ReturnType<typeof EncodedImageModel>;
