@@ -42,7 +42,7 @@ describe("src -> resolvers -> utilities -> creatorCheck.ts", () => {
     vi.resetModules();
   });
 
-  it("should throw error when user is not creator of organization IN_PRODUCTION = true", async () => {
+  it("should throw error when user is not creator of organization ", async () => {
     await Organization.findByIdAndUpdate(
       {
         _id: testOrganization?._id,
