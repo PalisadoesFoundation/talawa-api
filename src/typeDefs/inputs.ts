@@ -7,23 +7,23 @@ export const inputs = gql`
   }
 
   input createChatInput {
-    userIds: [ID!]!
-    organizationId: ID!
+    userIds: [ObjectID!]!
+    organizationId: ObjectID!
   }
 
   input createGroupChatInput {
-    userIds: [ID!]!
-    organizationId: ID!
+    userIds: [ObjectID!]!
+    organizationId: ObjectID!
     title: String!
   }
 
   input DonationWhereInput {
-    id: ID
-    id_not: ID
-    id_in: [ID!]
-    id_not_in: [ID!]
-    id_contains: ID
-    id_starts_with: ID
+    id: ObjectID
+    id_not: ObjectID
+    id_in: [ObjectID!]
+    id_not_in: [ObjectID!]
+    id_contains: ObjectID
+    id_starts_with: ObjectID
 
     name_of_user: String
     name_of_user_not: String
@@ -48,16 +48,16 @@ export const inputs = gql`
     location: String
     latitude: Latitude
     longitude: Longitude
-    organizationId: ID!
+    organizationId: ObjectID!
   }
 
   input EventWhereInput {
-    id: ID
-    id_not: ID
-    id_in: [ID!]
-    id_not_in: [ID!]
-    id_contains: ID
-    id_starts_with: ID
+    id: ObjectID
+    id_not: ObjectID
+    id_in: [ObjectID!]
+    id_not_in: [ObjectID!]
+    id_contains: ObjectID
+    id_starts_with: ObjectID
 
     title: String
     title_not: String
@@ -80,7 +80,7 @@ export const inputs = gql`
     location_contains: String
     location_starts_with: String
 
-    organization_id: ID
+    organization_id: ObjectID
   }
 
   # input EventProjectInput {
@@ -98,7 +98,7 @@ export const inputs = gql`
   input GroupInput {
     title: String
     description: String
-    organizationId: ID!
+    organizationId: ObjectID!
   }
 
   input LanguageInput {
@@ -114,7 +114,7 @@ export const inputs = gql`
 
   input MessageChatInput {
     message: String!
-    receiver: ID!
+    receiver: ObjectID!
   }
 
   input OrganizationInput {
@@ -130,12 +130,12 @@ export const inputs = gql`
   }
 
   input OrganizationWhereInput {
-    id: ID
-    id_not: ID
-    id_in: [ID!]
-    id_not_in: [ID!]
-    id_contains: ID
-    id_starts_with: ID
+    id: ObjectID
+    id_not: ObjectID
+    id_in: [ObjectID!]
+    id_not_in: [ObjectID!]
+    id_contains: ObjectID
+    id_starts_with: ObjectID
 
     name: String
     name_not: String
@@ -173,7 +173,7 @@ export const inputs = gql`
   }
 
   input PluginInput {
-    orgId: ID!
+    orgId: ObjectID!
     pluginName: String!
     pluginKey: String
     pluginType: Type
@@ -181,21 +181,21 @@ export const inputs = gql`
   }
 
   input PostInput {
-    _id: ID
+    _id: ObjectID
     text: String!
     title: String
     imageUrl: URL
     videoUrl: URL
-    organizationId: ID!
+    organizationId: ObjectID!
   }
 
   input PostWhereInput {
-    id: ID
-    id_not: ID
-    id_in: [ID!]
-    id_not_in: [ID!]
-    id_contains: ID
-    id_starts_with: ID
+    id: ObjectID
+    id_not: ObjectID
+    id_in: [ObjectID!]
+    id_not_in: [ObjectID!]
+    id_contains: ObjectID
+    id_starts_with: ObjectID
 
     text: String
     text_not: String
@@ -265,12 +265,12 @@ export const inputs = gql`
 
   input UpdateUserTypeInput {
     userType: String
-    id: ID
+    id: ObjectID
   }
 
   input UserAndOrganizationInput {
-    organizationId: ID!
-    userId: ID!
+    organizationId: ObjectID!
+    userId: ObjectID!
   }
 
   input UserInput {
@@ -279,16 +279,16 @@ export const inputs = gql`
     email: EmailAddress!
     password: String!
     appLanguageCode: String
-    organizationUserBelongsToId: ID
+    organizationUserBelongsToId: ObjectID
   }
 
   input UserWhereInput {
-    id: ID
-    id_not: ID
-    id_in: [ID!]
-    id_not_in: [ID!]
-    id_contains: ID
-    id_starts_with: ID
+    id: ObjectID
+    id_not: ObjectID
+    id_in: [ObjectID!]
+    id_not_in: [ObjectID!]
+    id_contains: ObjectID
+    id_starts_with: ObjectID
 
     firstName: String
     firstName_not: String
@@ -318,7 +318,7 @@ export const inputs = gql`
     appLanguageCode_contains: String
     appLanguageCode_starts_with: String
 
-    admin_for: ID
+    admin_for: ObjectID
 
     event_title_contains: String
   }
