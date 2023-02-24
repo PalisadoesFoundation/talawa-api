@@ -280,7 +280,9 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       await removeOrganizationResolver?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_AUTHORIZED_MESSAGE}`);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
+      );
     }
   });
 

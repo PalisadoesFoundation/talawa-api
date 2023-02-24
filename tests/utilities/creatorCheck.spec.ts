@@ -10,9 +10,7 @@ import {
 } from "vitest";
 import { connect, disconnect } from "../helpers/db";
 import mongoose from "mongoose";
-import {
-  USER_NOT_AUTHORIZED_MESSAGE,
-} from "../../src/constants";
+import { USER_NOT_AUTHORIZED_MESSAGE } from "../../src/constants";
 import {
   createTestUser,
   createTestUserAndOrganization,

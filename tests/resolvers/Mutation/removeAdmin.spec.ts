@@ -217,7 +217,6 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
 
   it(`throws UnauthorizedError if user with _id === context.userId is not the creator
   of organization with _id === args.data.organizationId`, async () => {
-    
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -268,7 +267,8 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
       expect(error.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
-    )}
+      );
+    }
   });
 
   it(`removes user with _id === args.data.userId from admins list of the organization
