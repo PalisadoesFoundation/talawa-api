@@ -12,7 +12,6 @@ import validator from "validator";
 import { Interface_Event } from "./Event";
 import { Interface_MembershipRequest } from "./MembershipRequest";
 import { Interface_Organization } from "./Organization";
-import dayjs from "dayjs";
 
 export interface Interface_User {
   _id: Types.ObjectId;
@@ -155,7 +154,7 @@ const userSchema = new Schema({
   },
   createdAt: {
     type: Date,
-    default: dayjs(Date.now()),
+    default: Date.now,
   },
 });
 

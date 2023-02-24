@@ -3,7 +3,6 @@ import { Interface_MembershipRequest } from "./MembershipRequest";
 import { Interface_Message } from "./Message";
 import { Interface_Post } from "./Post";
 import { Interface_User } from "./User";
-import dayjs from "dayjs";
 
 export interface Interface_Organization {
   _id: Types.ObjectId;
@@ -109,7 +108,7 @@ const organizationSchema = new Schema({
   ],
   createdAt: {
     type: Date,
-    default: dayjs(Date.now()),
+    default: Date.now,
   },
 });
 

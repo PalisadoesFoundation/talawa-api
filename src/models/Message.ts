@@ -1,7 +1,6 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
 import { Interface_Group } from "./Group";
 import { Interface_User } from "./User";
-import dayjs from "dayjs";
 
 export interface Interface_Message {
   _id: Types.ObjectId;
@@ -29,7 +28,7 @@ const messageSchema = new Schema({
   },
   createdAt: {
     type: Date,
-    default: dayjs(Date.now()),
+    default: Date.now,
   },
   creator: {
     type: Schema.Types.ObjectId,

@@ -1,5 +1,4 @@
 import { Schema, model, Types, Document, PopulatedDoc, models } from "mongoose";
-import dayjs from "dayjs";
 
 export interface Interface_LanguageModel {
   lang_code: string;
@@ -28,7 +27,7 @@ const languageModelSchema = new Schema({
   createdAt: {
     type: Date,
     required: true,
-    default: dayjs(Date.now()),
+    default: Date.now,
   },
 });
 
@@ -50,7 +49,7 @@ const languageSchema = new Schema({
   createdAt: {
     type: Date,
     required: true,
-    default: dayjs(Date.now()),
+    default: Date.now,
   },
 });
 

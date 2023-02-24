@@ -11,7 +11,6 @@ import mongoosePaginate from "mongoose-paginate-v2";
 import { Interface_Comment } from "./Comment";
 import { Interface_Organization } from "./Organization";
 import { Interface_User } from "./User";
-import dayjs from "dayjs";
 
 export interface Interface_Post {
   _id: Types.ObjectId;
@@ -45,7 +44,7 @@ const postSchema = new Schema({
   },
   createdAt: {
     type: Date,
-    default: dayjs(Date.now()),
+    default: Date.now,
   },
   imageUrl: {
     type: String,

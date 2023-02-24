@@ -1,6 +1,5 @@
 import { Schema, model, Types, models } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
-import dayjs from "dayjs";
 
 export interface Interface_File {
   _id: Types.ObjectId;
@@ -32,7 +31,7 @@ const fileSchema = new Schema({
   createdAt: {
     type: Date,
     required: true,
-    default: dayjs(Date.now()),
+    default: Date.now,
   },
   contentType: {
     type: String,
