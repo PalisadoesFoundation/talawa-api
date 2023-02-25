@@ -99,7 +99,7 @@ The process of proposing a change to Talawa API can be summarized as:
       3. Here are some useful testing resources:
          1. Documentation:
             1. [Jest testing documentation](https://jestjs.io/docs/expect)
-            2. The [organizations.spec.js](tests/resolvers/organization_query/organizations.spec.js) test file is a well documented example of what to do for resolver tests.
+            2. The [organizations.spec.ts](tests/resolvers/Query/organizations.spec.ts) test file is a well documented example of what to do for resolver tests.
          2. Videos:
             1. [Introduction To Testing In JavaScript With Jest](https://www.youtube.com/watch?v=FgnxcUQ5vho)
             2. [Jest Crash Course](https://www.youtube.com/watch?v=7r4xVDI2vho)
