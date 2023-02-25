@@ -5,6 +5,9 @@ import {
   getRequestContextValue,
   setRequestContext,
   middleware,
+  init,
+  translate,
+  translatePlural,
 } from "../../src/libraries/requestContext";
 import { NextFunction, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
@@ -16,6 +19,10 @@ describe("middleware -> requestContext", () => {
   const mockRequest = new EventEmitter();
   const mockResponse = new EventEmitter();
   const nextFunction = vi.fn();
+
+  interface Interface_InitOptions<T> extends Record<any, any> {
+    requestHandler?: () => T;
+  }
 
   beforeEach(() => {
     context = requestContextNamespace.createContext();
@@ -50,6 +57,44 @@ describe("middleware -> requestContext", () => {
       nextFunction as NextFunction
     );
     expect(nextFunction).toBeCalledTimes(1);
+  });
+
+  it("testing i18n api with translate and translatePlural", async () => {
+    const options: Interface_InitOptions<any> = {
+      defaultLocale: "fr",
+      locale: "fr",
+      fallbacks: true,
+      lang: "fr",
+      requestHandler: vi.fn(),
+    };
+    const locales = ["en", "fr", "hi", "zh", "sp", "fr"];
+    init(options);
+    setRequestContext({
+      __: vi.fn((x) => x),
+      __n: vi.fn((x) => x),
+    });
+    expect(translate(locales)).toBe(locales);
+    expect(translatePlural(locales)).toBe(locales);
+  });
+
+  it("testing error thrown for translate i18n not initialized", async () => {
+    try {
+      translate({});
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        "i18n is not initialized, try app.use(i18n.init);"
+      );
+    }
+  });
+
+  it("testing error thrown for translatePlural i18n not initialized", async () => {
+    try {
+      translatePlural({});
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        "i18n is not initialized, try app.use(i18n.init);"
+      );
+    }
   });
   afterEach(() => {
     requestContextNamespace.exit(context);
