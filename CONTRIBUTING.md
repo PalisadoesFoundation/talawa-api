@@ -231,7 +231,7 @@ If you don't want these pre-commit checks running on each commit, you can manual
         git commit -m "commit message" --no-verify
         
 ### Running Queries with talawa-api
-   - Talawa API currently implement `GraphQL Playground` as mediator interface to run and test queries directly from the api. Learn more
+   - Talawa API currently implement `GraphQL Playground` as mediator interface to run and test queries directly from the api. [Learn more](https://www.apollographql.com/docs/apollo-server/v2/testing/graphql-playground/)
    - In development, Apollo Server enables GraphQL Playground on the same URL as the GraphQL server itself (e.g. http://localhost:4000/graphql) and automatically serves the GUI to web browsers. When NODE_ENV is set to production, GraphQL Playground (as well as introspection) is disabled as a production best-practice.
     ![image](https://user-images.githubusercontent.com/65951872/221374309-5a6eee74-c0df-4280-a29a-0b8d2c7260b3.png)
 - Note: To access the playground in talawa API append the URL with "/graphql"
