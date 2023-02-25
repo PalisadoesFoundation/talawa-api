@@ -11,7 +11,6 @@ import {
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import * as uploadImage from "../../../src/utilities/uploadImage";
 import {
   beforeAll,
@@ -23,13 +22,13 @@ import {
   afterEach,
 } from "vitest";
 import { createTestUserFunc, testUserType } from "../../helpers/user";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 
-const testImagePath: string = `${nanoid().toLowerCase()}test.png`;
 let testUser: testUserType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
-vi.mock("../../utilities", () => ({
-  uploadImage: vi.fn(),
+vi.mock("../../utilities/uploadEncodedImage", () => ({
+  uploadEncodedImage: vi.fn(),
 }));
 
 beforeAll(async () => {
@@ -121,11 +120,15 @@ describe("resolvers -> Mutation -> createOrganization", () => {
   });
 
   it(`creates the organization with image and returns it`, async () => {
-    vi.spyOn(uploadImage, "uploadImage").mockImplementation(
-      async (newImagePath: any, imageAlreadyInDbPath: any) => ({
-        newImagePath,
-        imageAlreadyInDbPath,
-      })
+    // vi.spyOn(uploadImage, "uploadImage").mockImplementation(
+    //   async (newImagePath: any, imageAlreadyInDbPath: any) => ({
+    //     newImagePath,
+    //     imageAlreadyInDbPath,
+    //   })
+    // );
+
+    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
+      async (encodedImageURL: string) => encodedImageURL
     );
 
     await User.findOneAndUpdate(
@@ -150,7 +153,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         location: "location",
         tags: ["tag"],
       },
-      file: testImagePath,
+      file: "imagePath",
     };
     const context = {
       userId: testUser!._id,
@@ -172,10 +175,10 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         creator: testUser!._id,
         admins: [testUser!._id],
         members: [testUser!._id],
-        image: testImagePath,
+        image: "imagePath",
       })
     );
-    expect(createOrganizationPayload?.image).toEqual(testImagePath);
+    expect(createOrganizationPayload?.image).toEqual("imagePath");
 
     const updatedTestUser = await User.findOne({
       _id: testUser!._id,

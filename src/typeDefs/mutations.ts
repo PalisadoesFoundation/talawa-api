@@ -55,7 +55,7 @@ export const mutations = gql`
 
     createMessageChat(data: MessageChatInput!): MessageChat! @auth
 
-    createOrganization(data: OrganizationInput, file: Upload): Organization!
+    createOrganization(data: OrganizationInput, file: String): Organization!
       @auth
       @role(requires: SUPERADMIN)
 
