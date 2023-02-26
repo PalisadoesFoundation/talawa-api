@@ -29,7 +29,7 @@ export const types = gql`
   type Comment {
     _id: ID
     text: String!
-    createdAt: String
+    createdAt: DateTime
     creator: User!
     post: Post!
     likedBy: [User]
@@ -53,7 +53,7 @@ export const types = gql`
     directChatMessageBelongsTo: DirectChat!
     sender: User!
     receiver: User!
-    createdAt: String!
+    createdAt: DateTime!
     messageContent: String!
   }
 
@@ -76,18 +76,18 @@ export const types = gql`
     _id: ID!
     title: String!
     description: String!
-    startDate: String!
-    endDate: String!
-    startTime: String
-    endTime: String
+    startDate: Date!
+    endDate: Date!
+    startTime: Time
+    endTime: Time
     allDay: Boolean!
     recurring: Boolean!
     recurrance: Recurrance
     isPublic: Boolean!
     isRegisterable: Boolean!
     location: String
-    latitude: Float
-    longitude: Float
+    latitude: Latitude
+    longitude: Longitude
     organization: Organization
     creator: User!
     registrants: [UserAttende]
@@ -113,7 +113,7 @@ export const types = gql`
     _id: ID
     title: String
     description: String
-    createdAt: String
+    createdAt: DateTime
     organization: Organization!
     admins: [User]
   }
@@ -130,7 +130,7 @@ export const types = gql`
     _id: ID!
     groupChatMessageBelongsTo: GroupChat!
     sender: User!
-    createdAt: String!
+    createdAt: DateTime!
     messageContent: String!
   }
 
@@ -156,7 +156,7 @@ export const types = gql`
     lang_code: String!
     value: String!
     verified: Boolean!
-    createdAt: String!
+    createdAt: DateTime!
   }
 
   type MembershipRequest {
@@ -168,9 +168,9 @@ export const types = gql`
   type Message {
     _id: ID!
     text: String
-    createdAt: String
-    imageUrl: String
-    videoUrl: String
+    createdAt: DateTime
+    imageUrl: URL
+    videoUrl: URL
     creator: User
   }
 
@@ -180,7 +180,7 @@ export const types = gql`
     receiver: User!
     message: String!
     languageBarrier: Boolean
-    createdAt: String!
+    createdAt: DateTime!
   }
 
   type Organization {
@@ -196,8 +196,8 @@ export const types = gql`
     membershipRequests: [MembershipRequest]
     blockedUsers: [User]
     visibleInSearch: Boolean!
-    apiUrl: String!
-    createdAt: String
+    apiUrl: URL!
+    createdAt: DateTime
     tags: [String!]!
   }
 
@@ -209,7 +209,7 @@ export const types = gql`
     isPublic: Boolean!
     creator: User!
     visibleInSearch: Boolean!
-    apiUrl: String!
+    apiUrl: URL!
     tags: [String!]!
   }
 
@@ -260,16 +260,16 @@ export const types = gql`
     key: String!
     value: String!
     status: Status!
-    createdAt: String
+    createdAt: DateTime
   }
 
   type Post {
     _id: ID
     text: String!
     title: String
-    createdAt: String
-    imageUrl: String
-    videoUrl: String
+    createdAt: DateTime
+    imageUrl: URL
+    videoUrl: URL
     creator: User!
     organization: Organization!
     likedBy: [User]
@@ -301,8 +301,8 @@ export const types = gql`
     description: String
     event: Event!
     creator: User!
-    createdAt: String!
-    deadline: String
+    createdAt: DateTime!
+    deadline: DateTime
   }
 
   type Translation {
@@ -317,7 +317,7 @@ export const types = gql`
     _id: ID!
     firstName: String!
     lastName: String!
-    email: String!
+    email: EmailAddress!
     userType: String
     appLanguageCode: String!
     createdOrganizations: [Organization]
@@ -332,7 +332,7 @@ export const types = gql`
     organizationUserBelongsTo: Organization
     pluginCreationAllowed: Boolean
     adminApproved: Boolean
-    createdAt: String
+    createdAt: DateTime
   }
 
   type UserAttende {
@@ -340,7 +340,7 @@ export const types = gql`
     userId: String!
     user: User!
     status: Status!
-    createdAt: String
+    createdAt: DateTime
   }
 
   type UserConnection {
