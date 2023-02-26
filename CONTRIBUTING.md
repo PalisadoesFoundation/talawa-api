@@ -75,7 +75,6 @@ For Talawa API, we had employed the following branching strategy to simplify the
 
 When multiple developers are working on issues there is bound to be a conflict of interest (not to be confused with git conflicts) among issues, PRs or even ideas. Usually these conflicts are resolved in a **First Come First Serve** basis however there are certain exceptions to it.
 
-- More often than not when a developer is working on a function, creates the function but does not apply it everywhere needed, it is because of some good reasons. So preferance for an issue to apply that function will be given to that developer for assignment.
 - In the cases where you feel your potential issues could be an extension or in conflict with other PRs it is important to ask the author of the PR in the slack channel or in their PRs themselves why he/she did not write code for something that would require minimal effort on their part.
 - Based on basic courtesy, it is good practice to let the person who created a function apply and test that function when needed.
 - Last but not the least, communication is important make sure to talk to other contributors, in these cases, in slack channel or in a issue/PR thread.
