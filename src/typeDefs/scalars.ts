@@ -7,7 +7,7 @@ export const scalars = gql`
   scalar EmailAddress
   scalar Latitude
   scalar Longitude
-  scalar ObjectID
+  scalar ID
   scalar PhoneNumber
   scalar Time
   scalar URL

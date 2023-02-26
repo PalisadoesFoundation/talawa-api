@@ -3,10 +3,9 @@ import { gql } from "apollo-server-core";
 // Place fields alphabetically to ensure easier lookup and navigation.
 export const mutations = gql`
   type Mutation {
-    acceptAdmin(id: ObjectID!): Boolean! @auth @role(requires: SUPERADMIN)
+    acceptAdmin(id: ID!): Boolean! @auth @role(requires: SUPERADMIN)
 
-    acceptMembershipRequest(membershipRequestId: ObjectID!): MembershipRequest!
-      @auth
+    acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
     addLanguageTranslation(data: LanguageInput!): Language! @auth
 
@@ -15,36 +14,34 @@ export const mutations = gql`
 
     addUserImage(file: Upload!): User! @auth
 
-    addUserToGroupChat(userId: ObjectID!, chatId: ObjectID!): GroupChat! @auth
+    addUserToGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
 
-    adminRemoveEvent(eventId: ObjectID!): Event! @auth
+    adminRemoveEvent(eventId: ID!): Event! @auth
 
-    adminRemoveGroup(groupId: ObjectID!): Message! @auth
+    adminRemoveGroup(groupId: ID!): Message! @auth
 
-    adminRemovePost(organizationId: ObjectID!, postId: ObjectID!): Post! @auth
+    adminRemovePost(organizationId: ID!, postId: ID!): Post! @auth
 
-    blockPluginCreationBySuperadmin(
-      userId: ObjectID!
-      blockUser: Boolean!
-    ): User! @auth @role(requires: SUPERADMIN)
-
-    blockUser(organizationId: ObjectID!, userId: ObjectID!): User! @auth
-
-    cancelMembershipRequest(membershipRequestId: ObjectID!): MembershipRequest!
+    blockPluginCreationBySuperadmin(userId: ID!, blockUser: Boolean!): User!
       @auth
+      @role(requires: SUPERADMIN)
+
+    blockUser(organizationId: ID!, userId: ID!): User! @auth
+
+    cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
     createAdmin(data: UserAndOrganizationInput!): User!
       @auth
       @role(requires: SUPERADMIN)
 
-    createComment(postId: ObjectID!, data: CommentInput!): Comment @auth
+    createComment(postId: ID!, data: CommentInput!): Comment @auth
 
     createDirectChat(data: createChatInput): DirectChat! @auth
 
     createDonation(
-      userId: ObjectID!
-      orgId: ObjectID!
-      payPalId: ObjectID!
+      userId: ID!
+      orgId: ID!
+      payPalId: ID!
       nameOfUser: String!
       amount: Float!
       nameOfOrg: String!
@@ -67,24 +64,24 @@ export const mutations = gql`
       pluginCreatedBy: String!
       pluginDesc: String!
       pluginInstallStatus: Boolean!
-      installedOrgs: [ObjectID!]
+      installedOrgs: [ID!]
     ): Plugin!
 
     createPost(data: PostInput!, file: Upload): Post @auth
 
-    createTask(data: TaskInput, eventId: ObjectID!): Task! @auth
+    createTask(data: TaskInput, eventId: ID!): Task! @auth
 
-    deleteDonationById(id: ObjectID!): DeletePayload!
+    deleteDonationById(id: ID!): DeletePayload!
 
     forgotPassword(data: ForgotPasswordData!): Boolean!
 
-    joinPublicOrganization(organizationId: ObjectID!): User! @auth
+    joinPublicOrganization(organizationId: ID!): User! @auth
 
-    leaveOrganization(organizationId: ObjectID!): User! @auth
+    leaveOrganization(organizationId: ID!): User! @auth
 
-    likeComment(id: ObjectID!): Comment @auth
+    likeComment(id: ID!): Comment @auth
 
-    likePost(id: ObjectID!): Post @auth
+    likePost(id: ID!): Post @auth
 
     login(data: LoginInput!): AuthData!
 
@@ -96,38 +93,35 @@ export const mutations = gql`
 
     refreshToken(refreshToken: String!): ExtendSession!
 
-    registerForEvent(id: ObjectID!): Event! @auth
+    registerForEvent(id: ID!): Event! @auth
 
-    rejectAdmin(id: ObjectID!): Boolean! @auth @role(requires: SUPERADMIN)
+    rejectAdmin(id: ID!): Boolean! @auth @role(requires: SUPERADMIN)
 
-    rejectMembershipRequest(membershipRequestId: ObjectID!): MembershipRequest!
-      @auth
+    rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
     removeAdmin(data: UserAndOrganizationInput!): User!
       @auth
       @role(requires: SUPERADMIN)
 
-    removeComment(id: ObjectID!): Comment @auth
+    removeComment(id: ID!): Comment @auth
 
-    removeDirectChat(chatId: ObjectID!, organizationId: ObjectID!): DirectChat!
-      @auth
+    removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat! @auth
 
-    removeEvent(id: ObjectID!): Event! @auth
+    removeEvent(id: ID!): Event! @auth
 
-    removeGroupChat(chatId: ObjectID!): GroupChat! @auth
+    removeGroupChat(chatId: ID!): GroupChat! @auth
 
     removeMember(data: UserAndOrganizationInput!): Organization! @auth
 
-    removeOrganization(id: ObjectID!): User! @auth @role(requires: SUPERADMIN)
+    removeOrganization(id: ID!): User! @auth @role(requires: SUPERADMIN)
 
     removeOrganizationImage(organizationId: String!): Organization! @auth
 
-    removePost(id: ObjectID!): Post @auth
+    removePost(id: ID!): Post @auth
 
-    removeTask(id: ObjectID!): Task @auth
+    removeTask(id: ID!): Task @auth
 
-    removeUserFromGroupChat(userId: ObjectID!, chatId: ObjectID!): GroupChat!
-      @auth
+    removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
 
     removeUserImage: User! @auth
 
@@ -135,44 +129,42 @@ export const mutations = gql`
 
     saveFcmToken(token: String): Boolean! @auth
 
-    sendMembershipRequest(organizationId: ObjectID!): MembershipRequest! @auth
+    sendMembershipRequest(organizationId: ID!): MembershipRequest! @auth
 
     sendMessageToDirectChat(
-      chatId: ObjectID!
+      chatId: ID!
       messageContent: String!
     ): DirectChatMessage! @auth
 
     sendMessageToGroupChat(
-      chatId: ObjectID!
+      chatId: ID!
       messageContent: String!
     ): GroupChatMessage! @auth
 
     signUp(data: UserInput!, file: Upload): AuthData!
 
-    unblockUser(organizationId: ObjectID!, userId: ObjectID!): User! @auth
+    unblockUser(organizationId: ID!, userId: ID!): User! @auth
 
-    unlikeComment(id: ObjectID!): Comment @auth
+    unlikeComment(id: ID!): Comment @auth
 
-    unlikePost(id: ObjectID!): Post @auth
+    unlikePost(id: ID!): Post @auth
 
-    unregisterForEventByUser(id: ObjectID!): Event! @auth
+    unregisterForEventByUser(id: ID!): Event! @auth
 
-    updateEvent(id: ObjectID!, data: UpdateEventInput): Event! @auth
+    updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
 
-    updatePost(id: ObjectID!, data: PostUpdateInput): Post! @auth
+    updatePost(id: ID!, data: PostUpdateInput): Post! @auth
 
     updateLanguage(languageCode: String!): User! @auth
 
-    updateOrganization(
-      id: ObjectID!
-      data: UpdateOrganizationInput
-    ): Organization! @auth
+    updateOrganization(id: ID!, data: UpdateOrganizationInput): Organization!
+      @auth
 
-    updatePluginInstalledOrgs(id: ObjectID!, orgId: ObjectID!): Plugin!
+    updatePluginInstalledOrgs(id: ID!, orgId: ID!): Plugin!
 
-    updatePluginStatus(id: ObjectID!, status: Boolean!): Plugin!
+    updatePluginStatus(id: ID!, status: Boolean!): Plugin!
 
-    updateTask(id: ObjectID!, data: UpdateTaskInput): Task @auth
+    updateTask(id: ID!, data: UpdateTaskInput): Task @auth
 
     updateUserProfile(data: UpdateUserInput, file: Upload): User! @auth
 

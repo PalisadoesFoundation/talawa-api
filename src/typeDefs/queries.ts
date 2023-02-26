@@ -3,27 +3,27 @@ import { gql } from "apollo-server-core";
 // Place fields alphabetically to ensure easier lookup and navigation.
 export const queries = gql`
   type Query {
-    adminPlugin(orgId: ObjectID!): [Plugin]
+    adminPlugin(orgId: ID!): [Plugin]
 
     checkAuth: User! @auth
 
     comments: [Comment]
 
-    commentsByPost(id: ObjectID!): [Comment]
+    commentsByPost(id: ID!): [Comment]
 
     directChatMessages: [DirectChatMessage]
 
     directChats: [DirectChat]
 
-    directChatsByUserID(id: ObjectID!): [DirectChat]
+    directChatsByUserID(id: ID!): [DirectChat]
 
-    directChatsMessagesByChatID(id: ObjectID!): [DirectChatMessage]
+    directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
 
-    event(id: ObjectID!): Event
+    event(id: ID!): Event
 
-    events(id: ObjectID, orderBy: EventOrderByInput): [Event]
+    events(id: ID, orderBy: EventOrderByInput): [Event]
 
-    eventsByOrganization(id: ObjectID, orderBy: EventOrderByInput): [Event]
+    eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
 
     eventsByOrganizationConnection(
       where: EventWhereInput
@@ -32,12 +32,12 @@ export const queries = gql`
       orderBy: EventOrderByInput
     ): [Event]!
 
-    getDonationById(id: ObjectID!): Donation!
+    getDonationById(id: ID!): Donation!
 
-    getDonationByOrgId(orgId: ObjectID!): [Donation]
+    getDonationByOrgId(orgId: ID!): [Donation]
 
     getDonationByOrgIdConnection(
-      orgId: ObjectID!
+      orgId: ID!
       where: DonationWhereInput
       first: Int
       skip: Int
@@ -55,16 +55,13 @@ export const queries = gql`
 
     groups: [Group]
 
-    isUserRegister(eventId: ObjectID!): EventRegistrants
+    isUserRegister(eventId: ID!): EventRegistrants
 
     me: User! @auth
 
     myLanguage: String @auth
 
-    organizations(
-      id: ObjectID
-      orderBy: OrganizationOrderByInput
-    ): [Organization]
+    organizations(id: ID, orderBy: OrganizationOrderByInput): [Organization]
 
     organizationsConnection(
       where: OrganizationWhereInput
@@ -74,40 +71,40 @@ export const queries = gql`
     ): [Organization]!
 
     organizationsMemberConnection(
-      orgId: ObjectID!
+      orgId: ID!
       where: UserWhereInput
       first: Int
       skip: Int
       orderBy: UserOrderByInput
     ): UserConnection! @auth
 
-    plugin(orgId: ObjectID!): [Plugin]
+    plugin(orgId: ID!): [Plugin]
 
-    post(id: ObjectID!): Post
+    post(id: ID!): Post
 
     posts(orderBy: PostOrderByInput): [Post]
 
-    postsByOrganization(id: ObjectID!, orderBy: PostOrderByInput): [Post]
+    postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
 
     postsByOrganizationConnection(
-      id: ObjectID!
+      id: ID!
       where: PostWhereInput
       first: Int
       skip: Int
       orderBy: PostOrderByInput
     ): PostConnection
 
-    registeredEventsByUser(id: ObjectID, orderBy: EventOrderByInput): [Event]
+    registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
 
-    registrantsByEvent(id: ObjectID!): [User]
+    registrantsByEvent(id: ID!): [User]
 
-    tasksByEvent(id: ObjectID!, orderBy: TaskOrderByInput): [Task]
+    tasksByEvent(id: ID!, orderBy: TaskOrderByInput): [Task]
 
-    tasksByUser(id: ObjectID!, orderBy: TaskOrderByInput): [Task]
+    tasksByUser(id: ID!, orderBy: TaskOrderByInput): [Task]
 
-    user(id: ObjectID!): User! @auth
+    user(id: ID!): User! @auth
 
-    userLanguage(userId: ObjectID!): String @auth
+    userLanguage(userId: ID!): String @auth
 
     users(where: UserWhereInput, orderBy: UserOrderByInput): [User] @auth
 

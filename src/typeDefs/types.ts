@@ -27,7 +27,7 @@ export const types = gql`
   }
 
   type Comment {
-    _id: ObjectID
+    _id: ID
     text: String!
     createdAt: DateTime
     creator: User!
@@ -41,7 +41,7 @@ export const types = gql`
   }
 
   type DirectChat {
-    _id: ObjectID!
+    _id: ID!
     users: [User!]!
     messages: [DirectChatMessage]
     creator: User!
@@ -49,7 +49,7 @@ export const types = gql`
   }
 
   type DirectChatMessage {
-    _id: ObjectID!
+    _id: ID!
     directChatMessageBelongsTo: DirectChat!
     sender: User!
     receiver: User!
@@ -58,9 +58,9 @@ export const types = gql`
   }
 
   type Donation {
-    _id: ObjectID!
-    userId: ObjectID!
-    orgId: ObjectID!
+    _id: ID!
+    userId: ID!
+    orgId: ID!
     payPalId: String!
     nameOfUser: String!
     nameOfOrg: String!
@@ -73,7 +73,7 @@ export const types = gql`
   }
 
   type Event {
-    _id: ObjectID!
+    _id: ID!
     title: String!
     description: String!
     startDate: Date!
@@ -91,13 +91,13 @@ export const types = gql`
     organization: Organization
     creator: User!
     registrants: [UserAttende]
-    admins(adminId: ObjectID): [User]
+    admins(adminId: ID): [User]
     tasks: [Task]
     status: Status!
   }
 
   # type EventProject {
-  #     _id: ObjectID!
+  #     _id: ID!
   #     title:String!
   #     description: String!
   #     event: Event!
@@ -110,7 +110,7 @@ export const types = gql`
   }
 
   type Group {
-    _id: ObjectID
+    _id: ID
     title: String
     description: String
     createdAt: DateTime
@@ -119,7 +119,7 @@ export const types = gql`
   }
 
   type GroupChat {
-    _id: ObjectID!
+    _id: ID!
     users: [User!]!
     messages: [GroupChatMessage]
     creator: User!
@@ -127,7 +127,7 @@ export const types = gql`
   }
 
   type GroupChatMessage {
-    _id: ObjectID!
+    _id: ID!
     groupChatMessageBelongsTo: GroupChat!
     sender: User!
     createdAt: DateTime!
@@ -145,14 +145,14 @@ export const types = gql`
   }
 
   type Language {
-    _id: ObjectID!
+    _id: ID!
     en: String!
     translation: [LanguageModel]
     createdAt: String!
   }
 
   type LanguageModel {
-    _id: ObjectID!
+    _id: ID!
     lang_code: String!
     value: String!
     verified: Boolean!
@@ -160,13 +160,13 @@ export const types = gql`
   }
 
   type MembershipRequest {
-    _id: ObjectID!
+    _id: ID!
     user: User!
     organization: Organization!
   }
 
   type Message {
-    _id: ObjectID!
+    _id: ID!
     text: String
     createdAt: DateTime
     imageUrl: URL
@@ -175,7 +175,7 @@ export const types = gql`
   }
 
   type MessageChat {
-    _id: ObjectID!
+    _id: ID!
     sender: User!
     receiver: User!
     message: String!
@@ -185,14 +185,14 @@ export const types = gql`
 
   type Organization {
     image: String
-    _id: ObjectID!
+    _id: ID!
     name: String!
     description: String!
     location: String
     isPublic: Boolean!
     creator: User!
     members: [User]
-    admins(adminId: ObjectID): [User]
+    admins(adminId: ID): [User]
     membershipRequests: [MembershipRequest]
     blockedUsers: [User]
     visibleInSearch: Boolean!
@@ -203,7 +203,7 @@ export const types = gql`
 
   type OrganizationInfoNode {
     image: String
-    _id: ObjectID!
+    _id: ID!
     name: String!
     description: String!
     isPublic: Boolean!
@@ -238,12 +238,12 @@ export const types = gql`
 
   # For Plugins
   type Plugin {
-    _id: ObjectID!
+    _id: ID!
     pluginName: String!
     pluginCreatedBy: String!
     pluginDesc: String!
     pluginInstallStatus: Boolean!
-    installedOrgs: [ObjectID!]!
+    installedOrgs: [ID!]!
   }
 
   # type Plugin {
@@ -264,7 +264,7 @@ export const types = gql`
   }
 
   type Post {
-    _id: ObjectID
+    _id: ID
     text: String!
     title: String
     createdAt: DateTime
@@ -296,7 +296,7 @@ export const types = gql`
   }
 
   type Task {
-    _id: ObjectID!
+    _id: ID!
     title: String!
     description: String
     event: Event!
@@ -314,7 +314,7 @@ export const types = gql`
 
   type User {
     tokenVersion: Int!
-    _id: ObjectID!
+    _id: ID!
     firstName: String!
     lastName: String!
     email: EmailAddress!
@@ -336,7 +336,7 @@ export const types = gql`
   }
 
   type UserAttende {
-    _id: ObjectID!
+    _id: ID!
     userId: String!
     user: User!
     status: Status!
