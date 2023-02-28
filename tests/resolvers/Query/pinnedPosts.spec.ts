@@ -10,9 +10,10 @@ let MONGOOSE_INSTANCE: typeof mongoose | null;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
-  // Create two pinned posts, and two non pinned posts for testing
+  // Create some pinned and unpinned posts for testing
   await createTestPost(true);
   await createTestPost(false);
+  await createTestPost(true);
   await createTestPost(true);
   await createTestPost(false);
 });
@@ -31,14 +32,14 @@ describe("resolvers -> Query -> pinnedPostsByOrganization", () => {
 
     // Check for correct order of posts (post created later should appear first)
     for (
-      let index = 1;
+      let index = 0;
       index < (pinnedPostsPayload?.length || 1) - 1;
       index++
     ) {
       // @ts-ignore
       const t1 = new Date(pinnedPostsPayload?.at(index).createdAt);
       // @ts-ignore
-      const t2 = new Date(pinnedPostsPayload?.at(index - 1).createdAt);
+      const t2 = new Date(pinnedPostsPayload?.at(index + 1).createdAt);
       expect(t1.getTime() >= t2.getTime()).toBeTruthy();
     }
   });
