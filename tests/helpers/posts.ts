@@ -134,7 +134,8 @@ export const createSinglePostwithComment = async (
 
 export const createTestSinglePost = async (
   userId: string,
-  organizationId: string
+  organizationId: string,
+  pinned = false
 ): Promise<testPostType> => {
   const testPost = await Post.create({
     text: `text${nanoid().toLowerCase()}`,
@@ -143,6 +144,7 @@ export const createTestSinglePost = async (
     videoUrl: `videoUrl${nanoid()}`,
     creator: userId,
     organization: organizationId,
+    pinned,
   });
   return testPost;
 };
