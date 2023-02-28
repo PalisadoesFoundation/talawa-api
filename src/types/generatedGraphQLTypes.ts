@@ -391,6 +391,7 @@ export type Mutation = {
   login: AuthData;
   logout: Scalars['Boolean'];
   otp: OtpData;
+  pinPost?: Maybe<Post>;
   recaptcha: Scalars['Boolean'];
   refreshToken: ExtendSession;
   registerForEvent: Event;
@@ -417,6 +418,7 @@ export type Mutation = {
   unblockUser: User;
   unlikeComment?: Maybe<Comment>;
   unlikePost?: Maybe<Post>;
+  unpinPost?: Maybe<Post>;
   unregisterForEventByUser: Event;
   updateEvent: Event;
   updateLanguage: User;
@@ -608,6 +610,11 @@ export type MutationOtpArgs = {
 };
 
 
+export type MutationPinPostArgs = {
+  id: Scalars['ID'];
+};
+
+
 export type MutationRecaptchaArgs = {
   data: RecaptchaVerification;
 };
@@ -735,6 +742,11 @@ export type MutationUnlikeCommentArgs = {
 
 
 export type MutationUnlikePostArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type MutationUnpinPostArgs = {
   id: Scalars['ID'];
 };
 
@@ -947,6 +959,7 @@ export type Post = {
   likeCount?: Maybe<Scalars['Int']>;
   likedBy?: Maybe<Array<Maybe<User>>>;
   organization: Organization;
+  pinned?: Maybe<Scalars['Boolean']>;
   text: Scalars['String'];
   title?: Maybe<Scalars['String']>;
   videoUrl?: Maybe<Scalars['URL']>;
@@ -1046,6 +1059,8 @@ export type Query = {
   organizations?: Maybe<Array<Maybe<Organization>>>;
   organizationsConnection: Array<Maybe<Organization>>;
   organizationsMemberConnection: UserConnection;
+  pinnedPosts?: Maybe<Array<Maybe<Post>>>;
+  pinnedPostsByOrganization?: Maybe<Array<Maybe<Post>>>;
   plugin?: Maybe<Array<Maybe<Plugin>>>;
   post?: Maybe<Post>;
   posts?: Maybe<Array<Maybe<Post>>>;
@@ -1155,6 +1170,11 @@ export type QueryOrganizationsMemberConnectionArgs = {
   orgId: Scalars['ID'];
   skip?: InputMaybe<Scalars['Int']>;
   where?: InputMaybe<UserWhereInput>;
+};
+
+
+export type QueryPinnedPostsByOrganizationArgs = {
+  id: Scalars['ID'];
 };
 
 
@@ -1954,6 +1974,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   login?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'data'>>;
   logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   otp?: Resolver<ResolversTypes['OtpData'], ParentType, ContextType, RequireFields<MutationOtpArgs, 'data'>>;
+  pinPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationPinPostArgs, 'id'>>;
   recaptcha?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRecaptchaArgs, 'data'>>;
   refreshToken?: Resolver<ResolversTypes['ExtendSession'], ParentType, ContextType, RequireFields<MutationRefreshTokenArgs, 'refreshToken'>>;
   registerForEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRegisterForEventArgs, 'id'>>;
@@ -1980,6 +2001,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   unblockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUnblockUserArgs, 'organizationId' | 'userId'>>;
   unlikeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationUnlikeCommentArgs, 'id'>>;
   unlikePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUnlikePostArgs, 'id'>>;
+  unpinPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUnpinPostArgs, 'id'>>;
   unregisterForEventByUser?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUnregisterForEventByUserArgs, 'id'>>;
   updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'id'>>;
   updateLanguage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateLanguageArgs, 'languageCode'>>;
@@ -2071,6 +2093,7 @@ export type PostResolvers<ContextType = any, ParentType extends ResolversParentT
   likeCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   likedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
+  pinned?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   videoUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
@@ -2112,6 +2135,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   organizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType, Partial<QueryOrganizationsArgs>>;
   organizationsConnection?: Resolver<Array<Maybe<ResolversTypes['Organization']>>, ParentType, ContextType, Partial<QueryOrganizationsConnectionArgs>>;
   organizationsMemberConnection?: Resolver<ResolversTypes['UserConnection'], ParentType, ContextType, RequireFields<QueryOrganizationsMemberConnectionArgs, 'orgId'>>;
+  pinnedPosts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType>;
+  pinnedPostsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType, RequireFields<QueryPinnedPostsByOrganizationArgs, 'id'>>;
   plugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryPluginArgs, 'orgId'>>;
   post?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryPostArgs, 'id'>>;
   posts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType, Partial<QueryPostsArgs>>;

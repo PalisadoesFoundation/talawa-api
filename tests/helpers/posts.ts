@@ -21,9 +21,9 @@ export type testCommentType =
   | (Interface_Comment & Document<any, any, Interface_Comment>)
   | null;
 
-export const createTestPost = async (): Promise<
-  [testUserType, testOrganizationType, testPostType]
-> => {
+export const createTestPost = async (
+  pinned: boolean = false
+): Promise<[testUserType, testOrganizationType, testPostType]> => {
   const resultsArray = await createTestUserAndOrganization();
   const testUser = resultsArray[0];
   const testOrganization = resultsArray[1];
@@ -32,6 +32,7 @@ export const createTestPost = async (): Promise<
     text: `text${nanoid().toLowerCase()}`,
     creator: testUser!._id,
     organization: testOrganization!._id,
+    pinned,
   });
 
   await Organization.updateOne(
