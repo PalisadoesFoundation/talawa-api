@@ -22,7 +22,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Query -> pinnedPostsByOrganization", () => {
-  it(`returns list of 2 posts sorted in the decreasing order of createdAt`, async () => {
+  it(`returns list of pinned posts sorted in the decreasing order of createdAt`, async () => {
     const pinnedPostsPayload = await pinnedPostsResolver?.({}, {}, {});
 
     // Check that each post must have pinned = true
@@ -36,10 +36,10 @@ describe("resolvers -> Query -> pinnedPostsByOrganization", () => {
       index++
     ) {
       // @ts-ignore
-      expect(pinnedPostsPayload?.at(index).createdAt).toBeGreaterThanOrEqual(
-        // @ts-ignore
-        pinnedPostsPayload?.at(index - 1).createdAt
-      );
+      const t1 = new Date(pinnedPostsPayload?.at(index).createdAt);
+      // @ts-ignore
+      const t2 = new Date(pinnedPostsPayload?.at(index - 1).createdAt);
+      expect(t1.getTime() >= t2.getTime()).toBeTruthy();
     }
   });
 });
