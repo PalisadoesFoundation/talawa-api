@@ -199,7 +199,7 @@ export const types = gql`
     apiUrl: URL!
     createdAt: DateTime
     tags: [String!]!
-    pinnedPosts: [ID]!
+    pinnedPosts: [Post]!
   }
 
   type OrganizationInfoNode {
