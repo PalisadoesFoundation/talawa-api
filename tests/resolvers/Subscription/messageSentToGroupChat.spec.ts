@@ -26,8 +26,6 @@ describe("src -> resolvers -> Subscription -> messageSentToGroupChat", () => {
         "../../../src/resolvers/Subscription/messageSentToGroupChat"
       );
 
-    console.log("Before :", messageSentToGroupChatPayload);
-    console.log("gROUPChat", testGroupChat);
     const _args = {};
     const _parent = {};
     const context = {
