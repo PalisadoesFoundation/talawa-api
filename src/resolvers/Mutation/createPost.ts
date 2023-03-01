@@ -108,7 +108,7 @@ export const createPost: MutationResolvers["createPost"] = async (
           .includes(args.data.organizationId)
       )
     ) {
-      throw new errors.NotFoundError(
+      throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.message),
         USER_NOT_AUTHORIZED_TO_PIN.code,
         USER_NOT_AUTHORIZED_TO_PIN.param

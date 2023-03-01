@@ -12,6 +12,7 @@ import {
 } from "../../src/models";
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
+import { User } from "../../src/models";
 
 export type testPostType =
   | (Interface_Post & Document<any, any, Interface_Post>)
@@ -25,7 +26,7 @@ export const createTestPost = async (
   pinned: boolean = false
 ): Promise<[testUserType, testOrganizationType, testPostType]> => {
   const resultsArray = await createTestUserAndOrganization();
-  const testUser = resultsArray[0];
+  let testUser = resultsArray[0];
   const testOrganization = resultsArray[1];
 
   const testPost = await Post.create({
@@ -45,6 +46,10 @@ export const createTestPost = async (
       },
     }
   );
+
+  testUser = await User.findOne({
+    _id: testUser!._id,
+  }).lean();
 
   return [testUser, testOrganization, testPost];
 };

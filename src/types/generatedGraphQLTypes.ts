@@ -414,6 +414,7 @@ export type Mutation = {
   sendMessageToDirectChat: DirectChatMessage;
   sendMessageToGroupChat: GroupChatMessage;
   signUp: AuthData;
+  togglePinnedPost: Post;
   unblockUser: User;
   unlikeComment?: Maybe<Comment>;
   unlikePost?: Maybe<Post>;
@@ -723,6 +724,11 @@ export type MutationSignUpArgs = {
 };
 
 
+export type MutationTogglePinnedPostArgs = {
+  id: Scalars['ID'];
+};
+
+
 export type MutationUnblockUserArgs = {
   organizationId: Scalars['ID'];
   userId: Scalars['ID'];
@@ -814,7 +820,7 @@ export type Organization = {
   members?: Maybe<Array<Maybe<User>>>;
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
   name: Scalars['String'];
-  pinnedPosts: Array<Maybe<Scalars['ID']>>;
+  pinnedPosts: Array<Maybe<Post>>;
   tags: Array<Scalars['String']>;
   visibleInSearch: Scalars['Boolean'];
 };
@@ -1979,6 +1985,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   sendMessageToDirectChat?: Resolver<ResolversTypes['DirectChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToDirectChatArgs, 'chatId' | 'messageContent'>>;
   sendMessageToGroupChat?: Resolver<ResolversTypes['GroupChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToGroupChatArgs, 'chatId' | 'messageContent'>>;
   signUp?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'data'>>;
+  togglePinnedPost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationTogglePinnedPostArgs, 'id'>>;
   unblockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUnblockUserArgs, 'organizationId' | 'userId'>>;
   unlikeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationUnlikeCommentArgs, 'id'>>;
   unlikePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUnlikePostArgs, 'id'>>;
@@ -2008,7 +2015,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   members?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  pinnedPosts?: Resolver<Array<Maybe<ResolversTypes['ID']>>, ParentType, ContextType>;
+  pinnedPosts?: Resolver<Array<Maybe<ResolversTypes['Post']>>, ParentType, ContextType>;
   tags?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
