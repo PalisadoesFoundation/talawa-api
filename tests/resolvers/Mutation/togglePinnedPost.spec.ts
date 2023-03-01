@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { Types } from "mongoose";
-import { Organization } from "../../../src/models";
+import { Organization, User } from "../../../src/models";
 import { MutationTogglePinnedPostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
@@ -30,6 +30,11 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   [testUser, , testPost] = await createTestPost();
   randomUser = await createTestUser();
+
+  // Done so as to fetch the latest changes in the adminFor field of the user
+  testUser = await User.findOne({
+    _id: testUser!._id,
+  }).lean();
 });
 
 afterAll(async () => {
