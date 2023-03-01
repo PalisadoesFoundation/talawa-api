@@ -18,6 +18,7 @@ export interface Interface_Organization {
   admins: Array<PopulatedDoc<Interface_User & Document>>;
   groupChats: Array<PopulatedDoc<Interface_Message & Document>>;
   posts: Array<PopulatedDoc<Interface_Post & Document>>;
+  pinnedPosts: Array<PopulatedDoc<Interface_Post & Document>>;
   membershipRequests: Array<
     PopulatedDoc<Interface_MembershipRequest & Document>
   >;
@@ -83,6 +84,13 @@ const organizationSchema = new Schema({
     {
       type: Schema.Types.ObjectId,
       ref: "Post",
+    },
+  ],
+  pinnedPosts: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Post",
+      default: [],
     },
   ],
   membershipRequests: [

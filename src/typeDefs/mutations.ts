@@ -89,8 +89,6 @@ export const mutations = gql`
 
     otp(data: OTPInput!): OtpData!
 
-    pinPost(id: ID!): Post @auth
-
     recaptcha(data: RecaptchaVerification!): Boolean!
 
     refreshToken(refreshToken: String!): ExtendSession!
@@ -150,8 +148,6 @@ export const mutations = gql`
     unlikeComment(id: ID!): Comment @auth
 
     unlikePost(id: ID!): Post @auth
-
-    unpinPost(id: ID!): Post @auth
 
     unregisterForEventByUser(id: ID!): Event! @auth
 

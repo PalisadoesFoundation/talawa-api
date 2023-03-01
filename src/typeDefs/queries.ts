@@ -80,10 +80,6 @@ export const queries = gql`
 
     plugin(orgId: ID!): [Plugin]
 
-    pinnedPosts: [Post]
-
-    pinnedPostsByOrganization(id: ID!): [Post]
-
     post(id: ID!): Post
 
     posts(orderBy: PostOrderByInput): [Post]

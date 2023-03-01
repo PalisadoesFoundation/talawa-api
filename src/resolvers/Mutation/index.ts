@@ -31,7 +31,6 @@ import { likePost } from "./likePost";
 import { login } from "./login";
 import { logout } from "./logout";
 import { otp } from "./otp";
-import { pinPost } from "./pinPost";
 import { recaptcha } from "./recaptcha";
 import { refreshToken } from "./refreshToken";
 import { registerForEvent } from "./registerForEvent";
@@ -58,7 +57,6 @@ import { signUp } from "./signUp";
 import { unblockUser } from "./unblockUser";
 import { unlikeComment } from "./unlikeComment";
 import { unlikePost } from "./unlikePost";
-import { unpinPost } from "./unpinPost";
 import { unregisterForEventByUser } from "./unregisterForEventByUser";
 import { updateEvent } from "./updateEvent";
 import { updateLanguage } from "./updateLanguage";
@@ -103,7 +101,6 @@ export const Mutation: MutationResolvers = {
   login,
   logout,
   otp,
-  pinPost,
   recaptcha,
   refreshToken,
   registerForEvent,
@@ -130,7 +127,6 @@ export const Mutation: MutationResolvers = {
   unblockUser,
   unlikeComment,
   unlikePost,
-  unpinPost,
   unregisterForEventByUser,
   updateEvent,
   updateLanguage,

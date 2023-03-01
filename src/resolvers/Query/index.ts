@@ -25,8 +25,6 @@ import { myLanguage } from "./myLanguage";
 import { organizations } from "./organizations";
 import { organizationsConnection } from "./organizationsConnection";
 import { organizationsMemberConnection } from "./organizationsMemberConnection";
-import { pinnedPosts } from "./pinnedPosts";
-import { pinnedPostsByOrganization } from "./pinnedPostsByOrganization";
 import { post } from "./post";
 import { posts } from "./posts";
 import { postsByOrganization } from "./postsByOrganization";
@@ -67,8 +65,6 @@ export const Query: QueryResolvers = {
   organizations,
   organizationsConnection,
   organizationsMemberConnection,
-  pinnedPosts,
-  pinnedPostsByOrganization,
   post,
   posts,
   postsByOrganization,

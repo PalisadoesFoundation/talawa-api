@@ -199,6 +199,7 @@ export const types = gql`
     apiUrl: URL!
     createdAt: DateTime
     tags: [String!]!
+    pinnedPosts: [ID]!
   }
 
   type OrganizationInfoNode {
@@ -276,7 +277,6 @@ export const types = gql`
     comments: [Comment]
     likeCount: Int
     commentCount: Int
-    pinned: Boolean
   }
 
   """
