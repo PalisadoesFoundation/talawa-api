@@ -11,6 +11,7 @@ import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
+  USER_NOT_AUTHORIZED_TO_PIN,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 
@@ -92,6 +93,38 @@ export const createPost: MutationResolvers["createPost"] = async (
     organization: args.data.organizationId,
     imageUrl: args.file ? uploadImageObj?.newImagePath : "",
   });
+
+  // Check if the pinned property is set
+  if (args.data.pinned) {
+    // Check if the user has privileges to pin the post
+    const currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+    if (
+      !(
+        currentUser!.userType === "SUPERADMIN" ||
+        currentUser!.adminFor
+          .map((id) => id.toString())
+          .includes(args.data.organizationId)
+      )
+    ) {
+      throw new errors.NotFoundError(
+        requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.message),
+        USER_NOT_AUTHORIZED_TO_PIN.code,
+        USER_NOT_AUTHORIZED_TO_PIN.param
+      );
+    }
+
+    // Add the post to pinnedPosts of the organization
+    await Organization.update(
+      { _id: args.data.organizationId },
+      {
+        $push: {
+          pinnedPosts: createdPost._id,
+        },
+      }
+    );
+  }
 
   // Returns createdPost.
   return createdPost.toObject();
