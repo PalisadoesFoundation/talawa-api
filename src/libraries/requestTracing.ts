@@ -14,15 +14,15 @@ using the characters in alphabets variable
 */
 const nanoid = customAlphabet(alphabets, 10);
 
-const requestTracingNamespace = cls.createNamespace("request-tracing");
+export const requestTracingNamespace = cls.createNamespace("request-tracing");
 
 clsBluebird(requestTracingNamespace);
 
-export const tracingIdHeaderName = "X-Tracing-Id";
+const tracingIdHeaderName = "X-Tracing-Id";
 
 const tracingIdContextKeyName = "tracingId";
 
-const setTracingId = (tracingId: string) => {
+export const setTracingId = (tracingId: string) => {
   return requestTracingNamespace.set(tracingIdContextKeyName, tracingId);
 };
 
