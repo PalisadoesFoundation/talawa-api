@@ -7,17 +7,15 @@ import {
   describe,
   expect,
   it,
-  vi
+  vi,
 } from "vitest";
-import {
-  BASE_URL
-} from "../../../src/constants";
+import { BASE_URL } from "../../../src/constants";
 import { Organization } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 import {
   createTestUserAndOrganization,
   testOrganizationType,
-  testUserType
+  testUserType,
 } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
