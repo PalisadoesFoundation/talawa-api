@@ -1,4 +1,5 @@
 import { Schema, Types, model, PopulatedDoc, Document, models } from "mongoose";
+import { MONGOOSE_EVENT_ERRORS } from "../constants";
 import { Interface_Organization } from "./Organization";
 import { Interface_Task } from "./Task";
 import { Interface_User } from "./User";
@@ -61,10 +62,16 @@ const eventSchema = new Schema({
   title: {
     type: String,
     required: true,
+    trim:true,
+    maxLength: [256, MONGOOSE_EVENT_ERRORS.TITLE_ERRORS.lengthError],
+    match: [/^[a-zA-Z0-9!@#$%^&*()_\-+. ,]+$/ , MONGOOSE_EVENT_ERRORS.TITLE_ERRORS.regexError ] 
   },
   description: {
     type: String,
     required: true,
+    trim:true,
+    maxLength: [500, MONGOOSE_EVENT_ERRORS.DESCRIPTION_ERRORS.lengthError],
+    match: [/^[a-zA-Z0-9!@#$%^&*()_\-+. ,]+$/ , MONGOOSE_EVENT_ERRORS.DESCRIPTION_ERRORS.regexError ]
   },
   attendees: {
     type: String,
@@ -72,6 +79,9 @@ const eventSchema = new Schema({
   },
   location: {
     type: String,
+    trim:true,
+    maxLength: [50, MONGOOSE_EVENT_ERRORS.LOCATION_ERRORS.lengthError],
+    match: [/^[a-zA-Z0-9!@#$%^&*()_\-+. ,]+$/ , MONGOOSE_EVENT_ERRORS.LOCATION_ERRORS.regexError]
   },
   latitude: {
     type: Number,
@@ -93,6 +103,7 @@ const eventSchema = new Schema({
   startDate: {
     type: String,
     required: true,
+    min: [Date.now() , MONGOOSE_EVENT_ERRORS.DATE_ERROR.startDateError]
   },
   endDate: {
     type: String,
@@ -100,6 +111,14 @@ const eventSchema = new Schema({
       // @ts-ignore
       return !this.allDay;
     },
+    validate:{
+      validator: function (value:any): (value:any)=>boolean {
+        // @ts-ignore
+        return value >= this.startDate
+      } ,
+      message: MONGOOSE_EVENT_ERRORS.DATE_ERROR.endDateError
+    }
+
   },
   startTime: {
     type: String,

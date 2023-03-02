@@ -228,3 +228,48 @@ export const iOSstorageBucket = process.env.iOSstorageBucket;
 export const iosClientId = process.env.iosClientId;
 
 export const iosBundleId = process.env.iosBundleId;
+
+export const MONGOOSE_EVENT_ERRORS = {
+  TITLE_ERRORS : {
+    lengthError:"Title of the event cannot exceed 256 charcters",
+    regexError: "Title of the event does not match the pattern"
+  } ,
+  DESCRIPTION_ERRORS : {
+    lengthError:"Description of the event cannot exceed 256 charcters",
+    regexError: "Description of the event does not match the pattern"
+  } ,
+  LOCATION_ERRORS : {
+    lengthError:"Location of the event cannot exceed 256 charcters",
+    regexError: "Location of the event does not match the pattern"
+  } ,
+  DATE_ERROR: {
+    startDateError: "Start date has already passsed",
+    endDateError: "End date should come after the start date"
+  }
+
+}
+
+
+export const MONGOOSE_ORGANIZATION_ERRORS = {
+  NAME_ERRORS : {
+    lengthError:"Name of the Organization cannot exceed 256 charcters",
+    regexError: "Name of the Organization does not match the pattern"
+  } ,
+  DESCRIPTION_ERRORS : {
+    lengthError:"Description of the Organization cannot exceed 256 charcters",
+    regexError: "Description of the Organization does not match the pattern"
+  } ,
+  LOCATION_ERRORS : {
+    lengthError:"Location of the org cannot exceed 256 charcters",
+    regexError: "Location of the org does not match the pattern"
+  } ,
+  DATE_ERROR: {
+    startDateError: "Start date has already passsed",
+    endDateError: "End date should come after the start date"
+  } ,
+  TAGS_ERRORS : {
+    lengthError:"Tag of the org cannot exceed 256 charcters",
+    regexError: "Tag of the org does not match the pattern"
+  } ,
+
+}
