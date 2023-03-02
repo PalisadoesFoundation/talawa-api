@@ -16,12 +16,13 @@ export const togglePinnedPost: MutationResolvers["togglePinnedPost"] = async (
   args,
   context
 ) => {
-  // Check if the user requesting the action exits
-  const currentUserExists = await User.exists({
+  // Get the current user
+  const currentUser = await User.findOne({
     _id: context.userId,
-  });
+  }).lean();
 
-  if (currentUserExists === false) {
+  // Check if the user requesting the action exits
+  if (!currentUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_MESSAGE),
       USER_NOT_FOUND_CODE,
@@ -43,17 +44,14 @@ export const togglePinnedPost: MutationResolvers["togglePinnedPost"] = async (
   }
 
   // Check if the current user is authorized to perform the operation
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  }).lean();
+  const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
+    (organizationId) =>
+      organizationId.toString() === post.organization.toString()
+  );
 
   if (
-    !(
-      currentUser!.userType === "SUPERADMIN" ||
-      currentUser!.adminFor
-        .map((id) => id.toString())
-        .includes(post.organization.toString())
-    )
+    !(currentUser!.userType === "SUPERADMIN") &&
+    !currentUserIsOrganizationAdmin
   ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.message),
@@ -68,11 +66,11 @@ export const togglePinnedPost: MutationResolvers["togglePinnedPost"] = async (
   }).lean();
 
   const currentPostIsPinned = organization!.pinnedPosts.some(
-    (p) => p.toString() === args.id.toString()
+    (postID) => postID.toString() === args.id.toString()
   );
 
   if (currentPostIsPinned) {
-    await Organization.findOneAndUpdate(
+    await Organization.updateOne(
       {
         _id: post.organization,
       },
@@ -84,9 +82,9 @@ export const togglePinnedPost: MutationResolvers["togglePinnedPost"] = async (
       {
         new: true,
       }
-    ).lean();
+    );
   } else {
-    await Organization.findOneAndUpdate(
+    await Organization.updateOne(
       {
         _id: post.organization,
       },
@@ -98,7 +96,7 @@ export const togglePinnedPost: MutationResolvers["togglePinnedPost"] = async (
       {
         new: true,
       }
-    ).lean();
+    );
   }
 
   return post;

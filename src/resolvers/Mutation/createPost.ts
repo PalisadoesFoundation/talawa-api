@@ -20,12 +20,13 @@ export const createPost: MutationResolvers["createPost"] = async (
   args,
   context
 ) => {
-  const currentUserExists = await User.exists({
+  // Get the current user
+  const currentUser = await User.findOne({
     _id: context.userId,
-  });
+  }).lean();
 
-  // Checks whether currentUser with _id == context.userId exists.
-  if (currentUserExists === false) {
+  // Checks whether currentUser exists.
+  if (!currentUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_MESSAGE),
       USER_NOT_FOUND_CODE,
@@ -97,16 +98,13 @@ export const createPost: MutationResolvers["createPost"] = async (
   // Check if the pinned property is set
   if (args.data.pinned) {
     // Check if the user has privileges to pin the post
-    const currentUser = await User.findOne({
-      _id: context.userId,
-    }).lean();
+    const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
+      (organizationId) => organizationId.toString() === args.data.organizationId
+    );
+
     if (
-      !(
-        currentUser!.userType === "SUPERADMIN" ||
-        currentUser!.adminFor
-          .map((id) => id.toString())
-          .includes(args.data.organizationId)
-      )
+      !(currentUser!.userType === "SUPERADMIN") &&
+      !currentUserIsOrganizationAdmin
     ) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.message),
