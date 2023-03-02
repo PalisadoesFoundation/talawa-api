@@ -9,7 +9,7 @@ import {
 } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Post, Organization, Interface_Post } from "../../models";
+import { User, Post, Organization } from "../../models";
 
 export const togglePinnedPost: MutationResolvers["togglePinnedPost"] = async (
   _parent,
@@ -69,7 +69,6 @@ export const togglePinnedPost: MutationResolvers["togglePinnedPost"] = async (
     (postID) => postID.toString() === args.id.toString()
   );
 
-  let updatedPost: Interface_Post | null = null;
   if (currentPostIsPinned) {
     await Organization.updateOne(
       {
@@ -84,7 +83,7 @@ export const togglePinnedPost: MutationResolvers["togglePinnedPost"] = async (
         new: true,
       }
     );
-    updatedPost = await Post.findOneAndUpdate(
+    return await Post.findOneAndUpdate(
       {
         _id: args.id,
       },
@@ -108,7 +107,7 @@ export const togglePinnedPost: MutationResolvers["togglePinnedPost"] = async (
         new: true,
       }
     );
-    updatedPost = await Post.findOneAndUpdate(
+    return await Post.findOneAndUpdate(
       {
         _id: args.id,
       },
@@ -119,6 +118,4 @@ export const togglePinnedPost: MutationResolvers["togglePinnedPost"] = async (
       }
     ).lean();
   }
-
-  return updatedPost!;
 };

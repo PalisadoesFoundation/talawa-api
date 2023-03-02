@@ -87,15 +87,6 @@ export const createPost: MutationResolvers["createPost"] = async (
     );
   }
 
-  // Creates new post.
-  const createdPost = await Post.create({
-    ...args.data,
-    creator: context.userId,
-    organization: args.data.organizationId,
-    imageUrl: args.file ? uploadImageObj?.newImagePath : "",
-  });
-
-  // Check if the pinned property is set
   if (args.data.pinned) {
     // Check if the user has privileges to pin the post
     const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
@@ -112,25 +103,23 @@ export const createPost: MutationResolvers["createPost"] = async (
         USER_NOT_AUTHORIZED_TO_PIN.param
       );
     }
+  }
 
+  // Creates new post
+  const createdPost = await Post.create({
+    ...args.data,
+    creator: context.userId,
+    organization: args.data.organizationId,
+    imageUrl: args.file ? uploadImageObj?.newImagePath : "",
+  });
+
+  if (args.data.pinned) {
     // Add the post to pinnedPosts of the organization
     await Organization.updateOne(
       { _id: args.data.organizationId },
       {
         $push: {
           pinnedPosts: createdPost._id,
-        },
-      }
-    );
-
-    // Change the pinned status of the post
-    await Post.updateOne(
-      {
-        _id: createdPost._id,
-      },
-      {
-        $set: {
-          pinned: true,
         },
       }
     );
