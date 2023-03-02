@@ -114,11 +114,23 @@ export const createPost: MutationResolvers["createPost"] = async (
     }
 
     // Add the post to pinnedPosts of the organization
-    await Organization.update(
+    await Organization.updateOne(
       { _id: args.data.organizationId },
       {
         $push: {
           pinnedPosts: createdPost._id,
+        },
+      }
+    );
+
+    // Change the pinned status of the post
+    await Post.updateOne(
+      {
+        _id: createdPost._id,
+      },
+      {
+        $set: {
+          pinned: true,
         },
       }
     );

@@ -9,7 +9,7 @@ import {
 } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Post, Organization } from "../../models";
+import { User, Post, Organization, Interface_Post } from "../../models";
 
 export const togglePinnedPost: MutationResolvers["togglePinnedPost"] = async (
   _parent,
@@ -46,7 +46,7 @@ export const togglePinnedPost: MutationResolvers["togglePinnedPost"] = async (
   // Check if the current user is authorized to perform the operation
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
     (organizationId) =>
-      organizationId.toString() === post.organization.toString()
+      organizationId.toString() === post!.organization.toString()
   );
 
   if (
@@ -69,6 +69,7 @@ export const togglePinnedPost: MutationResolvers["togglePinnedPost"] = async (
     (postID) => postID.toString() === args.id.toString()
   );
 
+  let updatedPost: Interface_Post | null = null;
   if (currentPostIsPinned) {
     await Organization.updateOne(
       {
@@ -83,6 +84,16 @@ export const togglePinnedPost: MutationResolvers["togglePinnedPost"] = async (
         new: true,
       }
     );
+    updatedPost = await Post.findOneAndUpdate(
+      {
+        _id: args.id,
+      },
+      {
+        $set: {
+          pinned: false,
+        },
+      }
+    ).lean();
   } else {
     await Organization.updateOne(
       {
@@ -97,7 +108,17 @@ export const togglePinnedPost: MutationResolvers["togglePinnedPost"] = async (
         new: true,
       }
     );
+    updatedPost = await Post.findOneAndUpdate(
+      {
+        _id: args.id,
+      },
+      {
+        $set: {
+          pinned: true,
+        },
+      }
+    ).lean();
   }
 
-  return post;
+  return updatedPost!;
 };

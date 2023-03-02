@@ -26,6 +26,7 @@ export interface Interface_Post {
   comments: Array<PopulatedDoc<Interface_Comment & Document>>;
   likeCount: number;
   commentCount: number;
+  pinned: boolean;
 }
 
 const postSchema = new Schema({
@@ -83,6 +84,10 @@ const postSchema = new Schema({
   commentCount: {
     type: Number,
     default: 0,
+  },
+  pinned: {
+    type: Boolean,
+    default: false,
   },
 });
 
