@@ -87,6 +87,7 @@ const postSchema = new Schema({
 });
 
 postSchema.plugin(mongoosePaginate);
+postSchema.index({ organization: 1 }, { unique: false });
 
 const PostModel = () =>
   model<Interface_Post, PaginateModel<Interface_Post>>("Post", postSchema);

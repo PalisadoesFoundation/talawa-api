@@ -820,7 +820,7 @@ export type Organization = {
   members?: Maybe<Array<Maybe<User>>>;
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
   name: Scalars['String'];
-  pinnedPosts: Array<Maybe<Post>>;
+  pinnedPosts?: Maybe<Array<Maybe<Post>>>;
   tags: Array<Scalars['String']>;
   visibleInSearch: Scalars['Boolean'];
 };
@@ -2015,7 +2015,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   members?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  pinnedPosts?: Resolver<Array<Maybe<ResolversTypes['Post']>>, ParentType, ContextType>;
+  pinnedPosts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType>;
   tags?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
