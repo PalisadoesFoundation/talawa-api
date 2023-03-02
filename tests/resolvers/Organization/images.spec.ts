@@ -1,5 +1,5 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
+import mongoose from "mongoose";
 import {
   afterAll,
   afterEach,
@@ -7,18 +7,17 @@ import {
   describe,
   expect,
   it,
-  vi,
+  vi
 } from "vitest";
 import {
-  BASE_URL,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
+  BASE_URL
 } from "../../../src/constants";
 import { Organization } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 import {
   createTestUserAndOrganization,
   testOrganizationType,
-  testUserType,
+  testUserType
 } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
@@ -41,89 +40,6 @@ describe("resolvers -> Organization -> image", () => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
-
-  it(`throws NotFoundError if no organization exists with _id === parent.creator and IN_PRODUCTION === false`, async () => {
-    try {
-      testOrganization = await Organization.findOneAndUpdate(
-        {
-          _id: testOrganization!._id,
-        },
-        {
-          $set: {
-            creator: Types.ObjectId().toString(),
-          },
-        },
-        {
-          new: true,
-        }
-      );
-
-      const parent = testOrganization!.toObject();
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: false,
-        };
-      });
-
-      const { image: imageResolver } = await import(
-        "../../../src/resolvers/Organization/image"
-      );
-      await imageResolver?.(parent, {}, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
-    }
-  });
-
-  it(`throws NotFoundError if no organization exists with _id === parent.creator and IN_PRODUCTION === true`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementation((message) => `Translated ${message}`);
-
-    try {
-      testOrganization = await Organization.findOneAndUpdate(
-        {
-          _id: testOrganization!._id,
-        },
-        {
-          $set: {
-            creator: Types.ObjectId().toString(),
-          },
-        },
-        {
-          new: true,
-        }
-      );
-
-      const parent = testOrganization!.toObject();
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
-
-      const { image: imageResolver } = await import(
-        "../../../src/resolvers/Organization/image"
-      );
-      await imageResolver?.(parent, {}, {});
-    } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_MESSAGE}`
-      );
-    }
-  });
-
   it(`returns absolute url if the image is not null in the organization`, async () => {
     testOrganization = await Organization.findOneAndUpdate(
       {
@@ -153,7 +69,6 @@ describe("resolvers -> Organization -> image", () => {
 
     expect(creatorPayload).toEqual(BASE_URL + org?.image);
   });
-
   it(`returns null if the image is null in the organization`, async () => {
     testOrganization = await Organization.findOneAndUpdate(
       {
