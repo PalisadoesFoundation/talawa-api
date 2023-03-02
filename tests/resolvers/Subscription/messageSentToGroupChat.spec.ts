@@ -30,7 +30,7 @@ describe("src -> resolvers -> Subscription -> messageSentToGroupChat", () => {
     const _parent = {};
     const context = {
       pubsub: {
-        asyncInterator: (_action: "MESSAGE_SENT_TO_GROUP_CHAT") => {
+        asyncIterator: (_action: "MESSAGE_SENT_TO_GROUP_CHAT") => {
           return;
         },
       },
@@ -50,8 +50,8 @@ describe("src -> resolvers -> Subscription -> messageSentToGroupChat", () => {
     // @ts-ignore
     messageSentToGroupChatPayload.payload = payload;
     // @ts-ignore
-    const x = messageSentToGroupChatPayload?.subscribe;
-    expect(x()).not.toBe(null);
+    const x = messageSentToGroupChatPayload?.subscribe(_parent, _args, context);
+    expect(x).not.toBe(null);
     expect(await filterFunction(payload, context)).toBe(true);
   });
 });

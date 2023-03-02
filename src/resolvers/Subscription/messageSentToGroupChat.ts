@@ -26,7 +26,8 @@ export const messageSentToGroupChat: SubscriptionResolvers["messageSentToGroupCh
     // @ts-ignore
     subscribe: withFilter(
       (_parent, _args, context) =>
-        context?.pubsub.asyncIterator([MESSAGE_SENT_TO_GROUP_CHAT]),
+        context.pubsub.asyncIterator([MESSAGE_SENT_TO_GROUP_CHAT]),
+
       async (payload, _variables, context) => filterFunction(payload, context)
     ),
   };
