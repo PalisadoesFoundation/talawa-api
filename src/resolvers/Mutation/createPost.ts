@@ -90,7 +90,7 @@ export const createPost: MutationResolvers["createPost"] = async (
     ...args.data,
     creator: context.userId,
     organization: args.data.organizationId,
-    imageUrl: args.file ? uploadImageObj?.newImagePath : "",
+    imageUrl: args.file ? uploadImageObj?.newImagePath : null,
   });
 
   // Returns createdPost.
