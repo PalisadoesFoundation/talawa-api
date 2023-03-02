@@ -91,25 +91,25 @@ const eventSchema = new Schema({
     required: true,
   },
   startDate: {
-    type: String,
+    type: Date,
     required: true,
   },
   endDate: {
-    type: String,
+    type: Date,
     required: function (): () => boolean {
       // @ts-ignore
       return !this.allDay;
     },
   },
   startTime: {
-    type: String,
+    type: Date,
     required: function (): () => boolean {
       // @ts-ignore
       return !this.allDay;
     },
   },
   endTime: {
-    type: String,
+    type: Date,
     required: function (): () => boolean {
       // @ts-ignore
       return !this.allDay;
