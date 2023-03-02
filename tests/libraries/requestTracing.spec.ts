@@ -6,6 +6,7 @@ import {
   getTracingId,
   trace,
   middleware,
+  tracingIdHeaderName,
 } from "../../src/libraries/requestTracing";
 import { NextFunction, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
@@ -61,6 +62,7 @@ describe("middleware -> requestContext", () => {
       mockResponse as Response,
       nextFunction as NextFunction
     );
+    expect(tracingIdHeaderName).toBe("X-Tracing-Id");
     expect(nextFunction).toBeCalledTimes(1);
   });
 

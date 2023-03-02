@@ -18,7 +18,7 @@ export const requestTracingNamespace = cls.createNamespace("request-tracing");
 
 clsBluebird(requestTracingNamespace);
 
-const tracingIdHeaderName = "X-Tracing-Id";
+export const tracingIdHeaderName = "X-Tracing-Id";
 
 const tracingIdContextKeyName = "tracingId";
 
