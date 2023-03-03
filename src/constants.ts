@@ -269,3 +269,14 @@ export const MONGOOSE_ORGANIZATION_ERRORS = {
     regexError: "Tag of the org does not match the pattern",
   },
 };
+
+export const MONGOOSE_POST_ERRORS = {
+  TITLE_ERRORS: {
+    lengthError: "Title of the post cannot exceed 256 charcters",
+    regexError: "Title of the post does not match the pattern",
+  },
+  TEXT_ERRORS: {
+    lengthError: "Text of the Post cannot exceed 256 charcters",
+    regexError: "Text of the Post does not match the pattern",
+  },
+};

@@ -8,6 +8,7 @@ import {
   models,
 } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
+import { MONGOOSE_POST_ERRORS } from "../constants";
 import { Interface_Comment } from "./Comment";
 import { Interface_Organization } from "./Organization";
 import { Interface_User } from "./User";
@@ -32,9 +33,19 @@ const postSchema = new Schema({
   text: {
     type: String,
     required: true,
+    maxLength: [500, MONGOOSE_POST_ERRORS.TEXT_ERRORS.lengthError],
+    match: [
+      /^[a-zA-Z0-9!@#$%^&*()_\-+. ,]+$/,
+      MONGOOSE_POST_ERRORS.TEXT_ERRORS.regexError,
+    ],
   },
   title: {
     type: String,
+    maxLength: [256, MONGOOSE_POST_ERRORS.TITLE_ERRORS.lengthError],
+    match: [
+      /^[a-zA-Z0-9!@#$%^&*()_\-+. ,]+$/,
+      MONGOOSE_POST_ERRORS.TITLE_ERRORS.regexError,
+    ],
   },
   status: {
     type: String,

@@ -8,6 +8,7 @@ import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   REGEX_VALIDATION_ERROR,
   LENGTH_VALIDATION_ERROR,
+  MONGOOSE_POST_ERRORS,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -23,10 +24,12 @@ import {
   testOrganizationType,
   testUserType,
 } from "../../helpers/userAndOrg";
+import { Post } from "../../../src/models";
 
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
+const DB_POST_VALIDATION_ERROR = "Post validation failed";
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -366,6 +369,84 @@ describe("resolvers -> Mutation -> createPost", () => {
     } catch (error: any) {
       expect(error.message).toEqual(
         `${LENGTH_VALIDATION_ERROR.message} 500 characters in information`
+      );
+    }
+  });
+});
+
+describe("MONGODB validation errors for create Post", () => {
+  it("should throw title invalid length error when title.length() > 256", async () => {
+    try {
+      let invalidTitle: string = "";
+      for (let index = 0; index <= 256; index++) {
+        invalidTitle += "a";
+      }
+      await Post.create({
+        title: invalidTitle,
+        text: `text`,
+        creator: testUser!._id,
+        organization: testOrganization!._id,
+      });
+    } catch (error: any) {
+      expect(error.message).toBe(
+        DB_POST_VALIDATION_ERROR +
+          ": title: " +
+          MONGOOSE_POST_ERRORS.TITLE_ERRORS.lengthError
+      );
+    }
+  });
+
+  it("should throw title invalid regex error when title does not match pattern", async () => {
+    try {
+      await Post.create({
+        title: "<script></sciript>",
+        text: `text`,
+        creator: testUser!._id,
+        organization: testOrganization!._id,
+      });
+    } catch (error: any) {
+      expect(error.message).toBe(
+        DB_POST_VALIDATION_ERROR +
+          ": title: " +
+          MONGOOSE_POST_ERRORS.TITLE_ERRORS.regexError
+      );
+    }
+  });
+
+  it("should throw text invalid length error when text.length() > 500", async () => {
+    try {
+      let invalidText: string = "";
+      for (let index = 0; index <= 256; index++) {
+        invalidText += "a";
+      }
+      await Post.create({
+        title: "title",
+        text: invalidText,
+        creator: testUser!._id,
+        organization: testOrganization!._id,
+      });
+    } catch (error: any) {
+      expect(error.message).toBe(
+        DB_POST_VALIDATION_ERROR +
+          ": title: " +
+          MONGOOSE_POST_ERRORS.TEXT_ERRORS.lengthError
+      );
+    }
+  });
+
+  it("should throw text invalid regex error when text does not match the pattern", async () => {
+    try {
+      await Post.create({
+        title: "title",
+        text: "<script></script>",
+        creator: testUser!._id,
+        organization: testOrganization!._id,
+      });
+    } catch (error: any) {
+      expect(error.message).toBe(
+        DB_POST_VALIDATION_ERROR +
+          ": text: " +
+          MONGOOSE_POST_ERRORS.TEXT_ERRORS.regexError
       );
     }
   });
