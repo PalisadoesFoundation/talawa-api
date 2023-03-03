@@ -1,6 +1,6 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Post } from "../../models";
+import { User, Post, Organization } from "../../models";
 import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
@@ -64,6 +64,18 @@ export const removePost: MutationResolvers["removePost"] = async (
   await Post.deleteOne({
     _id: args.id,
   });
+
+  // Removes the post from the organization, doesn't fail if the post wasn't pinned
+  await Organization.updateOne(
+    {
+      _id: post.organization,
+    },
+    {
+      $pull: {
+        pinnedPosts: args.id,
+      },
+    }
+  );
 
   // Returns deleted post.
   return post;
