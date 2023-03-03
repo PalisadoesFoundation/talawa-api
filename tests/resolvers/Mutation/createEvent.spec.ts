@@ -18,11 +18,9 @@ import {
   testOrganizationType,
   createTestUser,
 } from "../../helpers/userAndOrg";
-import { testEventType } from "../../helpers/events";
 
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
-let testEvent: testEventType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 const DB_EVENT_VALIDATION_ERROR = "Event validation failed";
 
@@ -637,7 +635,7 @@ describe("MONGODB validation errors for create event", () => {
       for (let index = 0; index <= 256; index++) {
         Invalidtitle += "a";
       }
-      const testEvent = await Event.create({
+      await Event.create({
         title: Invalidtitle,
         description: "description",
         allDay: true,
@@ -660,7 +658,7 @@ describe("MONGODB validation errors for create event", () => {
   });
   it("should throw title regex error when title regex does not match pattern", async () => {
     try {
-      testEvent = await Event.create({
+      await Event.create({
         title: "<asjnd$$>",
         description: "description",
         allDay: true,
@@ -687,7 +685,7 @@ describe("MONGODB validation errors for create event", () => {
       for (let index = 0; index <= 500; index++) {
         InvalidDesc += "a";
       }
-      testEvent = await Event.create({
+      await Event.create({
         title: "title",
         description: InvalidDesc,
         allDay: true,
@@ -711,7 +709,7 @@ describe("MONGODB validation errors for create event", () => {
 
   it("should throw description regex error when description regex does not match pattern", async () => {
     try {
-      testEvent = await Event.create({
+      await Event.create({
         title: "title",
         description: "<script></script>",
         allDay: true,
