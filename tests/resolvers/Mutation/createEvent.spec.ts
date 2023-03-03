@@ -1,11 +1,12 @@
 import "dotenv/config";
 import { Types } from "mongoose";
-import { User, Organization } from "../../../src/models";
+import { User, Organization, Event } from "../../../src/models";
 import { MutationCreateEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
   LENGTH_VALIDATION_ERROR,
+  MONGOOSE_EVENT_ERRORS,
   ORGANIZATION_NOT_AUTHORIZED_MESSAGE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   REGEX_VALIDATION_ERROR,
@@ -17,10 +18,13 @@ import {
   testOrganizationType,
   createTestUser,
 } from "../../helpers/userAndOrg";
+import { testEventType } from "../../helpers/events";
 
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
+let testEvent: testEventType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
+let DB_EVENT_VALIDATION_ERROR = "Event validation failed"
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -622,4 +626,108 @@ describe("Check for validation conditions", () => {
       expect(error.message).toEqual(`start date must be earlier than end date`);
     }
   });
+
 });
+
+
+  // Next Errors deal with database validation errors for the Event model
+  
+  describe('MONGODB validation errors for create event', () => {
+    it('should throw title length error when title.length() > 256', async() => {
+      try {
+        let Invalidtitle:string="";
+        for (let index = 0; index <= 256; index++) {
+          Invalidtitle+='a';
+          
+        }
+        testEvent = await Event.create({
+          title: Invalidtitle,
+          description: "description",
+          allDay: true,
+          startDate: new Date(),
+          recurring: true,
+          isPublic: true,
+          isRegisterable: true,
+          creator: testUser!._id,
+          admins: [testUser!._id],
+          registrants: [],
+          organization: testOrganization!._id,
+        });
+      } catch (error:any) {
+        expect(error.message).toBe(DB_EVENT_VALIDATION_ERROR+": title: " +MONGOOSE_EVENT_ERRORS.TITLE_ERRORS.lengthError)
+      }
+  
+  
+    });
+    it('should throw title regex error when title regex does not match pattern', async() => {
+      try {
+        
+        testEvent = await Event.create({
+          title: "<asjnd$$>",
+          description: "description",
+          allDay: true,
+          startDate: new Date(),
+          recurring: true,
+          isPublic: true,
+          isRegisterable: true,
+          creator: testUser!._id,
+          admins: [testUser!._id],
+          registrants: [],
+          organization: testOrganization!._id,
+        });
+      } catch (error:any) {
+        expect(error.message).toBe(DB_EVENT_VALIDATION_ERROR+": title: " +MONGOOSE_EVENT_ERRORS.TITLE_ERRORS.regexError)
+      }
+  
+  
+    });
+    it('should throw description length error when descption.length() > 500', async() => {
+      try {
+        let InvalidDesc:string="";
+        for (let index = 0; index <= 500; index++) {
+          InvalidDesc+='a';
+          
+        }
+        testEvent = await Event.create({
+          title: "title",
+          description: InvalidDesc,
+          allDay: true,
+          startDate: new Date(),
+          recurring: true,
+          isPublic: true,
+          isRegisterable: true,
+          creator: testUser!._id,
+          admins: [testUser!._id],
+          registrants: [],
+          organization: testOrganization!._id,
+        });
+      } catch (error:any) {
+        expect(error.message).toBe(DB_EVENT_VALIDATION_ERROR+": description: " +MONGOOSE_EVENT_ERRORS.DESCRIPTION_ERRORS.lengthError)
+      }
+  
+  
+    });
+
+    it('should throw description regex error when description regex does not match pattern', async() => {
+      try {
+        
+        testEvent = await Event.create({
+          title: "title",
+          description: "<script></script>",
+          allDay: true,
+          startDate: new Date(),
+          recurring: true,
+          isPublic: true,
+          isRegisterable: true,
+          creator: testUser!._id,
+          admins: [testUser!._id],
+          registrants: [],
+          organization: testOrganization!._id,
+        });
+      } catch (error:any) {
+        expect(error.message).toBe(DB_EVENT_VALIDATION_ERROR+": description: " +MONGOOSE_EVENT_ERRORS.DESCRIPTION_ERRORS.regexError)
+      }
+  
+  
+    });
+  });
