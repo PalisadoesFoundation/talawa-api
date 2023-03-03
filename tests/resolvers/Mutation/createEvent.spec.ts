@@ -730,4 +730,57 @@ describe("MONGODB validation errors for create event", () => {
       );
     }
   });
+  it("should throw location length error when location.length() > 50", async () => {
+    try {
+      let InvalidLoc: string = "";
+      for (let index = 0; index <= 50; index++) {
+        InvalidLoc += "a";
+      }
+      await Event.create({
+        title: "title",
+        description: "description",
+        location: InvalidLoc,
+        allDay: true,
+        startDate: new Date(),
+        recurring: true,
+        isPublic: true,
+        isRegisterable: true,
+        creator: testUser!._id,
+        admins: [testUser!._id],
+        registrants: [],
+        organization: testOrganization!._id,
+      });
+    } catch (error: any) {
+      expect(error.message).toBe(
+        DB_EVENT_VALIDATION_ERROR +
+          ": location: " +
+          MONGOOSE_EVENT_ERRORS.LOCATION_ERRORS.lengthError
+      );
+    }
+  });
+
+  it("should throw location regex error when location does not match pattern", async () => {
+    try {
+      await Event.create({
+        title: "title",
+        description: "description",
+        location: "<script></script>",
+        allDay: true,
+        startDate: new Date(),
+        recurring: true,
+        isPublic: true,
+        isRegisterable: true,
+        creator: testUser!._id,
+        admins: [testUser!._id],
+        registrants: [],
+        organization: testOrganization!._id,
+      });
+    } catch (error: any) {
+      expect(error.message).toBe(
+        DB_EVENT_VALIDATION_ERROR +
+          ": location: " +
+          MONGOOSE_EVENT_ERRORS.LOCATION_ERRORS.regexError
+      );
+    }
+  });
 });
