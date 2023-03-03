@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { Types } from "mongoose";
-import { Organization, User } from "../../../src/models";
+import { Organization, User, Post } from "../../../src/models";
 import { MutationTogglePinnedPostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
@@ -176,12 +176,16 @@ describe("resolvers -> Mutation -> togglePinnedPost", () => {
     const organization = await Organization.findOne({
       _id: testPost!.organization,
     }).lean();
+    const updatedPost = await Post.findOne({
+      _id: testPost!.id,
+    }).lean();
 
     const currentPostIsPinned = organization!.pinnedPosts.some(
       (p) => p.toString() === args.id.toString()
     );
 
     expect(currentPostIsPinned).toBeTruthy();
+    expect(updatedPost!.pinned).toBeTruthy();
   });
 
   it(`removes a post from the pinnedPosts for an org`, async () => {
@@ -207,11 +211,15 @@ describe("resolvers -> Mutation -> togglePinnedPost", () => {
     const organization = await Organization.findOne({
       _id: testPost!.organization,
     }).lean();
+    const updatedPost = await Post.findOne({
+      _id: testPost!.id,
+    }).lean();
 
     const currentPostIsPinned = organization!.pinnedPosts.some(
       (p) => p.toString() === args.id.toString()
     );
 
     expect(currentPostIsPinned).toBeFalsy();
+    expect(updatedPost!.pinned).toBeFalsy();
   });
 });

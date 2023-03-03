@@ -108,6 +108,7 @@ export const createPost: MutationResolvers["createPost"] = async (
   // Creates new post
   const createdPost = await Post.create({
     ...args.data,
+    pinned: args.data.pinned ? true : false,
     creator: context.userId,
     organization: args.data.organizationId,
     imageUrl: args.file ? uploadImageObj?.newImagePath : "",
