@@ -413,7 +413,7 @@ export type Mutation = {
   sendMessageToDirectChat: DirectChatMessage;
   sendMessageToGroupChat: GroupChatMessage;
   signUp: AuthData;
-  togglePinnedPost: Post;
+  togglePostPin: Post;
   unblockUser: User;
   unlikeComment?: Maybe<Comment>;
   unlikePost?: Maybe<Post>;
@@ -717,7 +717,7 @@ export type MutationSignUpArgs = {
 };
 
 
-export type MutationTogglePinnedPostArgs = {
+export type MutationTogglePostPinArgs = {
   id: Scalars['ID'];
 };
 
@@ -1977,7 +1977,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   sendMessageToDirectChat?: Resolver<ResolversTypes['DirectChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToDirectChatArgs, 'chatId' | 'messageContent'>>;
   sendMessageToGroupChat?: Resolver<ResolversTypes['GroupChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToGroupChatArgs, 'chatId' | 'messageContent'>>;
   signUp?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'data'>>;
-  togglePinnedPost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationTogglePinnedPostArgs, 'id'>>;
+  togglePostPin?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationTogglePostPinArgs, 'id'>>;
   unblockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUnblockUserArgs, 'organizationId' | 'userId'>>;
   unlikeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationUnlikeCommentArgs, 'id'>>;
   unlikePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUnlikePostArgs, 'id'>>;

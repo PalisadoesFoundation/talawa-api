@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { Types } from "mongoose";
 import { Organization, User, Post } from "../../../src/models";
-import { MutationTogglePinnedPostArgs } from "../../../src/types/generatedGraphQLTypes";
+import { MutationTogglePostPinArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
@@ -41,7 +41,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE!);
 });
 
-describe("resolvers -> Mutation -> togglePinnedPost", () => {
+describe("resolvers -> Mutation -> togglePostPin", () => {
   afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
@@ -55,7 +55,7 @@ describe("resolvers -> Mutation -> togglePinnedPost", () => {
     );
 
     try {
-      const args: MutationTogglePinnedPostArgs = {
+      const args: MutationTogglePostPinArgs = {
         id: testPost!._id,
       };
 
@@ -73,11 +73,11 @@ describe("resolvers -> Mutation -> togglePinnedPost", () => {
         };
       });
 
-      const { togglePinnedPost: togglePinnedPostResolver } = await import(
-        "../../../src/resolvers/Mutation/togglePinnedPost"
+      const { togglePostPin: togglePostPinResolver } = await import(
+        "../../../src/resolvers/Mutation/togglePostPin"
       );
 
-      await togglePinnedPostResolver?.({}, args, context);
+      await togglePostPinResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
     }
@@ -90,7 +90,7 @@ describe("resolvers -> Mutation -> togglePinnedPost", () => {
     );
 
     try {
-      const args: MutationTogglePinnedPostArgs = {
+      const args: MutationTogglePostPinArgs = {
         id: Types.ObjectId().toString(),
       };
 
@@ -108,11 +108,11 @@ describe("resolvers -> Mutation -> togglePinnedPost", () => {
         userId: testUser!._id,
       };
 
-      const { togglePinnedPost: togglePinnedPostResolver } = await import(
-        "../../../src/resolvers/Mutation/togglePinnedPost"
+      const { togglePostPin: togglePostPinResolver } = await import(
+        "../../../src/resolvers/Mutation/togglePostPin"
       );
 
-      await togglePinnedPostResolver?.({}, args, context);
+      await togglePostPinResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(`Translated ${POST_NOT_FOUND_MESSAGE}`);
     }
@@ -124,7 +124,7 @@ describe("resolvers -> Mutation -> togglePinnedPost", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
     try {
-      const args: MutationTogglePinnedPostArgs = {
+      const args: MutationTogglePostPinArgs = {
         id: testPost!.id,
       };
 
@@ -142,11 +142,11 @@ describe("resolvers -> Mutation -> togglePinnedPost", () => {
         };
       });
 
-      const { togglePinnedPost: togglePinnedPostResolver } = await import(
-        "../../../src/resolvers/Mutation/togglePinnedPost"
+      const { togglePostPin: togglePostPinResolver } = await import(
+        "../../../src/resolvers/Mutation/togglePostPin"
       );
 
-      await togglePinnedPostResolver?.({}, args, context);
+      await togglePostPinResolver?.({}, args, context);
     } catch (error: any) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_PIN.message);
       expect(error.message).toEqual(
@@ -160,7 +160,7 @@ describe("resolvers -> Mutation -> togglePinnedPost", () => {
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
       (message) => `Translated ${message}`
     );
-    const args: MutationTogglePinnedPostArgs = {
+    const args: MutationTogglePostPinArgs = {
       id: testPost!._id,
     };
 
@@ -168,11 +168,11 @@ describe("resolvers -> Mutation -> togglePinnedPost", () => {
       userId: testUser!._id,
     };
 
-    const { togglePinnedPost: togglePinnedPostResolver } = await import(
-      "../../../src/resolvers/Mutation/togglePinnedPost"
+    const { togglePostPin: togglePostPinResolver } = await import(
+      "../../../src/resolvers/Mutation/togglePostPin"
     );
 
-    await togglePinnedPostResolver?.({}, args, context);
+    await togglePostPinResolver?.({}, args, context);
     const organization = await Organization.findOne({
       _id: testPost!.organization,
     }).lean();
@@ -194,7 +194,7 @@ describe("resolvers -> Mutation -> togglePinnedPost", () => {
       (message) => `Translated ${message}`
     );
 
-    const args: MutationTogglePinnedPostArgs = {
+    const args: MutationTogglePostPinArgs = {
       id: testPost!._id,
     };
 
@@ -202,11 +202,11 @@ describe("resolvers -> Mutation -> togglePinnedPost", () => {
       userId: testUser!._id,
     };
 
-    const { togglePinnedPost: togglePinnedPostResolver } = await import(
-      "../../../src/resolvers/Mutation/togglePinnedPost"
+    const { togglePostPin: togglePostPinResolver } = await import(
+      "../../../src/resolvers/Mutation/togglePostPin"
     );
 
-    await togglePinnedPostResolver?.({}, args, context);
+    await togglePostPinResolver?.({}, args, context);
 
     const organization = await Organization.findOne({
       _id: testPost!.organization,

@@ -141,7 +141,7 @@ export const mutations = gql`
 
     signUp(data: UserInput!, file: Upload): AuthData!
 
-    togglePinnedPost(id: ID!): Post! @auth
+    togglePostPin(id: ID!): Post! @auth
 
     unblockUser(organizationId: ID!, userId: ID!): User! @auth
 

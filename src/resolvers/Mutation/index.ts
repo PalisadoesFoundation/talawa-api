@@ -53,7 +53,7 @@ import { sendMembershipRequest } from "./sendMembershipRequest";
 import { sendMessageToDirectChat } from "./sendMessageToDirectChat";
 import { sendMessageToGroupChat } from "./sendMessageToGroupChat";
 import { signUp } from "./signUp";
-import { togglePinnedPost } from "./togglePinnedPost";
+import { togglePostPin } from "./togglePostPin";
 import { unblockUser } from "./unblockUser";
 import { unlikeComment } from "./unlikeComment";
 import { unlikePost } from "./unlikePost";
@@ -123,7 +123,7 @@ export const Mutation: MutationResolvers = {
   sendMessageToDirectChat,
   sendMessageToGroupChat,
   signUp,
-  togglePinnedPost,
+  togglePostPin,
   unblockUser,
   unlikeComment,
   unlikePost,

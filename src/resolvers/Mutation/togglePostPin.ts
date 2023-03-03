@@ -11,7 +11,7 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Post, Organization } from "../../models";
 
-export const togglePinnedPost: MutationResolvers["togglePinnedPost"] = async (
+export const togglePostPin: MutationResolvers["togglePostPin"] = async (
   _parent,
   args,
   context
