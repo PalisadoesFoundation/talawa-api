@@ -112,7 +112,6 @@ const eventSchema = new Schema({
   startDate: {
     type: String,
     required: true,
-    min: [Date.now(), MONGOOSE_EVENT_ERRORS.DATE_ERROR.startDateError],
   },
   endDate: {
     type: String,

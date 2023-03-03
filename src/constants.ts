@@ -243,7 +243,6 @@ export const MONGOOSE_EVENT_ERRORS = {
     regexError: "Location of the event does not match the pattern",
   },
   DATE_ERROR: {
-    startDateError: "Start date has already passsed",
     endDateError: "End date should come after the start date",
   },
 };
