@@ -7,7 +7,6 @@ import { addUserImage } from "./addUserImage";
 import { addUserToGroupChat } from "./addUserToGroupChat";
 import { adminRemoveEvent } from "./adminRemoveEvent";
 import { adminRemoveGroup } from "./adminRemoveGroup";
-import { adminRemovePost } from "./adminRemovePost";
 import { blockPluginCreationBySuperadmin } from "./blockPluginCreationBySuperadmin";
 import { blockUser } from "./blockUser";
 import { cancelMembershipRequest } from "./cancelMembershipRequest";
@@ -78,7 +77,6 @@ export const Mutation: MutationResolvers = {
   addUserToGroupChat,
   adminRemoveEvent,
   adminRemoveGroup,
-  adminRemovePost,
   blockPluginCreationBySuperadmin,
   blockUser,
   cancelMembershipRequest,

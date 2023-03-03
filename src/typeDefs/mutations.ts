@@ -20,8 +20,6 @@ export const mutations = gql`
 
     adminRemoveGroup(groupId: ID!): Message! @auth
 
-    adminRemovePost(organizationId: ID!, postId: ID!): Post! @auth
-
     blockPluginCreationBySuperadmin(userId: ID!, blockUser: Boolean!): User!
       @auth
       @role(requires: SUPERADMIN)
