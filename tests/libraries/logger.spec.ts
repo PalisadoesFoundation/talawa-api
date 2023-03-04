@@ -67,14 +67,14 @@ describe("logger functions", () => {
       // Thus to check we will use the number of arguments being combined in the fomat.combine method
       expect(format.combine).toHaveBeenCalledWith(
         undefined, // colorize()
-        undefined, // slat()
+        undefined, // splat()
         undefined, // simple()
         undefined, // timestamp()
         undefined // printf()
       );
     } else {
       expect(format.combine).toHaveBeenCalledWith(
-        undefined, // slat()
+        undefined, // splat()
         undefined, // simple()
         undefined, // timestamp()
         undefined // printf()
