@@ -187,6 +187,7 @@ export const inputs = gql`
     imageUrl: URL
     videoUrl: URL
     organizationId: ID!
+    pinned: Boolean
   }
 
   input PostWhereInput {

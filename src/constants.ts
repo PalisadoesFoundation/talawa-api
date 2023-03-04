@@ -133,6 +133,13 @@ export const ADMIN_REMOVING_CREATOR = {
   param: "admin.removeCreator",
 };
 
+export const USER_NOT_AUTHORIZED_TO_PIN = {
+  message:
+    "The user must be a superadmin or an admin of the organization to pin/unpin posts",
+  code: "user.notAuthorizedToPin",
+  param: "user.notAuthorizedToPin",
+};
+
 export const TASK_NOT_FOUND = "Task not found";
 export const TASK_NOT_FOUND_CODE = "task.notFound";
 export const TASK_NOT_FOUND_MESSAGE = "task.notFound";
@@ -192,6 +199,8 @@ export const EMAIL_ALREADY_EXISTS = "Email already exists";
 export const EMAIL_ALREADY_EXISTS_CODE = "email.alreadyExists";
 export const EMAIL_ALREADY_EXISTS_MESSAGE = "email.alreadyExists";
 export const EMAIL_ALREADY_EXISTS_PARAM = "email";
+
+export const BASE_URL = `http://localhost:${process.env.port || 4000}/`;
 
 export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 
