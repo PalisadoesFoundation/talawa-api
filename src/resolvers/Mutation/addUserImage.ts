@@ -1,12 +1,12 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { uploadImage } from "../../utilities";
 import { User } from "../../models";
 import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
 } from "../../constants";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 
 export const addUserImage: MutationResolvers["addUserImage"] = async (
   _parent,
@@ -26,7 +26,7 @@ export const addUserImage: MutationResolvers["addUserImage"] = async (
     );
   }
 
-  const imageToUpload = await uploadImage(args.file, currentUser.image!);
+  const imageToUploadFilePath = await uploadEncodedImage(args.file!);
 
   // Updates the user with new image and returns the updated user.
   return await User.findOneAndUpdate(
@@ -35,9 +35,7 @@ export const addUserImage: MutationResolvers["addUserImage"] = async (
     },
     {
       $set: {
-        image: imageToUpload.imageAlreadyInDbPath
-          ? imageToUpload.imageAlreadyInDbPath
-          : imageToUpload.newImagePath,
+        image: imageToUploadFilePath,
       },
     },
     {
