@@ -10,7 +10,6 @@ import {
   LENGTH_VALIDATION_ERROR,
   MONGOOSE_POST_ERRORS,
   USER_NOT_AUTHORIZED_TO_PIN,
-
 } from "../../../src/constants";
 import {
   beforeAll,
