@@ -28,7 +28,7 @@ This document provides instructions on how to set up and start a running instanc
     - [Apply the Firebase Keys to the Talawa Mobile App](#apply-the-firebase-keys-to-the-talawa-mobile-app)
   - [Installing required packages](#installing-required-packages)
   - [Running talawa-api](#running-talawa-api)
-  - [Accessing talawa-api](#accessing-talawa-api)
+  - [How to Access the Talawa-API URL](#how-to-access-the-talawa-api-url)
   - [Changing default talawa-api port](#changing-default-talawa-api-port)
   - [Running tests](#running-tests)
 
@@ -446,8 +446,9 @@ Run the following command to start talawa-api development server:-
 
 <br/>
 
-## Accessing talawa-api
-
+## How to Access the Talawa-API URL
+There are many important URLs for accessing the API
+### For API Developers
 By default talawa-api runs on `port 4000` on your system's localhost. It is available on the following endpoint:-
 
         http://localhost:4000/
@@ -464,8 +465,18 @@ GraphQL endpoint for handling `subscriptions` is this:-
 
         ws://localhost:4000/graphql/
 
-<br/>
+### For Mobile App Developers
 
+The Organization URL for Talawa mobile app developers to use is:
+
+       http://localhost:4000/graphql/
+       
+### For Talawa- Admin Developers
+
+The Organization URL for Talawa mobile app developers to use is:
+
+       http://localhost:4000/graphql/
+       
 ## Changing default talawa-api port
 
 If port `4000` is not free on your system you can pass a custom environment variable named `PORT` to the script to make it use a different port on your system's localhost. Here's the syntax for it:-
