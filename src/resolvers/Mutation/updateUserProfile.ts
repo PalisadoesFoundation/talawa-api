@@ -8,7 +8,7 @@ import {
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
-import { uploadImage } from "../../utilities";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 
 export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
   _parent,
@@ -40,15 +40,15 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
       );
     }
   } // Upload file
-  let uploadImageObj;
+  let uploadImageFileName;
   if (args.file) {
-    uploadImageObj = await uploadImage(args.file, null);
+    uploadImageFileName = await uploadEncodedImage(args.file);
   }
   const currentUser = await User.findById({
     _id: context.userId,
   });
   // Update User
-  if (uploadImageObj) {
+  if (uploadImageFileName) {
     return await User.findOneAndUpdate(
       {
         _id: context.userId,
@@ -62,9 +62,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
           lastName: args.data?.lastName
             ? args.data.lastName
             : currentUser?.lastName,
-          image: uploadImageObj.imageAlreadyInDbPath
-            ? uploadImageObj.imageAlreadyInDbPath
-            : uploadImageObj.newImagePath,
+          image: uploadImageFileName,
         },
       },
       {
