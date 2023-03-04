@@ -15,11 +15,11 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
   args,
   context
 ) => {
-  const currentUserExists = await User.exists({
+  const currentUserExists = await User.findOne({
     _id: context.userId,
   });
 
-  if (currentUserExists === false) {
+  if (!currentUserExists) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_MESSAGE),
       USER_NOT_FOUND_CODE,
@@ -39,10 +39,15 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
         EMAIL_ALREADY_EXISTS_PARAM
       );
     }
-  } // Upload file
+  }
+
+  // Upload file
   let uploadImageFileName;
   if (args.file) {
-    uploadImageFileName = await uploadEncodedImage(args.file);
+    uploadImageFileName = await uploadEncodedImage(
+      args.file,
+      currentUserExists?.image
+    );
   }
   const currentUser = await User.findById({
     _id: context.userId,

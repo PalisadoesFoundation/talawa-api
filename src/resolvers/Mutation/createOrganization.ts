@@ -37,7 +37,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     //Upload file
     let uploadImageFileName = null;
     if (args.file) {
-      uploadImageFileName = await uploadEncodedImage(args.file!);
+      uploadImageFileName = await uploadEncodedImage(args.file!, null);
     }
 
     // Checks if the recieved arguments are valid according to standard input norms

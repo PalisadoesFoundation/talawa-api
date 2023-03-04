@@ -29,7 +29,7 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
         "data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0" +
         "NAAAAKElEQVQ4jWNgYGD4Twzu6FhFFGYYNXDUwGFpIAk2E4dHDRw1cDgaCAASFOffhEIO" +
         "3gAAAABJRU5ErkJggg==";
-      await uploadEncodedImage(img);
+      await uploadEncodedImage(img , null);
     } catch (error: any) {
       expect(error.message).toEqual(`Translated ${INVALID_FILE_TYPE.message}`);
 
@@ -43,7 +43,7 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
         "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0" +
         "NAAAAKElEQVQ4jWNgYGD4Twzu6FhFFGYYNXDUwGFpIAk2E4dHDRw1cDgaCAASFOffhEIO" +
         "3gAAAABJRU5ErkJggg==";
-      const fileName = await uploadEncodedImage(img);
+      const fileName = await uploadEncodedImage(img , null);
       expect(fileName).not.toBe(null);
       if (fs.existsSync(path.join(__dirname, "../../../".concat(fileName)))) {
         fs.unlink(path.join(__dirname, "../../../".concat(fileName)), (err) => {
@@ -61,7 +61,7 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
         "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0" +
         "NAAAAKElEQVQ4jWNgYGD4Twzu6FhFFGYYNXDUwGFpIAk2E4dHDRw1cDgaCAASFOffhEIO" +
         "3gAAAABJRU5ErkJggg==";
-      const fileName = await uploadEncodedImage(img);
+      const fileName = await uploadEncodedImage(img , null);
       expect(fileName).not.toBe(null);
       if (fs.existsSync(path.join(__dirname, "../../../".concat(fileName)))) {
         fs.unlink(path.join(__dirname, "../../../".concat(fileName)), (err) => {

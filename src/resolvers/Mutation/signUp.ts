@@ -104,7 +104,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   // Upload file
   let uploadImageFileName;
   if (args.file) {
-    uploadImageFileName = await uploadEncodedImage(args.file);
+    uploadImageFileName = await uploadEncodedImage(args.file, null);
   }
 
   const createdUser = await User.create({

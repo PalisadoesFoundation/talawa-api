@@ -6,8 +6,12 @@ import { errors, requestContext } from "../../libraries";
 import { INVALID_FILE_TYPE } from "../../constants";
 import { EncodedImage } from "../../models/EncodedImage";
 import path from "path";
+import { deletePreviousImage } from "./deletePreviousImage";
 
-export const uploadEncodedImage = async (encodedImageURL: string) => {
+export const uploadEncodedImage = async (
+  encodedImageURL: string,
+  previousImagePath: string | undefined | null
+) => {
   const isURLValidImage: boolean = encodedImageExtentionCheck(encodedImageURL);
 
   if (!isURLValidImage) {
@@ -22,7 +26,21 @@ export const uploadEncodedImage = async (encodedImageURL: string) => {
     content: encodedImageURL,
   });
 
+  if (previousImagePath) {
+    await deletePreviousImage(previousImagePath);
+  }
+
   if (encodedImageAlreadyExist) {
+    await EncodedImage.findOneAndUpdate(
+      {
+        content: encodedImageURL,
+      },
+      {
+        $inc: {
+          numberOfUses: 1,
+        },
+      }
+    );
     return encodedImageAlreadyExist.fileName;
   }
 

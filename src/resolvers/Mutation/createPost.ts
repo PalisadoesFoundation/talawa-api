@@ -50,7 +50,7 @@ export const createPost: MutationResolvers["createPost"] = async (
   let uploadImageFileName;
 
   if (args.file) {
-    uploadImageFileName = await uploadEncodedImage(args.file!);
+    uploadImageFileName = await uploadEncodedImage(args.file!, null);
   }
 
   // Checks if the recieved arguments are valid according to standard input norms

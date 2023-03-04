@@ -45,7 +45,10 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
     adminCheck(context.userId, organization);
 
     // Upload Image
-    const uploadImageFileName = await uploadEncodedImage(args.file!);
+    const uploadImageFileName = await uploadEncodedImage(
+      args.file!,
+      organization.image
+    );
     // Updates the organization with new image and returns the updated organization.
     return await Organization.findOneAndUpdate(
       {
