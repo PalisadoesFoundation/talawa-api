@@ -26,6 +26,7 @@ export interface Interface_Post {
   comments: Array<PopulatedDoc<Interface_Comment & Document>>;
   likeCount: number;
   commentCount: number;
+  pinned: boolean;
 }
 
 const postSchema = new Schema({
@@ -84,9 +85,14 @@ const postSchema = new Schema({
     type: Number,
     default: 0,
   },
+  pinned: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 postSchema.plugin(mongoosePaginate);
+postSchema.index({ organization: 1 }, { unique: false });
 
 const PostModel = () =>
   model<Interface_Post, PaginateModel<Interface_Post>>("Post", postSchema);

@@ -20,8 +20,6 @@ export const mutations = gql`
 
     adminRemoveGroup(groupId: ID!): Message! @auth
 
-    adminRemovePost(organizationId: ID!, postId: ID!): Post! @auth
-
     blockPluginCreationBySuperadmin(userId: ID!, blockUser: Boolean!): User!
       @auth
       @role(requires: SUPERADMIN)
@@ -55,7 +53,7 @@ export const mutations = gql`
 
     createMessageChat(data: MessageChatInput!): MessageChat! @auth
 
-    createOrganization(data: OrganizationInput, file: Upload): Organization!
+    createOrganization(data: OrganizationInput, file: String): Organization!
       @auth
       @role(requires: SUPERADMIN)
 
@@ -142,6 +140,8 @@ export const mutations = gql`
     ): GroupChatMessage! @auth
 
     signUp(data: UserInput!, file: Upload): AuthData!
+
+    togglePostPin(id: ID!): Post! @auth
 
     unblockUser(organizationId: ID!, userId: ID!): User! @auth
 

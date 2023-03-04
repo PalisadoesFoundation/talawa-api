@@ -5,19 +5,21 @@ import clsBluebird from "cls-bluebird";
 import i18n from "i18n";
 import { NextFunction, Request, Response } from "express";
 
-const requestContextNamespace = cls.createNamespace("talawa-request-context");
+export const requestContextNamespace = cls.createNamespace(
+  "talawa-request-context"
+);
 
 clsBluebird(requestContextNamespace);
 
-const setRequestContextValue = <T>(key: string, value: T) => {
+export const setRequestContextValue = <T>(key: string, value: T) => {
   return requestContextNamespace.set<T>(key, value);
 };
 
-const getRequestContextValue = (key: string) => {
+export const getRequestContextValue = (key: string) => {
   return requestContextNamespace.get(key);
 };
 
-const setRequestContext = (obj: any) => {
+export const setRequestContext = (obj: any) => {
   setRequestContextValue("translate", obj.__);
   setRequestContextValue("translatePlural", obj.__n);
 };

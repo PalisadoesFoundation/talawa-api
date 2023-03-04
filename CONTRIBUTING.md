@@ -14,6 +14,7 @@ If you are new to contributing to open source, please read the Open Source Guide
       - [Issues](#issues)
       - [Pull Requests](#pull-requests)
       - [Branching Strategy](#branching-strategy)
+      - [Conflict Resolution](#conflict-resolution)
     - [Contributing Code](#contributing-code)
   - [Upgrading Code](#upgrading-code)
       - [Setting up Upstream and Origin](#setting-up-upstream-and-origin)
@@ -23,6 +24,7 @@ If you are new to contributing to open source, please read the Open Source Guide
       - [Linting code files](#linting-code-files)
       - [Formatting code files](#formatting-code-files)
       - [Automation using husky](#automation-using-husky)
+      - [Running Queries with talawa-api](#running-queries-with-talawa-api)
   - [Internships](#internships)
     - [GSoC](#gsoc)
   - [Community](#community)
@@ -69,6 +71,15 @@ For Talawa API, we had employed the following branching strategy to simplify the
 - `alpha-x.x.x`: For stability testing
 - `master`: Where the stable production ready code lies
 
+#### Conflict Resolution
+
+When multiple developers are working on issues there is bound to be a conflict of interest (not to be confused with git conflicts) among issues, PRs or even ideas. Usually these conflicts are resolved in a **First Come First Serve** basis however there are certain exceptions to it.
+
+- In the cases where you feel your potential issues could be an extension or in conflict with other PRs it is important to ask the author of the PR in the slack channel or in their PRs or issues themselves why he/she did not write code for something that would require minimal effort on their part.
+- Based on basic courtesy, it is good practice to let the person who created a function apply and test that function when needed.
+- Last but not the least, communication is important make sure to talk to other contributors, in these cases, in slack channel or in a issue/PR thread.
+- As a last resort the Admins would be responsible for deciding how to resolve this conflict. 
+
 ### Contributing Code
 
 Code contributions to Talawa come in the form of pull requests. These are done by forking the repo and making changes locally.
@@ -99,7 +110,7 @@ The process of proposing a change to Talawa API can be summarized as:
       3. Here are some useful testing resources:
          1. Documentation:
             1. [Jest testing documentation](https://jestjs.io/docs/expect)
-            2. The [organizations.spec.js](tests/resolvers/organization_query/organizations.spec.js) test file is a well documented example of what to do for resolver tests.
+            2. The [organizations.spec.ts](tests/resolvers/Query/organizations.spec.ts) test file is a well documented example of what to do for resolver tests.
          2. Videos:
             1. [Introduction To Testing In JavaScript With Jest](https://www.youtube.com/watch?v=FgnxcUQ5vho)
             2. [Jest Crash Course](https://www.youtube.com/watch?v=7r4xVDI2vho)
@@ -228,7 +239,13 @@ We are using the package `Husky` to run a pre-commit hook which automatically ru
 If you don't want these pre-commit checks running on each commit, you can manually opt out of it using the `--no-verify` flag with your commit message as shown:-
 
         git commit -m "commit message" --no-verify
-
+        
+### Running Queries with talawa-api
+   - Talawa API currently implement `GraphQL Playground` as mediator interface to run and test queries directly from the api. [Learn more](https://www.apollographql.com/docs/apollo-server/v2/testing/graphql-playground/)
+   - In development, Apollo Server enables GraphQL Playground on the same URL as the GraphQL server itself (e.g. http://localhost:4000/graphql) and automatically serves the GUI to web browsers. When NODE_ENV is set to production, GraphQL Playground (as well as introspection) is disabled as a production best-practice.
+    ![image](https://user-images.githubusercontent.com/65951872/221374309-5a6eee74-c0df-4280-a29a-0b8d2c7260b3.png)
+- Note: To access the playground in talawa API append the URL with "/graphql"
+   
 ## Internships
 
 We have internship partnerships with a number of organizations. See below for more details.

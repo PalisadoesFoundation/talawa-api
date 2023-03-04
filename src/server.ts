@@ -67,6 +67,8 @@ app.use(
 );
 app.use(mongoSanitize());
 app.use(cors());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb" }));
 
 // Fix added to stream
 app.use(
