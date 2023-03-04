@@ -4,6 +4,7 @@ import { blockedUsers } from "./blockedUsers";
 import { creator } from "./creator";
 import { image } from "./image";
 import { members } from "./members";
+import { pinnedPosts } from "./pinnedPosts";
 import { membershipRequests } from "./membershipRequests";
 
 export const Organization: OrganizationResolvers = {
@@ -13,4 +14,5 @@ export const Organization: OrganizationResolvers = {
   image,
   members,
   membershipRequests,
+  pinnedPosts,
 };

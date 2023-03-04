@@ -8,6 +8,7 @@ import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   REGEX_VALIDATION_ERROR,
   LENGTH_VALIDATION_ERROR,
+  USER_NOT_AUTHORIZED_TO_PIN,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -22,9 +23,12 @@ import {
   createTestUserAndOrganization,
   testOrganizationType,
   testUserType,
+  createTestUser,
 } from "../../helpers/userAndOrg";
+import { Organization } from "../../../src/models";
 
 let testUser: testUserType;
+let randomUser: testUserType;
 let testOrganization: testOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
@@ -33,6 +37,7 @@ beforeAll(async () => {
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
   testOrganization = temp[1];
+  randomUser = await createTestUser();
 });
 
 afterAll(async () => {
@@ -43,6 +48,7 @@ describe("resolvers -> Mutation -> createPost", () => {
   afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
+    vi.resetAllMocks();
   });
 
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
@@ -128,6 +134,94 @@ describe("resolvers -> Mutation -> createPost", () => {
     }
   });
 
+  it(`throws USER_NOT_AUTHORIZED_TO_PIN ERROR if the user is not authorized to pin the post`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+    try {
+      const args: MutationCreatePostArgs = {
+        data: {
+          organizationId: testOrganization!._id,
+          text: "New Post Text",
+          videoUrl: "http://dummyURL.com/",
+          title: "New Post Title",
+          imageUrl: "http://dummyURL.com/image/",
+          pinned: true,
+        },
+      };
+
+      const context = {
+        userId: randomUser!.id,
+      };
+
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+          IN_PRODUCTION: true,
+        };
+      });
+
+      const { createPost: createPostResolver } = await import(
+        "../../../src/resolvers/Mutation/createPost"
+      );
+
+      await createPostResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_PIN.message);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_TO_PIN.message}`
+      );
+    }
+  });
+
+  it(`pinned post should be successfully added to the organization`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => `Translated ${message}`
+    );
+
+    const args: MutationCreatePostArgs = {
+      data: {
+        organizationId: testOrganization!.id,
+        text: "New Post Text",
+        videoUrl: "http://dummyURL.com/",
+        title: "New Post Title",
+        imageUrl: "http://dummyURL.com/image/",
+        pinned: true,
+      },
+    };
+    const context = {
+      userId: testUser!.id,
+    };
+
+    const { createPost: createPostResolver } = await import(
+      "../../../src/resolvers/Mutation/createPost"
+    );
+    const createdPost = await createPostResolver?.({}, args, context);
+
+    expect(createdPost).toEqual(
+      expect.objectContaining({
+        text: "New Post Text",
+        videoUrl: "http://dummyURL.com/",
+        title: "New Post Title",
+      })
+    );
+
+    const updatedTestOrg = await Organization.findOne({
+      _id: testOrganization!.id,
+    }).lean();
+
+    expect(
+      updatedTestOrg!.pinnedPosts
+        .map((id) => id.toString())
+        .includes(createdPost!._id.toString())
+    ).toBeTruthy();
+  });
+
   it(`creates the post and returns it when image is not provided`, async () => {
     const args: MutationCreatePostArgs = {
       data: {
@@ -158,6 +252,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       })
     );
   });
+
   it(`creates the post and returns it when image is provided`, async () => {
     const utilities = await import("../../../src/utilities");
 

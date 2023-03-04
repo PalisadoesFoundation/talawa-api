@@ -133,6 +133,13 @@ export const ADMIN_REMOVING_CREATOR = {
   param: "admin.removeCreator",
 };
 
+export const USER_NOT_AUTHORIZED_TO_PIN = {
+  message:
+    "The user must be a superadmin or an admin of the organization to pin/unpin posts",
+  code: "user.notAuthorizedToPin",
+  param: "user.notAuthorizedToPin",
+};
+
 export const TASK_NOT_FOUND = "Task not found";
 export const TASK_NOT_FOUND_CODE = "task.notFound";
 export const TASK_NOT_FOUND_MESSAGE = "task.notFound";
