@@ -1,6 +1,6 @@
 import "dotenv/config";
 import _ from "lodash";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { appConfig } from "./../../src/config/appConfig";
 
 vi.mock("winston", () => {
@@ -31,13 +31,10 @@ import { createLogger, transports, format } from "winston";
 import { logger, stream } from "../../src/libraries";
 
 describe("logger functions", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   it("basic logger test should pass", () => {
     const spyInfoLog = vi.spyOn(logger, "info");
     const spyErrorLog = vi.spyOn(logger, "error");
+
     expect(logger).toBeDefined();
     logger.info("Info Test for logger");
     expect(spyInfoLog).toBeCalledWith("Info Test for logger");
@@ -66,9 +63,22 @@ describe("logger functions", () => {
 
   it("testing console colorization", () => {
     if (appConfig.colorize_logs === "true") {
-      expect(format.colorize).toHaveBeenCalledTimes(1);
+      // Since the actual function's aren't called in the logger, they can't be mocked and spied upon
+      // Thus to check we will use the number of arguments being combined in the fomat.combine method
+      expect(format.combine).toHaveBeenCalledWith(
+        undefined, // colorize()
+        undefined, // slat()
+        undefined, // simple()
+        undefined, // timestamp()
+        undefined // printf()
+      );
     } else {
-      expect(format.colorize).toHaveBeenCalledTimes(0);
+      expect(format.combine).toHaveBeenCalledWith(
+        undefined, // slat()
+        undefined, // simple()
+        undefined, // timestamp()
+        undefined // printf()
+      );
     }
   });
 });
