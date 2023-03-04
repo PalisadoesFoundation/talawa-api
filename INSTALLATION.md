@@ -29,6 +29,9 @@ This document provides instructions on how to set up and start a running instanc
   - [Installing required packages](#installing-required-packages)
   - [Running talawa-api](#running-talawa-api)
   - [How to Access the Talawa-API URL](#how-to-access-the-talawa-api-url)
+    - [For Talawa-API Developers](#for-talawa-api-developers)
+    - [For Talawa-Admin Developers](#how-to-access-the-talawa-api-url)
+    - [For Talawa Mobile App Developers](#for-talawa-admin-developers)
   - [Changing default talawa-api port](#changing-default-talawa-api-port)
   - [Running tests](#running-tests)
 
@@ -448,7 +451,8 @@ Run the following command to start talawa-api development server:-
 
 ## How to Access the Talawa-API URL
 There are many important URLs for accessing the API
-### For API Developers
+
+### For Talawa-API Developers
 By default talawa-api runs on `port 4000` on your system's localhost. It is available on the following endpoint:-
 
         http://localhost:4000/
@@ -471,7 +475,7 @@ The Organization URL for Talawa mobile app developers to use is:
 
        http://localhost:4000/graphql/
        
-### For Talawa- Admin Developers
+### For Talawa-Admin Developers
 
 The Organization URL for Talawa mobile app developers to use is:
 
