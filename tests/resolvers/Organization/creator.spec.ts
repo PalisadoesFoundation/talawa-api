@@ -3,7 +3,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { User, Organization } from "../../../src/models";
 import { Types } from "mongoose";
-import { USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import { USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
 import {
   beforeAll,
   afterAll,

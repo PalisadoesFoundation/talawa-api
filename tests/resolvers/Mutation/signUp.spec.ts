@@ -8,10 +8,7 @@ import {
   androidFirebaseOptions,
   iosFirebaseOptions,
 } from "../../../src/config";
-import {
-  ORGANIZATION_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-} from "../../../src/constants";
+import { ORGANIZATION_NOT_FOUND_MESSAGE } from "../../../src/constants";
 import { nanoid } from "nanoid";
 import {
   beforeAll,
