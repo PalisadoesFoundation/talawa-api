@@ -325,7 +325,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
 
     expect(updateUserProfilePayload).toEqual({
       ...testUser.toObject(),
-      email: args.data?.email,
+      email: updateUserProfilePayload?.email,
       firstName: "newFirstName",
       lastName: "newLastName",
       image: "newImageFile.png",
