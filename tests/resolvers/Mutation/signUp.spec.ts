@@ -289,6 +289,28 @@ describe("resolvers -> Mutation -> signUp", () => {
     expect(createdUser?.userType).toEqual("SUPERADMIN");
     expect(createdUser?.adminApproved).toBeTruthy();
   });
+  it(`Check if the User is not being promoted to SUPER ADMIN automatically`, async () => {
+    const email = `email${nanoid().toLowerCase()}@gmail.com`;
+    const args: MutationSignUpArgs = {
+      data: {
+        email,
+        firstName: "firstName",
+        lastName: "lastName",
+        password: "password",
+        appLanguageCode: "en",
+        organizationUserBelongsToId: undefined,
+      },
+    };
+    const { signUp: signUpResolver } = await import(
+      "../../../src/resolvers/Mutation/signUp"
+    );
+    await signUpResolver?.({}, args, {});
+    const createdUser = await User.findOne({
+      email,
+    });
+    expect(createdUser?.userType).not.to.toEqual("SUPERADMIN");
+    expect(createdUser?.adminApproved).toBeFalsy();
+  });
 });
 
 describe("resolvers -> Mutation -> signUp - [IN_PRODUCTION === TRUE]", () => {
