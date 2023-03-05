@@ -7,6 +7,7 @@ import path from "path";
 import { INVALID_FILE_TYPE } from "../../../src/constants";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
+let testPreviousImagePath: string;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -45,11 +46,6 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
         "3gAAAABJRU5ErkJggg==";
       const fileName = await uploadEncodedImage(img, null);
       expect(fileName).not.toBe(null);
-      if (fs.existsSync(path.join(__dirname, "../../../".concat(fileName)))) {
-        fs.unlink(path.join(__dirname, "../../../".concat(fileName)), (err) => {
-          if (err) throw err;
-        });
-      }
     } catch (error: any) {
       console.log(error);
     }
@@ -62,6 +58,20 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
         "NAAAAKElEQVQ4jWNgYGD4Twzu6FhFFGYYNXDUwGFpIAk2E4dHDRw1cDgaCAASFOffhEIO" +
         "3gAAAABJRU5ErkJggg==";
       const fileName = await uploadEncodedImage(img, null);
+      expect(fileName).not.toBe(null);
+      testPreviousImagePath = fileName;
+    } catch (error: any) {
+      console.log(error);
+    }
+  });
+
+  it("should not create new image but return the pointer to that binary data and delete the previous image", async () => {
+    try {
+      const img =
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0" +
+        "NAAAAKElEQVQ4jWNgYGD4Twzu6FhFFGYYNXDUwGFpIAk2E4dHDRw1cDgaCAASFOffhEIO" +
+        "3gAAAABJRU5ErkJggg==";
+      const fileName = await uploadEncodedImage(img, testPreviousImagePath);
       expect(fileName).not.toBe(null);
       if (fs.existsSync(path.join(__dirname, "../../../".concat(fileName)))) {
         fs.unlink(path.join(__dirname, "../../../".concat(fileName)), (err) => {
