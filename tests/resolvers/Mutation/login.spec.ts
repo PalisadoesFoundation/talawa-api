@@ -82,21 +82,7 @@ describe("resolvers -> Mutation -> login", () => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
-  /* it(`throws NotFoundError if no user exists with email === args.data.email`, async () => {
-    try {
-      const args: MutationLoginArgs = {
-        data: {
-          email: `invalidEmail${nanoid().toLowerCase()}@gmail.com`,
-          password: "password",
-        },
-      };
-
-      await loginResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
-    }
-  });*/
-
+  
   it(`throws NotFoundError if no user exists with email === args.data.email`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
@@ -131,23 +117,6 @@ describe("resolvers -> Mutation -> login", () => {
       expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
     }
   });
-
-  /*  it(`throws ValidationError if args.data.password !== password for user with
-  email === args.data.email`, async () => {
-    try {
-      const args: MutationLoginArgs = {
-        data: {
-          email: testUser!.email,
-          password: "incorrectPassword",
-        },
-      };
-
-      await loginResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(INVALID_CREDENTIALS);
-    }
-  });
-*/
 
   it(`throws ValidationError if args.data.password !== password for user with
 email === args.data.email`, async () => {
