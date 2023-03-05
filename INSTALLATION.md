@@ -88,6 +88,7 @@ This `.env` file must be populated with the following environment variables for 
 | RECAPTCHA_SECRET_KEY | Used for authentication using reCAPTCHA                |
 | MAIL_USERNAME        | Used for mailing service                               |
 | MAIL_PASSWORD        | Used for mailing service                               |
+| LAST_RESORT_SUPERADMIN_EMAIL | Used for promoting default super admin         |     
 
 Follow the instructions from [Access/refresh token secrets](#accessrefresh-token-secrets) section up to and including [Google/firebase](#googlefirebase) section to learn more about these environment variables and how to set them up.
 
@@ -325,6 +326,11 @@ We use `reCAPTCHA` for authentication. Follow these steps:-
 For more info refer to [this](https://support.google.com/accounts/answer/185833).
 
 <br/>
+
+### Setting up LAST_RESORT_SUPERADMIN_EMAIL in .env file
+
+This email is used for creating the default super admin. When user with this email will be
+created it will be automatically promoted to Super admin.
 
 ### Generate Firebase Keys for the Talawa Notification Service
 
