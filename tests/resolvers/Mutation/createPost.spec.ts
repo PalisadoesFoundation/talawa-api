@@ -491,23 +491,6 @@ describe("MONGODB validation errors for create Post", () => {
     }
   });
 
-  it("should throw title invalid regex error when title does not match pattern", async () => {
-    try {
-      await Post.create({
-        title: "<script></sciript>",
-        text: `text`,
-        creator: testUser!._id,
-        organization: testOrganization!._id,
-      });
-    } catch (error: any) {
-      expect(error.message).toBe(
-        DB_POST_VALIDATION_ERROR +
-          ": title: " +
-          MONGOOSE_POST_ERRORS.TITLE_ERRORS.regexError
-      );
-    }
-  });
-
   it("should throw text invalid length error when text.length() > 500", async () => {
     try {
       let invalidText: string = "";
@@ -525,23 +508,6 @@ describe("MONGODB validation errors for create Post", () => {
         DB_POST_VALIDATION_ERROR +
           ": title: " +
           MONGOOSE_POST_ERRORS.TEXT_ERRORS.lengthError
-      );
-    }
-  });
-
-  it("should throw text invalid regex error when text does not match the pattern", async () => {
-    try {
-      await Post.create({
-        title: "title",
-        text: "<script></script>",
-        creator: testUser!._id,
-        organization: testOrganization!._id,
-      });
-    } catch (error: any) {
-      expect(error.message).toBe(
-        DB_POST_VALIDATION_ERROR +
-          ": text: " +
-          MONGOOSE_POST_ERRORS.TEXT_ERRORS.regexError
       );
     }
   });

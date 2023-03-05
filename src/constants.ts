@@ -241,33 +241,25 @@ export const iosBundleId = process.env.iosBundleId;
 export const MONGOOSE_EVENT_ERRORS = {
   TITLE_ERRORS: {
     lengthError: "Title of the event cannot exceed 256 charcters",
-    regexError: "Title of the event does not match the pattern",
   },
   DESCRIPTION_ERRORS: {
     lengthError: "Description of the event cannot exceed 256 charcters",
-    regexError: "Description of the event does not match the pattern",
   },
   LOCATION_ERRORS: {
     lengthError: "Location of the event cannot exceed 256 charcters",
-    regexError: "Location of the event does not match the pattern",
   },
-  DATE_ERROR: {
-    endDateError: "End date should come after the start date",
-  },
+  DATE_ERROR: {},
 };
 
 export const MONGOOSE_ORGANIZATION_ERRORS = {
   NAME_ERRORS: {
     lengthError: "Name of the Organization cannot exceed 256 charcters",
-    regexError: "Name of the Organization does not match the pattern",
   },
   DESCRIPTION_ERRORS: {
     lengthError: "Description of the Organization cannot exceed 256 charcters",
-    regexError: "Description of the Organization does not match the pattern",
   },
   LOCATION_ERRORS: {
     lengthError: "Location of the org cannot exceed 256 charcters",
-    regexError: "Location of the org does not match the pattern",
   },
   DATE_ERROR: {
     startDateError: "Start date has already passsed",
@@ -275,17 +267,14 @@ export const MONGOOSE_ORGANIZATION_ERRORS = {
   },
   TAGS_ERRORS: {
     lengthError: "Tag of the org cannot exceed 256 charcters",
-    regexError: "Tag of the org does not match the pattern",
   },
 };
 
 export const MONGOOSE_POST_ERRORS = {
   TITLE_ERRORS: {
     lengthError: "Title of the post cannot exceed 256 charcters",
-    regexError: "Title of the post does not match the pattern",
   },
   TEXT_ERRORS: {
     lengthError: "Text of the Post cannot exceed 256 charcters",
-    regexError: "Text of the Post does not match the pattern",
   },
 };

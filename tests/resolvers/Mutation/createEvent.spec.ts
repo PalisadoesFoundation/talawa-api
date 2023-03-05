@@ -656,29 +656,7 @@ describe("MONGODB validation errors for create event", () => {
       );
     }
   });
-  it("should throw title regex error when title regex does not match pattern", async () => {
-    try {
-      await Event.create({
-        title: "<asjnd$$>",
-        description: "description",
-        allDay: true,
-        startDate: new Date(),
-        recurring: true,
-        isPublic: true,
-        isRegisterable: true,
-        creator: testUser!._id,
-        admins: [testUser!._id],
-        registrants: [],
-        organization: testOrganization!._id,
-      });
-    } catch (error: any) {
-      expect(error.message).toBe(
-        DB_EVENT_VALIDATION_ERROR +
-          ": title: " +
-          MONGOOSE_EVENT_ERRORS.TITLE_ERRORS.regexError
-      );
-    }
-  });
+
   it("should throw description length error when descption.length() > 500", async () => {
     try {
       let InvalidDesc: string = "";
@@ -707,29 +685,6 @@ describe("MONGODB validation errors for create event", () => {
     }
   });
 
-  it("should throw description regex error when description regex does not match pattern", async () => {
-    try {
-      await Event.create({
-        title: "title",
-        description: "<script></script>",
-        allDay: true,
-        startDate: new Date(),
-        recurring: true,
-        isPublic: true,
-        isRegisterable: true,
-        creator: testUser!._id,
-        admins: [testUser!._id],
-        registrants: [],
-        organization: testOrganization!._id,
-      });
-    } catch (error: any) {
-      expect(error.message).toBe(
-        DB_EVENT_VALIDATION_ERROR +
-          ": description: " +
-          MONGOOSE_EVENT_ERRORS.DESCRIPTION_ERRORS.regexError
-      );
-    }
-  });
   it("should throw location length error when location.length() > 50", async () => {
     try {
       let InvalidLoc: string = "";
@@ -755,31 +710,6 @@ describe("MONGODB validation errors for create event", () => {
         DB_EVENT_VALIDATION_ERROR +
           ": location: " +
           MONGOOSE_EVENT_ERRORS.LOCATION_ERRORS.lengthError
-      );
-    }
-  });
-
-  it("should throw location regex error when location does not match pattern", async () => {
-    try {
-      await Event.create({
-        title: "title",
-        description: "description",
-        location: "<script></script>",
-        allDay: true,
-        startDate: new Date(),
-        recurring: true,
-        isPublic: true,
-        isRegisterable: true,
-        creator: testUser!._id,
-        admins: [testUser!._id],
-        registrants: [],
-        organization: testOrganization!._id,
-      });
-    } catch (error: any) {
-      expect(error.message).toBe(
-        DB_EVENT_VALIDATION_ERROR +
-          ": location: " +
-          MONGOOSE_EVENT_ERRORS.LOCATION_ERRORS.regexError
       );
     }
   });

@@ -502,25 +502,6 @@ describe("MONGODB validation errors for create Organization", () => {
     }
   });
 
-  it("should throw name invalid regex error when name does not match pattern", async () => {
-    try {
-      await Organization.create({
-        name: "<scrpit></script>",
-        description: "description",
-        isPublic: true,
-        creator: testUser!._id,
-        admins: [testUser!._id],
-        members: [testUser!._id],
-      });
-    } catch (error: any) {
-      expect(error.message).toBe(
-        DB_ORGANIZATION_VALIDATION_ERROR +
-          ": name: " +
-          MONGOOSE_ORGANIZATION_ERRORS.NAME_ERRORS.regexError
-      );
-    }
-  });
-
   it("should throw description invalid length error when description.length() > 500", async () => {
     try {
       let invalidDsc = "";
@@ -540,25 +521,6 @@ describe("MONGODB validation errors for create Organization", () => {
         DB_ORGANIZATION_VALIDATION_ERROR +
           ": description: " +
           MONGOOSE_ORGANIZATION_ERRORS.DESCRIPTION_ERRORS.lengthError
-      );
-    }
-  });
-
-  it("should throw description invalid regex error when description does not match pattern", async () => {
-    try {
-      await Organization.create({
-        name: "org name",
-        description: "<scrpit></script>",
-        isPublic: true,
-        creator: testUser!._id,
-        admins: [testUser!._id],
-        members: [testUser!._id],
-      });
-    } catch (error: any) {
-      expect(error.message).toBe(
-        DB_ORGANIZATION_VALIDATION_ERROR +
-          ": description: " +
-          MONGOOSE_ORGANIZATION_ERRORS.DESCRIPTION_ERRORS.regexError
       );
     }
   });
@@ -587,26 +549,6 @@ describe("MONGODB validation errors for create Organization", () => {
     }
   });
 
-  it("should throw location invalid regex error when location does not match the pattern", async () => {
-    try {
-      await Organization.create({
-        name: "org name",
-        description: "org description",
-        location: "<scrpit></script>",
-        isPublic: true,
-        creator: testUser!._id,
-        admins: [testUser!._id],
-        members: [testUser!._id],
-      });
-    } catch (error: any) {
-      expect(error.message).toBe(
-        DB_ORGANIZATION_VALIDATION_ERROR +
-          ": location: " +
-          MONGOOSE_ORGANIZATION_ERRORS.LOCATION_ERRORS.regexError
-      );
-    }
-  });
-
   it("should throw tag invalid lengtherror when tag.length() > 256 ", async () => {
     try {
       let invalidTag = "";
@@ -627,26 +569,6 @@ describe("MONGODB validation errors for create Organization", () => {
         DB_ORGANIZATION_VALIDATION_ERROR +
           ": tags.0: " +
           MONGOOSE_ORGANIZATION_ERRORS.TAGS_ERRORS.lengthError
-      );
-    }
-  });
-
-  it("should throw tag invalid regex error when tag does not match the pattern", async () => {
-    try {
-      await Organization.create({
-        name: "org name",
-        description: "org description",
-        isPublic: true,
-        creator: testUser!._id,
-        admins: [testUser!._id],
-        members: [testUser!._id],
-        tags: ["<scrpit></script>"],
-      });
-    } catch (error: any) {
-      expect(error.message).toBe(
-        DB_ORGANIZATION_VALIDATION_ERROR +
-          ": tags.0: " +
-          MONGOOSE_ORGANIZATION_ERRORS.TAGS_ERRORS.regexError
       );
     }
   });

@@ -41,10 +41,6 @@ const organizationSchema = new Schema({
     required: true,
     trim: true,
     maxLength: [256, MONGOOSE_ORGANIZATION_ERRORS.NAME_ERRORS.lengthError],
-    match: [
-      /^[a-zA-Z0-9!@#$%^&*()_\-+. ,]+$/,
-      MONGOOSE_ORGANIZATION_ERRORS.NAME_ERRORS.regexError,
-    ],
   },
   description: {
     type: String,
@@ -54,19 +50,11 @@ const organizationSchema = new Schema({
       500,
       MONGOOSE_ORGANIZATION_ERRORS.DESCRIPTION_ERRORS.lengthError,
     ],
-    match: [
-      /^[a-zA-Z0-9!@#$%^&*()_\-+. ,]+$/,
-      MONGOOSE_ORGANIZATION_ERRORS.DESCRIPTION_ERRORS.regexError,
-    ],
   },
   location: {
     type: String,
     trim: true,
     maxLength: [50, MONGOOSE_ORGANIZATION_ERRORS.LOCATION_ERRORS.lengthError],
-    match: [
-      /^[a-zA-Z0-9!@#$%^&*()_\-+. ,]+$/,
-      MONGOOSE_ORGANIZATION_ERRORS.LOCATION_ERRORS.regexError,
-    ],
   },
   isPublic: {
     type: Boolean,
@@ -135,10 +123,6 @@ const organizationSchema = new Schema({
       type: String,
       required: false,
       maxLength: [256, MONGOOSE_ORGANIZATION_ERRORS.TAGS_ERRORS.lengthError],
-      match: [
-        /^[a-zA-Z0-9!@#$%^&*()_\-+. ,]+$/,
-        MONGOOSE_ORGANIZATION_ERRORS.TAGS_ERRORS.regexError,
-      ],
     },
   ],
   createdAt: {

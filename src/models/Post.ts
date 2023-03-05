@@ -35,18 +35,10 @@ const postSchema = new Schema({
     type: String,
     required: true,
     maxLength: [500, MONGOOSE_POST_ERRORS.TEXT_ERRORS.lengthError],
-    match: [
-      /^[a-zA-Z0-9!@#$%^&*()_\-+. ,]+$/,
-      MONGOOSE_POST_ERRORS.TEXT_ERRORS.regexError,
-    ],
   },
   title: {
     type: String,
     maxLength: [256, MONGOOSE_POST_ERRORS.TITLE_ERRORS.lengthError],
-    match: [
-      /^[a-zA-Z0-9!@#$%^&*()_\-+. ,]+$/,
-      MONGOOSE_POST_ERRORS.TITLE_ERRORS.regexError,
-    ],
   },
   status: {
     type: String,
