@@ -9,6 +9,7 @@ import {
   iosFirebaseOptions,
 } from "../../../src/config";
 import {
+  LAST_RESORT_SUPERADMIN_EMAIL,
   ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
@@ -264,6 +265,29 @@ describe("resolvers -> Mutation -> signUp", () => {
       .lean();
 
     expect(uploadImageSpy).toHaveReturnedWith(returnImageFile);
+  });
+
+  it(`Promotes the user to SUPER ADMIN if the email registering with is same that as provided in configuration file`, async () => {
+    const email = LAST_RESORT_SUPERADMIN_EMAIL;
+    const args: MutationSignUpArgs = {
+      data: {
+        email,
+        firstName: "firstName",
+        lastName: "lastName",
+        password: "password",
+        appLanguageCode: "en",
+        organizationUserBelongsToId: undefined,
+      },
+    };
+    const { signUp: signUpResolver } = await import(
+      "../../../src/resolvers/Mutation/signUp"
+    );
+    await signUpResolver?.({}, args, {});
+    const createdUser = await User.findOne({
+      email,
+    });
+    expect(createdUser?.userType).toEqual("SUPERADMIN");
+    expect(createdUser?.adminApproved).toBeTruthy();
   });
 });
 

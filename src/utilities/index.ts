@@ -6,3 +6,4 @@ export * from "./deleteImage";
 export * from "./mailer";
 export * from "./superAdminCheck";
 export * from "./uploadImage";
+export * from "./superAdminCreation";

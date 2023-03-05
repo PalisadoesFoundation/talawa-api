@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import {
   IN_PRODUCTION,
+  LAST_RESORT_SUPERADMIN_EMAIL,
   //LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_CODE,
@@ -16,6 +17,7 @@ import {
   createRefreshToken,
   uploadImage,
   copyToClipboard,
+  updateUserToSuperAdmin,
 } from "../../utilities";
 import { androidFirebaseOptions, iosFirebaseOptions } from "../../config";
 //import { isValidString } from "../../libraries/validators/validateString";
@@ -118,6 +120,10 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
       : null,
     password: hashedPassword,
   });
+
+  if (createdUser.email === LAST_RESORT_SUPERADMIN_EMAIL) {
+    updateUserToSuperAdmin(createdUser.email);
+  }
 
   const accessToken = await createAccessToken(createdUser);
   const refreshToken = await createRefreshToken(createdUser);

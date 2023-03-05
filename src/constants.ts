@@ -237,3 +237,6 @@ export const iOSstorageBucket = process.env.iOSstorageBucket;
 export const iosClientId = process.env.iosClientId;
 
 export const iosBundleId = process.env.iosBundleId;
+
+export const LAST_RESORT_SUPERADMIN_EMAIL =
+  process.env.LAST_RESORT_SUPERADMIN_EMAIL;
