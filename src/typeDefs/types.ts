@@ -198,7 +198,6 @@ export const types = gql`
     visibleInSearch: Boolean!
     apiUrl: URL!
     createdAt: DateTime
-    tags: [String!]!
     pinnedPosts: [Post]
   }
 
@@ -211,7 +210,6 @@ export const types = gql`
     creator: User!
     visibleInSearch: Boolean!
     apiUrl: URL!
-    tags: [String!]!
   }
 
   type OtpData {
