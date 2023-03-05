@@ -82,7 +82,7 @@ describe("resolvers -> Mutation -> login", () => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
-  
+
   it(`throws NotFoundError if no user exists with email === args.data.email`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
