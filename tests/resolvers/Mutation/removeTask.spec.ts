@@ -11,8 +11,12 @@ import { MutationRemoveTaskArgs } from "../../../src/types/generatedGraphQLTypes
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { removeTask as removeTaskResolver } from "../../../src/resolvers/Mutation/removeTask";
-import { USER_NOT_AUTHORIZED, USER_NOT_FOUND } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  USER_NOT_AUTHORIZED_MESSAGE,
+  USER_NOT_FOUND_MESSAGE,
+  TASK_NOT_FOUND_MESSAGE,
+} from "../../../src/constants";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUserFunc } from "../../helpers/user";
 import { testUserType } from "../../helpers/userAndOrg";
 
@@ -104,6 +108,10 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> removeTask", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveTaskArgs = {
         id: "",
@@ -113,13 +121,31 @@ describe("resolvers -> Mutation -> removeTask", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { removeTask: removeTaskResolver } = await import(
+        "../../../src/resolvers/Mutation/removeTask"
+      );
+
       await removeTaskResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no task exists with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveTaskArgs = {
         id: Types.ObjectId().toString(),
@@ -129,13 +155,31 @@ describe("resolvers -> Mutation -> removeTask", () => {
         userId: testUsers[0]!._id,
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { removeTask: removeTaskResolver } = await import(
+        "../../../src/resolvers/Mutation/removeTask"
+      );
+
       await removeTaskResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual("Task not found");
+      expect(spy).toBeCalledWith(TASK_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(TASK_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws NotAuthorizedError if for creator of task with _id === args.id, user._id !== context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveTaskArgs = {
         id: testTask._id,
@@ -145,9 +189,23 @@ describe("resolvers -> Mutation -> removeTask", () => {
         userId: testUsers[1]!._id,
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { removeTask: removeTaskResolver } = await import(
+        "../../../src/resolvers/Mutation/removeTask"
+      );
+
       await removeTaskResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
     }
   });
 

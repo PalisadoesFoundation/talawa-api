@@ -9,8 +9,6 @@ import { MutationRemoveDirectChatArgs } from "../../../src/types/generatedGraphQ
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
-  CHAT_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   CHAT_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED_ADMIN,
@@ -74,37 +72,7 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
     vi.resetModules();
   });
 
-  it(`throws NotFoundError if no organization exists with _id === args.organizationId and IN_PRODUCTION === false`, async () => {
-    try {
-      const args: MutationRemoveDirectChatArgs = {
-        chatId: "",
-        organizationId: Types.ObjectId().toString(),
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: false,
-        };
-      });
-
-      const { removeDirectChat: removeDirectChatResolver } = await import(
-        "../../../src/resolvers/Mutation/removeDirectChat"
-      );
-      await removeDirectChatResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
-    }
-  });
-
-  it(`throws NotFoundError if no organization exists with _id === args.organizationId and IN_PRODUCTION === true`, async () => {
+  it(`throws NotFoundError if no organization exists with _id === args.organizationId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -126,7 +94,6 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
 
@@ -142,37 +109,7 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
     }
   });
 
-  it(`throws NotFoundError if no directChat exists with _id === args.chatId and IN_PRODUCTION === false`, async () => {
-    try {
-      const args: MutationRemoveDirectChatArgs = {
-        chatId: Types.ObjectId().toString(),
-        organizationId: testOrganization!.id,
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: false,
-        };
-      });
-
-      const { removeDirectChat: removeDirectChatResolver } = await import(
-        "../../../src/resolvers/Mutation/removeDirectChat"
-      );
-      await removeDirectChatResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(CHAT_NOT_FOUND);
-    }
-  });
-
-  it(`throws NotFoundError if no directChat exists with _id === args.chatId and IN_PRODUCTION === true`, async () => {
+  it(`throws NotFoundError if no directChat exists with _id === args.chatId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -194,7 +131,6 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
 

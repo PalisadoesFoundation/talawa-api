@@ -6,11 +6,11 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { removeUserFromGroupChat as removeUserFromGroupChatResolver } from "../../../src/resolvers/Mutation/removeUserFromGroupChat";
 import {
-  CHAT_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND,
-  USER_NOT_AUTHORIZED,
+  CHAT_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_MESSAGE,
+  USER_NOT_AUTHORIZED_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { testOrganizationType, testUserType } from "../../helpers/userAndOrg";
 import {
   createTestGroupChatMessage,
@@ -36,6 +36,10 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
   it(`throws NotFoundError if no groupChat exists with _id === args.chatId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveUserFromGroupChatArgs = {
         chatId: Types.ObjectId().toString(),
@@ -46,14 +50,31 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
         userId: testUser!.id,
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { removeUserFromGroupChat: removeUserFromGroupChatResolver } =
+        await import("../../../src/resolvers/Mutation/removeUserFromGroupChat");
+
       await removeUserFromGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(CHAT_NOT_FOUND);
+      expect(spy).toBeCalledWith(CHAT_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(CHAT_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws UnauthorizedError if current user with _id === context.userId is not
     an admin of the organization of groupChat with _id === args.chatId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       await GroupChat.updateOne(
         {
@@ -75,14 +96,31 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
         userId: testUser!.id,
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { removeUserFromGroupChat: removeUserFromGroupChatResolver } =
+        await import("../../../src/resolvers/Mutation/removeUserFromGroupChat");
+
       await removeUserFromGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
     }
   });
 
   it(`throws UnauthorizedError if users field of groupChat with _id === args.chatId
     does not contain user with _id === args.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       await Organization.updateOne(
         {
@@ -115,14 +153,32 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
         userId: testUser!.id,
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { removeUserFromGroupChat: removeUserFromGroupChatResolver } =
+        await import("../../../src/resolvers/Mutation/removeUserFromGroupChat");
+
       await removeUserFromGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
     }
   });
 
   it(`removes user with _id === args.userId from users list field of groupChat
-    with _id === args.ChatId and returns the updated groupChat`, async () => {
+  with _id === args.ChatId and returns the updated groupChat`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => `Translated ${message}`
+    );
+
     await GroupChat.updateOne(
       {
         _id: testGroupChat!._id,
@@ -156,6 +212,11 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
   });
 
   it(`throws NotFoundError if no organization exists for groupChat with _id === args.chatId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+
     await Organization.findOneAndRemove({
       _id: testOrganization!._id,
     });
@@ -170,9 +231,22 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
         userId: testUser!.id,
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { removeUserFromGroupChat: removeUserFromGroupChatResolver } =
+        await import("../../../src/resolvers/Mutation/removeUserFromGroupChat");
+
       await removeUserFromGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
     }
   });
 });

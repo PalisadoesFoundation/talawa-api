@@ -8,10 +8,21 @@ import {
   androidFirebaseOptions,
   iosFirebaseOptions,
 } from "../../../src/config";
-import { INVALID_CREDENTIALS, USER_NOT_FOUND } from "../../../src/constants";
+import {
+  INVALID_CREDENTIALS_MESSAGE,
+  USER_NOT_FOUND_MESSAGE,
+} from "../../../src/constants";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  afterEach,
+  describe,
+  it,
+  expect,
+  vi,
+} from "vitest";
 import { testUserType } from "../../helpers/userAndOrg";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 
@@ -67,7 +78,11 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> login", () => {
-  it(`throws NotFoundError if no user exists with email === args.data.email`, async () => {
+  afterEach(async () => {
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
+  /* it(`throws NotFoundError if no user exists with email === args.data.email`, async () => {
     try {
       const args: MutationLoginArgs = {
         data: {
@@ -80,9 +95,44 @@ describe("resolvers -> Mutation -> login", () => {
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_FOUND);
     }
+  });*/
+
+  it(`throws NotFoundError if no user exists with email === args.data.email`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationLoginArgs = {
+        data: {
+          email: `invalidEmail${nanoid().toLowerCase()}@gmail.com`,
+          password: "password",
+        },
+      };
+
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { login: loginResolver } = await import(
+        "../../../src/resolvers/Mutation/login"
+      );
+
+      await loginResolver?.({}, args, {});
+    } catch (error: any) {
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+    }
   });
 
-  it(`throws ValidationError if args.data.password !== password for user with
+  /*  it(`throws ValidationError if args.data.password !== password for user with
   email === args.data.email`, async () => {
     try {
       const args: MutationLoginArgs = {
@@ -95,6 +145,42 @@ describe("resolvers -> Mutation -> login", () => {
       await loginResolver?.({}, args, {});
     } catch (error: any) {
       expect(error.message).toEqual(INVALID_CREDENTIALS);
+    }
+  });
+*/
+
+  it(`throws ValidationError if args.data.password !== password for user with
+email === args.data.email`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationLoginArgs = {
+        data: {
+          email: testUser!.email,
+          password: "incorrectPassword",
+        },
+      };
+
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { login: loginResolver } = await import(
+        "../../../src/resolvers/Mutation/login"
+      );
+
+      await loginResolver?.({}, args, {});
+    } catch (error: any) {
+      expect(spy).toHaveBeenLastCalledWith(INVALID_CREDENTIALS_MESSAGE);
     }
   });
 

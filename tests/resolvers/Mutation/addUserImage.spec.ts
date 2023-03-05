@@ -33,7 +33,7 @@ describe("resolvers -> Mutation -> addUserImage", () => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
-  it(`throws NotFoundError if no user exists with _id === context.userId // IN_PRODUCTION=true`, async () => {
+  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
@@ -57,9 +57,11 @@ describe("resolvers -> Mutation -> addUserImage", () => {
           ...actualConstants,
         };
       });
+
       const { addUserImage: addUserImageResolverUserError } = await import(
         "../../../src/resolvers/Mutation/addUserImage"
       );
+
       await addUserImageResolverUserError?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_MESSAGE);

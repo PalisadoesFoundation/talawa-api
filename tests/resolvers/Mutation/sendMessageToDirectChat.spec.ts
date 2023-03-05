@@ -11,8 +11,19 @@ import { MutationSendMessageToDirectChatArgs } from "../../../src/types/generate
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { sendMessageToDirectChat as sendMessageToDirectChatResolver } from "../../../src/resolvers/Mutation/sendMessageToDirectChat";
-import { CHAT_NOT_FOUND, USER_NOT_FOUND } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  CHAT_NOT_FOUND_MESSAGE,
+  USER_NOT_FOUND_MESSAGE,
+} from "../../../src/constants";
+import {
+  beforeAll,
+  afterAll,
+  afterEach,
+  describe,
+  it,
+  expect,
+  vi,
+} from "vitest";
 import { createTestUserFunc } from "../../helpers/user";
 import { testUserType } from "../../helpers/userAndOrg";
 
@@ -63,7 +74,16 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
+  afterEach(async () => {
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
+
   it(`throws NotFoundError if no directChat exists with _id === args.chatId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationSendMessageToDirectChatArgs = {
         chatId: Types.ObjectId().toString(),
@@ -72,13 +92,30 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
 
       const context = { userId: testUsers[0]!.id };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { sendMessageToDirectChat: sendMessageToDirectChatResolver } =
+        await import("../../../src/resolvers/Mutation/sendMessageToDirectChat");
+
       await sendMessageToDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(CHAT_NOT_FOUND);
+      expect(spy).toBeCalledWith(CHAT_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(CHAT_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws NotFoundError current user with _id === context.userId does not exist`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationSendMessageToDirectChatArgs = {
         chatId: testDirectChat.id,
@@ -89,9 +126,13 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      const { sendMessageToDirectChat: sendMessageToDirectChatResolver } =
+        await import("../../../src/resolvers/Mutation/sendMessageToDirectChat");
+
       await sendMessageToDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 

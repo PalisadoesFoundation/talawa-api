@@ -6,11 +6,11 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { removeEvent as removeEventResolver } from "../../../src/resolvers/Mutation/removeEvent";
 import {
-  EVENT_NOT_FOUND,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
+  EVENT_NOT_FOUND_MESSAGE,
+  USER_NOT_AUTHORIZED_MESSAGE,
+  USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { testOrganizationType, testUserType } from "../../helpers/userAndOrg";
 import { createTestEvent, testEventType } from "../../helpers/events";
 
@@ -33,6 +33,10 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> removeEvent", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveEventArgs = {
         id: "",
@@ -42,13 +46,31 @@ describe("resolvers -> Mutation -> removeEvent", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { removeEvent: removeEventResolver } = await import(
+        "../../../src/resolvers/Mutation/removeEvent"
+      );
+
       await removeEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no event exists with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveEventArgs = {
         id: Types.ObjectId().toString(),
@@ -58,15 +80,33 @@ describe("resolvers -> Mutation -> removeEvent", () => {
         userId: testUser!.id,
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { removeEvent: removeEventResolver } = await import(
+        "../../../src/resolvers/Mutation/removeEvent"
+      );
+
       await removeEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(EVENT_NOT_FOUND);
+      expect(spy).toBeCalledWith(EVENT_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(EVENT_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws UnauthorizedError if user with _id === context.userId is neither an
   admin of organization with _id === event.organization for event with _id === args.id
   or an admin for event with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       await User.updateOne(
         {
@@ -98,9 +138,23 @@ describe("resolvers -> Mutation -> removeEvent", () => {
         userId: testUser!.id,
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { removeEvent: removeEventResolver } = await import(
+        "../../../src/resolvers/Mutation/removeEvent"
+      );
+
       await removeEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
     }
   });
 

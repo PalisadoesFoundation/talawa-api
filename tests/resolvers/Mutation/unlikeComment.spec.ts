@@ -5,8 +5,11 @@ import { MutationUnlikeCommentArgs } from "../../../src/types/generatedGraphQLTy
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { unlikeComment as unlikeCommentResolver } from "../../../src/resolvers/Mutation/unlikeComment";
-import { COMMENT_NOT_FOUND, USER_NOT_FOUND } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  COMMENT_NOT_FOUND_MESSAGE,
+  USER_NOT_FOUND_MESSAGE,
+} from "../../../src/constants";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { testUserType } from "../../helpers/userAndOrg";
 import { createTestPost } from "../../helpers/posts";
 
@@ -49,6 +52,10 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> unlikeComment", () => {
   it(`throws NotFoundError if current user with _id === context.userId does not exist`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationUnlikeCommentArgs = {
         id: "",
@@ -58,13 +65,31 @@ describe("resolvers -> Mutation -> unlikeComment", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { unlikeComment: unlikeCommentResolver } = await import(
+        "../../../src/resolvers/Mutation/unlikeComment"
+      );
+
       await unlikeCommentResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no comment exists with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationUnlikeCommentArgs = {
         id: Types.ObjectId().toString(),
@@ -74,9 +99,23 @@ describe("resolvers -> Mutation -> unlikeComment", () => {
         userId: testUser!._id,
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { unlikeComment: unlikeCommentResolver } = await import(
+        "../../../src/resolvers/Mutation/unlikeComment"
+      );
+
       await unlikeCommentResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(COMMENT_NOT_FOUND);
+      expect(spy).toBeCalledWith(COMMENT_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(COMMENT_NOT_FOUND_MESSAGE);
     }
   });
 
