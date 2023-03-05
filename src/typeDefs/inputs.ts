@@ -126,7 +126,6 @@ export const inputs = gql`
     visibleInSearch: Boolean!
     apiUrl: URL
     image: String
-    tags: [String!]!
   }
 
   input OrganizationWhereInput {
