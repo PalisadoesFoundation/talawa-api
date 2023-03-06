@@ -14,19 +14,23 @@ export const connect = async () => {
     const errorMessage = error.toString();
     if (errorMessage.includes("ECONNREFUSED")) {
       logger.error("\n\n\n\x1b[1m\x1b[31m%s\x1b[0m", error);
-      console.log(
+      logger.error(
         "\n\n\x1b[1m\x1b[34m%s\x1b[0m",
-        `- Connection to MongoDB failed: This may have caused due to-`
+        `- Connection to MongoDB failed: There are several potential causes for this issue, including:`
       );
-      console.log("\x1b[1m\x1b[33m%s\x1b[0m", `- Network Issues`);
-      console.log("\x1b[1m\x1b[33m%s\x1b[0m", `- Invalid Connection String`);
-      console.log(
+      logger.error("\x1b[1m\x1b[33m%s\x1b[0m", `- Unstable Network Connection`);
+      logger.error("\x1b[1m\x1b[33m%s\x1b[0m", `- Invalid Connection String`);
+      logger.error(
         "\x1b[1m\x1b[33m%s\x1b[0m",
-        `- MongoDB Server is not running`
+        `- MongoDB Server may not be running`
       );
-      console.log(
+      logger.error(
         "\x1b[1m\x1b[33m%s\x1b[0m",
-        `- Please check your internet connection and ensure that your database is configured correctly.`
+        `- Firewall may not be configured to allow incoming connections on MongoDB port.`
+      );
+      logger.error(
+        "\x1b[1m\x1b[31m%s\x1b[0m",
+        `- Please try again with the fixes !`
       );
     } else {
       logger.error("Error while connecting to mongo database", error);
