@@ -6,11 +6,11 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { sendMembershipRequest as sendMembershipRequestResolver } from "../../../src/resolvers/Mutation/sendMembershipRequest";
 import {
-  MEMBERSHIP_REQUEST_ALREADY_EXISTS,
-  ORGANIZATION_NOT_FOUND,
-  USER_NOT_FOUND,
+  MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_MESSAGE,
+  USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { testOrganizationType, testUserType } from "../../helpers/userAndOrg";
 import {
   createTestMembershipRequest,
@@ -36,6 +36,10 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> sendMembershipRequest", () => {
   it(`throws NotFoundError if the current user with _id === context.userId does not exist`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationSendMembershipRequestArgs = {
         organizationId: "",
@@ -45,13 +49,30 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { sendMembershipRequest: sendMembershipRequestResolver } =
+        await import("../../../src/resolvers/Mutation/sendMembershipRequest");
+
       await sendMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no organization exists with _id === args.organizationId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationSendMembershipRequestArgs = {
         organizationId: Types.ObjectId().toString(),
@@ -61,14 +82,31 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
         userId: testUser!.id,
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { sendMembershipRequest: sendMembershipRequestResolver } =
+        await import("../../../src/resolvers/Mutation/sendMembershipRequest");
+
       await sendMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
     }
   });
 
-  it(`throws ConflictError if a membershipRequest with fields user === context.userId
-  and organization === args.organizationId already exists`, async () => {
+  it(`throws NotFoundError if a membershipRequest with fields user === context.userId
+  and organization === args.organizationId does not exists`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationSendMembershipRequestArgs = {
         organizationId: testOrganization!.id,
@@ -78,9 +116,22 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
         userId: testUser!.id,
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { sendMembershipRequest: sendMembershipRequestResolver } =
+        await import("../../../src/resolvers/Mutation/sendMembershipRequest");
+
       await sendMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(MEMBERSHIP_REQUEST_ALREADY_EXISTS);
+      expect(spy).toBeCalledWith(MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE);
     }
   });
 

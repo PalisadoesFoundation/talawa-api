@@ -10,11 +10,11 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { sendMessageToGroupChat as sendMessageToGroupChatResolver } from "../../../src/resolvers/Mutation/sendMessageToGroupChat";
 import {
-  CHAT_NOT_FOUND,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
+  CHAT_NOT_FOUND_MESSAGE,
+  USER_NOT_AUTHORIZED_MESSAGE,
+  USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
   createTestUserAndOrganization,
   testUserType,
@@ -45,6 +45,10 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
   it(`throws NotFoundError if no groupChat exists with _id === args.chatId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationSendMessageToGroupChatArgs = {
         chatId: Types.ObjectId().toString(),
@@ -53,13 +57,30 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
 
       const context = { userId: testUser!.id };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { sendMessageToGroupChat: sendMessageToGroupChatResolver } =
+        await import("../../../src/resolvers/Mutation/sendMessageToGroupChat");
+
       await sendMessageToGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(CHAT_NOT_FOUND);
+      expect(spy).toBeCalledWith(CHAT_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(CHAT_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws NotFoundError current user with _id === context.userId does not exist`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationSendMessageToGroupChatArgs = {
         chatId: testGroupChat.id,
@@ -70,14 +91,31 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { sendMessageToGroupChat: sendMessageToGroupChatResolver } =
+        await import("../../../src/resolvers/Mutation/sendMessageToGroupChat");
+
       await sendMessageToGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws UnauthorizedError if users field of groupChat with _id === args.chatId
   does not contain current user with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationSendMessageToGroupChatArgs = {
         chatId: testGroupChat.id,
@@ -88,9 +126,22 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
         userId: testUser!.id,
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { sendMessageToGroupChat: sendMessageToGroupChatResolver } =
+        await import("../../../src/resolvers/Mutation/sendMessageToGroupChat");
+
       await sendMessageToGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
     }
   });
 

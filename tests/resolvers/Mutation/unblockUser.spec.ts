@@ -6,11 +6,11 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { unblockUser as unblockUserResolver } from "../../../src/resolvers/Mutation/unblockUser";
 import {
-  ORGANIZATION_NOT_FOUND,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
+  ORGANIZATION_NOT_FOUND_MESSAGE,
+  USER_NOT_AUTHORIZED_MESSAGE,
+  USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
   createTestUserAndOrganization,
   testOrganizationType,
@@ -34,6 +34,10 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> unblockUser", () => {
   it(`throws NotFoundError if no organization exists with with _id === args.organizationId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationUnblockUserArgs = {
         organizationId: Types.ObjectId().toString(),
@@ -44,13 +48,31 @@ describe("resolvers -> Mutation -> unblockUser", () => {
         userId: "",
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { unblockUser: unblockUserResolver } = await import(
+        "../../../src/resolvers/Mutation/unblockUser"
+      );
+
       await unblockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no user exists with _id === args.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationUnblockUserArgs = {
         organizationId: testOrganization!.id,
@@ -61,14 +83,32 @@ describe("resolvers -> Mutation -> unblockUser", () => {
         userId: "",
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { unblockUser: unblockUserResolver } = await import(
+        "../../../src/resolvers/Mutation/unblockUser"
+      );
+
       await unblockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
   it(`throws UnauthorizedError if current user with _id === context.userId is not
   an admin of the organization with _id === args.organizationId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationUnblockUserArgs = {
         organizationId: testOrganization!.id,
@@ -79,14 +119,32 @@ describe("resolvers -> Mutation -> unblockUser", () => {
         userId: testUser!.id,
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { unblockUser: unblockUserResolver } = await import(
+        "../../../src/resolvers/Mutation/unblockUser"
+      );
+
       await unblockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
     }
   });
 
   it(`throws UnauthorizedError if user with _id === args.userId does not exist
   in blockedUsers list of organization with _id === args.organizationId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       await Organization.updateOne(
         {
@@ -119,9 +177,23 @@ describe("resolvers -> Mutation -> unblockUser", () => {
         userId: testUser!.id,
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { unblockUser: unblockUserResolver } = await import(
+        "../../../src/resolvers/Mutation/unblockUser"
+      );
+
       await unblockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
     }
   });
 

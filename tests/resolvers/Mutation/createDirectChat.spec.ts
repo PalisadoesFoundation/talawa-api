@@ -100,7 +100,6 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
 
@@ -114,7 +113,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
     }
   });
 
-  it(`throws NotFoundError message if no user exists with _id === context.userIds when [IN_PRODUCTION === TRUE]`, async () => {
+  it(`throws NotFoundError message if no user exists with _id === context.userIds`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -136,7 +135,6 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
       const { createDirectChat: createDirectChatResolver } = await import(

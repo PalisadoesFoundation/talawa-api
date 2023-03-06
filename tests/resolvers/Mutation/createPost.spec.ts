@@ -84,7 +84,6 @@ describe("resolvers -> Mutation -> createPost", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
 
@@ -125,7 +124,6 @@ describe("resolvers -> Mutation -> createPost", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
 
@@ -169,7 +167,6 @@ describe("resolvers -> Mutation -> createPost", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
 

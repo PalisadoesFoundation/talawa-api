@@ -3,12 +3,9 @@ import { DirectChat, DirectChatMessage, Organization } from "../../models";
 import { adminCheck } from "../../utilities";
 import { errors, requestContext } from "../../libraries";
 import {
-  CHAT_NOT_FOUND,
   CHAT_NOT_FOUND_CODE,
   CHAT_NOT_FOUND_MESSAGE,
   CHAT_NOT_FOUND_PARAM,
-  IN_PRODUCTION,
-  ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_PARAM,
@@ -26,9 +23,7 @@ export const removeDirectChat: MutationResolvers["removeDirectChat"] = async (
   // Checks whether organization exists.
   if (!organization) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? ORGANIZATION_NOT_FOUND
-        : requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
+      requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
       ORGANIZATION_NOT_FOUND_CODE,
       ORGANIZATION_NOT_FOUND_PARAM
     );
@@ -41,9 +36,7 @@ export const removeDirectChat: MutationResolvers["removeDirectChat"] = async (
   // Checks whether directChat exists.
   if (!directChat) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? CHAT_NOT_FOUND
-        : requestContext.translate(CHAT_NOT_FOUND_MESSAGE),
+      requestContext.translate(CHAT_NOT_FOUND_MESSAGE),
       CHAT_NOT_FOUND_CODE,
       CHAT_NOT_FOUND_PARAM
     );

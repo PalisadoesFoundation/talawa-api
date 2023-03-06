@@ -2,16 +2,12 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { GroupChat, GroupChatMessage, User } from "../../models";
 import {
-  IN_PRODUCTION,
-  USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_PARAM,
-  CHAT_NOT_FOUND,
   CHAT_NOT_FOUND_PARAM,
   CHAT_NOT_FOUND_MESSAGE,
   CHAT_NOT_FOUND_CODE,
-  USER_NOT_FOUND,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
@@ -25,9 +21,7 @@ export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"]
 
     if (!groupChat) {
       throw new errors.NotFoundError(
-        IN_PRODUCTION !== true
-          ? CHAT_NOT_FOUND
-          : requestContext.translate(CHAT_NOT_FOUND_MESSAGE),
+        requestContext.translate(CHAT_NOT_FOUND_MESSAGE),
         CHAT_NOT_FOUND_CODE,
         CHAT_NOT_FOUND_PARAM
       );
@@ -39,9 +33,7 @@ export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"]
 
     if (currentUserExists === false) {
       throw new errors.NotFoundError(
-        IN_PRODUCTION !== true
-          ? USER_NOT_FOUND
-          : requestContext.translate(USER_NOT_FOUND_MESSAGE),
+        requestContext.translate(USER_NOT_FOUND_MESSAGE),
         USER_NOT_FOUND_CODE,
         USER_NOT_FOUND_PARAM
       );
@@ -57,9 +49,7 @@ export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"]
     */
     if (currentUserIsAMemberOfGroupChat === false) {
       throw new errors.UnauthorizedError(
-        IN_PRODUCTION !== true
-          ? USER_NOT_AUTHORIZED
-          : requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
+        requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
         USER_NOT_AUTHORIZED_CODE,
         USER_NOT_AUTHORIZED_PARAM
       );

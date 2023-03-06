@@ -8,10 +8,7 @@ import {
   androidFirebaseOptions,
   iosFirebaseOptions,
 } from "../../../src/config";
-import {
-  ORGANIZATION_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-} from "../../../src/constants";
+import { ORGANIZATION_NOT_FOUND_MESSAGE } from "../../../src/constants";
 import { nanoid } from "nanoid";
 import {
   beforeAll,
@@ -56,28 +53,6 @@ describe("resolvers -> Mutation -> signUp", () => {
     vi.restoreAllMocks();
   });
 
-  it(`throws ConflictError if a user already with email === args.data.email already exists`, async () => {
-    try {
-      const args: MutationSignUpArgs = {
-        data: {
-          email: testUser!.email,
-          firstName: "firstName",
-          lastName: "lastName",
-          password: "password",
-          appLanguageCode: "en",
-          organizationUserBelongsToId: undefined,
-        },
-      };
-      const { signUp: signUpResolver } = await import(
-        "../../../src/resolvers/Mutation/signUp"
-      );
-
-      await signUpResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual("Email already exists");
-    }
-  });
-
   it(`creates the user and returns the created user with accessToken, refreshToken,
   androidFirebaseOptions, iosFirebaseOptions`, async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
@@ -119,30 +94,6 @@ describe("resolvers -> Mutation -> signUp", () => {
 
     expect(typeof signUpPayload?.refreshToken).toEqual("string");
     expect(signUpPayload?.refreshToken.length).toBeGreaterThan(1);
-  });
-
-  it(`throws NotFoundError if no organization exists with _id === args.data.organizationUserBelongsToId`, async () => {
-    try {
-      const email = `email${nanoid().toLowerCase()}@gmail.com`;
-
-      const args: MutationSignUpArgs = {
-        data: {
-          email,
-          firstName: "firstName",
-          lastName: "lastName",
-          password: "password",
-          appLanguageCode: "en",
-          organizationUserBelongsToId: Types.ObjectId().toString(),
-        },
-      };
-      const { signUp: signUpResolver } = await import(
-        "../../../src/resolvers/Mutation/signUp"
-      );
-
-      await signUpResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
-    }
   });
 
   it(`creates the user with provided organizationUserBelongsToId and returns the
@@ -220,13 +171,13 @@ describe("resolvers -> Mutation -> signUp", () => {
   });
 });
 
-describe("resolvers -> Mutation -> signUp - [IN_PRODUCTION === TRUE]", () => {
+describe("resolvers -> Mutation -> signUp", () => {
   afterEach(async () => {
     vi.resetModules();
     vi.restoreAllMocks();
   });
 
-  it(`throws ConflictError  message if a user already with email === args.data.email already exists when [IN_PRODUCTION === TRUE]`, async () => {
+  it(`throws ConflictError  message if a user already with email === args.data.email already exists`, async () => {
     const EMAIL_MESSAGE = "email.alreadyExists";
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
@@ -249,7 +200,6 @@ describe("resolvers -> Mutation -> signUp - [IN_PRODUCTION === TRUE]", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
       const { signUp: signUpResolver } = await import(
@@ -262,7 +212,7 @@ describe("resolvers -> Mutation -> signUp - [IN_PRODUCTION === TRUE]", () => {
       expect(error.message).toEqual(EMAIL_MESSAGE);
     }
   });
-  it(`throws NotFoundError message if no organization exists with _id === args.data.organizationUserBelongsToId when [IN_PRODUCTION === TRUE]`, async () => {
+  it(`throws NotFoundError message if no organization exists with _id === args.data.organizationUserBelongsToId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -286,7 +236,6 @@ describe("resolvers -> Mutation -> signUp - [IN_PRODUCTION === TRUE]", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
       const { signUp: signUpResolver } = await import(

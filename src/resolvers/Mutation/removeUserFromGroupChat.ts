@@ -1,14 +1,10 @@
 import {
-  CHAT_NOT_FOUND,
   CHAT_NOT_FOUND_CODE,
   CHAT_NOT_FOUND_MESSAGE,
   CHAT_NOT_FOUND_PARAM,
-  IN_PRODUCTION,
-  ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_PARAM,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_CODE,
-  USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_PARAM,
@@ -27,9 +23,7 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
     // Checks whether groupChat exists.
     if (!groupChat) {
       throw new errors.NotFoundError(
-        IN_PRODUCTION !== true
-          ? CHAT_NOT_FOUND
-          : requestContext.translate(CHAT_NOT_FOUND_MESSAGE),
+        requestContext.translate(CHAT_NOT_FOUND_MESSAGE),
         CHAT_NOT_FOUND_CODE,
         CHAT_NOT_FOUND_PARAM
       );
@@ -42,9 +36,7 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
     // Checks whether organization exists.
     if (!organization) {
       throw new errors.NotFoundError(
-        IN_PRODUCTION !== true
-          ? ORGANIZATION_NOT_FOUND
-          : requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
+        requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
         ORGANIZATION_NOT_FOUND_CODE,
         ORGANIZATION_NOT_FOUND_PARAM
       );
@@ -60,9 +52,7 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
     // Checks if user with _id === args.userId is not a member of groupChat.
     if (userIsMemberOfGroupChat === false) {
       throw new errors.UnauthorizedError(
-        IN_PRODUCTION !== true
-          ? USER_NOT_AUTHORIZED
-          : requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
+        requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
         USER_NOT_AUTHORIZED_CODE,
         USER_NOT_AUTHORIZED_PARAM
       );

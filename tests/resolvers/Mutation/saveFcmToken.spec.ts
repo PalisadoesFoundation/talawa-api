@@ -5,8 +5,8 @@ import { MutationSaveFcmTokenArgs } from "../../../src/types/generatedGraphQLTyp
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { saveFcmToken as saveFcmTokenResolver } from "../../../src/resolvers/Mutation/saveFcmToken";
-import { USER_NOT_FOUND } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUserFunc, testUserType } from "../../helpers/user";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
@@ -23,6 +23,10 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> saveFcmToken", () => {
   it(`throws NotFoundError current user with _id === context.userId does not exist`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationSaveFcmTokenArgs = {
         token: "",
@@ -32,9 +36,23 @@ describe("resolvers -> Mutation -> saveFcmToken", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      vi.doMock("../../../src/constants", async () => {
+        const actualConstants: object = await vi.importActual(
+          "../../../src/constants"
+        );
+        return {
+          ...actualConstants,
+        };
+      });
+
+      const { saveFcmToken: saveFcmTokenResolver } = await import(
+        "../../../src/resolvers/Mutation/saveFcmToken"
+      );
+
       await saveFcmTokenResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
     }
   });
 
