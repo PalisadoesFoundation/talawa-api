@@ -15,11 +15,11 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
   args,
   context
 ) => {
-  const currentUserExists = await User.findOne({
+  const currentUser = await User.findOne({
     _id: context.userId,
   });
 
-  if (!currentUserExists) {
+  if (!currentUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_MESSAGE),
       USER_NOT_FOUND_CODE,
@@ -46,12 +46,10 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
   if (args.file) {
     uploadImageFileName = await uploadEncodedImage(
       args.file,
-      currentUserExists?.image
+      currentUser?.image
     );
   }
-  const currentUser = await User.findById({
-    _id: context.userId,
-  });
+
   // Update User
   if (uploadImageFileName) {
     return await User.findOneAndUpdate(

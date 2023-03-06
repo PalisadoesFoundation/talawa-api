@@ -4,7 +4,7 @@ export interface Interface_EncodedImage {
   _id: Types.ObjectId;
   fileName: string;
   content: string;
-  numberOfUses: Number;
+  numberOfUses: number;
 }
 
 const encodedImageSchema = new Schema({
@@ -18,6 +18,7 @@ const encodedImageSchema = new Schema({
   },
   numberOfUses: {
     type: Number,
+    required: true,
     default: 1,
   },
 });

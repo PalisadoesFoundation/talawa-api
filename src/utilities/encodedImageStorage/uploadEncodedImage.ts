@@ -10,9 +10,9 @@ import { deletePreviousImage } from "./deletePreviousImage";
 
 export const uploadEncodedImage = async (
   encodedImageURL: string,
-  previousImagePath: string | undefined | null
+  previousImagePath?: string | null
 ) => {
-  const isURLValidImage: boolean = encodedImageExtentionCheck(encodedImageURL);
+  const isURLValidImage = encodedImageExtentionCheck(encodedImageURL);
 
   if (!isURLValidImage) {
     throw new errors.InvalidFileTypeError(
