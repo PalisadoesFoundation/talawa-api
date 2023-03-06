@@ -34,7 +34,7 @@
   "root": true,
   "rules": {
     "eqeqeq": ["error", "always"],
-    "linebreak-style": ["error", "windows"],
+    "linebreak-style": ["error", "unix"],
     "no-unused-vars": [
       "error",
       {
