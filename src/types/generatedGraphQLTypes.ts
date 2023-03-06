@@ -446,13 +446,13 @@ export type MutationAddLanguageTranslationArgs = {
 
 
 export type MutationAddOrganizationImageArgs = {
-  file: Scalars['Upload'];
+  file: Scalars['String'];
   organizationId: Scalars['String'];
 };
 
 
 export type MutationAddUserImageArgs = {
-  file: Scalars['Upload'];
+  file: Scalars['String'];
 };
 
 
@@ -552,7 +552,7 @@ export type MutationCreatePluginArgs = {
 
 export type MutationCreatePostArgs = {
   data: PostInput;
-  file?: InputMaybe<Scalars['Upload']>;
+  file?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -713,7 +713,7 @@ export type MutationSendMessageToGroupChatArgs = {
 
 export type MutationSignUpArgs = {
   data: UserInput;
-  file?: InputMaybe<Scalars['Upload']>;
+  file?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -786,7 +786,7 @@ export type MutationUpdateTaskArgs = {
 
 export type MutationUpdateUserProfileArgs = {
   data?: InputMaybe<UpdateUserInput>;
-  file?: InputMaybe<Scalars['Upload']>;
+  file?: InputMaybe<Scalars['String']>;
 };
 
 
