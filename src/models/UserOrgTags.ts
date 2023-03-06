@@ -9,6 +9,26 @@ export interface Interface_UserOrgTags {
   tags: Array<string>;
 }
 
+// Validator functions to check if a tag string is valid is or not
+const validateTags = [
+  // Check length of the tag
+  {
+    validator: function (tag: string) {
+      return tag.length <= 25;
+    },
+    message: ({ value }: { value: string }) =>
+      `${value} is not a valid tag as all tags must have a maximum length of 25 characters.`,
+  },
+  // Check the tag for allowed characters
+  {
+    validator: function (tag: string) {
+      return /^[a-zA-Z0-9_\- ]+$/.test(tag);
+    },
+    message: ({ value }: { value: string }) =>
+      `${value} is not a valid tag as a tag can only have alphabets, digits, dashes, underscores and spaces.`,
+  },
+];
+
 const userOrgTagsSchema = new Schema({
   user: {
     type: Schema.Types.ObjectId,
@@ -21,14 +41,7 @@ const userOrgTagsSchema = new Schema({
   tags: [
     {
       type: String,
-      // Test that each individual tag should not be more than 25 characters in length
-      validate: {
-        validator: function (v: string) {
-          return v.length <= 25;
-        },
-        message: ({ value }: { value: string }) =>
-          `${value} is not a valid tag as all tags must have a maximum length of 25 characters.`,
-      },
+      validate: validateTags,
     },
   ],
 });
