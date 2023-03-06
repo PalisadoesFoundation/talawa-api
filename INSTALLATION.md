@@ -203,7 +203,7 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 
 ```
 
-# Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter
+## Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter
 
 When we create the first user, that should be super admin. To promote the user to super admin we either
 need another super admin or have to make changes in DB directly. By creating the user with this email
