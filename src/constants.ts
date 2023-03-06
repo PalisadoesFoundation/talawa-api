@@ -56,6 +56,12 @@ export const ORGANIZATION_NOT_FOUND_CODE = "organization.notFound";
 export const ORGANIZATION_NOT_FOUND_MESSAGE = "organization.notFound";
 export const ORGANIZATION_NOT_FOUND_PARAM = "organization";
 
+export const ORGANIZATION_IMAGE_NOT_FOUND = "OrganizationImage not found";
+export const ORGANIZATION_IMAGE_NOT_FOUND_CODE = "organizationImage.notFound";
+export const ORGANIZATION_IMAGE_NOT_FOUND_MESSAGE =
+  "organizationImage.notFound";
+export const ORGANIZATION_IMAGE_NOT_FOUND_PARAM = "organizationImage";
+
 export const POST_NOT_FOUND = "Post not found";
 export const POST_NOT_FOUND_CODE = "post.notFound";
 export const POST_NOT_FOUND_MESSAGE = "post.notFound";

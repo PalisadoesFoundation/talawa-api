@@ -63,7 +63,6 @@ describe("resolvers -> Mutation -> removePost", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
 
@@ -98,7 +97,6 @@ describe("resolvers -> Mutation -> removePost", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
 
@@ -133,7 +131,6 @@ describe("resolvers -> Mutation -> removePost", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
 
@@ -169,7 +166,6 @@ describe("resolvers -> Mutation -> removePost", () => {
       );
       return {
         ...actualConstants,
-        IN_PRODUCTION: true,
       };
     });
 

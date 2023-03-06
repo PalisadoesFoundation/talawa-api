@@ -20,11 +20,8 @@ import {
   vi,
 } from "vitest";
 import {
-  USER_NOT_FOUND,
-  USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_FOUND_MESSAGE,
-  EVENT_PROJECT_NOT_FOUND,
   EVENT_PROJECT_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import { testUserType } from "../../helpers/userAndOrg";
@@ -85,25 +82,6 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
       userId: null,
     };
 
-    const { removeEventProject } = await import(
-      "../../../src/resolvers/Mutation/removeEventProject"
-    );
-
-    expect(async () => {
-      await removeEventProject(null, args, context);
-    }).rejects.toThrowError(USER_NOT_FOUND);
-  });
-  it("Should throw an error if the user is not found and IN_PRODUCTION is true", async () => {
-    const args = {
-      data: {
-        eventId: null,
-      },
-    };
-
-    const context = {
-      userId: null,
-    };
-
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
@@ -116,7 +94,6 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
       );
       return {
         ...actualConstants,
-        IN_PRODUCTION: true,
       };
     });
 
@@ -140,23 +117,6 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
       userId: testUser!._id,
     };
 
-    const { removeEventProject } = await import(
-      "../../../src/resolvers/Mutation/removeEventProject"
-    );
-
-    expect(async () => {
-      await removeEventProject(null, args, context);
-    }).rejects.toThrowError(EVENT_PROJECT_NOT_FOUND);
-  });
-  it("Should throw an error if the eventProject is not found and IN_PRODUCTION is true", async () => {
-    const args = {
-      id: null,
-    };
-
-    const context = {
-      userId: testUser!._id,
-    };
-
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
@@ -169,7 +129,6 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
       );
       return {
         ...actualConstants,
-        IN_PRODUCTION: true,
       };
     });
 
@@ -195,23 +154,6 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
       userId: testUserNotCreatorOfEventProject!._id,
     };
 
-    const { removeEventProject } = await import(
-      "../../../src/resolvers/Mutation/removeEventProject"
-    );
-
-    expect(async () => {
-      await removeEventProject(null, args, context);
-    }).rejects.toThrowError(USER_NOT_AUTHORIZED);
-  });
-  it("Should throw an error if the user is not the creator of the eventProject and IN_PRODUCTION is true", async () => {
-    const args = {
-      id: testEventProject._id,
-    };
-
-    const context = {
-      userId: testUserNotCreatorOfEventProject!._id,
-    };
-
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
@@ -224,7 +166,6 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
       );
       return {
         ...actualConstants,
-        IN_PRODUCTION: true,
       };
     });
 

@@ -69,7 +69,6 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
 
@@ -100,7 +99,6 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
 
@@ -138,7 +136,6 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
         );
         return {
           ...actualConstants,
-          IN_PRODUCTION: true,
         };
       });
 

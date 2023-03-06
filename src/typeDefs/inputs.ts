@@ -249,6 +249,7 @@ export const inputs = gql`
     description: String
     isPublic: Boolean
     visibleInSearch: Boolean
+    location: String
   }
 
   input UpdateTaskInput {
