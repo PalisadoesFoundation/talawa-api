@@ -1,8 +1,6 @@
 import { adminCheck } from "../../utilities";
 import {
-  CHAT_NOT_FOUND_CODE,
-  CHAT_NOT_FOUND_MESSAGE,
-  CHAT_NOT_FOUND_PARAM,
+  CHAT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_PARAM,
@@ -23,9 +21,9 @@ export const removeGroupChat: MutationResolvers["removeGroupChat"] = async (
   // Checks if a groupChat with _id === args.chatId exists.
   if (!groupChat) {
     throw new errors.NotFoundError(
-      requestContext.translate(CHAT_NOT_FOUND_MESSAGE),
-      CHAT_NOT_FOUND_CODE,
-      CHAT_NOT_FOUND_PARAM
+      requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
+      CHAT_NOT_FOUND_ERROR.CODE,
+      CHAT_NOT_FOUND_ERROR.PARAM
     );
   }
 

@@ -4,9 +4,7 @@ import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
 import { User, GroupChat, Organization } from "../../models";
 import {
-  CHAT_NOT_FOUND_MESSAGE,
-  CHAT_NOT_FOUND_CODE,
-  CHAT_NOT_FOUND_PARAM,
+  CHAT_NOT_FOUND_ERROR,
   USER_ALREADY_MEMBER_CODE,
   USER_ALREADY_MEMBER_MESSAGE,
   USER_ALREADY_MEMBER_PARAM,
@@ -27,9 +25,9 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
     // Checks whether groupChat exists.
     if (!groupChat) {
       throw new errors.NotFoundError(
-        requestContext.translate(CHAT_NOT_FOUND_MESSAGE),
-        CHAT_NOT_FOUND_CODE,
-        CHAT_NOT_FOUND_PARAM
+        requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
+        CHAT_NOT_FOUND_ERROR.CODE,
+        CHAT_NOT_FOUND_ERROR.PARAM
       );
     }
 

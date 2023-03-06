@@ -6,7 +6,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { removeUserFromGroupChat as removeUserFromGroupChatResolver } from "../../../src/resolvers/Mutation/removeUserFromGroupChat";
 import {
-  CHAT_NOT_FOUND,
+  CHAT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND,
   USER_NOT_AUTHORIZED,
 } from "../../../src/constants";
@@ -48,7 +48,7 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
 
       await removeUserFromGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(CHAT_NOT_FOUND);
+      expect(error.message).toEqual(CHAT_NOT_FOUND_ERROR.DESC);
     }
   });
 

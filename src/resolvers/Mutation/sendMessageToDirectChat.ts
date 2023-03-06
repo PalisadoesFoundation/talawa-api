@@ -3,10 +3,7 @@ import { errors, requestContext } from "../../libraries";
 import { DirectChat, DirectChatMessage, User } from "../../models";
 import {
   IN_PRODUCTION,
-  CHAT_NOT_FOUND,
-  CHAT_NOT_FOUND_MESSAGE,
-  CHAT_NOT_FOUND_CODE,
-  CHAT_NOT_FOUND_PARAM,
+  CHAT_NOT_FOUND_ERROR,
   USER_NOT_FOUND,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
@@ -22,10 +19,10 @@ export const sendMessageToDirectChat: MutationResolvers["sendMessageToDirectChat
     if (!directChat) {
       throw new errors.NotFoundError(
         IN_PRODUCTION !== true
-          ? CHAT_NOT_FOUND
-          : requestContext.translate(CHAT_NOT_FOUND_MESSAGE),
-        CHAT_NOT_FOUND_CODE,
-        CHAT_NOT_FOUND_PARAM
+          ? CHAT_NOT_FOUND_ERROR.DESC
+          : requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
+        CHAT_NOT_FOUND_ERROR.CODE,
+        CHAT_NOT_FOUND_ERROR.PARAM
       );
     }
 

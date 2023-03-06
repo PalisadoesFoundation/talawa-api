@@ -9,10 +9,9 @@ import { MutationRemoveDirectChatArgs } from "../../../src/types/generatedGraphQ
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
-  CHAT_NOT_FOUND,
+  CHAT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_MESSAGE,
-  CHAT_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED_ADMIN,
 } from "../../../src/constants";
 import {
@@ -168,7 +167,7 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
       );
       await removeDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(CHAT_NOT_FOUND);
+      expect(error.message).toEqual(CHAT_NOT_FOUND_ERROR.DESC);
     }
   });
 
@@ -203,8 +202,10 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
       );
       await removeDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(CHAT_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${CHAT_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenCalledWith(CHAT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${CHAT_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 

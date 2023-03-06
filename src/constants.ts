@@ -1,3 +1,9 @@
+export const CHAT_NOT_FOUND_ERROR = {
+  DESC: "Chat not found",
+  CODE: "chat.notFound",
+  MESSAGE: "chat.notFound",
+  PARAM: "chat",
+};
 export const CHAT_NOT_FOUND = "Chat not found";
 export const CHAT_NOT_FOUND_CODE = "chat.notFound";
 export const CHAT_NOT_FOUND_MESSAGE = "chat.notFound";

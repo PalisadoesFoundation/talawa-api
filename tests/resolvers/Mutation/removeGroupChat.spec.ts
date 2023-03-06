@@ -5,7 +5,7 @@ import { MutationRemoveGroupChatArgs } from "../../../src/types/generatedGraphQL
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
-  CHAT_NOT_FOUND_MESSAGE,
+  CHAT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED_ADMIN,
 } from "../../../src/constants";
@@ -82,8 +82,10 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
 
       await removeGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(CHAT_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${CHAT_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenCalledWith(CHAT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${CHAT_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 

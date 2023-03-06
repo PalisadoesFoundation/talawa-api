@@ -1,8 +1,5 @@
 import {
-  CHAT_NOT_FOUND,
-  CHAT_NOT_FOUND_CODE,
-  CHAT_NOT_FOUND_MESSAGE,
-  CHAT_NOT_FOUND_PARAM,
+  CHAT_NOT_FOUND_ERROR,
   IN_PRODUCTION,
   ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_PARAM,
@@ -28,10 +25,10 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
     if (!groupChat) {
       throw new errors.NotFoundError(
         IN_PRODUCTION !== true
-          ? CHAT_NOT_FOUND
-          : requestContext.translate(CHAT_NOT_FOUND_MESSAGE),
-        CHAT_NOT_FOUND_CODE,
-        CHAT_NOT_FOUND_PARAM
+          ? CHAT_NOT_FOUND_ERROR.DESC
+          : requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
+        CHAT_NOT_FOUND_ERROR.CODE,
+        CHAT_NOT_FOUND_ERROR.PARAM
       );
     }
 

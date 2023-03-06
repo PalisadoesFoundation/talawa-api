@@ -10,7 +10,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { sendMessageToGroupChat as sendMessageToGroupChatResolver } from "../../../src/resolvers/Mutation/sendMessageToGroupChat";
 import {
-  CHAT_NOT_FOUND,
+  CHAT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED,
   USER_NOT_FOUND,
 } from "../../../src/constants";
@@ -55,7 +55,7 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
 
       await sendMessageToGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(CHAT_NOT_FOUND);
+      expect(error.message).toEqual(CHAT_NOT_FOUND_ERROR.DESC);
     }
   });
 

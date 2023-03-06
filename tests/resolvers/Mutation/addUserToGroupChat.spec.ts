@@ -5,7 +5,7 @@ import { MutationAddUserToGroupChatArgs } from "../../../src/types/generatedGrap
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
-  CHAT_NOT_FOUND_MESSAGE,
+  CHAT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_ALREADY_MEMBER_MESSAGE,
   USER_NOT_AUTHORIZED_ADMIN,
@@ -76,8 +76,8 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       );
       await addUserToGroupChat?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(CHAT_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(CHAT_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(CHAT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

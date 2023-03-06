@@ -9,9 +9,7 @@ import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_PARAM,
-  CHAT_NOT_FOUND_PARAM,
-  CHAT_NOT_FOUND_CODE,
-  CHAT_NOT_FOUND_MESSAGE,
+  CHAT_NOT_FOUND_ERROR,
 } from "../../constants";
 
 // @ts-ignore
@@ -27,9 +25,9 @@ export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
   // Checks whether groupChat exists.
   if (!groupChat) {
     throw new errors.NotFoundError(
-      requestContext.translate(CHAT_NOT_FOUND_MESSAGE),
-      CHAT_NOT_FOUND_CODE,
-      CHAT_NOT_FOUND_PARAM
+      requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
+      CHAT_NOT_FOUND_ERROR.CODE,
+      CHAT_NOT_FOUND_ERROR.PARAM
     );
   }
 
