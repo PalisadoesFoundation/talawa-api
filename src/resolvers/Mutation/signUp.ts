@@ -122,7 +122,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   });
 
   if (createdUser.email === LAST_RESORT_SUPERADMIN_EMAIL) {
-    updateUserToSuperAdmin(createdUser.email);
+    await updateUserToSuperAdmin(createdUser.email);
   }
 
   const accessToken = await createAccessToken(createdUser);
