@@ -15,11 +15,11 @@ import { User, Organization } from "../../models";
 import {
   createAccessToken,
   createRefreshToken,
-  uploadImage,
   copyToClipboard,
   updateUserToSuperAdmin,
 } from "../../utilities";
 import { androidFirebaseOptions, iosFirebaseOptions } from "../../config";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 //import { isValidString } from "../../libraries/validators/validateString";
 //import { validatePassword } from "../../libraries/validators/validatePassword";
 
@@ -104,20 +104,16 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   const hashedPassword = await bcrypt.hash(args.data.password, 12);
 
   // Upload file
-  let uploadImageObj;
+  let uploadImageFileName;
   if (args.file) {
-    uploadImageObj = await uploadImage(args.file, null);
+    uploadImageFileName = await uploadEncodedImage(args.file, null);
   }
 
   const createdUser = await User.create({
     ...args.data,
     organizationUserBelongsTo: organization ? organization._id : null,
     email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
-    image: uploadImageObj
-      ? uploadImageObj.imageAlreadyInDbPath
-        ? uploadImageObj.imageAlreadyInDbPath
-        : uploadImageObj.newImagePath
-      : null,
+    image: uploadImageFileName ? uploadImageFileName : null,
     password: hashedPassword,
   });
 

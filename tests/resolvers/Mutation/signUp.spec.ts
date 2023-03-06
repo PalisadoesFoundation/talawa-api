@@ -28,10 +28,17 @@ import {
   testOrganizationType,
   testUserType,
 } from "../../helpers/userAndOrg";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
+import { signUp as signUpResolverImage } from "../../../src/resolvers/Mutation/signUp";
 
+const testImagePath: string = `${nanoid().toLowerCase()}test.png`;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
+
+vi.mock("../../utilities/uploadEncodedImage", () => ({
+  uploadEncodedImage: vi.fn(),
+}));
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -183,20 +190,9 @@ describe("resolvers -> Mutation -> signUp", () => {
     expect(signUpPayload?.refreshToken.length).toBeGreaterThan(1);
   });
   it(`when uploadImage is called with newFile `, async () => {
-    const utilities = await import("../../../src/utilities");
-    const newImageFile = {
-      filename: "testImage.png",
-      createReadStream: {},
-    };
-    const returnImageFile = {
-      newImagePath: "/testImage",
-      imageAlreadyInDbPath: "",
-    };
-    const uploadImageSpy = vi
-      .spyOn(utilities, "uploadImage")
-      .mockImplementation(() => {
-        return Promise.resolve(returnImageFile);
-      });
+    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
+      async (encodedImageURL: string) => encodedImageURL
+    );
 
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
 
@@ -209,62 +205,19 @@ describe("resolvers -> Mutation -> signUp", () => {
         appLanguageCode: "en",
         organizationUserBelongsToId: testOrganization!.id,
       },
-      file: newImageFile,
+      file: testImagePath,
     };
-    const { signUp: signUpResolver } = await import(
-      "../../../src/resolvers/Mutation/signUp"
-    );
 
-    await signUpResolver?.({}, args, {});
+    const signedUpUserPayload = await signUpResolverImage?.({}, args, {});
     await User.findOne({
       email,
     })
       .select("-password")
       .lean();
 
-    expect(uploadImageSpy).toBeCalledWith(newImageFile, null);
-  });
-  it(`when image file is already exists in the database `, async () => {
-    const utilities = await import("../../../src/utilities");
-    const newImageFile = {
-      filename: "testImage.png",
-      createReadStream: {},
-    };
-    const returnImageFile = {
-      newImagePath: "/testImage",
-      imageAlreadyInDbPath: "/testImage",
-    };
-    const uploadImageSpy = vi
-      .spyOn(utilities, "uploadImage")
-      .mockImplementation(() => {
-        return Promise.resolve(returnImageFile);
-      });
-
-    const email = `email${nanoid().toLowerCase()}@gmail.com`;
-
-    const args: MutationSignUpArgs = {
-      data: {
-        email,
-        firstName: "firstName",
-        lastName: "lastName",
-        password: "password",
-        appLanguageCode: "en",
-        organizationUserBelongsToId: testOrganization!.id,
-      },
-      file: newImageFile,
-    };
-    const { signUp: signUpResolver } = await import(
-      "../../../src/resolvers/Mutation/signUp"
-    );
-
-    await signUpResolver?.({}, args, {});
-    await User.findOne({
-      email,
-    })
-      .select("-password")
-      .lean();
-
-    expect(uploadImageSpy).toHaveReturnedWith(returnImageFile);
+    expect(signedUpUserPayload?.user).toContain({
+      image: testImagePath,
+    });
   });
 
   it(`Promotes the user to SUPER ADMIN if the email registering with is same that as provided in configuration file`, async () => {

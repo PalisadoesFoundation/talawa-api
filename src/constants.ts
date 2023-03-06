@@ -72,6 +72,12 @@ export const INVALID_FILE_TYPE = {
   param: "internalServerError",
 };
 
+export const SAME_FILE_ERROR = {
+  message: "The newer image is the same as the previous image in the database",
+  code: "internalServerError",
+  param: "internalServerError",
+};
+
 export const INTERNAL_SERVER_ERROR = {
   message: "Internal Server Error!",
   code: "internalServerError",

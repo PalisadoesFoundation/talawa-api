@@ -37,7 +37,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     //Upload file
     let uploadImageFileName = null;
     if (args.file) {
-      uploadImageFileName = await uploadEncodedImage(args.file!);
+      uploadImageFileName = await uploadEncodedImage(args.file!, null);
     }
 
     // Checks if the recieved arguments are valid according to standard input norms
@@ -47,11 +47,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       500
     );
     const validationResult_Location = isValidString(args.data!.location!, 50);
-    let tagsString = "";
-    for (let i = 0; i < args.data!.tags.length; i++) {
-      tagsString = tagsString + args.data!.tags[i];
-    }
-    const validationResult_Tags = isValidString(tagsString, 256);
+
     if (!validationResult_Name.isFollowingPattern) {
       throw new errors.InputValidationError(
         requestContext.translate(`${REGEX_VALIDATION_ERROR.message} in name`),
@@ -94,20 +90,6 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       throw new errors.InputValidationError(
         requestContext.translate(
           `${LENGTH_VALIDATION_ERROR.message} 50 characters in location`
-        ),
-        LENGTH_VALIDATION_ERROR.code
-      );
-    }
-    if (!validationResult_Tags.isFollowingPattern) {
-      throw new errors.InputValidationError(
-        requestContext.translate(`${REGEX_VALIDATION_ERROR.message} in tags`),
-        REGEX_VALIDATION_ERROR.code
-      );
-    }
-    if (!validationResult_Tags.isLessThanMaxLength) {
-      throw new errors.InputValidationError(
-        requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.message} 256 characters in tags`
         ),
         LENGTH_VALIDATION_ERROR.code
       );
