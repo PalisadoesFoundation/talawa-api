@@ -165,12 +165,14 @@ const serverStart = async () => {
   try {
     await database.connect();
     httpServer.listen(process.env.PORT || 4000, () => {
-      logger.info('\x1b[1m\x1b[32m%s\x1b[0m',
+      logger.info(
+        "\x1b[1m\x1b[32m%s\x1b[0m",
         `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
           apolloServer.graphqlPath
         }`
       );
-      logger.info('\x1b[1m\x1b[32m%s\x1b[0m',
+      logger.info(
+        "\x1b[1m\x1b[32m%s\x1b[0m",
         `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${
           apolloServer.subscriptionsPath
         }`
