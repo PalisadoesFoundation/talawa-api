@@ -39,6 +39,14 @@ vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),
 }));
 
+vi.mock("../../../src/constants", async () => {
+  const constants: object = await vi.importActual("../../../src/constants");
+  return {
+    ...constants,
+    LAST_RESORT_SUPERADMIN_EMAIL: "admin@email.com",
+  };
+});
+
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const temp = await createTestUserAndOrganization();
