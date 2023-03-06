@@ -33,6 +33,8 @@ This document provides instructions on how to set up and start a running instanc
 - [How to Access the Talawa-API URL](#how-to-access-the-talawa-api-url)
     - [For Talawa-API Developers](#for-talawa-api-developers)
     - [For Mobile App Developers](#for-mobile-app-developers)
+        - [On Android Virtual Device](#on-android-virtual-device)
+        - [On a Real Mobile Device](#on-a-real-mobile-device)
     - [For Talawa-Admin Developers](#for-talawa-admin-developers)
 - [Accessing MongoDB](#accessing-mongodb)
     - [Managing MongoDB using the MongoDB Compass GUI](#managing-mongodb-using-the-mongodb-compass-gui)
@@ -340,16 +342,19 @@ GraphQL endpoint for handling `subscriptions` is this:
 
 The Organization URL for Talawa mobile app developers will depend upon the device on which Mobile app is installed.
 
-- If Talawa Mobile App is installed on Android Virtual Device (AVD): Use the following URL:
+### On Android Virtual Device
+- If Talawa Mobile App is installed on Android Virtual Device (AVD), use the following URL:
 ```
     http://10.0.2.2:4000/graphql
 ```
-- If Talawa Mobile App is installed on a Read Android Device: Use the following method to get URL.
+
+### On a Real Mobile Device
+- If Talawa Mobile App is installed on a Real Mobile Device, follow the below steps to get URL:
     - Open Command Prompt in Windows, or Terminal in Linux/OSX
     - Enter ```ipconfig``` (For Windows Users) or ```ifconfig``` (For Linux/OSX Users)
     - Your Mobile and Computer (On which API server is running) must be on same Wifi Network. Use Mobile Hotspot to connect your computer to internet in case you don't have access to a Wifi Router.
     - Search for the ```Wireless LAN adapter Wi-Fi:``` and then copy ```IPv4 Address```, like in image below:
-    - ![image](https://user-images.githubusercontent.com/94157520/223067277-d1e40093-a018-479c-bf3c-07749fbb75b9.png)
+    - ![image](https://github.com/anshgoyalevil/talawa-api/blob/docs/image/ip-address.png)
     - Now, use this IP address (```192.168.0.105``` in our case) to access the API instance using the following URL pattern:
 
 ```
