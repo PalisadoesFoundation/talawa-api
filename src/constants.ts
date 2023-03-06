@@ -4,15 +4,12 @@ export const CHAT_NOT_FOUND_ERROR = {
   MESSAGE: "chat.notFound",
   PARAM: "chat",
 };
-export const CHAT_NOT_FOUND = "Chat not found";
-export const CHAT_NOT_FOUND_CODE = "chat.notFound";
-export const CHAT_NOT_FOUND_MESSAGE = "chat.notFound";
-export const CHAT_NOT_FOUND_PARAM = "chat";
-
-export const COMMENT_NOT_FOUND = "Comment not found";
-export const COMMENT_NOT_FOUND_CODE = "comment.notFound";
-export const COMMENT_NOT_FOUND_MESSAGE = "comment.notFound";
-export const COMMENT_NOT_FOUND_PARAM = "comment";
+export const COMMENT_NOT_FOUND_ERROR = {
+  DESC: "Comment not found",
+  CODE: "comment.notFound",
+  MESSAGE: "comment.notFound",
+  PARAM: "comment",
+};
 
 export const ERROR_IN_SENDING_MAIL = "Error in sending mail";
 

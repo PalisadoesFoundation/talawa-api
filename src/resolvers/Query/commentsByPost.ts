@@ -2,9 +2,7 @@ import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { errors } from "../../libraries";
 import { Comment, Organization } from "../../models";
 import {
-  COMMENT_NOT_FOUND,
-  COMMENT_NOT_FOUND_CODE,
-  COMMENT_NOT_FOUND_PARAM,
+  COMMENT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_PARAM,
@@ -32,9 +30,9 @@ export const commentsByPost: QueryResolvers["commentsByPost"] = async (
   // Throws error if comments list is empty.
   if (comments.length === 0) {
     throw new errors.NotFoundError(
-      COMMENT_NOT_FOUND,
-      COMMENT_NOT_FOUND_CODE,
-      COMMENT_NOT_FOUND_PARAM
+      COMMENT_NOT_FOUND_ERROR.DESC,
+      COMMENT_NOT_FOUND_ERROR.CODE,
+      COMMENT_NOT_FOUND_ERROR.PARAM
     );
   }
 

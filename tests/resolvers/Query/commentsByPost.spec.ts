@@ -5,7 +5,7 @@ import { commentsByPost as commentsByPostResolver } from "../../../src/resolvers
 import { Comment, Post, User, Organization } from "../../../src/models";
 import { Types } from "mongoose";
 import {
-  COMMENT_NOT_FOUND,
+  COMMENT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND,
   POST_NOT_FOUND,
   USER_NOT_FOUND,
@@ -111,7 +111,7 @@ describe("resolvers -> Query -> commentsByPost", () => {
 
       await commentsByPostResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(COMMENT_NOT_FOUND);
+      expect(error.message).toEqual(COMMENT_NOT_FOUND_ERROR.DESC);
     }
   });
 });

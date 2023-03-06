@@ -5,9 +5,7 @@ import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
-  COMMENT_NOT_FOUND_CODE,
-  COMMENT_NOT_FOUND_MESSAGE,
-  COMMENT_NOT_FOUND_PARAM,
+  COMMENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_CODE,
 } from "../../constants";
@@ -37,9 +35,9 @@ export const removeComment: MutationResolvers["removeComment"] = async (
   // Checks whether comment exists.
   if (!comment) {
     throw new errors.NotFoundError(
-      requestContext.translate(COMMENT_NOT_FOUND_MESSAGE),
-      COMMENT_NOT_FOUND_CODE,
-      COMMENT_NOT_FOUND_PARAM
+      requestContext.translate(COMMENT_NOT_FOUND_ERROR.MESSAGE),
+      COMMENT_NOT_FOUND_ERROR.CODE,
+      COMMENT_NOT_FOUND_ERROR.PARAM
     );
   }
 

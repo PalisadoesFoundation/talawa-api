@@ -6,7 +6,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { likeComment as likeCommentResolver } from "../../../src/resolvers/Mutation/likeComment";
 import {
-  COMMENT_NOT_FOUND_MESSAGE,
+  COMMENT_NOT_FOUND_ERROR,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import {
@@ -122,8 +122,8 @@ describe("resolvers -> Mutation -> likeComment", () => {
 
       await likeCommentResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(COMMENT_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(COMMENT_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(COMMENT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(COMMENT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

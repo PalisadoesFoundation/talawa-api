@@ -1,8 +1,5 @@
 import {
-  COMMENT_NOT_FOUND,
-  COMMENT_NOT_FOUND_CODE,
-  COMMENT_NOT_FOUND_MESSAGE,
-  COMMENT_NOT_FOUND_PARAM,
+  COMMENT_NOT_FOUND_ERROR,
   IN_PRODUCTION,
   USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
@@ -39,10 +36,10 @@ export const unlikeComment: MutationResolvers["unlikeComment"] = async (
   if (!comment) {
     throw new errors.NotFoundError(
       IN_PRODUCTION !== true
-        ? COMMENT_NOT_FOUND
-        : requestContext.translate(COMMENT_NOT_FOUND_MESSAGE),
-      COMMENT_NOT_FOUND_CODE,
-      COMMENT_NOT_FOUND_PARAM
+        ? COMMENT_NOT_FOUND_ERROR.DESC
+        : requestContext.translate(COMMENT_NOT_FOUND_ERROR.MESSAGE),
+      COMMENT_NOT_FOUND_ERROR.CODE,
+      COMMENT_NOT_FOUND_ERROR.PARAM
     );
   }
 

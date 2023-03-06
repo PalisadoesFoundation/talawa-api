@@ -2,9 +2,7 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Comment } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
-  COMMENT_NOT_FOUND_CODE,
-  COMMENT_NOT_FOUND_MESSAGE,
-  COMMENT_NOT_FOUND_PARAM,
+  COMMENT_NOT_FOUND_ERROR,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
@@ -35,9 +33,9 @@ export const likeComment: MutationResolvers["likeComment"] = async (
   // Checks whether comment exists.
   if (!comment) {
     throw new errors.NotFoundError(
-      requestContext.translate(COMMENT_NOT_FOUND_MESSAGE),
-      COMMENT_NOT_FOUND_CODE,
-      COMMENT_NOT_FOUND_PARAM
+      requestContext.translate(COMMENT_NOT_FOUND_ERROR.MESSAGE),
+      COMMENT_NOT_FOUND_ERROR.CODE,
+      COMMENT_NOT_FOUND_ERROR.PARAM
     );
   }
 
