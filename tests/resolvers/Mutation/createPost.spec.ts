@@ -26,11 +26,19 @@ import {
   createTestUser,
 } from "../../helpers/userAndOrg";
 import { Organization } from "../../../src/models";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
+import { nanoid } from "nanoid";
+import { createPost as createPostResolverImage } from "../../../src/resolvers/Mutation/createPost";
 
+const testImagePath: string = `${nanoid().toLowerCase()}test.png`;
 let testUser: testUserType;
 let randomUser: testUserType;
 let testOrganization: testOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
+
+vi.mock("../../utilities/uploadEncodedImage", () => ({
+  uploadEncodedImage: vi.fn(),
+}));
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -251,24 +259,6 @@ describe("resolvers -> Mutation -> createPost", () => {
   });
 
   it(`creates the post and returns it when image is provided`, async () => {
-    const utilities = await import("../../../src/utilities");
-
-    const newImageFile = {
-      filename: "testImage.png",
-      createReadStream: {},
-    };
-
-    const returnImageFile = {
-      newImagePath: "/testImage",
-      imageAlreadyInDbPath: "",
-    };
-
-    const uploadImageSpy = vi
-      .spyOn(utilities, "uploadImage")
-      .mockImplementation(() => {
-        return Promise.resolve(returnImageFile);
-      });
-
     const args: MutationCreatePostArgs = {
       data: {
         organizationId: testOrganization!.id,
@@ -276,27 +266,30 @@ describe("resolvers -> Mutation -> createPost", () => {
         videoUrl: "videoUrl",
         title: "title",
       },
-      file: newImageFile,
+      file: testImagePath,
     };
 
     const context = {
       userId: testUser!.id,
     };
 
-    const { createPost: createPostResolver } = await import(
-      "../../../src/resolvers/Mutation/createPost"
+    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
+      async (encodedImageURL: string) => encodedImageURL
     );
 
-    const createPostPayload = await createPostResolver?.({}, args, context);
+    const createPostPayload = await createPostResolverImage?.(
+      {},
+      args,
+      context
+    );
 
-    expect(uploadImageSpy).toBeCalledWith(newImageFile, "");
     expect(createPostPayload).toEqual(
       expect.objectContaining({
         title: "title",
         videoUrl: "videoUrl",
         creator: testUser!._id,
         organization: testOrganization!._id,
-        imageUrl: returnImageFile.newImagePath,
+        imageUrl: testImagePath,
       })
     );
   });

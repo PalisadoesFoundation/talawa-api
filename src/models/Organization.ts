@@ -24,7 +24,6 @@ export interface Interface_Organization {
   >;
   blockedUsers: Array<PopulatedDoc<Interface_User & Document>>;
   visibleInSearch: boolean | undefined;
-  tags: Array<string>;
   createdAt: Date;
 }
 
@@ -108,12 +107,6 @@ const organizationSchema = new Schema({
   visibleInSearch: {
     type: Boolean,
   },
-  tags: [
-    {
-      type: String,
-      required: false,
-    },
-  ],
   createdAt: {
     type: Date,
     default: Date.now,

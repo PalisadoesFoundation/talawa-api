@@ -9,10 +9,10 @@ export const mutations = gql`
 
     addLanguageTranslation(data: LanguageInput!): Language! @auth
 
-    addOrganizationImage(file: Upload!, organizationId: String!): Organization!
+    addOrganizationImage(file: String!, organizationId: String!): Organization!
       @auth
 
-    addUserImage(file: Upload!): User! @auth
+    addUserImage(file: String!): User! @auth
 
     addUserToGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
 
@@ -65,7 +65,7 @@ export const mutations = gql`
       installedOrgs: [ID!]
     ): Plugin!
 
-    createPost(data: PostInput!, file: Upload): Post @auth
+    createPost(data: PostInput!, file: String): Post @auth
 
     createTask(data: TaskInput, eventId: ID!): Task! @auth
 
@@ -139,7 +139,7 @@ export const mutations = gql`
       messageContent: String!
     ): GroupChatMessage! @auth
 
-    signUp(data: UserInput!, file: Upload): AuthData!
+    signUp(data: UserInput!, file: String): AuthData!
 
     togglePostPin(id: ID!): Post! @auth
 
@@ -166,7 +166,7 @@ export const mutations = gql`
 
     updateTask(id: ID!, data: UpdateTaskInput): Task @auth
 
-    updateUserProfile(data: UpdateUserInput, file: Upload): User! @auth
+    updateUserProfile(data: UpdateUserInput, file: String): User! @auth
 
     updateUserType(data: UpdateUserTypeInput!): Boolean!
       @auth

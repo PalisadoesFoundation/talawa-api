@@ -446,13 +446,13 @@ export type MutationAddLanguageTranslationArgs = {
 
 
 export type MutationAddOrganizationImageArgs = {
-  file: Scalars['Upload'];
+  file: Scalars['String'];
   organizationId: Scalars['String'];
 };
 
 
 export type MutationAddUserImageArgs = {
-  file: Scalars['Upload'];
+  file: Scalars['String'];
 };
 
 
@@ -552,7 +552,7 @@ export type MutationCreatePluginArgs = {
 
 export type MutationCreatePostArgs = {
   data: PostInput;
-  file?: InputMaybe<Scalars['Upload']>;
+  file?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -713,7 +713,7 @@ export type MutationSendMessageToGroupChatArgs = {
 
 export type MutationSignUpArgs = {
   data: UserInput;
-  file?: InputMaybe<Scalars['Upload']>;
+  file?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -786,7 +786,7 @@ export type MutationUpdateTaskArgs = {
 
 export type MutationUpdateUserProfileArgs = {
   data?: InputMaybe<UpdateUserInput>;
-  file?: InputMaybe<Scalars['Upload']>;
+  file?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -814,7 +814,6 @@ export type Organization = {
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
   name: Scalars['String'];
   pinnedPosts?: Maybe<Array<Maybe<Post>>>;
-  tags: Array<Scalars['String']>;
   visibleInSearch: Scalars['Boolean'];
 };
 
@@ -832,7 +831,6 @@ export type OrganizationInfoNode = {
   image?: Maybe<Scalars['String']>;
   isPublic: Scalars['Boolean'];
   name: Scalars['String'];
-  tags: Array<Scalars['String']>;
   visibleInSearch: Scalars['Boolean'];
 };
 
@@ -844,7 +842,6 @@ export type OrganizationInput = {
   isPublic: Scalars['Boolean'];
   location?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
-  tags: Array<Scalars['String']>;
   visibleInSearch: Scalars['Boolean'];
 };
 
@@ -1319,6 +1316,7 @@ export type UpdateEventInput = {
 export type UpdateOrganizationInput = {
   description?: InputMaybe<Scalars['String']>;
   isPublic?: InputMaybe<Scalars['Boolean']>;
+  location?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   visibleInSearch?: InputMaybe<Scalars['Boolean']>;
 };
@@ -2008,7 +2006,6 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pinnedPosts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType>;
-  tags?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2021,7 +2018,6 @@ export type OrganizationInfoNodeResolvers<ContextType = any, ParentType extends 
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  tags?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

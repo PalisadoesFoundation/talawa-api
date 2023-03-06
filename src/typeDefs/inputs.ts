@@ -126,7 +126,6 @@ export const inputs = gql`
     visibleInSearch: Boolean!
     apiUrl: URL
     image: String
-    tags: [String!]!
   }
 
   input OrganizationWhereInput {
@@ -250,6 +249,7 @@ export const inputs = gql`
     description: String
     isPublic: Boolean
     visibleInSearch: Boolean
+    location: String
   }
 
   input UpdateTaskInput {
