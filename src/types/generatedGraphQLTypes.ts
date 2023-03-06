@@ -1319,6 +1319,7 @@ export type UpdateEventInput = {
 export type UpdateOrganizationInput = {
   description?: InputMaybe<Scalars['String']>;
   isPublic?: InputMaybe<Scalars['Boolean']>;
+  location?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   visibleInSearch?: InputMaybe<Scalars['Boolean']>;
 };
