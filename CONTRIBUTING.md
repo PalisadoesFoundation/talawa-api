@@ -83,7 +83,7 @@ When multiple developers are working on issues there is bound to be a conflict o
 
 Code contributions to Talawa come in the form of pull requests. These are done by forking the repo and making changes locally.
 
-Make sure you have read the [Documentation for Setting up the Project](./INSTALLATION.md)
+Make sure you have read the [Documentation for Setting up the Project](INSTALLATION.md)
 
 The process of proposing a change to Talawa API can be summarized as:
 
