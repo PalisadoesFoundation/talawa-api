@@ -10,7 +10,7 @@ export const connect = async () => {
       useFindAndModify: false,
       useNewUrlParser: true,
     });
-  } catch (error) {
+  } catch (error: any) {
     const errorMessage = error.toString();
     if (errorMessage.includes("ECONNREFUSED")) {
       logger.error("\n\n\n\x1b[1m\x1b[31m%s\x1b[0m", error);
