@@ -104,7 +104,7 @@ jobs:
         uses: VeryGoodOpenSource/very_good_coverage@v2
         with:
           path: './coverage/lcov.info'
-          min_coverage: 94.3
+          min_coverage: 95.0
 
   JSDocs:
     name: 'JSDocs comments and pipeline'
