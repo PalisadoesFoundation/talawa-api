@@ -7,7 +7,7 @@ import {
   Comment,
   MembershipRequest,
 } from "../../models";
-import { creatorCheck, superAdminCheck } from "../../utilities";
+import { superAdminCheck } from "../../utilities";
 import {
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
@@ -47,8 +47,6 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     // Checks whether currentUser is a SUPERADMIN
     superAdminCheck(currentUser!);
 
-    // Checks whether currentUser is the creator of organization.
-    creatorCheck(currentUser._id, organization);
 
     // Remove each post and comments associated to it for organization.posts list.
     organization.posts.forEach(async (postId) => {

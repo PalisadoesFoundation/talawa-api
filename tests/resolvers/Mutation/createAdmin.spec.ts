@@ -89,36 +89,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     }
   });
 
-  it(`throws UnauthorizedError if user with _id === context.userId is not the creator
-  of organization with _id === args.data.organizationId`, async () => {
-    try {
-      await Organization.updateOne(
-        {
-          _id: testOrganization!._id,
-        },
-        {
-          $set: {
-            creator: Types.ObjectId().toString(),
-          },
-        }
-      );
 
-      const args: MutationCreateAdminArgs = {
-        data: {
-          organizationId: testOrganization!.id,
-          userId: testUser!.id,
-        },
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      await createAdminResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_SUPERADMIN.message);
-    }
-  });
 
   it(`throws NotFoundError if no user exists with _id === args.data.userId`, async () => {
     try {

@@ -235,56 +235,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     }
   });
 
-  it(`throws UnauthorizedError if current user with _id === context.userId
-  is not the creator of organization with _id === args.id`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementation((message) => `Translated ${message}`);
 
-    try {
-      await Organization.updateOne(
-        {
-          _id: testOrganization._id,
-        },
-        {
-          $set: {
-            creator: Types.ObjectId().toString(),
-          },
-        }
-      );
-
-      await User.updateOne(
-        {
-          _id: testUsers[0]?._id,
-        },
-        {
-          $set: {
-            userType: "SUPERADMIN",
-          },
-        }
-      );
-
-      const args: MutationRemoveOrganizationArgs = {
-        id: testOrganization.id,
-      };
-
-      const context = {
-        userId: testUsers[0]!.id,
-      };
-
-      const { removeOrganization: removeOrganizationResolver } = await import(
-        "../../../src/resolvers/Mutation/removeOrganization"
-      );
-
-      await removeOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
-      );
-    }
-  });
 
   it(`removes the organization and returns the updated user's object with _id === context.userId`, async () => {
     await Organization.updateOne(
