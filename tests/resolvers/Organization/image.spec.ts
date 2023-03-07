@@ -9,7 +9,6 @@ import {
   it,
   vi,
 } from "vitest";
-import { BASE_URL } from "../../../src/constants";
 import { Organization } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 import {
@@ -59,13 +58,21 @@ describe("resolvers -> Organization -> image", () => {
     const { image: imageResolver } = await import(
       "../../../src/resolvers/Organization/image"
     );
-    const creatorPayload = await imageResolver?.(parent, {}, {});
+    const context = {
+      req: {
+        protocol: "http",
+        get: (_param: string) => {
+          return "testdomain.com";
+        },
+      },
+    };
+    const creatorPayload = await imageResolver?.(parent, {}, context);
 
     const org = await Organization.findOne({
       _id: parent._id,
     });
 
-    expect(creatorPayload).toEqual(BASE_URL + org?.image);
+    expect(creatorPayload).toEqual("http://testdomain.com/" + org?.image);
   });
   it(`returns null if the image is null in the organization`, async () => {
     testOrganization = await Organization.findOneAndUpdate(

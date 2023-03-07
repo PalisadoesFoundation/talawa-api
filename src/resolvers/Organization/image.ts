@@ -1,10 +1,14 @@
-// BASE_URL is the url on which the server is running, it converts the relative path to absolute path
-import { BASE_URL } from "../../constants";
+// requestUrl() is a function which returns current server's domain on passing the context object.
+import { requestUrl } from "../../libraries/requestUrl";
 import { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 
-export const image: OrganizationResolvers["image"] = async (parent) => {
+export const image: OrganizationResolvers["image"] = async (
+  parent,
+  _args,
+  context
+) => {
   if (parent!.image) {
-    return `${BASE_URL}${parent!.image}`;
+    return `${requestUrl(context)}${parent!.image}`;
   }
   return null;
 };
