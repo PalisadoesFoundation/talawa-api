@@ -26,7 +26,6 @@ If you are new to contributing to open source, please read the Open Source Guide
       - [Automation using husky](#automation-using-husky)
       - [Running Queries with talawa-api](#running-queries-with-talawa-api)
   - [Internships](#internships)
-    - [GSoC](#gsoc)
   - [Community](#community)
 
 ## Code of Conduct
@@ -84,7 +83,7 @@ When multiple developers are working on issues there is bound to be a conflict o
 
 Code contributions to Talawa come in the form of pull requests. These are done by forking the repo and making changes locally.
 
-Make sure you have read the [Documentation for Setting up the Project](./INSTALLATION.md)
+Make sure you have read the [Documentation for Setting up the Project](INSTALLATION.md)
 
 The process of proposing a change to Talawa API can be summarized as:
 
@@ -248,11 +247,7 @@ If you don't want these pre-commit checks running on each commit, you can manual
    
 ## Internships
 
-We have internship partnerships with a number of organizations. See below for more details.
-
-### GSoC
-
-If you are participating in the Summer of Code, please read more about us and our processes [here](https://docs.talawa.io/docs/internships/gsoc/gsoc-introduction)
+If you are participating in any of the various internship programs we ar members of then please read the [introduction guides on our documentation website](https://docs.talawa.io/docs/).
 
 ## Community
 
