@@ -113,7 +113,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
     image: uploadImageFileName ? uploadImageFileName : null,
     password: hashedPassword,
-    userType: isLastResortAdmin ? "SUPERADMIN" : undefined,
+    userType: isLastResortAdmin ? "SUPERADMIN" : "USER",
     adminApproved: isLastResortAdmin,
   });
 
