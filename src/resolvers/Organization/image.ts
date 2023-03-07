@@ -1,5 +1,4 @@
-// requestUrl() is a function which returns current server's domain on passing the context object.
-import { requestUrl } from "../../libraries/requestUrl";
+// Context object contains an apiRootUrl for mapping DNS request of server to its domain, for example: http:abcd.com/
 import { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const image: OrganizationResolvers["image"] = async (
@@ -8,7 +7,7 @@ export const image: OrganizationResolvers["image"] = async (
   context
 ) => {
   if (parent!.image) {
-    return `${requestUrl(context)}${parent!.image}`;
+    return `${context.apiRootUrl}${parent!.image}`;
   }
   return null;
 };

@@ -59,12 +59,7 @@ describe("resolvers -> Organization -> image", () => {
       "../../../src/resolvers/Organization/image"
     );
     const context = {
-      req: {
-        protocol: "http",
-        get: (_param: string) => {
-          return "testdomain.com";
-        },
-      },
+      apiRootUrl: "http://testdomain.com",
     };
     const creatorPayload = await imageResolver?.(parent, {}, context);
 
@@ -72,7 +67,7 @@ describe("resolvers -> Organization -> image", () => {
       _id: parent._id,
     });
 
-    expect(creatorPayload).toEqual("http://testdomain.com/" + org?.image);
+    expect(creatorPayload).toEqual("http://testdomain.com" + org?.image);
   });
   it(`returns null if the image is null in the organization`, async () => {
     testOrganization = await Organization.findOneAndUpdate(

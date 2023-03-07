@@ -102,12 +102,14 @@ const apolloServer = new ApolloServer({
     role: RoleAuthorizationDirective,
   },
   context: ({ req, res, connection }) => {
+    const apiRootUrl = `${req.protocol}://${req.get("host")}/`;
     if (connection) {
       return {
         ...connection,
         pubsub,
         res,
         req,
+        apiRootUrl,
       };
     } else {
       return {
@@ -115,6 +117,7 @@ const apolloServer = new ApolloServer({
         pubsub,
         res,
         req,
+        apiRootUrl,
       };
     }
   },
