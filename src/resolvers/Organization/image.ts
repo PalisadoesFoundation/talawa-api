@@ -1,10 +1,13 @@
-// BASE_URL is the url on which the server is running, it converts the relative path to absolute path
-import { BASE_URL } from "../../constants";
+// Context object contains an apiRootUrl for mapping DNS request of server to its domain, for example: http:abcd.com/
 import { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 
-export const image: OrganizationResolvers["image"] = async (parent) => {
+export const image: OrganizationResolvers["image"] = async (
+  parent,
+  _args,
+  context
+) => {
   if (parent!.image) {
-    return `${BASE_URL}${parent!.image}`;
+    return `${context.apiRootUrl}${parent!.image}`;
   }
   return null;
 };

@@ -206,8 +206,6 @@ export const EMAIL_ALREADY_EXISTS_CODE = "email.alreadyExists";
 export const EMAIL_ALREADY_EXISTS_MESSAGE = "email.alreadyExists";
 export const EMAIL_ALREADY_EXISTS_PARAM = "email";
 
-export const BASE_URL = `http://localhost:${process.env.port || 4000}/`;
-
 export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 
 export const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
