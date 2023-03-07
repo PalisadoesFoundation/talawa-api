@@ -58,17 +58,16 @@ describe("utilities -> adminCheck", () => {
   });
 
   it("throws no error if userIsOrganizationAdmin === false and isUserSuperAdmin === true", async () => {
-    const updatedUser = await User.findByIdAndUpdate(
+    const updatedUser = await User.findOneAndUpdate(
       {
         _id: testUser?._id,
       },
       {
-        $set: {
-          userType: "SUPERADMIN",
-        },
+        userType: "SUPERADMIN",
       },
       {
         new: true,
+        upsert: true,
       }
     );
 
@@ -78,8 +77,6 @@ describe("utilities -> adminCheck", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
 
-    console.log(updatedUser);
-
     const { adminCheck } = await import("../../src/utilities");
     adminCheck(updatedUser!._id, testOrganization!);
 
@@ -87,21 +84,20 @@ describe("utilities -> adminCheck", () => {
   });
 
   it("throws no error if user is an admin in that organization but not super admin", async () => {
-    const updatedUser = await User.findByIdAndUpdate(
+    const updatedUser = await User.findOneAndUpdate(
       {
         _id: testUser?._id,
       },
       {
-        $set: {
-          userType: "USER",
-        },
+        userType: "USER",
       },
       {
         new: true,
+        upsert: true,
       }
     );
 
-    const updatedOrganization = await Organization.findByIdAndUpdate(
+    const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: testOrganization?._id,
       },
@@ -112,6 +108,7 @@ describe("utilities -> adminCheck", () => {
       },
       {
         new: true,
+        upsert: true,
       }
     );
 
