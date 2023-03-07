@@ -128,15 +128,6 @@ describe("resolvers -> Mutation -> updatePost", () => {
         userId: testUser!.id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { updatePost: updatePostResolver } = await import(
         "../../../src/resolvers/Mutation/updatePost"
       );
@@ -167,15 +158,6 @@ describe("resolvers -> Mutation -> updatePost", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { updatePost: updatePostResolver } = await import(
         "../../../src/resolvers/Mutation/updatePost"

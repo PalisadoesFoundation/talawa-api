@@ -46,14 +46,7 @@ describe("resolvers -> Mutation -> logout", () => {
       const context = {
         userId: Types.ObjectId().toString(),
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { logout: logoutResolver } = await import(
         "../../../src/resolvers/Mutation/logout"
       );

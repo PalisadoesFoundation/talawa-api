@@ -49,15 +49,6 @@ describe("resolvers -> Mutation -> refreshToken", () => {
         refreshToken: "",
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { refreshToken: refreshTokenResolver } = await import(
         "../../../src/resolvers/Mutation/refreshToken"
       );
@@ -86,15 +77,6 @@ describe("resolvers -> Mutation -> refreshToken", () => {
       const args: MutationRefreshTokenArgs = {
         refreshToken,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { refreshToken: refreshTokenResolver } = await import(
         "../../../src/resolvers/Mutation/refreshToken"
@@ -133,15 +115,6 @@ describe("resolvers -> Mutation -> refreshToken", () => {
         refreshToken,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { refreshToken: refreshTokenResolver } = await import(
         "../../../src/resolvers/Mutation/refreshToken"
       );
@@ -175,15 +148,6 @@ describe("resolvers -> Mutation -> refreshToken", () => {
       const args: MutationRefreshTokenArgs = {
         refreshToken,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { refreshToken: refreshTokenResolver } = await import(
         "../../../src/resolvers/Mutation/refreshToken"

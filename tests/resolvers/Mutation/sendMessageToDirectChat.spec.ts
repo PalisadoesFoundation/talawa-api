@@ -92,15 +92,6 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
 
       const context = { userId: testUsers[0]!.id };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { sendMessageToDirectChat: sendMessageToDirectChatResolver } =
         await import("../../../src/resolvers/Mutation/sendMessageToDirectChat");
 

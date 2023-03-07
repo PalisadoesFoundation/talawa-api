@@ -121,15 +121,6 @@ describe("resolvers -> Mutation -> removeTask", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { removeTask: removeTaskResolver } = await import(
         "../../../src/resolvers/Mutation/removeTask"
       );
@@ -155,15 +146,6 @@ describe("resolvers -> Mutation -> removeTask", () => {
         userId: testUsers[0]!._id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { removeTask: removeTaskResolver } = await import(
         "../../../src/resolvers/Mutation/removeTask"
       );
@@ -188,15 +170,6 @@ describe("resolvers -> Mutation -> removeTask", () => {
       const context = {
         userId: testUsers[1]!._id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { removeTask: removeTaskResolver } = await import(
         "../../../src/resolvers/Mutation/removeTask"
