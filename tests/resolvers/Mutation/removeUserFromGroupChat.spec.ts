@@ -50,15 +50,6 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
         userId: testUser!.id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { removeUserFromGroupChat: removeUserFromGroupChatResolver } =
         await import("../../../src/resolvers/Mutation/removeUserFromGroupChat");
 
@@ -95,15 +86,6 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { removeUserFromGroupChat: removeUserFromGroupChatResolver } =
         await import("../../../src/resolvers/Mutation/removeUserFromGroupChat");
@@ -152,15 +134,6 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { removeUserFromGroupChat: removeUserFromGroupChatResolver } =
         await import("../../../src/resolvers/Mutation/removeUserFromGroupChat");
@@ -230,15 +203,6 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { removeUserFromGroupChat: removeUserFromGroupChatResolver } =
         await import("../../../src/resolvers/Mutation/removeUserFromGroupChat");

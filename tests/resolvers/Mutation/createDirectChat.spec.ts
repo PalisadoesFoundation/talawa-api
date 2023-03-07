@@ -60,14 +60,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       const context = {
         userId: Types.ObjectId().toString(),
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { createDirectChat: createDirectChatResolver } = await import(
         "../../../src/resolvers/Mutation/createDirectChat"
       );
@@ -93,15 +86,6 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { createDirectChat: createDirectChatResolver } = await import(
         "../../../src/resolvers/Mutation/createDirectChat"
@@ -129,14 +113,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { createDirectChat: createDirectChatResolver } = await import(
         "../../../src/resolvers/Mutation/createDirectChat"
       );

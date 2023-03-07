@@ -49,15 +49,6 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { sendMembershipRequest: sendMembershipRequestResolver } =
         await import("../../../src/resolvers/Mutation/sendMembershipRequest");
 
@@ -81,15 +72,6 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { sendMembershipRequest: sendMembershipRequestResolver } =
         await import("../../../src/resolvers/Mutation/sendMembershipRequest");
@@ -115,15 +97,6 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { sendMembershipRequest: sendMembershipRequestResolver } =
         await import("../../../src/resolvers/Mutation/sendMembershipRequest");

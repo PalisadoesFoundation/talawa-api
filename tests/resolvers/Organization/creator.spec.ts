@@ -63,15 +63,6 @@ describe("resolvers -> Organization -> creator", () => {
 
       const parent = testOrganization!.toObject();
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { creator: creatorResolver } = await import(
         "../../../src/resolvers/Organization/creator"
       );

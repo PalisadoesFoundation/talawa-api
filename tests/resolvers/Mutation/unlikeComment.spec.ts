@@ -65,15 +65,6 @@ describe("resolvers -> Mutation -> unlikeComment", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { unlikeComment: unlikeCommentResolver } = await import(
         "../../../src/resolvers/Mutation/unlikeComment"
       );
@@ -98,15 +89,6 @@ describe("resolvers -> Mutation -> unlikeComment", () => {
       const context = {
         userId: testUser!._id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { unlikeComment: unlikeCommentResolver } = await import(
         "../../../src/resolvers/Mutation/unlikeComment"

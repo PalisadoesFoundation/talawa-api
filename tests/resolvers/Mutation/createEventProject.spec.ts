@@ -96,15 +96,6 @@ describe("resolvers -> Mutation -> createEventProject", () => {
         },
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { createEventProject } = await import(
         "../../../src/resolvers/Mutation/createEventProject"
       );
