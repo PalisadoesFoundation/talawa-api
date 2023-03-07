@@ -71,16 +71,11 @@ describe("utilities -> adminCheck", () => {
       }
     );
 
-    const { requestContext } = await import("../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
     const { adminCheck } = await import("../../src/utilities");
-    adminCheck(updatedUser!._id, testOrganization!);
 
-    expect(spy).not.toBeCalled();
+    await expect(
+      adminCheck(updatedUser!._id, testOrganization!)
+    ).resolves.not.toThrowError();
   });
 
   it("throws no error if user is an admin in that organization but not super admin", async () => {
@@ -112,15 +107,10 @@ describe("utilities -> adminCheck", () => {
       }
     );
 
-    const { requestContext } = await import("../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
     const { adminCheck } = await import("../../src/utilities");
-    adminCheck(updatedUser!._id, updatedOrganization!);
 
-    expect(spy).not.toBeCalled();
+    await expect(
+      adminCheck(updatedUser!._id, updatedOrganization!)
+    ).resolves.not.toThrowError();
   });
 });
