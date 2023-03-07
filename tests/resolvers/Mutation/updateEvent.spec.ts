@@ -118,7 +118,9 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       await updateEventResolver?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(`Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`);
+      expect(error.message).toEqual(
+        `Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 

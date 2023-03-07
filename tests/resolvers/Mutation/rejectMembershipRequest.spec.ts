@@ -7,7 +7,7 @@ import mongoose from "mongoose";
 import { rejectMembershipRequest as rejectMembershipRequestResolver } from "../../../src/resolvers/Mutation/rejectMembershipRequest";
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
@@ -122,8 +122,8 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
 
       await rejectMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

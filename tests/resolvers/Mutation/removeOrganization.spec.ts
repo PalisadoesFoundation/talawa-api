@@ -15,7 +15,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { removeOrganization as removeOrganizationResolver } from "../../../src/resolvers/Mutation/removeOrganization";
 import {
-  ORGANIZATION_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED_MESSAGE,
@@ -189,9 +189,9 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
 
       await removeOrganizationResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_MESSAGE}`
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });

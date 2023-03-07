@@ -5,10 +5,7 @@ import { errors, requestContext } from "../../libraries";
 import {
   CHAT_NOT_FOUND_ERROR,
   IN_PRODUCTION,
-  ORGANIZATION_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_PARAM,
+  ORGANIZATION_NOT_FOUND_ERROR,
 } from "../../constants";
 
 export const removeDirectChat: MutationResolvers["removeDirectChat"] = async (
@@ -24,10 +21,10 @@ export const removeDirectChat: MutationResolvers["removeDirectChat"] = async (
   if (!organization) {
     throw new errors.NotFoundError(
       IN_PRODUCTION !== true
-        ? ORGANIZATION_NOT_FOUND
-        : requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-      ORGANIZATION_NOT_FOUND_CODE,
-      ORGANIZATION_NOT_FOUND_PARAM
+        ? ORGANIZATION_NOT_FOUND_ERROR.DESC
+        : requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+      ORGANIZATION_NOT_FOUND_ERROR.CODE,
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM
     );
   }
 

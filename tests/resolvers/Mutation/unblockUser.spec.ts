@@ -6,7 +6,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { unblockUser as unblockUserResolver } from "../../../src/resolvers/Mutation/unblockUser";
 import {
-  ORGANIZATION_NOT_FOUND,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED,
   USER_NOT_FOUND,
 } from "../../../src/constants";
@@ -46,7 +46,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
       await unblockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.DESC);
     }
   });
 

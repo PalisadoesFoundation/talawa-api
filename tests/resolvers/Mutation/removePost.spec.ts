@@ -4,7 +4,7 @@ import { MutationRemovePostArgs } from "../../../src/types/generatedGraphQLTypes
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
-  POST_NOT_FOUND_MESSAGE,
+  POST_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
@@ -108,7 +108,9 @@ describe("resolvers -> Mutation -> removePost", () => {
 
       await removePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(`Translated ${POST_NOT_FOUND_MESSAGE}`);
+      expect(error.message).toEqual(
+        `Translated ${POST_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 

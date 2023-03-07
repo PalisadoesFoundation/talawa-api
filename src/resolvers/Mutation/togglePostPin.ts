@@ -1,7 +1,5 @@
 import {
-  POST_NOT_FOUND_CODE,
-  POST_NOT_FOUND_MESSAGE,
-  POST_NOT_FOUND_PARAM,
+  POST_NOT_FOUND_ERROR,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
@@ -37,9 +35,9 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
 
   if (!post) {
     throw new errors.NotFoundError(
-      requestContext.translate(POST_NOT_FOUND_MESSAGE),
-      POST_NOT_FOUND_CODE,
-      POST_NOT_FOUND_PARAM
+      requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
+      POST_NOT_FOUND_ERROR.CODE,
+      POST_NOT_FOUND_ERROR.PARAM
     );
   }
 

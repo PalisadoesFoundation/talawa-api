@@ -47,21 +47,24 @@ export const ORGANIZATION_MEMBER_NOT_FOUND_ERROR = {
   MESSAGE: "organization.member.notFound",
   PARAM: "organizationMember",
 };
-
-export const ORGANIZATION_NOT_AUTHORIZED = "Organization is not authorized";
-export const ORGANIZATION_NOT_AUTHORIZED_CODE = "org.notAuthorized";
-export const ORGANIZATION_NOT_AUTHORIZED_MESSAGE = "org.notAuthorized";
-export const ORGANIZATION_NOT_AUTHORIZED_PARAM = "org";
-
-export const ORGANIZATION_NOT_FOUND = "Organization not found";
-export const ORGANIZATION_NOT_FOUND_CODE = "organization.notFound";
-export const ORGANIZATION_NOT_FOUND_MESSAGE = "organization.notFound";
-export const ORGANIZATION_NOT_FOUND_PARAM = "organization";
-
-export const POST_NOT_FOUND = "Post not found";
-export const POST_NOT_FOUND_CODE = "post.notFound";
-export const POST_NOT_FOUND_MESSAGE = "post.notFound";
-export const POST_NOT_FOUND_PARAM = "post";
+export const ORGANIZATION_NOT_AUTHORIZED_ERROR = {
+  DESC: "Organization is not authorized",
+  CODE: "org.notAuthorized",
+  MESSAGE: "org.notAuthorized",
+  PARAM: "org",
+};
+export const ORGANIZATION_NOT_FOUND_ERROR = {
+  DESC: "Organization not found",
+  CODE: "organization.notFound",
+  MESSAGE: "organization.notFound",
+  PARAM: "organization",
+};
+export const POST_NOT_FOUND_ERROR = {
+  DESC: "Post not found",
+  CODE: "post.notFound",
+  MESSAGE: "post.notFound",
+  PARAM: "post",
+};
 
 export const REGISTRANT_ALREADY_EXIST = "Already registered for the event";
 export const REGISTRANT_ALREADY_EXIST_CODE = "registrant.alreadyExist";

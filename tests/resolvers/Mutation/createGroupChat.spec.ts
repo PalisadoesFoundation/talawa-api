@@ -5,7 +5,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { createGroupChat as createGroupChatResolver } from "../../../src/resolvers/Mutation/createGroupChat";
 import {
-  ORGANIZATION_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
@@ -72,7 +72,7 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
 
       await createGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

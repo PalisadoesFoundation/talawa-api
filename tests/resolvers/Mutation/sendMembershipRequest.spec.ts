@@ -7,7 +7,7 @@ import mongoose from "mongoose";
 import { sendMembershipRequest as sendMembershipRequestResolver } from "../../../src/resolvers/Mutation/sendMembershipRequest";
 import {
   MEMBERSHIP_REQUEST_ALREADY_EXISTS,
-  ORGANIZATION_NOT_FOUND,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -63,7 +63,7 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
 
       await sendMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.DESC);
     }
   });
 

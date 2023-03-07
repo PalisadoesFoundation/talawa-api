@@ -7,7 +7,7 @@ import mongoose from "mongoose";
 import { adminRemoveEvent as adminRemoveEventResolver } from "../../../src/resolvers/Mutation/adminRemoveEvent";
 import {
   EVENT_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
@@ -82,7 +82,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
 
       await adminRemoveEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

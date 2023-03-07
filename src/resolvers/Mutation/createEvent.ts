@@ -5,12 +5,8 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_PARAM,
-  ORGANIZATION_NOT_AUTHORIZED_MESSAGE,
-  ORGANIZATION_NOT_AUTHORIZED_CODE,
-  ORGANIZATION_NOT_AUTHORIZED_PARAM,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_AUTHORIZED_ERROR,
   REGEX_VALIDATION_ERROR,
   LENGTH_VALIDATION_ERROR,
 } from "../../constants";
@@ -50,9 +46,9 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   // Checks whether organization exists.
   if (!organization) {
     throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-      ORGANIZATION_NOT_FOUND_CODE,
-      ORGANIZATION_NOT_FOUND_PARAM
+      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+      ORGANIZATION_NOT_FOUND_ERROR.CODE,
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -69,9 +65,9 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   // Checks whether currentUser neither created nor joined the organization.
   if (!(userCreatedOrganization || userJoinedOrganization)) {
     throw new errors.UnauthorizedError(
-      requestContext.translate(ORGANIZATION_NOT_AUTHORIZED_MESSAGE),
-      ORGANIZATION_NOT_AUTHORIZED_CODE,
-      ORGANIZATION_NOT_AUTHORIZED_PARAM
+      requestContext.translate(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE),
+      ORGANIZATION_NOT_AUTHORIZED_ERROR.CODE,
+      ORGANIZATION_NOT_AUTHORIZED_ERROR.PARAM
     );
   }
 

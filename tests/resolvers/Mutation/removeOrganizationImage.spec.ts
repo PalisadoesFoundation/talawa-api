@@ -6,8 +6,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { removeOrganizationImage as removeOrganizationImageResolver } from "../../../src/resolvers/Mutation/removeOrganizationImage";
 import {
-  ORGANIZATION_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND,
   USER_NOT_FOUND_MESSAGE,
@@ -134,7 +133,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
 
       await removeOrganizationImageResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.DESC);
     }
   });
   it(`throws NotFoundError if no organization exists with _id === args.organizationId //IN_PRODUCTION = true`, async () => {
@@ -165,9 +164,11 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
 
       await removeOrganizationImageResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(spy).toHaveBeenLastCalledWith(
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE
+      );
       expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_MESSAGE}`
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });

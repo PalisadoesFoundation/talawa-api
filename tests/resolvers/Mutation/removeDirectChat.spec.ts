@@ -10,8 +10,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
   CHAT_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
 } from "../../../src/constants";
 import {
@@ -99,7 +98,7 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
       );
       await removeDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.DESC);
     }
   });
 
@@ -134,9 +133,9 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
       );
       await removeDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_MESSAGE}`
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });

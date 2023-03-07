@@ -7,7 +7,7 @@ import mongoose from "mongoose";
 import { addOrganizationImage as addOrganizationImageResolver } from "../../../src/resolvers/Mutation/addOrganizationImage";
 import * as uploadImage from "../../../src/utilities/uploadImage";
 import {
-  ORGANIZATION_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import { nanoid } from "nanoid";
@@ -107,8 +107,8 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
       );
       await addOrganizationImage?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
   it(`updates organization's image with the old image and returns the updated organization`, async () => {

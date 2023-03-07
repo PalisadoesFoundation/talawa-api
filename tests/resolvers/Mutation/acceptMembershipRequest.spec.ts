@@ -6,7 +6,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_ALREADY_MEMBER_MESSAGE,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_MESSAGE,
@@ -68,7 +68,9 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
 
       await acceptMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE);
+      expect(spy).toHaveBeenCalledWith(
+        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE
+      );
       expect(error.message).toEqual(
         `Translated ${MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE}`
       );
@@ -106,9 +108,9 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
 
       await acceptMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_MESSAGE}`
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });

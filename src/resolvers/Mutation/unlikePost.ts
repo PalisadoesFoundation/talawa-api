@@ -1,9 +1,6 @@
 import {
   IN_PRODUCTION,
-  POST_NOT_FOUND,
-  POST_NOT_FOUND_CODE,
-  POST_NOT_FOUND_MESSAGE,
-  POST_NOT_FOUND_PARAM,
+  POST_NOT_FOUND_ERROR,
   USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
@@ -39,10 +36,10 @@ export const unlikePost: MutationResolvers["unlikePost"] = async (
   if (!post) {
     throw new errors.NotFoundError(
       IN_PRODUCTION !== true
-        ? POST_NOT_FOUND
-        : requestContext.translate(POST_NOT_FOUND_MESSAGE),
-      POST_NOT_FOUND_CODE,
-      POST_NOT_FOUND_PARAM
+        ? POST_NOT_FOUND_ERROR.DESC
+        : requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
+      POST_NOT_FOUND_ERROR.CODE,
+      POST_NOT_FOUND_ERROR.PARAM
     );
   }
 

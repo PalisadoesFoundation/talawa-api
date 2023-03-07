@@ -8,10 +8,7 @@ import {
   androidFirebaseOptions,
   iosFirebaseOptions,
 } from "../../../src/config";
-import {
-  ORGANIZATION_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-} from "../../../src/constants";
+import { ORGANIZATION_NOT_FOUND_ERROR } from "../../../src/constants";
 import { nanoid } from "nanoid";
 import {
   beforeAll,
@@ -134,7 +131,7 @@ describe("resolvers -> Mutation -> signUp", () => {
 
       await signUpResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.DESC);
     }
   });
 
@@ -342,8 +339,8 @@ describe("resolvers -> Mutation -> signUp - [IN_PRODUCTION === TRUE]", () => {
 
       await signUpResolver?.({}, args, {});
     } catch (error: any) {
-      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 });

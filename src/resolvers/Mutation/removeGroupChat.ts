@@ -1,9 +1,7 @@
 import { adminCheck } from "../../utilities";
 import {
   CHAT_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_PARAM,
+  ORGANIZATION_NOT_FOUND_ERROR,
 } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
@@ -34,9 +32,9 @@ export const removeGroupChat: MutationResolvers["removeGroupChat"] = async (
   // Checks if an organization with _id === groupChat.organization exists.
   if (!organization) {
     throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-      ORGANIZATION_NOT_FOUND_CODE,
-      ORGANIZATION_NOT_FOUND_PARAM
+      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+      ORGANIZATION_NOT_FOUND_ERROR.CODE,
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM
     );
   }
 

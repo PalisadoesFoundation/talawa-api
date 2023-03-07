@@ -9,7 +9,7 @@ import {
   ADMIN_REMOVING_ADMIN,
   ADMIN_REMOVING_CREATOR,
   MEMBER_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_MESSAGE,
   USER_REMOVING_SELF,
@@ -137,7 +137,7 @@ describe("resolvers -> Mutation -> removeMember", () => {
 
       await removeMemberResolverOrgNotFoundError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -224,7 +224,9 @@ describe("resolvers -> Mutation -> removeMember", () => {
       await removeMemberResolverMemberNotFoundError?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(MEMBER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(`Translated ${MEMBER_NOT_FOUND_ERROR.MESSAGE}`);
+      expect(error.message).toEqual(
+        `Translated ${MEMBER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 

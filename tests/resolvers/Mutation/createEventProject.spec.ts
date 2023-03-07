@@ -150,7 +150,9 @@ describe("resolvers -> Mutation -> createEventProject", () => {
       await createEventProject(null, args, context);
     } catch (error: any) {
       expect(spy).toBeCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(`Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`);
+      expect(error.message).toEqual(
+        `Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 

@@ -2,10 +2,7 @@ import bcrypt from "bcryptjs";
 import {
   IN_PRODUCTION,
   //LENGTH_VALIDATION_ERROR,
-  ORGANIZATION_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_PARAM,
+  ORGANIZATION_NOT_FOUND_ERROR,
   //REGEX_VALIDATION_ERROR,
 } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
@@ -46,10 +43,10 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     if (!organization) {
       throw new errors.NotFoundError(
         IN_PRODUCTION !== true
-          ? ORGANIZATION_NOT_FOUND
-          : requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-        ORGANIZATION_NOT_FOUND_CODE,
-        ORGANIZATION_NOT_FOUND_PARAM
+          ? ORGANIZATION_NOT_FOUND_ERROR.DESC
+          : requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+        ORGANIZATION_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
     }
   }

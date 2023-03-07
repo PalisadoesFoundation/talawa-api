@@ -5,7 +5,7 @@ import { MutationUnlikePostArgs } from "../../../src/types/generatedGraphQLTypes
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { unlikePost as unlikePostResolver } from "../../../src/resolvers/Mutation/unlikePost";
-import { POST_NOT_FOUND, USER_NOT_FOUND } from "../../../src/constants";
+import { POST_NOT_FOUND_ERROR, USER_NOT_FOUND } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
   createTestUserAndOrganization,
@@ -65,7 +65,7 @@ describe("resolvers -> Mutation -> unlikePost", () => {
 
       await unlikePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(POST_NOT_FOUND);
+      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.DESC);
     }
   });
 

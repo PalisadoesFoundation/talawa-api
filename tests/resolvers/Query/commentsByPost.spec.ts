@@ -6,8 +6,8 @@ import { Comment, Post, User, Organization } from "../../../src/models";
 import { Types } from "mongoose";
 import {
   COMMENT_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND,
-  POST_NOT_FOUND,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  POST_NOT_FOUND_ERROR,
   USER_NOT_FOUND,
 } from "../../../src/constants";
 import { QueryCommentsByPostArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -65,7 +65,7 @@ describe("resolvers -> Query -> commentsByPost", () => {
 
       await commentsByPostResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.DESC);
     }
   });
 
@@ -81,7 +81,7 @@ describe("resolvers -> Query -> commentsByPost", () => {
 
       await commentsByPostResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(POST_NOT_FOUND);
+      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.DESC);
     }
   });
 

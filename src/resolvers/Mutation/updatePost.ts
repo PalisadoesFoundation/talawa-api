@@ -8,9 +8,7 @@ import {
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_PARAM,
-  POST_NOT_FOUND_MESSAGE,
-  POST_NOT_FOUND_CODE,
-  POST_NOT_FOUND_PARAM,
+  POST_NOT_FOUND_ERROR,
   REGEX_VALIDATION_ERROR,
   LENGTH_VALIDATION_ERROR,
 } from "../../constants";
@@ -41,9 +39,9 @@ export const updatePost: MutationResolvers["updatePost"] = async (
   // checks if there exists a post with _id === args.id
   if (!post) {
     throw new errors.NotFoundError(
-      requestContext.translate(POST_NOT_FOUND_MESSAGE),
-      POST_NOT_FOUND_CODE,
-      POST_NOT_FOUND_PARAM
+      requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
+      POST_NOT_FOUND_ERROR.CODE,
+      POST_NOT_FOUND_ERROR.PARAM
     );
   }
 

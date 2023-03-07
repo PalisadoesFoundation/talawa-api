@@ -6,8 +6,8 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
   LENGTH_VALIDATION_ERROR,
-  ORGANIZATION_NOT_AUTHORIZED_MESSAGE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_AUTHORIZED_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
   REGEX_VALIDATION_ERROR,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
@@ -106,7 +106,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
       await createEventResolverError?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -143,7 +143,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
       await createEventResolverError?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 

@@ -1,9 +1,7 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Event } from "../../models";
 import { errors } from "../../libraries";
-import {
-  EVENT_NOT_FOUND_ERROR,
-} from "../../constants";
+import { EVENT_NOT_FOUND_ERROR } from "../../constants";
 
 export const isUserRegister: QueryResolvers["isUserRegister"] = async (
   _parent,

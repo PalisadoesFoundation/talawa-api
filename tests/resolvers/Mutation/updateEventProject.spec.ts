@@ -112,7 +112,9 @@ describe("resolvers -> Mutation -> createEventProject", () => {
 
       await updateEventProjectResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(EVENT_PROJECT_NOT_FOUND_ERROR.MESSAGE);
+      expect(spy).toHaveBeenLastCalledWith(
+        EVENT_PROJECT_NOT_FOUND_ERROR.MESSAGE
+      );
       expect(error.message).toEqual(
         `Translated ${EVENT_PROJECT_NOT_FOUND_ERROR.MESSAGE}`
       );

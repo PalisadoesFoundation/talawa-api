@@ -5,7 +5,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { likePost as likePostResolver } from "../../../src/resolvers/Mutation/likePost";
 import {
-  POST_NOT_FOUND_MESSAGE,
+  POST_NOT_FOUND_ERROR,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import {
@@ -100,8 +100,8 @@ describe("resolvers -> Mutation -> likePost", () => {
 
       await likePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(POST_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(POST_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(POST_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

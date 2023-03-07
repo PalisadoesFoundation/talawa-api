@@ -4,11 +4,9 @@ import { User, Organization, MembershipRequest } from "../../models";
 import { adminCheck } from "../../utilities";
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_PARAM,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_MESSAGE,
 } from "../../constants";
 
@@ -34,9 +32,9 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
     // Checks whether organization exists.
     if (!organzation) {
       throw new errors.NotFoundError(
-        requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-        ORGANIZATION_NOT_FOUND_CODE,
-        ORGANIZATION_NOT_FOUND_PARAM
+        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+        ORGANIZATION_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
     }
 

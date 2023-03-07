@@ -6,9 +6,7 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_PARAM,
+  ORGANIZATION_NOT_FOUND_ERROR,
   CHAT_NOT_FOUND_ERROR,
 } from "../../constants";
 
@@ -38,9 +36,9 @@ export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
   // Checks whether organization exists.
   if (!organization) {
     throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-      ORGANIZATION_NOT_FOUND_CODE,
-      ORGANIZATION_NOT_FOUND_PARAM
+      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+      ORGANIZATION_NOT_FOUND_ERROR.CODE,
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM
     );
   }
 

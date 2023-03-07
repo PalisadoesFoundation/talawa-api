@@ -2,9 +2,7 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization, MembershipRequest } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_PARAM,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
@@ -36,9 +34,9 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
     // Checks whether organization exists.
     if (!organization) {
       throw new errors.NotFoundError(
-        requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-        ORGANIZATION_NOT_FOUND_CODE,
-        ORGANIZATION_NOT_FOUND_PARAM
+        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+        ORGANIZATION_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
     }
 

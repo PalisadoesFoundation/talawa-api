@@ -6,7 +6,7 @@ import { connect, disconnect } from "../../../src/db";
 import { updatePost as updatePostResolver } from "../../../src/resolvers/Mutation/updatePost";
 import {
   LENGTH_VALIDATION_ERROR,
-  POST_NOT_FOUND_MESSAGE,
+  POST_NOT_FOUND_ERROR,
   REGEX_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_FOUND_MESSAGE,
@@ -61,7 +61,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
 
       await updatePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(POST_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

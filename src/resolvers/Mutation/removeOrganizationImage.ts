@@ -1,9 +1,6 @@
 import {
   IN_PRODUCTION,
-  ORGANIZATION_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_PARAM,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_MESSAGE,
@@ -39,10 +36,10 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
     if (!organization) {
       throw new errors.NotFoundError(
         IN_PRODUCTION !== true
-          ? ORGANIZATION_NOT_FOUND
-          : requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-        ORGANIZATION_NOT_FOUND_CODE,
-        ORGANIZATION_NOT_FOUND_PARAM
+          ? ORGANIZATION_NOT_FOUND_ERROR.DESC
+          : requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+        ORGANIZATION_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
     }
 

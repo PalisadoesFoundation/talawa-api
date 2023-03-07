@@ -5,7 +5,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
   USER_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_ERROR,
   REGEX_VALIDATION_ERROR,
   LENGTH_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
@@ -127,9 +127,9 @@ describe("resolvers -> Mutation -> createPost", () => {
 
       await createPostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_MESSAGE}`
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
