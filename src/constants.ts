@@ -102,12 +102,6 @@ export const LENGTH_VALIDATION_ERROR = {
   param: "stringValidation",
 };
 
-export const REGEX_VALIDATION_ERROR = {
-  message: "Error: Entered value must be a valid string",
-  code: "string.notValid",
-  param: "stringValidation",
-};
-
 export const USER_NOT_AUTHORIZED_SUPERADMIN = {
   message: "Error: Current user must be a SUPERADMIN",
   code: "role.notValid.superadmin",
