@@ -9,9 +9,7 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
-  MEMBER_NOT_FOUND_MESSAGE,
-  MEMBER_NOT_FOUND_CODE,
-  MEMBER_NOT_FOUND_PARAM,
+  MEMBER_NOT_FOUND_ERROR,
   USER_REMOVING_SELF,
   ADMIN_REMOVING_ADMIN,
   ADMIN_REMOVING_CREATOR,
@@ -61,9 +59,9 @@ export const removeMember: MutationResolvers["removeMember"] = async (
 
   if (!userIsOrganizationMember) {
     throw new errors.NotFoundError(
-      requestContext.translate(MEMBER_NOT_FOUND_MESSAGE),
-      MEMBER_NOT_FOUND_CODE,
-      MEMBER_NOT_FOUND_PARAM
+      requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
+      MEMBER_NOT_FOUND_ERROR.CODE,
+      MEMBER_NOT_FOUND_ERROR.PARAM
     );
   }
 

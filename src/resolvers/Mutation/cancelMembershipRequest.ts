@@ -11,9 +11,7 @@ import {
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_PARAM,
-  MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
-  MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
-  MEMBERSHIP_REQUEST_NOT_FOUND_PARAM,
+  MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
 } from "../../constants";
 
 export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest"] =
@@ -25,9 +23,9 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
     // Checks whether membershipRequest exists.
     if (!membershipRequest) {
       throw new errors.NotFoundError(
-        requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE),
-        MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
-        MEMBERSHIP_REQUEST_NOT_FOUND_PARAM
+        requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE),
+        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.CODE,
+        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM
       );
     }
 

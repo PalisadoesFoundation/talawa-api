@@ -10,44 +10,43 @@ export const COMMENT_NOT_FOUND_ERROR = {
   MESSAGE: "comment.notFound",
   PARAM: "comment",
 };
-
 export const ERROR_IN_SENDING_MAIL = "Error in sending mail";
-
-export const EVENT_NOT_FOUND = "Event not found";
-export const EVENT_NOT_FOUND_CODE = "event.notFound";
-export const EVENT_NOT_FOUND_MESSAGE = "event.notFound";
-export const EVENT_NOT_FOUND_PARAM = "event";
-
-export const EVENT_PROJECT_NOT_FOUND = "EventProject not found";
-export const EVENT_PROJECT_NOT_FOUND_CODE = "eventProject.notFound";
-export const EVENT_PROJECT_NOT_FOUND_MESSAGE = "eventProject.notFound";
-export const EVENT_PROJECT_NOT_FOUND_PARAM = "eventProject";
-
+export const EVENT_NOT_FOUND_ERROR = {
+  DESC: "Event not found",
+  CODE: "event.notFound",
+  MESSAGE: "event.notFound",
+  PARAM: "event",
+};
+export const EVENT_PROJECT_NOT_FOUND_ERROR = {
+  DESC: "EventProject not found",
+  CODE: "eventProject.notFound",
+  MESSAGE: "eventProject.notFound",
+  PARAM: "eventProject",
+};
 export const INVALID_OTP = "Invalid OTP";
 
 export const IN_PRODUCTION = process.env.NODE_ENV === "production";
-
-export const MEMBER_NOT_FOUND = "Member not found";
-export const MEMBER_NOT_FOUND_CODE = "member.notFound";
-export const MEMBER_NOT_FOUND_MESSAGE = "member.notFound";
-export const MEMBER_NOT_FOUND_PARAM = "member";
-
-export const MEMBERSHIP_REQUEST_NOT_FOUND = "Membership Request not found";
-export const MEMBERSHIP_REQUEST_NOT_FOUND_CODE = "membershipRequest.notFound";
-export const MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE =
-  "membershipRequest.notFound";
-export const MEMBERSHIP_REQUEST_NOT_FOUND_PARAM = "membershipRequest";
-
+export const MEMBER_NOT_FOUND_ERROR = {
+  DESC: "Member not found",
+  CODE: "member.notFound",
+  MESSAGE: "member.notFound",
+  PARAM: "member",
+};
+export const MEMBERSHIP_REQUEST_NOT_FOUND_ERROR = {
+  DESC: "Membership Request not found",
+  CODE: "membershipRequest.notFound",
+  MESSAGE: "membershipRequest.notFound",
+  PARAM: "membershipRequest",
+};
 export const MEMBERSHIP_REQUEST_ALREADY_EXISTS =
   "Membership Request already exists";
 
-export const ORGANIZATION_MEMBER_NOT_FOUND =
-  "Organization's user is not a member";
-export const ORGANIZATION_MEMBER_NOT_FOUND_CODE =
-  "organization.member.notFound";
-export const ORGANIZATION_MEMBER_NOT_FOUND_MESSAGE =
-  "organization.member.notFound";
-export const ORGANIZATION_MEMBER_NOT_FOUND_PARAM = "organizationMember";
+export const ORGANIZATION_MEMBER_NOT_FOUND_ERROR = {
+  DESC: "Organization's user is not a member",
+  CODE: "organization.member.notFound",
+  MESSAGE: "organization.member.notFound",
+  PARAM: "organizationMember",
+};
 
 export const ORGANIZATION_NOT_AUTHORIZED = "Organization is not authorized";
 export const ORGANIZATION_NOT_AUTHORIZED_CODE = "org.notAuthorized";

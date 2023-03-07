@@ -3,14 +3,12 @@ import { errors, requestContext } from "../../libraries";
 import { User, Organization, MembershipRequest } from "../../models";
 import { adminCheck } from "../../utilities";
 import {
-  MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
-  MEMBERSHIP_REQUEST_NOT_FOUND_PARAM,
+  MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_PARAM,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
   ORGANIZATION_NOT_FOUND_MESSAGE,
-  MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_MESSAGE,
 } from "../../constants";
 
@@ -23,9 +21,9 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
     // Checks whether membershipRequest exists.
     if (!membershipRequest) {
       throw new errors.NotFoundError(
-        requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE),
-        MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
-        MEMBERSHIP_REQUEST_NOT_FOUND_PARAM
+        requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE),
+        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.CODE,
+        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM
       );
     }
 

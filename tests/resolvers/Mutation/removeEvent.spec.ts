@@ -6,7 +6,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { removeEvent as removeEventResolver } from "../../../src/resolvers/Mutation/removeEvent";
 import {
-  EVENT_NOT_FOUND,
+  EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED,
   USER_NOT_FOUND,
 } from "../../../src/constants";
@@ -60,7 +60,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
 
       await removeEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(EVENT_NOT_FOUND);
+      expect(error.message).toEqual(EVENT_NOT_FOUND_ERROR.DESC);
     }
   });
 

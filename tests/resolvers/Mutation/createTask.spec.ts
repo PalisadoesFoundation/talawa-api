@@ -6,7 +6,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { createTask as createTaskResolver } from "../../../src/resolvers/Mutation/createTask";
 import {
-  EVENT_NOT_FOUND_MESSAGE,
+  EVENT_NOT_FOUND_ERROR,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
@@ -62,7 +62,7 @@ describe("resolvers -> Mutation -> createTask", () => {
 
       await createTaskResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(EVENT_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

@@ -5,13 +5,11 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
-  MEMBER_NOT_FOUND_MESSAGE,
-  MEMBER_NOT_FOUND_PARAM,
+  MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_PARAM,
   USER_NOT_AUTHORIZED_PARAM,
-  MEMBER_NOT_FOUND_CODE,
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_MESSAGE,
 } from "../../constants";
@@ -63,9 +61,9 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   // Checks whether currentUser is not a member of organzation.
   if (currentUserIsOrganizationMember === false) {
     throw new errors.ConflictError(
-      requestContext.translate(MEMBER_NOT_FOUND_MESSAGE),
-      MEMBER_NOT_FOUND_CODE,
-      MEMBER_NOT_FOUND_PARAM
+      requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
+      MEMBER_NOT_FOUND_ERROR.CODE,
+      MEMBER_NOT_FOUND_ERROR.PARAM
     );
   }
 

@@ -24,8 +24,7 @@ import {
   USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_FOUND_MESSAGE,
-  EVENT_PROJECT_NOT_FOUND,
-  EVENT_PROJECT_NOT_FOUND_MESSAGE,
+  EVENT_PROJECT_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { testUserType } from "../../helpers/userAndOrg";
 import { createTestEvent, testEventType } from "../../helpers/events";
@@ -146,7 +145,7 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
 
     expect(async () => {
       await removeEventProject(null, args, context);
-    }).rejects.toThrowError(EVENT_PROJECT_NOT_FOUND);
+    }).rejects.toThrowError(EVENT_PROJECT_NOT_FOUND_ERROR.DESC);
   });
   it("Should throw an error if the eventProject is not found and IN_PRODUCTION is true", async () => {
     const args = {
@@ -180,9 +179,9 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     try {
       await removeEventProject(null, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(EVENT_PROJECT_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(EVENT_PROJECT_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toBe(
-        `Translated ${EVENT_PROJECT_NOT_FOUND_MESSAGE}`
+        `Translated ${EVENT_PROJECT_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });

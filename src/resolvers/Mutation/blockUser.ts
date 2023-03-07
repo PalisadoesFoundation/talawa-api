@@ -8,13 +8,11 @@ import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_PARAM,
-  MEMBER_NOT_FOUND_MESSAGE,
+  MEMBER_NOT_FOUND_ERROR,
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
   USER_BLOCKING_SELF,
-  MEMBER_NOT_FOUND_CODE,
-  MEMBER_NOT_FOUND_PARAM,
 } from "../../constants";
 import { Organization, User } from "../../models";
 
@@ -56,9 +54,9 @@ export const blockUser: MutationResolvers["blockUser"] = async (
 
   if (!userIsOrganizationMember) {
     throw new errors.NotFoundError(
-      requestContext.translate(MEMBER_NOT_FOUND_MESSAGE),
-      MEMBER_NOT_FOUND_CODE,
-      MEMBER_NOT_FOUND_PARAM
+      requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
+      MEMBER_NOT_FOUND_ERROR.CODE,
+      MEMBER_NOT_FOUND_ERROR.PARAM
     );
   }
 

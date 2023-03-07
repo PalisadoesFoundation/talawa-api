@@ -5,9 +5,7 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
-  EVENT_NOT_FOUND_MESSAGE,
-  EVENT_NOT_FOUND_CODE,
-  EVENT_NOT_FOUND_PARAM,
+  EVENT_NOT_FOUND_ERROR,
 } from "../../constants";
 
 export const createTask: MutationResolvers["createTask"] = async (
@@ -35,9 +33,9 @@ export const createTask: MutationResolvers["createTask"] = async (
   // Checks whether event with _id == args.eventId exists.
   if (eventExists === false) {
     throw new errors.NotFoundError(
-      requestContext.translate(EVENT_NOT_FOUND_MESSAGE),
-      EVENT_NOT_FOUND_CODE,
-      EVENT_NOT_FOUND_PARAM
+      requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
+      EVENT_NOT_FOUND_ERROR.CODE,
+      EVENT_NOT_FOUND_ERROR.PARAM
     );
   }
 

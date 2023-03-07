@@ -12,7 +12,7 @@ import {
   vi,
 } from "vitest";
 import {
-  EVENT_NOT_FOUND_MESSAGE,
+  EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
@@ -149,8 +149,8 @@ describe("resolvers -> Mutation -> createEventProject", () => {
     try {
       await createEventProject(null, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(EVENT_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${EVENT_NOT_FOUND_MESSAGE}`);
+      expect(spy).toBeCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(`Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`);
     }
   });
 

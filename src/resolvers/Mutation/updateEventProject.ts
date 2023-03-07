@@ -1,9 +1,8 @@
 import { User, EventProject } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
-  EVENT_NOT_FOUND_CODE,
-  EVENT_PROJECT_NOT_FOUND_MESSAGE,
-  EVENT_PROJECT_NOT_FOUND_PARAM,
+  EVENT_NOT_FOUND_ERROR,
+  EVENT_PROJECT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_PARAM,
@@ -35,9 +34,9 @@ export const updateEventProject = async (
 
   if (!eventProject) {
     throw new errors.NotFoundError(
-      requestContext.translate(EVENT_PROJECT_NOT_FOUND_MESSAGE),
-      EVENT_NOT_FOUND_CODE,
-      EVENT_PROJECT_NOT_FOUND_PARAM
+      requestContext.translate(EVENT_PROJECT_NOT_FOUND_ERROR.MESSAGE),
+      EVENT_NOT_FOUND_ERROR.CODE,
+      EVENT_PROJECT_NOT_FOUND_ERROR.PARAM
     );
   }
 

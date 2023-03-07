@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 import {
   ADMIN_REMOVING_ADMIN,
   ADMIN_REMOVING_CREATOR,
-  MEMBER_NOT_FOUND_MESSAGE,
+  MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_MESSAGE,
@@ -223,8 +223,8 @@ describe("resolvers -> Mutation -> removeMember", () => {
 
       await removeMemberResolverMemberNotFoundError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(MEMBER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${MEMBER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenCalledWith(MEMBER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(`Translated ${MEMBER_NOT_FOUND_ERROR.MESSAGE}`);
     }
   });
 

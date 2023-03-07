@@ -5,7 +5,7 @@ import { MutationAcceptMembershipRequestArgs } from "../../../src/types/generate
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
-  MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
+  MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_ALREADY_MEMBER_MESSAGE,
   USER_NOT_AUTHORIZED_ADMIN,
@@ -68,9 +68,9 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
 
       await acceptMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE);
+      expect(spy).toHaveBeenCalledWith(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE}`
+        `Translated ${MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });

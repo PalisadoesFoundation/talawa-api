@@ -5,7 +5,7 @@ import { MutationUpdateEventArgs } from "../../../src/types/generatedGraphQLType
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
-  EVENT_NOT_FOUND_MESSAGE,
+  EVENT_NOT_FOUND_ERROR,
   LENGTH_VALIDATION_ERROR,
   REGEX_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_MESSAGE,
@@ -117,8 +117,8 @@ describe("resolvers -> Mutation -> updateEvent", () => {
 
       await updateEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(EVENT_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${EVENT_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(`Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`);
     }
   });
 

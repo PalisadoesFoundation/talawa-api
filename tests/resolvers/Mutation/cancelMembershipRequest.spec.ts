@@ -6,7 +6,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { cancelMembershipRequest as cancelMembershipRequestResolver } from "../../../src/resolvers/Mutation/cancelMembershipRequest";
 import {
-  MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
+  MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_FOUND_MESSAGE,
@@ -53,7 +53,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
 
       await cancelMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

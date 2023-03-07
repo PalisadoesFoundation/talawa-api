@@ -5,9 +5,7 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
-  EVENT_NOT_FOUND_MESSAGE,
-  EVENT_NOT_FOUND_CODE,
-  EVENT_NOT_FOUND_PARAM,
+  EVENT_NOT_FOUND_ERROR,
   REGISTRANT_ALREADY_EXIST_CODE,
   REGISTRANT_ALREADY_EXIST_MESSAGE,
   REGISTRANT_ALREADY_EXIST_PARAM,
@@ -38,9 +36,9 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
   // Checks whether event exists.
   if (!event) {
     throw new errors.NotFoundError(
-      requestContext.translate(EVENT_NOT_FOUND_MESSAGE),
-      EVENT_NOT_FOUND_CODE,
-      EVENT_NOT_FOUND_PARAM
+      requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
+      EVENT_NOT_FOUND_ERROR.CODE,
+      EVENT_NOT_FOUND_ERROR.PARAM
     );
   }
 

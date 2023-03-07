@@ -2,9 +2,7 @@ import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Event } from "../../models";
 import { errors } from "../../libraries";
 import {
-  EVENT_NOT_FOUND,
-  EVENT_NOT_FOUND_CODE,
-  EVENT_NOT_FOUND_PARAM,
+  EVENT_NOT_FOUND_ERROR,
 } from "../../constants";
 
 export const isUserRegister: QueryResolvers["isUserRegister"] = async (
@@ -23,9 +21,9 @@ export const isUserRegister: QueryResolvers["isUserRegister"] = async (
 
   if (!event) {
     throw new errors.NotFoundError(
-      EVENT_NOT_FOUND,
-      EVENT_NOT_FOUND_CODE,
-      EVENT_NOT_FOUND_PARAM
+      EVENT_NOT_FOUND_ERROR.DESC,
+      EVENT_NOT_FOUND_ERROR.CODE,
+      EVENT_NOT_FOUND_ERROR.PARAM
     );
   }
 

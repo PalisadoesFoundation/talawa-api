@@ -6,7 +6,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { leaveOrganization as leaveOrganizationResolver } from "../../../src/resolvers/Mutation/leaveOrganization";
 import {
-  MEMBER_NOT_FOUND_MESSAGE,
+  MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_FOUND_MESSAGE,
@@ -183,8 +183,8 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
 
       await leaveOrganizationResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(MEMBER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(MEMBER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(MEMBER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(MEMBER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

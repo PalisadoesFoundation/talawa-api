@@ -6,7 +6,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { blockUser as blockUserResolver } from "../../../src/resolvers/Mutation/blockUser";
 import {
-  MEMBER_NOT_FOUND_MESSAGE,
+  MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_BLOCKING_SELF,
   USER_NOT_AUTHORIZED_ADMIN,
@@ -131,7 +131,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
 
       await blockUserResolverError?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(MEMBER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(MEMBER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

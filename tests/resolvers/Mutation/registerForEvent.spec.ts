@@ -6,7 +6,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { registerForEvent as registerForEventResolver } from "../../../src/resolvers/Mutation/registerForEvent";
 import {
-  EVENT_NOT_FOUND_MESSAGE,
+  EVENT_NOT_FOUND_ERROR,
   REGISTRANT_ALREADY_EXIST_MESSAGE,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
@@ -136,8 +136,8 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
 
       await registerForEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(EVENT_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(EVENT_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

@@ -7,10 +7,7 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
   USER_NOT_FOUND_PARAM,
-  EVENT_NOT_FOUND,
-  EVENT_NOT_FOUND_MESSAGE,
-  EVENT_NOT_FOUND_CODE,
-  EVENT_NOT_FOUND_PARAM,
+  EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_CODE,
@@ -45,10 +42,10 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
   if (!event) {
     throw new errors.NotFoundError(
       IN_PRODUCTION !== true
-        ? EVENT_NOT_FOUND
-        : requestContext.translate(EVENT_NOT_FOUND_MESSAGE),
-      EVENT_NOT_FOUND_CODE,
-      EVENT_NOT_FOUND_PARAM
+        ? EVENT_NOT_FOUND_ERROR.DESC
+        : requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
+      EVENT_NOT_FOUND_ERROR.CODE,
+      EVENT_NOT_FOUND_ERROR.PARAM
     );
   }
 
