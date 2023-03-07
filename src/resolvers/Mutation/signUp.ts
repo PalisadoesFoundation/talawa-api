@@ -17,7 +17,6 @@ import {
   createAccessToken,
   createRefreshToken,
   copyToClipboard,
-  updateUserToSuperAdmin,
 } from "../../utilities";
 import { androidFirebaseOptions, iosFirebaseOptions } from "../../config";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
@@ -106,17 +105,17 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     uploadImageFileName = await uploadEncodedImage(args.file, null);
   }
 
+  const isLastResortAdmin = args.data.email === LAST_RESORT_SUPERADMIN_EMAIL;
+
   const createdUser = await User.create({
     ...args.data,
     organizationUserBelongsTo: organization ? organization._id : null,
     email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
     image: uploadImageFileName ? uploadImageFileName : null,
     password: hashedPassword,
+    userType: isLastResortAdmin ? "SUPERADMIN" : undefined,
+    adminApproved: isLastResortAdmin,
   });
-
-  if (createdUser.email === LAST_RESORT_SUPERADMIN_EMAIL) {
-    await updateUserToSuperAdmin(createdUser.email);
-  }
 
   const accessToken = await createAccessToken(createdUser);
   const refreshToken = await createRefreshToken(createdUser);
