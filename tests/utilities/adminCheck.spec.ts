@@ -16,7 +16,7 @@ import {
   testUserType,
 } from "../helpers/userAndOrg";
 import mongoose from "mongoose";
-import { Organization } from "../../src/models";
+import { Organization, User } from "../../src/models";
 
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
@@ -38,7 +38,7 @@ describe("utilities -> adminCheck", () => {
     vi.resetModules();
   });
 
-  it("throws error if userIsOrganizationAdmin === false", async () => {
+  it("throws error if userIsOrganizationAdmin === false and isUserSuperAdmin === false", async () => {
     const { requestContext } = await import("../../src/libraries");
 
     const spy = vi
@@ -57,8 +57,51 @@ describe("utilities -> adminCheck", () => {
     }
   });
 
-  it("throws no error if user is an admin in that organization", async () => {
-    const updateOrg = await Organization.findByIdAndUpdate(
+  it("throws no error if userIsOrganizationAdmin === false and isUserSuperAdmin === true", async () => {
+    const updatedUser = await User.findByIdAndUpdate(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $set: {
+          userType: "SUPERADMIN",
+        },
+      },
+      {
+        new: true,
+      }
+    );
+
+    const { requestContext } = await import("../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    console.log(updatedUser);
+
+    const { adminCheck } = await import("../../src/utilities");
+    adminCheck(updatedUser!._id, testOrganization!);
+
+    expect(spy).not.toBeCalled();
+  });
+
+  it("throws no error if user is an admin in that organization but not super admin", async () => {
+    const updatedUser = await User.findByIdAndUpdate(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $set: {
+          userType: "USER",
+        },
+      },
+      {
+        new: true,
+      }
+    );
+
+    const updatedOrganization = await Organization.findByIdAndUpdate(
       {
         _id: testOrganization?._id,
       },
@@ -78,11 +121,9 @@ describe("utilities -> adminCheck", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
 
-    try {
-      const { adminCheck } = await import("../../src/utilities");
-      adminCheck(testUser?._id, updateOrg!);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(null);
-    }
+    const { adminCheck } = await import("../../src/utilities");
+    adminCheck(updatedUser!._id, updatedOrganization!);
+
+    expect(spy).not.toBeCalled();
   });
 });

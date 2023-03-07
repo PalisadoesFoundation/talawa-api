@@ -9,7 +9,7 @@ import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_PARAM,
 } from "../../constants";
-import { superAdminCheck } from "../../utilities/superAdminCheck";
+import { superAdminCheck } from "../../utilities";
 import { isValidString } from "../../libraries/validators/validateString";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 

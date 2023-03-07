@@ -1,5 +1,5 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { adminCheck, creatorCheck, superAdminCheck } from "../../utilities";
+import { creatorCheck, superAdminCheck } from "../../utilities";
 import { User, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
@@ -9,6 +9,7 @@ import {
   USER_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
   ORGANIZATION_NOT_FOUND_CODE,
+  USER_NOT_ORGANIZATION_ADMIN,
 } from "../../constants";
 
 export const removeAdmin: MutationResolvers["removeAdmin"] = async (
@@ -46,8 +47,18 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
     );
   }
 
-  // Checks whether user is an admin of organization.
-  adminCheck(user._id, organization);
+  // Checks whether user is an admin of the organization.
+  const userIsOrganizationAdmin = organization.admins.some((admin) =>
+    admin.equals(user._id)
+  );
+
+  if (!userIsOrganizationAdmin) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(`${USER_NOT_ORGANIZATION_ADMIN.message}`),
+      USER_NOT_ORGANIZATION_ADMIN.code,
+      USER_NOT_ORGANIZATION_ADMIN.param
+    );
+  }
 
   // Checks whether the current user is a superadmin.
   superAdminCheck(currentUser!);

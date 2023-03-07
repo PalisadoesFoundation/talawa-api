@@ -115,7 +115,13 @@ export const USER_NOT_AUTHORIZED_SUPERADMIN = {
 };
 
 export const USER_NOT_AUTHORIZED_ADMIN = {
-  message: "Error: Current user must be an ADMIN",
+  message: "Error: Current user must be an ADMIN or a SUPERADMIN",
+  code: "role.notValid.admin",
+  param: "roleValidationAdmin",
+};
+
+export const USER_NOT_ORGANIZATION_ADMIN = {
+  message: "Error: User must be an ADMIN of the organization",
   code: "role.notValid.admin",
   param: "roleValidationAdmin",
 };
