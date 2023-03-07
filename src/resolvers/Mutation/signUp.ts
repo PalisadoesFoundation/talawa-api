@@ -105,7 +105,8 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     uploadImageFileName = await uploadEncodedImage(args.file, null);
   }
 
-  const isLastResortAdmin = args.data.email === LAST_RESORT_SUPERADMIN_EMAIL;
+  const isLastResortSuperAdmin =
+    args.data.email === LAST_RESORT_SUPERADMIN_EMAIL;
 
   const createdUser = await User.create({
     ...args.data,
@@ -113,8 +114,8 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
     image: uploadImageFileName ? uploadImageFileName : null,
     password: hashedPassword,
-    userType: isLastResortAdmin ? "SUPERADMIN" : "USER",
-    adminApproved: isLastResortAdmin,
+    userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",
+    adminApproved: isLastResortSuperAdmin,
   });
 
   const accessToken = await createAccessToken(createdUser);
