@@ -4,7 +4,7 @@ import { User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { logout as logoutResolver } from "../../../src/resolvers/Mutation/logout";
-import { USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import {
   beforeAll,
   afterAll,
@@ -60,8 +60,8 @@ describe("resolvers -> Mutation -> logout", () => {
 
       await logoutResolver?.({}, {}, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

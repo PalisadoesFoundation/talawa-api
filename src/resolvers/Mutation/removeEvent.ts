@@ -3,15 +3,9 @@ import { errors, requestContext } from "../../libraries";
 import { User, Event } from "../../models";
 import {
   IN_PRODUCTION,
-  USER_NOT_FOUND,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_PARAM,
+  USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_AUTHORIZED_CODE,
-  USER_NOT_AUTHORIZED_PARAM,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 
 export const removeEvent: MutationResolvers["removeEvent"] = async (
@@ -27,10 +21,10 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
   if (!currentUser) {
     throw new errors.NotFoundError(
       IN_PRODUCTION !== true
-        ? USER_NOT_FOUND
-        : requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+        ? USER_NOT_FOUND_ERROR.DESC
+        : requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -63,10 +57,10 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
   if (!(currentUserIsOrganizationAdmin || currentUserIsEventAdmin)) {
     throw new errors.UnauthorizedError(
       IN_PRODUCTION !== true
-        ? USER_NOT_AUTHORIZED
-        : requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
-      USER_NOT_AUTHORIZED_CODE,
-      USER_NOT_AUTHORIZED_PARAM
+        ? USER_NOT_AUTHORIZED_ERROR.DESC
+        : requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM
     );
   }
 

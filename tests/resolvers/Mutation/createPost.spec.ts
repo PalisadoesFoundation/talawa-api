@@ -4,7 +4,7 @@ import { MutationCreatePostArgs } from "../../../src/types/generatedGraphQLTypes
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
-  USER_NOT_FOUND_MESSAGE,
+  USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   REGEX_VALIDATION_ERROR,
   LENGTH_VALIDATION_ERROR,
@@ -86,8 +86,10 @@ describe("resolvers -> Mutation -> createPost", () => {
 
       await createPostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 

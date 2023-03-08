@@ -7,7 +7,7 @@ import mongoose from "mongoose";
 import { blockPluginCreationBySuperadmin as blockPluginCreationBySuperadminResolver } from "../../../src/resolvers/Mutation/blockPluginCreationBySuperadmin";
 import {
   USER_NOT_AUTHORIZED_SUPERADMIN,
-  USER_NOT_FOUND_MESSAGE,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -55,7 +55,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
 
       await blockPluginCreationBySuperadminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -72,7 +72,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
 
       await blockPluginCreationBySuperadminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

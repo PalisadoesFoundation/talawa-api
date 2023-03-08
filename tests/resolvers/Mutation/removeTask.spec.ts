@@ -11,7 +11,10 @@ import { MutationRemoveTaskArgs } from "../../../src/types/generatedGraphQLTypes
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { removeTask as removeTaskResolver } from "../../../src/resolvers/Mutation/removeTask";
-import { USER_NOT_AUTHORIZED, USER_NOT_FOUND } from "../../../src/constants";
+import {
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestUserFunc } from "../../helpers/user";
 import { testUserType } from "../../helpers/userAndOrg";
@@ -115,7 +118,7 @@ describe("resolvers -> Mutation -> removeTask", () => {
 
       await removeTaskResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 
@@ -147,7 +150,7 @@ describe("resolvers -> Mutation -> removeTask", () => {
 
       await removeTaskResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.DESC);
     }
   });
 

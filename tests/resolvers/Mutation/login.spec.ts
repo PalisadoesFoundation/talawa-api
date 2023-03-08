@@ -8,7 +8,10 @@ import {
   androidFirebaseOptions,
   iosFirebaseOptions,
 } from "../../../src/config";
-import { INVALID_CREDENTIALS, USER_NOT_FOUND } from "../../../src/constants";
+import {
+  INVALID_CREDENTIALS,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -78,7 +81,7 @@ describe("resolvers -> Mutation -> login", () => {
 
       await loginResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 

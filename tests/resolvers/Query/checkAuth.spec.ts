@@ -3,7 +3,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { checkAuth as checkAuthResolver } from "../../../src/resolvers/Query/checkAuth";
 import { Types } from "mongoose";
-import { USER_NOT_FOUND } from "../../../src/constants";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
@@ -26,7 +26,7 @@ describe("resolvers -> Query -> checkAuth", () => {
 
       await checkAuthResolver?.({}, {}, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 

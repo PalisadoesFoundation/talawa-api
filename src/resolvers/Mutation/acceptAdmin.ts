@@ -1,9 +1,5 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import {
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
-} from "../../constants";
+import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { User } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import { superAdminCheck } from "../../utilities/superAdminCheck";
@@ -19,9 +15,9 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
 
   if (!currentUser) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -33,9 +29,9 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
 
   if (userExists === false) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 

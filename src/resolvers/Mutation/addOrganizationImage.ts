@@ -5,9 +5,7 @@ import { adminCheck, uploadImage } from "../../utilities";
 import { User, Organization } from "../../models";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 
 export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
@@ -19,9 +17,9 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
     // Checks whether currentUser exists.
     if (currentUserExists === false) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_MESSAGE),
-        USER_NOT_FOUND_CODE,
-        USER_NOT_FOUND_PARAM
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 

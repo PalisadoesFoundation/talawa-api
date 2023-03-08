@@ -3,15 +3,9 @@ import { User, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_ALREADY_MEMBER_CODE,
-  USER_ALREADY_MEMBER_MESSAGE,
-  USER_ALREADY_MEMBER_PARAM,
-  USER_NOT_AUTHORIZED_CODE,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_AUTHORIZED_PARAM,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
+  USER_ALREADY_MEMBER_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 
 export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"] =
@@ -32,9 +26,9 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
     // Checks whether organization is public.
     if (organization.isPublic === false) {
       throw new errors.UnauthorizedError(
-        requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
-        USER_NOT_AUTHORIZED_CODE,
-        USER_NOT_AUTHORIZED_PARAM
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM
       );
     }
 
@@ -45,9 +39,9 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
     // Checks whether currentUser with _id === context.userId exists.
     if (currentUserExists === false) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_MESSAGE),
-        USER_NOT_FOUND_CODE,
-        USER_NOT_FOUND_PARAM
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -58,9 +52,9 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
     // Checks whether currentUser with _id === context.userId is already a member of organzation.
     if (currentUserIsOrganizationMember === true) {
       throw new errors.ConflictError(
-        requestContext.translate(USER_ALREADY_MEMBER_MESSAGE),
-        USER_ALREADY_MEMBER_CODE,
-        USER_ALREADY_MEMBER_PARAM
+        requestContext.translate(USER_ALREADY_MEMBER_ERROR.MESSAGE),
+        USER_ALREADY_MEMBER_ERROR.CODE,
+        USER_ALREADY_MEMBER_ERROR.PARAM
       );
     }
 

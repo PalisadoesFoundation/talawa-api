@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 import { mailer } from "../../utilities";
-import { ACCESS_TOKEN_SECRET, USER_NOT_FOUND } from "../../constants";
+import { ACCESS_TOKEN_SECRET, USER_NOT_FOUND_ERROR } from "../../constants";
 import { logger } from "../../libraries";
 
 export const otp: MutationResolvers["otp"] = async (_parent, args) => {
@@ -12,7 +12,7 @@ export const otp: MutationResolvers["otp"] = async (_parent, args) => {
   }).lean();
 
   if (!user) {
-    throw new Error(USER_NOT_FOUND);
+    throw new Error(USER_NOT_FOUND_ERROR.DESC);
   }
 
   const username = `${user.firstName} ${user.lastName}`;

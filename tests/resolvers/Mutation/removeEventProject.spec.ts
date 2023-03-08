@@ -20,10 +20,8 @@ import {
   vi,
 } from "vitest";
 import {
-  USER_NOT_FOUND,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  USER_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   EVENT_PROJECT_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { testUserType } from "../../helpers/userAndOrg";
@@ -90,7 +88,7 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
 
     expect(async () => {
       await removeEventProject(null, args, context);
-    }).rejects.toThrowError(USER_NOT_FOUND);
+    }).rejects.toThrowError(USER_NOT_FOUND_ERROR.DESC);
   });
   it("Should throw an error if the user is not found and IN_PRODUCTION is true", async () => {
     const args = {
@@ -126,8 +124,8 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     try {
       await removeEventProject(null, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toBe(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toBe(`Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`);
     }
   });
   it("Should throw an error if the eventProject is not found", async () => {
@@ -200,7 +198,7 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
 
     expect(async () => {
       await removeEventProject(null, args, context);
-    }).rejects.toThrowError(USER_NOT_AUTHORIZED);
+    }).rejects.toThrowError(USER_NOT_AUTHORIZED_ERROR.DESC);
   });
   it("Should throw an error if the user is not the creator of the eventProject and IN_PRODUCTION is true", async () => {
     const args = {
@@ -234,8 +232,10 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     try {
       await removeEventProject(null, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
-      expect(error.message).toBe(`Translated ${USER_NOT_AUTHORIZED_MESSAGE}`);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect(error.message).toBe(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
     }
   });
   it("Should remove the eventProject", async () => {

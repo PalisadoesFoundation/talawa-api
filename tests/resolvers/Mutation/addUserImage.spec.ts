@@ -3,7 +3,7 @@ import { Types } from "mongoose";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { MutationAddUserImageArgs } from "../../../src/types/generatedGraphQLTypes";
-import { USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import {
   beforeAll,
   afterAll,
@@ -62,8 +62,10 @@ describe("resolvers -> Mutation -> addUserImage", () => {
       );
       await addUserImageResolverUserError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
   it(`When Image is given, updates current user's user object and returns the object when Image is  in DB path`, async () => {

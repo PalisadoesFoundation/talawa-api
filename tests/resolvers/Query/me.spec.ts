@@ -2,7 +2,7 @@ import "dotenv/config";
 import { me as meResolver } from "../../../src/resolvers/Query/me";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
-import { USER_NOT_FOUND } from "../../../src/constants";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { User } from "../../../src/models";
 import { Types } from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -30,7 +30,7 @@ describe("resolvers -> Query -> me", () => {
 
       await meResolver?.({}, {}, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 

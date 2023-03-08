@@ -3,7 +3,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { User, Organization } from "../../../src/models";
 import { Types } from "mongoose";
-import { USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import {
   beforeAll,
   afterAll,
@@ -73,7 +73,7 @@ describe("resolvers -> Organization -> creator", () => {
       );
       await creatorResolver?.(parent, {}, {});
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 
@@ -115,8 +115,10 @@ describe("resolvers -> Organization -> creator", () => {
       );
       await creatorResolver?.(parent, {}, {});
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 

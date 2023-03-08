@@ -5,9 +5,7 @@ import { adminCheck } from "../../utilities";
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_PARAM,
-  USER_NOT_FOUND_MESSAGE,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 
 export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest"] =
@@ -45,9 +43,9 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
     // Checks whether user exists.
     if (!user) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_MESSAGE),
-        USER_NOT_FOUND_CODE,
-        USER_NOT_FOUND_PARAM
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 

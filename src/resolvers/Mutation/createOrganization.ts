@@ -5,9 +5,7 @@ import { errors, requestContext } from "../../libraries";
 import {
   LENGTH_VALIDATION_ERROR,
   REGEX_VALIDATION_ERROR,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { superAdminCheck } from "../../utilities/superAdminCheck";
 import { isValidString } from "../../libraries/validators/validateString";
@@ -22,9 +20,9 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     // Checks whether currentUser with _id === context.userId exists.
     if (currentUserExists === false) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_MESSAGE),
-        USER_NOT_FOUND_CODE,
-        USER_NOT_FOUND_PARAM
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 

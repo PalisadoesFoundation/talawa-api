@@ -9,7 +9,7 @@ import {
   LENGTH_VALIDATION_ERROR,
   REGEX_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_SUPERADMIN,
-  USER_NOT_FOUND_MESSAGE,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import * as uploadImage from "../../../src/utilities/uploadImage";
 import {
@@ -79,8 +79,8 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       );
       await createOrganization?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

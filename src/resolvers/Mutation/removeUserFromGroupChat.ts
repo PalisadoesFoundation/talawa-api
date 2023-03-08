@@ -2,10 +2,7 @@ import {
   CHAT_NOT_FOUND_ERROR,
   IN_PRODUCTION,
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_AUTHORIZED_CODE,
-  USER_NOT_AUTHORIZED_PARAM,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
@@ -55,10 +52,10 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
     if (userIsMemberOfGroupChat === false) {
       throw new errors.UnauthorizedError(
         IN_PRODUCTION !== true
-          ? USER_NOT_AUTHORIZED
-          : requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
-        USER_NOT_AUTHORIZED_CODE,
-        USER_NOT_AUTHORIZED_PARAM
+          ? USER_NOT_AUTHORIZED_ERROR.DESC
+          : requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM
       );
     }
 

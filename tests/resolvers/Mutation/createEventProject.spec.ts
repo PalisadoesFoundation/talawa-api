@@ -13,8 +13,8 @@ import {
 } from "vitest";
 import {
   EVENT_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { testEventType } from "../../helpers/events";
 import {
@@ -111,8 +111,8 @@ describe("resolvers -> Mutation -> createEventProject", () => {
 
       await createEventProject(null, args, { user: null });
     } catch (err: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(err.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(err.message).toEqual(`Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`);
     }
   });
 
@@ -189,9 +189,9 @@ describe("resolvers -> Mutation -> createEventProject", () => {
     try {
       await createEventProject(null, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
       );
     }
   });

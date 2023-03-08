@@ -2,13 +2,9 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Event } from "../../models";
 import {
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_PARAM,
+  USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
-  REGISTRANT_ALREADY_EXIST_CODE,
-  REGISTRANT_ALREADY_EXIST_MESSAGE,
-  REGISTRANT_ALREADY_EXIST_PARAM,
+  REGISTRANT_ALREADY_EXIST_ERROR,
 } from "../../constants";
 
 export const registerForEvent: MutationResolvers["registerForEvent"] = async (
@@ -23,9 +19,9 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
   // Checks whether currentUser with _id == context.userId exists.
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -52,9 +48,9 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
   if (index !== -1) {
     if (event.registrants[index].status === "ACTIVE") {
       throw new errors.NotFoundError(
-        requestContext.translate(REGISTRANT_ALREADY_EXIST_MESSAGE),
-        REGISTRANT_ALREADY_EXIST_CODE,
-        REGISTRANT_ALREADY_EXIST_PARAM
+        requestContext.translate(REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE),
+        REGISTRANT_ALREADY_EXIST_ERROR.CODE,
+        REGISTRANT_ALREADY_EXIST_ERROR.PARAM
       );
     } else {
       currentUserIsEventRegistrant = true;

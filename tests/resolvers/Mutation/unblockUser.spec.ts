@@ -7,8 +7,8 @@ import mongoose from "mongoose";
 import { unblockUser as unblockUserResolver } from "../../../src/resolvers/Mutation/unblockUser";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
@@ -63,7 +63,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
       await unblockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 
@@ -81,7 +81,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
       await unblockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.DESC);
     }
   });
 
@@ -121,7 +121,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
       await unblockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.DESC);
     }
   });
 

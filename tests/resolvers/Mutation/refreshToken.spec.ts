@@ -7,8 +7,7 @@ import mongoose from "mongoose";
 import {
   INVALID_REFRESH_TOKEN,
   INVALID_REFRESH_TOKEN_MESSAGE,
-  USER_NOT_FOUND,
-  USER_NOT_FOUND_MESSAGE,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { createRefreshToken } from "../../../src/utilities";
 import {
@@ -127,7 +126,7 @@ describe("resolvers -> Mutation -> refreshToken", () => {
 
       await refreshTokenResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 
@@ -163,8 +162,10 @@ describe("resolvers -> Mutation -> refreshToken", () => {
 
       await refreshTokenResolver?.({}, args, {});
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
 
       spy.mockRestore();
     }

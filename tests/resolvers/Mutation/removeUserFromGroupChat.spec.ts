@@ -8,7 +8,7 @@ import { removeUserFromGroupChat as removeUserFromGroupChatResolver } from "../.
 import {
   CHAT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { testOrganizationType, testUserType } from "../../helpers/userAndOrg";
@@ -77,7 +77,7 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
 
       await removeUserFromGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.DESC);
     }
   });
 
@@ -117,7 +117,7 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
 
       await removeUserFromGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.DESC);
     }
   });
 

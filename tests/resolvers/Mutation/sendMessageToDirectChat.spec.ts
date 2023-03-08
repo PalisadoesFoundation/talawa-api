@@ -11,7 +11,10 @@ import { MutationSendMessageToDirectChatArgs } from "../../../src/types/generate
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { sendMessageToDirectChat as sendMessageToDirectChatResolver } from "../../../src/resolvers/Mutation/sendMessageToDirectChat";
-import { CHAT_NOT_FOUND_ERROR, USER_NOT_FOUND } from "../../../src/constants";
+import {
+  CHAT_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestUserFunc } from "../../helpers/user";
 import { testUserType } from "../../helpers/userAndOrg";
@@ -91,7 +94,7 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
 
       await sendMessageToDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 

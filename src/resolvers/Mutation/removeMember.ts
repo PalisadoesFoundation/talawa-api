@@ -4,9 +4,7 @@ import { User, Organization } from "../../models";
 import { adminCheck } from "../../utilities";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_PARAM,
+  USER_NOT_FOUND_ERROR,
   MEMBER_NOT_FOUND_ERROR,
   USER_REMOVING_SELF,
   ADMIN_REMOVING_ADMIN,
@@ -45,9 +43,9 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   // Checks whether curent user exists
   if (!user) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 

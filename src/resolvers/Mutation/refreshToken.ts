@@ -10,10 +10,7 @@ import {
   INVALID_REFRESH_TOKEN_PARAM,
   IN_PRODUCTION,
   REFRESH_TOKEN_SECRET,
-  USER_NOT_FOUND,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { Interface_JwtTokenPayload } from "../../utilities";
 
@@ -54,10 +51,10 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
   if (!user) {
     throw new errors.NotFoundError(
       IN_PRODUCTION !== true
-        ? USER_NOT_FOUND
-        : requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+        ? USER_NOT_FOUND_ERROR.DESC
+        : requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 

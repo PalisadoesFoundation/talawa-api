@@ -8,7 +8,7 @@ import { addOrganizationImage as addOrganizationImageResolver } from "../../../s
 import * as uploadImage from "../../../src/utilities/uploadImage";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_MESSAGE,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { nanoid } from "nanoid";
 import {
@@ -77,8 +77,8 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
       );
       await addOrganizationImage?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
   it(`throws NotFoundError if no organization exists with _id === args.organizationId`, async () => {

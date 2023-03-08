@@ -1,12 +1,7 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Comment } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import {
-  COMMENT_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
-} from "../../constants";
+import { COMMENT_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
 
 export const likeComment: MutationResolvers["likeComment"] = async (
   _parent,
@@ -20,9 +15,9 @@ export const likeComment: MutationResolvers["likeComment"] = async (
   // Checks whether currentUser with _id == context.userId exists.
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 

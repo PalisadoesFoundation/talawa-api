@@ -5,9 +5,7 @@ import {
   COMMENT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   POST_NOT_FOUND_ERROR,
-  USER_NOT_FOUND,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_PARAM,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 
 export const commentsByPost: QueryResolvers["commentsByPost"] = async (
@@ -35,9 +33,9 @@ export const commentsByPost: QueryResolvers["commentsByPost"] = async (
   // Throws error if no user exists for comments[0].creator.
   if (!comments[0].creator) {
     throw new errors.NotFoundError(
-      USER_NOT_FOUND,
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      USER_NOT_FOUND_ERROR.DESC,
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 

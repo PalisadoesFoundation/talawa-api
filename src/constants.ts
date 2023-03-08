@@ -65,11 +65,12 @@ export const POST_NOT_FOUND_ERROR = {
   MESSAGE: "post.notFound",
   PARAM: "post",
 };
-
-export const REGISTRANT_ALREADY_EXIST = "Already registered for the event";
-export const REGISTRANT_ALREADY_EXIST_CODE = "registrant.alreadyExist";
-export const REGISTRANT_ALREADY_EXIST_MESSAGE = "registrant.alreadyExist";
-export const REGISTRANT_ALREADY_EXIST_PARAM = "registrant";
+export const REGISTRANT_ALREADY_EXIST_ERROR = {
+  DESC: "Already registered for the event",
+  CODE: "registrant.alreadyExist",
+  MESSAGE: "registrant.alreadyExist",
+  PARAM: "registrant",
+};
 
 export const INVALID_FILE_TYPE = {
   message: "invalid.fileType",
@@ -144,11 +145,12 @@ export const USER_NOT_AUTHORIZED_TO_PIN = {
   code: "user.notAuthorizedToPin",
   param: "user.notAuthorizedToPin",
 };
-
-export const TASK_NOT_FOUND = "Task not found";
-export const TASK_NOT_FOUND_CODE = "task.notFound";
-export const TASK_NOT_FOUND_MESSAGE = "task.notFound";
-export const TASK_NOT_FOUND_PARAM = "task";
+export const TASK_NOT_FOUND_ERROR = {
+  DESC: "Task not found",
+  CODE: "task.notFound",
+  MESSAGE: "task.notFound",
+  PARAM: "task",
+};
 
 export const STATUS_ACTIVE = "ACTIVE";
 
@@ -157,27 +159,30 @@ export const URL =
     ? "http://localhost:4000/graphql"
     : "http://calico.palisadoes.org/talawa/graphql";
 
-export const USER_ALREADY_MEMBER = "User is already a member";
-export const USER_ALREADY_MEMBER_CODE = "user.alreadyMember";
-export const USER_ALREADY_MEMBER_MESSAGE = "user.alreadyMember";
-export const USER_ALREADY_MEMBER_PARAM = "user";
-
-export const USER_ALREADY_UNREGISTERED = "Already registered for the event";
-export const USER_ALREADY_UNREGISTERED_CODE = "registrant.alreadyUnregistered";
-export const USER_ALREADY_UNREGISTERED_MESSAGE =
-  "registrant.alreadyUnregistered";
-export const USER_ALREADY_UNREGISTERED_PARAM = "registrant";
-
-export const USER_NOT_AUTHORIZED =
-  "User is not authorized for performing this operation";
-export const USER_NOT_AUTHORIZED_CODE = "user.notAuthorized";
-export const USER_NOT_AUTHORIZED_MESSAGE = "user.notAuthorized";
-export const USER_NOT_AUTHORIZED_PARAM = "user";
-
-export const USER_NOT_FOUND = "User not found";
-export const USER_NOT_FOUND_CODE = "user.notFound";
-export const USER_NOT_FOUND_MESSAGE = "user.notFound";
-export const USER_NOT_FOUND_PARAM = "user";
+export const USER_ALREADY_MEMBER_ERROR = {
+  DESC: "User is already a member",
+  CODE: "user.alreadyMember",
+  MESSAGE: "user.alreadyMember",
+  PARAM: "user",
+};
+export const USER_ALREADY_UNREGISTERED_ERROR = {
+  DESC: "Already registered for the event",
+  CODE: "registrant.alreadyUnregistered",
+  MESSAGE: "registrant.alreadyUnregistered",
+  PARAM: "registrant",
+};
+export const USER_NOT_AUTHORIZED_ERROR = {
+  DESC: "User is not authorized for performing this operation",
+  CODE: "user.notAuthorized",
+  MESSAGE: "user.notAuthorized",
+  PARAM: "user",
+};
+export const USER_NOT_FOUND_ERROR = {
+  DESC: "User not found",
+  CODE: "user.notFound",
+  MESSAGE: "user.notFound",
+  PARAM: "user",
+};
 
 export const TRANSLATION_ALREADY_PRESENT = "Translation Already Present";
 export const TRANSLATION_ALREADY_PRESENT_CODE = "translation.alreadyPresent";

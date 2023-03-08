@@ -7,9 +7,9 @@ import mongoose from "mongoose";
 import {
   CHAT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_ALREADY_MEMBER_MESSAGE,
+  USER_ALREADY_MEMBER_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
-  USER_NOT_FOUND_MESSAGE,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -216,8 +216,8 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       );
       await addUserToGroupChat?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -249,8 +249,8 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       );
       await addUserToGroupChat?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_ALREADY_MEMBER_MESSAGE);
-      expect(error.message).toEqual(USER_ALREADY_MEMBER_MESSAGE);
+      expect(spy).toBeCalledWith(USER_ALREADY_MEMBER_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_ALREADY_MEMBER_ERROR.MESSAGE);
     }
   });
 

@@ -5,14 +5,7 @@ import {
   GraphQLInterfaceType,
   GraphQLObjectType,
 } from "graphql";
-import {
-  USER_NOT_AUTHORIZED_CODE,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_AUTHORIZED_PARAM,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
-} from "../constants";
+import { USER_NOT_AUTHORIZED_ERROR, USER_NOT_FOUND_ERROR } from "../constants";
 import { errors, requestContext } from "../libraries";
 import { User } from "../models";
 
@@ -39,17 +32,17 @@ export class RoleAuthorizationDirective extends SchemaDirectiveVisitor {
 
       if (!currentUser) {
         throw new errors.NotFoundError(
-          requestContext.translate(USER_NOT_FOUND_MESSAGE),
-          USER_NOT_FOUND_CODE,
-          USER_NOT_FOUND_PARAM
+          requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+          USER_NOT_FOUND_ERROR.CODE,
+          USER_NOT_FOUND_ERROR.PARAM
         );
       }
 
       if (currentUser.userType !== requires) {
         throw new errors.UnauthenticatedError(
-          requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
-          USER_NOT_AUTHORIZED_CODE,
-          USER_NOT_AUTHORIZED_PARAM
+          requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+          USER_NOT_AUTHORIZED_ERROR.CODE,
+          USER_NOT_AUTHORIZED_ERROR.PARAM
         );
       }
 

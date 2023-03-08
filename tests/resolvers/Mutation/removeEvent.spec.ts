@@ -7,8 +7,8 @@ import mongoose from "mongoose";
 import { removeEvent as removeEventResolver } from "../../../src/resolvers/Mutation/removeEvent";
 import {
   EVENT_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { testOrganizationType, testUserType } from "../../helpers/userAndOrg";
@@ -44,7 +44,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
 
       await removeEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 
@@ -100,7 +100,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
 
       await removeEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.DESC);
     }
   });
 
