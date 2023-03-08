@@ -115,7 +115,7 @@ This `.env` file must be populated with the following environment variables for 
 | RECAPTCHA_SECRET_KEY | Used for authentication using reCAPTCHA                |
 | MAIL_USERNAME        | Used for mailing service                               |
 | MAIL_PASSWORD        | Used for mailing service                               |
-| LAST_RESORT_SUPERADMIN_EMAIL | Used for promoting default super admin         |     
+| LAST_RESORT_SUPERADMIN_EMAIL | Used for promoting the default super admin         |     
 
 The following sections will show you how to configure each of these parameters.
 
@@ -218,10 +218,17 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 
 ## Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter
 
-When we create the first user, that should be super admin. To promote the user to super admin we either
-need another super admin or have to make changes in DB directly. By creating the user with this email
-promotes the user to super admin by default.
-Note - It is advised that you remove this variable once the initial installation and setup has been done. 
+The user with the email address set with this parameter will automatically be elevated to Super Admin status on registration. 
+
+1. When installing, set this to the email address of the person you want to be the very first Super Admin. 
+    - This will usually be the email address of the person installing the software.
+1. If this is not set you will not be able to administer the application. 
+
+If you don't set this parameter, then you'll need to follow the `Manually Adding The First Super Admin User` process discussed later in this document. 
+
+Set this value in the event that you need to elevate any of your users to be a Super Admin.
+
+**NOTE** It is STRONGLY advised that you remove the email address once the initial installation and setup has been done. 
 
 ## Configuring Google ReCAPTCHA
 
@@ -436,7 +443,7 @@ This guide is for `VSCode` users to easily manage their `MongoDB` databases:
 
 3. Now you can manage the database you are using for `talawa-api` through this extension within `VSCode`.
 
-# Adding The First Super Admin user
+# Manually Adding The First Super Admin User
 
 You can skip these instructions for now if you don't have running instance of Talawa-Admin.
 
