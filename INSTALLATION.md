@@ -9,42 +9,45 @@ This document provides instructions on how to set up and start a running instanc
 - [Talawa-API Installation](#talawa-api-installation)
 - [Table of Contents](#table-of-contents)
 - [Installation](#installation)
-    - [Install node.js](#install-nodejs)
-    - [Install git](#install-git)
-    - [Setting up this repository](#setting-up-this-repository)
-    - [Install the Required Packages](#install-the-required-packages)
-    - [Install MongoDB](#install-mongodb)
-        - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
+  - [Install node.js](#install-nodejs)
+  - [Install git](#install-git)
+  - [Setting up this repository](#setting-up-this-repository)
+  - [Install the Required Packages](#install-the-required-packages)
+  - [Install MongoDB](#install-mongodb)
+    - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
 - [Configuration](#configuration)
-    - [The .env Configuration File](#the-env-configuration-file)
-    - [Generating Token Secrets](#generating-token-secrets)
-        - [Setting up ACCESS_TOKEN_SECRET in .env file](#setting-up-access_token_secret-in-env-file)
-        - [Setting up REFRESH_TOKEN_SECRET in .env file](#setting-up-refresh_token_secret-in-env-file)
-    - [Configuring MongoDB](#configuring-mongodb)
-        - [Setting up the MONGODB_URL in .env file](#setting-up-the-mongodb_url-in-env-file)
-        - [Using the CLI to get the MONGODB_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
-        - [Using Microsoft Windows to get the MONGODB_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
-    - [Setting up .env LAST\_RESORT\_SUPERADMIN\_EMAIL parameter](#setting-up-env-last_resort_superadmin_email-parameter)
-    - [Configuring Google ReCAPTCHA](#configuring-google-recaptcha)
-        - [Setting up RECAPTCHA_SECRET_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
-        - [Setting up .env MAIL_USERNAME and MAIL_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
-    - [Configuring Google Firebase](#configuring-google-firebase)
-        - [Mobile Developers Only Applying the Firebase Keys to the Talawa Mobile App](#mobile-developers-only-applying-the-firebase-keys-to-the-talawa-mobile-app)
+  - [The .env Configuration File](#the-env-configuration-file)
+  - [Generating Token Secrets](#generating-token-secrets)
+    - [Setting up ACCESS\_TOKEN\_SECRET in .env file](#setting-up-access_token_secret-in-env-file)
+      - [Linux](#linux)
+      - [Windows](#windows)
+    - [Setting up REFRESH\_TOKEN\_SECRET in .env file](#setting-up-refresh_token_secret-in-env-file)
+  - [Configuring MongoDB](#configuring-mongodb)
+    - [Setting up the MONGODB\_URL in .env file](#setting-up-the-mongodb_url-in-env-file)
+    - [Using the CLI to get the MONGODB\_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
+    - [Using Microsoft Windows to get the MONGODB\_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
+  - [Setting up .env LAST\_RESORT\_SUPERADMIN\_EMAIL parameter](#setting-up-env-last_resort_superadmin_email-parameter)
+  - [Configuring Google ReCAPTCHA](#configuring-google-recaptcha)
+    - [Setting up RECAPTCHA\_SECRET\_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
+    - [Setting up .env MAIL\_USERNAME and MAIL\_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
+  - [Configuring Google Firebase](#configuring-google-firebase)
+    - [Generate Firebase Keys for the Talawa Notification Service](#generate-firebase-keys-for-the-talawa-notification-service)
+    - [(Mobile Developers Only) Applying the Firebase Keys to the Talawa Mobile App](#mobile-developers-only-applying-the-firebase-keys-to-the-talawa-mobile-app)
 - [Running Talawa-API](#running-talawa-api)
 - [How to Access the Talawa-API URL](#how-to-access-the-talawa-api-url)
-    - [For Talawa-API Developers](#for-talawa-api-developers)
-    - [For Mobile App Developers](#for-mobile-app-developers)
-        - [On Android Virtual Device](#on-android-virtual-device)
-        - [On a Real Mobile Device](#on-a-real-mobile-device)
-    - [For Talawa-Admin Developers](#for-talawa-admin-developers)
+  - [For Talawa-API Developers](#for-talawa-api-developers)
+  - [For Mobile App Developers](#for-mobile-app-developers)
+    - [On Android Virtual Device](#on-android-virtual-device)
+    - [On a Real Mobile Device](#on-a-real-mobile-device)
+  - [For Talawa-Admin Developers](#for-talawa-admin-developers)
 - [Accessing MongoDB](#accessing-mongodb)
-    - [Managing MongoDB using the MongoDB Compass GUI](#managing-mongodb-using-the-mongodb-compass-gui)
-    - [Managing MongoDB using the VSCode extension](#managing-mongodb-using-the-vscode-extension)
-- [Adding The First Super Admin user](#adding-the-first-super-admin-user)
-    - [Using MongoDB Compass](#using-mongodb-compass)
-    - [Using Mongo Shell](#using-mongo-shell)
+  - [Managing MongoDB using the MongoDB Compass GUI](#managing-mongodb-using-the-mongodb-compass-gui)
+  - [Managing MongoDB using the VSCode extension](#managing-mongodb-using-the-vscode-extension)
+- [Manually Adding The First Super Admin User](#manually-adding-the-first-super-admin-user)
+  - [Using MongoDB Compass](#using-mongodb-compass)
+  - [Using Mongo Shell](#using-mongo-shell)
 - [Other](#other)
-    - [Changing default talawa-api port](#changing-default-talawa-api-port)
+  - [Changing default talawa-api port](#changing-default-talawa-api-port)
 - [Testing](#testing)
 
 <!-- /TOC -->
@@ -107,15 +110,15 @@ A file named `.env` is required in the root directory of talawa-api for storing 
 
 This `.env` file must be populated with the following environment variables for talawa-api to work:
 
-| Variable             | Description                                            |
-| -------------------- | ------------------------------------------------------ |
-| ACCESS_TOKEN_SECRET  | Used for signing/verifying JWT tokens                  |
-| REFRESH_TOKEN_SECRET | Used for signing/verifying JWT tokens                  |
-| MONGO_DB_URL         | Used for connecting talawa-api to the mongoDB database |
-| RECAPTCHA_SECRET_KEY | Used for authentication using reCAPTCHA                |
-| MAIL_USERNAME        | Used for mailing service                               |
-| MAIL_PASSWORD        | Used for mailing service                               |
-| LAST_RESORT_SUPERADMIN_EMAIL | Used for promoting default super admin         |     
+| Variable                     | Description                                            |
+| ---------------------------- | ------------------------------------------------------ |
+| ACCESS_TOKEN_SECRET          | Used for signing/verifying JWT tokens                  |
+| REFRESH_TOKEN_SECRET         | Used for signing/verifying JWT tokens                  |
+| MONGO_DB_URL                 | Used for connecting talawa-api to the mongoDB database |
+| RECAPTCHA_SECRET_KEY         | Used for authentication using reCAPTCHA                |
+| MAIL_USERNAME                | Used for mailing service                               |
+| MAIL_PASSWORD                | Used for mailing service                               |
+| LAST_RESORT_SUPERADMIN_EMAIL | Used for promoting the default super admin             |
 
 The following sections will show you how to configure each of these parameters.
 
@@ -218,10 +221,17 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 
 ## Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter
 
-When we create the first user, that should be super admin. To promote the user to super admin we either
-need another super admin or have to make changes in DB directly. By creating the user with this email
-promotes the user to super admin by default.
-Note - It is advised that you remove this variable once the initial installation and setup has been done. 
+The user with the email address set with this parameter will automatically be elevated to Super Admin status on registration. 
+
+1. When installing, set this to the email address of the person you want to be the very first Super Admin. 
+    - This will usually be the email address of the person installing the software.
+1. If this is not set you will not be able to administer the application. 
+
+If you don't set this parameter, then you'll need to follow the `Manually Adding The First Super Admin User` process discussed later in this document. 
+
+Set this value in the event that you need to elevate any of your users to be a Super Admin.
+
+**NOTE** It is STRONGLY advised that you remove the email address once the initial installation and setup has been done. 
 
 ## Configuring Google ReCAPTCHA
 
@@ -436,7 +446,7 @@ This guide is for `VSCode` users to easily manage their `MongoDB` databases:
 
 3. Now you can manage the database you are using for `talawa-api` through this extension within `VSCode`.
 
-# Adding The First Super Admin user
+# Manually Adding The First Super Admin User
 
 You can skip these instructions for now if you don't have running instance of Talawa-Admin.
 
