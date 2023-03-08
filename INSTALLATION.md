@@ -428,9 +428,9 @@ You can skip these instructions for now if you don't have running instance of Ta
 1. Open MongoDB Compass and click on `Connect`.
 
 2. Select `user` collections and edit the data. Change:
-     1. `userType` from USER to SUPERADMIN
-     2. `adminApproved` from false to true
-     - ![Illustration for ADMIN user edit ](./image/mongodb_compass_admin_user_edit.png)
+     1. `userType` from `USER` to `SUPERADMIN`
+     2. `adminApproved` from `false` to `true`
+     - ![Illustration for user edit ](./image/mongodb_compass_user_edit.png)
      
 ## Using Mongo Shell
     
