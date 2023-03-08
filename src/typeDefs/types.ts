@@ -294,6 +294,19 @@ export const types = gql`
     aggregate: AggregatePost!
   }
 
+  type Tag {
+    _id: ID!
+    title: String!
+    folder: ID!
+  }
+
+  type TagFolder {
+    _id: ID!
+    title: String!
+    parent: ID
+    organization: ID!
+  }
+
   type Task {
     _id: ID!
     title: String!
@@ -332,6 +345,7 @@ export const types = gql`
     pluginCreationAllowed: Boolean
     adminApproved: Boolean
     createdAt: DateTime
+    tags: [String]
   }
 
   type UserAttende {

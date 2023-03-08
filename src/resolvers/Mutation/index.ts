@@ -20,6 +20,7 @@ import { createMessageChat } from "./createMessageChat";
 import { createOrganization } from "./createOrganization";
 import { createPlugin } from "./createPlugin";
 import { createPost } from "./createPost";
+import { createTagFolder } from "./createTagFolder";
 import { createTask } from "./createTask";
 import { deleteDonationById } from "./deleteDonationById";
 import { forgotPassword } from "./forgotPassword";
@@ -90,6 +91,7 @@ export const Mutation: MutationResolvers = {
   createOrganization,
   createPlugin,
   createPost,
+  createTagFolder,
   createTask,
   deleteDonationById,
   forgotPassword,

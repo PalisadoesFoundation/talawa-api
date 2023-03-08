@@ -380,6 +380,7 @@ export type Mutation = {
   createOrganization: Organization;
   createPlugin: Plugin;
   createPost?: Maybe<Post>;
+  createTagFolder?: Maybe<TagFolder>;
   createTask: Task;
   deleteDonationById: DeletePayload;
   forgotPassword: Scalars['Boolean'];
@@ -553,6 +554,13 @@ export type MutationCreatePluginArgs = {
 export type MutationCreatePostArgs = {
   data: PostInput;
   file?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationCreateTagFolderArgs = {
+  organizationId?: InputMaybe<Scalars['ID']>;
+  parentFolder?: InputMaybe<Scalars['ID']>;
+  title: Scalars['String'];
 };
 
 
@@ -1255,6 +1263,21 @@ export type Subscription = {
   messageSentToGroupChat?: Maybe<GroupChatMessage>;
 };
 
+export type Tag = {
+  __typename?: 'Tag';
+  _id: Scalars['ID'];
+  folder: Scalars['ID'];
+  title: Scalars['String'];
+};
+
+export type TagFolder = {
+  __typename?: 'TagFolder';
+  _id: Scalars['ID'];
+  organization: Scalars['ID'];
+  parent?: Maybe<Scalars['ID']>;
+  title: Scalars['String'];
+};
+
 export type Task = {
   __typename?: 'Task';
   _id: Scalars['ID'];
@@ -1358,6 +1381,7 @@ export type User = {
   organizationsBlockedBy?: Maybe<Array<Maybe<Organization>>>;
   pluginCreationAllowed?: Maybe<Scalars['Boolean']>;
   registeredEvents?: Maybe<Array<Maybe<Event>>>;
+  tags?: Maybe<Array<Maybe<Scalars['String']>>>;
   tokenVersion: Scalars['Int'];
   userType?: Maybe<Scalars['String']>;
 };
@@ -1586,6 +1610,8 @@ export type ResolversTypes = {
   Status: Status;
   String: ResolverTypeWrapper<Scalars['String']>;
   Subscription: ResolverTypeWrapper<{}>;
+  Tag: ResolverTypeWrapper<Tag>;
+  TagFolder: ResolverTypeWrapper<TagFolder>;
   Task: ResolverTypeWrapper<Interface_TaskModel>;
   TaskInput: TaskInput;
   TaskOrderByInput: TaskOrderByInput;
@@ -1674,6 +1700,8 @@ export type ResolversParentTypes = {
   RecaptchaVerification: RecaptchaVerification;
   String: Scalars['String'];
   Subscription: {};
+  Tag: Tag;
+  TagFolder: TagFolder;
   Task: Interface_TaskModel;
   TaskInput: TaskInput;
   Time: Scalars['Time'];
@@ -1942,6 +1970,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, Partial<MutationCreateOrganizationArgs>>;
   createPlugin?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationCreatePluginArgs, 'pluginCreatedBy' | 'pluginDesc' | 'pluginInstallStatus' | 'pluginName'>>;
   createPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'data'>>;
+  createTagFolder?: Resolver<Maybe<ResolversTypes['TagFolder']>, ParentType, ContextType, RequireFields<MutationCreateTagFolderArgs, 'title'>>;
   createTask?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationCreateTaskArgs, 'eventId'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;
@@ -2131,6 +2160,21 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   messageSentToGroupChat?: SubscriptionResolver<Maybe<ResolversTypes['GroupChatMessage']>, "messageSentToGroupChat", ParentType, ContextType>;
 };
 
+export type TagResolvers<ContextType = any, ParentType extends ResolversParentTypes['Tag'] = ResolversParentTypes['Tag']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  folder?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type TagFolderResolvers<ContextType = any, ParentType extends ResolversParentTypes['TagFolder'] = ResolversParentTypes['TagFolder']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  organization?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  parent?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type TaskResolvers<ContextType = any, ParentType extends ResolversParentTypes['Task'] = ResolversParentTypes['Task']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -2181,6 +2225,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   organizationsBlockedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   pluginCreationAllowed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   registeredEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
+  tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   tokenVersion?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   userType?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -2241,6 +2286,8 @@ export type Resolvers<ContextType = any> = {
   PostConnection?: PostConnectionResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
+  Tag?: TagResolvers<ContextType>;
+  TagFolder?: TagFolderResolvers<ContextType>;
   Task?: TaskResolvers<ContextType>;
   Time?: GraphQLScalarType;
   Translation?: TranslationResolvers<ContextType>;

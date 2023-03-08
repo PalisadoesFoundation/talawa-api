@@ -67,6 +67,12 @@ export const mutations = gql`
 
     createPost(data: PostInput!, file: String): Post @auth
 
+    createTagFolder(
+      title: String!
+      parentFolder: ID
+      organizationId: ID
+    ): TagFolder @auth
+
     createTask(data: TaskInput, eventId: ID!): Task! @auth
 
     deleteDonationById(id: ID!): DeletePayload!

@@ -152,6 +152,26 @@ export const USER_NOT_AUTHORIZED_TO_PIN = {
   param: "user.notAuthorizedToPin",
 };
 
+export const TAG_FOLDER_NOT_FOUND = {
+  message: "The tag folder with the specified ID doesn't exist.",
+  code: "tagFolder.doesNotExist",
+  param: "tagFolder.doesNotExist",
+};
+
+export const INVALID_TAG_INPUT = {
+  message:
+    "Either organizatin ID or a parent folder ID must be provided for this operation.",
+  code: "invalidArgs",
+  param: "invalidArgs",
+};
+
+export const USER_NOT_AUTHORIZED_TO_CREATE_TAG_FOLDER = {
+  message:
+    "The user must be a superadmin or an admin of the organization to create a tag folder",
+  code: "user.notAuth.createTagFolder",
+  param: "user.notAuth.createTagFolder",
+};
+
 export const TASK_NOT_FOUND = "Task not found";
 export const TASK_NOT_FOUND_CODE = "task.notFound";
 export const TASK_NOT_FOUND_MESSAGE = "task.notFound";
