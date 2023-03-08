@@ -347,6 +347,7 @@ export const types = gql`
     pluginCreationAllowed: Boolean
     adminApproved: Boolean
     createdAt: DateTime
+    tags(organizationId: ID!): [String]
   }
 
   type UserAttende {
