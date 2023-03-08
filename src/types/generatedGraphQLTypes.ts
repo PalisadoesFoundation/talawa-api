@@ -380,6 +380,7 @@ export type Mutation = {
   createOrganization: Organization;
   createPlugin: Plugin;
   createPost?: Maybe<Post>;
+  createTag?: Maybe<Tag>;
   createTagFolder?: Maybe<TagFolder>;
   createTask: Task;
   deleteDonationById: DeletePayload;
@@ -405,6 +406,7 @@ export type Mutation = {
   removeOrganization: User;
   removeOrganizationImage: Organization;
   removePost?: Maybe<Post>;
+  removeTag?: Maybe<Tag>;
   removeTagFolder?: Maybe<TagFolder>;
   removeTask?: Maybe<Task>;
   removeUserFromGroupChat: GroupChat;
@@ -426,6 +428,7 @@ export type Mutation = {
   updatePluginInstalledOrgs: Plugin;
   updatePluginStatus: Plugin;
   updatePost: Post;
+  updateTag?: Maybe<Tag>;
   updateTagFolder?: Maybe<TagFolder>;
   updateTask?: Maybe<Task>;
   updateUserProfile: User;
@@ -559,6 +562,12 @@ export type MutationCreatePostArgs = {
 };
 
 
+export type MutationCreateTagArgs = {
+  tagFolder: Scalars['ID'];
+  tagName: Scalars['String'];
+};
+
+
 export type MutationCreateTagFolderArgs = {
   organizationId?: InputMaybe<Scalars['ID']>;
   parentFolder?: InputMaybe<Scalars['ID']>;
@@ -683,6 +692,11 @@ export type MutationRemovePostArgs = {
 };
 
 
+export type MutationRemoveTagArgs = {
+  tagID: Scalars['ID'];
+};
+
+
 export type MutationRemoveTagFolderArgs = {
   id: Scalars['ID'];
 };
@@ -790,6 +804,12 @@ export type MutationUpdatePluginStatusArgs = {
 export type MutationUpdatePostArgs = {
   data?: InputMaybe<PostUpdateInput>;
   id: Scalars['ID'];
+};
+
+
+export type MutationUpdateTagArgs = {
+  newName: Scalars['String'];
+  tagID: Scalars['ID'];
 };
 
 
@@ -1983,6 +2003,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, Partial<MutationCreateOrganizationArgs>>;
   createPlugin?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationCreatePluginArgs, 'pluginCreatedBy' | 'pluginDesc' | 'pluginInstallStatus' | 'pluginName'>>;
   createPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'data'>>;
+  createTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<MutationCreateTagArgs, 'tagFolder' | 'tagName'>>;
   createTagFolder?: Resolver<Maybe<ResolversTypes['TagFolder']>, ParentType, ContextType, RequireFields<MutationCreateTagFolderArgs, 'title'>>;
   createTask?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationCreateTaskArgs, 'eventId'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
@@ -2008,6 +2029,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationArgs, 'id'>>;
   removeOrganizationImage?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationImageArgs, 'organizationId'>>;
   removePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationRemovePostArgs, 'id'>>;
+  removeTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<MutationRemoveTagArgs, 'tagID'>>;
   removeTagFolder?: Resolver<Maybe<ResolversTypes['TagFolder']>, ParentType, ContextType, RequireFields<MutationRemoveTagFolderArgs, 'id'>>;
   removeTask?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<MutationRemoveTaskArgs, 'id'>>;
   removeUserFromGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationRemoveUserFromGroupChatArgs, 'chatId' | 'userId'>>;
@@ -2029,6 +2051,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updatePluginInstalledOrgs?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginInstalledOrgsArgs, 'id' | 'orgId'>>;
   updatePluginStatus?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginStatusArgs, 'id' | 'status'>>;
   updatePost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationUpdatePostArgs, 'id'>>;
+  updateTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<MutationUpdateTagArgs, 'newName' | 'tagID'>>;
   updateTagFolder?: Resolver<Maybe<ResolversTypes['TagFolder']>, ParentType, ContextType, RequireFields<MutationUpdateTagFolderArgs, 'id' | 'title'>>;
   updateTask?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<MutationUpdateTaskArgs, 'id'>>;
   updateUserProfile?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;

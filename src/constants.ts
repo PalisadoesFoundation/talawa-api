@@ -158,6 +158,12 @@ export const TAG_FOLDER_NOT_FOUND = {
   param: "tagFolder.doesNotExist",
 };
 
+export const TAG_NOT_FOUND = {
+  message: "The tag with the specified ID doesn't exist.",
+  code: "tag.doesNotExist",
+  param: "tag.doesNotExist",
+};
+
 export const INVALID_TAG_INPUT = {
   message:
     "Either organizatin ID or a parent folder ID must be provided for this operation.",
@@ -170,6 +176,13 @@ export const USER_NOT_AUTHORIZED_TO_CREATE_TAG_FOLDER = {
     "The user must be a superadmin or an admin of the organization to create a tag folder",
   code: "user.notAuth.createTagFolder",
   param: "user.notAuth.createTagFolder",
+};
+
+export const USER_NOT_AUTHORIZED_TO_CREATE_TAG = {
+  message:
+    "The user must be a superadmin or an admin of the organization to create the tag",
+  code: "user.notAuth.createTag",
+  param: "user.notAuth.createTag",
 };
 
 export const TASK_NOT_FOUND = "Task not found";
