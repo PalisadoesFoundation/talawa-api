@@ -47,14 +47,13 @@ describe("utilities -> adminCheck", () => {
 
     try {
       const { adminCheck } = await import("../../src/utilities");
-      adminCheck(testUser!._id, testOrganization!);
+      await adminCheck(testUser!._id, testOrganization!);
     } catch (error: any) {
       expect(error.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ADMIN.message}`
       );
-
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.message);
     }
+    expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.message);
   });
 
   it("throws no error if userIsOrganizationAdmin === false and isUserSuperAdmin === true", async () => {

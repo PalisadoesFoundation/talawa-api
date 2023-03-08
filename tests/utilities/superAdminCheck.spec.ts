@@ -24,7 +24,7 @@ afterAll(async () => {
   disconnect();
 });
 
-describe("utilities -> adminCheck", () => {
+describe("utilities -> superAdminCheck", () => {
   afterEach(() => {
     vi.resetModules();
     vi.resetAllMocks();
