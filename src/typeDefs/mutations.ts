@@ -123,7 +123,7 @@ export const mutations = gql`
 
     removePost(id: ID!): Post @auth
 
-    removeTagFolder(id: ID): TagFolder @auth
+    removeTagFolder(id: ID!): TagFolder @auth
 
     removeTask(id: ID!): Task @auth
 
@@ -171,6 +171,8 @@ export const mutations = gql`
     updatePluginInstalledOrgs(id: ID!, orgId: ID!): Plugin!
 
     updatePluginStatus(id: ID!, status: Boolean!): Plugin!
+
+    updateTagFolder(id: ID!, title: String!): TagFolder @auth
 
     updateTask(id: ID!, data: UpdateTaskInput): Task @auth
 
