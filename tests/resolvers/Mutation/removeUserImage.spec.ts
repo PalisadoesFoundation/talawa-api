@@ -48,15 +48,6 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { removeUserImage: removeUserImageResolver } = await import(
         "../../../src/resolvers/Mutation/removeUserImage"
       );
@@ -79,15 +70,6 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { removeUserImage: removeUserImageResolver } = await import(
         "../../../src/resolvers/Mutation/removeUserImage"

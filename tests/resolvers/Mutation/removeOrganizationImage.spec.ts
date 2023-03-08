@@ -84,15 +84,6 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { removeOrganizationImage: removeOrganizationImageResolver } =
         await import("../../../src/resolvers/Mutation/removeOrganizationImage");
 
@@ -117,14 +108,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { removeOrganizationImage: removeOrganizationImageResolver } =
         await import("../../../src/resolvers/Mutation/removeOrganizationImage");
 
@@ -180,14 +164,6 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       const context = {
         userId: testAdminUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { removeOrganizationImage: removeOrganizationImageResolver } =
         await import("../../../src/resolvers/Mutation/removeOrganizationImage");

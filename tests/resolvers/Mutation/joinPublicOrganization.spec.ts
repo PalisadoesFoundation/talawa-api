@@ -59,14 +59,6 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { joinPublicOrganization: joinPublicOrganizationResolver } =
         await import("../../../src/resolvers/Mutation/joinPublicOrganization");
@@ -91,14 +83,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { joinPublicOrganization: joinPublicOrganizationResolver } =
         await import("../../../src/resolvers/Mutation/joinPublicOrganization");
 
@@ -133,14 +118,6 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
       const context = {
         userId: Types.ObjectId().toString(),
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { joinPublicOrganization: joinPublicOrganizationResolver } =
         await import("../../../src/resolvers/Mutation/joinPublicOrganization");
@@ -165,14 +142,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { joinPublicOrganization: joinPublicOrganizationResolver } =
         await import("../../../src/resolvers/Mutation/joinPublicOrganization");
 

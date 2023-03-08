@@ -98,15 +98,6 @@ describe("resolvers -> Mutation -> login", () => {
         },
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { login: loginResolver } = await import(
         "../../../src/resolvers/Mutation/login"
       );
@@ -133,15 +124,6 @@ email === args.data.email`, async () => {
           password: "incorrectPassword",
         },
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { login: loginResolver } = await import(
         "../../../src/resolvers/Mutation/login"

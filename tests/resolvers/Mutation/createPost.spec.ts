@@ -77,15 +77,6 @@ describe("resolvers -> Mutation -> createPost", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
       );
@@ -116,15 +107,6 @@ describe("resolvers -> Mutation -> createPost", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
@@ -159,15 +141,6 @@ describe("resolvers -> Mutation -> createPost", () => {
       const context = {
         userId: randomUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
@@ -313,15 +286,6 @@ describe("resolvers -> Mutation -> createPost", () => {
         userId: testUser!.id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
       );
@@ -352,15 +316,6 @@ describe("resolvers -> Mutation -> createPost", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"

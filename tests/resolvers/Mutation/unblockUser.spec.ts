@@ -48,15 +48,6 @@ describe("resolvers -> Mutation -> unblockUser", () => {
         userId: "",
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { unblockUser: unblockUserResolver } = await import(
         "../../../src/resolvers/Mutation/unblockUser"
       );
@@ -82,15 +73,6 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       const context = {
         userId: "",
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { unblockUser: unblockUserResolver } = await import(
         "../../../src/resolvers/Mutation/unblockUser"
@@ -118,15 +100,6 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { unblockUser: unblockUserResolver } = await import(
         "../../../src/resolvers/Mutation/unblockUser"
@@ -176,15 +149,6 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { unblockUser: unblockUserResolver } = await import(
         "../../../src/resolvers/Mutation/unblockUser"
