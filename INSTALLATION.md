@@ -428,26 +428,26 @@ You can skip these instructions for now if you don't have running instance of Ta
 1. Open MongoDB Compass and click on `Connect`.
 
 2. Select `user` collections and edit the data. Change:
-     1. `userType` from ADMIN to SUPERADMIN
-     2. `adminApproved` from false to true
-     - ![Illustration for ADMIN user edit ](./image/mongodb_compass_admin_user_edit.png)
+     1. `userType` from `USER` to `SUPERADMIN`
+     2. `adminApproved` from `false` to `true`
+     - ![Illustration for user edit ](./image/mongodb_compass_user_edit.png)
      
 ## Using Mongo Shell
     
 1. Open a terminal and run `mongosh` command to open interactive command line interface to work with MongoDB database.
 
 2. In the `mongosh` terminal use the following command to edit the `users` collections data:
-      1. Find all users of the type `ADMIN`.
+      1.Find the login credentials in the database through following command:
       ```
-      db.users.find({userType: 'ADMIN'})
+      db.users.find({userType: 'USER', firstName: '<user's first name>'})
       ```
-      2. Identify the `user` whose data you want to edit note its email address. Elevate permission of the user from `ADMIN` to `SUPERADMIN` and set `adminApproved` to `true`
+      2.  Elevate permission from `USER` to `SUPERADMIN` and set `adminApproved` to `true`:
       ```
-      db.users.updateOne({ email: '<user's email address>' },{ $set: { userType: 'SUPERADMIN', adminApproved: true }})
+      db.users.updateOne({ firstName: '<user's first name>' },{ $set: { userType: 'SUPERADMIN', adminApproved: true }})
       ``` 
       3. To verify the details were updated correctly use:
       ```
-      db.users.find({email:'<user's email address>' })
+      db.users.find({firstName:'<user's first name>' })
       ```
            
 **Note**: You can do the edits via any of the two methods.
