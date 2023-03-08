@@ -1,7 +1,7 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import { creatorCheck, superAdminCheck } from "../../utilities";
+import { superAdminCheck } from "../../utilities";
 import {
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
@@ -46,9 +46,6 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
     );
   }
   superAdminCheck(currentUser!);
-
-  // Checks whether currentUser with _id === context.userId is the creator of organization.
-  creatorCheck(context.userId, organization);
 
   const userExists = await User.exists({
     _id: args.data.userId,

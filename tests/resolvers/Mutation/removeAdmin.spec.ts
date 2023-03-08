@@ -10,7 +10,6 @@ import {
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED_MESSAGE,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -197,62 +196,6 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
     }
   });
 
-  it(`throws UnauthorizedError if user with _id === context.userId is not the creator
-  of organization with _id === args.data.organizationId`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
-    try {
-      await Organization.updateOne(
-        {
-          _id: testOrganization!._id,
-        },
-        {
-          $push: {
-            admins: testUserRemover!._id,
-          },
-          $set: {
-            creator: Types.ObjectId().toString(),
-          },
-        }
-      );
-      await User.findOneAndUpdate(
-        {
-          _id: testUserRemover?.id,
-        },
-        {
-          $set: {
-            userType: "SUPERADMIN",
-          },
-        }
-      );
-
-      const args: MutationRemoveAdminArgs = {
-        data: {
-          organizationId: testOrganization!.id,
-          userId: testUserRemoved!.id,
-        },
-      };
-
-      const context = {
-        userId: testUserRemover!.id,
-      };
-
-      const { removeAdmin: removeAdminResolver } = await import(
-        "../../../src/resolvers/Mutation/removeAdmin"
-      );
-
-      await removeAdminResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
-      );
-    }
-  });
-
   it(`removes user with _id === args.data.userId from admins list of the organization
   with _id === args.data.organizationId`, async () => {
     await Organization.updateOne(
@@ -262,6 +205,18 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       {
         $set: {
           creator: testUserRemover!._id,
+        },
+      }
+    );
+
+    await User.updateOne(
+      {
+        _id: testUserRemover!.id,
+      },
+      {
+        $set: {
+          adminApproved: true,
+          userType: "SUPERADMIN",
         },
       }
     );
