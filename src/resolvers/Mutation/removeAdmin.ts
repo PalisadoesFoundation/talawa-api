@@ -1,5 +1,5 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { adminCheck,  superAdminCheck } from "../../utilities";
+import { adminCheck, superAdminCheck } from "../../utilities";
 import { User, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
@@ -51,7 +51,6 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
 
   // Checks whether the current user is a superadmin.
   superAdminCheck(currentUser!);
-
 
   // Removes user._id from admins list of the organization.
   await Organization.updateOne(

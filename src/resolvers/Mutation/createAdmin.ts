@@ -47,7 +47,6 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   }
   superAdminCheck(currentUser!);
 
-
   const userExists = await User.exists({
     _id: args.data.userId,
   });

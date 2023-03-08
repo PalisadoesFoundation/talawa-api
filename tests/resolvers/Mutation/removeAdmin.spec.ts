@@ -10,7 +10,6 @@ import {
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED_MESSAGE,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -197,7 +196,6 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
     }
   });
 
-
   it(`removes user with _id === args.data.userId from admins list of the organization
   with _id === args.data.organizationId`, async () => {
     await Organization.updateOne(
@@ -207,6 +205,18 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       {
         $set: {
           creator: testUserRemover!._id,
+        },
+      }
+    );
+
+    await User.updateOne(
+      {
+        _id: testUserRemover!.id,
+      },
+      {
+        $set: {
+          adminApproved: true,
+          userType: "SUPERADMIN",
         },
       }
     );

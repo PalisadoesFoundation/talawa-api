@@ -47,7 +47,6 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     // Checks whether currentUser is a SUPERADMIN
     superAdminCheck(currentUser!);
 
-
     // Remove each post and comments associated to it for organization.posts list.
     organization.posts.forEach(async (postId) => {
       await Post.deleteOne({

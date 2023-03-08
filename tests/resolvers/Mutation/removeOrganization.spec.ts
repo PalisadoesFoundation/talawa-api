@@ -18,7 +18,6 @@ import {
   ORGANIZATION_NOT_FOUND_MESSAGE,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED_MESSAGE,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -235,8 +234,6 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     }
   });
 
-
-
   it(`removes the organization and returns the updated user's object with _id === context.userId`, async () => {
     await Organization.updateOne(
       {
@@ -245,6 +242,18 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       {
         $set: {
           creator: testUsers[0]!._id,
+        },
+      }
+    );
+
+    await User.updateOne(
+      {
+        _id: testUsers[0]!.id,
+      },
+      {
+        $set: {
+          adminApproved: true,
+          userType: "SUPERADMIN",
         },
       }
     );
