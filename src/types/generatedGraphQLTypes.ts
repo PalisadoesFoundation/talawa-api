@@ -1322,6 +1322,7 @@ export type Tag = {
   folder: Scalars['ID'];
   organization: Scalars['ID'];
   title: Scalars['String'];
+  users?: Maybe<Array<Maybe<User>>>;
 };
 
 export type TagFolder = {
@@ -1663,7 +1664,7 @@ export type ResolversTypes = {
   Status: Status;
   String: ResolverTypeWrapper<Scalars['String']>;
   Subscription: ResolverTypeWrapper<{}>;
-  Tag: ResolverTypeWrapper<Tag>;
+  Tag: ResolverTypeWrapper<Omit<Tag, 'users'> & { users?: Maybe<Array<Maybe<ResolversTypes['User']>>> }>;
   TagFolder: ResolverTypeWrapper<TagFolder>;
   Task: ResolverTypeWrapper<Interface_TaskModel>;
   TaskInput: TaskInput;
@@ -1753,7 +1754,7 @@ export type ResolversParentTypes = {
   RecaptchaVerification: RecaptchaVerification;
   String: Scalars['String'];
   Subscription: {};
-  Tag: Tag;
+  Tag: Omit<Tag, 'users'> & { users?: Maybe<Array<Maybe<ResolversParentTypes['User']>>> };
   TagFolder: TagFolder;
   Task: Interface_TaskModel;
   TaskInput: TaskInput;
@@ -2226,6 +2227,7 @@ export type TagResolvers<ContextType = any, ParentType extends ResolversParentTy
   folder?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  users?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

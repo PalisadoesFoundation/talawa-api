@@ -68,5 +68,5 @@ export const createTag: MutationResolvers["createTag"] = async (
     users: [],
   });
 
-  return createdTag.toObject();
+  return createdTag;
 };

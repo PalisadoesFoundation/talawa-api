@@ -299,6 +299,7 @@ export const types = gql`
     title: String!
     folder: ID!
     organization: ID!
+    users: [User]
   }
 
   type TagFolder {
