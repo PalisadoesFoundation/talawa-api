@@ -123,6 +123,8 @@ export const mutations = gql`
 
     removePost(id: ID!): Post @auth
 
+    removeTagFolder(id: ID): TagFolder @auth
+
     removeTask(id: ID!): Task @auth
 
     removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth

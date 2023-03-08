@@ -45,6 +45,7 @@ import { removeMember } from "./removeMember";
 import { removeOrganization } from "./removeOrganization";
 import { removeOrganizationImage } from "./removeOrganizationImage";
 import { removePost } from "./removePost";
+import { removeTagFolder } from "./removeTagFolder";
 import { removeTask } from "./removeTask";
 import { removeUserFromGroupChat } from "./removeUserFromGroupChat";
 import { removeUserImage } from "./removeUserImage";
@@ -116,6 +117,7 @@ export const Mutation: MutationResolvers = {
   removeOrganization,
   removeOrganizationImage,
   removePost,
+  removeTagFolder,
   removeTask,
   removeUserFromGroupChat,
   removeUserImage,

@@ -405,6 +405,7 @@ export type Mutation = {
   removeOrganization: User;
   removeOrganizationImage: Organization;
   removePost?: Maybe<Post>;
+  removeTagFolder?: Maybe<TagFolder>;
   removeTask?: Maybe<Task>;
   removeUserFromGroupChat: GroupChat;
   removeUserImage: User;
@@ -678,6 +679,11 @@ export type MutationRemoveOrganizationImageArgs = {
 
 export type MutationRemovePostArgs = {
   id: Scalars['ID'];
+};
+
+
+export type MutationRemoveTagFolderArgs = {
+  id?: InputMaybe<Scalars['ID']>;
 };
 
 
@@ -1995,6 +2001,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationArgs, 'id'>>;
   removeOrganizationImage?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationImageArgs, 'organizationId'>>;
   removePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationRemovePostArgs, 'id'>>;
+  removeTagFolder?: Resolver<Maybe<ResolversTypes['TagFolder']>, ParentType, ContextType, Partial<MutationRemoveTagFolderArgs>>;
   removeTask?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<MutationRemoveTaskArgs, 'id'>>;
   removeUserFromGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationRemoveUserFromGroupChatArgs, 'chatId' | 'userId'>>;
   removeUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
