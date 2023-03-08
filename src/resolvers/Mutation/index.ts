@@ -7,6 +7,7 @@ import { addUserImage } from "./addUserImage";
 import { addUserToGroupChat } from "./addUserToGroupChat";
 import { adminRemoveEvent } from "./adminRemoveEvent";
 import { adminRemoveGroup } from "./adminRemoveGroup";
+import { assignTag } from "./assignTag";
 import { blockPluginCreationBySuperadmin } from "./blockPluginCreationBySuperadmin";
 import { blockUser } from "./blockUser";
 import { cancelMembershipRequest } from "./cancelMembershipRequest";
@@ -58,6 +59,7 @@ import { sendMessageToDirectChat } from "./sendMessageToDirectChat";
 import { sendMessageToGroupChat } from "./sendMessageToGroupChat";
 import { signUp } from "./signUp";
 import { togglePostPin } from "./togglePostPin";
+import { unassignTag } from "./unassignTag";
 import { unblockUser } from "./unblockUser";
 import { unlikeComment } from "./unlikeComment";
 import { unlikePost } from "./unlikePost";
@@ -83,6 +85,7 @@ export const Mutation: MutationResolvers = {
   addUserToGroupChat,
   adminRemoveEvent,
   adminRemoveGroup,
+  assignTag,
   blockPluginCreationBySuperadmin,
   blockUser,
   cancelMembershipRequest,
@@ -134,6 +137,7 @@ export const Mutation: MutationResolvers = {
   sendMessageToGroupChat,
   signUp,
   togglePostPin,
+  unassignTag,
   unblockUser,
   unlikeComment,
   unlikePost,

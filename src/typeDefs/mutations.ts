@@ -20,6 +20,8 @@ export const mutations = gql`
 
     adminRemoveGroup(groupId: ID!): Message! @auth
 
+    assignTag(userId: ID!, tagId: ID!): User! @auth
+
     blockPluginCreationBySuperadmin(userId: ID!, blockUser: Boolean!): User!
       @auth
       @role(requires: SUPERADMIN)
@@ -154,6 +156,8 @@ export const mutations = gql`
     signUp(data: UserInput!, file: String): AuthData!
 
     togglePostPin(id: ID!): Post! @auth
+
+    unassignTag(userId: ID!, tagId: ID!): User! @auth
 
     unblockUser(organizationId: ID!, userId: ID!): User! @auth
 
