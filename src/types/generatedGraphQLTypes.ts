@@ -1111,6 +1111,7 @@ export type Query = {
   user: User;
   userLanguage?: Maybe<Scalars['String']>;
   users?: Maybe<Array<Maybe<User>>>;
+  usersByTag?: Maybe<Array<Maybe<User>>>;
   usersConnection: Array<Maybe<User>>;
 };
 
@@ -1277,6 +1278,11 @@ export type QueryUserLanguageArgs = {
 export type QueryUsersArgs = {
   orderBy?: InputMaybe<UserOrderByInput>;
   where?: InputMaybe<UserWhereInput>;
+};
+
+
+export type QueryUsersByTagArgs = {
+  tagId: Scalars['ID'];
 };
 
 
@@ -2205,6 +2211,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
   userLanguage?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryUserLanguageArgs, 'userId'>>;
   users?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<QueryUsersArgs>>;
+  usersByTag?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<QueryUsersByTagArgs, 'tagId'>>;
   usersConnection?: Resolver<Array<Maybe<ResolversTypes['User']>>, ParentType, ContextType, Partial<QueryUsersConnectionArgs>>;
 };
 

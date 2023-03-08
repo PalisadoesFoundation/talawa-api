@@ -108,6 +108,8 @@ export const queries = gql`
 
     users(where: UserWhereInput, orderBy: UserOrderByInput): [User] @auth
 
+    usersByTag(tagId: ID!): [User] @auth
+
     usersConnection(
       where: UserWhereInput
       first: Int
