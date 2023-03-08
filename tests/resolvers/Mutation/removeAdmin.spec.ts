@@ -161,9 +161,9 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
 
       await removeAdminAdminError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ADMIN.message);
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.message}`
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
       );
     }
   });
@@ -207,10 +207,10 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       await removeAdminAdminError?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(
-        USER_NOT_AUTHORIZED_SUPERADMIN.message
+        USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE
       );
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.message}`
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
       );
     }
   });

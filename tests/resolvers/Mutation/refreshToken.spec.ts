@@ -5,8 +5,7 @@ import { MutationRefreshTokenArgs } from "../../../src/types/generatedGraphQLTyp
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
-  INVALID_REFRESH_TOKEN,
-  INVALID_REFRESH_TOKEN_MESSAGE,
+  INVALID_REFRESH_TOKEN_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { createRefreshToken } from "../../../src/utilities";
@@ -61,7 +60,7 @@ describe("resolvers -> Mutation -> refreshToken", () => {
 
       await refreshTokenResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(INVALID_REFRESH_TOKEN);
+      expect(error.message).toEqual(INVALID_REFRESH_TOKEN_ERROR.DESC);
     }
   });
 
@@ -91,9 +90,9 @@ describe("resolvers -> Mutation -> refreshToken", () => {
 
       await refreshTokenResolver?.({}, args, {});
     } catch (error: any) {
-      expect(spy).toBeCalledWith(INVALID_REFRESH_TOKEN_MESSAGE);
+      expect(spy).toBeCalledWith(INVALID_REFRESH_TOKEN_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${INVALID_REFRESH_TOKEN_MESSAGE}`
+        `Translated ${INVALID_REFRESH_TOKEN_ERROR.MESSAGE}`
       );
     }
   });
@@ -207,7 +206,7 @@ describe("resolvers -> Mutation -> refreshToken", () => {
 
       await refreshTokenResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(INVALID_REFRESH_TOKEN);
+      expect(error.message).toEqual(INVALID_REFRESH_TOKEN_ERROR.DESC);
     }
   });
 
@@ -251,9 +250,9 @@ describe("resolvers -> Mutation -> refreshToken", () => {
 
       await refreshTokenResolver?.({}, args, {});
     } catch (error: any) {
-      expect(spy).toBeCalledWith(INVALID_REFRESH_TOKEN_MESSAGE);
+      expect(spy).toBeCalledWith(INVALID_REFRESH_TOKEN_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${INVALID_REFRESH_TOKEN_MESSAGE}`
+        `Translated ${INVALID_REFRESH_TOKEN_ERROR.MESSAGE}`
       );
     }
   });

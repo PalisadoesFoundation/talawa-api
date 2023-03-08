@@ -42,9 +42,9 @@ describe("utilities -> adminCheck", () => {
       superAdminCheck(testUser!);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.message}`
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
       );
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.message);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
     }
   });
 });

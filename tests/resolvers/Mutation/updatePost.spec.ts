@@ -144,7 +144,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
       await updatePostResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in title`
+        `${REGEX_VALIDATION_ERROR.MESSAGE} in title`
       );
     }
   });
@@ -184,7 +184,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
       await updatePostResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in information`
+        `${REGEX_VALIDATION_ERROR.MESSAGE} in information`
       );
     }
   });
@@ -225,7 +225,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
       await updatePostResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 256 characters in title`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
       );
     }
   });
@@ -265,7 +265,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
       await updatePostResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 500 characters in information`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
       );
     }
   });

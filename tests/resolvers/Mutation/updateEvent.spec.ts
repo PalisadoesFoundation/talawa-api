@@ -254,7 +254,7 @@ describe("Check for validation conditions", () => {
       await updateEventResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in title`
+        `${REGEX_VALIDATION_ERROR.MESSAGE} in title`
       );
     }
   });
@@ -295,7 +295,7 @@ describe("Check for validation conditions", () => {
       await updateEventResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in description`
+        `${REGEX_VALIDATION_ERROR.MESSAGE} in description`
       );
     }
   });
@@ -336,7 +336,7 @@ describe("Check for validation conditions", () => {
       await updateEventResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in location`
+        `${REGEX_VALIDATION_ERROR.MESSAGE} in location`
       );
     }
   });
@@ -378,7 +378,7 @@ describe("Check for validation conditions", () => {
       await updateEventResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 256 characters in title`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
       );
     }
   });
@@ -420,7 +420,7 @@ describe("Check for validation conditions", () => {
       await updateEventResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 500 characters in description`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
       );
     }
   });
@@ -461,7 +461,7 @@ describe("Check for validation conditions", () => {
       await updateEventResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 50 characters in location`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
       );
     }
   });

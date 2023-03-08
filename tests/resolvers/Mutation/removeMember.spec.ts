@@ -166,9 +166,9 @@ describe("resolvers -> Mutation -> removeMember", () => {
 
       await removeMemberResolverAdminError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ADMIN.message);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.message}`
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
       );
     }
   });
@@ -254,8 +254,8 @@ describe("resolvers -> Mutation -> removeMember", () => {
 
       await removeMemberResolverRemoveSelfError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_REMOVING_SELF.message);
-      expect(error.message).toEqual(`Translated ${USER_REMOVING_SELF.message}`);
+      expect(spy).toHaveBeenCalledWith(USER_REMOVING_SELF.MESSAGE);
+      expect(error.message).toEqual(`Translated ${USER_REMOVING_SELF.MESSAGE}`);
     }
   });
 
@@ -281,9 +281,9 @@ describe("resolvers -> Mutation -> removeMember", () => {
 
       await removeMemberResolverRemoveAdminError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_ADMIN.message);
+      expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_ADMIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ADMIN_REMOVING_ADMIN.message}`
+        `Translated ${ADMIN_REMOVING_ADMIN.MESSAGE}`
       );
     }
   });
@@ -310,9 +310,9 @@ describe("resolvers -> Mutation -> removeMember", () => {
 
       await removeMemberResolverRemoveAdminError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_CREATOR.message);
+      expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_CREATOR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ADMIN_REMOVING_CREATOR.message}`
+        `Translated ${ADMIN_REMOVING_CREATOR.MESSAGE}`
       );
     }
   });

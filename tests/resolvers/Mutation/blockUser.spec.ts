@@ -156,7 +156,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
 
       await blockUserResolverError?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_BLOCKING_SELF.message);
+      expect(error.message).toEqual(USER_BLOCKING_SELF.MESSAGE);
     }
   });
 
@@ -185,7 +185,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
 
       await blockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.message);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
     }
   });
 

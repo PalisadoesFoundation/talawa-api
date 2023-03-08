@@ -9,7 +9,7 @@ import {
   iosFirebaseOptions,
 } from "../../../src/config";
 import {
-  INVALID_CREDENTIALS,
+  INVALID_CREDENTIALS_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import bcrypt from "bcryptjs";
@@ -97,7 +97,7 @@ describe("resolvers -> Mutation -> login", () => {
 
       await loginResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(INVALID_CREDENTIALS);
+      expect(error.message).toEqual(INVALID_CREDENTIALS_ERROR.DESC);
     }
   });
 

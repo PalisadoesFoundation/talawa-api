@@ -13,9 +13,9 @@ export const adminCheck = (
 
   if (userIsOrganizationAdmin === false) {
     throw new errors.UnauthorizedError(
-      requestContext.translate(`${USER_NOT_AUTHORIZED_ADMIN.message}`),
-      USER_NOT_AUTHORIZED_ADMIN.code,
-      USER_NOT_AUTHORIZED_ADMIN.param
+      requestContext.translate(`${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`),
+      USER_NOT_AUTHORIZED_ADMIN.CODE,
+      USER_NOT_AUTHORIZED_ADMIN.PARAM
     );
   }
 };

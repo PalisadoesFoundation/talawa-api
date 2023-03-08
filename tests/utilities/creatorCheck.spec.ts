@@ -10,7 +10,7 @@ import {
 } from "vitest";
 import { connect, disconnect } from "../helpers/db";
 import mongoose from "mongoose";
-import { USER_NOT_AUTHORIZED_MESSAGE } from "../../src/constants";
+import { USER_NOT_AUTHORIZED_ERROR } from "../../src/constants";
 import {
   createTestUser,
   createTestUserAndOrganization,
@@ -68,9 +68,9 @@ describe("src -> resolvers -> utilities -> creatorCheck.ts", () => {
       creatorCheckResolver(testUser2?._id, testOrganization!);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
       );
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 

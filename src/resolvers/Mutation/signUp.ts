@@ -58,33 +58,33 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   // if (!validationResult_firstName.isFollowingPattern) {
   //   throw new errors.InputValidationError(
   //     requestContext.translate(
-  //       `${REGEX_VALIDATION_ERROR.message} in first name`
+  //       `${REGEX_VALIDATION_ERROR.MESSAGE} in first name`
   //     ),
-  //     REGEX_VALIDATION_ERROR.code
+  //     REGEX_VALIDATION_ERROR.CODE
   //   );
   // }
   // if (!validationResult_firstName.isLessThanMaxLength) {
   //   throw new errors.InputValidationError(
   //     requestContext.translate(
-  //       `${LENGTH_VALIDATION_ERROR.message} 50 characters in first name`
+  //       `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in first name`
   //     ),
-  //     LENGTH_VALIDATION_ERROR.code
+  //     LENGTH_VALIDATION_ERROR.CODE
   //   );
   // }
   // if (!validationResult_lastName.isFollowingPattern) {
   //   throw new errors.InputValidationError(
   //     requestContext.translate(
-  //       `${REGEX_VALIDATION_ERROR.message} in last name`
+  //       `${REGEX_VALIDATION_ERROR.MESSAGE} in last name`
   //     ),
-  //     REGEX_VALIDATION_ERROR.code
+  //     REGEX_VALIDATION_ERROR.CODE
   //   );
   // }
   // if (!validationResult_lastName.isLessThanMaxLength) {
   //   throw new errors.InputValidationError(
   //     requestContext.translate(
-  //       `${LENGTH_VALIDATION_ERROR.message} 50 characters in last name`
+  //       `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in last name`
   //     ),
-  //     LENGTH_VALIDATION_ERROR.code
+  //     LENGTH_VALIDATION_ERROR.CODE
   //   );
   // }
   // if (!validationResult_Password) {

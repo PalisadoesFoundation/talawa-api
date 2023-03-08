@@ -78,46 +78,46 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   const validationResult_Location = isValidString(args.data!.location!, 50);
   if (!validationResult_Title.isFollowingPattern) {
     throw new errors.InputValidationError(
-      requestContext.translate(`${REGEX_VALIDATION_ERROR.message} in title`),
-      REGEX_VALIDATION_ERROR.code
+      requestContext.translate(`${REGEX_VALIDATION_ERROR.MESSAGE} in title`),
+      REGEX_VALIDATION_ERROR.CODE
     );
   }
   if (!validationResult_Title.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.message} 256 characters in title`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
       ),
-      LENGTH_VALIDATION_ERROR.code
+      LENGTH_VALIDATION_ERROR.CODE
     );
   }
   if (!validationResult_Description.isFollowingPattern) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${REGEX_VALIDATION_ERROR.message} in description`
+        `${REGEX_VALIDATION_ERROR.MESSAGE} in description`
       ),
-      REGEX_VALIDATION_ERROR.code
+      REGEX_VALIDATION_ERROR.CODE
     );
   }
   if (!validationResult_Description.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.message} 500 characters in description`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
       ),
-      LENGTH_VALIDATION_ERROR.code
+      LENGTH_VALIDATION_ERROR.CODE
     );
   }
   if (!validationResult_Location.isFollowingPattern) {
     throw new errors.InputValidationError(
-      requestContext.translate(`${REGEX_VALIDATION_ERROR.message} in location`),
-      REGEX_VALIDATION_ERROR.code
+      requestContext.translate(`${REGEX_VALIDATION_ERROR.MESSAGE} in location`),
+      REGEX_VALIDATION_ERROR.CODE
     );
   }
   if (!validationResult_Location.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.message} 50 characters in location`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
       ),
-      LENGTH_VALIDATION_ERROR.code
+      LENGTH_VALIDATION_ERROR.CODE
     );
   }
   const compareDatesResult = compareDates(

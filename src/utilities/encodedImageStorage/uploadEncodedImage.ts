@@ -12,9 +12,9 @@ export const uploadEncodedImage = async (encodedImageURL: string) => {
 
   if (!isURLValidImage) {
     throw new errors.InvalidFileTypeError(
-      requestContext.translate(INVALID_FILE_TYPE.message),
-      INVALID_FILE_TYPE.code,
-      INVALID_FILE_TYPE.param
+      requestContext.translate(INVALID_FILE_TYPE.MESSAGE),
+      INVALID_FILE_TYPE.CODE,
+      INVALID_FILE_TYPE.PARAM
     );
   }
 

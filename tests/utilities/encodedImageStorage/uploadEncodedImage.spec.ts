@@ -31,9 +31,9 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
         "3gAAAABJRU5ErkJggg==";
       await uploadEncodedImage(img);
     } catch (error: any) {
-      expect(error.message).toEqual(`Translated ${INVALID_FILE_TYPE.message}`);
+      expect(error.message).toEqual(`Translated ${INVALID_FILE_TYPE.MESSAGE}`);
 
-      expect(spy).toBeCalledWith(INVALID_FILE_TYPE.message);
+      expect(spy).toBeCalledWith(INVALID_FILE_TYPE.MESSAGE);
     }
   });
 

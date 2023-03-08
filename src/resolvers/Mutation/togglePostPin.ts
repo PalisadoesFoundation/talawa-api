@@ -50,9 +50,9 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     !currentUserIsOrganizationAdmin
   ) {
     throw new errors.UnauthorizedError(
-      requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.message),
-      USER_NOT_AUTHORIZED_TO_PIN.code,
-      USER_NOT_AUTHORIZED_TO_PIN.param
+      requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE),
+      USER_NOT_AUTHORIZED_TO_PIN.CODE,
+      USER_NOT_AUTHORIZED_TO_PIN.PARAM
     );
   }
 

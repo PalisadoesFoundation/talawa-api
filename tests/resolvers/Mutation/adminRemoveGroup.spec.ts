@@ -147,7 +147,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
 
       await adminRemoveGroupResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.message);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
     }
   });
 

@@ -173,9 +173,9 @@ describe("resolvers -> Mutation -> createPost", () => {
 
       await createPostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_PIN.message);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_TO_PIN.message}`
+        `Translated ${USER_NOT_AUTHORIZED_TO_PIN.MESSAGE}`
       );
     }
   });
@@ -341,7 +341,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       await createPostResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in title`
+        `${REGEX_VALIDATION_ERROR.MESSAGE} in title`
       );
     }
   });
@@ -381,7 +381,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       await createPostResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in information`
+        `${REGEX_VALIDATION_ERROR.MESSAGE} in information`
       );
     }
   });
@@ -422,7 +422,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       await createPostResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 256 characters in title`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
       );
     }
   });
@@ -462,7 +462,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       await createPostResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 500 characters in information`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
       );
     }
   });

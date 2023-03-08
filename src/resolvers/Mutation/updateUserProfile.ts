@@ -1,6 +1,5 @@
 import {
-  EMAIL_ALREADY_EXISTS_MESSAGE,
-  EMAIL_ALREADY_EXISTS_PARAM,
+  EMAIL_ALREADY_EXISTS_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
@@ -32,9 +31,9 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
 
     if (userWithEmailExists === true) {
       throw new errors.ConflictError(
-        requestContext.translate(EMAIL_ALREADY_EXISTS_MESSAGE),
-        EMAIL_ALREADY_EXISTS_MESSAGE,
-        EMAIL_ALREADY_EXISTS_PARAM
+        requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
+        EMAIL_ALREADY_EXISTS_ERROR.MESSAGE,
+        EMAIL_ALREADY_EXISTS_ERROR.PARAM
       );
     }
   } // Upload file

@@ -243,10 +243,10 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
       await removeDirectChatResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.message}`
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
       );
 
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.message);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
     }
   });
 

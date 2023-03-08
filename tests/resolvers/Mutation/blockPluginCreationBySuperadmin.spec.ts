@@ -101,9 +101,9 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
 
       await blockPluginCreationBySuperadminError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.message);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.message}`
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
       );
     }
   });

@@ -54,32 +54,32 @@ export const createPost: MutationResolvers["createPost"] = async (
   const validationResult_Text = isValidString(args.data!.text, 500);
   if (!validationResult_Title.isFollowingPattern) {
     throw new errors.InputValidationError(
-      requestContext.translate(`${REGEX_VALIDATION_ERROR.message} in title`),
-      REGEX_VALIDATION_ERROR.code
+      requestContext.translate(`${REGEX_VALIDATION_ERROR.MESSAGE} in title`),
+      REGEX_VALIDATION_ERROR.CODE
     );
   }
   if (!validationResult_Title.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.message} 256 characters in title`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
       ),
-      LENGTH_VALIDATION_ERROR.code
+      LENGTH_VALIDATION_ERROR.CODE
     );
   }
   if (!validationResult_Text.isFollowingPattern) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${REGEX_VALIDATION_ERROR.message} in information`
+        `${REGEX_VALIDATION_ERROR.MESSAGE} in information`
       ),
-      REGEX_VALIDATION_ERROR.code
+      REGEX_VALIDATION_ERROR.CODE
     );
   }
   if (!validationResult_Text.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.message} 500 characters in information`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
       ),
-      LENGTH_VALIDATION_ERROR.code
+      LENGTH_VALIDATION_ERROR.CODE
     );
   }
 
@@ -94,9 +94,9 @@ export const createPost: MutationResolvers["createPost"] = async (
       !currentUserIsOrganizationAdmin
     ) {
       throw new errors.UnauthorizedError(
-        requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.message),
-        USER_NOT_AUTHORIZED_TO_PIN.code,
-        USER_NOT_AUTHORIZED_TO_PIN.param
+        requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE),
+        USER_NOT_AUTHORIZED_TO_PIN.CODE,
+        USER_NOT_AUTHORIZED_TO_PIN.PARAM
       );
     }
   }

@@ -152,9 +152,9 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
 
       await togglePostPinResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_PIN.message);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_TO_PIN.message}`
+        `Translated ${USER_NOT_AUTHORIZED_TO_PIN.MESSAGE}`
       );
     }
   });

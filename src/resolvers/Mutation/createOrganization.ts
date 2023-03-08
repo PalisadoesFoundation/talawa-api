@@ -48,48 +48,48 @@ export const createOrganization: MutationResolvers["createOrganization"] =
 
     if (!validationResult_Name.isFollowingPattern) {
       throw new errors.InputValidationError(
-        requestContext.translate(`${REGEX_VALIDATION_ERROR.message} in name`),
-        REGEX_VALIDATION_ERROR.code
+        requestContext.translate(`${REGEX_VALIDATION_ERROR.MESSAGE} in name`),
+        REGEX_VALIDATION_ERROR.CODE
       );
     }
     if (!validationResult_Name.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.message} 256 characters in name`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
         ),
-        LENGTH_VALIDATION_ERROR.code
+        LENGTH_VALIDATION_ERROR.CODE
       );
     }
     if (!validationResult_Description.isFollowingPattern) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${REGEX_VALIDATION_ERROR.message} in description`
+          `${REGEX_VALIDATION_ERROR.MESSAGE} in description`
         ),
-        REGEX_VALIDATION_ERROR.code
+        REGEX_VALIDATION_ERROR.CODE
       );
     }
     if (!validationResult_Description.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.message} 500 characters in description`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
         ),
-        LENGTH_VALIDATION_ERROR.code
+        LENGTH_VALIDATION_ERROR.CODE
       );
     }
     if (!validationResult_Location.isFollowingPattern) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${REGEX_VALIDATION_ERROR.message} in location`
+          `${REGEX_VALIDATION_ERROR.MESSAGE} in location`
         ),
-        REGEX_VALIDATION_ERROR.code
+        REGEX_VALIDATION_ERROR.CODE
       );
     }
     if (!validationResult_Location.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.message} 50 characters in location`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
         ),
-        LENGTH_VALIDATION_ERROR.code
+        LENGTH_VALIDATION_ERROR.CODE
       );
     }
 

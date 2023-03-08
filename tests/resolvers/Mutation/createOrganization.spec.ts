@@ -111,9 +111,9 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganization?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(
-        USER_NOT_AUTHORIZED_SUPERADMIN.message
+        USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE
       );
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_SUPERADMIN.message);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
     }
   });
 
@@ -257,7 +257,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganizationResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in name`
+        `${REGEX_VALIDATION_ERROR.MESSAGE} in name`
       );
     }
   });
@@ -285,7 +285,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganizationResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in description`
+        `${REGEX_VALIDATION_ERROR.MESSAGE} in description`
       );
     }
   });
@@ -313,7 +313,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganizationResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in location`
+        `${REGEX_VALIDATION_ERROR.MESSAGE} in location`
       );
     }
   });
@@ -342,7 +342,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganizationResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 256 characters in name`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
       );
     }
   });
@@ -371,7 +371,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganizationResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 500 characters in description`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
       );
     }
   });
@@ -400,7 +400,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganizationResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 50 characters in location`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
       );
     }
   });

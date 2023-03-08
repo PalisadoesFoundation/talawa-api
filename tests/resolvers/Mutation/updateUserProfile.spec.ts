@@ -6,7 +6,7 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { updateUserProfile as updateUserProfileResolver } from "../../../src/resolvers/Mutation/updateUserProfile";
 import {
-  EMAIL_ALREADY_EXISTS_MESSAGE,
+  EMAIL_ALREADY_EXISTS_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { nanoid } from "nanoid";
@@ -127,9 +127,9 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
 
       await updateUserProfileResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_MESSAGE);
+      expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${EMAIL_ALREADY_EXISTS_MESSAGE}`
+        `Translated ${EMAIL_ALREADY_EXISTS_ERROR.MESSAGE}`
       );
     }
   });
@@ -157,9 +157,9 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
 
       await updateUserProfileResolverEmailError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_MESSAGE);
+      expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${EMAIL_ALREADY_EXISTS_MESSAGE}`
+        `Translated ${EMAIL_ALREADY_EXISTS_ERROR.MESSAGE}`
       );
     }
   });

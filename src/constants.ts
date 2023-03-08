@@ -73,77 +73,77 @@ export const REGISTRANT_ALREADY_EXIST_ERROR = {
 };
 
 export const INVALID_FILE_TYPE = {
-  message: "invalid.fileType",
-  code: "internalServerError",
-  param: "internalServerError",
+  MESSAGE: "invalid.fileType",
+  CODE: "internalServerError",
+  PARAM: "internalServerError",
 };
 
 export const INTERNAL_SERVER_ERROR = {
-  message: "Internal Server Error!",
-  code: "internalServerError",
-  param: "internalServerError",
+  MESSAGE: "Internal Server Error!",
+  CODE: "internalServerError",
+  PARAM: "internalServerError",
 };
 
 export const UNAUTHENTICATED_ERROR = {
-  message: "UnauthenticatedError",
-  code: "user.notAuthenticated",
-  param: "userAuthentication",
+  MESSAGE: "UnauthenticatedError",
+  CODE: "user.notAuthenticated",
+  PARAM: "userAuthentication",
 };
 
 export const LENGTH_VALIDATION_ERROR = {
-  message: "Error: Length must be greater than 0 and less than",
-  code: "string.notValid",
-  param: "stringValidation",
+  MESSAGE: "Error: Length must be greater than 0 and less than",
+  CODE: "string.notValid",
+  PARAM: "stringValidation",
 };
 
 export const REGEX_VALIDATION_ERROR = {
-  message: "Error: Entered value must be a valid string",
-  code: "string.notValid",
-  param: "stringValidation",
+  MESSAGE: "Error: Entered value must be a valid string",
+  CODE: "string.notValid",
+  PARAM: "stringValidation",
 };
 
 export const USER_NOT_AUTHORIZED_SUPERADMIN = {
-  message: "Error: Current user must be a SUPERADMIN",
-  code: "role.notValid.superadmin",
-  param: "roleValidationSuperAdmin",
+  MESSAGE: "Error: Current user must be a SUPERADMIN",
+  CODE: "role.notValid.superadmin",
+  PARAM: "roleValidationSuperAdmin",
 };
 
 export const USER_NOT_AUTHORIZED_ADMIN = {
-  message: "Error: Current user must be an ADMIN",
-  code: "role.notValid.admin",
-  param: "roleValidationAdmin",
+  MESSAGE: "Error: Current user must be an ADMIN",
+  CODE: "role.notValid.admin",
+  PARAM: "roleValidationAdmin",
 };
 
 export const USER_BLOCKING_SELF = {
-  message: "Error: Current user cannot block self",
-  code: "user.selfBlock",
-  param: "userSelfBlock",
+  MESSAGE: "Error: Current user cannot block self",
+  CODE: "user.selfBlock",
+  PARAM: "userSelfBlock",
 };
 
 export const USER_REMOVING_SELF = {
-  message:
+  MESSAGE:
     "Error: Current user cannot remove self, instead you can use leave Org function",
-  code: "user.selfRemove",
-  param: "userSelfRemove",
+  CODE: "user.selfRemove",
+  PARAM: "userSelfRemove",
 };
 
 export const ADMIN_REMOVING_ADMIN = {
-  message: "Error: Current admin cannot remove another admin",
-  code: "admin.removeAdmin",
-  param: "admin.removeAdmin",
+  MESSAGE: "Error: Current admin cannot remove another admin",
+  CODE: "admin.removeAdmin",
+  PARAM: "admin.removeAdmin",
 };
 
 export const ADMIN_REMOVING_CREATOR = {
-  message: "Error: Current admin cannot remove the creator of the Org",
-  code: "admin.removeCreator",
-  param: "admin.removeCreator",
+  MESSAGE: "Error: Current admin cannot remove the creator of the Org",
+  CODE: "admin.removeCreator",
+  PARAM: "admin.removeCreator",
 };
 
 export const USER_NOT_AUTHORIZED_TO_PIN = {
-  message:
+  MESSAGE:
     "The user must be a superadmin or an admin of the organization to pin/unpin posts",
-  code: "user.notAuthorizedToPin",
-  param: "user.notAuthorizedToPin",
+  CODE: "user.notAuthorizedToPin",
+  PARAM: "user.notAuthorizedToPin",
 };
 export const TASK_NOT_FOUND_ERROR = {
   DESC: "Task not found",
@@ -183,33 +183,36 @@ export const USER_NOT_FOUND_ERROR = {
   MESSAGE: "user.notFound",
   PARAM: "user",
 };
-
-export const TRANSLATION_ALREADY_PRESENT = "Translation Already Present";
-export const TRANSLATION_ALREADY_PRESENT_CODE = "translation.alreadyPresent";
-export const TRANSLATION_ALREADY_PRESENT_MESSAGE = "translation.alreadyPresent";
-export const TRANSLATION_ALREADY_PRESENT_PARAM = "translationAlreadyPresent";
-
-export const INVALID_CREDENTIALS = "Invalid credentials";
-export const INVALID_CREDENTIALS_CODE = "invalid.credentials";
-export const INVALID_CREDENTIALS_MESSAGE = "invalid.credentials";
-export const INVALID_CREDENTIALS_PARAM = "credentials";
-
-export const INVALID_REFRESH_TOKEN = "Invalid refreshToken";
-export const INVALID_REFRESH_TOKEN_CODE = "invalid.refreshToken";
-export const INVALID_REFRESH_TOKEN_MESSAGE = "invalid.refreshToken";
-export const INVALID_REFRESH_TOKEN_PARAM = "refreshToken";
-
-export const USER_PROFILE_IMAGE_NOT_FOUND = "User profile image not found";
-export const USER_PROFILE_IMAGE_NOT_FOUND_CODE = "user.profileImage.notFound";
-export const USER_PROFILE_IMAGE_NOT_FOUND_MESSAGE =
-  "user.profileImage.notFound";
-export const USER_PROFILE_IMAGE_NOT_FOUND_PARAM = "userProfileImage";
-
-export const EMAIL_ALREADY_EXISTS = "Email already exists";
-export const EMAIL_ALREADY_EXISTS_CODE = "email.alreadyExists";
-export const EMAIL_ALREADY_EXISTS_MESSAGE = "email.alreadyExists";
-export const EMAIL_ALREADY_EXISTS_PARAM = "email";
-
+export const TRANSLATION_ALREADY_PRESENT_ERROR = {
+  DESC: "Translation Already Present",
+  CODE: "translation.alreadyPresent",
+  MESSAGE: "translation.alreadyPresent",
+  PARAM: "translationAlreadyPresent",
+};
+export const INVALID_CREDENTIALS_ERROR = {
+  DESC: "Invalid credentials",
+  CODE: "invalid.credentials",
+  MESSAGE: "invalid.credentials",
+  PARAM: "credentials",
+};
+export const INVALID_REFRESH_TOKEN_ERROR = {
+  DESC: "Invalid refreshToken",
+  CODE: "invalid.refreshToken",
+  MESSAGE: "invalid.refreshToken",
+  PARAM: "refreshToken",
+};
+export const USER_PROFILE_IMAGE_NOT_FOUND_ERROR = {
+  DESC: "User profile image not found",
+  CODE: "user.profileImage.notFound",
+  MESSAGE: "user.profileImage.notFound",
+  PARAM: "userProfileImage",
+};
+export const EMAIL_ALREADY_EXISTS_ERROR = {
+  DESC: "Email already exists",
+  CODE: "email.alreadyExists",
+  MESSAGE: "email.alreadyExists",
+  PARAM: "email",
+};
 export const BASE_URL = `http://localhost:${process.env.port || 4000}/`;
 
 export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;

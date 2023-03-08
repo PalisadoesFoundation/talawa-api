@@ -116,7 +116,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
       await createAdminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_SUPERADMIN.message);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
     }
   });
 
