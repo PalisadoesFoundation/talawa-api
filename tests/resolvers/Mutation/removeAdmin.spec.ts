@@ -68,15 +68,6 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
         userId: testUserRemover!.id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { removeAdmin: removeAdminResolver } = await import(
         "../../../src/resolvers/Mutation/removeAdmin"
       );
@@ -104,15 +95,6 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       const context = {
         userId: testUserRemover!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { removeAdmin: removeAdminResolver } = await import(
         "../../../src/resolvers/Mutation/removeAdmin"

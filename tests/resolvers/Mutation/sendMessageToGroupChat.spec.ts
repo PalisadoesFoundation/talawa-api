@@ -57,15 +57,6 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
 
       const context = { userId: testUser!.id };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { sendMessageToGroupChat: sendMessageToGroupChatResolver } =
         await import("../../../src/resolvers/Mutation/sendMessageToGroupChat");
 
@@ -90,15 +81,6 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
       const context = {
         userId: Types.ObjectId().toString(),
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { sendMessageToGroupChat: sendMessageToGroupChatResolver } =
         await import("../../../src/resolvers/Mutation/sendMessageToGroupChat");
@@ -125,15 +107,6 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { sendMessageToGroupChat: sendMessageToGroupChatResolver } =
         await import("../../../src/resolvers/Mutation/sendMessageToGroupChat");

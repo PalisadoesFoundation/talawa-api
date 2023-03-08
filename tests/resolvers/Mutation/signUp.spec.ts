@@ -194,14 +194,7 @@ describe("resolvers -> Mutation -> signUp", () => {
           organizationUserBelongsToId: undefined,
         },
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { signUp: signUpResolver } = await import(
         "../../../src/resolvers/Mutation/signUp"
       );
@@ -230,14 +223,7 @@ describe("resolvers -> Mutation -> signUp", () => {
           organizationUserBelongsToId: Types.ObjectId().toString(),
         },
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { signUp: signUpResolver } = await import(
         "../../../src/resolvers/Mutation/signUp"
       );

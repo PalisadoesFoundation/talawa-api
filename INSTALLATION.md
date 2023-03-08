@@ -125,6 +125,19 @@ Access and refresh token secrets are used for authentication purposes.
 
 Run the following command and copy/paste the result to the variable named `ACCESS_TOKEN_SECRET` in `.env` file.
 
+#### Linux
+The command to use is:
+```
+openssl rand -hex 32
+```
+#### Windows
+ 
+This command is available if you have [Git for Windows](https://gitforwindows.org/) installed. Follow these steps:
+
+1. Install `Git for Windows`
+1. Run the Git Bash app
+1. Issue the same command
+
 ```
 openssl rand -hex 32
 ```

@@ -59,14 +59,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { leaveOrganization: leaveOrganizationResolver } = await import(
         "../../../src/resolvers/Mutation/leaveOrganization"
       );
@@ -91,14 +84,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       const context = {
         userId: Types.ObjectId().toString(),
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { leaveOrganization: leaveOrganizationResolver } = await import(
         "../../../src/resolvers/Mutation/leaveOrganization"
       );
@@ -124,14 +110,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { leaveOrganization: leaveOrganizationResolver } = await import(
         "../../../src/resolvers/Mutation/leaveOrganization"
       );
@@ -169,14 +148,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { leaveOrganization: leaveOrganizationResolver } = await import(
         "../../../src/resolvers/Mutation/leaveOrganization"
       );

@@ -46,15 +46,6 @@ describe("resolvers -> Mutation -> removeEvent", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { removeEvent: removeEventResolver } = await import(
         "../../../src/resolvers/Mutation/removeEvent"
       );
@@ -79,15 +70,6 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { removeEvent: removeEventResolver } = await import(
         "../../../src/resolvers/Mutation/removeEvent"
@@ -137,15 +119,6 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { removeEvent: removeEventResolver } = await import(
         "../../../src/resolvers/Mutation/removeEvent"

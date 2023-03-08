@@ -63,14 +63,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { addUserToGroupChat } = await import(
         "../../../src/resolvers/Mutation/addUserToGroupChat"
       );
@@ -107,14 +100,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { addUserToGroupChat } = await import(
         "../../../src/resolvers/Mutation/addUserToGroupChat"
       );
@@ -203,14 +189,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { addUserToGroupChat } = await import(
         "../../../src/resolvers/Mutation/addUserToGroupChat"
       );
@@ -236,14 +215,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { addUserToGroupChat } = await import(
         "../../../src/resolvers/Mutation/addUserToGroupChat"
       );

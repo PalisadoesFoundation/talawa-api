@@ -53,14 +53,7 @@ describe("resolvers -> Mutation -> likePost", () => {
       const context = {
         userId: Types.ObjectId().toString(),
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { likePost: likePostResolver } = await import(
         "../../../src/resolvers/Mutation/likePost"
       );
@@ -85,14 +78,6 @@ describe("resolvers -> Mutation -> likePost", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { likePost: likePostResolver } = await import(
         "../../../src/resolvers/Mutation/likePost"

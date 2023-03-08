@@ -88,15 +88,6 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
         userId: testUser!.id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { removeDirectChat: removeDirectChatResolver } = await import(
         "../../../src/resolvers/Mutation/removeDirectChat"
       );
@@ -124,15 +115,6 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { removeDirectChat: removeDirectChatResolver } = await import(
         "../../../src/resolvers/Mutation/removeDirectChat"

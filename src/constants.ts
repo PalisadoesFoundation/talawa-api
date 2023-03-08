@@ -102,12 +102,6 @@ export const LENGTH_VALIDATION_ERROR = {
   param: "stringValidation",
 };
 
-export const REGEX_VALIDATION_ERROR = {
-  message: "Error: Entered value must be a valid string",
-  code: "string.notValid",
-  param: "stringValidation",
-};
-
 export const USER_NOT_AUTHORIZED_SUPERADMIN = {
   message: "Error: Current user must be a SUPERADMIN",
   code: "role.notValid.superadmin",
@@ -211,8 +205,6 @@ export const EMAIL_ALREADY_EXISTS = "Email already exists";
 export const EMAIL_ALREADY_EXISTS_CODE = "email.alreadyExists";
 export const EMAIL_ALREADY_EXISTS_MESSAGE = "email.alreadyExists";
 export const EMAIL_ALREADY_EXISTS_PARAM = "email";
-
-export const BASE_URL = `http://localhost:${process.env.port || 4000}/`;
 
 export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 

@@ -7,7 +7,6 @@ import mongoose from "mongoose";
 import {
   EVENT_NOT_FOUND_MESSAGE,
   LENGTH_VALIDATION_ERROR,
-  REGEX_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_FOUND_MESSAGE,
 } from "../../../src/constants";
@@ -213,129 +212,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
 });
 
 describe("Check for validation conditions", () => {
-  it(`throws Regex Validation Failed error if title contains a character other then number, letter, or symbol`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
-    try {
-      const args: MutationUpdateEventArgs = {
-        id: testEvent!._id,
-        data: {
-          allDay: false,
-          description: "Random",
-          endDate: "Tue Feb 15 2023",
-          endTime: "",
-          isPublic: false,
-          isRegisterable: false,
-          latitude: 1,
-          longitude: 1,
-          location: "Random",
-          recurring: false,
-          startDate: "Tue Feb 14 2023",
-          startTime: "",
-          title: "🍕",
-          recurrance: "DAILY",
-        },
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      const { updateEvent: updateEventResolverError } = await import(
-        "../../../src/resolvers/Mutation/updateEvent"
-      );
-
-      await updateEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in title`
-      );
-    }
-  });
-  it(`throws Regex Validation Failed error if description contains a character other then number, letter, or symbol`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
-    try {
-      const args: MutationUpdateEventArgs = {
-        id: testEvent!._id,
-        data: {
-          allDay: false,
-          description: "🍕",
-          endDate: "Tue Feb 15 2023",
-          endTime: "",
-          isPublic: false,
-          isRegisterable: false,
-          latitude: 1,
-          longitude: 1,
-          location: "Random",
-          recurring: false,
-          startDate: "Tue Feb 14 2023",
-          startTime: "",
-          title: "Random",
-          recurrance: "DAILY",
-        },
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      const { updateEvent: updateEventResolverError } = await import(
-        "../../../src/resolvers/Mutation/updateEvent"
-      );
-
-      await updateEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in description`
-      );
-    }
-  });
-  it(`throws Regex Validation Failed error if location contains a character other then number, letter, or symbol`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
-    try {
-      const args: MutationUpdateEventArgs = {
-        id: testEvent!._id,
-        data: {
-          allDay: false,
-          description: "Random",
-          endDate: "Tue Feb 15 2023",
-          endTime: "",
-          isPublic: false,
-          isRegisterable: false,
-          latitude: 1,
-          longitude: 1,
-          location: "🍕",
-          recurring: false,
-          startDate: "Tue Feb 14 2023",
-          startTime: "",
-          title: "Random",
-          recurrance: "DAILY",
-        },
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      const { updateEvent: updateEventResolverError } = await import(
-        "../../../src/resolvers/Mutation/updateEvent"
-      );
-
-      await updateEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in location`
-      );
-    }
-  });
   it(`throws String Length Validation error if title is greater than 256 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
