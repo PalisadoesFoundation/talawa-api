@@ -239,7 +239,7 @@ We are using the package `Husky` to run git hooks that run according to differen
 <br/>
 
 #### pre-commit hook
-we run a pre-commit hook which automatically runs these checks each time you make a commit and also fixes some of the issues. This way you don't have to run them manually each time.
+We run a pre-commit hook which automatically runs code quality checks each time you make a commit and also fixes some of the issues. This way you don't have to run them manually each time.
 
 
 If you don't want these pre-commit checks running on each commit, you can manually opt out of it using the `--no-verify` flag with your commit message as shown:-
@@ -251,10 +251,10 @@ If you don't want these pre-commit checks running on each commit, you can manual
 
 #### post-merge hook
 
-we are also running a post-merge(post-pull) hook which will automatically run "npm install" only if there is any change made to pakage.json file so that the developer has all the required dependencies when pulling files from remote.
+We are also running a post-merge(post-pull) hook which will automatically run "npm install" only if there is any change made to pakage.json file so that the developer has all the required dependencies when pulling files from remote.
 
 
-If you don't want this post-commit hook to run, you can manually opt out of this using the `no verify` flag while using the merge command(git pull):
+If you don't want this hook to run, you can manually opt out of this using the `no verify` flag while using the merge command(git pull):
 
         git pull --no-verify  
 
