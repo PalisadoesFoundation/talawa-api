@@ -8,7 +8,10 @@ import {
   androidFirebaseOptions,
   iosFirebaseOptions,
 } from "../../../src/config";
-import { ORGANIZATION_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import {
+  LAST_RESORT_SUPERADMIN_EMAIL,
+  ORGANIZATION_NOT_FOUND_MESSAGE,
+} from "../../../src/constants";
 import { nanoid } from "nanoid";
 import {
   beforeAll,
@@ -35,6 +38,14 @@ let testOrganization: testOrganizationType;
 vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),
 }));
+
+vi.mock("../../../src/constants", async () => {
+  const constants: object = await vi.importActual("../../../src/constants");
+  return {
+    ...constants,
+    LAST_RESORT_SUPERADMIN_EMAIL: "admin@email.com",
+  };
+});
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -168,6 +179,51 @@ describe("resolvers -> Mutation -> signUp", () => {
     expect(signedUpUserPayload?.user).toContain({
       image: testImagePath,
     });
+  });
+
+  it(`Promotes the user to SUPER ADMIN if the email registering with is same that as provided in configuration file`, async () => {
+    const email = LAST_RESORT_SUPERADMIN_EMAIL;
+    const args: MutationSignUpArgs = {
+      data: {
+        email,
+        firstName: "firstName",
+        lastName: "lastName",
+        password: "password",
+        appLanguageCode: "en",
+        organizationUserBelongsToId: undefined,
+      },
+    };
+    const { signUp: signUpResolver } = await import(
+      "../../../src/resolvers/Mutation/signUp"
+    );
+    await signUpResolver?.({}, args, {});
+    const createdUser = await User.findOne({
+      email,
+    });
+    expect(createdUser?.userType).toEqual("SUPERADMIN");
+    expect(createdUser?.adminApproved).toBeTruthy();
+  });
+  it(`Check if the User is not being promoted to SUPER ADMIN automatically`, async () => {
+    const email = `email${nanoid().toLowerCase()}@gmail.com`;
+    const args: MutationSignUpArgs = {
+      data: {
+        email,
+        firstName: "firstName",
+        lastName: "lastName",
+        password: "password",
+        appLanguageCode: "en",
+        organizationUserBelongsToId: undefined,
+      },
+    };
+    const { signUp: signUpResolver } = await import(
+      "../../../src/resolvers/Mutation/signUp"
+    );
+    await signUpResolver?.({}, args, {});
+    const createdUser = await User.findOne({
+      email,
+    });
+    expect(createdUser?.userType).not.to.toEqual("SUPERADMIN");
+    expect(createdUser?.adminApproved).toBeFalsy();
   });
 });
 

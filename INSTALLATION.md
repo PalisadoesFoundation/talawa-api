@@ -24,6 +24,7 @@ This document provides instructions on how to set up and start a running instanc
         - [Setting up the MONGODB_URL in .env file](#setting-up-the-mongodb_url-in-env-file)
         - [Using the CLI to get the MONGODB_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
         - [Using Microsoft Windows to get the MONGODB_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
+    - [Setting up .env LAST\_RESORT\_SUPERADMIN\_EMAIL parameter](#setting-up-env-last_resort_superadmin_email-parameter)
     - [Configuring Google ReCAPTCHA](#configuring-google-recaptcha)
         - [Setting up RECAPTCHA_SECRET_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
         - [Setting up .env MAIL_USERNAME and MAIL_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
@@ -114,6 +115,7 @@ This `.env` file must be populated with the following environment variables for 
 | RECAPTCHA_SECRET_KEY | Used for authentication using reCAPTCHA                |
 | MAIL_USERNAME        | Used for mailing service                               |
 | MAIL_PASSWORD        | Used for mailing service                               |
+| LAST_RESORT_SUPERADMIN_EMAIL | Used for promoting default super admin         |     
 
 The following sections will show you how to configure each of these parameters.
 
@@ -214,6 +216,13 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 
 ```
 
+## Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter
+
+When we create the first user, that should be super admin. To promote the user to super admin we either
+need another super admin or have to make changes in DB directly. By creating the user with this email
+promotes the user to super admin by default.
+Note - It is advised that you remove this variable once the initial installation and setup has been done. 
+
 ## Configuring Google ReCAPTCHA
 
 You need to have a `google` account to follow the following steps.
@@ -249,6 +258,21 @@ For more info refer to this [Google Answer](https://support.google.com/accounts/
 ## Configuring Google Firebase
 
 We use firebase for mobile app notifications. To configure the notification service create a new firebase project and follow these steps:
+3.  Under `Signing in to Google` section select `App Passwords`.
+
+4.  Click on `Select app` section and choose `Other(Custom name)`, enter `talawa` as the custom name and press `Generate` button.
+
+5.  Copy the 16 character generated app password to the variable named `MAIL_PASSWORD` in `.env` file.
+
+6.  Copy you usual gmail address to the variable named `MAIL_USERNAME` in `.env` file.
+
+For more info refer to [this](https://support.google.com/accounts/answer/185833).
+
+<br/>
+
+### Generate Firebase Keys for the Talawa Notification Service
+
+We use firebase for mobile app notifications. To configure the notification service create a new firebase project and follow these steps:-
 
 1. Create a new Firebase project for Talawa-API
 1. When created you will automatically enter the project's console area

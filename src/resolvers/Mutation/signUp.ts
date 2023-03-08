@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import {
+  LAST_RESORT_SUPERADMIN_EMAIL,
   //LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_FOUND_CODE,
   ORGANIZATION_NOT_FOUND_MESSAGE,
@@ -104,12 +105,17 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     uploadImageFileName = await uploadEncodedImage(args.file, null);
   }
 
+  const isLastResortSuperAdmin =
+    args.data.email === LAST_RESORT_SUPERADMIN_EMAIL;
+
   const createdUser = await User.create({
     ...args.data,
     organizationUserBelongsTo: organization ? organization._id : null,
     email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
     image: uploadImageFileName ? uploadImageFileName : null,
     password: hashedPassword,
+    userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",
+    adminApproved: isLastResortSuperAdmin,
   });
 
   const accessToken = await createAccessToken(createdUser);
