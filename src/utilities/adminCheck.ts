@@ -13,7 +13,7 @@ export const adminCheck = async (
 
   const user = await User.findOne({
     _id: userId,
-  }).lean();
+  });
 
   const isUserSuperAdmin: boolean = user!.userType === "SUPERADMIN";
 

@@ -59,7 +59,7 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
   }
 
   // Checks whether currentUser is an admin of organization.
-  adminCheck(currentUser._id, organization);
+  await adminCheck(currentUser._id, organization);
 
   /*
   Removes event._id from eventAdmin, createdEvents and registeredEvents lists on

@@ -43,7 +43,7 @@ export const removeDirectChat: MutationResolvers["removeDirectChat"] = async (
   }
 
   // Checks whether currentUser with _id === context.userId is an admin of organzation.
-  adminCheck(context.userId, organization);
+  await adminCheck(context.userId, organization);
 
   // Deletes all directChatMessages with _id as one of the ids in directChat.messages list.
   await DirectChatMessage.deleteMany({

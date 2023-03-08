@@ -60,7 +60,7 @@ export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
   }
 
   // Checks whether currentUser with _id === context.userId is an admin of organization.
-  adminCheck(context.userId, organization);
+  await adminCheck(context.userId, organization);
 
   //remove message from organization
   // org.overwrite({

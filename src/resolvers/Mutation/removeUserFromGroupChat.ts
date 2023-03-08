@@ -43,7 +43,7 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
     }
 
     // Checks whether currentUser with _id == context.userId is an admin of organzation.
-    adminCheck(context.userId, organization);
+    await adminCheck(context.userId, organization);
 
     const userIsMemberOfGroupChat = groupChat.users.some(
       (user) => user.toString() === args.userId.toString()

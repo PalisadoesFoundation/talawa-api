@@ -43,7 +43,7 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
     }
 
     // Checks whether currentUser with _id === context.userId is an admin of organization
-    adminCheck(context.userId, organization);
+    await adminCheck(context.userId, organization);
 
     // Checks whether organization.image exists.
     if (!organization.image) {
