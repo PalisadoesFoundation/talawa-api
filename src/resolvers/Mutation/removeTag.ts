@@ -1,6 +1,6 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, TagFolder, Tag } from "../../models";
+import { User, Tag } from "../../models";
 import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
@@ -42,15 +42,9 @@ export const removeTag: MutationResolvers["removeTag"] = async (
     );
   }
 
-  // Get the tag folder object
-  const tagFolder = await TagFolder.findOne({
-    _id: tag.folder,
-  });
-
   // Boolean to determine whether user is an admin of organization of the tag folder.
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) =>
-      organization.toString() === tagFolder!.organization.toString()
+    (organization) => organization.toString() === tag!.organization.toString()
   );
 
   // Checks whether currentUser can delete the tag or not.
@@ -70,15 +64,5 @@ export const removeTag: MutationResolvers["removeTag"] = async (
     _id: args.tagID,
   });
 
-  // Delete the tag from all the user models
-  await User.updateMany(
-    {}, // Blank object to update all the objects
-    {
-      $pull: {
-        tags: args.tagID,
-      },
-    }
-  );
-
-  return tag;
+  return tag!;
 };

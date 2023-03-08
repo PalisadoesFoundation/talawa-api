@@ -27,9 +27,10 @@ export const createTag: MutationResolvers["createTag"] = async (
       USER_NOT_FOUND_PARAM
     );
   }
+
   // Get the organizationId from the parent folder
   const parentFolder = await TagFolder.findOne({
-    _id: args.tagFolder,
+    _id: args.parentFolder!,
   });
 
   // Throw an error if the parent tag folder does not exist
@@ -43,9 +44,9 @@ export const createTag: MutationResolvers["createTag"] = async (
 
   const currentOrganizatonId = parentFolder.organization;
 
-  // Check if the user has privileges to pin the post
+  // Check if the user has privileges to create the tag
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organizationId) => organizationId.toString() === currentOrganizatonId!
+    (organizationId) => organizationId.toString() === currentOrganizatonId
   );
 
   if (
@@ -59,10 +60,12 @@ export const createTag: MutationResolvers["createTag"] = async (
     );
   }
 
-  // Create new tag
+  // Creates new tag folder
   const createdTag = await Tag.create({
-    title: args.tagName,
-    parent: args.tagFolder,
+    title: args.title,
+    organization: currentOrganizatonId,
+    folder: args.parentFolder,
+    users: [],
   });
 
   return createdTag.toObject();

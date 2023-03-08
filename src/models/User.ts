@@ -12,7 +12,6 @@ import validator from "validator";
 import { Interface_Event } from "./Event";
 import { Interface_MembershipRequest } from "./MembershipRequest";
 import { Interface_Organization } from "./Organization";
-import { Interface_Tag } from "./Tag";
 
 export interface Interface_User {
   _id: Types.ObjectId;
@@ -44,7 +43,6 @@ export interface Interface_User {
   pluginCreationAllowed: boolean;
   adminApproved: boolean;
   createdAt: Date;
-  tags: Array<PopulatedDoc<Interface_Tag & Document>>;
 }
 
 const userSchema = new Schema({
@@ -158,12 +156,6 @@ const userSchema = new Schema({
     type: Date,
     default: Date.now,
   },
-  tags: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Tag",
-    },
-  ],
 });
 
 userSchema.plugin(mongoosePaginate);

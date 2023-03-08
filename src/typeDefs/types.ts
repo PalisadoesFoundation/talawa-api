@@ -298,6 +298,7 @@ export const types = gql`
     _id: ID!
     title: String!
     folder: ID!
+    organization: ID!
   }
 
   type TagFolder {
@@ -345,7 +346,6 @@ export const types = gql`
     pluginCreationAllowed: Boolean
     adminApproved: Boolean
     createdAt: DateTime
-    tags: [String]
   }
 
   type UserAttende {

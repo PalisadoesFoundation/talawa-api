@@ -178,19 +178,6 @@ export const USER_NOT_AUTHORIZED_TO_CREATE_TAG_FOLDER = {
   param: "user.notAuth.createTagFolder",
 };
 
-export const USER_ALREADY_HAS_TAG = {
-  message: "The user already has the given tag.",
-  code: "user.alreadyHasTag",
-  param: "user.alreadyHasTag",
-};
-
-export const USER_DOEST_NOT_HAVE_TAG = {
-  message:
-    "The user does not have the given tag which you are trying to remove.",
-  code: "user.doesNotHaveGivenTag",
-  param: "user.doesNotHaveGivenTag",
-};
-
 export const USER_NOT_AUTHORIZED_TO_CREATE_TAG = {
   message:
     "The user must be a superadmin or an admin of the organization to create the tag",

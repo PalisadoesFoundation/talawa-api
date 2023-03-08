@@ -1,6 +1,6 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, TagFolder, Tag } from "../../models";
+import { User, Tag } from "../../models";
 import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
@@ -8,7 +8,6 @@ import {
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_PARAM,
-  USER_ALREADY_HAS_TAG,
 } from "../../constants";
 import { TAG_NOT_FOUND } from "../../constants";
 
@@ -21,10 +20,12 @@ export const assignTag: MutationResolvers["assignTag"] = async (
     _id: context.userId,
   }).lean();
 
-  const requestedUser = await User.findOne({ _id: args.userId }).lean();
+  const requestUser = await User.exists({
+    _id: args.userId,
+  });
 
-  // Checks whether currentUser exists.
-  if (!currentUser || !requestedUser) {
+  // Checks whether currentUser and the requestUser both exist.
+  if (!currentUser || !requestUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_MESSAGE),
       USER_NOT_FOUND_CODE,
@@ -32,20 +33,7 @@ export const assignTag: MutationResolvers["assignTag"] = async (
     );
   }
 
-  // Check that the user shouldn't already be assigned the tag
-  const userAlreadyHasTag = requestedUser.tags.some(
-    (tag) => tag.toString() === args.tagId
-  );
-
-  if (userAlreadyHasTag) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_ALREADY_HAS_TAG.message),
-      USER_ALREADY_HAS_TAG.code,
-      USER_ALREADY_HAS_TAG.param
-    );
-  }
-
-  // Get the tag folder object
+  // Get the tag object
   const tag = await Tag.findOne({
     _id: args.tagId,
   }).lean();
@@ -57,15 +45,16 @@ export const assignTag: MutationResolvers["assignTag"] = async (
       TAG_NOT_FOUND.param
     );
   }
+  // Check that the user shouldn't already be assigned the tag
+  const userAlreadyHasTag = tag.users.some(
+    (user) => user.toString() === args.userId
+  );
 
-  const tagFolder = await TagFolder.findOne({
-    _id: tag!.folder,
-  });
+  if (userAlreadyHasTag) return false;
 
-  // Boolean to determine whether user is an admin of organization of the tag folder.
+  // Boolean to determine whether user is an admin of organization of the tag.
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) =>
-      organization.toString() === tagFolder!.organization.toString()
+    (organization) => organization.toString() === tag!.organization.toString()
   );
 
   // Checks whether currentUser cannot delete the tag folder.
@@ -80,17 +69,17 @@ export const assignTag: MutationResolvers["assignTag"] = async (
     );
   }
 
-  // Update the user
-  const updatedUser = await User.findOneAndUpdate(
+  // Assign the tag
+  await Tag.findOneAndUpdate(
     {
-      _id: args.userId,
+      _id: args.tagId,
     },
     {
-      $pull: {
-        tags: args.tagId,
+      $push: {
+        users: args.userId,
       },
     }
   );
 
-  return updatedUser!;
+  return true;
 };

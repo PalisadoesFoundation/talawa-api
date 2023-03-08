@@ -1,10 +1,14 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
 import { Interface_TagFolder } from "./TagFolder";
+import { Interface_User } from "./User";
+import { Interface_Organization } from "./Organization";
 
 export interface Interface_Tag {
   _id: Types.ObjectId;
   folder: PopulatedDoc<Interface_TagFolder & Document>;
+  organization: PopulatedDoc<Interface_Organization & Document>;
   title: string;
+  users: Array<PopulatedDoc<Interface_User & Document>>;
 }
 
 const validateTagName = [
@@ -27,6 +31,11 @@ const validateTagName = [
 ];
 
 const TagSchema = new Schema({
+  organization: {
+    type: Schema.Types.ObjectId,
+    ref: "Organization",
+    required: true,
+  },
   folder: {
     type: Schema.Types.ObjectId,
     ref: "TagFolder",
@@ -35,6 +44,12 @@ const TagSchema = new Schema({
     type: String,
     validate: validateTagName,
   },
+  users: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
 });
 
 const TagModel = () => model<Interface_Tag>("Tag", TagSchema);

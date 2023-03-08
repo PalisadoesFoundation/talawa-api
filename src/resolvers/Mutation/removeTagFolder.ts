@@ -99,17 +99,5 @@ export const removeTagFolder: MutationResolvers["removeTagFolder"] = async (
     },
   });
 
-  // Delete all the tags from the user model
-  await User.updateMany(
-    {}, // Blank object to update all the objects
-    {
-      $pull: {
-        tags: {
-          $in: allTagIDs,
-        },
-      },
-    }
-  );
-
   return tagFolder;
 };
