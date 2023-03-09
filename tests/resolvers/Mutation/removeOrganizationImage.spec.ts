@@ -4,8 +4,8 @@ import { User, Organization } from "../../../src/models";
 import { MutationRemoveOrganizationImageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
-import { removeOrganizationImage as removeOrganizationImageResolver } from "../../../src/resolvers/Mutation/removeOrganizationImage";
 import {
+  ORGANIZATION_IMAGE_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_ERROR,
@@ -71,27 +71,10 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
     vi.resetModules();
   });
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
-    try {
-      const args: MutationRemoveOrganizationImageArgs = {
-        organizationId: "",
-      };
-
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-
-      await removeOrganizationImageResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
-    }
-  });
-
-  it(`throws NotFoundError if no user exists with _id === context.userId // IN_PRODUCTION =true`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveOrganizationImageArgs = {
         organizationId: "",
@@ -101,43 +84,17 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
       const { removeOrganizationImage: removeOrganizationImageResolver } =
         await import("../../../src/resolvers/Mutation/removeOrganizationImage");
 
       await removeOrganizationImageResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
-      );
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no organization exists with _id === args.organizationId`, async () => {
-    try {
-      const args: MutationRemoveOrganizationImageArgs = {
-        organizationId: Types.ObjectId().toString(),
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      await removeOrganizationImageResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.DESC);
-    }
-  });
-  it(`throws NotFoundError if no organization exists with _id === args.organizationId //IN_PRODUCTION = true`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -151,15 +108,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
+
       const { removeOrganizationImage: removeOrganizationImageResolver } =
         await import("../../../src/resolvers/Mutation/removeOrganizationImage");
 
@@ -175,7 +124,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
   });
 
   it(`throws UnauthorizedError if current user with _id === context.userId
-  is not an admin of organization with _id === args.organizationId //IN_PRODUCTION = true`, async () => {
+  is not an admin of organization with _id === args.organizationId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -204,23 +153,6 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
 
   it(`throws NotFoundError if no organization.image exists for organization
   with _id === args.organizationId`, async () => {
-    try {
-      const args: MutationRemoveOrganizationImageArgs = {
-        organizationId: testOrganization!.id,
-      };
-
-      const context = {
-        userId: testAdminUser!.id,
-      };
-
-      await removeOrganizationImageResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual("Organization image not found");
-    }
-  });
-
-  it(`throws NotFoundError if no organization.image exists for organization
-  with _id === args.organizationId // IN_PRODUCTION = true`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -234,24 +166,17 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       const context = {
         userId: testAdminUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
 
       const { removeOrganizationImage: removeOrganizationImageResolver } =
         await import("../../../src/resolvers/Mutation/removeOrganizationImage");
 
       await removeOrganizationImageResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith("organization.profile.notFound");
+      expect(spy).toHaveBeenLastCalledWith(
+        ORGANIZATION_IMAGE_NOT_FOUND_ERROR.MESSAGE
+      );
       expect(error.message).toEqual(
-        `Translated ${"organization.profile.notFound"}`
+        `Translated ${ORGANIZATION_IMAGE_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });

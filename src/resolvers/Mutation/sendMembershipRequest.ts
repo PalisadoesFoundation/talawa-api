@@ -1,6 +1,4 @@
 import {
-  IN_PRODUCTION,
-  MEMBERSHIP_REQUEST_ALREADY_EXISTS,
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -17,9 +15,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
 
     if (currentUserExists === false) {
       throw new errors.NotFoundError(
-        IN_PRODUCTION !== true
-          ? USER_NOT_FOUND_ERROR.DESC
-          : requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
         USER_NOT_FOUND_ERROR.PARAM
       );
@@ -31,9 +27,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
 
     if (!organization) {
       throw new errors.NotFoundError(
-        IN_PRODUCTION !== true
-          ? ORGANIZATION_NOT_FOUND_ERROR.DESC
-          : requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
         ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
@@ -46,11 +40,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
 
     if (membershipRequestExists === true) {
       throw new errors.ConflictError(
-        IN_PRODUCTION !== true
-          ? MEMBERSHIP_REQUEST_ALREADY_EXISTS
-          : requestContext.translate(
-              MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE
-            ),
+        requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE),
         MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.CODE,
         MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM
       );

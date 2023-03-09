@@ -10,7 +10,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
   createTestUserAndOrganization,
   testOrganizationType,
@@ -34,6 +34,10 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> unblockUser", () => {
   it(`throws NotFoundError if no organization exists with with _id === args.organizationId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationUnblockUserArgs = {
         organizationId: Types.ObjectId().toString(),
@@ -44,13 +48,22 @@ describe("resolvers -> Mutation -> unblockUser", () => {
         userId: "",
       };
 
+      const { unblockUser: unblockUserResolver } = await import(
+        "../../../src/resolvers/Mutation/unblockUser"
+      );
+
       await unblockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.DESC);
+      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no user exists with _id === args.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationUnblockUserArgs = {
         organizationId: testOrganization!.id,
@@ -61,14 +74,23 @@ describe("resolvers -> Mutation -> unblockUser", () => {
         userId: "",
       };
 
+      const { unblockUser: unblockUserResolver } = await import(
+        "../../../src/resolvers/Mutation/unblockUser"
+      );
+
       await unblockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
   it(`throws UnauthorizedError if current user with _id === context.userId is not
   an admin of the organization with _id === args.organizationId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationUnblockUserArgs = {
         organizationId: testOrganization!.id,
@@ -79,14 +101,23 @@ describe("resolvers -> Mutation -> unblockUser", () => {
         userId: testUser!.id,
       };
 
+      const { unblockUser: unblockUserResolver } = await import(
+        "../../../src/resolvers/Mutation/unblockUser"
+      );
+
       await unblockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.DESC);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 
   it(`throws UnauthorizedError if user with _id === args.userId does not exist
   in blockedUsers list of organization with _id === args.organizationId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       await Organization.updateOne(
         {
@@ -119,9 +150,14 @@ describe("resolvers -> Mutation -> unblockUser", () => {
         userId: testUser!.id,
       };
 
+      const { unblockUser: unblockUserResolver } = await import(
+        "../../../src/resolvers/Mutation/unblockUser"
+      );
+
       await unblockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.DESC);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 

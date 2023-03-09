@@ -1,11 +1,7 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { DirectChat, DirectChatMessage, User } from "../../models";
-import {
-  IN_PRODUCTION,
-  CHAT_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
-} from "../../constants";
+import { CHAT_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
 
 export const sendMessageToDirectChat: MutationResolvers["sendMessageToDirectChat"] =
   async (_parent, args, context) => {
@@ -15,9 +11,7 @@ export const sendMessageToDirectChat: MutationResolvers["sendMessageToDirectChat
 
     if (!directChat) {
       throw new errors.NotFoundError(
-        IN_PRODUCTION !== true
-          ? CHAT_NOT_FOUND_ERROR.DESC
-          : requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
+        requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
         CHAT_NOT_FOUND_ERROR.CODE,
         CHAT_NOT_FOUND_ERROR.PARAM
       );
@@ -29,9 +23,7 @@ export const sendMessageToDirectChat: MutationResolvers["sendMessageToDirectChat
 
     if (currentUserExists === false) {
       throw new errors.NotFoundError(
-        IN_PRODUCTION !== true
-          ? USER_NOT_FOUND_ERROR.DESC
-          : requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
         USER_NOT_FOUND_ERROR.PARAM
       );

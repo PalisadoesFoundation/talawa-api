@@ -60,14 +60,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       const context = {
         userId: Types.ObjectId().toString(),
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { createDirectChat: createDirectChatResolver } = await import(
         "../../../src/resolvers/Mutation/createDirectChat"
       );
@@ -94,16 +87,6 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
         userId: testUser!.id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
-
       const { createDirectChat: createDirectChatResolver } = await import(
         "../../../src/resolvers/Mutation/createDirectChat"
       );
@@ -114,7 +97,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
     }
   });
 
-  it(`throws NotFoundError message if no user exists with _id === context.userIds when [IN_PRODUCTION === TRUE]`, async () => {
+  it(`throws NotFoundError message if no user exists with _id === context.userIds`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -130,15 +113,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
+
       const { createDirectChat: createDirectChatResolver } = await import(
         "../../../src/resolvers/Mutation/createDirectChat"
       );

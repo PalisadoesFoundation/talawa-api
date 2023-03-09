@@ -31,7 +31,6 @@ describe("resolvers -> Query -> users", () => {
       );
       return {
         ...actualConstants,
-        IN_PRODUCTION: true,
       };
     });
 

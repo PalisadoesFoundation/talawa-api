@@ -14,7 +14,15 @@ import {
 } from "../../../src/constants";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  afterEach,
+  describe,
+  it,
+  expect,
+  vi,
+} from "vitest";
 import { testUserType } from "../../helpers/userAndOrg";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 
@@ -70,7 +78,18 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> login", () => {
+  afterEach(async () => {
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
+
   it(`throws NotFoundError if no user exists with email === args.data.email`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
     try {
       const args: MutationLoginArgs = {
         data: {
@@ -79,14 +98,27 @@ describe("resolvers -> Mutation -> login", () => {
         },
       };
 
+      const { login: loginResolver } = await import(
+        "../../../src/resolvers/Mutation/login"
+      );
+
       await loginResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
   it(`throws ValidationError if args.data.password !== password for user with
-  email === args.data.email`, async () => {
+email === args.data.email`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
     try {
       const args: MutationLoginArgs = {
         data: {
@@ -95,9 +127,13 @@ describe("resolvers -> Mutation -> login", () => {
         },
       };
 
+      const { login: loginResolver } = await import(
+        "../../../src/resolvers/Mutation/login"
+      );
+
       await loginResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(INVALID_CREDENTIALS_ERROR.DESC);
+      expect(spy).toHaveBeenLastCalledWith(INVALID_CREDENTIALS_ERROR.MESSAGE);
     }
   });
 

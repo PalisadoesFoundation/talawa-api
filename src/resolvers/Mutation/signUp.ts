@@ -1,8 +1,9 @@
 import bcrypt from "bcryptjs";
 import {
-  IN_PRODUCTION,
+  LAST_RESORT_SUPERADMIN_EMAIL,
   //LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  EMAIL_ALREADY_EXISTS_ERROR,
   //REGEX_VALIDATION_ERROR,
 } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
@@ -11,10 +12,10 @@ import { User, Organization } from "../../models";
 import {
   createAccessToken,
   createRefreshToken,
-  uploadImage,
   copyToClipboard,
 } from "../../utilities";
 import { androidFirebaseOptions, iosFirebaseOptions } from "../../config";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 //import { isValidString } from "../../libraries/validators/validateString";
 //import { validatePassword } from "../../libraries/validators/validatePassword";
 
@@ -25,11 +26,9 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
 
   if (userWithEmailExists === true) {
     throw new errors.ConflictError(
-      IN_PRODUCTION !== true
-        ? "Email already exists"
-        : requestContext.translate("email.alreadyExists"),
-      "email.alreadyExists",
-      "email"
+      requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
+      EMAIL_ALREADY_EXISTS_ERROR.CODE,
+      EMAIL_ALREADY_EXISTS_ERROR.PARAM
     );
   }
 
@@ -42,9 +41,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
 
     if (!organization) {
       throw new errors.NotFoundError(
-        IN_PRODUCTION !== true
-          ? ORGANIZATION_NOT_FOUND_ERROR.DESC
-          : requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
         ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
@@ -58,33 +55,33 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   // if (!validationResult_firstName.isFollowingPattern) {
   //   throw new errors.InputValidationError(
   //     requestContext.translate(
-  //       `${REGEX_VALIDATION_ERROR.MESSAGE} in first name`
+  //       `${REGEX_VALIDATION_ERROR.message} in first name`
   //     ),
-  //     REGEX_VALIDATION_ERROR.CODE
+  //     REGEX_VALIDATION_ERROR.code
   //   );
   // }
   // if (!validationResult_firstName.isLessThanMaxLength) {
   //   throw new errors.InputValidationError(
   //     requestContext.translate(
-  //       `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in first name`
+  //       `${LENGTH_VALIDATION_ERROR.message} 50 characters in first name`
   //     ),
-  //     LENGTH_VALIDATION_ERROR.CODE
+  //     LENGTH_VALIDATION_ERROR.code
   //   );
   // }
   // if (!validationResult_lastName.isFollowingPattern) {
   //   throw new errors.InputValidationError(
   //     requestContext.translate(
-  //       `${REGEX_VALIDATION_ERROR.MESSAGE} in last name`
+  //       `${REGEX_VALIDATION_ERROR.message} in last name`
   //     ),
-  //     REGEX_VALIDATION_ERROR.CODE
+  //     REGEX_VALIDATION_ERROR.code
   //   );
   // }
   // if (!validationResult_lastName.isLessThanMaxLength) {
   //   throw new errors.InputValidationError(
   //     requestContext.translate(
-  //       `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in last name`
+  //       `${LENGTH_VALIDATION_ERROR.message} 50 characters in last name`
   //     ),
-  //     LENGTH_VALIDATION_ERROR.CODE
+  //     LENGTH_VALIDATION_ERROR.code
   //   );
   // }
   // if (!validationResult_Password) {
@@ -99,21 +96,22 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   const hashedPassword = await bcrypt.hash(args.data.password, 12);
 
   // Upload file
-  let uploadImageObj;
+  let uploadImageFileName;
   if (args.file) {
-    uploadImageObj = await uploadImage(args.file, null);
+    uploadImageFileName = await uploadEncodedImage(args.file, null);
   }
+
+  const isLastResortSuperAdmin =
+    args.data.email === LAST_RESORT_SUPERADMIN_EMAIL;
 
   const createdUser = await User.create({
     ...args.data,
     organizationUserBelongsTo: organization ? organization._id : null,
     email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
-    image: uploadImageObj
-      ? uploadImageObj.imageAlreadyInDbPath
-        ? uploadImageObj.imageAlreadyInDbPath
-        : uploadImageObj.newImagePath
-      : null,
+    image: uploadImageFileName ? uploadImageFileName : null,
     password: hashedPassword,
+    userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",
+    adminApproved: isLastResortSuperAdmin,
   });
 
   const accessToken = await createAccessToken(createdUser);

@@ -7,7 +7,6 @@ import { updatePost as updatePostResolver } from "../../../src/resolvers/Mutatio
 import {
   LENGTH_VALIDATION_ERROR,
   POST_NOT_FOUND_ERROR,
-  REGEX_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -108,86 +107,6 @@ describe("resolvers -> Mutation -> updatePost", () => {
 
     expect(updatePostPayload).toEqual(testUpdatePostPayload);
   });
-  it(`throws Regex Validation Failed error if title contains a character other then number, letter, or symbol`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message
-    );
-    try {
-      const args: MutationUpdatePostArgs = {
-        id: testPost!._id,
-        data: {
-          text: "random",
-          videoUrl: "",
-          title: "🍕",
-          imageUrl: null,
-        },
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
-      const { updatePost: updatePostResolver } = await import(
-        "../../../src/resolvers/Mutation/updatePost"
-      );
-
-      await updatePostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.MESSAGE} in title`
-      );
-    }
-  });
-  it(`throws Regex Validation Failed error if text contains a character other then number, letter, or symbol`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message
-    );
-    try {
-      const args: MutationUpdatePostArgs = {
-        id: testPost!._id,
-        data: {
-          text: "🍕",
-          videoUrl: "",
-          title: "random",
-          imageUrl: null,
-        },
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
-      const { updatePost: updatePostResolver } = await import(
-        "../../../src/resolvers/Mutation/updatePost"
-      );
-
-      await updatePostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.MESSAGE} in information`
-      );
-    }
-  });
   it(`throws String Length Validation error if title is greater than 256 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
@@ -208,15 +127,6 @@ describe("resolvers -> Mutation -> updatePost", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { updatePost: updatePostResolver } = await import(
         "../../../src/resolvers/Mutation/updatePost"
@@ -248,15 +158,6 @@ describe("resolvers -> Mutation -> updatePost", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { updatePost: updatePostResolver } = await import(
         "../../../src/resolvers/Mutation/updatePost"

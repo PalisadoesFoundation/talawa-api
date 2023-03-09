@@ -9,7 +9,7 @@ import {
   POST_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
   createTestUserAndOrganization,
   testUserType,
@@ -41,6 +41,10 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> unlikePost", () => {
   it(`throws NotFoundError if current user with _id === context.userId does not exist`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationUnlikePostArgs = {
         id: "",
@@ -50,13 +54,22 @@ describe("resolvers -> Mutation -> unlikePost", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      const { unlikePost: unlikePostResolver } = await import(
+        "../../../src/resolvers/Mutation/unlikePost"
+      );
+
       await unlikePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no post exists with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationUnlikePostArgs = {
         id: Types.ObjectId().toString(),
@@ -66,9 +79,14 @@ describe("resolvers -> Mutation -> unlikePost", () => {
         userId: testUser!._id,
       };
 
+      const { unlikePost: unlikePostResolver } = await import(
+        "../../../src/resolvers/Mutation/unlikePost"
+      );
+
       await unlikePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.DESC);
+      expect(spy).toBeCalledWith(POST_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

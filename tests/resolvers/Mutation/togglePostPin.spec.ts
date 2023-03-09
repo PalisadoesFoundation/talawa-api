@@ -63,16 +63,6 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
-
       const { togglePostPin: togglePostPinResolver } = await import(
         "../../../src/resolvers/Mutation/togglePostPin"
       );
@@ -95,16 +85,6 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
       const args: MutationTogglePostPinArgs = {
         id: Types.ObjectId().toString(),
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
 
       const context = {
         userId: testUser!._id,
@@ -135,16 +115,6 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
       const context = {
         userId: randomUser!._id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
 
       const { togglePostPin: togglePostPinResolver } = await import(
         "../../../src/resolvers/Mutation/togglePostPin"

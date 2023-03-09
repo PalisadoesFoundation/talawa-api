@@ -72,15 +72,6 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
         userId: testUsers[0].id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { createMessageChat: createMessageChatResolver } = await import(
         "../../../src/resolvers/Mutation/createMessageChat"
       );

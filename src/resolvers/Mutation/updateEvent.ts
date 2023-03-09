@@ -6,7 +6,6 @@ import {
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   LENGTH_VALIDATION_ERROR,
-  REGEX_VALIDATION_ERROR,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 
@@ -61,12 +60,6 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     500
   );
   const validationResult_Location = isValidString(args.data!.location!, 50);
-  if (!validationResult_Title.isFollowingPattern) {
-    throw new errors.InputValidationError(
-      requestContext.translate(`${REGEX_VALIDATION_ERROR.MESSAGE} in title`),
-      REGEX_VALIDATION_ERROR.CODE
-    );
-  }
   if (!validationResult_Title.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
@@ -75,26 +68,12 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
       LENGTH_VALIDATION_ERROR.CODE
     );
   }
-  if (!validationResult_Description.isFollowingPattern) {
-    throw new errors.InputValidationError(
-      requestContext.translate(
-        `${REGEX_VALIDATION_ERROR.MESSAGE} in description`
-      ),
-      REGEX_VALIDATION_ERROR.CODE
-    );
-  }
   if (!validationResult_Description.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
       ),
       LENGTH_VALIDATION_ERROR.CODE
-    );
-  }
-  if (!validationResult_Location.isFollowingPattern) {
-    throw new errors.InputValidationError(
-      requestContext.translate(`${REGEX_VALIDATION_ERROR.MESSAGE} in location`),
-      REGEX_VALIDATION_ERROR.CODE
     );
   }
   if (!validationResult_Location.isLessThanMaxLength) {

@@ -5,7 +5,6 @@ import { User } from "../../models";
 import { createAccessToken, createRefreshToken } from "../../utilities";
 import {
   INVALID_REFRESH_TOKEN_ERROR,
-  IN_PRODUCTION,
   REFRESH_TOKEN_SECRET,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
@@ -20,17 +19,14 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
     throw new errors.ValidationError(
       [
         {
-          message:
-            IN_PRODUCTION !== true
-              ? INVALID_REFRESH_TOKEN_ERROR.DESC
-              : requestContext.translate(INVALID_REFRESH_TOKEN_ERROR.MESSAGE),
+          message: requestContext.translate(
+            INVALID_REFRESH_TOKEN_ERROR.MESSAGE
+          ),
           code: INVALID_REFRESH_TOKEN_ERROR.CODE,
           param: INVALID_REFRESH_TOKEN_ERROR.PARAM,
         },
       ],
-      IN_PRODUCTION !== true
-        ? INVALID_REFRESH_TOKEN_ERROR.DESC
-        : requestContext.translate(INVALID_REFRESH_TOKEN_ERROR.MESSAGE)
+      requestContext.translate(INVALID_REFRESH_TOKEN_ERROR.MESSAGE)
     );
   }
 
@@ -47,9 +43,7 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
   // Checks whether user exists.
   if (!user) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND_ERROR.DESC
-        : requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
       USER_NOT_FOUND_ERROR.PARAM
     );
@@ -59,17 +53,14 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
     throw new errors.ValidationError(
       [
         {
-          message:
-            IN_PRODUCTION !== true
-              ? INVALID_REFRESH_TOKEN_ERROR.DESC
-              : requestContext.translate(INVALID_REFRESH_TOKEN_ERROR.MESSAGE),
+          message: requestContext.translate(
+            INVALID_REFRESH_TOKEN_ERROR.MESSAGE
+          ),
           code: INVALID_REFRESH_TOKEN_ERROR.CODE,
           param: INVALID_REFRESH_TOKEN_ERROR.PARAM,
         },
       ],
-      IN_PRODUCTION !== true
-        ? INVALID_REFRESH_TOKEN_ERROR.DESC
-        : requestContext.translate(INVALID_REFRESH_TOKEN_ERROR.MESSAGE)
+      requestContext.translate(INVALID_REFRESH_TOKEN_ERROR.MESSAGE)
     );
   }
 

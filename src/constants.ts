@@ -59,6 +59,12 @@ export const ORGANIZATION_NOT_FOUND_ERROR = {
   MESSAGE: "organization.notFound",
   PARAM: "organization",
 };
+export const ORGANIZATION_IMAGE_NOT_FOUND_ERROR = {
+  DESC: "OrganizationImage not found",
+  CODE: "organizationImage.notFound",
+  MESSAGE: "organizationImage.notFound",
+  PARAM: "organizationImage",
+};
 export const POST_NOT_FOUND_ERROR = {
   DESC: "Post not found",
   CODE: "post.notFound",
@@ -76,6 +82,12 @@ export const INVALID_FILE_TYPE = {
   MESSAGE: "invalid.fileType",
   CODE: "internalServerError",
   PARAM: "internalServerError",
+};
+
+export const SAME_FILE_ERROR = {
+  message: "The newer image is the same as the previous image in the database",
+  code: "internalServerError",
+  param: "internalServerError",
 };
 
 export const INTERNAL_SERVER_ERROR = {
@@ -250,3 +262,6 @@ export const iOSstorageBucket = process.env.iOSstorageBucket;
 export const iosClientId = process.env.iosClientId;
 
 export const iosBundleId = process.env.iosBundleId;
+
+export const LAST_RESORT_SUPERADMIN_EMAIL =
+  process.env.LAST_RESORT_SUPERADMIN_EMAIL;

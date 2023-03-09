@@ -2,7 +2,6 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Event } from "../../models";
 import {
-  IN_PRODUCTION,
   USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -20,9 +19,7 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
   // Checks whether currentUser exists.
   if (!currentUser) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND_ERROR.DESC
-        : requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
       USER_NOT_FOUND_ERROR.PARAM
     );
@@ -35,9 +32,7 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
   // Checks whether event exists.
   if (!event) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? EVENT_NOT_FOUND_ERROR.DESC
-        : requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
+      requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
       EVENT_NOT_FOUND_ERROR.CODE,
       EVENT_NOT_FOUND_ERROR.PARAM
     );
@@ -56,9 +51,7 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
   // Checks whether currentUser cannot delete event.
   if (!(currentUserIsOrganizationAdmin || currentUserIsEventAdmin)) {
     throw new errors.UnauthorizedError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_AUTHORIZED_ERROR.DESC
-        : requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
       USER_NOT_AUTHORIZED_ERROR.PARAM
     );

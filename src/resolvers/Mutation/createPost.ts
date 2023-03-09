@@ -1,15 +1,14 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Post, Organization } from "../../models";
-import { uploadImage } from "../../utilities";
 import { errors, requestContext } from "../../libraries";
 import {
   LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
-  REGEX_VALIDATION_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 
 export const createPost: MutationResolvers["createPost"] = async (
   _parent,
@@ -43,35 +42,21 @@ export const createPost: MutationResolvers["createPost"] = async (
     );
   }
 
-  let uploadImageObj;
+  let uploadImageFileName;
 
   if (args.file) {
-    uploadImageObj = await uploadImage(args.file, "");
+    uploadImageFileName = await uploadEncodedImage(args.file!, null);
   }
 
   // Checks if the recieved arguments are valid according to standard input norms
   const validationResult_Title = isValidString(args.data!.title!, 256);
   const validationResult_Text = isValidString(args.data!.text, 500);
-  if (!validationResult_Title.isFollowingPattern) {
-    throw new errors.InputValidationError(
-      requestContext.translate(`${REGEX_VALIDATION_ERROR.MESSAGE} in title`),
-      REGEX_VALIDATION_ERROR.CODE
-    );
-  }
   if (!validationResult_Title.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
       ),
       LENGTH_VALIDATION_ERROR.CODE
-    );
-  }
-  if (!validationResult_Text.isFollowingPattern) {
-    throw new errors.InputValidationError(
-      requestContext.translate(
-        `${REGEX_VALIDATION_ERROR.MESSAGE} in information`
-      ),
-      REGEX_VALIDATION_ERROR.CODE
     );
   }
   if (!validationResult_Text.isLessThanMaxLength) {
@@ -107,7 +92,7 @@ export const createPost: MutationResolvers["createPost"] = async (
     pinned: args.data.pinned ? true : false,
     creator: context.userId,
     organization: args.data.organizationId,
-    imageUrl: args.file ? uploadImageObj?.newImagePath : null,
+    imageUrl: args.file ? uploadImageFileName : null,
   });
 
   if (args.data.pinned) {

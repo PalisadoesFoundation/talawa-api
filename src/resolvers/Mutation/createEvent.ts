@@ -5,7 +5,6 @@ import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
-  REGEX_VALIDATION_ERROR,
   LENGTH_VALIDATION_ERROR,
 } from "../../constants";
 import admin, { credential } from "firebase-admin";
@@ -76,12 +75,6 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     500
   );
   const validationResult_Location = isValidString(args.data!.location!, 50);
-  if (!validationResult_Title.isFollowingPattern) {
-    throw new errors.InputValidationError(
-      requestContext.translate(`${REGEX_VALIDATION_ERROR.MESSAGE} in title`),
-      REGEX_VALIDATION_ERROR.CODE
-    );
-  }
   if (!validationResult_Title.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
@@ -90,26 +83,12 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       LENGTH_VALIDATION_ERROR.CODE
     );
   }
-  if (!validationResult_Description.isFollowingPattern) {
-    throw new errors.InputValidationError(
-      requestContext.translate(
-        `${REGEX_VALIDATION_ERROR.MESSAGE} in description`
-      ),
-      REGEX_VALIDATION_ERROR.CODE
-    );
-  }
   if (!validationResult_Description.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
       ),
       LENGTH_VALIDATION_ERROR.CODE
-    );
-  }
-  if (!validationResult_Location.isFollowingPattern) {
-    throw new errors.InputValidationError(
-      requestContext.translate(`${REGEX_VALIDATION_ERROR.MESSAGE} in location`),
-      REGEX_VALIDATION_ERROR.CODE
     );
   }
   if (!validationResult_Location.isLessThanMaxLength) {

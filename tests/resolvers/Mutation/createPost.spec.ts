@@ -6,7 +6,6 @@ import mongoose from "mongoose";
 import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
-  REGEX_VALIDATION_ERROR,
   LENGTH_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
 } from "../../../src/constants";
@@ -26,11 +25,19 @@ import {
   createTestUser,
 } from "../../helpers/userAndOrg";
 import { Organization } from "../../../src/models";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
+import { nanoid } from "nanoid";
+import { createPost as createPostResolverImage } from "../../../src/resolvers/Mutation/createPost";
 
+const testImagePath: string = `${nanoid().toLowerCase()}test.png`;
 let testUser: testUserType;
 let randomUser: testUserType;
 let testOrganization: testOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
+
+vi.mock("../../utilities/uploadEncodedImage", () => ({
+  uploadEncodedImage: vi.fn(),
+}));
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -70,16 +77,6 @@ describe("resolvers -> Mutation -> createPost", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
-
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
       );
@@ -112,16 +109,6 @@ describe("resolvers -> Mutation -> createPost", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
 
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
@@ -156,16 +143,6 @@ describe("resolvers -> Mutation -> createPost", () => {
       const context = {
         userId: randomUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
 
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
@@ -256,24 +233,6 @@ describe("resolvers -> Mutation -> createPost", () => {
   });
 
   it(`creates the post and returns it when image is provided`, async () => {
-    const utilities = await import("../../../src/utilities");
-
-    const newImageFile = {
-      filename: "testImage.png",
-      createReadStream: {},
-    };
-
-    const returnImageFile = {
-      newImagePath: "/testImage",
-      imageAlreadyInDbPath: "",
-    };
-
-    const uploadImageSpy = vi
-      .spyOn(utilities, "uploadImage")
-      .mockImplementation(() => {
-        return Promise.resolve(returnImageFile);
-      });
-
     const args: MutationCreatePostArgs = {
       data: {
         organizationId: testOrganization!.id,
@@ -281,109 +240,32 @@ describe("resolvers -> Mutation -> createPost", () => {
         videoUrl: "videoUrl",
         title: "title",
       },
-      file: newImageFile,
+      file: testImagePath,
     };
 
     const context = {
       userId: testUser!.id,
     };
 
-    const { createPost: createPostResolver } = await import(
-      "../../../src/resolvers/Mutation/createPost"
+    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
+      async (encodedImageURL: string) => encodedImageURL
     );
 
-    const createPostPayload = await createPostResolver?.({}, args, context);
+    const createPostPayload = await createPostResolverImage?.(
+      {},
+      args,
+      context
+    );
 
-    expect(uploadImageSpy).toBeCalledWith(newImageFile, "");
     expect(createPostPayload).toEqual(
       expect.objectContaining({
         title: "title",
         videoUrl: "videoUrl",
         creator: testUser!._id,
         organization: testOrganization!._id,
-        imageUrl: returnImageFile.newImagePath,
+        imageUrl: testImagePath,
       })
     );
-  });
-  it(`throws Regex Validation Failed error if title contains a character other then number, letter, or symbol`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message
-    );
-    try {
-      const args: MutationCreatePostArgs = {
-        data: {
-          organizationId: testOrganization!._id,
-          text: "random",
-          videoUrl: "",
-          title: "🍕",
-          imageUrl: null,
-        },
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
-      const { createPost: createPostResolver } = await import(
-        "../../../src/resolvers/Mutation/createPost"
-      );
-
-      await createPostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.MESSAGE} in title`
-      );
-    }
-  });
-  it(`throws Regex Validation Failed error if text contains a character other then number, letter, or symbol`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementationOnce(
-      (message) => message
-    );
-    try {
-      const args: MutationCreatePostArgs = {
-        data: {
-          organizationId: testOrganization!._id,
-          text: "🍕",
-          videoUrl: "",
-          title: "random",
-          imageUrl: null,
-        },
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
-      const { createPost: createPostResolver } = await import(
-        "../../../src/resolvers/Mutation/createPost"
-      );
-
-      await createPostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.MESSAGE} in information`
-      );
-    }
   });
   it(`throws String Length Validation error if title is greater than 256 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
@@ -405,15 +287,6 @@ describe("resolvers -> Mutation -> createPost", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"
@@ -445,15 +318,6 @@ describe("resolvers -> Mutation -> createPost", () => {
       const context = {
         userId: testUser!.id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { createPost: createPostResolver } = await import(
         "../../../src/resolvers/Mutation/createPost"

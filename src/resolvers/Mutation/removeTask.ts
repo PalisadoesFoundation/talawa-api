@@ -1,5 +1,4 @@
 import {
-  IN_PRODUCTION,
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   TASK_NOT_FOUND_ERROR,
@@ -20,9 +19,7 @@ export const removeTask: MutationResolvers["removeTask"] = async (
   // Checks whether currentUser with _id === context.userId exists.
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND_ERROR.DESC
-        : requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
       USER_NOT_FOUND_ERROR.PARAM
     );
@@ -35,9 +32,7 @@ export const removeTask: MutationResolvers["removeTask"] = async (
   // Checks whether task exists.
   if (!task) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? TASK_NOT_FOUND_ERROR.DESC
-        : requestContext.translate(TASK_NOT_FOUND_ERROR.MESSAGE),
+      requestContext.translate(TASK_NOT_FOUND_ERROR.MESSAGE),
       TASK_NOT_FOUND_ERROR.CODE,
       TASK_NOT_FOUND_ERROR.PARAM
     );
@@ -46,9 +41,7 @@ export const removeTask: MutationResolvers["removeTask"] = async (
   // Checks whether currentUser with _id === context.userId is not the creator of task.
   if (task.creator.toString() !== context.userId.toString()) {
     throw new errors.UnauthorizedError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_AUTHORIZED_ERROR.DESC
-        : requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
       USER_NOT_AUTHORIZED_ERROR.PARAM
     );

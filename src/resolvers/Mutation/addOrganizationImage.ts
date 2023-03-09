@@ -1,12 +1,13 @@
 import "dotenv/config";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { adminCheck, uploadImage } from "../../utilities";
+import { adminCheck } from "../../utilities";
 import { User, Organization } from "../../models";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 
 export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
   async (_parent, args, context) => {
@@ -40,7 +41,10 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
     adminCheck(context.userId, organization);
 
     // Upload Image
-    const uploadImageObj = await uploadImage(args.file, organization.image!);
+    const uploadImageFileName = await uploadEncodedImage(
+      args.file!,
+      organization.image
+    );
     // Updates the organization with new image and returns the updated organization.
     return await Organization.findOneAndUpdate(
       {
@@ -48,9 +52,7 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
       },
       {
         $set: {
-          image: uploadImageObj.imageAlreadyInDbPath
-            ? uploadImageObj.imageAlreadyInDbPath
-            : uploadImageObj.newImagePath,
+          image: uploadImageFileName,
         },
       },
       {

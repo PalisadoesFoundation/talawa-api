@@ -1,5 +1,4 @@
 import {
-  IN_PRODUCTION,
   USER_NOT_FOUND_ERROR,
   USER_PROFILE_IMAGE_NOT_FOUND_ERROR,
 } from "../../constants";
@@ -20,9 +19,7 @@ export const removeUserImage: MutationResolvers["removeUserImage"] = async (
   // Checks whether currentUser exists.
   if (!currentUser) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND_ERROR.DESC
-        : requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
       USER_NOT_FOUND_ERROR.PARAM
     );
@@ -31,9 +28,7 @@ export const removeUserImage: MutationResolvers["removeUserImage"] = async (
   // Checks whether currentUser.image already doesn't exist.
   if (!currentUser.image) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_PROFILE_IMAGE_NOT_FOUND_ERROR.DESC
-        : requestContext.translate(USER_PROFILE_IMAGE_NOT_FOUND_ERROR.MESSAGE),
+      requestContext.translate(USER_PROFILE_IMAGE_NOT_FOUND_ERROR.MESSAGE),
       USER_PROFILE_IMAGE_NOT_FOUND_ERROR.MESSAGE,
       USER_PROFILE_IMAGE_NOT_FOUND_ERROR.PARAM
     );

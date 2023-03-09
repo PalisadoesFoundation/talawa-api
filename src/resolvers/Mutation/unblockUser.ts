@@ -2,7 +2,6 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
 import {
-  IN_PRODUCTION,
   USER_NOT_AUTHORIZED_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -21,9 +20,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
   // checks if there exists an organization with _id === args.organizationId
   if (!organization) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? ORGANIZATION_NOT_FOUND_ERROR.DESC
-        : requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
       ORGANIZATION_NOT_FOUND_ERROR.PARAM
     );
@@ -36,9 +33,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
 
   if (!user) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND_ERROR.DESC
-        : requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
       USER_NOT_FOUND_ERROR.PARAM
     );
@@ -54,9 +49,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
   // checks if user with _id === args.userId is blocked by organzation with _id == args.organizationId
   if (userIsBlockedFromOrganization === false) {
     throw new errors.UnauthorizedError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_AUTHORIZED_ERROR.DESC
-        : requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
       USER_NOT_AUTHORIZED_ERROR.PARAM
     );

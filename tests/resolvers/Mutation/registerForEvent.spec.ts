@@ -87,15 +87,6 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { registerForEvent: registerForEventResolver } = await import(
         "../../../src/resolvers/Mutation/registerForEvent"
       );
@@ -120,15 +111,6 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
       const context = {
         userId: testUser!._id,
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { registerForEvent: registerForEventResolver } = await import(
         "../../../src/resolvers/Mutation/registerForEvent"
@@ -157,14 +139,6 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
       const context = {
         userId: testUser!._id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { registerForEvent: registerForEventResolver } = await import(
         "../../../src/resolvers/Mutation/registerForEvent"

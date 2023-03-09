@@ -14,8 +14,9 @@ import { removeTask as removeTaskResolver } from "../../../src/resolvers/Mutatio
 import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
+  TASK_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUserFunc } from "../../helpers/user";
 import { testUserType } from "../../helpers/userAndOrg";
 
@@ -107,6 +108,10 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> removeTask", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveTaskArgs = {
         id: "",
@@ -116,13 +121,22 @@ describe("resolvers -> Mutation -> removeTask", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      const { removeTask: removeTaskResolver } = await import(
+        "../../../src/resolvers/Mutation/removeTask"
+      );
+
       await removeTaskResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no task exists with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveTaskArgs = {
         id: Types.ObjectId().toString(),
@@ -132,13 +146,22 @@ describe("resolvers -> Mutation -> removeTask", () => {
         userId: testUsers[0]!._id,
       };
 
+      const { removeTask: removeTaskResolver } = await import(
+        "../../../src/resolvers/Mutation/removeTask"
+      );
+
       await removeTaskResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual("Task not found");
+      expect(spy).toBeCalledWith(TASK_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(TASK_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
   it(`throws NotAuthorizedError if for creator of task with _id === args.id, user._id !== context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveTaskArgs = {
         id: testTask._id,
@@ -148,9 +171,14 @@ describe("resolvers -> Mutation -> removeTask", () => {
         userId: testUsers[1]!._id,
       };
 
+      const { removeTask: removeTaskResolver } = await import(
+        "../../../src/resolvers/Mutation/removeTask"
+      );
+
       await removeTaskResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.DESC);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 
