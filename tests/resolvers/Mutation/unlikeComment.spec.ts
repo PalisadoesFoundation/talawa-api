@@ -6,8 +6,8 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { unlikeComment as unlikeCommentResolver } from "../../../src/resolvers/Mutation/unlikeComment";
 import {
-  COMMENT_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  COMMENT_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { testUserType } from "../../helpers/userAndOrg";
@@ -71,8 +71,8 @@ describe("resolvers -> Mutation -> unlikeComment", () => {
 
       await unlikeCommentResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -96,8 +96,8 @@ describe("resolvers -> Mutation -> unlikeComment", () => {
 
       await unlikeCommentResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(COMMENT_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(COMMENT_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(COMMENT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(COMMENT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

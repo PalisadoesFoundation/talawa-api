@@ -2,12 +2,8 @@ import bcrypt from "bcryptjs";
 import {
   LAST_RESORT_SUPERADMIN_EMAIL,
   //LENGTH_VALIDATION_ERROR,
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_PARAM,
-  EMAIL_ALREADY_EXISTS_MESSAGE,
-  EMAIL_ALREADY_EXISTS_CODE,
-  EMAIL_ALREADY_EXISTS_PARAM,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  EMAIL_ALREADY_EXISTS_ERROR,
   //REGEX_VALIDATION_ERROR,
 } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
@@ -30,9 +26,9 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
 
   if (userWithEmailExists === true) {
     throw new errors.ConflictError(
-      requestContext.translate(EMAIL_ALREADY_EXISTS_MESSAGE),
-      EMAIL_ALREADY_EXISTS_CODE,
-      EMAIL_ALREADY_EXISTS_PARAM
+      requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
+      EMAIL_ALREADY_EXISTS_ERROR.CODE,
+      EMAIL_ALREADY_EXISTS_ERROR.PARAM
     );
   }
 
@@ -45,9 +41,9 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
 
     if (!organization) {
       throw new errors.NotFoundError(
-        requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-        ORGANIZATION_NOT_FOUND_CODE,
-        ORGANIZATION_NOT_FOUND_PARAM
+        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+        ORGANIZATION_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
     }
   }

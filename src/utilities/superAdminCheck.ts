@@ -7,9 +7,9 @@ export const superAdminCheck = (user: Interface_User) => {
 
   if (!userIsSuperAdmin) {
     throw new errors.UnauthorizedError(
-      requestContext.translate(USER_NOT_AUTHORIZED_SUPERADMIN.message),
-      USER_NOT_AUTHORIZED_SUPERADMIN.code,
-      USER_NOT_AUTHORIZED_SUPERADMIN.param
+      requestContext.translate(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE),
+      USER_NOT_AUTHORIZED_SUPERADMIN.CODE,
+      USER_NOT_AUTHORIZED_SUPERADMIN.PARAM
     );
   }
 };

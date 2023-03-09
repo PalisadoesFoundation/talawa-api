@@ -71,12 +71,12 @@ export const imageAlreadyInDbCheck = async (
     throw new errors.ValidationError(
       [
         {
-          message: requestContext.translate(INVALID_FILE_TYPE.message),
-          code: INVALID_FILE_TYPE.code,
-          param: INVALID_FILE_TYPE.param,
+          message: requestContext.translate(INVALID_FILE_TYPE.MESSAGE),
+          code: INVALID_FILE_TYPE.CODE,
+          param: INVALID_FILE_TYPE.PARAM,
         },
       ],
-      requestContext.translate(INVALID_FILE_TYPE.message)
+      requestContext.translate(INVALID_FILE_TYPE.MESSAGE)
     );
   }
 };

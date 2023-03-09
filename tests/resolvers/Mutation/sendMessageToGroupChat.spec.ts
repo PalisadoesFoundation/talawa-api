@@ -10,9 +10,9 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { sendMessageToGroupChat as sendMessageToGroupChatResolver } from "../../../src/resolvers/Mutation/sendMessageToGroupChat";
 import {
-  CHAT_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  CHAT_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
@@ -62,8 +62,8 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
 
       await sendMessageToGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(CHAT_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(CHAT_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(CHAT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -87,8 +87,8 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
 
       await sendMessageToGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -113,8 +113,8 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
 
       await sendMessageToGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 

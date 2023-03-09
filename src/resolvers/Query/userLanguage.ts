@@ -1,11 +1,7 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 import { errors } from "../../libraries";
-import {
-  USER_NOT_FOUND,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_PARAM,
-} from "../../constants";
+import { USER_NOT_FOUND_ERROR } from "../../constants";
 
 export const userLanguage: QueryResolvers["userLanguage"] = async (
   _parent,
@@ -19,9 +15,9 @@ export const userLanguage: QueryResolvers["userLanguage"] = async (
 
   if (!user) {
     throw new errors.NotFoundError(
-      USER_NOT_FOUND,
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      USER_NOT_FOUND_ERROR.DESC,
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 

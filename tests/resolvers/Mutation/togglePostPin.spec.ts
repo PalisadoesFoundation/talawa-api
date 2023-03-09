@@ -5,8 +5,8 @@ import { MutationTogglePostPinArgs } from "../../../src/types/generatedGraphQLTy
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
-  POST_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  POST_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
 } from "../../../src/constants";
 import {
@@ -69,7 +69,9 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
 
       await togglePostPinResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
@@ -94,7 +96,9 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
 
       await togglePostPinResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(`Translated ${POST_NOT_FOUND_MESSAGE}`);
+      expect(error.message).toEqual(
+        `Translated ${POST_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
@@ -118,9 +122,9 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
 
       await togglePostPinResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_PIN.message);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_TO_PIN.message}`
+        `Translated ${USER_NOT_AUTHORIZED_TO_PIN.MESSAGE}`
       );
     }
   });

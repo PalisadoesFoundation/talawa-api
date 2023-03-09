@@ -6,10 +6,10 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { createAdmin as createAdminResolver } from "../../../src/resolvers/Mutation/createAdmin";
 import {
-  ORGANIZATION_MEMBER_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  ORGANIZATION_MEMBER_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
@@ -54,7 +54,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
       await createAdminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -84,7 +84,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
       await createAdminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -125,7 +125,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
       await createAdminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -145,7 +145,9 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
       await createAdminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_MEMBER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(
+        ORGANIZATION_MEMBER_NOT_FOUND_ERROR.MESSAGE
+      );
     }
   });
 
@@ -176,7 +178,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
       await createAdminResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 

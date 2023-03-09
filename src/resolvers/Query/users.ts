@@ -5,11 +5,7 @@ import {
 } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import {
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
-} from "../../constants";
+import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
 
 export const users: QueryResolvers["users"] = async (_parent, args) => {
@@ -29,9 +25,9 @@ export const users: QueryResolvers["users"] = async (_parent, args) => {
 
   if (!users[0]) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   } else
     return users.map((user) => {

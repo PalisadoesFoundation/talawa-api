@@ -8,9 +8,9 @@ const testFilename: string = "test.anyOtherExtension";
 
 const testErrors = [
   {
-    message: INVALID_FILE_TYPE.message,
-    code: INVALID_FILE_TYPE.code,
-    param: INVALID_FILE_TYPE.param,
+    message: INVALID_FILE_TYPE.MESSAGE,
+    code: INVALID_FILE_TYPE.CODE,
+    param: INVALID_FILE_TYPE.PARAM,
   },
 ];
 

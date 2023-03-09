@@ -4,18 +4,10 @@ import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
 import { User, GroupChat, Organization } from "../../models";
 import {
-  CHAT_NOT_FOUND_MESSAGE,
-  CHAT_NOT_FOUND_CODE,
-  CHAT_NOT_FOUND_PARAM,
-  USER_ALREADY_MEMBER_CODE,
-  USER_ALREADY_MEMBER_MESSAGE,
-  USER_ALREADY_MEMBER_PARAM,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_PARAM,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_PARAM,
+  CHAT_NOT_FOUND_ERROR,
+  USER_ALREADY_MEMBER_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 
 export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
@@ -27,9 +19,9 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
     // Checks whether groupChat exists.
     if (!groupChat) {
       throw new errors.NotFoundError(
-        requestContext.translate(CHAT_NOT_FOUND_MESSAGE),
-        CHAT_NOT_FOUND_CODE,
-        CHAT_NOT_FOUND_PARAM
+        requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
+        CHAT_NOT_FOUND_ERROR.CODE,
+        CHAT_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -40,9 +32,9 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
     // Checks whether organization exists.
     if (!organization) {
       throw new errors.NotFoundError(
-        requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-        ORGANIZATION_NOT_FOUND_CODE,
-        ORGANIZATION_NOT_FOUND_PARAM
+        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+        ORGANIZATION_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -56,9 +48,9 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
     // Checks whether user with _id === args.userId exists.
     if (userExists === false) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_MESSAGE),
-        USER_NOT_FOUND_CODE,
-        USER_NOT_FOUND_PARAM
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -69,9 +61,9 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
     // Checks whether user with _id === args.userId is already a member of groupChat.
     if (isUserGroupChatMember === true) {
       throw new errors.ConflictError(
-        requestContext.translate(USER_ALREADY_MEMBER_MESSAGE),
-        USER_ALREADY_MEMBER_CODE,
-        USER_ALREADY_MEMBER_PARAM
+        requestContext.translate(USER_ALREADY_MEMBER_ERROR.MESSAGE),
+        USER_ALREADY_MEMBER_ERROR.CODE,
+        USER_ALREADY_MEMBER_ERROR.PARAM
       );
     }
 

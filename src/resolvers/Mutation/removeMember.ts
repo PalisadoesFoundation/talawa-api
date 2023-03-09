@@ -3,15 +3,9 @@ import { errors, requestContext } from "../../libraries";
 import { User, Organization } from "../../models";
 import { adminCheck } from "../../utilities";
 import {
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_PARAM,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_PARAM,
-  MEMBER_NOT_FOUND_MESSAGE,
-  MEMBER_NOT_FOUND_CODE,
-  MEMBER_NOT_FOUND_PARAM,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
+  MEMBER_NOT_FOUND_ERROR,
   USER_REMOVING_SELF,
   ADMIN_REMOVING_ADMIN,
   ADMIN_REMOVING_CREATOR,
@@ -29,9 +23,9 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   // Checks if organization exists.
   if (!organization) {
     throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-      ORGANIZATION_NOT_FOUND_CODE,
-      ORGANIZATION_NOT_FOUND_PARAM
+      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+      ORGANIZATION_NOT_FOUND_ERROR.CODE,
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -49,9 +43,9 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   // Checks whether curent user exists
   if (!user) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -61,18 +55,18 @@ export const removeMember: MutationResolvers["removeMember"] = async (
 
   if (!userIsOrganizationMember) {
     throw new errors.NotFoundError(
-      requestContext.translate(MEMBER_NOT_FOUND_MESSAGE),
-      MEMBER_NOT_FOUND_CODE,
-      MEMBER_NOT_FOUND_PARAM
+      requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
+      MEMBER_NOT_FOUND_ERROR.CODE,
+      MEMBER_NOT_FOUND_ERROR.PARAM
     );
   }
 
   // Check if the current user is removing self
   if (user._id.toString() === currentUser?._id.toString()) {
     throw new errors.ConflictError(
-      requestContext.translate(USER_REMOVING_SELF.message),
-      USER_REMOVING_SELF.code,
-      USER_REMOVING_SELF.param
+      requestContext.translate(USER_REMOVING_SELF.MESSAGE),
+      USER_REMOVING_SELF.CODE,
+      USER_REMOVING_SELF.PARAM
     );
   }
 
@@ -86,9 +80,9 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     */
   if (userIsOrganizationAdmin === true) {
     throw new errors.ConflictError(
-      requestContext.translate(ADMIN_REMOVING_ADMIN.message),
-      ADMIN_REMOVING_ADMIN.code,
-      ADMIN_REMOVING_ADMIN.param
+      requestContext.translate(ADMIN_REMOVING_ADMIN.MESSAGE),
+      ADMIN_REMOVING_ADMIN.CODE,
+      ADMIN_REMOVING_ADMIN.PARAM
     );
   }
 
@@ -101,9 +95,9 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     */
   if (organization?.creator.toString() === user._id.toString()) {
     throw new errors.UnauthorizedError(
-      requestContext.translate(ADMIN_REMOVING_CREATOR.message),
-      ADMIN_REMOVING_CREATOR.code,
-      ADMIN_REMOVING_CREATOR.param
+      requestContext.translate(ADMIN_REMOVING_CREATOR.MESSAGE),
+      ADMIN_REMOVING_CREATOR.CODE,
+      ADMIN_REMOVING_CREATOR.PARAM
     );
   }
 

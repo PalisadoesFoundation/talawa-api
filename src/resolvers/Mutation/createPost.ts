@@ -3,12 +3,8 @@ import { User, Post, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
   LENGTH_VALIDATION_ERROR,
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_PARAM,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
@@ -27,9 +23,9 @@ export const createPost: MutationResolvers["createPost"] = async (
   // Checks whether currentUser exists.
   if (!currentUser) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -40,9 +36,9 @@ export const createPost: MutationResolvers["createPost"] = async (
   // Checks whether organization with _id == args.data.organizationId exists.
   if (organizationExists === false) {
     throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-      ORGANIZATION_NOT_FOUND_CODE,
-      ORGANIZATION_NOT_FOUND_PARAM
+      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+      ORGANIZATION_NOT_FOUND_ERROR.CODE,
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -58,17 +54,17 @@ export const createPost: MutationResolvers["createPost"] = async (
   if (!validationResult_Title.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.message} 256 characters in title`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
       ),
-      LENGTH_VALIDATION_ERROR.code
+      LENGTH_VALIDATION_ERROR.CODE
     );
   }
   if (!validationResult_Text.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.message} 500 characters in information`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
       ),
-      LENGTH_VALIDATION_ERROR.code
+      LENGTH_VALIDATION_ERROR.CODE
     );
   }
 
@@ -83,9 +79,9 @@ export const createPost: MutationResolvers["createPost"] = async (
       !currentUserIsOrganizationAdmin
     ) {
       throw new errors.UnauthorizedError(
-        requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.message),
-        USER_NOT_AUTHORIZED_TO_PIN.code,
-        USER_NOT_AUTHORIZED_TO_PIN.param
+        requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE),
+        USER_NOT_AUTHORIZED_TO_PIN.CODE,
+        USER_NOT_AUTHORIZED_TO_PIN.PARAM
       );
     }
   }

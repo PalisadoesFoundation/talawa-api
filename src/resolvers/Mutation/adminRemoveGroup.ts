@@ -3,15 +3,9 @@ import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
 import { User, Organization, GroupChat } from "../../models";
 import {
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_PARAM,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_PARAM,
-  CHAT_NOT_FOUND_PARAM,
-  CHAT_NOT_FOUND_CODE,
-  CHAT_NOT_FOUND_MESSAGE,
+  USER_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  CHAT_NOT_FOUND_ERROR,
 } from "../../constants";
 
 // @ts-ignore
@@ -27,9 +21,9 @@ export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
   // Checks whether groupChat exists.
   if (!groupChat) {
     throw new errors.NotFoundError(
-      requestContext.translate(CHAT_NOT_FOUND_MESSAGE),
-      CHAT_NOT_FOUND_CODE,
-      CHAT_NOT_FOUND_PARAM
+      requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
+      CHAT_NOT_FOUND_ERROR.CODE,
+      CHAT_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -40,9 +34,9 @@ export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
   // Checks whether organization exists.
   if (!organization) {
     throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-      ORGANIZATION_NOT_FOUND_CODE,
-      ORGANIZATION_NOT_FOUND_PARAM
+      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+      ORGANIZATION_NOT_FOUND_ERROR.CODE,
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -53,9 +47,9 @@ export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
   // Checks currentUser with _id === context.userId exists.
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 

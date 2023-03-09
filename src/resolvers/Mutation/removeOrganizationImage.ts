@@ -1,13 +1,7 @@
 import {
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_PARAM,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
-  ORGANIZATION_IMAGE_NOT_FOUND_MESSAGE,
-  ORGANIZATION_IMAGE_NOT_FOUND_CODE,
-  ORGANIZATION_IMAGE_NOT_FOUND_PARAM,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
+  ORGANIZATION_IMAGE_NOT_FOUND_ERROR,
 } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
@@ -23,9 +17,9 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
     // Checks whether currentUser with _id === context.userId exists.
     if (currentUserExists === false) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_MESSAGE),
-        USER_NOT_FOUND_CODE,
-        USER_NOT_FOUND_PARAM
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -36,9 +30,9 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
     // Checks whether organization exists.
     if (!organization) {
       throw new errors.NotFoundError(
-        requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-        ORGANIZATION_NOT_FOUND_CODE,
-        ORGANIZATION_NOT_FOUND_PARAM
+        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+        ORGANIZATION_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -48,9 +42,9 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
     // Checks whether organization.image exists.
     if (!organization.image) {
       throw new errors.NotFoundError(
-        requestContext.translate(ORGANIZATION_IMAGE_NOT_FOUND_MESSAGE),
-        ORGANIZATION_IMAGE_NOT_FOUND_CODE,
-        ORGANIZATION_IMAGE_NOT_FOUND_PARAM
+        requestContext.translate(ORGANIZATION_IMAGE_NOT_FOUND_ERROR.MESSAGE),
+        ORGANIZATION_IMAGE_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_IMAGE_NOT_FOUND_ERROR.PARAM
       );
     }
 

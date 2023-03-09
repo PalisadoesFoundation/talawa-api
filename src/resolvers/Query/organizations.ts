@@ -1,11 +1,7 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Organization } from "../../models";
 import { errors } from "../../libraries";
-import {
-  ORGANIZATION_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_PARAM,
-} from "../../constants";
+import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
 
 export const organizations: QueryResolvers["organizations"] = async (
@@ -23,9 +19,9 @@ export const organizations: QueryResolvers["organizations"] = async (
 
     if (!organizationFound[0]) {
       throw new errors.NotFoundError(
-        ORGANIZATION_NOT_FOUND,
-        ORGANIZATION_NOT_FOUND_CODE,
-        ORGANIZATION_NOT_FOUND_PARAM
+        ORGANIZATION_NOT_FOUND_ERROR.DESC,
+        ORGANIZATION_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
     }
 

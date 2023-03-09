@@ -6,9 +6,9 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
   LENGTH_VALIDATION_ERROR,
-  ORGANIZATION_NOT_AUTHORIZED_MESSAGE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_AUTHORIZED_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
@@ -69,7 +69,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
       await createEventResolverError?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -105,7 +105,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
       await createEventResolverError?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -142,7 +142,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
       await createEventResolverError?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 
@@ -372,7 +372,7 @@ describe("Check for validation conditions", () => {
       await createEventResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 256 characters in title`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
       );
     }
   });
@@ -414,7 +414,7 @@ describe("Check for validation conditions", () => {
       await createEventResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 500 characters in description`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
       );
     }
   });
@@ -455,7 +455,7 @@ describe("Check for validation conditions", () => {
       await createEventResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 50 characters in location`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
       );
     }
   });

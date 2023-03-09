@@ -8,7 +8,7 @@ import { errors } from "../../src/libraries";
 import { Document, Types } from "mongoose";
 import { nanoid } from "nanoid";
 import "dotenv/config";
-import { USER_NOT_FOUND_MESSAGE } from "../../src/constants";
+import { USER_NOT_FOUND_ERROR } from "../../src/constants";
 import i18n from "i18n";
 import express from "express";
 import { appConfig } from "../../src/config";
@@ -97,7 +97,7 @@ it("throws NotFoundError if no user exists with _id === context.userId", async (
     });
   } catch (err) {
     if (err instanceof errors.NotFoundError) {
-      expect(err.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(err.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   }
 });

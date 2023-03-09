@@ -2,12 +2,7 @@ import "dotenv/config";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import {
-  LENGTH_VALIDATION_ERROR,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
-} from "../../constants";
+import { LENGTH_VALIDATION_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
 import { superAdminCheck } from "../../utilities/superAdminCheck";
 import { isValidString } from "../../libraries/validators/validateString";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
@@ -21,9 +16,9 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     // Checks whether currentUser with _id === context.userId exists.
     if (currentUserExists === false) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_MESSAGE),
-        USER_NOT_FOUND_CODE,
-        USER_NOT_FOUND_PARAM
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -50,25 +45,25 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     if (!validationResult_Name.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.message} 256 characters in name`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
         ),
-        LENGTH_VALIDATION_ERROR.code
+        LENGTH_VALIDATION_ERROR.CODE
       );
     }
     if (!validationResult_Description.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.message} 500 characters in description`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
         ),
-        LENGTH_VALIDATION_ERROR.code
+        LENGTH_VALIDATION_ERROR.CODE
       );
     }
     if (!validationResult_Location.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.message} 50 characters in location`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
         ),
-        LENGTH_VALIDATION_ERROR.code
+        LENGTH_VALIDATION_ERROR.CODE
       );
     }
 

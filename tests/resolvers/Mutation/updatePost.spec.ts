@@ -6,9 +6,9 @@ import { connect, disconnect } from "../../../src/db";
 import { updatePost as updatePostResolver } from "../../../src/resolvers/Mutation/updatePost";
 import {
   LENGTH_VALIDATION_ERROR,
-  POST_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  POST_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import { testUserType } from "../../helpers/userAndOrg";
@@ -44,7 +44,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
 
       await updatePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -60,7 +60,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
 
       await updatePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(POST_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -82,7 +82,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
 
       await updatePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 
@@ -135,7 +135,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
       await updatePostResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 256 characters in title`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
       );
     }
   });
@@ -166,7 +166,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
       await updatePostResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 500 characters in information`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
       );
     }
   });

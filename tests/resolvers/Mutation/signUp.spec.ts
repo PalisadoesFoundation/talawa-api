@@ -10,7 +10,7 @@ import {
 } from "../../../src/config";
 import {
   LAST_RESORT_SUPERADMIN_EMAIL,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { nanoid } from "nanoid";
 import {
@@ -286,8 +286,8 @@ describe("resolvers -> Mutation -> signUp", () => {
 
       await signUpResolver?.({}, args, {});
     } catch (error: any) {
-      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 });

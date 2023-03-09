@@ -4,8 +4,8 @@ import { MutationCreateDirectChatArgs } from "../../../src/types/generatedGraphQ
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -66,8 +66,8 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       );
       await createDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -92,8 +92,8 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       );
       await createDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -119,8 +119,8 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       );
       await createDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
   it(`creates the directChat and returns it`, async () => {

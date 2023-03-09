@@ -5,7 +5,7 @@ import { MutationCreateCommentArgs } from "../../../src/types/generatedGraphQLTy
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { createComment as createCommentResolver } from "../../../src/resolvers/Mutation/createComment";
-import { USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestPost, testPostType } from "../../helpers/posts";
 import { testUserType } from "../../helpers/userAndOrg";
@@ -45,7 +45,7 @@ describe("resolvers -> Mutation -> createComment", () => {
 
       await createCommentResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

@@ -7,8 +7,8 @@ import mongoose from "mongoose";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { updateUserProfile as updateUserProfileResolver } from "../../../src/resolvers/Mutation/updateUserProfile";
 import {
-  EMAIL_ALREADY_EXISTS_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  EMAIL_ALREADY_EXISTS_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { nanoid } from "nanoid";
 import {
@@ -73,8 +73,10 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
 
       await updateUserProfileResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
@@ -99,8 +101,10 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
 
       await updateUserProfileResolverUserError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
@@ -128,9 +132,9 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
 
       await updateUserProfileResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_MESSAGE);
+      expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${EMAIL_ALREADY_EXISTS_MESSAGE}`
+        `Translated ${EMAIL_ALREADY_EXISTS_ERROR.MESSAGE}`
       );
     }
   });
@@ -158,9 +162,9 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
 
       await updateUserProfileResolverEmailError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_MESSAGE);
+      expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${EMAIL_ALREADY_EXISTS_MESSAGE}`
+        `Translated ${EMAIL_ALREADY_EXISTS_ERROR.MESSAGE}`
       );
     }
   });

@@ -1,9 +1,6 @@
 import {
-  EMAIL_ALREADY_EXISTS_MESSAGE,
-  EMAIL_ALREADY_EXISTS_PARAM,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
+  EMAIL_ALREADY_EXISTS_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
@@ -21,9 +18,9 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
 
   if (!currentUser) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -34,9 +31,9 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
 
     if (userWithEmailExists === true) {
       throw new errors.ConflictError(
-        requestContext.translate(EMAIL_ALREADY_EXISTS_MESSAGE),
-        EMAIL_ALREADY_EXISTS_MESSAGE,
-        EMAIL_ALREADY_EXISTS_PARAM
+        requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
+        EMAIL_ALREADY_EXISTS_ERROR.MESSAGE,
+        EMAIL_ALREADY_EXISTS_ERROR.PARAM
       );
     }
   }

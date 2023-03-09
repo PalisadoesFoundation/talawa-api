@@ -5,7 +5,7 @@ import { MutationSaveFcmTokenArgs } from "../../../src/types/generatedGraphQLTyp
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { saveFcmToken as saveFcmTokenResolver } from "../../../src/resolvers/Mutation/saveFcmToken";
-import { USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUserFunc, testUserType } from "../../helpers/user";
 
@@ -42,8 +42,8 @@ describe("resolvers -> Mutation -> saveFcmToken", () => {
 
       await saveFcmTokenResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
