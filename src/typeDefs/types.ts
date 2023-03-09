@@ -199,6 +199,7 @@ export const types = gql`
     apiUrl: URL!
     createdAt: DateTime
     pinnedPosts: [Post]
+    tagFolders: [TagFolder]
   }
 
   type OrganizationInfoNode {
@@ -307,6 +308,8 @@ export const types = gql`
     title: String!
     parent: ID
     organization: ID!
+    subfolders: [TagFolder]
+    tags: [Tag]
   }
 
   type Task {

@@ -26,6 +26,8 @@ const TagFolderSchema = new Schema({
   },
 });
 
+TagFolderSchema.index({ parent: 1 });
+
 const TagFolderModel = () =>
   model<Interface_TagFolder>("TagFolder", TagFolderSchema);
 

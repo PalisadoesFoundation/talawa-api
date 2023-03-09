@@ -10,6 +10,7 @@ import { Query } from "./Query";
 import { Subscription } from "./Subscription";
 import { User } from "./User";
 import { Tag } from "./Tag";
+import { TagFolder } from "./TagFolder";
 import {
   DateResolver,
   DateTimeResolver,
@@ -33,6 +34,7 @@ export const resolvers: Resolvers = {
   Subscription,
   User,
   Tag,
+  TagFolder,
 
   // graphql-scalar resolver
   Date: DateResolver,

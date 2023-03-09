@@ -869,6 +869,7 @@ export type Organization = {
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
   name: Scalars['String'];
   pinnedPosts?: Maybe<Array<Maybe<Post>>>;
+  tagFolders?: Maybe<Array<Maybe<TagFolder>>>;
   visibleInSearch: Scalars['Boolean'];
 };
 
@@ -1330,6 +1331,8 @@ export type TagFolder = {
   _id: Scalars['ID'];
   organization: Scalars['ID'];
   parent?: Maybe<Scalars['ID']>;
+  subfolders?: Maybe<Array<Maybe<TagFolder>>>;
+  tags?: Maybe<Array<Maybe<Tag>>>;
   title: Scalars['String'];
 };
 
@@ -1671,7 +1674,7 @@ export type ResolversTypes = {
   String: ResolverTypeWrapper<Scalars['String']>;
   Subscription: ResolverTypeWrapper<{}>;
   Tag: ResolverTypeWrapper<Omit<Tag, 'users'> & { users?: Maybe<Array<Maybe<ResolversTypes['User']>>> }>;
-  TagFolder: ResolverTypeWrapper<TagFolder>;
+  TagFolder: ResolverTypeWrapper<Omit<TagFolder, 'subfolders' | 'tags'> & { subfolders?: Maybe<Array<Maybe<ResolversTypes['TagFolder']>>>, tags?: Maybe<Array<Maybe<ResolversTypes['Tag']>>> }>;
   Task: ResolverTypeWrapper<Interface_TaskModel>;
   TaskInput: TaskInput;
   TaskOrderByInput: TaskOrderByInput;
@@ -1761,7 +1764,7 @@ export type ResolversParentTypes = {
   String: Scalars['String'];
   Subscription: {};
   Tag: Omit<Tag, 'users'> & { users?: Maybe<Array<Maybe<ResolversParentTypes['User']>>> };
-  TagFolder: TagFolder;
+  TagFolder: Omit<TagFolder, 'subfolders' | 'tags'> & { subfolders?: Maybe<Array<Maybe<ResolversParentTypes['TagFolder']>>>, tags?: Maybe<Array<Maybe<ResolversParentTypes['Tag']>>> };
   Task: Interface_TaskModel;
   TaskInput: TaskInput;
   Time: Scalars['Time'];
@@ -2102,6 +2105,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pinnedPosts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType>;
+  tagFolders?: Resolver<Maybe<Array<Maybe<ResolversTypes['TagFolder']>>>, ParentType, ContextType>;
   visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2241,6 +2245,8 @@ export type TagFolderResolvers<ContextType = any, ParentType extends ResolversPa
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   parent?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  subfolders?: Resolver<Maybe<Array<Maybe<ResolversTypes['TagFolder']>>>, ParentType, ContextType>;
+  tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['Tag']>>>, ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

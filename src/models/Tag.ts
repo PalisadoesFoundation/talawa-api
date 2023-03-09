@@ -52,6 +52,9 @@ const TagSchema = new Schema({
   ],
 });
 
+TagSchema.index({ parent: 1 });
+TagSchema.index({ organization: 1 });
+
 const TagModel = () => model<Interface_Tag>("Tag", TagSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
