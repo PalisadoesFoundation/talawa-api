@@ -8,10 +8,30 @@ export interface Interface_TagFolder {
   title: string;
 }
 
+const validateFolderName = [
+  // Check length of the folder name
+  {
+    validator: function (tag: string) {
+      return tag.length <= 50;
+    },
+    message: ({ value }: { value: string }) =>
+      `${value} is not a valid folder name as all tag folders must have a maximum length of 50 characters.`,
+  },
+  // Check the tag for allowed characters
+  {
+    validator: function (tag: string) {
+      return /^[a-zA-Z0-9_\- ]+$/.test(tag);
+    },
+    message: ({ value }: { value: string }) =>
+      `${value} is not a valid tag folder as it can only have alphabets, digits, dashes, underscores and spaces.`,
+  },
+];
+
 const TagFolderSchema = new Schema({
   title: {
     type: String,
     required: true,
+    validate: validateFolderName,
   },
   organization: {
     type: Schema.Types.ObjectId,
@@ -21,12 +41,12 @@ const TagFolderSchema = new Schema({
   parent: {
     type: Schema.Types.ObjectId,
     ref: "TagFolder",
-    required: false,
+    required: true,
     default: null, // A null parent corresponds to a root folder in the organization
   },
 });
 
-TagFolderSchema.index({ parent: 1 });
+TagFolderSchema.index({ organization: 1, parent: 1 }, { unique: true });
 
 const TagFolderModel = () =>
   model<Interface_TagFolder>("TagFolder", TagFolderSchema);

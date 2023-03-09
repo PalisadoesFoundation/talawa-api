@@ -39,9 +39,11 @@ const TagSchema = new Schema({
   folder: {
     type: Schema.Types.ObjectId,
     ref: "TagFolder",
+    required: true,
   },
   title: {
     type: String,
+    required: true,
     validate: validateTagName,
   },
   users: [
@@ -52,7 +54,6 @@ const TagSchema = new Schema({
   ],
 });
 
-TagSchema.index({ parent: 1 });
 TagSchema.index({ organization: 1 });
 
 const TagModel = () => model<Interface_Tag>("Tag", TagSchema);
