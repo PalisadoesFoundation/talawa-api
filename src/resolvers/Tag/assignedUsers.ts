@@ -3,10 +3,13 @@ import { UserTag } from "../../models";
 
 export const assignedUsers: TagResolvers["assignedUsers"] = async (parent) => {
   const allUserTags = await UserTag.find({
-    tagId: parent._id,
+    tag: parent._id,
   })
     .select({
-      userId: 1,
+      user: 1,
+    })
+    .sort({
+      createdAt: 1,
     })
     .populate("user")
     .lean();

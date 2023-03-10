@@ -41,7 +41,7 @@ const TagSchema = new Schema({
   parentTag: {
     type: Schema.Types.ObjectId,
     ref: "Tag",
-    required: true,
+    required: false,
     default: null, // A null parent corresponds to a root tag in the organization
   },
 });

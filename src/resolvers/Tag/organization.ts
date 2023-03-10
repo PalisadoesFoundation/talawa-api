@@ -6,7 +6,7 @@ export const organization: TagResolvers["organization"] = async (parent) => {
     _id: parent._id,
   })
     .select({
-      organizationId: 1,
+      organization: 1,
     })
     .lean();
 
