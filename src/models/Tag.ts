@@ -3,8 +3,8 @@ import { Interface_Organization } from "./Organization";
 
 export interface Interface_Tag {
   _id: Types.ObjectId;
-  organizationId: PopulatedDoc<Interface_Organization & Document>;
-  parentTagId: PopulatedDoc<Interface_Tag & Document>;
+  organization: PopulatedDoc<Interface_Organization & Document>;
+  parentTag: PopulatedDoc<Interface_Tag & Document>;
   title: string;
 }
 
@@ -33,12 +33,12 @@ const TagSchema = new Schema({
     required: true,
     validate: validateTagName,
   },
-  organizationId: {
+  organization: {
     type: Schema.Types.ObjectId,
     ref: "Organization",
     required: true,
   },
-  parentTagId: {
+  parentTag: {
     type: Schema.Types.ObjectId,
     ref: "Tag",
     required: true,
@@ -46,7 +46,7 @@ const TagSchema = new Schema({
   },
 });
 
-TagSchema.index({ organizationId: 1, parentTagId: 1 });
+TagSchema.index({ organization: 1, parentTag: 1 });
 
 const TagModel = () => model<Interface_Tag>("Tag", TagSchema);
 

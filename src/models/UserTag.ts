@@ -4,24 +4,24 @@ import { Interface_Tag } from "./Tag";
 
 export interface Interface_UserTag {
   _id: Types.ObjectId;
-  userId: PopulatedDoc<Interface_User & Document>;
-  tagId: PopulatedDoc<Interface_Tag & Document>;
+  user: PopulatedDoc<Interface_User & Document>;
+  tag: PopulatedDoc<Interface_Tag & Document>;
 }
 
 const UserTagSchema = new Schema({
-  userId: {
+  user: {
     type: Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
-  tagId: {
+  tag: {
     type: Schema.Types.ObjectId,
     ref: "Tag",
     required: true,
   },
 });
 
-UserTagSchema.index({ userId: 1, tagId: 1 });
+UserTagSchema.index({ user: 1, tag: 1 });
 
 const UserTagModel = () => model<Interface_UserTag>("UserTag", UserTagSchema);
 

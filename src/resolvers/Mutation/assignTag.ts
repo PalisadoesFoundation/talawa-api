@@ -47,14 +47,15 @@ export const assignTag: MutationResolvers["assignTag"] = async (
   }
   // Check that the user shouldn't already be assigned the tag
   const userAlreadyHasTag = await UserTag.exists({
-    ...args,
+    user: args.userId,
+    tag: args.tagId,
   });
 
   if (userAlreadyHasTag) return false;
 
   // Boolean to determine whether user is an admin of organization of the tag.
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) => organization.toString() === tag!.organizationId.toString()
+    (organization) => organization.toString() === tag!.organization.toString()
   );
 
   // Checks whether currentUser cannot delete the tag folder.
@@ -71,7 +72,8 @@ export const assignTag: MutationResolvers["assignTag"] = async (
 
   // Assign the tag
   await UserTag.create({
-    ...args,
+    user: args.userId,
+    tag: args.tagId,
   });
 
   return true;

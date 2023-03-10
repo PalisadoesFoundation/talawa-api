@@ -3,6 +3,6 @@ import { Tag } from "../../models";
 
 export const childTags: TagResolvers["childTags"] = async (parent) => {
   return await Tag.find({
-    parentTagId: parent._id,
+    parentTag: parent._id,
   }).lean()!;
 };

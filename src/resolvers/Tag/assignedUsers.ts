@@ -8,10 +8,10 @@ export const assignedUsers: TagResolvers["assignedUsers"] = async (parent) => {
     .select({
       userId: 1,
     })
-    .populate("userId")
+    .populate("user")
     .lean();
 
   // Return a user array, built by mapping the userTag's populated with the userId
   // to their userId property
-  return allUserTags.map((userTag) => userTag.userId);
+  return allUserTags.map((userTag) => userTag.user);
 };

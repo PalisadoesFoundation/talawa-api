@@ -1,6 +1,6 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, TagFolder, Tag } from "../../models";
+import { User, Tag, UserTag } from "../../models";
 import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
@@ -8,8 +8,8 @@ import {
   USER_NOT_AUTHORIZED_MESSAGE,
   USER_NOT_AUTHORIZED_CODE,
   USER_NOT_AUTHORIZED_PARAM,
+  TAG_NOT_FOUND,
 } from "../../constants";
-import { TAG_FOLDER_NOT_FOUND } from "../../constants";
 
 export const removeTag: MutationResolvers["removeTag"] = async (
   _parent,
@@ -29,29 +29,28 @@ export const removeTag: MutationResolvers["removeTag"] = async (
     );
   }
 
-  // Get the tag folder object
-  const tagFolder = await TagFolder.findOne({
-    _id: args.id!,
+  // Get the tag  object
+  const tag = await Tag.findOne({
+    _id: args.tagId,
   });
 
-  if (!tagFolder) {
+  if (!tag) {
     throw new errors.NotFoundError(
-      TAG_FOLDER_NOT_FOUND.message,
-      TAG_FOLDER_NOT_FOUND.code,
-      TAG_FOLDER_NOT_FOUND.param
+      TAG_NOT_FOUND.message,
+      TAG_NOT_FOUND.code,
+      TAG_NOT_FOUND.param
     );
   }
 
   // Boolean to determine whether user is an admin of organization of the tag folder.
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) =>
-      organization.toString() === tagFolder.organization.toString()
+    (organization) => organization.toString() === tag.organization.toString()
   );
 
   // Checks whether currentUser cannot delete the tag folder.
   if (
-    !currentUserIsOrganizationAdmin &&
-    !(currentUser.userType === "SUPERADMIN")
+    !(currentUser.userType === "SUPERADMIN") &&
+    !currentUserIsOrganizationAdmin
   ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
@@ -60,15 +59,15 @@ export const removeTag: MutationResolvers["removeTag"] = async (
     );
   }
 
-  // Get all the subfolders of the tag folder (including itself)
-  const TOP_LEVEL_PARENT = tagFolder._id;
-
-  const allSubFolders = await TagFolder.aggregate([
+  // Get all the subfolders of the tag (including itself)
+  // using a graph lookup aggregate query on the Tag model
+  const TOP_LEVEL_PARENT = tag._id;
+  const allTags = await Tag.aggregate([
     {
       $graphLookup: {
-        from: "TagFolder",
-        startWith: "$parent",
-        connectFromField: "parent",
+        from: "Tag",
+        startWith: "$parentTagId",
+        connectFromField: "parentTagId",
         connectToField: "_id",
         as: "hierarchy",
       },
@@ -79,25 +78,22 @@ export const removeTag: MutationResolvers["removeTag"] = async (
       },
     },
   ]);
-  const allSubFolderIDs = allSubFolders.map(({ _id }: { _id: string }) => _id);
 
-  // Delete all the tag folders
-  await TagFolder.deleteMany({ _id: { $in: allSubFolderIDs } });
-
-  // Get all the tag objects associated with the folders
-  const allTags = await Tag.find({
-    parent: {
-      $in: allSubFolderIDs,
-    },
-  });
-  const allTagIDs = allTags.map((tag) => tag._id);
+  const allTagIds = allTags.map(({ _id }: { _id: string }) => _id);
 
   // Delete all the tags
   await Tag.deleteMany({
     _id: {
-      $in: allTagIDs,
+      $in: allTagIds,
     },
   });
 
-  return tagFolder;
+  // Delete all the tag entries in the UserTag table
+  await UserTag.deleteMany({
+    tagId: {
+      $in: allTagIds,
+    },
+  });
+
+  return tag!;
 };

@@ -31,7 +31,7 @@ export const updateTag: MutationResolvers["updateTag"] = async (
 
   // Get the tag folder object
   const tag = await Tag.findOne({
-    _id: args.tagID,
+    _id: args.tagId,
   }).lean();
 
   if (!tag) {
@@ -44,13 +44,13 @@ export const updateTag: MutationResolvers["updateTag"] = async (
 
   // Boolean to determine whether user is an admin of organization of the tag folder.
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) => organization.toString() === tag!.organization.toString()
+    (organization) => organization.toString() === tag!.organizationId.toString()
   );
 
   // Checks whether currentUser cannot delete the tag folder.
   if (
-    !currentUserIsOrganizationAdmin &&
-    !(currentUser.userType === "SUPERADMIN")
+    !(currentUser.userType === "SUPERADMIN") &&
+    !currentUserIsOrganizationAdmin
   ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
@@ -62,7 +62,7 @@ export const updateTag: MutationResolvers["updateTag"] = async (
   // Update the title of the tag folder
   const updatedTag = await Tag.findOneAndUpdate(
     {
-      _id: args.tagID,
+      _id: args.tagId,
     },
     {
       title: args.newName,

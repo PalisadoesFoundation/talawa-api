@@ -11,6 +11,6 @@ export const organization: TagResolvers["organization"] = async (parent) => {
     .lean();
 
   return await Organization.findOne({
-    _id: tag?.organizationId,
+    _id: tag?.organization,
   }).lean()!;
 };

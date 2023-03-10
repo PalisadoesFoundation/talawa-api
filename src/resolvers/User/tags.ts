@@ -14,6 +14,6 @@ export const tags: UserResolvers["tags"] = async (
 
   // Get all the tags that belong to the particular organization
   return allTags
-    .map((tag) => tag.tagId)
-    .filter((tag) => tag.organizationId.toString() === organizationId);
+    .map((tag) => tag.tag)
+    .filter((tag) => tag.organization.toString() === organizationId);
 };

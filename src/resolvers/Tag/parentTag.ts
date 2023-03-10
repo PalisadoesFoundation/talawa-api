@@ -7,6 +7,6 @@ export const parentTag: TagResolvers["parentTag"] = async (parent) => {
   }).lean();
 
   return await Tag.findOne({
-    _id: tag!.parentTagId,
+    _id: tag!.parentTag,
   }).lean()!;
 };
