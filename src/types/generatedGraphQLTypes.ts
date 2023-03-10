@@ -382,7 +382,6 @@ export type Mutation = {
   createPlugin: Plugin;
   createPost?: Maybe<Post>;
   createTag?: Maybe<Tag>;
-  createTagFolder?: Maybe<TagFolder>;
   createTask: Task;
   deleteDonationById: DeletePayload;
   forgotPassword: Scalars['Boolean'];
@@ -408,7 +407,6 @@ export type Mutation = {
   removeOrganizationImage: Organization;
   removePost?: Maybe<Post>;
   removeTag?: Maybe<Tag>;
-  removeTagFolder?: Maybe<TagFolder>;
   removeTask?: Maybe<Task>;
   removeUserFromGroupChat: GroupChat;
   removeUserImage: User;
@@ -431,7 +429,6 @@ export type Mutation = {
   updatePluginStatus: Plugin;
   updatePost: Post;
   updateTag?: Maybe<Tag>;
-  updateTagFolder?: Maybe<TagFolder>;
   updateTask?: Maybe<Task>;
   updateUserProfile: User;
   updateUserType: Scalars['Boolean'];
@@ -571,12 +568,6 @@ export type MutationCreatePostArgs = {
 
 
 export type MutationCreateTagArgs = {
-  parentFolder: Scalars['ID'];
-  title: Scalars['String'];
-};
-
-
-export type MutationCreateTagFolderArgs = {
   organizationId?: InputMaybe<Scalars['ID']>;
   parentFolder?: InputMaybe<Scalars['ID']>;
   title: Scalars['String'];
@@ -701,12 +692,7 @@ export type MutationRemovePostArgs = {
 
 
 export type MutationRemoveTagArgs = {
-  tagID: Scalars['ID'];
-};
-
-
-export type MutationRemoveTagFolderArgs = {
-  id: Scalars['ID'];
+  tagId: Scalars['ID'];
 };
 
 
@@ -823,13 +809,7 @@ export type MutationUpdatePostArgs = {
 
 export type MutationUpdateTagArgs = {
   newName: Scalars['String'];
-  tagID: Scalars['ID'];
-};
-
-
-export type MutationUpdateTagFolderArgs = {
-  id: Scalars['ID'];
-  title: Scalars['String'];
+  tagId: Scalars['ID'];
 };
 
 
@@ -869,7 +849,7 @@ export type Organization = {
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
   name: Scalars['String'];
   pinnedPosts?: Maybe<Array<Maybe<Post>>>;
-  tagFolders?: Maybe<Array<Maybe<TagFolder>>>;
+  tags?: Maybe<Array<Maybe<Tag>>>;
   visibleInSearch: Scalars['Boolean'];
 };
 
@@ -1320,18 +1300,10 @@ export type Subscription = {
 export type Tag = {
   __typename?: 'Tag';
   _id: Scalars['ID'];
-  folder: Scalars['ID'];
-  organization: Scalars['ID'];
-  title: Scalars['String'];
-  users?: Maybe<Array<Maybe<User>>>;
-};
-
-export type TagFolder = {
-  __typename?: 'TagFolder';
-  _id: Scalars['ID'];
-  organization: Scalars['ID'];
-  parent?: Maybe<Scalars['ID']>;
-  subfolders?: Maybe<Array<Maybe<TagFolder>>>;
+  assignedUsers?: Maybe<Array<Maybe<User>>>;
+  childTags?: Maybe<Array<Maybe<Tag>>>;
+  organization: Organization;
+  parentTag?: Maybe<Tag>;
   tags?: Maybe<Array<Maybe<Tag>>>;
   title: Scalars['String'];
 };
@@ -1439,7 +1411,7 @@ export type User = {
   organizationsBlockedBy?: Maybe<Array<Maybe<Organization>>>;
   pluginCreationAllowed?: Maybe<Scalars['Boolean']>;
   registeredEvents?: Maybe<Array<Maybe<Event>>>;
-  tags?: Maybe<Array<Maybe<Scalars['String']>>>;
+  tags?: Maybe<Array<Maybe<Tag>>>;
   tokenVersion: Scalars['Int'];
   userType?: Maybe<Scalars['String']>;
 };
@@ -1673,8 +1645,7 @@ export type ResolversTypes = {
   Status: Status;
   String: ResolverTypeWrapper<Scalars['String']>;
   Subscription: ResolverTypeWrapper<{}>;
-  Tag: ResolverTypeWrapper<Omit<Tag, 'users'> & { users?: Maybe<Array<Maybe<ResolversTypes['User']>>> }>;
-  TagFolder: ResolverTypeWrapper<Omit<TagFolder, 'subfolders' | 'tags'> & { subfolders?: Maybe<Array<Maybe<ResolversTypes['TagFolder']>>>, tags?: Maybe<Array<Maybe<ResolversTypes['Tag']>>> }>;
+  Tag: ResolverTypeWrapper<Omit<Tag, 'assignedUsers' | 'childTags' | 'organization' | 'parentTag' | 'tags'> & { assignedUsers?: Maybe<Array<Maybe<ResolversTypes['User']>>>, childTags?: Maybe<Array<Maybe<ResolversTypes['Tag']>>>, organization: ResolversTypes['Organization'], parentTag?: Maybe<ResolversTypes['Tag']>, tags?: Maybe<Array<Maybe<ResolversTypes['Tag']>>> }>;
   Task: ResolverTypeWrapper<Interface_TaskModel>;
   TaskInput: TaskInput;
   TaskOrderByInput: TaskOrderByInput;
@@ -1763,8 +1734,7 @@ export type ResolversParentTypes = {
   RecaptchaVerification: RecaptchaVerification;
   String: Scalars['String'];
   Subscription: {};
-  Tag: Omit<Tag, 'users'> & { users?: Maybe<Array<Maybe<ResolversParentTypes['User']>>> };
-  TagFolder: Omit<TagFolder, 'subfolders' | 'tags'> & { subfolders?: Maybe<Array<Maybe<ResolversParentTypes['TagFolder']>>>, tags?: Maybe<Array<Maybe<ResolversParentTypes['Tag']>>> };
+  Tag: Omit<Tag, 'assignedUsers' | 'childTags' | 'organization' | 'parentTag' | 'tags'> & { assignedUsers?: Maybe<Array<Maybe<ResolversParentTypes['User']>>>, childTags?: Maybe<Array<Maybe<ResolversParentTypes['Tag']>>>, organization: ResolversParentTypes['Organization'], parentTag?: Maybe<ResolversParentTypes['Tag']>, tags?: Maybe<Array<Maybe<ResolversParentTypes['Tag']>>> };
   Task: Interface_TaskModel;
   TaskInput: TaskInput;
   Time: Scalars['Time'];
@@ -2034,8 +2004,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, Partial<MutationCreateOrganizationArgs>>;
   createPlugin?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationCreatePluginArgs, 'pluginCreatedBy' | 'pluginDesc' | 'pluginInstallStatus' | 'pluginName'>>;
   createPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'data'>>;
-  createTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<MutationCreateTagArgs, 'parentFolder' | 'title'>>;
-  createTagFolder?: Resolver<Maybe<ResolversTypes['TagFolder']>, ParentType, ContextType, RequireFields<MutationCreateTagFolderArgs, 'title'>>;
+  createTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<MutationCreateTagArgs, 'title'>>;
   createTask?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationCreateTaskArgs, 'eventId'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;
@@ -2060,8 +2029,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationArgs, 'id'>>;
   removeOrganizationImage?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationImageArgs, 'organizationId'>>;
   removePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationRemovePostArgs, 'id'>>;
-  removeTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<MutationRemoveTagArgs, 'tagID'>>;
-  removeTagFolder?: Resolver<Maybe<ResolversTypes['TagFolder']>, ParentType, ContextType, RequireFields<MutationRemoveTagFolderArgs, 'id'>>;
+  removeTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<MutationRemoveTagArgs, 'tagId'>>;
   removeTask?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<MutationRemoveTaskArgs, 'id'>>;
   removeUserFromGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationRemoveUserFromGroupChatArgs, 'chatId' | 'userId'>>;
   removeUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
@@ -2083,8 +2051,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updatePluginInstalledOrgs?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginInstalledOrgsArgs, 'id' | 'orgId'>>;
   updatePluginStatus?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginStatusArgs, 'id' | 'status'>>;
   updatePost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationUpdatePostArgs, 'id'>>;
-  updateTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<MutationUpdateTagArgs, 'newName' | 'tagID'>>;
-  updateTagFolder?: Resolver<Maybe<ResolversTypes['TagFolder']>, ParentType, ContextType, RequireFields<MutationUpdateTagFolderArgs, 'id' | 'title'>>;
+  updateTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<MutationUpdateTagArgs, 'newName' | 'tagId'>>;
   updateTask?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<MutationUpdateTaskArgs, 'id'>>;
   updateUserProfile?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;
   updateUserType?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateUserTypeArgs, 'data'>>;
@@ -2105,7 +2072,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pinnedPosts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType>;
-  tagFolders?: Resolver<Maybe<Array<Maybe<ResolversTypes['TagFolder']>>>, ParentType, ContextType>;
+  tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['Tag']>>>, ParentType, ContextType>;
   visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2234,18 +2201,10 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
 
 export type TagResolvers<ContextType = any, ParentType extends ResolversParentTypes['Tag'] = ResolversParentTypes['Tag']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  folder?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  organization?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  users?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type TagFolderResolvers<ContextType = any, ParentType extends ResolversParentTypes['TagFolder'] = ResolversParentTypes['TagFolder']> = {
-  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  organization?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  parent?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
-  subfolders?: Resolver<Maybe<Array<Maybe<ResolversTypes['TagFolder']>>>, ParentType, ContextType>;
+  assignedUsers?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
+  childTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['Tag']>>>, ParentType, ContextType>;
+  organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
+  parentTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType>;
   tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['Tag']>>>, ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -2301,7 +2260,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   organizationsBlockedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   pluginCreationAllowed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   registeredEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
-  tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType, RequireFields<UserTagsArgs, 'organizationId'>>;
+  tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['Tag']>>>, ParentType, ContextType, RequireFields<UserTagsArgs, 'organizationId'>>;
   tokenVersion?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   userType?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -2363,7 +2322,6 @@ export type Resolvers<ContextType = any> = {
   Query?: QueryResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   Tag?: TagResolvers<ContextType>;
-  TagFolder?: TagFolderResolvers<ContextType>;
   Task?: TaskResolvers<ContextType>;
   Time?: GraphQLScalarType;
   Translation?: TranslationResolvers<ContextType>;

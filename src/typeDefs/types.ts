@@ -199,7 +199,7 @@ export const types = gql`
     apiUrl: URL!
     createdAt: DateTime
     pinnedPosts: [Post]
-    tagFolders: [TagFolder]
+    tags: [Tag]
   }
 
   type OrganizationInfoNode {
@@ -298,17 +298,10 @@ export const types = gql`
   type Tag {
     _id: ID!
     title: String!
-    folder: ID!
-    organization: ID!
-    users: [User]
-  }
-
-  type TagFolder {
-    _id: ID!
-    title: String!
-    parent: ID
-    organization: ID!
-    subfolders: [TagFolder]
+    parentTag: Tag
+    childTags: [Tag]
+    organization: Organization!
+    assignedUsers: [User]
     tags: [Tag]
   }
 
@@ -350,7 +343,7 @@ export const types = gql`
     pluginCreationAllowed: Boolean
     adminApproved: Boolean
     createdAt: DateTime
-    tags(organizationId: ID!): [String]
+    tags(organizationId: ID!): [Tag]
   }
 
   type UserAttende {

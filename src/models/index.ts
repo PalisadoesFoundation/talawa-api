@@ -19,6 +19,6 @@ export * from "./Plugin";
 export * from "./PluginField";
 export * from "./Post";
 export * from "./Tag";
-export * from "./TagFolder";
 export * from "./Task";
 export * from "./User";
+export * from "./UserTag";
