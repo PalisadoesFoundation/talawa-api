@@ -127,7 +127,7 @@ export const USER_NOT_AUTHORIZED_ADMIN = {
 };
 
 export const USER_NOT_ORGANIZATION_ADMIN = {
-  MESSAGE: "Error: Current user must be an ADMIN",
+  MESSAGE: "Error: User must be an ADMIN",
   CODE: "role.notValid.admin",
   PARAM: "roleValidationAdmin",
 };
