@@ -1,6 +1,6 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Tag } from "../../models";
+import { User, Tag, UserTag } from "../../models";
 import {
   USER_NOT_FOUND_MESSAGE,
   USER_NOT_FOUND_CODE,
@@ -46,15 +46,15 @@ export const unassignTag: MutationResolvers["unassignTag"] = async (
     );
   }
   // Check that the user should already be assigned the tag
-  const userAlreadyHasTag = tag.users.some(
-    (user) => user.toString() === args.userId
-  );
+  const userAlreadyHasTag = await UserTag.exists({
+    ...args,
+  });
 
   if (!userAlreadyHasTag) return false;
 
   // Boolean to determine whether user is an admin of organization of the tag.
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) => organization.toString() === tag!.organization.toString()
+    (organization) => organization.toString() === tag!.organizationId.toString()
   );
 
   // Checks whether currentUser cannot delete the tag folder.
@@ -70,16 +70,9 @@ export const unassignTag: MutationResolvers["unassignTag"] = async (
   }
 
   // Unassign the tag
-  await Tag.findOneAndUpdate(
-    {
-      _id: args.tagId,
-    },
-    {
-      $pull: {
-        users: args.userId,
-      },
-    }
-  );
+  await UserTag.deleteOne({
+    ...args,
+  });
 
   return true;
 };

@@ -147,15 +147,9 @@ export const ADMIN_REMOVING_CREATOR = {
 
 export const USER_NOT_AUTHORIZED_TO_PIN = {
   message:
-    "The user must be a superadmin or an admin of the organization to pin/unpin posts",
+    "The user must be a superadmin or an admin of the organization to pin/unpin posts.",
   code: "user.notAuthorizedToPin",
   param: "user.notAuthorizedToPin",
-};
-
-export const TAG_FOLDER_NOT_FOUND = {
-  message: "The tag folder with the specified ID doesn't exist.",
-  code: "tagFolder.doesNotExist",
-  param: "tagFolder.doesNotExist",
 };
 
 export const TAG_NOT_FOUND = {
@@ -166,21 +160,21 @@ export const TAG_NOT_FOUND = {
 
 export const INVALID_TAG_INPUT = {
   message:
-    "Either organizatin ID or a parent folder ID must be provided for this operation.",
+    "Either an organizatin ID or a parent tag ID must be provided for this operation.",
   code: "invalidArgs",
   param: "invalidArgs",
 };
 
-export const USER_NOT_AUTHORIZED_TO_CREATE_TAG_FOLDER = {
+export const INCORRECT_TAG_INPUT = {
   message:
-    "The user must be a superadmin or an admin of the organization to create a tag folder.",
-  code: "user.notAuth.createTagFolder",
-  param: "user.notAuth.createTagFolder",
+    "The tag does not belong to the organization provieded. Try sending only one correct parameter.",
+  code: "invalidArgs.tag",
+  param: "invalidArgs.tag",
 };
 
 export const USER_NOT_AUTHORIZED_TO_CREATE_TAG = {
   message:
-    "The user must be a superadmin or an admin of the organization to create the tag",
+    "The user must be a superadmin or an admin of the organization to create the tag.",
   code: "user.notAuth.createTag",
   param: "user.notAuth.createTag",
 };
