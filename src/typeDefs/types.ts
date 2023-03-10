@@ -298,11 +298,10 @@ export const types = gql`
   type Tag {
     _id: ID!
     title: String!
+    organization: Organization!
     parentTag: Tag
     childTags: [Tag]
-    organization: Organization!
     assignedUsers: [User]
-    tags: [Tag]
   }
 
   type Task {
