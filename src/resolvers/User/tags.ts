@@ -1,17 +1,19 @@
 import { UserResolvers } from "../../types/generatedGraphQLTypes";
-import { Tag } from "../../models";
+import { UserTag } from "../../models";
 
 export const tags: UserResolvers["tags"] = async (
   parent,
   { organizationId }
 ) => {
-  const allTags = await Tag.find({
-    organization: organizationId,
-  }).lean();
+  // Get all the tags that the user has been assigned
+  const allTags = await UserTag.find({
+    userId: parent._id,
+  })
+    .populate("tagId")
+    .lean();
 
+  // Get all the tags that belong to the particular organization
   return allTags
-    .filter((tag) =>
-      tag.users.some((user) => user._id.toString() === parent._id.toString())
-    )
-    .map((tag) => tag.title);
+    .map((tag) => tag.tagId)
+    .filter((tag) => tag.organizationId.toString() === organizationId);
 };

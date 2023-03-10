@@ -849,7 +849,7 @@ export type Organization = {
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
   name: Scalars['String'];
   pinnedPosts?: Maybe<Array<Maybe<Post>>>;
-  tags?: Maybe<Array<Maybe<Tag>>>;
+  rootTags?: Maybe<Array<Maybe<Tag>>>;
   visibleInSearch: Scalars['Boolean'];
 };
 
@@ -1304,7 +1304,6 @@ export type Tag = {
   childTags?: Maybe<Array<Maybe<Tag>>>;
   organization: Organization;
   parentTag?: Maybe<Tag>;
-  tags?: Maybe<Array<Maybe<Tag>>>;
   title: Scalars['String'];
 };
 
@@ -1645,7 +1644,7 @@ export type ResolversTypes = {
   Status: Status;
   String: ResolverTypeWrapper<Scalars['String']>;
   Subscription: ResolverTypeWrapper<{}>;
-  Tag: ResolverTypeWrapper<Omit<Tag, 'assignedUsers' | 'childTags' | 'organization' | 'parentTag' | 'tags'> & { assignedUsers?: Maybe<Array<Maybe<ResolversTypes['User']>>>, childTags?: Maybe<Array<Maybe<ResolversTypes['Tag']>>>, organization: ResolversTypes['Organization'], parentTag?: Maybe<ResolversTypes['Tag']>, tags?: Maybe<Array<Maybe<ResolversTypes['Tag']>>> }>;
+  Tag: ResolverTypeWrapper<Omit<Tag, 'assignedUsers' | 'childTags' | 'organization' | 'parentTag'> & { assignedUsers?: Maybe<Array<Maybe<ResolversTypes['User']>>>, childTags?: Maybe<Array<Maybe<ResolversTypes['Tag']>>>, organization: ResolversTypes['Organization'], parentTag?: Maybe<ResolversTypes['Tag']> }>;
   Task: ResolverTypeWrapper<Interface_TaskModel>;
   TaskInput: TaskInput;
   TaskOrderByInput: TaskOrderByInput;
@@ -1734,7 +1733,7 @@ export type ResolversParentTypes = {
   RecaptchaVerification: RecaptchaVerification;
   String: Scalars['String'];
   Subscription: {};
-  Tag: Omit<Tag, 'assignedUsers' | 'childTags' | 'organization' | 'parentTag' | 'tags'> & { assignedUsers?: Maybe<Array<Maybe<ResolversParentTypes['User']>>>, childTags?: Maybe<Array<Maybe<ResolversParentTypes['Tag']>>>, organization: ResolversParentTypes['Organization'], parentTag?: Maybe<ResolversParentTypes['Tag']>, tags?: Maybe<Array<Maybe<ResolversParentTypes['Tag']>>> };
+  Tag: Omit<Tag, 'assignedUsers' | 'childTags' | 'organization' | 'parentTag'> & { assignedUsers?: Maybe<Array<Maybe<ResolversParentTypes['User']>>>, childTags?: Maybe<Array<Maybe<ResolversParentTypes['Tag']>>>, organization: ResolversParentTypes['Organization'], parentTag?: Maybe<ResolversParentTypes['Tag']> };
   Task: Interface_TaskModel;
   TaskInput: TaskInput;
   Time: Scalars['Time'];
@@ -2072,7 +2071,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pinnedPosts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType>;
-  tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['Tag']>>>, ParentType, ContextType>;
+  rootTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['Tag']>>>, ParentType, ContextType>;
   visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2205,7 +2204,6 @@ export type TagResolvers<ContextType = any, ParentType extends ResolversParentTy
   childTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['Tag']>>>, ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
   parentTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType>;
-  tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['Tag']>>>, ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
