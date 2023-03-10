@@ -291,7 +291,7 @@ There are different logging levels that can be configured by setting this parame
 ```
 <br>On setting this parameter value, log messages are displayed in the console only if the `message.level` is less than or equal to setted `LOG_LEVEL`
 <br><br>
-For our application, the most appropriate setting is `LOG_LEVEL = 'info'` since most of information logged on the console are error messages, warnings or info texts.
+For our application, the most appropriate setting is `LOG_LEVEL = info` since most of information logged on the console are error messages, warnings or info texts.
 
 ## Configuring Google Firebase
 
