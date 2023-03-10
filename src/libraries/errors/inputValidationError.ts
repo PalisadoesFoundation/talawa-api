@@ -1,5 +1,7 @@
 import { ApplicationError } from "./applicationError";
-
+/**
+ * This class detects input validation errors and sends those errors to the superclass ApplicationError.
+ */
 export class InputValidationError extends ApplicationError {
   constructor(
     message: string = "InputValidationError",
