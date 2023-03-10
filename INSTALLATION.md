@@ -274,7 +274,7 @@ COLORIZE_LOGS = false
 ```
 If the parameter value is set to `true`, you should be able to see colorized logs in console, or else logs will display in the console's default simple format.
 
-![Colorized logs in console](./image/colorize-logs.png)
+![Colorized logs in console](./image/colorize-logs.jpg)
 
 ### Setting up LOG_LEVEL in .env file
 There are different logging levels that can be configured by setting this parameter. The severity order of levels are displayed numerically ascending from most important to least important.<br>
