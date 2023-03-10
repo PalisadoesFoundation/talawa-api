@@ -119,6 +119,8 @@ This `.env` file must be populated with the following environment variables for 
 | MAIL_USERNAME                | Used for mailing service                               |
 | MAIL_PASSWORD                | Used for mailing service                               |
 | LAST_RESORT_SUPERADMIN_EMAIL | Used for promoting the default super admin             |
+| COLORIZE_LOGS                | Used for colorized log formats in console              |
+| LOG_LEVEL                    | Used for setting the logging level                     |
 
 The following sections will show you how to configure each of these parameters.
 
@@ -261,9 +263,35 @@ The MAIL_USERNAME and MAIL_PASSWORD parameters are required to enable an app to 
 1. Under `Signing in to Google` section select `App Passwords`.
 1. Click on `Select app` section and choose `Other(Custom name)`, enter `talawa` as the custom name and press `Generate` button.
 1.  Copy the 16 character generated app password to the variable named `MAIL_PASSWORD` in `.env` file.
-1.  Copy you usual gmail address to the variable named `MAIL_USERNAME` in `.env` file.
+1.  Copy your usual gmail address to the variable named `MAIL_USERNAME` in `.env` file.
 
 For more info refer to this [Google Answer](https://support.google.com/accounts/answer/185833).
+
+### Setting up COLORIZE_LOGS in .env file
+The parameter `COLORIZE_LOGS` is a boolean field and can be set to true or false. It customizes the log colorization formats displayed in console. You can set the value in `.env` file as 
+```
+COLORIZE_LOGS = false
+```
+If the parameter value is set to `true`, you should be able to see colorized logs in console, or else logs will display in the console's default simple format.
+
+![Colorized logs in console](./image/colorize-logs.png)
+
+### Setting up LOG_LEVEL in .env file
+There are different logging levels that can be configured by setting this parameter. The severity order of levels are displayed numerically ascending from most important to least important.<br>
+```
+ levels = {
+    error: 0,
+    warn: 1,
+    info: 2,
+    http: 3,
+    verbose: 4,
+    debug: 5,
+    silly: 6
+  }
+```
+<br>On setting this parameter value, log messages are displayed in the console only if the `message.level` is less than or equal to setted `LOG_LEVEL`
+<br><br>
+For our application, the most appropriate setting is `LOG_LEVEL = 'info'` since most of information logged on the console are error messages, warnings or info texts.
 
 ## Configuring Google Firebase
 
