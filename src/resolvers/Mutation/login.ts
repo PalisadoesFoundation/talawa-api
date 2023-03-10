@@ -9,12 +9,8 @@ import {
 import { errors, requestContext } from "../../libraries";
 import { androidFirebaseOptions, iosFirebaseOptions } from "../../config";
 import {
-  INVALID_CREDENTIALS_CODE,
-  INVALID_CREDENTIALS_MESSAGE,
-  INVALID_CREDENTIALS_PARAM,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
+  INVALID_CREDENTIALS_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 
 export const login: MutationResolvers["login"] = async (_parent, args) => {
@@ -25,9 +21,9 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
   // Checks whether user exists.
   if (!user) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
   const isPasswordValid = await bcrypt.compare(
@@ -39,12 +35,12 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     throw new errors.ValidationError(
       [
         {
-          message: requestContext.translate(INVALID_CREDENTIALS_MESSAGE),
-          code: INVALID_CREDENTIALS_CODE,
-          param: INVALID_CREDENTIALS_PARAM,
+          message: requestContext.translate(INVALID_CREDENTIALS_ERROR.MESSAGE),
+          code: INVALID_CREDENTIALS_ERROR.CODE,
+          param: INVALID_CREDENTIALS_ERROR.PARAM,
         },
       ],
-      requestContext.translate(INVALID_CREDENTIALS_MESSAGE)
+      requestContext.translate(INVALID_CREDENTIALS_ERROR.MESSAGE)
     );
   }
   const accessToken = await createAccessToken(user);

@@ -5,8 +5,8 @@ import { MutationRefreshTokenArgs } from "../../../src/types/generatedGraphQLTyp
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
-  INVALID_REFRESH_TOKEN_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  INVALID_REFRESH_TOKEN_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { createRefreshToken } from "../../../src/utilities";
 import {
@@ -49,24 +49,15 @@ describe("resolvers -> Mutation -> refreshToken", () => {
         refreshToken: "",
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { refreshToken: refreshTokenResolver } = await import(
         "../../../src/resolvers/Mutation/refreshToken"
       );
 
       await refreshTokenResolver?.({}, args, {});
     } catch (error: any) {
-      expect(spy).toBeCalledWith(INVALID_REFRESH_TOKEN_MESSAGE);
+      expect(spy).toBeCalledWith(INVALID_REFRESH_TOKEN_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${INVALID_REFRESH_TOKEN_MESSAGE}`
+        `Translated ${INVALID_REFRESH_TOKEN_ERROR.MESSAGE}`
       );
     }
   });
@@ -87,23 +78,16 @@ describe("resolvers -> Mutation -> refreshToken", () => {
         refreshToken,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { refreshToken: refreshTokenResolver } = await import(
         "../../../src/resolvers/Mutation/refreshToken"
       );
 
       await refreshTokenResolver?.({}, args, {});
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
 
       spy.mockRestore();
     }
@@ -133,22 +117,13 @@ describe("resolvers -> Mutation -> refreshToken", () => {
         refreshToken,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { refreshToken: refreshTokenResolver } = await import(
         "../../../src/resolvers/Mutation/refreshToken"
       );
 
       await refreshTokenResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(INVALID_REFRESH_TOKEN_MESSAGE);
+      expect(error.message).toEqual(INVALID_REFRESH_TOKEN_ERROR.MESSAGE);
     }
   });
 
@@ -176,24 +151,15 @@ describe("resolvers -> Mutation -> refreshToken", () => {
         refreshToken,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { refreshToken: refreshTokenResolver } = await import(
         "../../../src/resolvers/Mutation/refreshToken"
       );
 
       await refreshTokenResolver?.({}, args, {});
     } catch (error: any) {
-      expect(spy).toBeCalledWith(INVALID_REFRESH_TOKEN_MESSAGE);
+      expect(spy).toBeCalledWith(INVALID_REFRESH_TOKEN_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${INVALID_REFRESH_TOKEN_MESSAGE}`
+        `Translated ${INVALID_REFRESH_TOKEN_ERROR.MESSAGE}`
       );
     }
   });

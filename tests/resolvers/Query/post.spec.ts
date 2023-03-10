@@ -3,7 +3,7 @@ import { post as postResolver } from "../../../src/resolvers/Query/post";
 import { connect, disconnect } from "../../helpers/db";
 import { Post } from "../../../src/models";
 import { Types } from "mongoose";
-import { POST_NOT_FOUND } from "../../../src/constants";
+import { POST_NOT_FOUND_ERROR } from "../../../src/constants";
 import { QueryPostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { testPostType, createPostwithComment } from "../../helpers/posts";
@@ -30,7 +30,7 @@ describe("resolvers -> Query -> post", () => {
 
       await postResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(POST_NOT_FOUND);
+      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.DESC);
     }
   });
 

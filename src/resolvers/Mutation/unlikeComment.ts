@@ -1,11 +1,4 @@
-import {
-  COMMENT_NOT_FOUND_CODE,
-  COMMENT_NOT_FOUND_MESSAGE,
-  COMMENT_NOT_FOUND_PARAM,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
-} from "../../constants";
+import { COMMENT_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Comment } from "../../models";
@@ -21,9 +14,9 @@ export const unlikeComment: MutationResolvers["unlikeComment"] = async (
 
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -33,9 +26,9 @@ export const unlikeComment: MutationResolvers["unlikeComment"] = async (
 
   if (!comment) {
     throw new errors.NotFoundError(
-      requestContext.translate(COMMENT_NOT_FOUND_MESSAGE),
-      COMMENT_NOT_FOUND_CODE,
-      COMMENT_NOT_FOUND_PARAM
+      requestContext.translate(COMMENT_NOT_FOUND_ERROR.MESSAGE),
+      COMMENT_NOT_FOUND_ERROR.CODE,
+      COMMENT_NOT_FOUND_ERROR.PARAM
     );
   }
 

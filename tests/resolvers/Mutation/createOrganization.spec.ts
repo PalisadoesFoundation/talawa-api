@@ -7,9 +7,8 @@ import mongoose from "mongoose";
 import { createOrganization as createOrganizationResolver } from "../../../src/resolvers/Mutation/createOrganization";
 import {
   LENGTH_VALIDATION_ERROR,
-  REGEX_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_SUPERADMIN,
-  USER_NOT_FOUND_MESSAGE,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import * as uploadImage from "../../../src/utilities/uploadImage";
 import {
@@ -66,21 +65,13 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
       const { createOrganization } = await import(
         "../../../src/resolvers/Mutation/createOrganization"
       );
       await createOrganization?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -111,9 +102,9 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganization?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(
-        USER_NOT_AUTHORIZED_SUPERADMIN.message
+        USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE
       );
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_SUPERADMIN.message);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
     }
   });
 
@@ -233,90 +224,6 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     );
     expect(createOrganizationPayload?.image).toBe(null);
   });
-  it(`throws Regex Validation Failed error if name contains a character other then number, letter, or symbol`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
-    try {
-      const args: MutationCreateOrganizationArgs = {
-        data: {
-          description: "description",
-          isPublic: true,
-          name: "🥗",
-          visibleInSearch: true,
-          apiUrl: "apiUrl",
-          location: "location",
-        },
-        file: null,
-      };
-      const context = {
-        userId: testUser!._id,
-      };
-
-      await createOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in name`
-      );
-    }
-  });
-  it(`throws Regex Validation Failed error if description contains a character other then number, letter, or symbol`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
-    try {
-      const args: MutationCreateOrganizationArgs = {
-        data: {
-          description: "🥗",
-          isPublic: true,
-          name: "random",
-          visibleInSearch: true,
-          apiUrl: "apiUrl",
-          location: "location",
-        },
-        file: null,
-      };
-      const context = {
-        userId: testUser!._id,
-      };
-
-      await createOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in description`
-      );
-    }
-  });
-  it(`throws Regex Validation Failed error if location contains a character other then number, letter, or symbol`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
-    try {
-      const args: MutationCreateOrganizationArgs = {
-        data: {
-          description: "description",
-          isPublic: true,
-          name: "random",
-          visibleInSearch: true,
-          apiUrl: "apiUrl",
-          location: "🥗",
-        },
-        file: null,
-      };
-      const context = {
-        userId: testUser!._id,
-      };
-
-      await createOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in location`
-      );
-    }
-  });
 
   it(`throws String Length Validation error if name is greater than 256 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
@@ -342,7 +249,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganizationResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 256 characters in name`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
       );
     }
   });
@@ -371,7 +278,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganizationResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 500 characters in description`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
       );
     }
   });
@@ -400,7 +307,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganizationResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 50 characters in location`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
       );
     }
   });

@@ -10,8 +10,8 @@ describe("src -> resolvers -> Subscription -> directMessageChat", () => {
     const _parent = {};
     const context = {
       pubsub: {
-        asyncInterator: () => {
-          return "string";
+        asyncIterator: (CHAT_CHANNEL: string) => {
+          return CHAT_CHANNEL;
         },
       },
     };
@@ -27,8 +27,7 @@ describe("src -> resolvers -> Subscription -> directMessageChat", () => {
     // @ts-ignore
     directMessageChatPayload.context = context;
     // @ts-ignore
-    const x = directMessageChatPayload?.subscribe;
-
-    expect(x()).not.toBe(null);
+    const x = directMessageChatPayload?.subscribe(_parent, _args, context);
+    expect(x).not.toBe(null);
   });
 });

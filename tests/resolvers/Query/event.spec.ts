@@ -2,7 +2,7 @@ import "dotenv/config";
 import { event as eventResolver } from "../../../src/resolvers/Query/event";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
-import { EVENT_NOT_FOUND } from "../../../src/constants";
+import { EVENT_NOT_FOUND_ERROR } from "../../../src/constants";
 import { Event } from "../../../src/models";
 import { Types } from "mongoose";
 import { QueryEventArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -37,7 +37,7 @@ describe("resolvers -> Query -> event", () => {
 
       await eventResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(EVENT_NOT_FOUND);
+      expect(error.message).toEqual(EVENT_NOT_FOUND_ERROR.DESC);
     }
   });
 

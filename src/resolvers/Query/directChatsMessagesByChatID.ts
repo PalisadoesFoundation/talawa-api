@@ -1,11 +1,7 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { errors } from "../../libraries";
 import { DirectChatMessage } from "../../models";
-import {
-  CHAT_NOT_FOUND,
-  CHAT_NOT_FOUND_CODE,
-  CHAT_NOT_FOUND_PARAM,
-} from "../../constants";
+import { CHAT_NOT_FOUND_ERROR } from "../../constants";
 
 export const directChatsMessagesByChatID: QueryResolvers["directChatsMessagesByChatID"] =
   async (_parent, args) => {
@@ -15,9 +11,9 @@ export const directChatsMessagesByChatID: QueryResolvers["directChatsMessagesByC
 
     if (directChatsMessages.length === 0) {
       throw new errors.NotFoundError(
-        CHAT_NOT_FOUND,
-        CHAT_NOT_FOUND_CODE,
-        CHAT_NOT_FOUND_PARAM
+        CHAT_NOT_FOUND_ERROR.DESC,
+        CHAT_NOT_FOUND_ERROR.CODE,
+        CHAT_NOT_FOUND_ERROR.PARAM
       );
     }
 

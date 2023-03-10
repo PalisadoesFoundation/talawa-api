@@ -1,14 +1,10 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { adminCheck, creatorCheck, superAdminCheck } from "../../utilities";
+import { adminCheck, superAdminCheck } from "../../utilities";
 import { User, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
-  ORGANIZATION_NOT_FOUND_PARAM,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
-  USER_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_CODE,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 
 export const removeAdmin: MutationResolvers["removeAdmin"] = async (
@@ -23,9 +19,9 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
   // Checks whether organization exists.
   if (!organization) {
     throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-      ORGANIZATION_NOT_FOUND_CODE,
-      ORGANIZATION_NOT_FOUND_PARAM
+      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+      ORGANIZATION_NOT_FOUND_ERROR.CODE,
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -40,9 +36,9 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
   // Checks whether user exists.
   if (!user) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -51,9 +47,6 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
 
   // Checks whether the current user is a superadmin.
   superAdminCheck(currentUser!);
-
-  // Checks whether currentUser with _id === context.userId is the creator of organization.
-  creatorCheck(context.userId, organization);
 
   // Removes user._id from admins list of the organization.
   await Organization.updateOne(

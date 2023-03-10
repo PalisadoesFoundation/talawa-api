@@ -6,10 +6,10 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { leaveOrganization as leaveOrganizationResolver } from "../../../src/resolvers/Mutation/leaveOrganization";
 import {
-  MEMBER_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  MEMBER_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -59,22 +59,15 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { leaveOrganization: leaveOrganizationResolver } = await import(
         "../../../src/resolvers/Mutation/leaveOrganization"
       );
 
       await leaveOrganizationResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -91,22 +84,15 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       const context = {
         userId: Types.ObjectId().toString(),
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { leaveOrganization: leaveOrganizationResolver } = await import(
         "../../../src/resolvers/Mutation/leaveOrganization"
       );
 
       await leaveOrganizationResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -124,22 +110,15 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { leaveOrganization: leaveOrganizationResolver } = await import(
         "../../../src/resolvers/Mutation/leaveOrganization"
       );
 
       await leaveOrganizationResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 
@@ -169,22 +148,15 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { leaveOrganization: leaveOrganizationResolver } = await import(
         "../../../src/resolvers/Mutation/leaveOrganization"
       );
 
       await leaveOrganizationResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(MEMBER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(MEMBER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(MEMBER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(MEMBER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

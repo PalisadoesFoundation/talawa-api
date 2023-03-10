@@ -2,7 +2,7 @@ import "dotenv/config";
 import { user as userResolver } from "../../../src/resolvers/Query/user";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
-import { USER_NOT_FOUND } from "../../../src/constants";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { User } from "../../../src/models";
 import { Types } from "mongoose";
 import { QueryUserArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -33,7 +33,7 @@ describe("resolvers -> Query -> user", () => {
 
       await userResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 

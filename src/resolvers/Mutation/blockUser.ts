@@ -2,19 +2,11 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
 import {
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_AUTHORIZED_CODE,
-  USER_NOT_AUTHORIZED_PARAM,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_PARAM,
-  MEMBER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_PARAM,
+  USER_NOT_AUTHORIZED_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  MEMBER_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
   USER_BLOCKING_SELF,
-  MEMBER_NOT_FOUND_CODE,
-  MEMBER_NOT_FOUND_PARAM,
 } from "../../constants";
 import { Organization, User } from "../../models";
 
@@ -30,9 +22,9 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   // Checks whether organization exists.
   if (!organization) {
     throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-      ORGANIZATION_NOT_FOUND_CODE,
-      ORGANIZATION_NOT_FOUND_PARAM
+      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+      ORGANIZATION_NOT_FOUND_ERROR.CODE,
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -43,9 +35,9 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   // Checks whether user with _id === args.userId exists.
   if (userExists === false) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -56,17 +48,17 @@ export const blockUser: MutationResolvers["blockUser"] = async (
 
   if (!userIsOrganizationMember) {
     throw new errors.NotFoundError(
-      requestContext.translate(MEMBER_NOT_FOUND_MESSAGE),
-      MEMBER_NOT_FOUND_CODE,
-      MEMBER_NOT_FOUND_PARAM
+      requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
+      MEMBER_NOT_FOUND_ERROR.CODE,
+      MEMBER_NOT_FOUND_ERROR.PARAM
     );
   }
 
   if (args.userId === context.userId) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_BLOCKING_SELF.message),
-      USER_BLOCKING_SELF.code,
-      USER_BLOCKING_SELF.param
+      requestContext.translate(USER_BLOCKING_SELF.MESSAGE),
+      USER_BLOCKING_SELF.CODE,
+      USER_BLOCKING_SELF.PARAM
     );
   }
 
@@ -80,9 +72,9 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   // Checks whether user with _id === args.userId is already blocked from organization.
   if (userIsBlocked === true) {
     throw new errors.UnauthorizedError(
-      requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
-      USER_NOT_AUTHORIZED_CODE,
-      USER_NOT_AUTHORIZED_PARAM
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM
     );
   }
 

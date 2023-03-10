@@ -2,14 +2,10 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Tag, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
+  USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_TO_CREATE_TAG,
   INCORRECT_TAG_INPUT,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_PARAM,
-  ORGANIZATION_NOT_FOUND_CODE,
+  ORGANIZATION_NOT_FOUND_ERROR,
   INVALID_TAG_INPUT,
   TAG_NOT_FOUND,
 } from "../../constants";
@@ -27,18 +23,18 @@ export const createTag: MutationResolvers["createTag"] = async (
   // Checks whether currentUser exists.
   if (!currentUser) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
   // Check that atleast one of the two optional arguments must be provided
   if (!args.organizationId && !args.parentTag)
     throw new errors.InputValidationError(
-      INVALID_TAG_INPUT.message,
-      INVALID_TAG_INPUT.code,
-      INVALID_TAG_INPUT.param
+      INVALID_TAG_INPUT.MESSAGE,
+      INVALID_TAG_INPUT.CODE,
+      INVALID_TAG_INPUT.PARAM
     );
 
   let currentOrganizatonId: null | string = null;
@@ -51,9 +47,9 @@ export const createTag: MutationResolvers["createTag"] = async (
     // Checks whether organization with _id == args.organizationId exists.
     if (!organizationExists) {
       throw new errors.NotFoundError(
-        requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-        ORGANIZATION_NOT_FOUND_CODE,
-        ORGANIZATION_NOT_FOUND_PARAM
+        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+        ORGANIZATION_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -67,22 +63,22 @@ export const createTag: MutationResolvers["createTag"] = async (
     // Throw an error if the parent tag folder does not exist
     if (!parentTag) {
       throw new errors.NotFoundError(
-        requestContext.translate(TAG_NOT_FOUND.message),
-        TAG_NOT_FOUND.code,
-        TAG_NOT_FOUND.param
+        requestContext.translate(TAG_NOT_FOUND.MESSAGE),
+        TAG_NOT_FOUND.CODE,
+        TAG_NOT_FOUND.PARAM
       );
     }
 
-    // If the user has sent both the optional paramaters, then as an additional check the
+    // If the user has sent both the optional PARAMaters, then as an additional check the
     // tag must belong to the organization provided
     if (
       currentOrganizatonId &&
       currentOrganizatonId !== parentTag.organization.toString()
     ) {
       throw new errors.NotFoundError(
-        requestContext.translate(INCORRECT_TAG_INPUT.message),
-        INCORRECT_TAG_INPUT.code,
-        INCORRECT_TAG_INPUT.param
+        requestContext.translate(INCORRECT_TAG_INPUT.MESSAGE),
+        INCORRECT_TAG_INPUT.CODE,
+        INCORRECT_TAG_INPUT.PARAM
       );
     }
 
@@ -99,9 +95,9 @@ export const createTag: MutationResolvers["createTag"] = async (
     !currentUserIsOrganizationAdmin
   ) {
     throw new errors.UnauthorizedError(
-      requestContext.translate(USER_NOT_AUTHORIZED_TO_CREATE_TAG.message),
-      USER_NOT_AUTHORIZED_TO_CREATE_TAG.code,
-      USER_NOT_AUTHORIZED_TO_CREATE_TAG.param
+      requestContext.translate(USER_NOT_AUTHORIZED_TO_CREATE_TAG.MESSAGE),
+      USER_NOT_AUTHORIZED_TO_CREATE_TAG.CODE,
+      USER_NOT_AUTHORIZED_TO_CREATE_TAG.PARAM
     );
   }
 

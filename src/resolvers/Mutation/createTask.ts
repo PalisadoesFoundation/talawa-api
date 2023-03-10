@@ -1,14 +1,7 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Task, Event } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import {
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_PARAM,
-  EVENT_NOT_FOUND_MESSAGE,
-  EVENT_NOT_FOUND_CODE,
-  EVENT_NOT_FOUND_PARAM,
-} from "../../constants";
+import { USER_NOT_FOUND_ERROR, EVENT_NOT_FOUND_ERROR } from "../../constants";
 
 export const createTask: MutationResolvers["createTask"] = async (
   _parent,
@@ -22,9 +15,9 @@ export const createTask: MutationResolvers["createTask"] = async (
   // Checks whether currentUser with _id == context.userId exists.
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -35,9 +28,9 @@ export const createTask: MutationResolvers["createTask"] = async (
   // Checks whether event with _id == args.eventId exists.
   if (eventExists === false) {
     throw new errors.NotFoundError(
-      requestContext.translate(EVENT_NOT_FOUND_MESSAGE),
-      EVENT_NOT_FOUND_CODE,
-      EVENT_NOT_FOUND_PARAM
+      requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
+      EVENT_NOT_FOUND_ERROR.CODE,
+      EVENT_NOT_FOUND_ERROR.PARAM
     );
   }
 

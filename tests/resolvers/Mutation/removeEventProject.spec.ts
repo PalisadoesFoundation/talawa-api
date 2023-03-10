@@ -20,9 +20,9 @@ import {
   vi,
 } from "vitest";
 import {
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
-  EVENT_PROJECT_NOT_FOUND_MESSAGE,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
+  EVENT_PROJECT_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { testUserType } from "../../helpers/userAndOrg";
 import { createTestEvent, testEventType } from "../../helpers/events";
@@ -104,8 +104,8 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     try {
       await removeEventProject(null, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toBe(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toBe(`Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`);
     }
   });
   it("Should throw an error if the eventProject is not found", async () => {
@@ -139,9 +139,9 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     try {
       await removeEventProject(null, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(EVENT_PROJECT_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(EVENT_PROJECT_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toBe(
-        `Translated ${EVENT_PROJECT_NOT_FOUND_MESSAGE}`
+        `Translated ${EVENT_PROJECT_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -176,8 +176,10 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     try {
       await removeEventProject(null, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
-      expect(error.message).toBe(`Translated ${USER_NOT_AUTHORIZED_MESSAGE}`);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect(error.message).toBe(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
     }
   });
   it("Should remove the eventProject", async () => {

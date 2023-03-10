@@ -9,8 +9,8 @@ import {
   iosFirebaseOptions,
 } from "../../../src/config";
 import {
-  INVALID_CREDENTIALS_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  INVALID_CREDENTIALS_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
@@ -98,23 +98,16 @@ describe("resolvers -> Mutation -> login", () => {
         },
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { login: loginResolver } = await import(
         "../../../src/resolvers/Mutation/login"
       );
 
       await loginResolver?.({}, args, {});
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
@@ -134,22 +127,13 @@ email === args.data.email`, async () => {
         },
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { login: loginResolver } = await import(
         "../../../src/resolvers/Mutation/login"
       );
 
       await loginResolver?.({}, args, {});
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(INVALID_CREDENTIALS_MESSAGE);
+      expect(spy).toHaveBeenLastCalledWith(INVALID_CREDENTIALS_ERROR.MESSAGE);
     }
   });
 

@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { CHAT_NOT_FOUND } from "../../../src/constants";
+import { CHAT_NOT_FOUND_ERROR } from "../../../src/constants";
 import { directChatsMessagesByChatID as directChatsMessagesByChatIDResolver } from "../../../src/resolvers/Query/directChatsMessagesByChatID";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
@@ -58,7 +58,7 @@ describe("resolvers -> Query -> directChatsMessagesByChatID", () => {
 
       await directChatsMessagesByChatIDResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(CHAT_NOT_FOUND);
+      expect(error.message).toEqual(CHAT_NOT_FOUND_ERROR.DESC);
     }
   });
 
@@ -71,7 +71,7 @@ describe("resolvers -> Query -> directChatsMessagesByChatID", () => {
 
       await directChatsMessagesByChatIDResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(CHAT_NOT_FOUND);
+      expect(error.message).toEqual(CHAT_NOT_FOUND_ERROR.DESC);
     }
   });
 
