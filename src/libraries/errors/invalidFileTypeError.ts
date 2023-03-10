@@ -1,5 +1,7 @@
 import { ApplicationError } from "./applicationError";
-
+/**
+ * This class detects invalid file type errors and sends those errors to the superclass ApplicationError.
+ */
 export class InvalidFileTypeError extends ApplicationError {
   constructor(
     message: string = "Invalid File Type",

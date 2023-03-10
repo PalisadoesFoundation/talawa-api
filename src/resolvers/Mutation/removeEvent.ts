@@ -2,15 +2,9 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Event } from "../../models";
 import {
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_PARAM,
-  EVENT_NOT_FOUND_MESSAGE,
-  EVENT_NOT_FOUND_CODE,
-  EVENT_NOT_FOUND_PARAM,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_AUTHORIZED_CODE,
-  USER_NOT_AUTHORIZED_PARAM,
+  USER_NOT_FOUND_ERROR,
+  EVENT_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 
 export const removeEvent: MutationResolvers["removeEvent"] = async (
@@ -25,9 +19,9 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
   // Checks whether currentUser exists.
   if (!currentUser) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -38,9 +32,9 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
   // Checks whether event exists.
   if (!event) {
     throw new errors.NotFoundError(
-      requestContext.translate(EVENT_NOT_FOUND_MESSAGE),
-      EVENT_NOT_FOUND_CODE,
-      EVENT_NOT_FOUND_PARAM
+      requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
+      EVENT_NOT_FOUND_ERROR.CODE,
+      EVENT_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -57,9 +51,9 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
   // Checks whether currentUser cannot delete event.
   if (!(currentUserIsOrganizationAdmin || currentUserIsEventAdmin)) {
     throw new errors.UnauthorizedError(
-      requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
-      USER_NOT_AUTHORIZED_CODE,
-      USER_NOT_AUTHORIZED_PARAM
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM
     );
   }
 

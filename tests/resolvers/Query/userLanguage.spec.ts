@@ -4,7 +4,7 @@ import { nanoid } from "nanoid";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { userLanguage as userLanguageResolver } from "../../../src/resolvers/Query/userLanguage";
-import { USER_NOT_FOUND } from "../../../src/constants";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { User } from "../../../src/models";
 import { QueryUserLanguageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -28,7 +28,7 @@ describe("resolvers -> Query -> userLanguage", () => {
 
       await userLanguageResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 

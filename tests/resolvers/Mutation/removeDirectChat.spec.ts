@@ -9,8 +9,8 @@ import { MutationRemoveDirectChatArgs } from "../../../src/types/generatedGraphQ
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  CHAT_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  CHAT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
 } from "../../../src/constants";
 import {
@@ -88,23 +88,14 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
         userId: testUser!.id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { removeDirectChat: removeDirectChatResolver } = await import(
         "../../../src/resolvers/Mutation/removeDirectChat"
       );
       await removeDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_MESSAGE}`
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -125,22 +116,15 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
         userId: testUser!.id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { removeDirectChat: removeDirectChatResolver } = await import(
         "../../../src/resolvers/Mutation/removeDirectChat"
       );
       await removeDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(CHAT_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${CHAT_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenCalledWith(CHAT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${CHAT_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
@@ -179,10 +163,10 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
       await removeDirectChatResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.message}`
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
       );
 
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.message);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
     }
   });
 

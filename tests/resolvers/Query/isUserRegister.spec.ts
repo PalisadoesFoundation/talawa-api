@@ -4,7 +4,7 @@ import { connect, disconnect } from "../../helpers/db";
 import { Event } from "../../../src/models";
 import { Types } from "mongoose";
 import { QueryIsUserRegisterArgs } from "../../../src/types/generatedGraphQLTypes";
-import { EVENT_NOT_FOUND } from "../../../src/constants";
+import { EVENT_NOT_FOUND_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
   testUserType,
@@ -49,7 +49,7 @@ describe("resolvers -> Query -> isUserRegister", () => {
 
       await isUserRegisterResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(EVENT_NOT_FOUND);
+      expect(error.message).toEqual(EVENT_NOT_FOUND_ERROR.DESC);
     }
   });
 

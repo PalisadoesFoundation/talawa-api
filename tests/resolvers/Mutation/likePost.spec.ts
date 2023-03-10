@@ -5,8 +5,8 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { likePost as likePostResolver } from "../../../src/resolvers/Mutation/likePost";
 import {
-  POST_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  POST_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -53,22 +53,15 @@ describe("resolvers -> Mutation -> likePost", () => {
       const context = {
         userId: Types.ObjectId().toString(),
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { likePost: likePostResolver } = await import(
         "../../../src/resolvers/Mutation/likePost"
       );
 
       await likePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -85,14 +78,6 @@ describe("resolvers -> Mutation -> likePost", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { likePost: likePostResolver } = await import(
         "../../../src/resolvers/Mutation/likePost"
@@ -100,8 +85,8 @@ describe("resolvers -> Mutation -> likePost", () => {
 
       await likePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(POST_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(POST_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(POST_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

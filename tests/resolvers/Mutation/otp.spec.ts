@@ -9,7 +9,7 @@ import {
   testUserType,
 } from "../../helpers/userAndOrg";
 import { mailer } from "../../../src/utilities";
-import { USER_NOT_FOUND } from "../../../src/constants";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { nanoid } from "nanoid";
 
 let testUser: testUserType;
@@ -35,7 +35,7 @@ describe("resolvers -> Mutation -> otp", () => {
 
       await otpResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
   it("should generate and send OTP to the user", async () => {
@@ -54,7 +54,7 @@ describe("resolvers -> Mutation -> otp", () => {
       return {
         ...actualConstants,
         ACCESS_TOKEN_SECRET: "mysecret",
-        USER_NOT_FOUND: "User not found",
+        USER_NOT_FOUND_ERROR: { DESC: "User not found" },
       };
     });
 

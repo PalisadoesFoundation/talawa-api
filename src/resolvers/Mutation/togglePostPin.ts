@@ -1,10 +1,6 @@
 import {
-  POST_NOT_FOUND_CODE,
-  POST_NOT_FOUND_MESSAGE,
-  POST_NOT_FOUND_PARAM,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
+  POST_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
 } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
@@ -24,9 +20,9 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
   // Check if the user requesting the action exits
   if (!currentUser) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -37,9 +33,9 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
 
   if (!post) {
     throw new errors.NotFoundError(
-      requestContext.translate(POST_NOT_FOUND_MESSAGE),
-      POST_NOT_FOUND_CODE,
-      POST_NOT_FOUND_PARAM
+      requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
+      POST_NOT_FOUND_ERROR.CODE,
+      POST_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -54,9 +50,9 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     !currentUserIsOrganizationAdmin
   ) {
     throw new errors.UnauthorizedError(
-      requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.message),
-      USER_NOT_AUTHORIZED_TO_PIN.code,
-      USER_NOT_AUTHORIZED_TO_PIN.param
+      requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE),
+      USER_NOT_AUTHORIZED_TO_PIN.CODE,
+      USER_NOT_AUTHORIZED_TO_PIN.PARAM
     );
   }
 

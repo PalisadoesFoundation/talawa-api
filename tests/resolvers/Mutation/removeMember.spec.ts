@@ -8,10 +8,10 @@ import mongoose from "mongoose";
 import {
   ADMIN_REMOVING_ADMIN,
   ADMIN_REMOVING_CREATOR,
-  MEMBER_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
+  MEMBER_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
-  USER_NOT_FOUND_MESSAGE,
+  USER_NOT_FOUND_ERROR,
   USER_REMOVING_SELF,
 } from "../../../src/constants";
 import {
@@ -137,7 +137,7 @@ describe("resolvers -> Mutation -> removeMember", () => {
 
       await removeMemberResolverOrgNotFoundError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -166,9 +166,9 @@ describe("resolvers -> Mutation -> removeMember", () => {
 
       await removeMemberResolverAdminError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ADMIN.message);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.message}`
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
       );
     }
   });
@@ -196,8 +196,10 @@ describe("resolvers -> Mutation -> removeMember", () => {
 
       await removeMemberResolverNotFoundError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
@@ -223,8 +225,10 @@ describe("resolvers -> Mutation -> removeMember", () => {
 
       await removeMemberResolverMemberNotFoundError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(MEMBER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${MEMBER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenCalledWith(MEMBER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${MEMBER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
@@ -250,8 +254,8 @@ describe("resolvers -> Mutation -> removeMember", () => {
 
       await removeMemberResolverRemoveSelfError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_REMOVING_SELF.message);
-      expect(error.message).toEqual(`Translated ${USER_REMOVING_SELF.message}`);
+      expect(spy).toHaveBeenCalledWith(USER_REMOVING_SELF.MESSAGE);
+      expect(error.message).toEqual(`Translated ${USER_REMOVING_SELF.MESSAGE}`);
     }
   });
 
@@ -277,9 +281,9 @@ describe("resolvers -> Mutation -> removeMember", () => {
 
       await removeMemberResolverRemoveAdminError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_ADMIN.message);
+      expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_ADMIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ADMIN_REMOVING_ADMIN.message}`
+        `Translated ${ADMIN_REMOVING_ADMIN.MESSAGE}`
       );
     }
   });
@@ -306,9 +310,9 @@ describe("resolvers -> Mutation -> removeMember", () => {
 
       await removeMemberResolverRemoveAdminError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_CREATOR.message);
+      expect(spy).toHaveBeenCalledWith(ADMIN_REMOVING_CREATOR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ADMIN_REMOVING_CREATOR.message}`
+        `Translated ${ADMIN_REMOVING_CREATOR.MESSAGE}`
       );
     }
   });

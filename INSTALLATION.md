@@ -9,41 +9,45 @@ This document provides instructions on how to set up and start a running instanc
 - [Talawa-API Installation](#talawa-api-installation)
 - [Table of Contents](#table-of-contents)
 - [Installation](#installation)
-    - [Install node.js](#install-nodejs)
-    - [Install git](#install-git)
-    - [Setting up this repository](#setting-up-this-repository)
-    - [Install the Required Packages](#install-the-required-packages)
-    - [Install MongoDB](#install-mongodb)
-        - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
+  - [Install node.js](#install-nodejs)
+  - [Install git](#install-git)
+  - [Setting up this repository](#setting-up-this-repository)
+  - [Install the Required Packages](#install-the-required-packages)
+  - [Install MongoDB](#install-mongodb)
+    - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
 - [Configuration](#configuration)
-    - [The .env Configuration File](#the-env-configuration-file)
-    - [Generating Token Secrets](#generating-token-secrets)
-        - [Setting up ACCESS_TOKEN_SECRET in .env file](#setting-up-access_token_secret-in-env-file)
-        - [Setting up REFRESH_TOKEN_SECRET in .env file](#setting-up-refresh_token_secret-in-env-file)
-    - [Configuring MongoDB](#configuring-mongodb)
-        - [Setting up the MONGODB_URL in .env file](#setting-up-the-mongodb_url-in-env-file)
-        - [Using the CLI to get the MONGODB_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
-        - [Using Microsoft Windows to get the MONGODB_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
-    - [Configuring Google ReCAPTCHA](#configuring-google-recaptcha)
-        - [Setting up RECAPTCHA_SECRET_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
-        - [Setting up .env MAIL_USERNAME and MAIL_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
-    - [Configuring Google Firebase](#configuring-google-firebase)
-        - [Mobile Developers Only Applying the Firebase Keys to the Talawa Mobile App](#mobile-developers-only-applying-the-firebase-keys-to-the-talawa-mobile-app)
+  - [The .env Configuration File](#the-env-configuration-file)
+  - [Generating Token Secrets](#generating-token-secrets)
+    - [Setting up ACCESS\_TOKEN\_SECRET in .env file](#setting-up-access_token_secret-in-env-file)
+      - [Linux](#linux)
+      - [Windows](#windows)
+    - [Setting up REFRESH\_TOKEN\_SECRET in .env file](#setting-up-refresh_token_secret-in-env-file)
+  - [Configuring MongoDB](#configuring-mongodb)
+    - [Setting up the MONGODB\_URL in .env file](#setting-up-the-mongodb_url-in-env-file)
+    - [Using the CLI to get the MONGODB\_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
+    - [Using Microsoft Windows to get the MONGODB\_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
+  - [Setting up .env LAST\_RESORT\_SUPERADMIN\_EMAIL parameter](#setting-up-env-last_resort_superadmin_email-parameter)
+  - [Configuring Google ReCAPTCHA](#configuring-google-recaptcha)
+    - [Setting up RECAPTCHA\_SECRET\_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
+    - [Setting up .env MAIL\_USERNAME and MAIL\_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
+  - [Configuring Google Firebase](#configuring-google-firebase)
+    - [Generate Firebase Keys for the Talawa Notification Service](#generate-firebase-keys-for-the-talawa-notification-service)
+    - [(Mobile Developers Only) Applying the Firebase Keys to the Talawa Mobile App](#mobile-developers-only-applying-the-firebase-keys-to-the-talawa-mobile-app)
 - [Running Talawa-API](#running-talawa-api)
 - [How to Access the Talawa-API URL](#how-to-access-the-talawa-api-url)
-    - [For Talawa-API Developers](#for-talawa-api-developers)
-    - [For Mobile App Developers](#for-mobile-app-developers)
-        - [On Android Virtual Device](#on-android-virtual-device)
-        - [On a Real Mobile Device](#on-a-real-mobile-device)
-    - [For Talawa-Admin Developers](#for-talawa-admin-developers)
+  - [For Talawa-API Developers](#for-talawa-api-developers)
+  - [For Mobile App Developers](#for-mobile-app-developers)
+    - [On Android Virtual Device](#on-android-virtual-device)
+    - [On a Real Mobile Device](#on-a-real-mobile-device)
+  - [For Talawa-Admin Developers](#for-talawa-admin-developers)
 - [Accessing MongoDB](#accessing-mongodb)
-    - [Managing MongoDB using the MongoDB Compass GUI](#managing-mongodb-using-the-mongodb-compass-gui)
-    - [Managing MongoDB using the VSCode extension](#managing-mongodb-using-the-vscode-extension)
-- [Adding The First Super Admin user](#adding-the-first-super-admin-user)
-    - [Using MongoDB Compass](#using-mongodb-compass)
-    - [Using Mongo Shell](#using-mongo-shell)
+  - [Managing MongoDB using the MongoDB Compass GUI](#managing-mongodb-using-the-mongodb-compass-gui)
+  - [Managing MongoDB using the VSCode extension](#managing-mongodb-using-the-vscode-extension)
+- [Manually Adding The First Super Admin User](#manually-adding-the-first-super-admin-user)
+  - [Using MongoDB Compass](#using-mongodb-compass)
+  - [Using Mongo Shell](#using-mongo-shell)
 - [Other](#other)
-    - [Changing default talawa-api port](#changing-default-talawa-api-port)
+  - [Changing default talawa-api port](#changing-default-talawa-api-port)
 - [Testing](#testing)
 
 <!-- /TOC -->
@@ -106,14 +110,15 @@ A file named `.env` is required in the root directory of talawa-api for storing 
 
 This `.env` file must be populated with the following environment variables for talawa-api to work:
 
-| Variable             | Description                                            |
-| -------------------- | ------------------------------------------------------ |
-| ACCESS_TOKEN_SECRET  | Used for signing/verifying JWT tokens                  |
-| REFRESH_TOKEN_SECRET | Used for signing/verifying JWT tokens                  |
-| MONGO_DB_URL         | Used for connecting talawa-api to the mongoDB database |
-| RECAPTCHA_SECRET_KEY | Used for authentication using reCAPTCHA                |
-| MAIL_USERNAME        | Used for mailing service                               |
-| MAIL_PASSWORD        | Used for mailing service                               |
+| Variable                     | Description                                            |
+| ---------------------------- | ------------------------------------------------------ |
+| ACCESS_TOKEN_SECRET          | Used for signing/verifying JWT tokens                  |
+| REFRESH_TOKEN_SECRET         | Used for signing/verifying JWT tokens                  |
+| MONGO_DB_URL                 | Used for connecting talawa-api to the mongoDB database |
+| RECAPTCHA_SECRET_KEY         | Used for authentication using reCAPTCHA                |
+| MAIL_USERNAME                | Used for mailing service                               |
+| MAIL_PASSWORD                | Used for mailing service                               |
+| LAST_RESORT_SUPERADMIN_EMAIL | Used for promoting the default super admin             |
 
 The following sections will show you how to configure each of these parameters.
 
@@ -214,6 +219,20 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 
 ```
 
+## Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter
+
+The user with the email address set with this parameter will automatically be elevated to Super Admin status on registration. 
+
+1. When installing, set this to the email address of the person you want to be the very first Super Admin. 
+    - This will usually be the email address of the person installing the software.
+1. If this is not set you will not be able to administer the application. 
+
+If you don't set this parameter, then you'll need to follow the `Manually Adding The First Super Admin User` process discussed later in this document. 
+
+Set this value in the event that you need to elevate any of your users to be a Super Admin.
+
+**NOTE** It is STRONGLY advised that you remove the email address once the initial installation and setup has been done. 
+
 ## Configuring Google ReCAPTCHA
 
 You need to have a `google` account to follow the following steps.
@@ -249,6 +268,21 @@ For more info refer to this [Google Answer](https://support.google.com/accounts/
 ## Configuring Google Firebase
 
 We use firebase for mobile app notifications. To configure the notification service create a new firebase project and follow these steps:
+3.  Under `Signing in to Google` section select `App Passwords`.
+
+4.  Click on `Select app` section and choose `Other(Custom name)`, enter `talawa` as the custom name and press `Generate` button.
+
+5.  Copy the 16 character generated app password to the variable named `MAIL_PASSWORD` in `.env` file.
+
+6.  Copy you usual gmail address to the variable named `MAIL_USERNAME` in `.env` file.
+
+For more info refer to [this](https://support.google.com/accounts/answer/185833).
+
+<br/>
+
+### Generate Firebase Keys for the Talawa Notification Service
+
+We use firebase for mobile app notifications. To configure the notification service create a new firebase project and follow these steps:-
 
 1. Create a new Firebase project for Talawa-API
 1. When created you will automatically enter the project's console area
@@ -412,7 +446,7 @@ This guide is for `VSCode` users to easily manage their `MongoDB` databases:
 
 3. Now you can manage the database you are using for `talawa-api` through this extension within `VSCode`.
 
-# Adding The First Super Admin user
+# Manually Adding The First Super Admin User
 
 You can skip these instructions for now if you don't have running instance of Talawa-Admin.
 
@@ -428,26 +462,26 @@ You can skip these instructions for now if you don't have running instance of Ta
 1. Open MongoDB Compass and click on `Connect`.
 
 2. Select `user` collections and edit the data. Change:
-     1. `userType` from ADMIN to SUPERADMIN
-     2. `adminApproved` from false to true
-     - ![Illustration for ADMIN user edit ](./image/mongodb_compass_admin_user_edit.png)
+     1. `userType` from `USER` to `SUPERADMIN`
+     2. `adminApproved` from `false` to `true`
+     - ![Illustration for user edit ](./image/mongodb_compass_user_edit.png)
      
 ## Using Mongo Shell
     
 1. Open a terminal and run `mongosh` command to open interactive command line interface to work with MongoDB database.
 
 2. In the `mongosh` terminal use the following command to edit the `users` collections data:
-      1. Find all users of the type `ADMIN`.
+      1.Find the login credentials in the database through following command:
       ```
-      db.users.find({userType: 'ADMIN'})
+      db.users.find({userType: 'USER', firstName: '<user's first name>'})
       ```
-      2. Identify the `user` whose data you want to edit note its email address. Elevate permission of the user from `ADMIN` to `SUPERADMIN` and set `adminApproved` to `true`
+      2.  Elevate permission from `USER` to `SUPERADMIN` and set `adminApproved` to `true`:
       ```
-      db.users.updateOne({ email: '<user's email address>' },{ $set: { userType: 'SUPERADMIN', adminApproved: true }})
+      db.users.updateOne({ firstName: '<user's first name>' },{ $set: { userType: 'SUPERADMIN', adminApproved: true }})
       ``` 
       3. To verify the details were updated correctly use:
       ```
-      db.users.find({email:'<user's email address>' })
+      db.users.find({firstName:'<user's first name>' })
       ```
            
 **Note**: You can do the edits via any of the two methods.

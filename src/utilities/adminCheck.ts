@@ -19,9 +19,9 @@ export const adminCheck = async (
 
   if (!userIsOrganizationAdmin && !isUserSuperAdmin) {
     throw new errors.UnauthorizedError(
-      requestContext.translate(`${USER_NOT_AUTHORIZED_ADMIN.message}`),
-      USER_NOT_AUTHORIZED_ADMIN.code,
-      USER_NOT_AUTHORIZED_ADMIN.param
+      requestContext.translate(`${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`),
+      USER_NOT_AUTHORIZED_ADMIN.CODE,
+      USER_NOT_AUTHORIZED_ADMIN.PARAM
     );
   }
 };

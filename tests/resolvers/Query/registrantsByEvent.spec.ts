@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 import { Event } from "../../../src/models";
 import { Types } from "mongoose";
 import { QueryRegistrantsByEventArgs } from "../../../src/types/generatedGraphQLTypes";
-import { EVENT_NOT_FOUND } from "../../../src/constants";
+import { EVENT_NOT_FOUND_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
   testUserType,
@@ -43,7 +43,7 @@ describe("resolvers -> Query -> registrantsByEvent", () => {
 
       await registrantsByEventResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(EVENT_NOT_FOUND);
+      expect(error.message).toEqual(EVENT_NOT_FOUND_ERROR.DESC);
     }
   });
 

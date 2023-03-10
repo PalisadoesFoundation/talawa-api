@@ -6,8 +6,8 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { unlikePost as unlikePostResolver } from "../../../src/resolvers/Mutation/unlikePost";
 import {
-  POST_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  POST_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
@@ -54,23 +54,14 @@ describe("resolvers -> Mutation -> unlikePost", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { unlikePost: unlikePostResolver } = await import(
         "../../../src/resolvers/Mutation/unlikePost"
       );
 
       await unlikePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -88,23 +79,14 @@ describe("resolvers -> Mutation -> unlikePost", () => {
         userId: testUser!._id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { unlikePost: unlikePostResolver } = await import(
         "../../../src/resolvers/Mutation/unlikePost"
       );
 
       await unlikePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(POST_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(POST_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(POST_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

@@ -2,15 +2,9 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { GroupChat, GroupChatMessage, User } from "../../models";
 import {
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_AUTHORIZED_CODE,
-  USER_NOT_AUTHORIZED_PARAM,
-  CHAT_NOT_FOUND_PARAM,
-  CHAT_NOT_FOUND_MESSAGE,
-  CHAT_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_PARAM,
+  USER_NOT_AUTHORIZED_ERROR,
+  CHAT_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 
 export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"] =
@@ -21,9 +15,9 @@ export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"]
 
     if (!groupChat) {
       throw new errors.NotFoundError(
-        requestContext.translate(CHAT_NOT_FOUND_MESSAGE),
-        CHAT_NOT_FOUND_CODE,
-        CHAT_NOT_FOUND_PARAM
+        requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
+        CHAT_NOT_FOUND_ERROR.CODE,
+        CHAT_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -33,9 +27,9 @@ export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"]
 
     if (currentUserExists === false) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_MESSAGE),
-        USER_NOT_FOUND_CODE,
-        USER_NOT_FOUND_PARAM
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -49,9 +43,9 @@ export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"]
     */
     if (currentUserIsAMemberOfGroupChat === false) {
       throw new errors.UnauthorizedError(
-        requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
-        USER_NOT_AUTHORIZED_CODE,
-        USER_NOT_AUTHORIZED_PARAM
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM
       );
     }
 

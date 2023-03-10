@@ -12,8 +12,8 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { sendMessageToDirectChat as sendMessageToDirectChatResolver } from "../../../src/resolvers/Mutation/sendMessageToDirectChat";
 import {
-  CHAT_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  CHAT_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -92,22 +92,13 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
 
       const context = { userId: testUsers[0]!.id };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { sendMessageToDirectChat: sendMessageToDirectChatResolver } =
         await import("../../../src/resolvers/Mutation/sendMessageToDirectChat");
 
       await sendMessageToDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(CHAT_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(CHAT_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(CHAT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -131,8 +122,8 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
 
       await sendMessageToDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

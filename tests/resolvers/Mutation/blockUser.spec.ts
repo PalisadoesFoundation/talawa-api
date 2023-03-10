@@ -6,12 +6,12 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { blockUser as blockUserResolver } from "../../../src/resolvers/Mutation/blockUser";
 import {
-  MEMBER_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
+  MEMBER_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
   USER_BLOCKING_SELF,
   USER_NOT_AUTHORIZED_ADMIN,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { nanoid } from "nanoid";
 import {
@@ -89,7 +89,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
 
       await blockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -106,7 +106,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
 
       await blockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -131,7 +131,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
 
       await blockUserResolverError?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(MEMBER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(MEMBER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -156,7 +156,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
 
       await blockUserResolverError?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_BLOCKING_SELF.message);
+      expect(error.message).toEqual(USER_BLOCKING_SELF.MESSAGE);
     }
   });
 
@@ -185,7 +185,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
 
       await blockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.message);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
     }
   });
 
@@ -226,7 +226,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
 
       await blockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 

@@ -68,7 +68,7 @@ app.use(
 app.use(mongoSanitize());
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // Fix added to stream
 app.use(
@@ -102,12 +102,23 @@ const apolloServer = new ApolloServer({
     role: RoleAuthorizationDirective,
   },
   context: ({ req, res, connection }) => {
+    /**
+     * The apiRootUrl for serving static files.
+     * This is constructed by extracting the protocol and host information from the `req` object.
+     * It is passed to the context object and can be accessed by all the resolver functions.
+     * Resolver functions can use this to construct absolute URLs for serving static files.
+     * For example, http://testDomain.com/ is apiRootUrl for a server with testDomain.com as Domain Name
+     * with no SSL certificate (http://)
+     * In local environment, apiRootUrl will be http://localhost:{port}/
+     */
+    const apiRootUrl = `${req.protocol}://${req.get("host")}/`;
     if (connection) {
       return {
         ...connection,
         pubsub,
         res,
         req,
+        apiRootUrl,
       };
     } else {
       return {
@@ -115,6 +126,7 @@ const apolloServer = new ApolloServer({
         pubsub,
         res,
         req,
+        apiRootUrl,
       };
     }
   },

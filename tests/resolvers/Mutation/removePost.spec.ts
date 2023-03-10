@@ -4,9 +4,9 @@ import { MutationRemovePostArgs } from "../../../src/types/generatedGraphQLTypes
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
-  POST_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  POST_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { createTestUser, testUserType } from "../../helpers/userAndOrg";
 import { testPostType, createTestPost } from "../../helpers/posts";
@@ -57,22 +57,15 @@ describe("resolvers -> Mutation -> removePost", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { removePost: removePostResolver } = await import(
         "../../../src/resolvers/Mutation/removePost"
       );
 
       await removePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
@@ -91,22 +84,15 @@ describe("resolvers -> Mutation -> removePost", () => {
         userId: testUser!.id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { removePost: removePostResolver } = await import(
         "../../../src/resolvers/Mutation/removePost"
       );
 
       await removePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(`Translated ${POST_NOT_FOUND_MESSAGE}`);
+      expect(error.message).toEqual(
+        `Translated ${POST_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
@@ -125,15 +111,6 @@ describe("resolvers -> Mutation -> removePost", () => {
         userId: randomUser!.id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { removePost: removePostResolver } = await import(
         "../../../src/resolvers/Mutation/removePost"
       );
@@ -141,7 +118,7 @@ describe("resolvers -> Mutation -> removePost", () => {
       await removePostResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
       );
     }
   });

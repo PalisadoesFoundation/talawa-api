@@ -3,18 +3,10 @@ import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
 import { MembershipRequest, Organization, User } from "../../models";
 import {
-  MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
-  MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
-  MEMBERSHIP_REQUEST_NOT_FOUND_PARAM,
-  USER_ALREADY_MEMBER_CODE,
-  USER_ALREADY_MEMBER_MESSAGE,
-  USER_ALREADY_MEMBER_PARAM,
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_PARAM,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_PARAM,
+  MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
+  USER_ALREADY_MEMBER_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 
 export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest"] =
@@ -26,9 +18,9 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
     // Checks whether membershipRequest exists.
     if (!membershipRequest) {
       throw new errors.NotFoundError(
-        requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE),
-        MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
-        MEMBERSHIP_REQUEST_NOT_FOUND_PARAM
+        requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE),
+        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.CODE,
+        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -39,9 +31,9 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
     // Checks whether organization exists.
     if (!organization) {
       throw new errors.NotFoundError(
-        requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-        ORGANIZATION_NOT_FOUND_CODE,
-        ORGANIZATION_NOT_FOUND_PARAM
+        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+        ORGANIZATION_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -52,9 +44,9 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
     // Checks whether user exists.
     if (!user) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_MESSAGE),
-        USER_NOT_FOUND_CODE,
-        USER_NOT_FOUND_PARAM
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -68,9 +60,9 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
     // Checks whether user is already a member of organization.
     if (userIsOrganizationMember === true) {
       throw new errors.ConflictError(
-        requestContext.translate(USER_ALREADY_MEMBER_MESSAGE),
-        USER_ALREADY_MEMBER_CODE,
-        USER_ALREADY_MEMBER_PARAM
+        requestContext.translate(USER_ALREADY_MEMBER_ERROR.MESSAGE),
+        USER_ALREADY_MEMBER_ERROR.CODE,
+        USER_ALREADY_MEMBER_ERROR.PARAM
       );
     }
 

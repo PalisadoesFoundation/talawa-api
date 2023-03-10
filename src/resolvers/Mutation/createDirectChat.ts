@@ -2,12 +2,8 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization, DirectChat } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_PARAM,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_PARAM,
+  USER_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
 } from "../../constants";
 
 export const createDirectChat: MutationResolvers["createDirectChat"] = async (
@@ -22,9 +18,9 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
   // Checks whether currentUser with _id === context.userId exists.
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -35,9 +31,9 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
   // Checks whether organization with _id === args.data.organizationId exists.
   if (organizationExists === false) {
     throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-      ORGANIZATION_NOT_FOUND_CODE,
-      ORGANIZATION_NOT_FOUND_PARAM
+      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+      ORGANIZATION_NOT_FOUND_ERROR.CODE,
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -53,9 +49,9 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
     // Checks whether user with _id === userId exists.
     if (userExists === false) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_MESSAGE),
-        USER_NOT_FOUND_CODE,
-        USER_NOT_FOUND_PARAM
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 

@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { organizations as organizationsResolver } from "../../../src/resolvers/Query/organizations";
-import { ORGANIZATION_NOT_FOUND } from "../../../src/constants";
+import { ORGANIZATION_NOT_FOUND_ERROR } from "../../../src/constants";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { Organization } from "../../../src/models";
@@ -37,7 +37,7 @@ describe("resolvers -> Query -> organizations", () => {
 
       await organizationsResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.DESC);
     }
   });
 

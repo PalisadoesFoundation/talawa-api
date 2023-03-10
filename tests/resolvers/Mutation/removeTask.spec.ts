@@ -12,9 +12,9 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { removeTask as removeTaskResolver } from "../../../src/resolvers/Mutation/removeTask";
 import {
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
-  TASK_NOT_FOUND_MESSAGE,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
+  TASK_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUserFunc } from "../../helpers/user";
@@ -121,23 +121,14 @@ describe("resolvers -> Mutation -> removeTask", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { removeTask: removeTaskResolver } = await import(
         "../../../src/resolvers/Mutation/removeTask"
       );
 
       await removeTaskResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -155,23 +146,14 @@ describe("resolvers -> Mutation -> removeTask", () => {
         userId: testUsers[0]!._id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { removeTask: removeTaskResolver } = await import(
         "../../../src/resolvers/Mutation/removeTask"
       );
 
       await removeTaskResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(TASK_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(TASK_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(TASK_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(TASK_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -189,23 +171,14 @@ describe("resolvers -> Mutation -> removeTask", () => {
         userId: testUsers[1]!._id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { removeTask: removeTaskResolver } = await import(
         "../../../src/resolvers/Mutation/removeTask"
       );
 
       await removeTaskResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 

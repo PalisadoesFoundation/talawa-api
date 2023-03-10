@@ -233,11 +233,32 @@ To fix formatting issues in code use this command:-
 
 <br/>
 
-We are using the package `Husky` to run a pre-commit hook which automatically runs these checks each time you make a commit and also fixes some of the issues. This way you don't have to run them manually each time.
+We are using the package `Husky` to run git hooks that run according to different git workflows.
+
+<br/>
+
+#### pre-commit hook
+We run a pre-commit hook which automatically runs code quality checks each time you make a commit and also fixes some of the issues. This way you don't have to run them manually each time.
+
 
 If you don't want these pre-commit checks running on each commit, you can manually opt out of it using the `--no-verify` flag with your commit message as shown:-
 
         git commit -m "commit message" --no-verify
+
+<br/>
+
+
+#### post-merge hook
+
+We are also running a post-merge(post-pull) hook which will automatically run "npm install" only if there is any change made to pakage.json file so that the developer has all the required dependencies when pulling files from remote.
+
+
+If you don't want this hook to run, you can manually opt out of this using the `no verify` flag while using the merge command(git pull):
+
+        git pull --no-verify  
+
+<br/>
+
         
 ### Running Queries with talawa-api
    - Talawa API currently implement `GraphQL Playground` as mediator interface to run and test queries directly from the api. [Learn more](https://www.apollographql.com/docs/apollo-server/v2/testing/graphql-playground/)

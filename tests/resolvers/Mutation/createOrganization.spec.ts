@@ -8,7 +8,7 @@ import { createOrganization as createOrganizationResolver } from "../../../src/r
 import {
   LENGTH_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_SUPERADMIN,
-  USER_NOT_FOUND_MESSAGE,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import * as uploadImage from "../../../src/utilities/uploadImage";
 import {
@@ -65,21 +65,13 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
       const { createOrganization } = await import(
         "../../../src/resolvers/Mutation/createOrganization"
       );
       await createOrganization?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -110,9 +102,9 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganization?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(
-        USER_NOT_AUTHORIZED_SUPERADMIN.message
+        USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE
       );
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_SUPERADMIN.message);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
     }
   });
 
@@ -257,7 +249,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganizationResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 256 characters in name`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
       );
     }
   });
@@ -286,7 +278,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganizationResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 500 characters in description`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
       );
     }
   });
@@ -315,7 +307,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganizationResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 50 characters in location`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
       );
     }
   });

@@ -2,7 +2,7 @@ import "dotenv/config";
 import { myLanguage as myLanguageResolver } from "../../../src/resolvers/Query/myLanguage";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
-import { USER_NOT_FOUND } from "../../../src/constants";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { User } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { Types } from "mongoose";
@@ -27,7 +27,7 @@ describe("resolvers -> Query -> myLanguage", () => {
 
       await myLanguageResolver?.({}, {}, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 

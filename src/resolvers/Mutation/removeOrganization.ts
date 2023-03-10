@@ -7,14 +7,10 @@ import {
   Comment,
   MembershipRequest,
 } from "../../models";
-import { creatorCheck, superAdminCheck } from "../../utilities";
+import { superAdminCheck } from "../../utilities";
 import {
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_PARAM,
+  USER_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
 } from "../../constants";
 
 export const removeOrganization: MutationResolvers["removeOrganization"] =
@@ -26,9 +22,9 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     // Checks whether currentUser exists.
     if (!currentUser) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_MESSAGE),
-        USER_NOT_FOUND_CODE,
-        USER_NOT_FOUND_PARAM
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -39,16 +35,13 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     // Checks whether organization exists.
     if (!organization) {
       throw new errors.NotFoundError(
-        requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-        ORGANIZATION_NOT_FOUND_CODE,
-        ORGANIZATION_NOT_FOUND_PARAM
+        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+        ORGANIZATION_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
     }
     // Checks whether currentUser is a SUPERADMIN
     superAdminCheck(currentUser!);
-
-    // Checks whether currentUser is the creator of organization.
-    creatorCheck(currentUser._id, organization);
 
     // Remove each post and comments associated to it for organization.posts list.
     organization.posts.forEach(async (postId) => {
