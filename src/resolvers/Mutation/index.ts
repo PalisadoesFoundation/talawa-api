@@ -22,7 +22,6 @@ import { createOrganization } from "./createOrganization";
 import { createPlugin } from "./createPlugin";
 import { createPost } from "./createPost";
 import { createTag } from "./createTag";
-import { createTagFolder } from "./createTagFolder";
 import { createTask } from "./createTask";
 import { deleteDonationById } from "./deleteDonationById";
 import { forgotPassword } from "./forgotPassword";
@@ -48,7 +47,6 @@ import { removeOrganization } from "./removeOrganization";
 import { removeOrganizationImage } from "./removeOrganizationImage";
 import { removePost } from "./removePost";
 import { removeTag } from "./removeTag";
-import { removeTagFolder } from "./removeTagFolder";
 import { removeTask } from "./removeTask";
 import { removeUserFromGroupChat } from "./removeUserFromGroupChat";
 import { removeUserImage } from "./removeUserImage";
@@ -71,7 +69,6 @@ import { updatePluginInstalledOrgs } from "./updatePluginInstalledOrgs";
 import { updatePluginStatus } from "./updatePluginStatus";
 import { updatePost } from "./updatePost";
 import { updateTag } from "./updateTag";
-import { updateTagFolder } from "./updateTagFolder";
 import { updateTask } from "./updateTask";
 import { updateUserProfile } from "./updateUserProfile";
 import { updateUserType } from "./updateUserType";
@@ -100,7 +97,6 @@ export const Mutation: MutationResolvers = {
   createPlugin,
   createPost,
   createTag,
-  createTagFolder,
   createTask,
   deleteDonationById,
   forgotPassword,
@@ -126,7 +122,6 @@ export const Mutation: MutationResolvers = {
   removeOrganizationImage,
   removePost,
   removeTag,
-  removeTagFolder,
   removeTask,
   removeUserFromGroupChat,
   removeUserImage,
@@ -148,7 +143,6 @@ export const Mutation: MutationResolvers = {
   updatePluginInstalledOrgs,
   updatePluginStatus,
   updateTag,
-  updateTagFolder,
   updateTask,
   updateUserProfile,
   updateUserType,
