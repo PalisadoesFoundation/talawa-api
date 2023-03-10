@@ -569,7 +569,7 @@ export type MutationCreatePostArgs = {
 
 export type MutationCreateTagArgs = {
   organizationId?: InputMaybe<Scalars['ID']>;
-  parentFolder?: InputMaybe<Scalars['ID']>;
+  parentTag?: InputMaybe<Scalars['ID']>;
   title: Scalars['String'];
 };
 

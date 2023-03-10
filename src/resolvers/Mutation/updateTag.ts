@@ -44,7 +44,7 @@ export const updateTag: MutationResolvers["updateTag"] = async (
 
   // Boolean to determine whether user is an admin of organization of the tag folder.
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) => organization.toString() === tag!.organizationId.toString()
+    (organization) => organization.toString() === tag!.organization.toString()
   );
 
   // Checks whether currentUser cannot delete the tag folder.
