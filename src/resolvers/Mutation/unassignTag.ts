@@ -1,6 +1,6 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Tag, UserTag } from "../../models";
+import { User, Tag, TagUser } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -42,7 +42,7 @@ export const unassignTag: MutationResolvers["unassignTag"] = async (
     );
   }
   // Check that the user should already be assigned the tag
-  const userAlreadyHasTag = await UserTag.exists({
+  const userAlreadyHasTag = await TagUser.exists({
     user: args.userId,
     tag: args.tagId,
   });
@@ -67,7 +67,7 @@ export const unassignTag: MutationResolvers["unassignTag"] = async (
   }
 
   // Unassign the tag
-  await UserTag.deleteOne({
+  await TagUser.deleteOne({
     user: args.userId,
     tag: args.tagId,
   });

@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { assignedUsers as assignedUsersResolver } from "../../../src/resolvers/Tag/assignedUsers";
+import { usersAssignedTo as usersAssignedToResolver } from "../../../src/resolvers/Tag/usersAssignedTo";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -8,7 +8,7 @@ import {
   createAndAssignUsersToTag,
   createTwoLevelTagsWithOrg,
 } from "../../helpers/tags";
-import { UserTag } from "../../../src/models";
+import { TagUser } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testRootTag: testTagType, testChildTag1: testTagType;
@@ -23,13 +23,13 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE!);
 });
 
-describe("resolvers -> Tag -> assignedUsers", () => {
+describe("resolvers -> Tag -> usersAssignedTo", () => {
   it(`returns the list of assigned user object`, async () => {
     const parent = testRootTag!.toObject();
 
-    const payload = await assignedUsersResolver?.(parent, {}, {});
+    const payload = await usersAssignedToResolver?.(parent, {}, {});
 
-    const assignedUsers = await UserTag.find({
+    const usersAssignedTo = await TagUser.find({
       tag: parent._id,
     })
       .select({
@@ -41,7 +41,7 @@ describe("resolvers -> Tag -> assignedUsers", () => {
       .populate("user")
       .lean();
 
-    const userArray = assignedUsers.map((user) => user.user);
+    const userArray = usersAssignedTo.map((user) => user.user);
 
     expect(payload).toEqual(userArray);
   });
@@ -49,7 +49,7 @@ describe("resolvers -> Tag -> assignedUsers", () => {
   it(`returns empty list if no user is assigned to the tag`, async () => {
     const parent = testChildTag1!.toObject();
 
-    const payload = await assignedUsersResolver?.(parent, {}, {});
+    const payload = await usersAssignedToResolver?.(parent, {}, {});
 
     expect(payload).toEqual([]);
   });

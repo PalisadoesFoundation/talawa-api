@@ -20,8 +20,6 @@ export const mutations = gql`
 
     adminRemoveGroup(groupId: ID!): Message! @auth
 
-    assignTag(userId: ID!, tagId: ID!): Boolean @auth
-
     blockPluginCreationBySuperadmin(userId: ID!, blockUser: Boolean!): User!
       @auth
       @role(requires: SUPERADMIN)
@@ -69,7 +67,7 @@ export const mutations = gql`
 
     createPost(data: PostInput!, file: String): Post @auth
 
-    createTag(title: String!, parentTag: ID, organizationId: ID): Tag @auth
+    createTag(input: createTagInput): Tag @auth
 
     createTask(data: TaskInput, eventId: ID!): Task! @auth
 
@@ -121,7 +119,7 @@ export const mutations = gql`
 
     removePost(id: ID!): Post @auth
 
-    removeTag(tagId: ID!): Tag @auth
+    removeTag(id: ID!): Tag @auth
 
     removeTask(id: ID!): Task @auth
 
@@ -149,7 +147,7 @@ export const mutations = gql`
 
     togglePostPin(id: ID!): Post! @auth
 
-    unassignTag(userId: ID!, tagId: ID!): Boolean @auth
+    toggleTagAssign(input: ToggleTagAssignInput): Boolean @auth
 
     unblockUser(organizationId: ID!, userId: ID!): User! @auth
 

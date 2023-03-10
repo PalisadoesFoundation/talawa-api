@@ -17,6 +17,12 @@ export const inputs = gql`
     title: String!
   }
 
+  input createTagInput {
+    name: String!
+    parentTagId: ID
+    organizationId: ID
+  }
+
   input DonationWhereInput {
     id: ID
     id_not: ID
@@ -220,6 +226,11 @@ export const inputs = gql`
     title: String!
     description: String
     deadline: DateTime
+  }
+
+  input ToggleTagAssignInput {
+    userId: ID!
+    tagId: ID!
   }
 
   input UpdateEventInput {

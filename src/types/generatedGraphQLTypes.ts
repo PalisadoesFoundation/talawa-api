@@ -1300,7 +1300,7 @@ export type Subscription = {
 export type Tag = {
   __typename?: 'Tag';
   _id: Scalars['ID'];
-  assignedUsers?: Maybe<Array<Maybe<User>>>;
+  usersAssignedTo?: Maybe<Array<Maybe<User>>>;
   childTags?: Maybe<Array<Maybe<Tag>>>;
   organization: Organization;
   parentTag?: Maybe<Tag>;
@@ -1416,7 +1416,7 @@ export type User = {
 };
 
 
-export type UserTagsArgs = {
+export type TagUsersArgs = {
   organizationId: Scalars['ID'];
 };
 
@@ -1644,7 +1644,7 @@ export type ResolversTypes = {
   Status: Status;
   String: ResolverTypeWrapper<Scalars['String']>;
   Subscription: ResolverTypeWrapper<{}>;
-  Tag: ResolverTypeWrapper<Omit<Tag, 'assignedUsers' | 'childTags' | 'organization' | 'parentTag'> & { assignedUsers?: Maybe<Array<Maybe<ResolversTypes['User']>>>, childTags?: Maybe<Array<Maybe<ResolversTypes['Tag']>>>, organization: ResolversTypes['Organization'], parentTag?: Maybe<ResolversTypes['Tag']> }>;
+  Tag: ResolverTypeWrapper<Omit<Tag, 'usersAssignedTo' | 'childTags' | 'organization' | 'parentTag'> & { usersAssignedTo?: Maybe<Array<Maybe<ResolversTypes['User']>>>, childTags?: Maybe<Array<Maybe<ResolversTypes['Tag']>>>, organization: ResolversTypes['Organization'], parentTag?: Maybe<ResolversTypes['Tag']> }>;
   Task: ResolverTypeWrapper<Interface_TaskModel>;
   TaskInput: TaskInput;
   TaskOrderByInput: TaskOrderByInput;
@@ -1733,7 +1733,7 @@ export type ResolversParentTypes = {
   RecaptchaVerification: RecaptchaVerification;
   String: Scalars['String'];
   Subscription: {};
-  Tag: Omit<Tag, 'assignedUsers' | 'childTags' | 'organization' | 'parentTag'> & { assignedUsers?: Maybe<Array<Maybe<ResolversParentTypes['User']>>>, childTags?: Maybe<Array<Maybe<ResolversParentTypes['Tag']>>>, organization: ResolversParentTypes['Organization'], parentTag?: Maybe<ResolversParentTypes['Tag']> };
+  Tag: Omit<Tag, 'usersAssignedTo' | 'childTags' | 'organization' | 'parentTag'> & { usersAssignedTo?: Maybe<Array<Maybe<ResolversParentTypes['User']>>>, childTags?: Maybe<Array<Maybe<ResolversParentTypes['Tag']>>>, organization: ResolversParentTypes['Organization'], parentTag?: Maybe<ResolversParentTypes['Tag']> };
   Task: Interface_TaskModel;
   TaskInput: TaskInput;
   Time: Scalars['Time'];
@@ -2200,7 +2200,7 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
 
 export type TagResolvers<ContextType = any, ParentType extends ResolversParentTypes['Tag'] = ResolversParentTypes['Tag']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  assignedUsers?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
+  usersAssignedTo?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   childTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['Tag']>>>, ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
   parentTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType>;
@@ -2258,7 +2258,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   organizationsBlockedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   pluginCreationAllowed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   registeredEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
-  tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['Tag']>>>, ParentType, ContextType, RequireFields<UserTagsArgs, 'organizationId'>>;
+  tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['Tag']>>>, ParentType, ContextType, RequireFields<TagUsersArgs, 'organizationId'>>;
   tokenVersion?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   userType?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

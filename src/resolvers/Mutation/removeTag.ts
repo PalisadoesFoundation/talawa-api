@@ -1,6 +1,6 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Tag, UserTag } from "../../models";
+import { User, Tag, TagUser } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -84,8 +84,8 @@ export const removeTag: MutationResolvers["removeTag"] = async (
     },
   });
 
-  // Delete all the tag entries in the UserTag table
-  await UserTag.deleteMany({
+  // Delete all the tag entries in the TagUser table
+  await TagUser.deleteMany({
     tagId: {
       $in: allTagIds,
     },

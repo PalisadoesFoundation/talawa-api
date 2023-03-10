@@ -1,11 +1,11 @@
 import { TagResolvers } from "../../types/generatedGraphQLTypes";
-import { assignedUsers } from "./assignedUsers";
+import { usersAssignedTo } from "./usersAssignedTo";
 import { childTags } from "./childTags";
 import { organization } from "./organization";
 import { parentTag } from "./parentTag";
 
 export const Tag: TagResolvers = {
-  assignedUsers,
+  usersAssignedTo,
   childTags,
   organization,
   parentTag,

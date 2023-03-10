@@ -2,30 +2,30 @@ import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
 import { Interface_User } from "./User";
 import { Interface_Tag } from "./Tag";
 
-export interface Interface_UserTag {
+export interface Interface_TagUser {
   _id: Types.ObjectId;
-  user: PopulatedDoc<Interface_User & Document>;
-  tag: PopulatedDoc<Interface_Tag & Document>;
+  userId: PopulatedDoc<Interface_User & Document>;
+  tagId: PopulatedDoc<Interface_Tag & Document>;
 }
 
-const UserTagSchema = new Schema({
-  user: {
+const TagUserSchema = new Schema({
+  userId: {
     type: Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
-  tag: {
+  tagId: {
     type: Schema.Types.ObjectId,
     ref: "Tag",
     required: true,
   },
 });
 
-UserTagSchema.index({ user: 1, tag: 1 });
+TagUserSchema.index({ userId: 1, tagId: 1 }, { unique: true });
 
-const UserTagModel = () => model<Interface_UserTag>("UserTag", UserTagSchema);
+const TagUserModel = () => model<Interface_TagUser>("TagUser", TagUserSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const UserTag = (models.UserTag || UserTagModel()) as ReturnType<
-  typeof UserTagModel
+export const TagUser = (models.TagUser || TagUserModel()) as ReturnType<
+  typeof TagUserModel
 >;

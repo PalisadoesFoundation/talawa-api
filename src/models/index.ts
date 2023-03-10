@@ -21,4 +21,4 @@ export * from "./Post";
 export * from "./Tag";
 export * from "./Task";
 export * from "./User";
-export * from "./UserTag";
+export * from "./TagUser";

@@ -1,4 +1,4 @@
-import { Interface_Tag, Tag, UserTag } from "../../src/models";
+import { Interface_Tag, Tag, TagUser } from "../../src/models";
 import { nanoid } from "nanoid";
 import { Document } from "mongoose";
 import {
@@ -52,7 +52,7 @@ export const createAndAssignUsersToTag = async (
 
   for (let i = 0; i < numberOfUsers; i++) {
     const user = await createTestUser();
-    await UserTag.create({
+    await TagUser.create({
       user: user!._id,
       tag: tag!._id,
     });
