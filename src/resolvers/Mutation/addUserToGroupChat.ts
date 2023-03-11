@@ -39,7 +39,7 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
     }
 
     // Checks whether currentUser with _id === context.userId is an admin of organization.
-    adminCheck(context.userId, organization);
+    await adminCheck(context.userId, organization);
 
     const userExists = await User.exists({
       _id: args.userId,

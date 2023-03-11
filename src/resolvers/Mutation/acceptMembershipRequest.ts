@@ -51,7 +51,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
     }
 
     // Checks whether currentUser with _id === context.userId is an admin of organization.
-    adminCheck(context.userId, organization);
+    await adminCheck(context.userId, organization);
 
     const userIsOrganizationMember = organization.members.some(
       (member) => member.toString() === user?._id.toString()

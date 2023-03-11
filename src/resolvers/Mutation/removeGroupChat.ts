@@ -39,7 +39,7 @@ export const removeGroupChat: MutationResolvers["removeGroupChat"] = async (
   }
 
   // Checks whether current user making the request is an admin of organization.
-  adminCheck(context.userId, organization);
+  await adminCheck(context.userId, organization);
 
   // Delete all groupChatMessages that have their ids stored in messages list of groupChat
   await GroupChatMessage.deleteMany({

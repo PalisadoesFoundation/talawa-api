@@ -50,7 +50,7 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
     }
 
     // Checks whether currentUser with _id === context.userId is an admin of organization.
-    adminCheck(context.userId, organzation);
+    await adminCheck(context.userId, organzation);
 
     // Deletes the membershipRequest.
     await MembershipRequest.deleteOne({

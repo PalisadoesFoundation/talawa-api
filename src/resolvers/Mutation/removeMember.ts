@@ -34,7 +34,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   });
 
   // Checks whether current user making the request is an admin of organization.
-  adminCheck(context.userId, organization!);
+  await adminCheck(context.userId, organization!);
 
   const user = await User.findOne({
     _id: args.data.userId,
