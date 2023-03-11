@@ -786,7 +786,7 @@ export type MutationUpdateTaskArgs = {
 
 
 export type MutationUpdateUserPasswordArgs = {
-  data?: InputMaybe<UpdateUserPassword>;
+  data?: InputMaybe<UpdateUserPasswordInput>;
 };
 
 
@@ -1339,7 +1339,7 @@ export type UpdateUserInput = {
   lastName?: InputMaybe<Scalars['String']>;
 };
 
-export type UpdateUserPassword = {
+export type UpdateUserPasswordInput = {
   confirmNewPassword: Scalars['String'];
   newPassword: Scalars['String'];
   previousPassword: Scalars['String'];
@@ -1609,7 +1609,7 @@ export type ResolversTypes = {
   UpdateOrganizationInput: UpdateOrganizationInput;
   UpdateTaskInput: UpdateTaskInput;
   UpdateUserInput: UpdateUserInput;
-  UpdateUserPassword: UpdateUserPassword;
+  UpdateUserPasswordInput: UpdateUserPasswordInput;
   UpdateUserTypeInput: UpdateUserTypeInput;
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
   User: ResolverTypeWrapper<Interface_UserModel>;
@@ -1696,7 +1696,7 @@ export type ResolversParentTypes = {
   UpdateOrganizationInput: UpdateOrganizationInput;
   UpdateTaskInput: UpdateTaskInput;
   UpdateUserInput: UpdateUserInput;
-  UpdateUserPassword: UpdateUserPassword;
+  UpdateUserPasswordInput: UpdateUserPasswordInput;
   UpdateUserTypeInput: UpdateUserTypeInput;
   Upload: Scalars['Upload'];
   User: Interface_UserModel;
