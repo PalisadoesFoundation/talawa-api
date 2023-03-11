@@ -168,6 +168,8 @@ export const mutations = gql`
 
     updateUserProfile(data: UpdateUserInput, file: String): User! @auth
 
+    updateUserPassword(data: UpdateUserPasswordInput): User! @auth
+
     updateUserType(data: UpdateUserTypeInput!): Boolean!
       @auth
       @role(requires: SUPERADMIN)
