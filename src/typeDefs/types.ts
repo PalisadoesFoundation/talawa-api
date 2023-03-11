@@ -94,6 +94,12 @@ export const types = gql`
     admins(adminId: ID): [User]
     tasks: [Task]
     status: Status!
+    tagsAssignedWith(
+      after: String
+      before: String
+      first: Int
+      last: Int
+    ): TagsAssignedWithConnection
   }
 
   # type EventProject {
@@ -312,6 +318,7 @@ export const types = gql`
     parentTag: Tag
     childTags: [Tag]
     usersAssignedTo: [User]
+    eventsAssignedTo: [Event]
   }
 
   type TagsAssignedWithConnection {

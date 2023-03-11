@@ -229,7 +229,7 @@ export const inputs = gql`
   }
 
   input ToggleTagAssignInput {
-    userId: ID!
+    objectId: ID!
     tagId: ID!
   }
 

@@ -27,7 +27,6 @@ describe("resolvers -> Tag -> usersAssignedTo", () => {
   it(`returns the list of assigned user object`, async () => {
     const parent = testRootTag!.toObject();
 
-    // @ts-ignore
     const payload = await usersAssignedToResolver?.(parent, {}, {});
 
     const usersAssignedTo = await TagUser.find({

@@ -68,6 +68,10 @@ const config: CodegenConfig = {
 
           Task: "../models/Task#Interface_Task",
 
+          Tag: "../models/Tag#Interface_Tag",
+
+          TagAssign: "../models/TagAssign#Interface_TagAssign",
+
           User: "../models/User#Interface_User",
         },
 

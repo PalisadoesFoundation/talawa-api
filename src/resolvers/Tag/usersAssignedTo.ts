@@ -1,22 +1,23 @@
 import { TagResolvers } from "../../types/generatedGraphQLTypes";
-import { TagUser } from "../../models";
+import { TagAssign, User } from "../../models";
 
 export const usersAssignedTo: TagResolvers["usersAssignedTo"] = async (
   parent
 ) => {
-  const allTagUsers = await TagUser.find({
-    tag: parent._id,
+  const allUsers = await TagAssign.find({
+    tagId: parent._id,
+    objectType: "USER",
   })
     .select({
-      userId: 1,
+      objectId: 1,
     })
-    .sort({
-      createdAt: 1,
-    })
-    .populate("userId")
     .lean();
 
-  // Return a user array, built by mapping the userTag's populated with the userId
-  // to their userId property
-  return allTagUsers.map((userTag) => userTag.userId);
+  const allUserIds = allUsers.map((user) => user.objectId);
+
+  return await User.find({
+    _id: {
+      $in: allUserIds,
+    },
+  });
 };

@@ -25,9 +25,7 @@ describe("resolvers -> Tag -> parentTag", () => {
     const parent = testRootTag!.toObject();
     const childTags = [testChildTag1!.toObject(), testChildTag2!.toObject()];
 
-    // @ts-ignore
     const payload1 = await parentTagResolver?.(childTags[0], {}, {});
-    // @ts-ignore
     const payload2 = await parentTagResolver?.(childTags[1], {}, {});
 
     expect(payload1).toEqual(parent);
@@ -37,7 +35,6 @@ describe("resolvers -> Tag -> parentTag", () => {
   it(`returns null if the tag is a root level tag`, async () => {
     const parent = testRootTag!.toObject();
 
-    // @ts-ignore
     const payload = await parentTagResolver?.(parent, {}, {});
 
     expect(payload).toEqual(null);

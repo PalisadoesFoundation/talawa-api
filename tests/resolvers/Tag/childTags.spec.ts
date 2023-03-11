@@ -25,7 +25,6 @@ describe("resolvers -> Tag -> childTags", () => {
     const parent = testRootTag!.toObject();
     const childTags = [testChildTag1!.toObject(), testChildTag2!.toObject()];
 
-    // @ts-ignore
     const payload = await childTagsResolver?.(parent, {}, {});
 
     expect(payload).toEqual(childTags);
@@ -34,7 +33,6 @@ describe("resolvers -> Tag -> childTags", () => {
   it(`returns empty list when the tag object has no children`, async () => {
     const parent = testChildTag1!.toObject();
 
-    // @ts-ignore
     const payload = await childTagsResolver?.(parent, {}, {});
 
     expect(payload).toEqual([]);
