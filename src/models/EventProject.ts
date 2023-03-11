@@ -2,7 +2,9 @@ import { Schema, Types, model, PopulatedDoc, Document, models } from "mongoose";
 import { Interface_Event } from "./Event";
 import { Interface_Task } from "./Task";
 import { Interface_User } from "./User";
-
+/**
+ * This is an interface representing a document for an event project in the database(MongoDB).
+ */
 export interface Interface_EventProject {
   _id: Types.ObjectId;
   title: string;
@@ -13,7 +15,16 @@ export interface Interface_EventProject {
   tasks: Array<PopulatedDoc<Interface_Task & Document>>;
   status: string;
 }
-
+/**
+ * This is the Structure of the event project
+ * @param title - Title
+ * @param description - description
+ * @param createdAt - Created at Date
+ * @param event - Event
+ * @param creator - Creator
+ * @param tasks - Tasks
+ * @param status - Status
+ */
 const eventProjectSchema = new Schema({
   title: {
     type: String,
