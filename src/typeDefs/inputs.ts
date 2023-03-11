@@ -264,7 +264,7 @@ export const inputs = gql`
     email: EmailAddress
   }
 
-  input UpdateUserPassword {
+  input UpdateUserPasswordInput {
     previousPassword: String!
     newPassword: String!
     confirmNewPassword: String!
