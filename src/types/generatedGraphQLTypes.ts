@@ -425,6 +425,7 @@ export type Mutation = {
   updatePluginStatus: Plugin;
   updatePost: Post;
   updateTask?: Maybe<Task>;
+  updateUserPassword: User;
   updateUserProfile: User;
   updateUserType: Scalars['Boolean'];
 };
@@ -781,6 +782,11 @@ export type MutationUpdatePostArgs = {
 export type MutationUpdateTaskArgs = {
   data?: InputMaybe<UpdateTaskInput>;
   id: Scalars['ID'];
+};
+
+
+export type MutationUpdateUserPasswordArgs = {
+  data?: InputMaybe<UpdateUserPassword>;
 };
 
 
@@ -1333,6 +1339,12 @@ export type UpdateUserInput = {
   lastName?: InputMaybe<Scalars['String']>;
 };
 
+export type UpdateUserPassword = {
+  confirmNewPassword: Scalars['String'];
+  newPassword: Scalars['String'];
+  previousPassword: Scalars['String'];
+};
+
 export type UpdateUserTypeInput = {
   id?: InputMaybe<Scalars['ID']>;
   userType?: InputMaybe<Scalars['String']>;
@@ -1597,6 +1609,7 @@ export type ResolversTypes = {
   UpdateOrganizationInput: UpdateOrganizationInput;
   UpdateTaskInput: UpdateTaskInput;
   UpdateUserInput: UpdateUserInput;
+  UpdateUserPassword: UpdateUserPassword;
   UpdateUserTypeInput: UpdateUserTypeInput;
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
   User: ResolverTypeWrapper<Interface_UserModel>;
@@ -1683,6 +1696,7 @@ export type ResolversParentTypes = {
   UpdateOrganizationInput: UpdateOrganizationInput;
   UpdateTaskInput: UpdateTaskInput;
   UpdateUserInput: UpdateUserInput;
+  UpdateUserPassword: UpdateUserPassword;
   UpdateUserTypeInput: UpdateUserTypeInput;
   Upload: Scalars['Upload'];
   User: Interface_UserModel;
@@ -1987,6 +2001,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updatePluginStatus?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginStatusArgs, 'id' | 'status'>>;
   updatePost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationUpdatePostArgs, 'id'>>;
   updateTask?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<MutationUpdateTaskArgs, 'id'>>;
+  updateUserPassword?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationUpdateUserPasswordArgs>>;
   updateUserProfile?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;
   updateUserType?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateUserTypeArgs, 'data'>>;
 };

@@ -27,7 +27,7 @@ let testUser: Interface_User & Document<any, any, Interface_User>;
 vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),
 }));
-
+const email = `email${nanoid().toLowerCase()}@gmail.com`;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
@@ -38,6 +38,15 @@ beforeAll(async () => {
     lastName: "lastName",
     appLanguageCode: "en",
   });
+  const testUser2 = await User.create({
+    email: email,
+    password: "password",
+    firstName: "firstName",
+    lastName: "lastName",
+    appLanguageCode: "en",
+  });
+  testUser2.save();
+  testUser.save();
 });
 
 afterAll(async () => {
@@ -118,7 +127,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     try {
       const args: MutationUpdateUserProfileArgs = {
         data: {
-          email: testUser.email,
+          email: email,
         },
       };
 
