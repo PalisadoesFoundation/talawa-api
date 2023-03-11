@@ -8,7 +8,7 @@ import {
   createAndAssignUsersToTag,
   createTwoLevelTagsWithOrg,
 } from "../../helpers/tags";
-import { TagUser } from "../../../src/models";
+import { TagAssign, User } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testRootTag: testTagType, testChildTag1: testTagType;
@@ -29,27 +29,31 @@ describe("resolvers -> Tag -> usersAssignedTo", () => {
 
     const payload = await usersAssignedToResolver?.(parent, {}, {});
 
-    const usersAssignedTo = await TagUser.find({
-      tag: parent._id,
+    // Getting all the assigned users
+    const allUsers = await TagAssign.find({
+      tagId: parent._id,
+      objectType: "USER",
     })
       .select({
-        user: 1,
+        objectId: 1,
       })
-      .sort({
-        createdAt: 1,
-      })
-      .populate("user")
       .lean();
 
-    const userArray = usersAssignedTo.map((user) => user.userId);
+    const allUserIds = allUsers.map((user) => user.objectId);
 
-    expect(payload).toEqual(userArray);
+    const testUsers = await User.find({
+      _id: {
+        $in: allUserIds,
+      },
+    });
+
+    // The recieved payload should match the fetched users
+    expect(payload).toEqual(testUsers);
   });
 
   it(`returns empty list if no user is assigned to the tag`, async () => {
     const parent = testChildTag1!.toObject();
 
-    // @ts-ignore
     const payload = await usersAssignedToResolver?.(parent, {}, {});
 
     expect(payload).toEqual([]);
