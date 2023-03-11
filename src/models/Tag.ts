@@ -8,6 +8,9 @@ export interface Interface_Tag {
   name: string;
 }
 
+// A tag is used for the categorization and the grouping of related objects (for eg. user)
+// Each tag belongs to a particular organization, and is private to the same.
+// Each tag can be nested to hold other sub-tags so as to create a heriecheal structure.
 const TagSchema = new Schema({
   name: {
     type: String,

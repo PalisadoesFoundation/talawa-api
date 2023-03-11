@@ -203,7 +203,6 @@ export const types = gql`
     apiUrl: URL!
     createdAt: DateTime
     pinnedPosts: [Post]
-    tags: TagConnection
   }
 
   type OrganizationInfoNode {
@@ -363,7 +362,6 @@ export const types = gql`
     pluginCreationAllowed: Boolean
     adminApproved: Boolean
     createdAt: DateTime
-    tagsAssignedWith(organizationId: ID!): TagConnection
   }
 
   type UserAttende {

@@ -102,6 +102,15 @@ export const queries = gql`
 
     tasksByUser(id: ID!, orderBy: TaskOrderByInput): [Task]
 
+    tagsAssignedWithByUserConnection(
+      userId: ID!
+      orgId: ID!
+      first: Int
+      skip: Int
+    ): TagConnection
+
+    tagsByOrganizationConnection(id: ID!, first: Int, skip: Int): TagConnection
+
     user(id: ID!): User! @auth
 
     userLanguage(userId: ID!): String @auth

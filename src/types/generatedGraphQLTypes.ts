@@ -47,6 +47,11 @@ export type AggregatePost = {
   count: Scalars['Int'];
 };
 
+export type AggregateTag = {
+  __typename?: 'AggregateTag';
+  count: Scalars['Int'];
+};
+
 export type AggregateUser = {
   __typename?: 'AggregateUser';
   count: Scalars['Int'];
@@ -366,7 +371,6 @@ export type Mutation = {
   addUserToGroupChat: GroupChat;
   adminRemoveEvent: Event;
   adminRemoveGroup: Message;
-  assignTag?: Maybe<Scalars['Boolean']>;
   blockPluginCreationBySuperadmin: User;
   blockUser: User;
   cancelMembershipRequest: MembershipRequest;
@@ -417,7 +421,7 @@ export type Mutation = {
   sendMessageToGroupChat: GroupChatMessage;
   signUp: AuthData;
   togglePostPin: Post;
-  unassignTag?: Maybe<Scalars['Boolean']>;
+  toggleTagAssign?: Maybe<Scalars['Boolean']>;
   unblockUser: User;
   unlikeComment?: Maybe<Comment>;
   unlikePost?: Maybe<Post>;
@@ -474,12 +478,6 @@ export type MutationAdminRemoveEventArgs = {
 
 export type MutationAdminRemoveGroupArgs = {
   groupId: Scalars['ID'];
-};
-
-
-export type MutationAssignTagArgs = {
-  tagId: Scalars['ID'];
-  userId: Scalars['ID'];
 };
 
 
@@ -568,9 +566,7 @@ export type MutationCreatePostArgs = {
 
 
 export type MutationCreateTagArgs = {
-  organizationId?: InputMaybe<Scalars['ID']>;
-  parentTag?: InputMaybe<Scalars['ID']>;
-  title: Scalars['String'];
+  input?: InputMaybe<CreateTagInput>;
 };
 
 
@@ -692,7 +688,7 @@ export type MutationRemovePostArgs = {
 
 
 export type MutationRemoveTagArgs = {
-  tagId: Scalars['ID'];
+  id: Scalars['ID'];
 };
 
 
@@ -745,9 +741,8 @@ export type MutationTogglePostPinArgs = {
 };
 
 
-export type MutationUnassignTagArgs = {
-  tagId: Scalars['ID'];
-  userId: Scalars['ID'];
+export type MutationToggleTagAssignArgs = {
+  input?: InputMaybe<ToggleTagAssignInput>;
 };
 
 
@@ -849,7 +844,6 @@ export type Organization = {
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
   name: Scalars['String'];
   pinnedPosts?: Maybe<Array<Maybe<Post>>>;
-  rootTags?: Maybe<Array<Maybe<Tag>>>;
   visibleInSearch: Scalars['Boolean'];
 };
 
@@ -1087,12 +1081,13 @@ export type Query = {
   postsByOrganizationConnection?: Maybe<PostConnection>;
   registeredEventsByUser?: Maybe<Array<Maybe<Event>>>;
   registrantsByEvent?: Maybe<Array<Maybe<User>>>;
+  tagsAssignedWithByUserConnection?: Maybe<TagConnection>;
+  tagsByOrganizationConnection?: Maybe<TagConnection>;
   tasksByEvent?: Maybe<Array<Maybe<Task>>>;
   tasksByUser?: Maybe<Array<Maybe<Task>>>;
   user: User;
   userLanguage?: Maybe<Scalars['String']>;
   users?: Maybe<Array<Maybe<User>>>;
-  usersByTag?: Maybe<Array<Maybe<User>>>;
   usersConnection: Array<Maybe<User>>;
 };
 
@@ -1234,6 +1229,21 @@ export type QueryRegistrantsByEventArgs = {
 };
 
 
+export type QueryTagsAssignedWithByUserConnectionArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+  orgId: Scalars['ID'];
+  skip?: InputMaybe<Scalars['Int']>;
+  userId: Scalars['ID'];
+};
+
+
+export type QueryTagsByOrganizationConnectionArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+  id: Scalars['ID'];
+  skip?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type QueryTasksByEventArgs = {
   id: Scalars['ID'];
   orderBy?: InputMaybe<TaskOrderByInput>;
@@ -1259,11 +1269,6 @@ export type QueryUserLanguageArgs = {
 export type QueryUsersArgs = {
   orderBy?: InputMaybe<UserOrderByInput>;
   where?: InputMaybe<UserWhereInput>;
-};
-
-
-export type QueryUsersByTagArgs = {
-  tagId: Scalars['ID'];
 };
 
 
@@ -1300,11 +1305,21 @@ export type Subscription = {
 export type Tag = {
   __typename?: 'Tag';
   _id: Scalars['ID'];
-  usersAssignedTo?: Maybe<Array<Maybe<User>>>;
   childTags?: Maybe<Array<Maybe<Tag>>>;
+  name: Scalars['String'];
   organization: Organization;
   parentTag?: Maybe<Tag>;
-  title: Scalars['String'];
+  usersAssignedTo?: Maybe<Array<Maybe<User>>>;
+};
+
+/** A connection to a list of tags. */
+export type TagConnection = {
+  __typename?: 'TagConnection';
+  aggregate: AggregateTag;
+  /** A list of edges. */
+  edges: Array<Maybe<Tag>>;
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
 };
 
 export type Task = {
@@ -1335,6 +1350,11 @@ export type TaskOrderByInput =
   | 'id_DESC'
   | 'title_ASC'
   | 'title_DESC';
+
+export type ToggleTagAssignInput = {
+  tagId: Scalars['ID'];
+  userId: Scalars['ID'];
+};
 
 export type Translation = {
   __typename?: 'Translation';
@@ -1410,14 +1430,8 @@ export type User = {
   organizationsBlockedBy?: Maybe<Array<Maybe<Organization>>>;
   pluginCreationAllowed?: Maybe<Scalars['Boolean']>;
   registeredEvents?: Maybe<Array<Maybe<Event>>>;
-  tags?: Maybe<Array<Maybe<Tag>>>;
   tokenVersion: Scalars['Int'];
   userType?: Maybe<Scalars['String']>;
-};
-
-
-export type TagUsersArgs = {
-  organizationId: Scalars['ID'];
 };
 
 export type UserAndOrganizationInput = {
@@ -1513,6 +1527,12 @@ export type CreateGroupChatInput = {
   userIds: Array<Scalars['ID']>;
 };
 
+export type CreateTagInput = {
+  name: Scalars['String'];
+  organizationId?: InputMaybe<Scalars['ID']>;
+  parentTagId?: InputMaybe<Scalars['ID']>;
+};
+
 
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
@@ -1579,6 +1599,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
+  AggregateTag: ResolverTypeWrapper<AggregateTag>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
   AndroidFirebaseOptions: ResolverTypeWrapper<AndroidFirebaseOptions>;
   AuthData: ResolverTypeWrapper<Omit<AuthData, 'user'> & { user: ResolversTypes['User'] }>;
@@ -1644,11 +1665,13 @@ export type ResolversTypes = {
   Status: Status;
   String: ResolverTypeWrapper<Scalars['String']>;
   Subscription: ResolverTypeWrapper<{}>;
-  Tag: ResolverTypeWrapper<Omit<Tag, 'usersAssignedTo' | 'childTags' | 'organization' | 'parentTag'> & { usersAssignedTo?: Maybe<Array<Maybe<ResolversTypes['User']>>>, childTags?: Maybe<Array<Maybe<ResolversTypes['Tag']>>>, organization: ResolversTypes['Organization'], parentTag?: Maybe<ResolversTypes['Tag']> }>;
+  Tag: ResolverTypeWrapper<Omit<Tag, 'childTags' | 'organization' | 'parentTag' | 'usersAssignedTo'> & { childTags?: Maybe<Array<Maybe<ResolversTypes['Tag']>>>, organization: ResolversTypes['Organization'], parentTag?: Maybe<ResolversTypes['Tag']>, usersAssignedTo?: Maybe<Array<Maybe<ResolversTypes['User']>>> }>;
+  TagConnection: ResolverTypeWrapper<Omit<TagConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['Tag']>> }>;
   Task: ResolverTypeWrapper<Interface_TaskModel>;
   TaskInput: TaskInput;
   TaskOrderByInput: TaskOrderByInput;
   Time: ResolverTypeWrapper<Scalars['Time']>;
+  ToggleTagAssignInput: ToggleTagAssignInput;
   Translation: ResolverTypeWrapper<Translation>;
   Type: Type;
   URL: ResolverTypeWrapper<Scalars['URL']>;
@@ -1668,11 +1691,13 @@ export type ResolversTypes = {
   UserWhereInput: UserWhereInput;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
+  createTagInput: CreateTagInput;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
   AggregatePost: AggregatePost;
+  AggregateTag: AggregateTag;
   AggregateUser: AggregateUser;
   AndroidFirebaseOptions: AndroidFirebaseOptions;
   AuthData: Omit<AuthData, 'user'> & { user: ResolversParentTypes['User'] };
@@ -1733,10 +1758,12 @@ export type ResolversParentTypes = {
   RecaptchaVerification: RecaptchaVerification;
   String: Scalars['String'];
   Subscription: {};
-  Tag: Omit<Tag, 'usersAssignedTo' | 'childTags' | 'organization' | 'parentTag'> & { usersAssignedTo?: Maybe<Array<Maybe<ResolversParentTypes['User']>>>, childTags?: Maybe<Array<Maybe<ResolversParentTypes['Tag']>>>, organization: ResolversParentTypes['Organization'], parentTag?: Maybe<ResolversParentTypes['Tag']> };
+  Tag: Omit<Tag, 'childTags' | 'organization' | 'parentTag' | 'usersAssignedTo'> & { childTags?: Maybe<Array<Maybe<ResolversParentTypes['Tag']>>>, organization: ResolversParentTypes['Organization'], parentTag?: Maybe<ResolversParentTypes['Tag']>, usersAssignedTo?: Maybe<Array<Maybe<ResolversParentTypes['User']>>> };
+  TagConnection: Omit<TagConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['Tag']>> };
   Task: Interface_TaskModel;
   TaskInput: TaskInput;
   Time: Scalars['Time'];
+  ToggleTagAssignInput: ToggleTagAssignInput;
   Translation: Translation;
   URL: Scalars['URL'];
   UpdateEventInput: UpdateEventInput;
@@ -1753,6 +1780,7 @@ export type ResolversParentTypes = {
   UserWhereInput: UserWhereInput;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
+  createTagInput: CreateTagInput;
 };
 
 export type AuthDirectiveArgs = { };
@@ -1766,6 +1794,11 @@ export type RoleDirectiveArgs = {
 export type RoleDirectiveResolver<Result, Parent, ContextType = any, Args = RoleDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
 export type AggregatePostResolvers<ContextType = any, ParentType extends ResolversParentTypes['AggregatePost'] = ResolversParentTypes['AggregatePost']> = {
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type AggregateTagResolvers<ContextType = any, ParentType extends ResolversParentTypes['AggregateTag'] = ResolversParentTypes['AggregateTag']> = {
   count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -1988,7 +2021,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addUserToGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationAddUserToGroupChatArgs, 'chatId' | 'userId'>>;
   adminRemoveEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationAdminRemoveEventArgs, 'eventId'>>;
   adminRemoveGroup?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<MutationAdminRemoveGroupArgs, 'groupId'>>;
-  assignTag?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationAssignTagArgs, 'tagId' | 'userId'>>;
   blockPluginCreationBySuperadmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockPluginCreationBySuperadminArgs, 'blockUser' | 'userId'>>;
   blockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockUserArgs, 'organizationId' | 'userId'>>;
   cancelMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationCancelMembershipRequestArgs, 'membershipRequestId'>>;
@@ -2003,7 +2035,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, Partial<MutationCreateOrganizationArgs>>;
   createPlugin?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationCreatePluginArgs, 'pluginCreatedBy' | 'pluginDesc' | 'pluginInstallStatus' | 'pluginName'>>;
   createPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'data'>>;
-  createTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<MutationCreateTagArgs, 'title'>>;
+  createTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType, Partial<MutationCreateTagArgs>>;
   createTask?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationCreateTaskArgs, 'eventId'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;
@@ -2028,7 +2060,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationArgs, 'id'>>;
   removeOrganizationImage?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationImageArgs, 'organizationId'>>;
   removePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationRemovePostArgs, 'id'>>;
-  removeTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<MutationRemoveTagArgs, 'tagId'>>;
+  removeTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<MutationRemoveTagArgs, 'id'>>;
   removeTask?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<MutationRemoveTaskArgs, 'id'>>;
   removeUserFromGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationRemoveUserFromGroupChatArgs, 'chatId' | 'userId'>>;
   removeUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
@@ -2039,7 +2071,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   sendMessageToGroupChat?: Resolver<ResolversTypes['GroupChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToGroupChatArgs, 'chatId' | 'messageContent'>>;
   signUp?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'data'>>;
   togglePostPin?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationTogglePostPinArgs, 'id'>>;
-  unassignTag?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationUnassignTagArgs, 'tagId' | 'userId'>>;
+  toggleTagAssign?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationToggleTagAssignArgs>>;
   unblockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUnblockUserArgs, 'organizationId' | 'userId'>>;
   unlikeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationUnlikeCommentArgs, 'id'>>;
   unlikePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUnlikePostArgs, 'id'>>;
@@ -2071,7 +2103,6 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pinnedPosts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType>;
-  rootTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['Tag']>>>, ParentType, ContextType>;
   visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2183,12 +2214,13 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   postsByOrganizationConnection?: Resolver<Maybe<ResolversTypes['PostConnection']>, ParentType, ContextType, RequireFields<QueryPostsByOrganizationConnectionArgs, 'id'>>;
   registeredEventsByUser?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryRegisteredEventsByUserArgs>>;
   registrantsByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<QueryRegistrantsByEventArgs, 'id'>>;
+  tagsAssignedWithByUserConnection?: Resolver<Maybe<ResolversTypes['TagConnection']>, ParentType, ContextType, RequireFields<QueryTagsAssignedWithByUserConnectionArgs, 'orgId' | 'userId'>>;
+  tagsByOrganizationConnection?: Resolver<Maybe<ResolversTypes['TagConnection']>, ParentType, ContextType, RequireFields<QueryTagsByOrganizationConnectionArgs, 'id'>>;
   tasksByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['Task']>>>, ParentType, ContextType, RequireFields<QueryTasksByEventArgs, 'id'>>;
   tasksByUser?: Resolver<Maybe<Array<Maybe<ResolversTypes['Task']>>>, ParentType, ContextType, RequireFields<QueryTasksByUserArgs, 'id'>>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
   userLanguage?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryUserLanguageArgs, 'userId'>>;
   users?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<QueryUsersArgs>>;
-  usersByTag?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<QueryUsersByTagArgs, 'tagId'>>;
   usersConnection?: Resolver<Array<Maybe<ResolversTypes['User']>>, ParentType, ContextType, Partial<QueryUsersConnectionArgs>>;
 };
 
@@ -2200,11 +2232,18 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
 
 export type TagResolvers<ContextType = any, ParentType extends ResolversParentTypes['Tag'] = ResolversParentTypes['Tag']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  usersAssignedTo?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   childTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['Tag']>>>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
   parentTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType>;
-  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  usersAssignedTo?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type TagConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TagConnection'] = ResolversParentTypes['TagConnection']> = {
+  aggregate?: Resolver<ResolversTypes['AggregateTag'], ParentType, ContextType>;
+  edges?: Resolver<Array<Maybe<ResolversTypes['Tag']>>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2258,7 +2297,6 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   organizationsBlockedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   pluginCreationAllowed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   registeredEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
-  tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['Tag']>>>, ParentType, ContextType, RequireFields<TagUsersArgs, 'organizationId'>>;
   tokenVersion?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   userType?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -2282,6 +2320,7 @@ export type UserConnectionResolvers<ContextType = any, ParentType extends Resolv
 
 export type Resolvers<ContextType = any> = {
   AggregatePost?: AggregatePostResolvers<ContextType>;
+  AggregateTag?: AggregateTagResolvers<ContextType>;
   AggregateUser?: AggregateUserResolvers<ContextType>;
   AndroidFirebaseOptions?: AndroidFirebaseOptionsResolvers<ContextType>;
   AuthData?: AuthDataResolvers<ContextType>;
@@ -2320,6 +2359,7 @@ export type Resolvers<ContextType = any> = {
   Query?: QueryResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   Tag?: TagResolvers<ContextType>;
+  TagConnection?: TagConnectionResolvers<ContextType>;
   Task?: TaskResolvers<ContextType>;
   Time?: GraphQLScalarType;
   Translation?: TranslationResolvers<ContextType>;

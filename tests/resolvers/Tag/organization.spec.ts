@@ -24,6 +24,7 @@ describe("resolvers -> Tag -> organization", () => {
   it(`returns the correct organization object`, async () => {
     const parent = testTag!.toObject();
 
+    // @ts-ignore
     const payload = await organizationResolver?.(parent, {}, {});
 
     const organization = await Organization.findOne({

@@ -18,9 +18,9 @@ export const createRootTagWithOrg = async (): Promise<
   const [testUser, testOrganization] = await createTestUserAndOrganization();
 
   const testTag = await Tag.create({
-    title: `TagTitle${nanoid(10)}`,
-    parentTag: null,
-    organization: testOrganization!._id,
+    name: `TagTitle${nanoid()}`,
+    parentTagId: null,
+    organizationId: testOrganization!._id,
   });
 
   return [testUser, testOrganization, testTag];
@@ -31,14 +31,14 @@ export const createTwoLevelTagsWithOrg = async (): Promise<
 > => {
   const [testUser, testOrg, testRootTag] = await createRootTagWithOrg();
   const testTag1 = await Tag.create({
-    title: `TagTitle${nanoid(10)}`,
-    parentTag: testRootTag?._id,
-    organization: testOrg!._id,
+    name: `TagTitle${nanoid()}`,
+    parentTagId: testRootTag?._id,
+    organizationId: testOrg!._id,
   });
   const testTag2 = await Tag.create({
-    title: `TagTitle${nanoid(10)}`,
-    parentTag: testRootTag?._id,
-    organization: testOrg!._id,
+    name: `TagTitle${nanoid()}`,
+    parentTagId: testRootTag?._id,
+    organizationId: testOrg!._id,
   });
 
   return [testUser, testOrg, [testRootTag, testTag1, testTag2]];
@@ -53,8 +53,8 @@ export const createAndAssignUsersToTag = async (
   for (let i = 0; i < numberOfUsers; i++) {
     const user = await createTestUser();
     await TagUser.create({
-      user: user!._id,
-      tag: tag!._id,
+      userId: user!._id,
+      tagId: tag!._id,
     });
     testUsers.push(user);
   }

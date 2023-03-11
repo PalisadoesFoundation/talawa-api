@@ -6,11 +6,11 @@ export const organization: TagResolvers["organization"] = async (parent) => {
     _id: parent._id,
   })
     .select({
-      organization: 1,
+      organizationId: 1,
     })
     .lean();
 
   return await Organization.findOne({
-    _id: tag?.organization,
+    _id: tag?.organizationId,
   }).lean()!;
 };

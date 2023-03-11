@@ -27,7 +27,7 @@ export const removeTag: MutationResolvers["removeTag"] = async (
 
   // Get the tag  object
   const tag = await Tag.findOne({
-    _id: args.tagId,
+    _id: args.id,
   });
 
   if (!tag) {
@@ -40,7 +40,7 @@ export const removeTag: MutationResolvers["removeTag"] = async (
 
   // Boolean to determine whether user is an admin of organization of the tag folder.
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) => organization.toString() === tag.organization.toString()
+    (organization) => organization.toString() === tag.organizationId.toString()
   );
 
   // Checks whether currentUser cannot delete the tag folder.

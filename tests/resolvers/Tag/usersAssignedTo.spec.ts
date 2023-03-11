@@ -27,6 +27,7 @@ describe("resolvers -> Tag -> usersAssignedTo", () => {
   it(`returns the list of assigned user object`, async () => {
     const parent = testRootTag!.toObject();
 
+    // @ts-ignore
     const payload = await usersAssignedToResolver?.(parent, {}, {});
 
     const usersAssignedTo = await TagUser.find({
@@ -41,7 +42,7 @@ describe("resolvers -> Tag -> usersAssignedTo", () => {
       .populate("user")
       .lean();
 
-    const userArray = usersAssignedTo.map((user) => user.user);
+    const userArray = usersAssignedTo.map((user) => user.userId);
 
     expect(payload).toEqual(userArray);
   });
@@ -49,6 +50,7 @@ describe("resolvers -> Tag -> usersAssignedTo", () => {
   it(`returns empty list if no user is assigned to the tag`, async () => {
     const parent = testChildTag1!.toObject();
 
+    // @ts-ignore
     const payload = await usersAssignedToResolver?.(parent, {}, {});
 
     expect(payload).toEqual([]);
