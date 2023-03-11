@@ -67,7 +67,7 @@ export const mutations = gql`
 
     createPost(data: PostInput!, file: String): Post @auth
 
-    createTag(input: createTagInput): Tag @auth
+    createTag(input: CreateTagInput): Tag @auth
 
     createTask(data: TaskInput, eventId: ID!): Task! @auth
 
@@ -147,7 +147,7 @@ export const mutations = gql`
 
     togglePostPin(id: ID!): Post! @auth
 
-    toggleTagAssign(input: ToggleTagAssignInput): Boolean @auth
+    toggleTagAssign(input: ToggleTagAssignInput): User @auth
 
     unblockUser(organizationId: ID!, userId: ID!): User! @auth
 
@@ -170,7 +170,7 @@ export const mutations = gql`
 
     updatePluginStatus(id: ID!, status: Boolean!): Plugin!
 
-    updateTag(tagId: ID!, newName: String!): Tag @auth
+    updateTag(input: UpdateTagInput): Tag @auth
 
     updateTask(id: ID!, data: UpdateTaskInput): Task @auth
 

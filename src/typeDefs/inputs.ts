@@ -17,7 +17,7 @@ export const inputs = gql`
     title: String!
   }
 
-  input createTagInput {
+  input CreateTagInput {
     name: String!
     parentTagId: ID
     organizationId: ID
@@ -261,6 +261,11 @@ export const inputs = gql`
     isPublic: Boolean
     visibleInSearch: Boolean
     location: String
+  }
+
+  type UpdateTagInput {
+    _id: ID!
+    name: String!
   }
 
   input UpdateTaskInput {

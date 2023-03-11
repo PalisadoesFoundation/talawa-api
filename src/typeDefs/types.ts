@@ -10,10 +10,6 @@ export const types = gql`
     count: Int!
   }
 
-  type AggregateTag {
-    count: Int!
-  }
-
   type AndroidFirebaseOptions {
     apiKey: String
     appId: String
@@ -203,6 +199,12 @@ export const types = gql`
     apiUrl: URL!
     createdAt: DateTime
     pinnedPosts: [Post]
+    tags(
+      after: String
+      before: String
+      first: Int
+      last: Int
+    ): OrganizationTagsConnection
   }
 
   type OrganizationInfoNode {
@@ -214,6 +216,11 @@ export const types = gql`
     creator: User!
     visibleInSearch: Boolean!
     apiUrl: URL!
+  }
+
+  type OrganizationTagsConnection {
+    edges: [TagEdge]
+    pageInfo: PageInfo
   }
 
   type OtpData {
@@ -307,21 +314,14 @@ export const types = gql`
     usersAssignedTo: [User]
   }
 
-  """
-  A connection to a list of tags.
-  """
-  type TagConnection {
-    """
-    Information to aid in pagination.
-    """
-    pageInfo: PageInfo!
+  type TagsAssignedWithConnection {
+    edges: [TagEdge]
+    pageInfo: PageInfo
+  }
 
-    """
-    A list of edges.
-    """
-    edges: [Tag]!
-
-    aggregate: AggregateTag!
+  type TagEdge {
+    node: Tag
+    cursor: String!
   }
 
   type Task {
@@ -362,6 +362,12 @@ export const types = gql`
     pluginCreationAllowed: Boolean
     adminApproved: Boolean
     createdAt: DateTime
+    tagsAssignedWith(
+      after: String
+      before: String
+      first: Int
+      last: Int
+    ): TagsAssignedWithConnection
   }
 
   type UserAttende {
