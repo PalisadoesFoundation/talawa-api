@@ -53,6 +53,6 @@
         "avoidEscape": true
       }
     ],
-    "tsdoc/syntax": ['warn', { jsx: true, ignore: ["@typescript-eslint/no-inferrable-types", "@typescript-eslint/no-var-requires"]}]
+    "tsdoc/syntax": ['warn', { ignore: ["@typescript-eslint/no-inferrable-types", "@typescript-eslint/no-var-requires"]}]
   }
 }
