@@ -757,6 +757,7 @@ export type MutationUpdateLanguageArgs = {
 
 export type MutationUpdateOrganizationArgs = {
   data?: InputMaybe<UpdateOrganizationInput>;
+  file?: InputMaybe<Scalars['String']>;
   id: Scalars['ID'];
 };
 

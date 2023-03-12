@@ -5,6 +5,7 @@ import {
 } from "../../types/generatedGraphQLTypes";
 import { Post } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
+import { BASE_URL } from "../../constants";
 
 // @ts-ignore
 export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationConnection"] =
@@ -46,6 +47,7 @@ export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationC
     const posts = postsmodel.docs.map((post) => {
       post.likeCount = post.likedBy.length || 0;
       post.commentCount = post.comments.length || 0;
+      post.imageUrl = post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined;
 
       return post;
     });

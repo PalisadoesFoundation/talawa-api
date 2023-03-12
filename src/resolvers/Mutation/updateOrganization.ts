@@ -3,6 +3,7 @@ import { errors, requestContext } from "../../libraries";
 import { Organization } from "../../models";
 import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
 import { adminCheck } from "../../utilities";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 
 export const updateOrganization: MutationResolvers["updateOrganization"] =
   async (_parent, args, context) => {
@@ -22,6 +23,14 @@ export const updateOrganization: MutationResolvers["updateOrganization"] =
     // checks if the current user is an admin of the organization
     await adminCheck(context.userId, organization);
 
+    let uploadImageFileName;
+    if (args.file) {
+      uploadImageFileName = await uploadEncodedImage(
+        args.file,
+        organization?.image
+      );
+    }
+
     return await Organization.findOneAndUpdate(
       {
         _id: organization._id,
@@ -29,6 +38,7 @@ export const updateOrganization: MutationResolvers["updateOrganization"] =
       {
         $set: {
           ...args.data,
+          image: uploadImageFileName || undefined,
         },
       },
       {

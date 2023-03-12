@@ -6,6 +6,7 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
+  BASE_URL,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
@@ -108,5 +109,10 @@ export const createPost: MutationResolvers["createPost"] = async (
   }
 
   // Returns createdPost.
-  return createdPost.toObject();
+  return {
+    ...createdPost.toObject(),
+    imageUrl: createdPost.imageUrl
+      ? `${BASE_URL}${uploadEncodedImage}`
+      : undefined,
+  };
 };

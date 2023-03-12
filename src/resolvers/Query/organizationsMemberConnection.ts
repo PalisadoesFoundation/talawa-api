@@ -5,6 +5,7 @@ import {
 } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
+import { BASE_URL } from "../../constants";
 
 // @ts-ignore
 export const organizationsMemberConnection: QueryResolvers["organizationsMemberConnection"] =
@@ -58,6 +59,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
       users = usersModel.docs.map((user) => {
         return {
           ...user,
+          image: `${BASE_URL}${user.image}`,
           password: null,
         };
       });
@@ -65,6 +67,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
       users = usersModel.docs.map((user) => {
         return {
           ...user._doc,
+          image: `${BASE_URL}${user.image}`,
           password: null,
         };
       });

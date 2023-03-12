@@ -5,7 +5,7 @@ import {
 } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import { USER_NOT_FOUND_ERROR } from "../../constants";
+import { BASE_URL, USER_NOT_FOUND_ERROR } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
 
 export const users: QueryResolvers["users"] = async (_parent, args) => {
@@ -33,6 +33,7 @@ export const users: QueryResolvers["users"] = async (_parent, args) => {
     return users.map((user) => {
       return {
         ...user,
+        image: `${BASE_URL}${user.image}`,
         organizationsBlockedBy: [],
       };
     });

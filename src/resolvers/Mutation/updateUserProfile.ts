@@ -1,4 +1,5 @@
 import {
+  BASE_URL,
   EMAIL_ALREADY_EXISTS_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
@@ -50,46 +51,29 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
   }
 
   // Update User
-  if (uploadImageFileName) {
-    return await User.findOneAndUpdate(
-      {
-        _id: context.userId,
+  const updatedUser = await User.findOneAndUpdate(
+    {
+      _id: context.userId,
+    },
+    {
+      $set: {
+        email: args.data?.email ? args.data.email : currentUser?.email,
+        firstName: args.data?.firstName
+          ? args.data.firstName
+          : currentUser?.firstName,
+        lastName: args.data?.lastName
+          ? args.data.lastName
+          : currentUser?.lastName,
+        image: args.file ? uploadImageFileName : null,
       },
-      {
-        $set: {
-          email: args.data?.email ? args.data.email : currentUser?.email,
-          firstName: args.data?.firstName
-            ? args.data.firstName
-            : currentUser?.firstName,
-          lastName: args.data?.lastName
-            ? args.data.lastName
-            : currentUser?.lastName,
-          image: uploadImageFileName,
-        },
-      },
-      {
-        new: true,
-      }
-    ).lean();
-  } else {
-    return await User.findOneAndUpdate(
-      {
-        _id: context.userId,
-      },
-      {
-        $set: {
-          email: args.data?.email ? args.data.email : currentUser?.email,
-          firstName: args.data?.firstName
-            ? args.data.firstName
-            : currentUser?.firstName,
-          lastName: args.data?.lastName
-            ? args.data.lastName
-            : currentUser?.lastName,
-        },
-      },
-      {
-        new: true,
-      }
-    ).lean();
-  }
+    },
+    {
+      new: true,
+    }
+  ).lean();
+  updatedUser!.image = updatedUser?.image
+    ? `${BASE_URL}${updatedUser?.image}`
+    : undefined;
+
+  return updatedUser!;
 };
