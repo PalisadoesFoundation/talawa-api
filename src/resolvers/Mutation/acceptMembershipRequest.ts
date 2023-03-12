@@ -8,7 +8,18 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-
+/**
+ * This function accepts the membership request sent by a user.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. Whether the membership request exists or not.
+ * 2. Whether thr organization exists or not
+ * 3. Whether the user exists
+ * 4. whether currentUser with _id === context.userId is an admin of organization.
+ * 5. Whether user is already a member of organization.
+ */
 export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest"] =
   async (_parent, args, context) => {
     const membershipRequest = await MembershipRequest.findOne({
