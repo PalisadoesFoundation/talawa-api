@@ -261,7 +261,7 @@ The MAIL_USERNAME and MAIL_PASSWORD parameters are required to enable an app to 
 1. Under `Signing in to Google` section select `App Passwords`.
 1. Click on `Select app` section and choose `Other(Custom name)`, enter `talawa` as the custom name and press `Generate` button.
 1.  Copy the 16 character generated app password to the variable named `MAIL_PASSWORD` in `.env` file.
-1.  Copy you usual gmail address to the variable named `MAIL_USERNAME` in `.env` file.
+1.  Copy your usual gmail address to the variable named `MAIL_USERNAME` in `.env` file.
 
 For more info refer to this [Google Answer](https://support.google.com/accounts/answer/185833).
 
