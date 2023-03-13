@@ -190,7 +190,7 @@
     "@typescript-eslint/space-before-blocks": "off",
     "@typescript-eslint/space-before-function-paren": "off",
     "@typescript-eslint/space-infix-ops": "off",
-    "@typescript-eslint/type-annotation-spacing": "off",
+    "@typescript-eslint/type-annotation-spacing": "off"
 
     // Deprecates Rules
 //     "@typescript-eslint/no-duplicate-imports": "off",
