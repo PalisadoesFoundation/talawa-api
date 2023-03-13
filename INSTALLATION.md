@@ -30,6 +30,8 @@ This document provides instructions on how to set up and start a running instanc
   - [Configuring Google ReCAPTCHA](#configuring-google-recaptcha)
     - [Setting up RECAPTCHA\_SECRET\_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
     - [Setting up .env MAIL\_USERNAME and MAIL\_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
+  - [Setting up COLORIZE_LOGS in .env file (optional)](#setting-up-colorize_logs-in-env-file-optional)
+  - [Setting up LOG_LEVEL in .env file (optional)](#setting-up-log_level-in-env-file-optional)  
   - [Configuring Google Firebase](#configuring-google-firebase)
     - [Generate Firebase Keys for the Talawa Notification Service](#generate-firebase-keys-for-the-talawa-notification-service)
     - [(Mobile Developers Only) Applying the Firebase Keys to the Talawa Mobile App](#mobile-developers-only-applying-the-firebase-keys-to-the-talawa-mobile-app)
@@ -267,7 +269,7 @@ The MAIL_USERNAME and MAIL_PASSWORD parameters are required to enable an app to 
 
 For more info refer to this [Google Answer](https://support.google.com/accounts/answer/185833).
 
-### Setting up COLORIZE_LOGS in .env file
+## Setting up COLORIZE_LOGS in .env file *(optional)*
 The parameter `COLORIZE_LOGS` is a boolean field and can be set to true or false. It customizes the log colorization formats displayed in console. You can set the value in `.env` file as 
 ```
 COLORIZE_LOGS = false
@@ -276,7 +278,7 @@ If the parameter value is set to `true`, you should be able to see colorized log
 
 ![Colorized logs in console](./image/colorize-logs.jpg)
 
-### Setting up LOG_LEVEL in .env file
+## Setting up LOG_LEVEL in .env file *(optional)*
 There are different logging levels that can be configured by setting this parameter. The severity order of levels are displayed numerically ascending from most important to least important.<br>
 ```
  levels = {
