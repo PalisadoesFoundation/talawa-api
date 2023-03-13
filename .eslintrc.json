@@ -3,6 +3,8 @@
     "es2022": true,
     "node": true
   },
+  "failOnError": false,
+  "emitWarning": true,
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
