@@ -5,9 +5,8 @@
   },
   "extends": [
     "eslint:recommended",
-    "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
-    "plugin:prettier/recommended"
+    "prettier"
   ],
   "overrides": [
     {
@@ -29,30 +28,10 @@
   },
   "plugins": [
     "@typescript-eslint",
-    "@typescript-eslint/eslint-plugin",
     "eslint-plugin-tsdoc"
   ],
   "root": true,
   "rules": {
-    "eqeqeq": ["error", "always"],
-    "linebreak-style": ["error", "unix"],
-    "no-unused-vars": [
-      "error",
-      {
-        "argsIgnorePattern": "^_",
-        "caughtErrorsIgnorePattern": "^_",
-        "destructuredArrayIgnorePattern": "^_",
-        "varsIgnorePattern": "^_"
-      }
-    ],
-    "quotes": [
-      "error",
-      "double",
-      {
-        "allowTemplateLiterals": true,
-        "avoidEscape": true
-      }
-    ],
     // warn/1, error/2, off/0
     "tsdoc/syntax": "off", // toggle off/ warn
 
