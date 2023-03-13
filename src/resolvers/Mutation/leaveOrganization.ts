@@ -2,18 +2,10 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_PARAM,
-  MEMBER_NOT_FOUND_MESSAGE,
-  MEMBER_NOT_FOUND_PARAM,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_PARAM,
-  USER_NOT_AUTHORIZED_PARAM,
-  MEMBER_NOT_FOUND_CODE,
-  USER_NOT_AUTHORIZED_CODE,
-  USER_NOT_AUTHORIZED_MESSAGE,
+  USER_NOT_FOUND_ERROR,
+  MEMBER_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 
 export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
@@ -28,9 +20,9 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   // Checks whether organization exists.
   if (!organization) {
     throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-      ORGANIZATION_NOT_FOUND_CODE,
-      ORGANIZATION_NOT_FOUND_PARAM
+      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+      ORGANIZATION_NOT_FOUND_ERROR.CODE,
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -41,18 +33,18 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   // Checks whether currentUser exists.
   if (!currentUser) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
   // Checks whether currentUser is the creator of organzation.
   if (currentUser._id.toString() === organization.creator.toString()) {
     throw new errors.UnauthorizedError(
-      requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
-      USER_NOT_AUTHORIZED_CODE,
-      USER_NOT_AUTHORIZED_PARAM
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM
     );
   }
 
@@ -63,9 +55,9 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   // Checks whether currentUser is not a member of organzation.
   if (currentUserIsOrganizationMember === false) {
     throw new errors.ConflictError(
-      requestContext.translate(MEMBER_NOT_FOUND_MESSAGE),
-      MEMBER_NOT_FOUND_CODE,
-      MEMBER_NOT_FOUND_PARAM
+      requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
+      MEMBER_NOT_FOUND_ERROR.CODE,
+      MEMBER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -99,6 +91,10 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
         joinedOrganizations: currentUser.joinedOrganizations.filter(
           (joinedOrganization) =>
             joinedOrganization.toString() !== organization._id.toString()
+        ),
+        adminFor: currentUser.adminFor.filter(
+          (adminAtOrganization) =>
+            adminAtOrganization.toString() !== organization._id.toString()
         ),
       },
     },

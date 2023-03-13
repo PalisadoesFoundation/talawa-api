@@ -3,13 +3,12 @@ import { errors, requestContext } from "../../libraries";
 import { User, Organization } from "../../models";
 import { adminCheck } from "../../utilities";
 import {
-  USER_NOT_FOUND,
-  MEMBER_NOT_FOUND,
-  IN_PRODUCTION,
-  ORGANIZATION_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_PARAM,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
+  MEMBER_NOT_FOUND_ERROR,
+  USER_REMOVING_SELF,
+  ADMIN_REMOVING_ADMIN,
+  ADMIN_REMOVING_CREATOR,
 } from "../../constants";
 
 export const removeMember: MutationResolvers["removeMember"] = async (
@@ -24,117 +23,115 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   // Checks if organization exists.
   if (!organization) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? ORGANIZATION_NOT_FOUND
-        : requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-      ORGANIZATION_NOT_FOUND_CODE,
-      ORGANIZATION_NOT_FOUND_PARAM
+      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+      ORGANIZATION_NOT_FOUND_ERROR.CODE,
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM
     );
   }
 
+  const currentUser = await User.findOne({
+    _id: context.userId,
+  });
+
   // Checks whether current user making the request is an admin of organization.
-  adminCheck(context.userId, organization);
+  await adminCheck(context.userId, organization!);
 
-  /* 
-  Errors inside a loop stop the loop it doesnt throw the error, errors have to be
-  stored in an array an thrown at the end. This variable is used to store all the
-  errors we want to throw from the following for loop.
-  */
-  const errorsToThrow = [];
+  const user = await User.findOne({
+    _id: args.data.userId,
+  }).lean();
 
-  for await (const userId of args.data.userIds) {
-    // do not run an async function inside a for each loop - it doesnt work
-
-    const user = await User.findOne({
-      _id: userId,
-    }).lean();
-
-    // Checks if a user with _id === userId exists.
-    if (!user) {
-      errorsToThrow.push(USER_NOT_FOUND);
-      break;
-    }
-
-    // Boolean to determine whether user is a member of organization.
-    const userIsOrganizationMember = organization?.members.some(
-      (member) => member.toString() === user._id.toString()
+  // Checks whether curent user exists
+  if (!user) {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
+  }
 
-    /*
-    userIsOrganizationMember being true implies that the current user is a member of organization.
-    If userIsOrganizationMember is false pushes error message to errors list and breaks out of loop.
-    */
-    if (userIsOrganizationMember === false) {
-      errorsToThrow.push(MEMBER_NOT_FOUND);
-      break;
-    }
+  const userIsOrganizationMember = organization?.members.some(
+    (member) => member.toString() === user._id.toString()
+  );
 
-    // Boolean to determine whether user is an admin of organization.
-    const userIsOrganizationAdmin = organization?.admins.some(
-      (admin) => admin.toString() === user._id.toString()
+  if (!userIsOrganizationMember) {
+    throw new errors.NotFoundError(
+      requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
+      MEMBER_NOT_FOUND_ERROR.CODE,
+      MEMBER_NOT_FOUND_ERROR.PARAM
     );
+  }
 
-    /*
+  // Check if the current user is removing self
+  if (user._id.toString() === currentUser?._id.toString()) {
+    throw new errors.ConflictError(
+      requestContext.translate(USER_REMOVING_SELF.MESSAGE),
+      USER_REMOVING_SELF.CODE,
+      USER_REMOVING_SELF.PARAM
+    );
+  }
+
+  const userIsOrganizationAdmin = organization?.admins.some(
+    (admin) => admin.toString() === user._id.toString()
+  );
+
+  /*
     userIsOrganizationAdmin being true implies that the current user is an admin of organization.
     If userIsOrganizationAdmin is true pushes error message to errors list and breaks out of loop.
     */
-    if (userIsOrganizationAdmin === true) {
-      errorsToThrow.push(
-        "Administrators cannot remove members who are also Administrators"
-      );
-      break;
-    }
+  if (userIsOrganizationAdmin === true) {
+    throw new errors.ConflictError(
+      requestContext.translate(ADMIN_REMOVING_ADMIN.MESSAGE),
+      ADMIN_REMOVING_ADMIN.CODE,
+      ADMIN_REMOVING_ADMIN.PARAM
+    );
+  }
 
-    /*
+  /*
     Administrators cannot remove creator of organzation from the members list.
     Following if block matches organization's creator's id to
     user's id. Match being true implies that current user is the creator
     of organization. If match is true assigns error message to errors list
     and breaks out of loop.
     */
-    if (organization?.creator.toString() === user._id.toString()) {
-      errorsToThrow.push(
-        "Administrators cannot remove the creator of the organization from the organization"
-      );
-      break;
-    }
-
-    // Removes user's id from members list on organization.
-    organization = await Organization.findOneAndUpdate(
-      {
-        _id: organization?._id,
-      },
-      {
-        $set: {
-          members: organization?.members.filter(
-            (member) => member.toString() !== user._id.toString()
-          ),
-        },
-      },
-      {
-        new: true,
-      }
-    ).lean();
-
-    // Remove organization's id from joinedOrganizations list on user.
-    await User.updateOne(
-      {
-        _id: user._id,
-      },
-      {
-        $set: {
-          joinedOrganizations: user.joinedOrganizations.filter(
-            (joinedOrganization) =>
-              joinedOrganization.toString() !== organization?._id.toString()
-          ),
-        },
-      }
+  if (organization?.creator.toString() === user._id.toString()) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(ADMIN_REMOVING_CREATOR.MESSAGE),
+      ADMIN_REMOVING_CREATOR.CODE,
+      ADMIN_REMOVING_CREATOR.PARAM
     );
   }
 
-  if (errorsToThrow.length > 0) {
-    throw new Error(errorsToThrow.join());
-  }
+  // Removes user's id from members list on organization.
+  organization = await Organization.findOneAndUpdate(
+    {
+      _id: organization?._id,
+    },
+    {
+      $set: {
+        members: organization?.members.filter(
+          (member) => member.toString() !== user._id.toString()
+        ),
+      },
+    },
+    {
+      new: true,
+    }
+  ).lean();
+
+  // Remove organization's id from joinedOrganizations list on user.
+  await User.updateOne(
+    {
+      _id: user._id,
+    },
+    {
+      $set: {
+        joinedOrganizations: user.joinedOrganizations.filter(
+          (joinedOrganization) =>
+            joinedOrganization.toString() !== organization?._id.toString()
+        ),
+      },
+    }
+  );
 
   return organization!;
 };

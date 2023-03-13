@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { Types } from "mongoose";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { directChatsByUserID as directChatsByUserIDResolver } from "../../../src/resolvers/Query/directChatsByUserID";
 import { DirectChat } from "../../../src/models";
 import { QueryDirectChatsByUserIdArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -9,15 +10,16 @@ import { createTestDirectChat } from "../../helpers/directChat";
 import { testUserType } from "../../helpers/userAndOrg";
 
 let testUser: testUserType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const resultArray = await createTestDirectChat();
   testUser = resultArray[0];
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> directChatsByUserID", () => {

@@ -3,16 +3,16 @@ import { gql } from "apollo-server-core";
 // Place fields alphabetically to ensure easier lookup and navigation.
 export const mutations = gql`
   type Mutation {
-    acceptAdmin(id: ID!): Boolean! @auth
+    acceptAdmin(id: ID!): Boolean! @auth @role(requires: SUPERADMIN)
 
     acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
     addLanguageTranslation(data: LanguageInput!): Language! @auth
 
-    addOrganizationImage(file: Upload!, organizationId: String!): Organization!
+    addOrganizationImage(file: String!, organizationId: String!): Organization!
       @auth
 
-    addUserImage(file: Upload!): User! @auth
+    addUserImage(file: String!): User! @auth
 
     addUserToGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
 
@@ -20,16 +20,17 @@ export const mutations = gql`
 
     adminRemoveGroup(groupId: ID!): Message! @auth
 
-    adminRemovePost(organizationId: ID!, postId: ID!): Post! @auth
-
     blockPluginCreationBySuperadmin(userId: ID!, blockUser: Boolean!): User!
       @auth
+      @role(requires: SUPERADMIN)
 
     blockUser(organizationId: ID!, userId: ID!): User! @auth
 
     cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
-    createAdmin(data: UserAndOrganizationInput!): User! @auth
+    createAdmin(data: UserAndOrganizationInput!): User!
+      @auth
+      @role(requires: SUPERADMIN)
 
     createComment(postId: ID!, data: CommentInput!): Comment @auth
 
@@ -52,7 +53,7 @@ export const mutations = gql`
 
     createMessageChat(data: MessageChatInput!): MessageChat! @auth
 
-    createOrganization(data: OrganizationInput, file: Upload): Organization!
+    createOrganization(data: OrganizationInput, file: String): Organization!
       @auth
       @role(requires: SUPERADMIN)
 
@@ -64,7 +65,7 @@ export const mutations = gql`
       installedOrgs: [ID!]
     ): Plugin!
 
-    createPost(data: PostInput!, file: Upload): Post @auth
+    createPost(data: PostInput!, file: String): Post @auth
 
     createTask(data: TaskInput, eventId: ID!): Task! @auth
 
@@ -92,11 +93,13 @@ export const mutations = gql`
 
     registerForEvent(id: ID!): Event! @auth
 
-    rejectAdmin(id: ID!): Boolean! @auth
+    rejectAdmin(id: ID!): Boolean! @auth @role(requires: SUPERADMIN)
 
     rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
-    removeAdmin(data: UserAndOrganizationInput!): User! @auth
+    removeAdmin(data: UserAndOrganizationInput!): User!
+      @auth
+      @role(requires: SUPERADMIN)
 
     removeComment(id: ID!): Comment @auth
 
@@ -106,9 +109,9 @@ export const mutations = gql`
 
     removeGroupChat(chatId: ID!): GroupChat! @auth
 
-    removeMember(data: MultipleUsersAndOrganizationInput!): Organization! @auth
+    removeMember(data: UserAndOrganizationInput!): Organization! @auth
 
-    removeOrganization(id: ID!): User! @auth
+    removeOrganization(id: ID!): User! @auth @role(requires: SUPERADMIN)
 
     removeOrganizationImage(organizationId: String!): Organization! @auth
 
@@ -136,7 +139,9 @@ export const mutations = gql`
       messageContent: String!
     ): GroupChatMessage! @auth
 
-    signUp(data: UserInput!, file: Upload): AuthData!
+    signUp(data: UserInput!, file: String): AuthData!
+
+    togglePostPin(id: ID!): Post! @auth
 
     unblockUser(organizationId: ID!, userId: ID!): User! @auth
 
@@ -161,8 +166,12 @@ export const mutations = gql`
 
     updateTask(id: ID!, data: UpdateTaskInput): Task @auth
 
-    updateUserProfile(data: UpdateUserInput, file: Upload): User! @auth
+    updateUserProfile(data: UpdateUserInput, file: String): User! @auth
 
-    updateUserType(data: UpdateUserTypeInput!): Boolean! @auth
+    updateUserPassword(data: UpdateUserPasswordInput): User! @auth
+
+    updateUserType(data: UpdateUserTypeInput!): Boolean!
+      @auth
+      @role(requires: SUPERADMIN)
   }
 `;

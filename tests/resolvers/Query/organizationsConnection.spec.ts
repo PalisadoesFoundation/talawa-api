@@ -5,18 +5,21 @@ import {
   User,
   Interface_Organization,
 } from "../../../src/models";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { QueryOrganizationsConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestUser, testUserType } from "../../helpers/userAndOrg";
 import { nanoid } from "nanoid";
 import { Document } from "mongoose";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testOrganizations: (Interface_Organization &
   Document<any, any, Interface_Organization>)[];
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const testUser: testUserType = await createTestUser();
+
   testOrganizations = await Organization.insertMany([
     {
       name: `name${nanoid()}`,
@@ -77,7 +80,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> organizationsConnection", () => {

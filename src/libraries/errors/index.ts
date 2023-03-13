@@ -14,3 +14,5 @@ export * from "./unauthorizedError";
 export * from "./validationError";
 // Used for basic input sanity checks
 export * from "./inputValidationError";
+// Used for File extension check
+export * from "./invalidFileTypeError";

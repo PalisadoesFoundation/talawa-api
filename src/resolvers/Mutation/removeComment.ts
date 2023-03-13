@@ -2,14 +2,9 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Post, Comment } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
-  COMMENT_NOT_FOUND_CODE,
-  COMMENT_NOT_FOUND_MESSAGE,
-  COMMENT_NOT_FOUND_PARAM,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_AUTHORIZED_CODE,
+  USER_NOT_FOUND_ERROR,
+  COMMENT_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 
 export const removeComment: MutationResolvers["removeComment"] = async (
@@ -24,9 +19,9 @@ export const removeComment: MutationResolvers["removeComment"] = async (
   // Checks whether currentUser with _id === context.userId exists.
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -37,18 +32,18 @@ export const removeComment: MutationResolvers["removeComment"] = async (
   // Checks whether comment exists.
   if (!comment) {
     throw new errors.NotFoundError(
-      requestContext.translate(COMMENT_NOT_FOUND_MESSAGE),
-      COMMENT_NOT_FOUND_CODE,
-      COMMENT_NOT_FOUND_PARAM
+      requestContext.translate(COMMENT_NOT_FOUND_ERROR.MESSAGE),
+      COMMENT_NOT_FOUND_ERROR.CODE,
+      COMMENT_NOT_FOUND_ERROR.PARAM
     );
   }
 
   // Checks whether currentUser with _id === context.userId is not the creator of comment.
   if (comment.creator.toString() !== context.userId.toString()) {
     throw new errors.UnauthorizedError(
-      requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
-      USER_NOT_AUTHORIZED_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 

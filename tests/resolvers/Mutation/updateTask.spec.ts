@@ -2,22 +2,24 @@ import "dotenv/config";
 import { Document, Types } from "mongoose";
 import { Event, Task, Interface_Task } from "../../../src/models";
 import { MutationUpdateTaskArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { updateTask as updateTaskResolver } from "../../../src/resolvers/Mutation/updateTask";
 import {
-  TASK_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  TASK_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { testUserType } from "../../helpers/userAndOrg";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 let testTasks: (Interface_Task & Document<any, any, Interface_Task>)[];
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestEventWithRegistrants();
   testUser = temp[0];
   const testEvent = temp[2];
@@ -48,7 +50,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> updateTask", () => {
@@ -73,8 +75,10 @@ describe("resolvers -> Mutation -> updateTask", () => {
 
       await updateTaskResolverNotFoundError?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -101,8 +105,10 @@ describe("resolvers -> Mutation -> updateTask", () => {
 
       await updateTaskResolverNotFoundError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(TASK_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${TASK_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenLastCalledWith(TASK_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${TASK_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
@@ -130,9 +136,11 @@ describe("resolvers -> Mutation -> updateTask", () => {
       await updateTaskResolverNotFoundError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
       );
-      expect(spy).toHaveBeenLastCalledWith(`${USER_NOT_AUTHORIZED_MESSAGE}`);
+      expect(spy).toHaveBeenLastCalledWith(
+        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
     }
   });
 

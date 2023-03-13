@@ -2,7 +2,9 @@ import { Schema, Types, model, PopulatedDoc, Document, models } from "mongoose";
 import { Interface_GroupChatMessage } from "./GroupChatMessage";
 import { Interface_Organization } from "./Organization";
 import { Interface_User } from "./User";
-
+/**
+ * This is an interface representing a document for a group chat in the database(MongoDB).
+ */
 export interface Interface_GroupChat {
   _id: Types.ObjectId;
   title: string;
@@ -12,7 +14,15 @@ export interface Interface_GroupChat {
   organization: PopulatedDoc<Interface_Organization & Document>;
   status: string;
 }
-
+/**
+ * This is the structure of a group chat
+ * @param title - Title
+ * @param users - Users of the chat
+ * @param messages - Message of the chat
+ * @param creator - Creator of the chat
+ * @param organization - Organization
+ * @param status - Status
+ */
 const groupChatSchema = new Schema({
   title: {
     type: String,

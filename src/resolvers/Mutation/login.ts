@@ -9,11 +9,8 @@ import {
 import { errors, requestContext } from "../../libraries";
 import { androidFirebaseOptions, iosFirebaseOptions } from "../../config";
 import {
-  IN_PRODUCTION,
-  USER_NOT_FOUND,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
+  INVALID_CREDENTIALS_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 
 export const login: MutationResolvers["login"] = async (_parent, args) => {
@@ -24,41 +21,30 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
   // Checks whether user exists.
   if (!user) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND
-        : requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
-
   const isPasswordValid = await bcrypt.compare(
     args.data.password,
     user.password
   );
-
   // Checks whether password is invalid.
   if (isPasswordValid === false) {
     throw new errors.ValidationError(
       [
         {
-          message:
-            IN_PRODUCTION !== true
-              ? "Invalid credentials"
-              : requestContext.translate("invalid.credentials"),
-          code: "invalid.credentials",
-          param: "credentials",
+          message: requestContext.translate(INVALID_CREDENTIALS_ERROR.MESSAGE),
+          code: INVALID_CREDENTIALS_ERROR.CODE,
+          param: INVALID_CREDENTIALS_ERROR.PARAM,
         },
       ],
-      IN_PRODUCTION !== true
-        ? "Invalid credentials"
-        : requestContext.translate("invalid.credentials")
+      requestContext.translate(INVALID_CREDENTIALS_ERROR.MESSAGE)
     );
   }
-
   const accessToken = await createAccessToken(user);
   const refreshToken = await createRefreshToken(user);
-
   copyToClipboard(`{
     "Authorization": "Bearer ${accessToken}"
   }`);

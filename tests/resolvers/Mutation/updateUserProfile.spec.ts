@@ -2,11 +2,13 @@ import "dotenv/config";
 import { Document, Types } from "mongoose";
 import { Interface_User, User } from "../../../src/models";
 import { MutationUpdateUserProfileArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { updateUserProfile as updateUserProfileResolver } from "../../../src/resolvers/Mutation/updateUserProfile";
 import {
-  EMAIL_ALREADY_EXISTS_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  EMAIL_ALREADY_EXISTS_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { nanoid } from "nanoid";
 import {
@@ -19,10 +21,15 @@ import {
   afterEach,
 } from "vitest";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: Interface_User & Document<any, any, Interface_User>;
 
+vi.mock("../../utilities/uploadEncodedImage", () => ({
+  uploadEncodedImage: vi.fn(),
+}));
+const email = `email${nanoid().toLowerCase()}@gmail.com`;
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 
   testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,
@@ -31,10 +38,19 @@ beforeAll(async () => {
     lastName: "lastName",
     appLanguageCode: "en",
   });
+  const testUser2 = await User.create({
+    email: email,
+    password: "password",
+    firstName: "firstName",
+    lastName: "lastName",
+    appLanguageCode: "en",
+  });
+  testUser2.save();
+  testUser.save();
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 afterEach(() => {
@@ -66,8 +82,10 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
 
       await updateUserProfileResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
@@ -92,8 +110,10 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
 
       await updateUserProfileResolverUserError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
@@ -107,7 +127,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     try {
       const args: MutationUpdateUserProfileArgs = {
         data: {
-          email: testUser.email,
+          email: email,
         },
       };
 
@@ -121,9 +141,9 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
 
       await updateUserProfileResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_MESSAGE);
+      expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${EMAIL_ALREADY_EXISTS_MESSAGE}`
+        `Translated ${EMAIL_ALREADY_EXISTS_ERROR.MESSAGE}`
       );
     }
   });
@@ -151,9 +171,9 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
 
       await updateUserProfileResolverEmailError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_MESSAGE);
+      expect(spy).toHaveBeenLastCalledWith(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${EMAIL_ALREADY_EXISTS_MESSAGE}`
+        `Translated ${EMAIL_ALREADY_EXISTS_ERROR.MESSAGE}`
       );
     }
   });
@@ -264,18 +284,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     });
   });
 
-  it(`When Image is given, updates current user's user object and returns the object`, async () => {
-    const uploadImage = await import("../../../src/utilities");
-
-    const spy = vi
-      .spyOn(uploadImage, "uploadImage")
-      .mockImplementationOnce(async () => {
-        return {
-          newImagePath: "newImagePath",
-          imageAlreadyInDbPath: "imageAlreadyInDbPath",
-        };
-      });
-
+  it("When Image is give updates the current user's object with the uploaded image and returns it", async () => {
     const args: MutationUpdateUserProfileArgs = {
       data: {
         email: `email${nanoid().toLowerCase()}@gmail.com`,
@@ -285,202 +294,54 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       file: "newImageFile.png",
     };
 
+    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
+      async (encodedImageURL: string) => encodedImageURL
+    );
+
     const context = {
       userId: testUser._id,
     };
 
-    const { updateUserProfile: updateUserProfileResolverWImage } = await import(
-      "../../../src/resolvers/Mutation/updateUserProfile"
-    );
-
-    const updateUserProfilePayload = await updateUserProfileResolverWImage?.(
+    const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
       context
     );
-    expect(spy).toHaveBeenCalledTimes(1);
+
     expect(updateUserProfilePayload).toEqual({
       ...testUser.toObject(),
       email: args.data?.email,
       firstName: "newFirstName",
       lastName: "newLastName",
-      image: "imageAlreadyInDbPath",
+      image: "newImageFile.png",
     });
   });
-
-  it(`When Image is given, updates current user's user object and returns the object when only email is given`, async () => {
-    const uploadImage = await import("../../../src/utilities");
-
-    const spy = vi
-      .spyOn(uploadImage, "uploadImage")
-      .mockImplementationOnce(async () => {
-        return {
-          newImagePath: "newImagePath",
-          imageAlreadyInDbPath: "imageAlreadyInDbPath",
-        };
-      });
-
-    const args: MutationUpdateUserProfileArgs = {
-      data: {
-        email: `email${nanoid().toLowerCase()}@gmail.com`,
-      },
-      file: "newImageFile.png",
-    };
-
-    const context = {
-      userId: testUser._id,
-    };
-
-    const { updateUserProfile: updateUserProfileResolverWImage } = await import(
-      "../../../src/resolvers/Mutation/updateUserProfile"
-    );
-
-    const updateUserProfilePayload = await updateUserProfileResolverWImage?.(
-      {},
-      args,
-      context
-    );
-
-    expect(spy).toHaveBeenCalledTimes(1);
-    expect(updateUserProfilePayload).toEqual({
-      ...testUser.toObject(),
-      email: args.data?.email,
-      firstName: "newFirstName",
-      lastName: "newLastName",
-      image: "imageAlreadyInDbPath",
-    });
-  });
-
-  it(`When Image is given, updates current user's user object and returns the object when only firstName is given`, async () => {
-    const uploadImage = await import("../../../src/utilities");
-
-    const spy = vi
-      .spyOn(uploadImage, "uploadImage")
-      .mockImplementationOnce(async () => {
-        return {
-          newImagePath: "newImagePath",
-          imageAlreadyInDbPath: "imageAlreadyInDbPath",
-        };
-      });
-
-    const args: MutationUpdateUserProfileArgs = {
-      data: {
-        firstName: "newFirstName1",
-      },
-      file: "newImageFile.png",
-    };
-
-    const context = {
-      userId: testUser._id,
-    };
-
-    const { updateUserProfile: updateUserProfileResolverWImage } = await import(
-      "../../../src/resolvers/Mutation/updateUserProfile"
-    );
-
-    const updateUserProfilePayload = await updateUserProfileResolverWImage?.(
-      {},
-      args,
-      context
-    );
-
-    const testUserobj = await User.findById({ _id: testUser.id });
-
-    expect(spy).toHaveBeenCalledTimes(1);
-    expect(updateUserProfilePayload).toEqual({
-      ...testUser.toObject(),
-      email: testUserobj?.email,
-      firstName: "newFirstName1",
-      lastName: testUserobj?.lastName,
-      image: "imageAlreadyInDbPath",
-    });
-  });
-
-  it(`When Image is given, updates current user's user object and returns the object when only lastName is given`, async () => {
-    const uploadImage = await import("../../../src/utilities");
-
-    const spy = vi
-      .spyOn(uploadImage, "uploadImage")
-      .mockImplementationOnce(async () => {
-        return {
-          newImagePath: "newImagePath",
-          imageAlreadyInDbPath: "imageAlreadyInDbPath",
-        };
-      });
-
-    const args: MutationUpdateUserProfileArgs = {
-      data: {
-        lastName: "newLastName1",
-      },
-      file: "newImageFile.png",
-    };
-
-    const context = {
-      userId: testUser._id,
-    };
-
-    const { updateUserProfile: updateUserProfileResolverWImage } = await import(
-      "../../../src/resolvers/Mutation/updateUserProfile"
-    );
-
-    const updateUserProfilePayload = await updateUserProfileResolverWImage?.(
-      {},
-      args,
-      context
-    );
-
-    const testUserobj = await User.findById({ _id: testUser.id });
-
-    expect(spy).toHaveBeenCalledTimes(1);
-    expect(updateUserProfilePayload).toEqual({
-      ...testUser.toObject(),
-      email: testUserobj?.email,
-      firstName: testUserobj?.firstName,
-      lastName: "newLastName1",
-      image: "imageAlreadyInDbPath",
-    });
-  });
-
-  it(`When Image is given, updates current user's user object and returns the object when only Image is not in DB path`, async () => {
-    const uploadImage = await import("../../../src/utilities");
-
-    const spy = vi
-      .spyOn(uploadImage, "uploadImage")
-      .mockImplementationOnce(async () => {
-        return {
-          newImagePath: "newImagePath",
-          imageAlreadyInDbPath: undefined,
-        };
-      });
-
+  it("When Image is give updates the current user's object with the uploaded image and returns it", async () => {
     const args: MutationUpdateUserProfileArgs = {
       data: {},
       file: "newImageFile.png",
     };
 
+    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
+      async (encodedImageURL: string) => encodedImageURL
+    );
+
     const context = {
       userId: testUser._id,
     };
 
-    const { updateUserProfile: updateUserProfileResolverWImage } = await import(
-      "../../../src/resolvers/Mutation/updateUserProfile"
-    );
-
-    const updateUserProfilePayload = await updateUserProfileResolverWImage?.(
+    const updateUserProfilePayload = await updateUserProfileResolver?.(
       {},
       args,
       context
     );
 
-    const testUserobj = await User.findById({ _id: testUser.id });
-
-    expect(spy).toHaveBeenCalledTimes(1);
     expect(updateUserProfilePayload).toEqual({
       ...testUser.toObject(),
-      email: testUserobj?.email,
-      firstName: testUserobj?.firstName,
-      lastName: "newLastName1",
-      image: "newImagePath",
+      email: updateUserProfilePayload?.email,
+      firstName: "newFirstName",
+      lastName: "newLastName",
+      image: "newImageFile.png",
     });
   });
 });

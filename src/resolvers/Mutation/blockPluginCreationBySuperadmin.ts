@@ -1,14 +1,8 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
-import {
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_PARAM,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_AUTHORIZED_CODE,
-  USER_NOT_AUTHORIZED_PARAM,
-} from "../../constants";
+import { USER_NOT_FOUND_ERROR } from "../../constants";
+import { superAdminCheck } from "../../utilities";
 
 export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCreationBySuperadmin"] =
   async (_parent, args, context) => {
@@ -19,9 +13,9 @@ export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCrea
     // Checks whether user with _id === args.userId exists.
     if (userExists === false) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_MESSAGE),
-        USER_NOT_FOUND_CODE,
-        USER_NOT_FOUND_PARAM
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -32,22 +26,14 @@ export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCrea
     // Checks whether currentUser exists.
     if (!currentUser) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_MESSAGE),
-        USER_NOT_FOUND_CODE,
-        USER_NOT_FOUND_PARAM
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
     // Checks whether currentUser is a SUPERADMIN.
-    const currentUserIsSuperAdmin = currentUser.userType === "SUPERADMIN";
-
-    if (currentUserIsSuperAdmin === false) {
-      throw new errors.UnauthorizedError(
-        requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
-        USER_NOT_AUTHORIZED_CODE,
-        USER_NOT_AUTHORIZED_PARAM
-      );
-    }
+    superAdminCheck(currentUser!);
 
     /*
     Sets pluginCreationAllowed field on document of user with _id === args.userId

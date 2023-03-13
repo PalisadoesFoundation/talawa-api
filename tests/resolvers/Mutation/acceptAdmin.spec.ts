@@ -1,11 +1,12 @@
 import "dotenv/config";
 import { Types } from "mongoose";
 import { MutationAcceptAdminArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { acceptAdmin as acceptAdminResolver } from "../../../src/resolvers/Mutation/acceptAdmin";
 import {
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  USER_NOT_AUTHORIZED_SUPERADMIN,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
   afterAll,
@@ -21,18 +22,20 @@ import { User } from "../../../src/models";
 
 let testUserSuperAdmin: testUserType;
 let testUserAdmin: testUserType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   testUserSuperAdmin = await createTestUser();
   testUserAdmin = await createTestUser();
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   vi.doUnmock("../../../src/constants");
   vi.resetModules();
 });
@@ -58,8 +61,10 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
       );
       await acceptAdmin?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
@@ -83,9 +88,9 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
       );
       await acceptAdmin?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
       );
     }
   });
@@ -144,8 +149,10 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
       );
       await acceptAdmin?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 });

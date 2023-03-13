@@ -6,8 +6,9 @@ import {
   Interface_MessageChat,
 } from "../../../src/models";
 import { MutationCreateMessageChatArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
-import { USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { nanoid } from "nanoid";
 import {
   beforeAll,
@@ -20,9 +21,10 @@ import {
 } from "vitest";
 
 let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 
   testUsers = await User.insertMany([
     {
@@ -43,7 +45,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> createMessageChat", () => {
@@ -70,22 +72,15 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
         userId: testUsers[0].id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { createMessageChat: createMessageChatResolver } = await import(
         "../../../src/resolvers/Mutation/createMessageChat"
       );
       await createMessageChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 

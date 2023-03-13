@@ -2,7 +2,8 @@ import "dotenv/config";
 import { Document } from "mongoose";
 import { Plugin, Interface_Plugin } from "../../../src/models";
 import { MutationUpdatePluginStatusArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { updatePluginStatus as updatePluginStatusResolver } from "../../../src/resolvers/Mutation/updatePluginStatus";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
@@ -10,11 +11,12 @@ import {
   testUserType,
 } from "../../helpers/userAndOrg";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 let testPlugin: Interface_Plugin & Document<any, any, Interface_Plugin>;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
   const testOrganization = temp[1];
@@ -28,7 +30,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> updatePluginStatus", () => {

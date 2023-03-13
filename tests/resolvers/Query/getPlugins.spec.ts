@@ -1,16 +1,20 @@
 import "dotenv/config";
 import { getPlugins as getPluginsResolver } from "../../../src/resolvers/Query/getPlugins";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { Plugin } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestPlugin } from "../../helpers/plugins";
+
+let MONGOOSE_INSTANCE: typeof mongoose | null;
+
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   await createTestPlugin();
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> getPlugins", () => {

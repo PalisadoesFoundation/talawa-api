@@ -1,20 +1,10 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Post } from "../../models";
+import { User, Post, Organization } from "../../models";
 import {
-  IN_PRODUCTION,
-  USER_NOT_FOUND,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
-  POST_NOT_FOUND,
-  POST_NOT_FOUND_CODE,
-  POST_NOT_FOUND_MESSAGE,
-  POST_NOT_FOUND_PARAM,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_AUTHORIZED_CODE,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_AUTHORIZED_PARAM,
+  USER_NOT_FOUND_ERROR,
+  POST_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 
 export const removePost: MutationResolvers["removePost"] = async (
@@ -22,18 +12,17 @@ export const removePost: MutationResolvers["removePost"] = async (
   args,
   context
 ) => {
-  const currentUserExists = await User.exists({
+  // Get the currentUser with _id === context.userId exists.
+  const currentUser = await User.findOne({
     _id: context.userId,
-  });
+  }).lean();
 
-  // Checks whether currentUser with _id === context.userId exists.
-  if (currentUserExists === false) {
+  // Get the currentUser with _id === context.userId exists.
+  if (!currentUser) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND
-        : requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -44,22 +33,24 @@ export const removePost: MutationResolvers["removePost"] = async (
   // Checks whether post exists.
   if (!post) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? POST_NOT_FOUND
-        : requestContext.translate(POST_NOT_FOUND_MESSAGE),
-      POST_NOT_FOUND_CODE,
-      POST_NOT_FOUND_PARAM
+      requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
+      POST_NOT_FOUND_ERROR.CODE,
+      POST_NOT_FOUND_ERROR.PARAM
     );
   }
 
-  // Checks whether currentUser with _id === context.userId is not the creator of post.
-  if (post.creator.toString() !== context.userId.toString()) {
+  // Checks whether currentUser is allowed to delete the post or not.
+  const isCreator = post.creator.toString() === context.userId.toString();
+  const isSuperAdmin = currentUser!.userType === "SUPERADMIN";
+  const isAdminOfPostOrganization = currentUser!.adminFor.some(
+    (orgID) => orgID.toString() === post.organization.toString()
+  );
+
+  if (!isCreator && !isSuperAdmin && !isAdminOfPostOrganization) {
     throw new errors.UnauthorizedError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_AUTHORIZED
-        : requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
-      USER_NOT_AUTHORIZED_CODE,
-      USER_NOT_AUTHORIZED_PARAM
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM
     );
   }
 
@@ -67,6 +58,18 @@ export const removePost: MutationResolvers["removePost"] = async (
   await Post.deleteOne({
     _id: args.id,
   });
+
+  // Removes the post from the organization, doesn't fail if the post wasn't pinned
+  await Organization.updateOne(
+    {
+      _id: post.organization,
+    },
+    {
+      $pull: {
+        pinnedPosts: args.id,
+      },
+    }
+  );
 
   // Returns deleted post.
   return post;

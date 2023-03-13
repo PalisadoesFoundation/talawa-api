@@ -3,15 +3,9 @@ import { errors, requestContext } from "../../libraries";
 import { User, Organization, MembershipRequest } from "../../models";
 import { adminCheck } from "../../utilities";
 import {
-  MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
-  MEMBERSHIP_REQUEST_NOT_FOUND_PARAM,
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_PARAM,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_PARAM,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 
 export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest"] =
@@ -23,9 +17,9 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
     // Checks whether membershipRequest exists.
     if (!membershipRequest) {
       throw new errors.NotFoundError(
-        requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE),
-        MEMBERSHIP_REQUEST_NOT_FOUND_CODE,
-        MEMBERSHIP_REQUEST_NOT_FOUND_PARAM
+        requestContext.translate(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE),
+        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.CODE,
+        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -36,9 +30,9 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
     // Checks whether organization exists.
     if (!organzation) {
       throw new errors.NotFoundError(
-        requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-        ORGANIZATION_NOT_FOUND_CODE,
-        ORGANIZATION_NOT_FOUND_PARAM
+        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+        ORGANIZATION_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -49,14 +43,14 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
     // Checks whether user exists.
     if (!user) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_MESSAGE),
-        USER_NOT_FOUND_CODE,
-        USER_NOT_FOUND_PARAM
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
     // Checks whether currentUser with _id === context.userId is an admin of organization.
-    adminCheck(context.userId, organzation);
+    await adminCheck(context.userId, organzation);
 
     // Deletes the membershipRequest.
     await MembershipRequest.deleteOne({

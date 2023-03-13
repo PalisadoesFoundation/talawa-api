@@ -2,11 +2,12 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { User, Event } from "../../../src/models";
 import { MutationUnregisterForEventByUserArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import {
-  EVENT_NOT_FOUND_MESSAGE,
-  USER_ALREADY_UNREGISTERED_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  EVENT_NOT_FOUND_ERROR,
+  USER_ALREADY_UNREGISTERED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -20,18 +21,19 @@ import {
 import { testUserType } from "../../helpers/userAndOrg";
 import { createTestEvent, testEventType } from "../../helpers/events";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 let testEvent: testEventType;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestEvent();
   testUser = temp[0];
   testEvent = temp[2];
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 afterEach(() => {
@@ -62,8 +64,10 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
 
       await unregisterForEventByUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
@@ -89,8 +93,10 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
 
       await unregisterForEventByUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(EVENT_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${EVENT_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
@@ -117,8 +123,10 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
 
       await unregisterForEventByUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
@@ -196,9 +204,9 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
 
       await unregisterForEventByUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_ALREADY_UNREGISTERED_MESSAGE);
+      expect(spy).toHaveBeenCalledWith(USER_ALREADY_UNREGISTERED_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_ALREADY_UNREGISTERED_MESSAGE}`
+        `Translated ${USER_ALREADY_UNREGISTERED_ERROR.MESSAGE}`
       );
     }
   });

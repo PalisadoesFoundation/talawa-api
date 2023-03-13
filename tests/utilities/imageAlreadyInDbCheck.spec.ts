@@ -9,7 +9,8 @@ import {
   it,
   vi,
 } from "vitest";
-import { connect, disconnect } from "../../src/db";
+import { connect, disconnect } from "../helpers/db";
+import mongoose from "mongoose";
 import { nanoid } from "nanoid";
 import { INVALID_FILE_TYPE } from "../../src/constants";
 
@@ -17,22 +18,23 @@ const testNewImagePath: string = `${nanoid()}-testNewImagePath`;
 const testOldImagePath: string = `${nanoid()}-testOldImagePath`;
 const testHash: string = `${nanoid()}-testHash`;
 const testDifferentHash: string = `${nanoid()}-testDifferentHash`;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 const testMessage: string = "invalid.fileType";
 
 const testErrors = [
   {
-    message: INVALID_FILE_TYPE.message,
-    code: INVALID_FILE_TYPE.code,
-    param: INVALID_FILE_TYPE.param,
+    message: INVALID_FILE_TYPE.MESSAGE,
+    code: INVALID_FILE_TYPE.CODE,
+    param: INVALID_FILE_TYPE.PARAM,
   },
 ];
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("utilities -> imageAlreadyInDbCheck", () => {

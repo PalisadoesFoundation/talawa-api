@@ -8,18 +8,24 @@ import {
   Interface_Task,
 } from "../../../src/models";
 import { MutationRemoveTaskArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { removeTask as removeTaskResolver } from "../../../src/resolvers/Mutation/removeTask";
-import { USER_NOT_AUTHORIZED, USER_NOT_FOUND } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
+  TASK_NOT_FOUND_ERROR,
+} from "../../../src/constants";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUserFunc } from "../../helpers/user";
 import { testUserType } from "../../helpers/userAndOrg";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUsers: testUserType[];
 let testTask: Interface_Task & Document<any, any, Interface_Task>;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 
   const tempUser1 = await createTestUserFunc();
   const tempUser2 = await createTestUserFunc();
@@ -97,11 +103,15 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> removeTask", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveTaskArgs = {
         id: "",
@@ -111,13 +121,22 @@ describe("resolvers -> Mutation -> removeTask", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      const { removeTask: removeTaskResolver } = await import(
+        "../../../src/resolvers/Mutation/removeTask"
+      );
+
       await removeTaskResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no task exists with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveTaskArgs = {
         id: Types.ObjectId().toString(),
@@ -127,13 +146,22 @@ describe("resolvers -> Mutation -> removeTask", () => {
         userId: testUsers[0]!._id,
       };
 
+      const { removeTask: removeTaskResolver } = await import(
+        "../../../src/resolvers/Mutation/removeTask"
+      );
+
       await removeTaskResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual("Task not found");
+      expect(spy).toBeCalledWith(TASK_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(TASK_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
   it(`throws NotAuthorizedError if for creator of task with _id === args.id, user._id !== context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveTaskArgs = {
         id: testTask._id,
@@ -143,9 +171,14 @@ describe("resolvers -> Mutation -> removeTask", () => {
         userId: testUsers[1]!._id,
       };
 
+      const { removeTask: removeTaskResolver } = await import(
+        "../../../src/resolvers/Mutation/removeTask"
+      );
+
       await removeTaskResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 

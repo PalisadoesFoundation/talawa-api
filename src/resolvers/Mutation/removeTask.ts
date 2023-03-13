@@ -1,13 +1,7 @@
 import {
-  IN_PRODUCTION,
-  USER_NOT_FOUND,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_AUTHORIZED_CODE,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_AUTHORIZED_PARAM,
+  USER_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  TASK_NOT_FOUND_ERROR,
 } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
@@ -25,11 +19,9 @@ export const removeTask: MutationResolvers["removeTask"] = async (
   // Checks whether currentUser with _id === context.userId exists.
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND
-        : requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -40,22 +32,18 @@ export const removeTask: MutationResolvers["removeTask"] = async (
   // Checks whether task exists.
   if (!task) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? "Task not found"
-        : requestContext.translate("task.notFound"),
-      "task.notFound",
-      "task"
+      requestContext.translate(TASK_NOT_FOUND_ERROR.MESSAGE),
+      TASK_NOT_FOUND_ERROR.CODE,
+      TASK_NOT_FOUND_ERROR.PARAM
     );
   }
 
   // Checks whether currentUser with _id === context.userId is not the creator of task.
   if (task.creator.toString() !== context.userId.toString()) {
     throw new errors.UnauthorizedError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_AUTHORIZED
-        : requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
-      USER_NOT_AUTHORIZED_CODE,
-      USER_NOT_AUTHORIZED_PARAM
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM
     );
   }
 

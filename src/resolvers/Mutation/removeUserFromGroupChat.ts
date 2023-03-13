@@ -1,17 +1,7 @@
 import {
-  CHAT_NOT_FOUND,
-  CHAT_NOT_FOUND_CODE,
-  CHAT_NOT_FOUND_MESSAGE,
-  CHAT_NOT_FOUND_PARAM,
-  IN_PRODUCTION,
-  ORGANIZATION_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND_PARAM,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_CODE,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_AUTHORIZED_CODE,
-  USER_NOT_AUTHORIZED_PARAM,
+  CHAT_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
@@ -27,11 +17,9 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
     // Checks whether groupChat exists.
     if (!groupChat) {
       throw new errors.NotFoundError(
-        IN_PRODUCTION !== true
-          ? CHAT_NOT_FOUND
-          : requestContext.translate(CHAT_NOT_FOUND_MESSAGE),
-        CHAT_NOT_FOUND_CODE,
-        CHAT_NOT_FOUND_PARAM
+        requestContext.translate(CHAT_NOT_FOUND_ERROR.MESSAGE),
+        CHAT_NOT_FOUND_ERROR.CODE,
+        CHAT_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -42,16 +30,14 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
     // Checks whether organization exists.
     if (!organization) {
       throw new errors.NotFoundError(
-        IN_PRODUCTION !== true
-          ? ORGANIZATION_NOT_FOUND
-          : requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-        ORGANIZATION_NOT_FOUND_CODE,
-        ORGANIZATION_NOT_FOUND_PARAM
+        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+        ORGANIZATION_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
     }
 
     // Checks whether currentUser with _id == context.userId is an admin of organzation.
-    adminCheck(context.userId, organization);
+    await adminCheck(context.userId, organization);
 
     const userIsMemberOfGroupChat = groupChat.users.some(
       (user) => user.toString() === args.userId.toString()
@@ -60,11 +46,9 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
     // Checks if user with _id === args.userId is not a member of groupChat.
     if (userIsMemberOfGroupChat === false) {
       throw new errors.UnauthorizedError(
-        IN_PRODUCTION !== true
-          ? USER_NOT_AUTHORIZED
-          : requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
-        USER_NOT_AUTHORIZED_CODE,
-        USER_NOT_AUTHORIZED_PARAM
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM
       );
     }
 

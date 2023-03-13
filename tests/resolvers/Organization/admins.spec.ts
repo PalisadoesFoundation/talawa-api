@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { admins as adminsResolver } from "../../../src/resolvers/Organization/admins";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { User } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
@@ -8,16 +9,17 @@ import {
   testOrganizationType,
 } from "../../helpers/userAndOrg";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const userAndOrg = await createTestUserAndOrganization();
   testOrganization = userAndOrg[1];
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Organization -> admins", () => {

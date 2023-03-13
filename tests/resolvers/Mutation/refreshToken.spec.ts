@@ -2,8 +2,12 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { User } from "../../../src/models";
 import { MutationRefreshTokenArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
-import { USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
+import {
+  INVALID_REFRESH_TOKEN_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
 import { createRefreshToken } from "../../../src/utilities";
 import {
   beforeAll,
@@ -18,45 +22,21 @@ import { createTestUserFunc, testUserType } from "../../helpers/user";
 
 let testUser: testUserType;
 let refreshToken: string;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUserFunc();
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> refreshToken", () => {
   afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
-  });
-  it(`throws NotFoundError if no refreshToken is provided using args.refreshToken and IN_PRODUCTION === false`, async () => {
-    try {
-      const args: MutationRefreshTokenArgs = {
-        refreshToken: "",
-      };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: false,
-        };
-      });
-
-      const { refreshToken: refreshTokenResolver } = await import(
-        "../../../src/resolvers/Mutation/refreshToken"
-      );
-
-      await refreshTokenResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual("Invalid refreshToken");
-    }
   });
 
   it(`throws NotFoundError if no refreshToken is provided using args.refreshToken and IN_PRODUCTION === true`, async () => {
@@ -69,56 +49,16 @@ describe("resolvers -> Mutation -> refreshToken", () => {
         refreshToken: "",
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
-
       const { refreshToken: refreshTokenResolver } = await import(
         "../../../src/resolvers/Mutation/refreshToken"
       );
 
       await refreshTokenResolver?.({}, args, {});
     } catch (error: any) {
-      expect(spy).toBeCalledWith("invalid.refreshToken");
-      expect(error.message).toEqual("Translated invalid.refreshToken");
-    }
-  });
-
-  it(`throws NotFoundError if no user exists with _id === payload.userId for
-  args.refreshToken and IN_PRODUCTION === false`, async () => {
-    try {
-      refreshToken = await createRefreshToken({
-        ...testUser!.toObject(),
-        _id: Types.ObjectId(),
-      });
-
-      const args: MutationRefreshTokenArgs = {
-        refreshToken,
-      };
-
-      const { refreshToken: refreshTokenResolver } = await import(
-        "../../../src/resolvers/Mutation/refreshToken"
+      expect(spy).toBeCalledWith(INVALID_REFRESH_TOKEN_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${INVALID_REFRESH_TOKEN_ERROR.MESSAGE}`
       );
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: false,
-        };
-      });
-
-      await refreshTokenResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
     }
   });
 
@@ -138,31 +78,27 @@ describe("resolvers -> Mutation -> refreshToken", () => {
         refreshToken,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
-
       const { refreshToken: refreshTokenResolver } = await import(
         "../../../src/resolvers/Mutation/refreshToken"
       );
 
       await refreshTokenResolver?.({}, args, {});
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
 
       spy.mockRestore();
     }
   });
 
   it(`throws ValidationError if user.tokenVersion !== payload.tokenVersion for user
-  with _id === payload.userId for args.refreshToken and IN_PRODUCTION === false`, async () => {
+  with _id === payload.userId for args.refreshToken`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message
+    );
     try {
       await User.updateOne(
         {
@@ -181,28 +117,18 @@ describe("resolvers -> Mutation -> refreshToken", () => {
         refreshToken,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: false,
-        };
-      });
-
       const { refreshToken: refreshTokenResolver } = await import(
         "../../../src/resolvers/Mutation/refreshToken"
       );
 
       await refreshTokenResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual("Invalid refreshToken");
+      expect(error.message).toEqual(INVALID_REFRESH_TOKEN_ERROR.MESSAGE);
     }
   });
 
   it(`throws ValidationError if user.tokenVersion !== payload.tokenVersion for user
-  with _id === payload.userId for args.refreshToken and IN_PRODUCTION === true`, async () => {
+  with _id === payload.userId for args.refreshToken`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -225,24 +151,16 @@ describe("resolvers -> Mutation -> refreshToken", () => {
         refreshToken,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
-
       const { refreshToken: refreshTokenResolver } = await import(
         "../../../src/resolvers/Mutation/refreshToken"
       );
 
       await refreshTokenResolver?.({}, args, {});
     } catch (error: any) {
-      expect(spy).toBeCalledWith("invalid.refreshToken");
-      expect(error.message).toEqual("Translated invalid.refreshToken");
+      expect(spy).toBeCalledWith(INVALID_REFRESH_TOKEN_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${INVALID_REFRESH_TOKEN_ERROR.MESSAGE}`
+      );
     }
   });
 

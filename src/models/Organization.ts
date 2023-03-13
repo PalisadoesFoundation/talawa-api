@@ -3,7 +3,9 @@ import { Interface_MembershipRequest } from "./MembershipRequest";
 import { Interface_Message } from "./Message";
 import { Interface_Post } from "./Post";
 import { Interface_User } from "./User";
-
+/**
+ * This is an interface that represents a database(MongoDB) document for Organization.
+ */
 export interface Interface_Organization {
   _id: Types.ObjectId;
   apiUrl: string | undefined;
@@ -18,15 +20,33 @@ export interface Interface_Organization {
   admins: Array<PopulatedDoc<Interface_User & Document>>;
   groupChats: Array<PopulatedDoc<Interface_Message & Document>>;
   posts: Array<PopulatedDoc<Interface_Post & Document>>;
+  pinnedPosts: Array<PopulatedDoc<Interface_Post & Document>>;
   membershipRequests: Array<
     PopulatedDoc<Interface_MembershipRequest & Document>
   >;
   blockedUsers: Array<PopulatedDoc<Interface_User & Document>>;
   visibleInSearch: boolean | undefined;
-  tags: Array<string>;
   createdAt: Date;
 }
-
+/**
+ * This describes the schema for a `Organization` that corresponds to `Interface_Organization` document.
+ * @param apiUrl - API URL.
+ * @param image - Organization image URL.
+ * @param name - Organization name.
+ * @param description - Organization description.
+ * @param location - Organization location.
+ * @param isPublic - Organization visibility.
+ * @param creator - Organization creator, referring to `User` model.
+ * @param status - Status.
+ * @param members - Collection of members, each object refer to `User` model.
+ * @param admins - Collection of organization admins, each object refer to `User` model.
+ * @param groupChats - Collection of group chats, each object refer to `Message` model.
+ * @param posts - Collection of Posts in the Organization, each object refer to `Post` model.
+ * @param membershipRequests - Collection of membership requests in the Organization, each object refer to `MembershipRequest` model.
+ * @param blockedUsers - Collection of Blocked User in the Organization, each object refer to `User` model.
+ * @param tags - Collection of tags.
+ * @param createdAt - Time stamp of data creation.
+ */
 const organizationSchema = new Schema({
   apiUrl: {
     type: String,
@@ -85,6 +105,13 @@ const organizationSchema = new Schema({
       ref: "Post",
     },
   ],
+  pinnedPosts: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Post",
+      default: [],
+    },
+  ],
   membershipRequests: [
     {
       type: Schema.Types.ObjectId,
@@ -100,12 +127,6 @@ const organizationSchema = new Schema({
   visibleInSearch: {
     type: Boolean,
   },
-  tags: [
-    {
-      type: String,
-      required: false,
-    },
-  ],
   createdAt: {
     type: Date,
     default: Date.now,

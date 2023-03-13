@@ -17,6 +17,12 @@
       "files": ["*.graphql"],
       "parser": "@graphql-eslint/eslint-plugin",
       "plugins": ["@graphql-eslint"]
+    },
+    {
+      "files": ["tests/**/*"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
     }
   ],
   "parser": "@typescript-eslint/parser",
@@ -29,6 +35,13 @@
   "plugins": ["@typescript-eslint", "eslint-plugin-tsdoc"],
   "root": true,
   "rules": {
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": ["**/src/**"]
+      }
+    ],
+
     // warn/1, error/2, off/0
     "tsdoc/syntax": "off", // toggle off/ warn
 

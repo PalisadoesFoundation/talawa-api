@@ -25,9 +25,23 @@ export const queries = gql`
 
     eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
 
+    eventsByOrganizationConnection(
+      where: EventWhereInput
+      first: Int
+      skip: Int
+      orderBy: EventOrderByInput
+    ): [Event!]!
+
     getDonationById(id: ID!): Donation!
 
     getDonationByOrgId(orgId: ID!): [Donation]
+
+    getDonationByOrgIdConnection(
+      orgId: ID!
+      where: DonationWhereInput
+      first: Int
+      skip: Int
+    ): [Donation!]!
 
     getDonations: [Donation]
 

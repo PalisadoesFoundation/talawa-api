@@ -1,7 +1,8 @@
 // @ts-nocheck
 import "dotenv/config";
 import { postsByOrganizationConnection as postsByOrganizationConnectionResolver } from "../../../src/resolvers/Query/postsByOrganizationConnection";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { Document, Types } from "mongoose";
 import { QueryPostsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -13,12 +14,13 @@ import {
 import { Post, Interface_Post } from "../../../src/models";
 import { nanoid } from "nanoid";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testOrganization: testOrganizationType;
 let testUser: testUserType;
 let testPosts: (Interface_Post & Document<any, any, Interface_Post>)[];
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 
   const resultArray = await createTestUserAndOrganization();
   testUser = resultArray[0];
@@ -53,7 +55,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> postsByOrganizationConnection", () => {
@@ -112,7 +114,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, {});
 
-    const posts = await Post.find(where).sort(sort).lean();
+    const posts = await Post.find(where).sort(sort).populate("creator").lean();
 
     const postsWithId = posts.map((post) => {
       return {
@@ -181,7 +183,11 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, {});
 
-    const posts = await Post.find(where).limit(2).sort(sort).lean();
+    const posts = await Post.find(where)
+      .limit(2)
+      .sort(sort)
+      .populate("creator")
+      .lean();
 
     const postsWithId = posts.map((post) => {
       return {
@@ -250,7 +256,11 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, {});
 
-    const posts = await Post.find(where).limit(2).sort(sort).lean();
+    const posts = await Post.find(where)
+      .limit(2)
+      .sort(sort)
+      .populate("creator")
+      .lean();
     const postsWithId = posts.map((post) => {
       return {
         ...post,
@@ -318,7 +328,12 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, {});
 
-    const posts = await Post.find(where).limit(2).skip(1).sort(sort).lean();
+    const posts = await Post.find(where)
+      .limit(2)
+      .skip(1)
+      .sort(sort)
+      .populate("creator")
+      .lean();
 
     const postsWithId = posts.map((post) => {
       return {
@@ -384,7 +399,11 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, {});
 
-    const posts = await Post.find(where).limit(2).sort(sort).lean();
+    const posts = await Post.find(where)
+      .limit(2)
+      .sort(sort)
+      .populate("creator")
+      .lean();
 
     const postsWithId = posts.map((post) => {
       return {
@@ -445,7 +464,11 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, {});
 
-    const posts = await Post.find(where).limit(2).sort(sort).lean();
+    const posts = await Post.find(where)
+      .limit(2)
+      .sort(sort)
+      .populate("creator")
+      .lean();
 
     const postsWithId = posts.map((post) => {
       return {

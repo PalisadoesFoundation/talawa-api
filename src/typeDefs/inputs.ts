@@ -17,22 +17,70 @@ export const inputs = gql`
     title: String!
   }
 
+  input DonationWhereInput {
+    id: ID
+    id_not: ID
+    id_in: [ID!]
+    id_not_in: [ID!]
+    id_contains: ID
+    id_starts_with: ID
+
+    name_of_user: String
+    name_of_user_not: String
+    name_of_user_in: [String!]
+    name_of_user_not_in: [String!]
+    name_of_user_contains: String
+    name_of_user_starts_with: String
+  }
+
   input EventInput {
     title: String!
     description: String!
-    startDate: String!
-    endDate: String
-    startTime: String
-    endTime: String
+    startDate: Date!
+    endDate: Date
+    startTime: Time
+    endTime: Time
     allDay: Boolean!
     recurring: Boolean!
     recurrance: Recurrance
     isPublic: Boolean!
     isRegisterable: Boolean!
     location: String
-    latitude: Float
-    longitude: Float
+    latitude: Latitude
+    longitude: Longitude
     organizationId: ID!
+  }
+
+  input EventWhereInput {
+    id: ID
+    id_not: ID
+    id_in: [ID!]
+    id_not_in: [ID!]
+    id_contains: ID
+    id_starts_with: ID
+
+    title: String
+    title_not: String
+    title_in: [String!]
+    title_not_in: [String!]
+    title_contains: String
+    title_starts_with: String
+
+    description: String
+    description_not: String
+    description_in: [String!]
+    description_not_in: [String!]
+    description_contains: String
+    description_starts_with: String
+
+    location: String
+    location_not: String
+    location_in: [String!]
+    location_not_in: [String!]
+    location_contains: String
+    location_starts_with: String
+
+    organization_id: ID
   }
 
   # input EventProjectInput {
@@ -60,18 +108,13 @@ export const inputs = gql`
   }
 
   input LoginInput {
-    email: String!
+    email: EmailAddress!
     password: String!
   }
 
   input MessageChatInput {
     message: String!
     receiver: ID!
-  }
-
-  input MultipleUsersAndOrganizationInput {
-    organizationId: ID!
-    userIds: [ID!]!
   }
 
   input OrganizationInput {
@@ -81,9 +124,8 @@ export const inputs = gql`
     attendees: String
     isPublic: Boolean!
     visibleInSearch: Boolean!
-    apiUrl: String
+    apiUrl: URL
     image: String
-    tags: [String!]!
   }
 
   input OrganizationWhereInput {
@@ -108,12 +150,12 @@ export const inputs = gql`
     description_contains: String
     description_starts_with: String
 
-    apiUrl: String
-    apiUrl_not: String
-    apiUrl_in: [String!]
-    apiUrl_not_in: [String!]
-    apiUrl_contains: String
-    apiUrl_starts_with: String
+    apiUrl: URL
+    apiUrl_not: URL
+    apiUrl_in: [URL!]
+    apiUrl_not_in: [URL!]
+    apiUrl_contains: URL
+    apiUrl_starts_with: URL
 
     visibleInSearch: Boolean
 
@@ -121,7 +163,7 @@ export const inputs = gql`
   }
 
   input OTPInput {
-    email: String!
+    email: EmailAddress!
   }
 
   input PluginFieldInput {
@@ -141,9 +183,10 @@ export const inputs = gql`
     _id: ID
     text: String!
     title: String
-    imageUrl: String
-    videoUrl: String
+    imageUrl: URL
+    videoUrl: URL
     organizationId: ID!
+    pinned: Boolean
   }
 
   input PostWhereInput {
@@ -176,7 +219,7 @@ export const inputs = gql`
   input TaskInput {
     title: String!
     description: String
-    deadline: String
+    deadline: DateTime
   }
 
   input UpdateEventInput {
@@ -186,14 +229,14 @@ export const inputs = gql`
     recurrance: Recurrance
     isPublic: Boolean
     isRegisterable: Boolean
-    startDate: String
-    endDate: String
+    startDate: Date
+    endDate: Date
     location: String
-    latitude: Float
-    longitude: Float
+    latitude: Latitude
+    longitude: Longitude
     allDay: Boolean
-    startTime: String
-    endTime: String
+    startTime: Time
+    endTime: Time
   }
 
   # input UpdateEventProjectInput {
@@ -206,18 +249,25 @@ export const inputs = gql`
     description: String
     isPublic: Boolean
     visibleInSearch: Boolean
+    location: String
   }
 
   input UpdateTaskInput {
     title: String
     description: String
-    deadline: String
+    deadline: DateTime
   }
 
   input UpdateUserInput {
     firstName: String
     lastName: String
-    email: String
+    email: EmailAddress
+  }
+
+  input UpdateUserPasswordInput {
+    previousPassword: String!
+    newPassword: String!
+    confirmNewPassword: String!
   }
 
   input UpdateUserTypeInput {
@@ -233,7 +283,7 @@ export const inputs = gql`
   input UserInput {
     firstName: String!
     lastName: String!
-    email: String!
+    email: EmailAddress!
     password: String!
     appLanguageCode: String
     organizationUserBelongsToId: ID
@@ -261,12 +311,12 @@ export const inputs = gql`
     lastName_contains: String
     lastName_starts_with: String
 
-    email: String
-    email_not: String
-    email_in: [String!]
-    email_not_in: [String!]
-    email_contains: String
-    email_starts_with: String
+    email: EmailAddress
+    email_not: EmailAddress
+    email_in: [EmailAddress!]
+    email_not_in: [EmailAddress!]
+    email_contains: EmailAddress
+    email_starts_with: EmailAddress
 
     appLanguageCode: String
     appLanguageCode_not: String
@@ -274,11 +324,15 @@ export const inputs = gql`
     appLanguageCode_not_in: [String!]
     appLanguageCode_contains: String
     appLanguageCode_starts_with: String
+
+    admin_for: ID
+
+    event_title_contains: String
   }
   input PostUpdateInput {
     text: String
     title: String
-    imageUrl: String
-    videoUrl: String
+    imageUrl: URL
+    videoUrl: URL
   }
 `;

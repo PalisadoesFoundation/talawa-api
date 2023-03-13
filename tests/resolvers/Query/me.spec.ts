@@ -1,22 +1,24 @@
 import "dotenv/config";
 import { me as meResolver } from "../../../src/resolvers/Query/me";
-import { connect, disconnect } from "../../../src/db";
-import { USER_NOT_FOUND } from "../../../src/constants";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { User } from "../../../src/models";
 import { Types } from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { testUserType } from "../../helpers/userAndOrg";
 import { createTestEvent } from "../../helpers/events";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   testUser = (await createTestEvent())[0];
 });
 
 afterAll(async () => {
-  disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> me", () => {
@@ -28,7 +30,7 @@ describe("resolvers -> Query -> me", () => {
 
       await meResolver?.({}, {}, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 

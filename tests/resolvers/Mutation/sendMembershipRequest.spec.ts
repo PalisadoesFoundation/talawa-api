@@ -2,22 +2,28 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { User, Organization, MembershipRequest } from "../../../src/models";
 import { MutationSendMembershipRequestArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { sendMembershipRequest as sendMembershipRequestResolver } from "../../../src/resolvers/Mutation/sendMembershipRequest";
-import { ORGANIZATION_NOT_FOUND, USER_NOT_FOUND } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import {
+  MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { testOrganizationType, testUserType } from "../../helpers/userAndOrg";
 import {
   createTestMembershipRequest,
   testMembershipRequestType,
 } from "../../helpers/membershipRequests";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
 let testMembershipRequest: testMembershipRequestType;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestMembershipRequest();
   testUser = temp[0];
   testOrganization = temp[1];
@@ -25,11 +31,15 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> sendMembershipRequest", () => {
   it(`throws NotFoundError if the current user with _id === context.userId does not exist`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationSendMembershipRequestArgs = {
         organizationId: "",
@@ -39,13 +49,21 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      const { sendMembershipRequest: sendMembershipRequestResolver } =
+        await import("../../../src/resolvers/Mutation/sendMembershipRequest");
+
       await sendMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
   it(`throws NotFoundError if no organization exists with _id === args.organizationId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationSendMembershipRequestArgs = {
         organizationId: Types.ObjectId().toString(),
@@ -55,14 +73,22 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
         userId: testUser!.id,
       };
 
+      const { sendMembershipRequest: sendMembershipRequestResolver } =
+        await import("../../../src/resolvers/Mutation/sendMembershipRequest");
+
       await sendMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
+      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
-  it(`throws ConflictError if a membershipRequest with fields user === context.userId
-  and organization === args.organizationId already exists`, async () => {
+  it(`throws NotFoundError if a membershipRequest with fields user === context.userId
+  and organization === args.organizationId does not exists`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationSendMembershipRequestArgs = {
         organizationId: testOrganization!.id,
@@ -72,9 +98,13 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
         userId: testUser!.id,
       };
 
+      const { sendMembershipRequest: sendMembershipRequestResolver } =
+        await import("../../../src/resolvers/Mutation/sendMembershipRequest");
+
       await sendMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual("MembershipRequest already exists");
+      expect(spy).toBeCalledWith(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

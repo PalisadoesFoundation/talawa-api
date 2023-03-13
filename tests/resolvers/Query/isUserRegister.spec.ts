@@ -1,10 +1,10 @@
 import "dotenv/config";
 import { isUserRegister as isUserRegisterResolver } from "../../../src/resolvers/Query/isUserRegister";
+import { connect, disconnect } from "../../helpers/db";
 import { Event } from "../../../src/models";
-import { connect, disconnect } from "../../../src/db";
 import { Types } from "mongoose";
 import { QueryIsUserRegisterArgs } from "../../../src/types/generatedGraphQLTypes";
-import { EVENT_NOT_FOUND } from "../../../src/constants";
+import { EVENT_NOT_FOUND_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
   testUserType,
@@ -13,13 +13,15 @@ import {
 } from "../../helpers/userAndOrg";
 import { testEventType, createEventWithRegistrant } from "../../helpers/events";
 import { createTestTask } from "../../helpers/task";
+import mongoose from "mongoose";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testEvent: testEventType;
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   [testUser, testOrganization] = await createTestUserAndOrganization();
   testEvent = await createEventWithRegistrant(
     testUser?._id,
@@ -32,7 +34,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> isUserRegister", () => {
@@ -47,7 +49,7 @@ describe("resolvers -> Query -> isUserRegister", () => {
 
       await isUserRegisterResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(EVENT_NOT_FOUND);
+      expect(error.message).toEqual(EVENT_NOT_FOUND_ERROR.DESC);
     }
   });
 

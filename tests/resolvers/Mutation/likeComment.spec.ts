@@ -2,11 +2,12 @@ import "dotenv/config";
 import { Document, Types } from "mongoose";
 import { Post, Comment, Interface_Comment } from "../../../src/models";
 import { MutationLikeCommentArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { likeComment as likeCommentResolver } from "../../../src/resolvers/Mutation/likeComment";
 import {
-  COMMENT_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  COMMENT_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -22,9 +23,10 @@ import { createTestPost } from "../../helpers/posts";
 
 let testUser: testUserType;
 let testComment: Interface_Comment & Document<any, any, Interface_Comment>;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestPost();
   testUser = temp[0];
 
@@ -52,7 +54,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> likeComment", () => {
@@ -74,22 +76,15 @@ describe("resolvers -> Mutation -> likeComment", () => {
       const context = {
         userId: Types.ObjectId().toString(),
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { likeComment: likeCommentResolver } = await import(
         "../../../src/resolvers/Mutation/likeComment"
       );
 
       await likeCommentResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -106,22 +101,15 @@ describe("resolvers -> Mutation -> likeComment", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { likeComment: likeCommentResolver } = await import(
         "../../../src/resolvers/Mutation/likeComment"
       );
 
       await likeCommentResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(COMMENT_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(COMMENT_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(COMMENT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(COMMENT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

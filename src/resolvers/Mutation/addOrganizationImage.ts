@@ -1,16 +1,13 @@
 import "dotenv/config";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { adminCheck, uploadImage } from "../../utilities";
+import { adminCheck } from "../../utilities";
 import { User, Organization } from "../../models";
 import {
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_PARAM,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 
 export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
   async (_parent, args, context) => {
@@ -21,9 +18,9 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
     // Checks whether currentUser exists.
     if (currentUserExists === false) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_MESSAGE),
-        USER_NOT_FOUND_CODE,
-        USER_NOT_FOUND_PARAM
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -34,17 +31,20 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
     // Checks whether organization exists.
     if (!organization) {
       throw new errors.NotFoundError(
-        requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-        ORGANIZATION_NOT_FOUND_CODE,
-        ORGANIZATION_NOT_FOUND_PARAM
+        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+        ORGANIZATION_NOT_FOUND_ERROR.CODE,
+        ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
     }
 
     // Checks whether currentUser with _id === context.userId is an admin of organization.
-    adminCheck(context.userId, organization);
+    await adminCheck(context.userId, organization);
 
     // Upload Image
-    const uploadImageObj = await uploadImage(args.file, organization.image!);
+    const uploadImageFileName = await uploadEncodedImage(
+      args.file!,
+      organization.image
+    );
     // Updates the organization with new image and returns the updated organization.
     return await Organization.findOneAndUpdate(
       {
@@ -52,9 +52,7 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
       },
       {
         $set: {
-          image: uploadImageObj.imageAlreadyInDbPath
-            ? uploadImageObj.imageAlreadyInDbPath
-            : uploadImageObj.newImagePath,
+          image: uploadImageFileName,
         },
       },
       {

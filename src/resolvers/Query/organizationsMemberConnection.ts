@@ -43,6 +43,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
       },
       {
         ...paginateOptions,
+        populate: ["registeredEvents"],
         select: ["-password"],
       }
     );
@@ -357,7 +358,25 @@ const getInputArg = (where: InputMaybe<UserWhereInput> | undefined) => {
         appLanguageCode: regexp,
       };
     }
-  }
 
+    if (where.admin_for) {
+      inputArg = {
+        ...inputArg,
+        adminFor: {
+          _id: where.admin_for,
+        },
+      };
+    }
+
+    if (where.event_title_contains) {
+      inputArg = {
+        ...inputArg,
+        "registeredEvents.title": {
+          $regex: where.event_title_contains,
+          $options: "i",
+        },
+      };
+    }
+  }
   return inputArg;
 };
