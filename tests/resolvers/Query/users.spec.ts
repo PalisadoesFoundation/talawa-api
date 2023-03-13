@@ -179,6 +179,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : undefined,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -238,6 +239,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : undefined,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -297,6 +299,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : undefined,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -356,6 +359,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : undefined,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -415,6 +419,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : undefined,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -462,6 +467,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : undefined,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -496,6 +502,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : undefined,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -530,6 +537,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : undefined,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -564,6 +572,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : undefined,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -598,6 +607,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : undefined,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -610,36 +620,16 @@ describe("resolvers -> Query -> users", () => {
     const sort = {
       email: -1,
     };
-    await User.findOneAndUpdate(
-      {
-        _id: testUsers[0].id,
-      },
+
+    await User.updateMany(
+      {},
       {
         $set: {
-          image: `images/image.png`,
+          image: "images/image.png",
         },
       }
     );
-    await User.findOneAndUpdate(
-      {
-        _id: testUsers[1].id,
-      },
-      {
-        $set: {
-          image: `images/image.png`,
-        },
-      }
-    );
-    await User.findOneAndUpdate(
-      {
-        _id: testUsers[2].id,
-      },
-      {
-        $set: {
-          image: `images/image.png`,
-        },
-      }
-    );
+
     const args: QueryUsersArgs = {
       where: null,
       orderBy: "email_DESC",
