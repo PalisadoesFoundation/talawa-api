@@ -63,12 +63,11 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
     {
       $set: {
         blockedUsers: organization.blockedUsers.filter(
-          (blockedUser) => blockedUser !== user._id
+          (blockedUser) => !user._id.equals(blockedUser)
         ),
       },
     }
   );
-
   // remove the organization from the organizationsBlockedBy array inside the user record
   return await User.findOneAndUpdate(
     {
@@ -77,7 +76,8 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
     {
       $set: {
         organizationsBlockedBy: user.organizationsBlockedBy.filter(
-          (organizationBlockedBy) => organizationBlockedBy !== organization._id
+          (organizationBlockedBy) =>
+            !organization._id.equals(organizationBlockedBy)
         ),
       },
     },
