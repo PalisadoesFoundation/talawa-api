@@ -54,7 +54,7 @@
       }
     ],
     // warn/1, error/2, off/0
-    "tsdoc/syntax": "off",
+//     "tsdoc/syntax": "off",
 
     // Typescript Rules
     "@typescript-eslint/adjacent-overload-signatures": "off",
