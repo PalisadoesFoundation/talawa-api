@@ -59,7 +59,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
       users = usersModel.docs.map((user) => {
         return {
           ...user,
-          image: `${BASE_URL}${user.image}`,
+          image: user.image ? `${BASE_URL}${user.image}` : undefined,
           password: null,
         };
       });
@@ -67,7 +67,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
       users = usersModel.docs.map((user) => {
         return {
           ...user._doc,
-          image: `${BASE_URL}${user.image}`,
+          image: user.image ? `${BASE_URL}${user.image}` : undefined,
           password: null,
         };
       });

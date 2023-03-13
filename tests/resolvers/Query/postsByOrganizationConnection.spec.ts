@@ -13,6 +13,7 @@ import {
 } from "../../helpers/userAndOrg";
 import { Post, Interface_Post } from "../../../src/models";
 import { nanoid } from "nanoid";
+import { BASE_URL } from "../../../src/constants";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testOrganization: testOrganizationType;
@@ -120,6 +121,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       return {
         ...post,
         id: String(post._id),
+        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
       };
     });
 
@@ -193,6 +195,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       return {
         ...post,
         id: String(post._id),
+        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
       };
     });
 
@@ -265,6 +268,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       return {
         ...post,
         id: String(post._id),
+        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
       };
     });
 
@@ -339,6 +343,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       return {
         ...post,
         id: String(post._id),
+        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
       };
     });
 
@@ -409,6 +414,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       return {
         ...post,
         id: String(post._id),
+        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
       };
     });
 
@@ -474,6 +480,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       return {
         ...post,
         id: String(post._id),
+        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
       };
     });
 

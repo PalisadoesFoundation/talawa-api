@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { updateUserProfile as updateUserProfileResolver } from "../../../src/resolvers/Mutation/updateUserProfile";
 import {
+  BASE_URL,
   EMAIL_ALREADY_EXISTS_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -313,7 +314,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       email: args.data?.email,
       firstName: "newFirstName",
       lastName: "newLastName",
-      image: "newImageFile.png",
+      image: BASE_URL + "newImageFile.png",
     });
   });
   it("When Image is give updates the current user's object with the uploaded image and returns it", async () => {
@@ -341,7 +342,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       email: updateUserProfilePayload?.email,
       firstName: "newFirstName",
       lastName: "newLastName",
-      image: "newImageFile.png",
+      image: BASE_URL + "newImageFile.png",
     });
   });
 });

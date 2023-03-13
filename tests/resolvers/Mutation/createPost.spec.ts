@@ -8,6 +8,7 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   LENGTH_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
+  BASE_URL,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -227,7 +228,7 @@ describe("resolvers -> Mutation -> createPost", () => {
         videoUrl: "videoUrl",
         creator: testUser!._id,
         organization: testOrganization!._id,
-        imageUrl: null,
+        imageUrl: undefined,
       })
     );
   });
@@ -263,7 +264,7 @@ describe("resolvers -> Mutation -> createPost", () => {
         videoUrl: "videoUrl",
         creator: testUser!._id,
         organization: testOrganization!._id,
-        imageUrl: testImagePath,
+        imageUrl: `${BASE_URL}${testImagePath}`,
       })
     );
   });

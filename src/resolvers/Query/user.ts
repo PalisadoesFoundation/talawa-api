@@ -25,7 +25,7 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
   // This Query field doesn't allow client to see organizations they are blocked by
   return {
     ...user!,
-    image: `${BASE_URL}${user?.image}`,
+    image: user!.image ? `${BASE_URL}${user!.image}` : undefined,
     organizationsBlockedBy: [],
   };
 };

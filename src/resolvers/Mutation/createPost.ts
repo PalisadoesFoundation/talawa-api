@@ -112,7 +112,7 @@ export const createPost: MutationResolvers["createPost"] = async (
   return {
     ...createdPost.toObject(),
     imageUrl: createdPost.imageUrl
-      ? `${BASE_URL}${uploadEncodedImage}`
+      ? `${BASE_URL}${uploadImageFileName}`
       : undefined,
   };
 };

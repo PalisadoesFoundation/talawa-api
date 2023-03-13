@@ -12,6 +12,7 @@ import {
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
 import { createSinglePostwithComment } from "../../helpers/posts";
+import { BASE_URL } from "../../../src/constants";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testOrganization: testOrganizationType;
@@ -59,7 +60,11 @@ describe("resolvers -> Query -> posts", () => {
       .populate("creator", "-password")
       .lean();
 
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -93,8 +98,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -128,8 +136,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -163,8 +174,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -199,7 +213,11 @@ describe("resolvers -> Query -> posts", () => {
       .populate("creator", "-password")
       .lean();
 
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -233,8 +251,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -268,8 +289,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -303,8 +327,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -338,8 +365,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -374,7 +404,11 @@ describe("resolvers -> Query -> posts", () => {
       .populate("creator", "-password")
       .lean();
 
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -408,8 +442,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -444,7 +481,11 @@ describe("resolvers -> Query -> posts", () => {
       .populate("creator", "-password")
       .lean();
 
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -478,8 +519,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -513,8 +557,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -548,8 +595,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -583,8 +633,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -618,7 +671,10 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 });
