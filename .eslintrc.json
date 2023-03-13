@@ -3,8 +3,6 @@
     "es2022": true,
     "node": true
   },
-  "failOnError": false,
-  "emitWarning": true,
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
@@ -56,10 +54,10 @@
       }
     ],
     "tsdoc/syntax": "warn", 
-    "@typescript-eslint/no-inferrable-types": "off",
-    "@typescript-eslint/no-var-requires": "off",
-    "@typescript-eslint/ban-ts-comment": "off",
-    "@typescript-eslint/no-empty-function": "off",
-    "@typescript-eslint/no-non-null-asserted-optional-chain": "off"
+    "@typescript-eslint": "off",
+//     "@typescript-eslint/no-var-requires": "off",
+//     "@typescript-eslint/ban-ts-comment": "off",
+//     "@typescript-eslint/no-empty-function": "off",
+//     "@typescript-eslint/no-non-null-asserted-optional-chain": "off"
   }
 }
