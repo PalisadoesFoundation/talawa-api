@@ -12,6 +12,7 @@ import { QueryOrganizationsMemberConnectionArgs } from "../../../src/types/gener
 import { Document, Types } from "mongoose";
 import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { BASE_URL } from "../../../src/constants";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
@@ -854,8 +855,77 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       },
     });
   });
+  it(`returns paginated list of users
+    sorted by args.orderBy === 'email_DESC' and image is not undefined`, async () => {
+    await User.updateMany(
+      {},
+      {
+        $set: {
+          image: `image/image.png`,
+        },
+      }
+    );
+    const where = {
+      joinedOrganizations: {
+        $in: testOrganization._id,
+      },
+    };
 
+    const sort = {
+      email: -1,
+    };
+
+    const args: QueryOrganizationsMemberConnectionArgs = {
+      orgId: testOrganization._id,
+      first: 2,
+      skip: 1,
+      where: null,
+      orderBy: "email_DESC",
+    };
+
+    const organizationsMemberConnectionPayload =
+      await organizationsMemberConnectionResolver?.({}, args, {});
+
+    const users = await User.find(where)
+      .sort(sort)
+      .limit(2)
+      .select(["-password"])
+      .populate(["registeredEvents"])
+      .lean();
+
+    const usersWithPassword = users.map((user) => {
+      return {
+        ...user,
+        password: null,
+        image: `${BASE_URL}${user.image}`,
+        id: String(user._id),
+      };
+    });
+
+    expect(organizationsMemberConnectionPayload).toEqual({
+      pageInfo: {
+        hasNextPage: true,
+        hasPreviousPage: false,
+        totalPages: 2,
+        nextPageNo: 2,
+        prevPageNo: null,
+        currPageNo: 1,
+      },
+      edges: usersWithPassword,
+      aggregate: {
+        count: 3,
+      },
+    });
+  });
   it(`returns non-paginated list of admins if args.first === undefined and where.admin_for !== undefined`, async () => {
+    await User.updateMany(
+      {},
+      {
+        $set: {
+          image: `image/image.png`,
+        },
+      }
+    );
     const where = {
       joinedOrganizations: {
         $in: testOrganization._id,
@@ -884,6 +954,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const users = usersTestModel.docs.map((user) => {
       return {
         ...user._doc,
+        image: `${BASE_URL}${user.image}`,
         password: null,
       };
     });
@@ -932,4 +1003,15 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       },
     });
   });
+
+  // await User.updateMany(
+  //   {
+
+  //   } ,
+  //   {
+  //     $set:{
+  //       image:`image/image.png`
+  //     }
+  //   }
+  // )
 });

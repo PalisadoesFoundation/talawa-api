@@ -592,4 +592,66 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       },
     });
   });
+  it(`returns non-paginated list of posts if args.first === undefined and post.imageUrl === undefined`, async () => {
+    await Post.findOneAndUpdate(
+      {
+        creator: testUser?.id,
+      },
+      {
+        $set: {
+          imageUrl: undefined,
+        },
+      }
+    );
+
+    const where = {
+      creator: {
+        $in: testUser?._id,
+      },
+    };
+
+    const args: QueryPostsByOrganizationConnectionArgs = {
+      id: testOrganization?._id,
+      skip: 1,
+      where: {},
+      orderBy: null,
+    };
+
+    const postsByOrganizationConnectionPayload =
+      await postsByOrganizationConnectionResolver?.({}, args, {});
+
+    const postsTestModel = await Post.paginate(where, {
+      pagination: false,
+      sort: {},
+    });
+
+    const postsWithId = postsTestModel.docs.map((post) => {
+      return {
+        ...post,
+        id: String(post._id),
+      };
+    });
+    postsByOrganizationConnectionPayload?.edges.map((post) => {
+      return {
+        ...post,
+        organization: post?.organization._id,
+      };
+    });
+    postsByOrganizationConnectionPayload!.edges = postsWithId;
+
+    expect(postsByOrganizationConnectionPayload).toEqual({
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        totalPages: 1,
+        nextPageNo: null,
+        prevPageNo: null,
+        currPageNo: 1,
+      },
+      edges: postsWithId,
+      aggregate: {
+        count: 3,
+      },
+    });
+  });
 });

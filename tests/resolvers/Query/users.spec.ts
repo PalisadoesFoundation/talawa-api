@@ -5,7 +5,7 @@ import { connect, disconnect } from "../../helpers/db";
 import { QueryUsersArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
-import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
+import { BASE_URL, USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import * as mongoose from "mongoose";
 
@@ -602,5 +602,68 @@ describe("resolvers -> Query -> users", () => {
 
       expect(usersPayload).toEqual(users);
     });
+  });
+  it(`returns list of all existing users
+  sorted by args.orderBy === 'email_DESC' and when images exist`, async () => {
+    const where = {};
+
+    const sort = {
+      email: -1,
+    };
+    await User.findOneAndUpdate(
+      {
+        _id: testUsers[0].id,
+      },
+      {
+        $set: {
+          image: `images/image.png`,
+        },
+      }
+    );
+    await User.findOneAndUpdate(
+      {
+        _id: testUsers[1].id,
+      },
+      {
+        $set: {
+          image: `images/image.png`,
+        },
+      }
+    );
+    await User.findOneAndUpdate(
+      {
+        _id: testUsers[2].id,
+      },
+      {
+        $set: {
+          image: `images/image.png`,
+        },
+      }
+    );
+    const args: QueryUsersArgs = {
+      where: null,
+      orderBy: "email_DESC",
+    };
+
+    const usersPayload = await usersResolver?.({}, args, {});
+
+    let users = await User.find(where)
+      .sort(sort)
+      .select(["-password"])
+      .populate("createdOrganizations")
+      .populate("createdEvents")
+      .populate("joinedOrganizations")
+      .populate("registeredEvents")
+      .populate("eventAdmin")
+      .populate("adminFor")
+      .lean();
+
+    users = users.map((user) => ({
+      ...user,
+      organizationsBlockedBy: [],
+      image: user.image ? `${BASE_URL}${user.image}` : undefined,
+    }));
+
+    expect(usersPayload).toEqual(users);
   });
 });
