@@ -1,6 +1,6 @@
 import { UserResolvers } from "../../types/generatedGraphQLTypes";
-import { tags } from "./tags";
+import { tagsAssignedWith } from "./tagsAssignedWith";
 
 export const User: UserResolvers = {
-  tags,
+  tagsAssignedWith,
 };

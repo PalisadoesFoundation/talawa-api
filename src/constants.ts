@@ -192,6 +192,22 @@ export const TASK_NOT_FOUND_ERROR = {
   PARAM: "task",
 };
 
+export const PAGINATION_FIRST_CANT_BE_NEGATIVE_ERROR = {
+  MESSAGE:
+    "The first argument can't be less than 0 for cursor based navigation.",
+  CODE: "pagination.invalidFirst",
+  DESC: "pagination.invalidFirst",
+  PARAM: "first",
+};
+
+export const PAGINATION_LAST_CANT_BE_NEGATIVE_ERROR = {
+  MESSAGE:
+    "The last argument can't be less than 0 for cursor based navigation.",
+  CODE: "pagination.invalidLast",
+  DESC: "pagination.invalidLast",
+  PARAM: "last",
+};
+
 export const STATUS_ACTIVE = "ACTIVE";
 
 export const URL =
