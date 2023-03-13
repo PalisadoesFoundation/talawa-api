@@ -2,12 +2,13 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { User, Event } from "../../../src/models";
 import { MutationRegisterForEventArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { registerForEvent as registerForEventResolver } from "../../../src/resolvers/Mutation/registerForEvent";
 import {
-  EVENT_NOT_FOUND_MESSAGE,
-  REGISTRANT_ALREADY_EXIST_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  EVENT_NOT_FOUND_ERROR,
+  REGISTRANT_ALREADY_EXIST_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -23,10 +24,11 @@ import { testEventType } from "../../helpers/events";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 
 let testUser: testUserType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testEvent: testEventType;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestEventWithRegistrants();
   testUser = temp[0];
   const testOrganization = temp[1];
@@ -62,7 +64,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> registerForEvent", () => {
@@ -85,23 +87,14 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { registerForEvent: registerForEventResolver } = await import(
         "../../../src/resolvers/Mutation/registerForEvent"
       );
 
       await registerForEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -119,23 +112,14 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
         userId: testUser!._id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { registerForEvent: registerForEventResolver } = await import(
         "../../../src/resolvers/Mutation/registerForEvent"
       );
 
       await registerForEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(EVENT_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(EVENT_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -155,14 +139,6 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
       const context = {
         userId: testUser!._id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { registerForEvent: registerForEventResolver } = await import(
         "../../../src/resolvers/Mutation/registerForEvent"
@@ -170,8 +146,8 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
 
       await registerForEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(REGISTRANT_ALREADY_EXIST_MESSAGE);
-      expect(error.message).toEqual(REGISTRANT_ALREADY_EXIST_MESSAGE);
+      expect(spy).toBeCalledWith(REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE);
+      expect(error.message).toEqual(REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE);
     }
   });
 

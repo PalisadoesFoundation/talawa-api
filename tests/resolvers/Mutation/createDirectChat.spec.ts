@@ -1,10 +1,11 @@
 import "dotenv/config";
 import { Types } from "mongoose";
 import { MutationCreateDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import {
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -23,9 +24,10 @@ import {
 
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const resultsArray = await createTestUserAndOrganization();
 
   testUser = resultsArray[0];
@@ -33,7 +35,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> createDirectChat", () => {
@@ -58,21 +60,14 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       const context = {
         userId: Types.ObjectId().toString(),
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { createDirectChat: createDirectChatResolver } = await import(
         "../../../src/resolvers/Mutation/createDirectChat"
       );
       await createDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -92,27 +87,17 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
         userId: testUser!.id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
-
       const { createDirectChat: createDirectChatResolver } = await import(
         "../../../src/resolvers/Mutation/createDirectChat"
       );
       await createDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
-  it(`throws NotFoundError message if no user exists with _id === context.userIds when [IN_PRODUCTION === TRUE]`, async () => {
+  it(`throws NotFoundError message if no user exists with _id === context.userIds`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -128,22 +113,14 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
+
       const { createDirectChat: createDirectChatResolver } = await import(
         "../../../src/resolvers/Mutation/createDirectChat"
       );
       await createDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
   it(`creates the directChat and returns it`, async () => {

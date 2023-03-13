@@ -2,13 +2,14 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { User, Organization, Event } from "../../../src/models";
 import { MutationAdminRemoveEventArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { adminRemoveEvent as adminRemoveEventResolver } from "../../../src/resolvers/Mutation/adminRemoveEvent";
 import {
-  EVENT_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND_MESSAGE,
+  EVENT_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ADMIN,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
@@ -17,9 +18,10 @@ import { testEventType, createTestEvent } from "../../helpers/events";
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
 let testEvent: testEventType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const resultsArray = await createTestEvent();
 
   testUser = resultsArray[0];
@@ -32,7 +34,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> adminRemoveEvent", () => {
@@ -52,7 +54,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
 
       await adminRemoveEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(EVENT_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -80,7 +82,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
 
       await adminRemoveEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -107,7 +109,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
 
       await adminRemoveEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -135,7 +137,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
 
       await adminRemoveEventResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
     }
   });
 

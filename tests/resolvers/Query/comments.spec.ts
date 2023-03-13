@@ -1,17 +1,20 @@
 import "dotenv/config";
 import { comments as commentsResolver } from "../../../src/resolvers/Query/comments";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { Comment } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createPostwithComment } from "../../helpers/posts";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
+
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   await createPostwithComment();
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> comments", () => {

@@ -1,9 +1,6 @@
 import {
-  IN_PRODUCTION,
-  USER_NOT_FOUND,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
+  USER_NOT_FOUND_ERROR,
+  USER_PROFILE_IMAGE_NOT_FOUND_ERROR,
 } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
@@ -22,22 +19,18 @@ export const removeUserImage: MutationResolvers["removeUserImage"] = async (
   // Checks whether currentUser exists.
   if (!currentUser) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND
-        : requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
   // Checks whether currentUser.image already doesn't exist.
   if (!currentUser.image) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? "User profile image not found"
-        : requestContext.translate("user.profileImage.notFound"),
-      "user.profileImage.notFound",
-      "userProfileImage"
+      requestContext.translate(USER_PROFILE_IMAGE_NOT_FOUND_ERROR.MESSAGE),
+      USER_PROFILE_IMAGE_NOT_FOUND_ERROR.MESSAGE,
+      USER_PROFILE_IMAGE_NOT_FOUND_ERROR.PARAM
     );
   }
 

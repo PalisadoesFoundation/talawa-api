@@ -2,16 +2,9 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Organization, Event } from "../../models";
 import {
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_PARAM,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_CODE,
-  ORGANIZATION_NOT_FOUND_PARAM,
-  ORGANIZATION_NOT_AUTHORIZED_MESSAGE,
-  ORGANIZATION_NOT_AUTHORIZED_CODE,
-  ORGANIZATION_NOT_AUTHORIZED_PARAM,
-  REGEX_VALIDATION_ERROR,
+  USER_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_AUTHORIZED_ERROR,
   LENGTH_VALIDATION_ERROR,
 } from "../../constants";
 import admin, { credential } from "firebase-admin";
@@ -37,9 +30,9 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   // Checks whether currentUser exists.
   if (!currentUser) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -50,9 +43,9 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   // Checks whether organization exists.
   if (!organization) {
     throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_MESSAGE),
-      ORGANIZATION_NOT_FOUND_CODE,
-      ORGANIZATION_NOT_FOUND_PARAM
+      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+      ORGANIZATION_NOT_FOUND_ERROR.CODE,
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -69,9 +62,9 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   // Checks whether currentUser neither created nor joined the organization.
   if (!(userCreatedOrganization || userJoinedOrganization)) {
     throw new errors.UnauthorizedError(
-      requestContext.translate(ORGANIZATION_NOT_AUTHORIZED_MESSAGE),
-      ORGANIZATION_NOT_AUTHORIZED_CODE,
-      ORGANIZATION_NOT_AUTHORIZED_PARAM
+      requestContext.translate(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE),
+      ORGANIZATION_NOT_AUTHORIZED_ERROR.CODE,
+      ORGANIZATION_NOT_AUTHORIZED_ERROR.PARAM
     );
   }
 
@@ -82,48 +75,28 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     500
   );
   const validationResult_Location = isValidString(args.data!.location!, 50);
-  if (!validationResult_Title.isFollowingPattern) {
-    throw new errors.InputValidationError(
-      requestContext.translate(`${REGEX_VALIDATION_ERROR.message} in title`),
-      REGEX_VALIDATION_ERROR.code
-    );
-  }
   if (!validationResult_Title.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.message} 256 characters in title`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
       ),
-      LENGTH_VALIDATION_ERROR.code
-    );
-  }
-  if (!validationResult_Description.isFollowingPattern) {
-    throw new errors.InputValidationError(
-      requestContext.translate(
-        `${REGEX_VALIDATION_ERROR.message} in description`
-      ),
-      REGEX_VALIDATION_ERROR.code
+      LENGTH_VALIDATION_ERROR.CODE
     );
   }
   if (!validationResult_Description.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.message} 500 characters in description`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
       ),
-      LENGTH_VALIDATION_ERROR.code
-    );
-  }
-  if (!validationResult_Location.isFollowingPattern) {
-    throw new errors.InputValidationError(
-      requestContext.translate(`${REGEX_VALIDATION_ERROR.message} in location`),
-      REGEX_VALIDATION_ERROR.code
+      LENGTH_VALIDATION_ERROR.CODE
     );
   }
   if (!validationResult_Location.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.message} 50 characters in location`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
       ),
-      LENGTH_VALIDATION_ERROR.code
+      LENGTH_VALIDATION_ERROR.CODE
     );
   }
   const compareDatesResult = compareDates(

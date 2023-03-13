@@ -6,24 +6,27 @@ import {
   Interface_GroupChatMessage,
 } from "../../../src/models";
 import { MutationSendMessageToGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { sendMessageToGroupChat as sendMessageToGroupChatResolver } from "../../../src/resolvers/Mutation/sendMessageToGroupChat";
 import {
-  CHAT_NOT_FOUND,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
+  CHAT_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-let testUser: testUserType;
-let testGroupChat: Interface_GroupChat &
-  Document<any, any, Interface_GroupChat>;
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
   createTestUserAndOrganization,
   testUserType,
 } from "../../helpers/userAndOrg";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
+let testUser: testUserType;
+let testGroupChat: Interface_GroupChat &
+  Document<any, any, Interface_GroupChat>;
+
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestUserAndOrganization();
   testUser = temp[0];
 
@@ -37,11 +40,15 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
   it(`throws NotFoundError if no groupChat exists with _id === args.chatId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationSendMessageToGroupChatArgs = {
         chatId: Types.ObjectId().toString(),
@@ -50,13 +57,21 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
 
       const context = { userId: testUser!.id };
 
+      const { sendMessageToGroupChat: sendMessageToGroupChatResolver } =
+        await import("../../../src/resolvers/Mutation/sendMessageToGroupChat");
+
       await sendMessageToGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(CHAT_NOT_FOUND);
+      expect(spy).toBeCalledWith(CHAT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(CHAT_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
   it(`throws NotFoundError current user with _id === context.userId does not exist`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationSendMessageToGroupChatArgs = {
         chatId: testGroupChat.id,
@@ -67,14 +82,22 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      const { sendMessageToGroupChat: sendMessageToGroupChatResolver } =
+        await import("../../../src/resolvers/Mutation/sendMessageToGroupChat");
+
       await sendMessageToGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
   it(`throws UnauthorizedError if users field of groupChat with _id === args.chatId
   does not contain current user with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
     try {
       const args: MutationSendMessageToGroupChatArgs = {
         chatId: testGroupChat.id,
@@ -85,9 +108,13 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
         userId: testUser!.id,
       };
 
+      const { sendMessageToGroupChat: sendMessageToGroupChatResolver } =
+        await import("../../../src/resolvers/Mutation/sendMessageToGroupChat");
+
       await sendMessageToGroupChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 

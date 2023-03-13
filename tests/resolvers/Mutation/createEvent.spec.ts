@@ -2,13 +2,13 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { User, Organization } from "../../../src/models";
 import { MutationCreateEventArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import {
   LENGTH_VALIDATION_ERROR,
-  ORGANIZATION_NOT_AUTHORIZED_MESSAGE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  REGEX_VALIDATION_ERROR,
-  USER_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_AUTHORIZED_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
@@ -19,9 +19,10 @@ import {
 
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 
   testUser = await createTestUser();
   testOrganization = await Organization.create({
@@ -50,7 +51,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> createEvent", () => {
@@ -68,7 +69,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
       await createEventResolverError?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -104,7 +105,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
       await createEventResolverError?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -141,7 +142,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
       await createEventResolverError?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 
@@ -333,129 +334,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
 });
 
 describe("Check for validation conditions", () => {
-  it(`throws Regex Validation Failed error if title contains a character other then number, letter, or symbol`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
-    try {
-      const args: MutationCreateEventArgs = {
-        data: {
-          organizationId: testOrganization!.id,
-          allDay: false,
-          description: "Random",
-          endDate: "Tue Feb 15 2023",
-          endTime: "",
-          isPublic: false,
-          isRegisterable: false,
-          latitude: 1,
-          longitude: 1,
-          location: "Random",
-          recurring: false,
-          startDate: "Tue Feb 14 2023",
-          startTime: "",
-          title: "🍕",
-          recurrance: "DAILY",
-        },
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      const { createEvent: createEventResolverError } = await import(
-        "../../../src/resolvers/Mutation/createEvent"
-      );
-
-      await createEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in title`
-      );
-    }
-  });
-  it(`throws Regex Validation Failed error if description contains a character other then number, letter, or symbol`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
-    try {
-      const args: MutationCreateEventArgs = {
-        data: {
-          organizationId: testOrganization!.id,
-          allDay: false,
-          description: "🍕",
-          endDate: "Tue Feb 15 2023",
-          endTime: "",
-          isPublic: false,
-          isRegisterable: false,
-          latitude: 1,
-          longitude: 1,
-          location: "Random",
-          recurring: false,
-          startDate: "Tue Feb 14 2023",
-          startTime: "",
-          title: "Random",
-          recurrance: "DAILY",
-        },
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      const { createEvent: createEventResolverError } = await import(
-        "../../../src/resolvers/Mutation/createEvent"
-      );
-
-      await createEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in description`
-      );
-    }
-  });
-  it(`throws Regex Validation Failed error if location contains a character other then number, letter, or symbol`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
-    try {
-      const args: MutationCreateEventArgs = {
-        data: {
-          organizationId: testOrganization!.id,
-          allDay: false,
-          description: "Random",
-          endDate: "Tue Feb 15 2023",
-          endTime: "",
-          isPublic: false,
-          isRegisterable: false,
-          latitude: 1,
-          longitude: 1,
-          location: "🍕",
-          recurring: false,
-          startDate: "Tue Feb 14 2023",
-          startTime: "",
-          title: "Random",
-          recurrance: "DAILY",
-        },
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      const { createEvent: createEventResolverError } = await import(
-        "../../../src/resolvers/Mutation/createEvent"
-      );
-
-      await createEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in location`
-      );
-    }
-  });
   it(`throws String Length Validation error if title is greater than 256 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
@@ -494,7 +372,7 @@ describe("Check for validation conditions", () => {
       await createEventResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 256 characters in title`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
       );
     }
   });
@@ -536,7 +414,7 @@ describe("Check for validation conditions", () => {
       await createEventResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 500 characters in description`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
       );
     }
   });
@@ -577,7 +455,7 @@ describe("Check for validation conditions", () => {
       await createEventResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 50 characters in location`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
       );
     }
   });

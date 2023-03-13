@@ -1,17 +1,11 @@
 import "dotenv/config";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization } from "../../models";
-import { uploadImage } from "../../utilities";
 import { errors, requestContext } from "../../libraries";
-import {
-  LENGTH_VALIDATION_ERROR,
-  REGEX_VALIDATION_ERROR,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
-} from "../../constants";
-import { superAdminCheck } from "../../utilities/superAdminCheck";
+import { LENGTH_VALIDATION_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
+import { superAdminCheck } from "../../utilities";
 import { isValidString } from "../../libraries/validators/validateString";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 
 export const createOrganization: MutationResolvers["createOrganization"] =
   async (_parent, args, context) => {
@@ -22,20 +16,22 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     // Checks whether currentUser with _id === context.userId exists.
     if (currentUserExists === false) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_MESSAGE),
-        USER_NOT_FOUND_CODE,
-        USER_NOT_FOUND_PARAM
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
     const currentUser = await User.findById({
       _id: context.userId,
     });
+
     superAdminCheck(currentUser!);
+
     //Upload file
-    let uploadImageObj;
+    let uploadImageFileName = null;
     if (args.file) {
-      uploadImageObj = await uploadImage(args.file, null);
+      uploadImageFileName = await uploadEncodedImage(args.file!, null);
     }
 
     // Checks if the recieved arguments are valid according to standard input norms
@@ -45,76 +41,36 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       500
     );
     const validationResult_Location = isValidString(args.data!.location!, 50);
-    let tagsString = "";
-    for (let i = 0; i < args.data!.tags.length; i++) {
-      tagsString = tagsString + args.data!.tags[i];
-    }
-    const validationResult_Tags = isValidString(tagsString, 256);
-    if (!validationResult_Name.isFollowingPattern) {
-      throw new errors.InputValidationError(
-        requestContext.translate(`${REGEX_VALIDATION_ERROR.message} in name`),
-        REGEX_VALIDATION_ERROR.code
-      );
-    }
+
     if (!validationResult_Name.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.message} 256 characters in name`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
         ),
-        LENGTH_VALIDATION_ERROR.code
-      );
-    }
-    if (!validationResult_Description.isFollowingPattern) {
-      throw new errors.InputValidationError(
-        requestContext.translate(
-          `${REGEX_VALIDATION_ERROR.message} in description`
-        ),
-        REGEX_VALIDATION_ERROR.code
+        LENGTH_VALIDATION_ERROR.CODE
       );
     }
     if (!validationResult_Description.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.message} 500 characters in description`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
         ),
-        LENGTH_VALIDATION_ERROR.code
-      );
-    }
-    if (!validationResult_Location.isFollowingPattern) {
-      throw new errors.InputValidationError(
-        requestContext.translate(
-          `${REGEX_VALIDATION_ERROR.message} in location`
-        ),
-        REGEX_VALIDATION_ERROR.code
+        LENGTH_VALIDATION_ERROR.CODE
       );
     }
     if (!validationResult_Location.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.message} 50 characters in location`
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
         ),
-        LENGTH_VALIDATION_ERROR.code
-      );
-    }
-    if (!validationResult_Tags.isFollowingPattern) {
-      throw new errors.InputValidationError(
-        requestContext.translate(`${REGEX_VALIDATION_ERROR.message} in tags`),
-        REGEX_VALIDATION_ERROR.code
-      );
-    }
-    if (!validationResult_Tags.isLessThanMaxLength) {
-      throw new errors.InputValidationError(
-        requestContext.translate(
-          `${LENGTH_VALIDATION_ERROR.message} 256 characters in tags`
-        ),
-        LENGTH_VALIDATION_ERROR.code
+        LENGTH_VALIDATION_ERROR.CODE
       );
     }
 
     // Creates new organization.
     const createdOrganization = await Organization.create({
       ...args.data,
-      image: uploadImageObj ? uploadImageObj.newImagePath : null,
+      image: uploadImageFileName ? uploadImageFileName : null,
       creator: context.userId,
       admins: [context.userId],
       members: [context.userId],

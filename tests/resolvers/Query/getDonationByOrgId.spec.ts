@@ -1,22 +1,24 @@
 import "dotenv/config";
 import { Donation } from "../../../src/models";
-import { connect, disconnect } from "../../../src/db";
 import { getDonationByOrgId as getDonationByOrgIdResolver } from "../../../src/resolvers/Query/getDonationByOrgId";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { QueryGetDonationByOrgIdArgs } from "../../../src/types/generatedGraphQLTypes";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { createTestDonation } from "../../helpers/donation";
 import { testOrganizationType } from "../../helpers/userAndOrg";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const resultArray = await createTestDonation();
   testOrganization = resultArray[1];
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> getDonationByOrgId", () => {

@@ -7,16 +7,16 @@ describe("libraries -> errors -> internalServerError", () => {
   it(`throws internalServerError if there is error from the server side `, async () => {
     try {
       throw new errors.InternalServerError(
-        INTERNAL_SERVER_ERROR.message,
-        INTERNAL_SERVER_ERROR.code,
-        INTERNAL_SERVER_ERROR.param
+        INTERNAL_SERVER_ERROR.MESSAGE,
+        INTERNAL_SERVER_ERROR.CODE,
+        INTERNAL_SERVER_ERROR.PARAM
       );
     } catch (error: any) {
       expect(error.errors).toEqual([
         expect.objectContaining({
-          message: INTERNAL_SERVER_ERROR.message,
-          code: INTERNAL_SERVER_ERROR.code,
-          param: INTERNAL_SERVER_ERROR.param,
+          message: INTERNAL_SERVER_ERROR.MESSAGE,
+          code: INTERNAL_SERVER_ERROR.CODE,
+          param: INTERNAL_SERVER_ERROR.PARAM,
         }),
       ]);
     }

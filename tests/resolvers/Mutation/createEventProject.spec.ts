@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { Event, Organization, User } from "../../../src/models";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import {
   afterAll,
   afterEach,
@@ -11,9 +12,9 @@ import {
   vi,
 } from "vitest";
 import {
-  EVENT_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  EVENT_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { testEventType } from "../../helpers/events";
 import {
@@ -26,9 +27,10 @@ let testUser: testUserType;
 let testAdminUser: testUserType;
 let testOrganization: testOrganizationType;
 let testEvent: testEventType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 
   testUser = await createTestUser();
   testAdminUser = await createTestUser();
@@ -72,7 +74,7 @@ afterAll(async () => {
   await User.deleteMany({});
   await Organization.deleteMany({});
   await Event.deleteMany({});
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 afterEach(async () => {
@@ -94,23 +96,14 @@ describe("resolvers -> Mutation -> createEventProject", () => {
         },
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { createEventProject } = await import(
         "../../../src/resolvers/Mutation/createEventProject"
       );
 
       await createEventProject(null, args, { user: null });
     } catch (err: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(err.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(err.message).toEqual(`Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`);
     }
   });
 
@@ -147,8 +140,10 @@ describe("resolvers -> Mutation -> createEventProject", () => {
     try {
       await createEventProject(null, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(EVENT_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${EVENT_NOT_FOUND_MESSAGE}`);
+      expect(spy).toBeCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
@@ -185,9 +180,9 @@ describe("resolvers -> Mutation -> createEventProject", () => {
     try {
       await createEventProject(null, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
       );
     }
   });

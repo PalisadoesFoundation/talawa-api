@@ -2,15 +2,14 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { User } from "../../../src/models";
 import { MutationCreateOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { createOrganization as createOrganizationResolver } from "../../../src/resolvers/Mutation/createOrganization";
 import {
   LENGTH_VALIDATION_ERROR,
-  REGEX_VALIDATION_ERROR,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  USER_NOT_AUTHORIZED_SUPERADMIN,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { nanoid } from "nanoid";
 import * as uploadImage from "../../../src/utilities/uploadImage";
 import {
   beforeAll,
@@ -22,21 +21,22 @@ import {
   afterEach,
 } from "vitest";
 import { createTestUserFunc, testUserType } from "../../helpers/user";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 
-const testImagePath: string = `${nanoid().toLowerCase()}test.png`;
 let testUser: testUserType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
-vi.mock("../../utilities", () => ({
-  uploadImage: vi.fn(),
+vi.mock("../../utilities/uploadEncodedImage", () => ({
+  uploadEncodedImage: vi.fn(),
 }));
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUserFunc();
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> createOrganization", () => {
@@ -58,7 +58,6 @@ describe("resolvers -> Mutation -> createOrganization", () => {
           visibleInSearch: true,
           apiUrl: "apiUrl",
           location: "location",
-          tags: ["tag"],
         },
       };
 
@@ -66,21 +65,13 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
       const { createOrganization } = await import(
         "../../../src/resolvers/Mutation/createOrganization"
       );
       await createOrganization?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -98,7 +89,6 @@ describe("resolvers -> Mutation -> createOrganization", () => {
           visibleInSearch: true,
           apiUrl: "apiUrl",
           location: "location",
-          tags: ["tag"],
         },
       };
 
@@ -111,17 +101,23 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       );
       await createOrganization?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(spy).toHaveBeenLastCalledWith(
+        USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE
+      );
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);
     }
   });
 
   it(`creates the organization with image and returns it`, async () => {
-    vi.spyOn(uploadImage, "uploadImage").mockImplementation(
-      async (newImagePath: any, imageAlreadyInDbPath: any) => ({
-        newImagePath,
-        imageAlreadyInDbPath,
-      })
+    // vi.spyOn(uploadImage, "uploadImage").mockImplementation(
+    //   async (newImagePath: any, imageAlreadyInDbPath: any) => ({
+    //     newImagePath,
+    //     imageAlreadyInDbPath,
+    //   })
+    // );
+
+    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
+      async (encodedImageURL: string) => encodedImageURL
     );
 
     await User.findOneAndUpdate(
@@ -144,9 +140,8 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         visibleInSearch: true,
         apiUrl: "apiUrl",
         location: "location",
-        tags: ["tag"],
       },
-      file: testImagePath,
+      file: "imagePath",
     };
     const context = {
       userId: testUser!._id,
@@ -168,10 +163,10 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         creator: testUser!._id,
         admins: [testUser!._id],
         members: [testUser!._id],
-        image: testImagePath,
+        image: "imagePath",
       })
     );
-    expect(createOrganizationPayload?.image).toEqual(testImagePath);
+    expect(createOrganizationPayload?.image).toEqual("imagePath");
 
     const updatedTestUser = await User.findOne({
       _id: testUser!._id,
@@ -202,7 +197,6 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         visibleInSearch: true,
         apiUrl: "apiUrl",
         location: "location",
-        tags: ["tag"],
       },
       file: null,
     };
@@ -230,122 +224,6 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     );
     expect(createOrganizationPayload?.image).toBe(null);
   });
-  it(`throws Regex Validation Failed error if name contains a character other then number, letter, or symbol`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
-    try {
-      const args: MutationCreateOrganizationArgs = {
-        data: {
-          description: "description",
-          isPublic: true,
-          name: "🥗",
-          visibleInSearch: true,
-          apiUrl: "apiUrl",
-          location: "location",
-          tags: ["tag"],
-        },
-        file: null,
-      };
-      const context = {
-        userId: testUser!._id,
-      };
-
-      await createOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in name`
-      );
-    }
-  });
-  it(`throws Regex Validation Failed error if description contains a character other then number, letter, or symbol`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
-    try {
-      const args: MutationCreateOrganizationArgs = {
-        data: {
-          description: "🥗",
-          isPublic: true,
-          name: "random",
-          visibleInSearch: true,
-          apiUrl: "apiUrl",
-          location: "location",
-          tags: ["tag"],
-        },
-        file: null,
-      };
-      const context = {
-        userId: testUser!._id,
-      };
-
-      await createOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in description`
-      );
-    }
-  });
-  it(`throws Regex Validation Failed error if location contains a character other then number, letter, or symbol`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
-    try {
-      const args: MutationCreateOrganizationArgs = {
-        data: {
-          description: "description",
-          isPublic: true,
-          name: "random",
-          visibleInSearch: true,
-          apiUrl: "apiUrl",
-          location: "🥗",
-          tags: ["tag"],
-        },
-        file: null,
-      };
-      const context = {
-        userId: testUser!._id,
-      };
-
-      await createOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in location`
-      );
-    }
-  });
-  it(`throws Regex Validation Failed error if tags contains a character other then number, letter, or symbol`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
-    try {
-      const args: MutationCreateOrganizationArgs = {
-        data: {
-          description: "description",
-          isPublic: true,
-          name: "random",
-          visibleInSearch: true,
-          apiUrl: "apiUrl",
-          location: "location",
-          tags: ["🥗"],
-        },
-        file: null,
-      };
-      const context = {
-        userId: testUser!._id,
-      };
-
-      await createOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${REGEX_VALIDATION_ERROR.message} in tags`
-      );
-    }
-  });
 
   it(`throws String Length Validation error if name is greater than 256 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
@@ -361,7 +239,6 @@ describe("resolvers -> Mutation -> createOrganization", () => {
           visibleInSearch: true,
           apiUrl: "apiUrl",
           location: "location",
-          tags: ["tag"],
         },
         file: null,
       };
@@ -372,7 +249,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganizationResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 256 characters in name`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
       );
     }
   });
@@ -391,7 +268,6 @@ describe("resolvers -> Mutation -> createOrganization", () => {
           visibleInSearch: true,
           apiUrl: "apiUrl",
           location: "location",
-          tags: ["tag"],
         },
         file: null,
       };
@@ -402,7 +278,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganizationResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 500 characters in description`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
       );
     }
   });
@@ -421,7 +297,6 @@ describe("resolvers -> Mutation -> createOrganization", () => {
           apiUrl: "apiUrl",
           location:
             "JWQPfpdkGGGKyryb86K4YN85nDj4m4F7gEAMBbMXLax73pn2okV6kpWY0EYO0XSlUc0fAlp45UCgg3s6mqsRYF9FOlzNIDFLZ1rd03Z17cdJRuvBcAmbC0imyqGdXHGDUQmVyOjDkaOLAvjhB5uDeuEqajcAPTcKpZ6LMpigXuqRAd0xGdPNXyITC03FEeKZAjjJL35cSIUeMv5eWmiFlmmm70FU1Bp6575zzBtEdyWPLflcA2GpGmmf4zvT7nfgN3NIkwQIhk9OwP8dn75YYczcYuUzLpxBu1Lyog77YlAj5DNdTIveXu9zHeC6V4EEUcPQtf1622mhdU3jZNMIAyxcAG4ErtztYYRqFs0ApUxXiQI38rmiaLcicYQgcOxpmFvqRGiSduiCprCYm90CHWbQFq4w2uhr8HhR3r9HYMIYtrRyO6C3rPXaQ7otpjuNgE0AKI57AZ4nGG1lvNwptFCY60JEndSLX9Za6XP1zkVRLaMZArQNl",
-          tags: ["tag"],
         },
         file: null,
       };
@@ -432,38 +307,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       await createOrganizationResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 50 characters in location`
-      );
-    }
-  });
-  it(`throws String Length Validation error if tags is greater than 256 characters`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
-    try {
-      const args: MutationCreateOrganizationArgs = {
-        data: {
-          description: "description",
-          isPublic: true,
-          name: "random",
-          visibleInSearch: true,
-          apiUrl: "apiUrl",
-          location: "location",
-          tags: [
-            "JWQPfpdkGGGKyryb86K4YN85nDj4m4F7gEAMBbMXLax73pn2okV6kpWY0EYO0XSlUc0fAlp45UCgg3s6mqsRYF9FOlzNIDFLZ1rd03Z17cdJRuvBcAmbC0imyqGdXHGDUQmVyOjDkaOLAvjhB5uDeuEqajcAPTcKpZ6LMpigXuqRAd0xGdPNXyITC03FEeKZAjjJL35cSIUeMv5eWmiFlmmm70FU1Bp6575zzBtEdyWPLflcA2GpGmmf4zvT7nfgN3NIkwQIhk9OwP8dn75YYczcYuUzLpxBu1Lyog77YlAj5DNdTIveXu9zHeC6V4EEUcPQtf1622mhdU3jZNMIAyxcAG4ErtztYYRqFs0ApUxXiQI38rmiaLcicYQgcOxpmFvqRGiSduiCprCYm90CHWbQFq4w2uhr8HhR3r9HYMIYtrRyO6C3rPXaQ7otpjuNgE0AKI57AZ4nGG1lvNwptFCY60JEndSLX9Za6XP1zkVRLaMZArQNl",
-          ],
-        },
-        file: null,
-      };
-      const context = {
-        userId: testUser!._id,
-      };
-
-      await createOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.message} 256 characters in tags`
+        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
       );
     }
   });

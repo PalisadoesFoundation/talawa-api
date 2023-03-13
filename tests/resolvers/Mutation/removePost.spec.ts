@@ -1,66 +1,53 @@
 import "dotenv/config";
 import { Types } from "mongoose";
-import { User, Organization, Post } from "../../../src/models";
 import { MutationRemovePostArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
-import { removePost as removePostResolver } from "../../../src/resolvers/Mutation/removePost";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import {
-  POST_NOT_FOUND,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND,
+  POST_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { testUserType } from "../../helpers/userAndOrg";
-import { testPostType } from "../../helpers/posts";
-import { createTestUserFunc } from "../../helpers/user";
+import { createTestUser, testUserType } from "../../helpers/userAndOrg";
+import { testPostType, createTestPost } from "../../helpers/posts";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  vi,
+  afterEach,
+} from "vitest";
 
-let testUsers: testUserType[];
+let MONGOOSE_INSTANCE: typeof mongoose | null;
+let testUser: testUserType;
 let testPost: testPostType;
+let randomUser: testUserType;
 
 beforeAll(async () => {
-  await connect();
-  const tempUser1 = await createTestUserFunc();
-  const tempUser2 = await createTestUserFunc();
-  testUsers = [tempUser1, tempUser2];
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUsers[0]!._id,
-    admins: [testUsers[0]!._id],
-    members: [testUsers[0]!._id],
-    visibleInSearch: true,
-  });
-
-  await User.updateOne(
-    {
-      _id: testUsers[0]!._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  testPost = await Post.create({
-    text: "text",
-    creator: testUsers[0]!._id,
-    organization: testOrganization._id,
-    likedBy: [testUsers[0]!._id],
-    likeCount: 1,
-  });
+  MONGOOSE_INSTANCE = await connect();
+  [testUser, , testPost] = await createTestPost();
+  randomUser = await createTestUser();
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> removePost", () => {
+  afterEach(() => {
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+    vi.resetAllMocks();
+  });
+
   it(`throws NotFoundError if current user with _id === context.userId does not exist`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => `Translated ${message}`
+    );
+
     try {
       const args: MutationRemovePostArgs = {
         id: "",
@@ -70,56 +57,100 @@ describe("resolvers -> Mutation -> removePost", () => {
         userId: Types.ObjectId().toString(),
       };
 
+      const { removePost: removePostResolver } = await import(
+        "../../../src/resolvers/Mutation/removePost"
+      );
+
       await removePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
   it(`throws NotFoundError if no post exists with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => `Translated ${message}`
+    );
+
     try {
       const args: MutationRemovePostArgs = {
         id: Types.ObjectId().toString(),
       };
 
       const context = {
-        userId: testUsers[0]!.id,
+        userId: testUser!.id,
       };
+
+      const { removePost: removePostResolver } = await import(
+        "../../../src/resolvers/Mutation/removePost"
+      );
 
       await removePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(POST_NOT_FOUND);
+      expect(error.message).toEqual(
+        `Translated ${POST_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
-  it(`throws UnauthorizedError if for creator of post with _id === args.id,
-  user._id !== context.userId`, async () => {
+  it(`throws UnauthorizedError if a non-creator / non-superadmin / non-admin of the org tries to delete the post`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => `Translated ${message}`
+    );
+
     try {
       const args: MutationRemovePostArgs = {
         id: testPost!.id,
       };
 
       const context = {
-        userId: testUsers[1]!.id,
+        userId: randomUser!.id,
       };
+
+      const { removePost: removePostResolver } = await import(
+        "../../../src/resolvers/Mutation/removePost"
+      );
 
       await removePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
     }
   });
 
   it(`deletes the post with _id === args.id and returns it`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => `Translated ${message}`
+    );
+
     const args: MutationRemovePostArgs = {
       id: testPost!.id,
     };
 
     const context = {
-      userId: testUsers[0]!.id,
+      userId: testUser!.id,
     };
 
-    const removePostPayload = await removePostResolver?.({}, args, context);
+    vi.doMock("../../../src/constants", async () => {
+      const actualConstants: object = await vi.importActual(
+        "../../../src/constants"
+      );
+      return {
+        ...actualConstants,
+      };
+    });
 
+    const { removePost: removePostResolver } = await import(
+      "../../../src/resolvers/Mutation/removePost"
+    );
+
+    const removePostPayload = await removePostResolver?.({}, args, context);
     expect(removePostPayload).toEqual(testPost!.toObject());
   });
 });

@@ -2,15 +2,17 @@ import "dotenv/config";
 import { Document, Types } from "mongoose";
 import { Interface_Donation, Donation } from "../../../src/models";
 import { MutationDeleteDonationByIdArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { deleteDonationById as deleteDonationByIdResolver } from "../../../src/resolvers/Mutation/deleteDonationById";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let testDonation: Interface_Donation & Document<any, any, Interface_Donation>;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestUserAndOrganization();
   const testUser = temp[0];
 
@@ -27,7 +29,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> deleteDonationById", () => {

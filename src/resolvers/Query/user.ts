@@ -1,8 +1,4 @@
-import {
-  USER_NOT_FOUND,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_PARAM,
-} from "../../constants";
+import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { errors } from "../../libraries";
 import { User } from "../../models";
@@ -14,9 +10,9 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
 
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
-      USER_NOT_FOUND,
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      USER_NOT_FOUND_ERROR.DESC,
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 

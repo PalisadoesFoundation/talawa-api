@@ -1,11 +1,12 @@
 import "dotenv/config";
 import { Types } from "mongoose";
 import { MutationLikePostArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { likePost as likePostResolver } from "../../../src/resolvers/Mutation/likePost";
 import {
-  POST_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  POST_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -21,16 +22,17 @@ import { createTestPost, testPostType } from "../../helpers/posts";
 
 let testUser: testUserType;
 let testPost: testPostType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestPost();
   testUser = temp[0];
   testPost = temp[2];
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> likePost", () => {
@@ -51,22 +53,15 @@ describe("resolvers -> Mutation -> likePost", () => {
       const context = {
         userId: Types.ObjectId().toString(),
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { likePost: likePostResolver } = await import(
         "../../../src/resolvers/Mutation/likePost"
       );
 
       await likePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -83,14 +78,6 @@ describe("resolvers -> Mutation -> likePost", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { likePost: likePostResolver } = await import(
         "../../../src/resolvers/Mutation/likePost"
@@ -98,8 +85,8 @@ describe("resolvers -> Mutation -> likePost", () => {
 
       await likePostResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toBeCalledWith(POST_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(POST_NOT_FOUND_MESSAGE);
+      expect(spy).toBeCalledWith(POST_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 

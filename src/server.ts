@@ -25,7 +25,8 @@ import {
 import { typeDefs } from "./typeDefs";
 import { resolvers } from "./resolvers";
 import { Interface_JwtTokenPayload } from "./utilities";
-import { ACCESS_TOKEN_SECRET } from "./constants";
+import { ACCESS_TOKEN_SECRET, LAST_RESORT_SUPERADMIN_EMAIL } from "./constants";
+import { User } from "./models";
 
 const app = express();
 
@@ -67,6 +68,8 @@ app.use(
 );
 app.use(mongoSanitize());
 app.use(cors());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // Fix added to stream
 app.use(
@@ -100,12 +103,23 @@ const apolloServer = new ApolloServer({
     role: RoleAuthorizationDirective,
   },
   context: ({ req, res, connection }) => {
+    /**
+     * The apiRootUrl for serving static files.
+     * This is constructed by extracting the protocol and host information from the `req` object.
+     * It is passed to the context object and can be accessed by all the resolver functions.
+     * Resolver functions can use this to construct absolute URLs for serving static files.
+     * For example, http://testDomain.com/ is apiRootUrl for a server with testDomain.com as Domain Name
+     * with no SSL certificate (http://)
+     * In local environment, apiRootUrl will be http://localhost:{port}/
+     */
+    const apiRootUrl = `${req.protocol}://${req.get("host")}/`;
     if (connection) {
       return {
         ...connection,
         pubsub,
         res,
         req,
+        apiRootUrl,
       };
     } else {
       return {
@@ -113,6 +127,7 @@ const apolloServer = new ApolloServer({
         pubsub,
         res,
         req,
+        apiRootUrl,
       };
     }
   },
@@ -159,16 +174,39 @@ apolloServer.applyMiddleware({
 });
 apolloServer.installSubscriptionHandlers(httpServer);
 
+const logWarningForSuperAdminEnvVariable = async () => {
+  const superAdminExist = await User.exists({ userType: "SUPERADMIN" });
+  const isVariablePresentInEnvFile = !!LAST_RESORT_SUPERADMIN_EMAIL;
+  if (superAdminExist) {
+    if (isVariablePresentInEnvFile) {
+      logger.warn(
+        "\x1b[1m\x1b[33m%s\x1b[0m",
+        "The LAST_RESORT_SUPERADMIN_EMAIL variable configured in your .env file poses a security risk. We strongly recommend that you remove it if not required. Please refer to the documentation in the INSTALLATION.md file.You have created super admin, please remove the LAST_RESORT_SUPERADMIN_EMAIL variable from .env file if you don't require it"
+      );
+    }
+  } else {
+    if (!isVariablePresentInEnvFile) {
+      logger.warn(
+        "\x1b[1m\x1b[33m%s\x1b[0m",
+        "To create your first Super Admin, the LAST_RESORT_SUPERADMIN_EMAIL parameter needs to be set in the .env file. Please refer to the documentation in the INSTALLATION.md file."
+      );
+    }
+  }
+};
+
 const serverStart = async () => {
   try {
     await database.connect();
-    httpServer.listen(process.env.PORT || 4000, () => {
+    httpServer.listen(process.env.PORT || 4000, async () => {
+      await logWarningForSuperAdminEnvVariable();
       logger.info(
+        "\x1b[1m\x1b[32m%s\x1b[0m",
         `🚀 Server ready at http://localhost:${process.env.PORT || 4000}${
           apolloServer.graphqlPath
         }`
       );
       logger.info(
+        "\x1b[1m\x1b[32m%s\x1b[0m",
         `🚀 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}${
           apolloServer.subscriptionsPath
         }`

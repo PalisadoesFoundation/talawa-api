@@ -6,13 +6,12 @@ import {
   DirectChatMessage,
 } from "../../../src/models";
 import { MutationRemoveDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import {
-  CHAT_NOT_FOUND,
-  ORGANIZATION_NOT_FOUND,
-  USER_NOT_AUTHORIZED,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  CHAT_NOT_FOUND_MESSAGE,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  CHAT_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ADMIN,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -29,12 +28,13 @@ import {
   testDirectChatType,
 } from "../../helpers/directChat";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
 let testDirectChat: testDirectChatType;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestDirectChat();
   testUser = temp[0];
   testOrganization = temp[1];
@@ -63,7 +63,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> removeDirectChat", () => {
@@ -72,37 +72,7 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
     vi.resetModules();
   });
 
-  it(`throws NotFoundError if no organization exists with _id === args.organizationId and IN_PRODUCTION === false`, async () => {
-    try {
-      const args: MutationRemoveDirectChatArgs = {
-        chatId: "",
-        organizationId: Types.ObjectId().toString(),
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: false,
-        };
-      });
-
-      const { removeDirectChat: removeDirectChatResolver } = await import(
-        "../../../src/resolvers/Mutation/removeDirectChat"
-      );
-      await removeDirectChatResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND);
-    }
-  });
-
-  it(`throws NotFoundError if no organization exists with _id === args.organizationId and IN_PRODUCTION === true`, async () => {
+  it(`throws NotFoundError if no organization exists with _id === args.organizationId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -118,59 +88,19 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
         userId: testUser!.id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
-
       const { removeDirectChat: removeDirectChatResolver } = await import(
         "../../../src/resolvers/Mutation/removeDirectChat"
       );
       await removeDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_MESSAGE}`
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
 
-  it(`throws NotFoundError if no directChat exists with _id === args.chatId and IN_PRODUCTION === false`, async () => {
-    try {
-      const args: MutationRemoveDirectChatArgs = {
-        chatId: Types.ObjectId().toString(),
-        organizationId: testOrganization!.id,
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: false,
-        };
-      });
-
-      const { removeDirectChat: removeDirectChatResolver } = await import(
-        "../../../src/resolvers/Mutation/removeDirectChat"
-      );
-      await removeDirectChatResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(CHAT_NOT_FOUND);
-    }
-  });
-
-  it(`throws NotFoundError if no directChat exists with _id === args.chatId and IN_PRODUCTION === true`, async () => {
+  it(`throws NotFoundError if no directChat exists with _id === args.chatId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -186,28 +116,26 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
         userId: testUser!.id,
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
-
       const { removeDirectChat: removeDirectChatResolver } = await import(
         "../../../src/resolvers/Mutation/removeDirectChat"
       );
       await removeDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(CHAT_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${CHAT_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenCalledWith(CHAT_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${CHAT_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
   it(`throws UnauthorizedError if user with _id === context.userId is not an admin
   of organization with _id === args.organizationId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
     try {
       await Organization.updateOne(
         {
@@ -234,7 +162,11 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
       );
       await removeDirectChatResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
+      );
+
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
     }
   });
 

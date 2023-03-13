@@ -1,14 +1,4 @@
-import {
-  IN_PRODUCTION,
-  POST_NOT_FOUND,
-  POST_NOT_FOUND_CODE,
-  POST_NOT_FOUND_MESSAGE,
-  POST_NOT_FOUND_PARAM,
-  USER_NOT_FOUND,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
-} from "../../constants";
+import { POST_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Post } from "../../models";
@@ -24,11 +14,9 @@ export const unlikePost: MutationResolvers["unlikePost"] = async (
 
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND
-        : requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -38,11 +26,9 @@ export const unlikePost: MutationResolvers["unlikePost"] = async (
 
   if (!post) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? POST_NOT_FOUND
-        : requestContext.translate(POST_NOT_FOUND_MESSAGE),
-      POST_NOT_FOUND_CODE,
-      POST_NOT_FOUND_PARAM
+      requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
+      POST_NOT_FOUND_ERROR.CODE,
+      POST_NOT_FOUND_ERROR.PARAM
     );
   }
 

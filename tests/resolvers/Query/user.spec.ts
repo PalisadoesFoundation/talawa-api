@@ -1,7 +1,8 @@
 import "dotenv/config";
 import { user as userResolver } from "../../../src/resolvers/Query/user";
-import { connect, disconnect } from "../../../src/db";
-import { USER_NOT_FOUND } from "../../../src/constants";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { User } from "../../../src/models";
 import { Types } from "mongoose";
 import { QueryUserArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -11,15 +12,16 @@ import {
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   testUser = (await createTestUserAndOrganization())[0];
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> user", () => {
@@ -31,7 +33,7 @@ describe("resolvers -> Query -> user", () => {
 
       await userResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
   });
 

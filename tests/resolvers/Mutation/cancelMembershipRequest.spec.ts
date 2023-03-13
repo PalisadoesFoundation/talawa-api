@@ -2,13 +2,14 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { User, Organization, MembershipRequest } from "../../../src/models";
 import { MutationCancelMembershipRequestArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { cancelMembershipRequest as cancelMembershipRequestResolver } from "../../../src/resolvers/Mutation/cancelMembershipRequest";
 import {
-  MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
@@ -20,9 +21,10 @@ import { testOrganizationType, testUserType } from "../../helpers/userAndOrg";
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
 let testMembershipRequest: testMembershipRequestType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const resultsArray = await createTestMembershipRequestAsNew();
 
   testUser = resultsArray[0];
@@ -35,7 +37,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
@@ -51,7 +53,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
 
       await cancelMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -79,7 +81,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
 
       await cancelMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -106,7 +108,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
 
       await cancelMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -134,7 +136,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
 
       await cancelMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 

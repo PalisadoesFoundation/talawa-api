@@ -1,15 +1,10 @@
 import { User, EventProject } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
-  EVENT_NOT_FOUND_CODE,
-  EVENT_PROJECT_NOT_FOUND_MESSAGE,
-  EVENT_PROJECT_NOT_FOUND_PARAM,
-  USER_NOT_AUTHORIZED_CODE,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_AUTHORIZED_PARAM,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
+  EVENT_NOT_FOUND_ERROR,
+  EVENT_PROJECT_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 
 export const updateEventProject = async (
@@ -23,9 +18,9 @@ export const updateEventProject = async (
 
   if (currentUserExists === false) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -35,18 +30,18 @@ export const updateEventProject = async (
 
   if (!eventProject) {
     throw new errors.NotFoundError(
-      requestContext.translate(EVENT_PROJECT_NOT_FOUND_MESSAGE),
-      EVENT_NOT_FOUND_CODE,
-      EVENT_PROJECT_NOT_FOUND_PARAM
+      requestContext.translate(EVENT_PROJECT_NOT_FOUND_ERROR.MESSAGE),
+      EVENT_NOT_FOUND_ERROR.CODE,
+      EVENT_PROJECT_NOT_FOUND_ERROR.PARAM
     );
   }
 
   // toString() method converts mongodb's objectId to a javascript string for comparision
   if (eventProject.creator.toString() !== context.userId.toString()) {
     throw new errors.UnauthorizedError(
-      requestContext.translate(USER_NOT_AUTHORIZED_MESSAGE),
-      USER_NOT_AUTHORIZED_CODE,
-      USER_NOT_AUTHORIZED_PARAM
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM
     );
   }
 

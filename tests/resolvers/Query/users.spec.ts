@@ -1,22 +1,24 @@
 import "dotenv/config";
 import { users as usersResolver } from "../../../src/resolvers/Query/users";
 import { Event, Interface_User, Organization, User } from "../../../src/models";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
 import { QueryUsersArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
-import { USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import * as mongoose from "mongoose";
 
 let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
+
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> users", () => {
@@ -29,7 +31,6 @@ describe("resolvers -> Query -> users", () => {
       );
       return {
         ...actualConstants,
-        IN_PRODUCTION: true,
       };
     });
 
@@ -52,8 +53,10 @@ describe("resolvers -> Query -> users", () => {
       );
       await mockedInProductionUserResolver?.({}, args, {});
     } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
 
     vi.doUnmock("../../../src/constants");

@@ -1,14 +1,17 @@
 import "dotenv/config";
 import { posts as postsResolver } from "../../../src/resolvers/Query/posts";
 import { Post } from "../../../src/models";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
 import { QueryPostsArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { createSinglePostwithComment } from "../../helpers/posts";
+import mongoose from "mongoose";
+
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 
   const [testUser, testOrganization] = await createTestUserAndOrganization();
   await createSinglePostwithComment(testUser?._id, testOrganization?._id);
@@ -16,7 +19,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> posts", () => {

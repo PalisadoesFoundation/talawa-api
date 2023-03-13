@@ -1,6 +1,8 @@
 import { Schema, model, Types, models } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
-
+/**
+ * This is an interface representing a document for a file in the database(MongoDB).
+ */
 export interface Interface_File {
   _id: Types.ObjectId;
   name: string;
@@ -11,7 +13,16 @@ export interface Interface_File {
   contentType: string | undefined;
   status: string;
 }
-
+/**
+ * This is the structure of a file
+ * @param name - Name
+ * @param url - URL
+ * @param size - Size
+ * @param secret - Secret
+ * @param reatedAt - Created at Date
+ * @param contentType - Content Type
+ * @param status - Status
+ */
 const fileSchema = new Schema({
   name: {
     type: String,

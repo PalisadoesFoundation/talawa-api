@@ -7,16 +7,16 @@ describe("libraries -> errors -> unauthenticatedError", () => {
   it(`throws unauthenticatedError if user not authenticated`, async () => {
     try {
       throw new errors.UnauthenticatedError(
-        UNAUTHENTICATED_ERROR.message,
-        UNAUTHENTICATED_ERROR.code,
-        UNAUTHENTICATED_ERROR.param
+        UNAUTHENTICATED_ERROR.MESSAGE,
+        UNAUTHENTICATED_ERROR.CODE,
+        UNAUTHENTICATED_ERROR.PARAM
       );
     } catch (error: any) {
       expect(error.errors).toEqual([
         expect.objectContaining({
-          message: UNAUTHENTICATED_ERROR.message,
-          code: UNAUTHENTICATED_ERROR.code,
-          param: UNAUTHENTICATED_ERROR.param,
+          message: UNAUTHENTICATED_ERROR.MESSAGE,
+          code: UNAUTHENTICATED_ERROR.CODE,
+          param: UNAUTHENTICATED_ERROR.PARAM,
         }),
       ]);
     }

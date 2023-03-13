@@ -1,8 +1,9 @@
 import "dotenv/config";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { User, Organization } from "../../../src/models";
 import { Types } from "mongoose";
-import { USER_NOT_FOUND, USER_NOT_FOUND_MESSAGE } from "../../../src/constants";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import {
   beforeAll,
   afterAll,
@@ -18,18 +19,19 @@ import {
   testOrganizationType,
 } from "../../helpers/userAndOrg";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const userAndOrg = await createTestUserAndOrganization();
   testUser = userAndOrg[0];
   testOrganization = userAndOrg[1];
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Organization -> creator", () => {
@@ -38,44 +40,7 @@ describe("resolvers -> Organization -> creator", () => {
     vi.resetModules();
   });
 
-  it(`throws NotFoundError if no user exists with _id === parent.creator and IN_PRODUCTION === false`, async () => {
-    try {
-      testOrganization = await Organization.findOneAndUpdate(
-        {
-          _id: testOrganization!._id,
-        },
-        {
-          $set: {
-            creator: Types.ObjectId().toString(),
-          },
-        },
-        {
-          new: true,
-        }
-      );
-
-      const parent = testOrganization!.toObject();
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: false,
-        };
-      });
-
-      const { creator: creatorResolver } = await import(
-        "../../../src/resolvers/Organization/creator"
-      );
-      await creatorResolver?.(parent, {}, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
-    }
-  });
-
-  it(`throws NotFoundError if no user exists with _id === parent.creator and IN_PRODUCTION === true`, async () => {
+  it(`throws NotFoundError if no user exists with _id === parent.creator`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -98,23 +63,15 @@ describe("resolvers -> Organization -> creator", () => {
 
       const parent = testOrganization!.toObject();
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-          IN_PRODUCTION: true,
-        };
-      });
-
       const { creator: creatorResolver } = await import(
         "../../../src/resolvers/Organization/creator"
       );
       await creatorResolver?.(parent, {}, {});
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 

@@ -4,6 +4,13 @@ export default defineConfig({
   test: {
     setupFiles: ["./setupFile.ts"],
 
+    // Run the setup and teardown scripts before and after all the tests are run
+    // The scripts are used to clear the testing database of all the data.
+    // The function names `setup` and `teardown` are special because vitest
+    // specifically looks for those functions in the `globalSetup.ts` file.
+    // More info here https://vitest.dev/config/#globalsetup
+    globalSetup: ["./tests/helpers/globalSetup.ts"],
+
     coverage: {
       // This tells vitest to include all files from ./src in test coverage.
       all: true,

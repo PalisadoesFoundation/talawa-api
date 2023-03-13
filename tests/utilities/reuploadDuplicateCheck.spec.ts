@@ -9,7 +9,8 @@ import {
   it,
   vi,
 } from "vitest";
-import { connect, disconnect } from "../../src/db";
+import { connect, disconnect } from "../helpers/db";
+import mongoose from "mongoose";
 import { nanoid } from "nanoid";
 import { Type_ImagePath } from "../../src/utilities/reuploadDuplicateCheck";
 
@@ -25,12 +26,14 @@ const testErrors = [
   },
 ];
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
+
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("utilities -> reuploadDuplicateCheck", () => {

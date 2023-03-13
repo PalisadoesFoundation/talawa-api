@@ -2,16 +2,27 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { User, Organization } from "../../../src/models";
 import { MutationBlockUserArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { blockUser as blockUserResolver } from "../../../src/resolvers/Mutation/blockUser";
 import {
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_AUTHORIZED_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
+  MEMBER_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_BLOCKING_SELF,
+  USER_NOT_AUTHORIZED_ADMIN,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { nanoid } from "nanoid";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  vi,
+  afterEach,
+} from "vitest";
 import {
   testUserType,
   testOrganizationType,
@@ -19,12 +30,16 @@ import {
 } from "../../helpers/userAndOrg";
 
 let testUser: testUserType;
+let testUser2: testUserType;
 let testOrganization: testOrganizationType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 
   testUser = await createTestUser();
+
+  testUser2 = await createTestUser();
 
   testOrganization = await Organization.create({
     name: `name${nanoid().toLowerCase()}`,
@@ -53,10 +68,14 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> blockUser", () => {
+  afterEach(() => {
+    vi.resetModules();
+  });
+
   it(`throws NotFoundError if no organization exists with with _id === args.organizationId`, async () => {
     try {
       const args: MutationBlockUserArgs = {
@@ -70,7 +89,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
 
       await blockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -87,12 +106,41 @@ describe("resolvers -> Mutation -> blockUser", () => {
 
       await blockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
-  it(`throws UnauthorizedError if current user with _id === context.userId is not
-  an admin of the organization with _id === args.organizationId`, async () => {
+  it(`throws member not found error if user with args.userId is not a member of the organization`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message
+    );
+
+    try {
+      const args: MutationBlockUserArgs = {
+        organizationId: testOrganization!.id,
+        userId: testUser2!.id,
+      };
+
+      const context = {
+        userId: testUser!.id,
+      };
+      const { blockUser: blockUserResolverError } = await import(
+        "../../../src/resolvers/Mutation/blockUser"
+      );
+
+      await blockUserResolverError?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(MEMBER_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
+
+  it(`throws cannot block self error if  context.userId === args.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message
+    );
+
     try {
       const args: MutationBlockUserArgs = {
         organizationId: testOrganization!.id,
@@ -102,10 +150,42 @@ describe("resolvers -> Mutation -> blockUser", () => {
       const context = {
         userId: testUser!.id,
       };
+      const { blockUser: blockUserResolverError } = await import(
+        "../../../src/resolvers/Mutation/blockUser"
+      );
+
+      await blockUserResolverError?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(USER_BLOCKING_SELF.MESSAGE);
+    }
+  });
+
+  it(`throws UnauthorizedError if current user with _id === context.userId is not
+  an admin of the organization with _id === args.organizationId`, async () => {
+    try {
+      await Organization.findByIdAndUpdate(
+        {
+          _id: testOrganization?._id,
+        },
+        {
+          $push: {
+            members: testUser2?.id,
+          },
+        }
+      );
+
+      const args: MutationBlockUserArgs = {
+        organizationId: testOrganization!.id,
+        userId: testUser2!.id,
+      };
+
+      const context = {
+        userId: testUser!.id,
+      };
 
       await blockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
     }
   });
 
@@ -119,7 +199,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
         {
           $push: {
             admins: testUser!._id,
-            blockedUsers: testUser!._id,
+            blockedUsers: testUser2!._id,
           },
         }
       );
@@ -137,7 +217,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
 
       const args: MutationBlockUserArgs = {
         organizationId: testOrganization!.id,
-        userId: testUser!.id,
+        userId: testUser2!.id,
       };
 
       const context = {
@@ -146,13 +226,13 @@ describe("resolvers -> Mutation -> blockUser", () => {
 
       await blockUserResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 
   it(`blocks the user with _id === args.userId from the organization with
   _id === args.organizationId and returns the blocked user`, async () => {
-    await Organization.updateOne(
+    await Organization.findOneAndUpdate(
       {
         _id: testOrganization!._id,
       },
@@ -160,12 +240,15 @@ describe("resolvers -> Mutation -> blockUser", () => {
         $set: {
           blockedUsers: [],
         },
+      },
+      {
+        new: true,
       }
     );
 
     const args: MutationBlockUserArgs = {
       organizationId: testOrganization!.id,
-      userId: testUser!.id,
+      userId: testUser2!.id,
     };
 
     const context = {
@@ -175,7 +258,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
     const blockUserPayload = await blockUserResolver?.({}, args, context);
 
     const testUpdatedTestUser = await User.findOne({
-      _id: testUser!.id,
+      _id: testUser2!.id,
     })
       .select(["-password"])
       .lean();
@@ -188,6 +271,6 @@ describe("resolvers -> Mutation -> blockUser", () => {
       .select(["blockedUsers"])
       .lean();
 
-    expect(testUpdatedOrganization?.blockedUsers).toEqual([testUser!._id]);
+    expect(testUpdatedOrganization?.blockedUsers).toEqual([testUser2!._id]);
   });
 });

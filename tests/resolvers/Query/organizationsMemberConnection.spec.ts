@@ -6,18 +6,20 @@ import {
   Organization,
   User,
 } from "../../../src/models";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { QueryOrganizationsMemberConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Document, Types } from "mongoose";
 import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
 let testOrganization: Interface_Organization &
   Document<any, any, Interface_Organization>;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
 
   testUsers = await User.insertMany([
     {
@@ -92,7 +94,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Query -> organizationsMemberConnection", () => {
@@ -161,6 +163,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const users = await User.find(where)
       .sort(sort)
       .select(["-password"])
+      .populate(["registeredEvents"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -235,6 +238,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       .limit(2)
       .sort(sort)
       .select(["-password"])
+      .populate(["registeredEvents"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -308,6 +312,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const users = await User.find(where)
       .sort(sort)
       .select(["-password"])
+      .populate(["registeredEvents"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -384,6 +389,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const users = await User.find(where)
       .sort(sort)
       .select(["-password"])
+      .populate(["registeredEvents"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -460,6 +466,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const users = await User.find(where)
       .sort(sort)
       .select(["-password"])
+      .populate(["registeredEvents"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -524,6 +531,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const users = await User.find(where)
       .sort(sort)
       .select(["-password"])
+      .populate(["registeredEvents"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -577,6 +585,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       .sort(sort)
       .limit(2)
       .select(["-password"])
+      .populate(["registeredEvents"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -630,6 +639,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       .sort(sort)
       .limit(2)
       .select(["-password"])
+      .populate(["registeredEvents"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -683,6 +693,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       .sort(sort)
       .limit(2)
       .select(["-password"])
+      .populate(["registeredEvents"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -736,6 +747,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       .sort(sort)
       .limit(2)
       .select(["-password"])
+      .populate(["registeredEvents"])
       .lean();
 
     const usersWithPassword = users.map((user) => {
@@ -816,6 +828,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     const usersTestModel = await User.paginate(where, {
       pagination: false,
       sort: {},
+      populate: ["registeredEvents"],
       select: ["-password"],
     });
 
@@ -838,6 +851,84 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       edges: users,
       aggregate: {
         count: 3,
+      },
+    });
+  });
+
+  it(`returns non-paginated list of admins if args.first === undefined and where.admin_for !== undefined`, async () => {
+    const where = {
+      joinedOrganizations: {
+        $in: testOrganization._id,
+      },
+    };
+
+    const args: QueryOrganizationsMemberConnectionArgs = {
+      orgId: testOrganization._id,
+      skip: 1,
+      where: {
+        admin_for: testOrganization._id,
+      },
+      orderBy: null,
+    };
+
+    const organizationsMemberConnectionPayload =
+      await organizationsMemberConnectionResolver?.({}, args, {});
+
+    const usersTestModel = await User.paginate(where, {
+      pagination: false,
+      sort: {},
+      populate: ["registeredEvents"],
+      select: ["-password"],
+    });
+
+    const users = usersTestModel.docs.map((user) => {
+      return {
+        ...user._doc,
+        password: null,
+      };
+    });
+
+    expect(organizationsMemberConnectionPayload).toEqual({
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        totalPages: 1,
+        nextPageNo: null,
+        prevPageNo: null,
+        currPageNo: 1,
+      },
+      edges: users,
+      aggregate: {
+        count: 3,
+      },
+    });
+  });
+
+  it(`returns non-paginated list of admins if args.first === undefined and where.event_title_contains !== undefined`, async () => {
+    const args: QueryOrganizationsMemberConnectionArgs = {
+      orgId: testOrganization._id,
+      skip: 1,
+      where: {
+        event_title_contains: "testEvent",
+      },
+      orderBy: null,
+    };
+
+    const organizationsMemberConnectionPayload =
+      await organizationsMemberConnectionResolver?.({}, args, {});
+
+    expect(organizationsMemberConnectionPayload).toEqual({
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        totalPages: 1,
+        nextPageNo: null,
+        prevPageNo: null,
+        currPageNo: 1,
+      },
+      edges: [],
+      aggregate: {
+        count: 0,
       },
     });
   });

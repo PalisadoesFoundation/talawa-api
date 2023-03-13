@@ -2,14 +2,22 @@ import { Schema, Types, model, PopulatedDoc, Document, models } from "mongoose";
 import { Interface_Organization } from "./Organization";
 import { Interface_Task } from "./Task";
 import { Interface_User } from "./User";
-
+/**
+ * This is an interface representing a document for a user attendee in the database(MongoDB).
+ */
 export interface Interface_UserAttende {
   userId: string;
   user: PopulatedDoc<Interface_User & Document>;
   status: string;
   createdAt: Date;
 }
-
+/**
+ * This is the Structure of the User Attendee
+ * @param userId - User-id
+ * @param user - User details
+ * @param status - whether the User is active, blocked, or delete
+ * @param createdAt - Creation Date
+ */
 const userAttendeSchema = new Schema({
   userId: {
     type: String,
@@ -31,7 +39,9 @@ const userAttendeSchema = new Schema({
     default: Date.now,
   },
 });
-
+/**
+ * This is an interface representing a document for an event in the database(MongoDB).
+ */
 export interface Interface_Event {
   _id: Types.ObjectId;
   title: string;
@@ -56,7 +66,29 @@ export interface Interface_Event {
   tasks: Array<PopulatedDoc<Interface_Task & Document>>;
   status: string;
 }
-
+/**
+ * This is the Structure of the Event
+ * @param title - Title of the event
+ * @param description - Description of the event
+ * @param attendees - Attendees
+ * @param location - Location of the event
+ * @param latitude - Latitude
+ * @param longitude - Longitude
+ * @param recurring - Is the event recurring
+ * @param allDay - Is the event occuring all day
+ * @param startDate - Start Date
+ * @param endDate - End date
+ * @param startTime - Start Time
+ * @param endTime - End Time
+ * @param recurrance - Periodicity of recurrance of the event
+ * @param isPublic - Is the event public
+ * @param isRegisterable - Is the event Registrable
+ * @param creator - Creator of the event
+ * @param admins - Admins
+ * @param organization - Organization
+ * @param tasks - Tasks
+ * @param status - whether the event is active, blocked, or deleted.
+ */
 const eventSchema = new Schema({
   title: {
     type: String,
@@ -91,25 +123,25 @@ const eventSchema = new Schema({
     required: true,
   },
   startDate: {
-    type: String,
+    type: Date,
     required: true,
   },
   endDate: {
-    type: String,
+    type: Date,
     required: function (): () => boolean {
       // @ts-ignore
       return !this.allDay;
     },
   },
   startTime: {
-    type: String,
+    type: Date,
     required: function (): () => boolean {
       // @ts-ignore
       return !this.allDay;
     },
   },
   endTime: {
-    type: String,
+    type: Date,
     required: function (): () => boolean {
       // @ts-ignore
       return !this.allDay;

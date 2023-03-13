@@ -2,16 +2,24 @@ import "dotenv/config";
 import { Types } from "mongoose";
 import { User, Organization, MembershipRequest } from "../../../src/models";
 import { MutationAcceptMembershipRequestArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
-import { acceptMembershipRequest as acceptMembershipRequestResolver } from "../../../src/resolvers/Mutation/acceptMembershipRequest";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import {
-  MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE,
-  ORGANIZATION_NOT_FOUND_MESSAGE,
-  USER_ALREADY_MEMBER_MESSAGE,
-  USER_NOT_AUTHORIZED,
-  USER_NOT_FOUND_MESSAGE,
+  MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_ALREADY_MEMBER_ERROR,
+  USER_NOT_AUTHORIZED_ADMIN,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  vi,
+  afterEach,
+} from "vitest";
 import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
 import {
   testMembershipRequestType,
@@ -21,9 +29,10 @@ import {
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
 let testMembershipRequest: testMembershipRequestType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const resultArray = await createTestMembershipRequest();
   testUser = resultArray[0];
   testOrganization = resultArray[1];
@@ -31,10 +40,15 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
   it(`throws NotFoundError if no membershipRequest exists with _id === args.membershipRequestId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
@@ -49,11 +63,16 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         userId: testUser!.id,
       };
 
+      const { acceptMembershipRequest: acceptMembershipRequestResolver } =
+        await import("../../../src/resolvers/Mutation/acceptMembershipRequest");
+
       await acceptMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE);
+      expect(spy).toHaveBeenCalledWith(
+        MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE
+      );
       expect(error.message).toEqual(
-        `Translated ${MEMBERSHIP_REQUEST_NOT_FOUND_MESSAGE}`
+        `Translated ${MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -84,11 +103,14 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         userId: testUser!.id,
       };
 
+      const { acceptMembershipRequest: acceptMembershipRequestResolver } =
+        await import("../../../src/resolvers/Mutation/acceptMembershipRequest");
+
       await acceptMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_MESSAGE);
+      expect(spy).toHaveBeenCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${ORGANIZATION_NOT_FOUND_MESSAGE}`
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -120,16 +142,27 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         userId: testUser!.id,
       };
 
+      const { acceptMembershipRequest: acceptMembershipRequestResolver } =
+        await import("../../../src/resolvers/Mutation/acceptMembershipRequest");
+
       await acceptMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
   it(`throws UnauthorizedError if user with _id === context.userId is not an
   admin of organization with _id === membershipRequest.organization for
   membershipRequest with _id === args.membershipRequestId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
     try {
       await MembershipRequest.updateOne(
         {
@@ -161,9 +194,15 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         userId: testUser!.id,
       };
 
+      const { acceptMembershipRequest: acceptMembershipRequestResolver } =
+        await import("../../../src/resolvers/Mutation/acceptMembershipRequest");
+
       await acceptMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED);
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
+      );
     }
   });
 
@@ -195,11 +234,14 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         userId: testUser!.id,
       };
 
+      const { acceptMembershipRequest: acceptMembershipRequestResolver } =
+        await import("../../../src/resolvers/Mutation/acceptMembershipRequest");
+
       await acceptMembershipRequestResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_ALREADY_MEMBER_MESSAGE);
+      expect(spy).toHaveBeenCalledWith(USER_ALREADY_MEMBER_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_ALREADY_MEMBER_MESSAGE}`
+        `Translated ${USER_ALREADY_MEMBER_ERROR.MESSAGE}`
       );
     }
   });
@@ -223,7 +265,8 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
     const context = {
       userId: testUser!.id,
     };
-
+    const { acceptMembershipRequest: acceptMembershipRequestResolver } =
+      await import("../../../src/resolvers/Mutation/acceptMembershipRequest");
     const acceptMembershipRequestPayload =
       await acceptMembershipRequestResolver?.({}, args, context);
 

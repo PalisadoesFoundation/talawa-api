@@ -20,8 +20,10 @@ on:
       - 'tsconfig.json'
       - '.gitignore'
       - '.eslintrc.json'
-      - '.eslintignore '
+      - '.eslintignore'
+      - 'vite.config.ts'
       - 'CODEOWNERS'
+      - 'LICENSE'
       
 jobs:
   Checking-for-unauthorized-file-changes:

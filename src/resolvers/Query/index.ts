@@ -9,8 +9,10 @@ import { directChatsMessagesByChatID } from "./directChatsMessagesByChatID";
 import { event } from "./event";
 import { events } from "./events";
 import { eventsByOrganization } from "./eventsByOrganization";
+import { eventsByOrganizationConnection } from "./eventsByOrganizationConnection";
 import { getDonationById } from "./getDonationById";
 import { getDonationByOrgId } from "./getDonationByOrgId";
+import { getDonationByOrgIdConnection } from "./getDonationByOrgIdConnection";
 import { getDonations } from "./getDonations";
 import { getlanguage } from "./getlanguage";
 import { getPlugins } from "./getPlugins";
@@ -47,8 +49,10 @@ export const Query: QueryResolvers = {
   event,
   events,
   eventsByOrganization,
+  eventsByOrganizationConnection,
   getDonationById,
   getDonationByOrgId,
+  getDonationByOrgIdConnection,
   getDonations,
   getlanguage,
   getPlugins,

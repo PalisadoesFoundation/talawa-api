@@ -7,7 +7,8 @@ import {
   Interface_EventProject,
   EventProject,
 } from "../../../src/models";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import {
   beforeAll,
   afterAll,
@@ -18,12 +19,14 @@ import {
   afterEach,
 } from "vitest";
 import {
-  EVENT_PROJECT_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_AUTHORIZED_MESSAGE,
+  EVENT_PROJECT_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
 import { createTestUserFunc, testUserType } from "../../helpers/user";
 import { createTestEvent, testEventType } from "../../helpers/events";
+
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 let testAdminUser: testUserType;
 let testEvent: testEventType;
@@ -31,7 +34,7 @@ let testEventProject: Interface_EventProject &
   Document<any, any, Interface_EventProject>;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestEvent();
   testUser = await createTestUserFunc();
   testAdminUser = temp[0];
@@ -49,7 +52,7 @@ afterAll(async () => {
   await User.deleteMany({});
   await Organization.deleteMany({});
   await Event.deleteMany({});
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 afterEach(() => {
@@ -82,8 +85,10 @@ describe("resolvers -> Mutation -> createEventProject", () => {
 
       await updateEventProjectResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_MESSAGE);
-      expect(error.message).toEqual(`Translated ${USER_NOT_FOUND_MESSAGE}`);
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
     }
   });
 
@@ -109,9 +114,11 @@ describe("resolvers -> Mutation -> createEventProject", () => {
 
       await updateEventProjectResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(EVENT_PROJECT_NOT_FOUND_MESSAGE);
+      expect(spy).toHaveBeenLastCalledWith(
+        EVENT_PROJECT_NOT_FOUND_ERROR.MESSAGE
+      );
       expect(error.message).toEqual(
-        `Translated ${EVENT_PROJECT_NOT_FOUND_MESSAGE}`
+        `Translated ${EVENT_PROJECT_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
@@ -138,9 +145,9 @@ describe("resolvers -> Mutation -> createEventProject", () => {
 
       await updateEventProjectResolver?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_MESSAGE);
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_MESSAGE}`
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
       );
     }
   });

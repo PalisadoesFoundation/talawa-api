@@ -14,6 +14,7 @@ If you are new to contributing to open source, please read the Open Source Guide
       - [Issues](#issues)
       - [Pull Requests](#pull-requests)
       - [Branching Strategy](#branching-strategy)
+      - [Conflict Resolution](#conflict-resolution)
     - [Contributing Code](#contributing-code)
   - [Upgrading Code](#upgrading-code)
       - [Setting up Upstream and Origin](#setting-up-upstream-and-origin)
@@ -23,8 +24,8 @@ If you are new to contributing to open source, please read the Open Source Guide
       - [Linting code files](#linting-code-files)
       - [Formatting code files](#formatting-code-files)
       - [Automation using husky](#automation-using-husky)
+      - [Running Queries with talawa-api](#running-queries-with-talawa-api)
   - [Internships](#internships)
-    - [GSoC](#gsoc)
   - [Community](#community)
 
 ## Code of Conduct
@@ -59,7 +60,7 @@ Make sure you are following [issue report guidelines](issue-guidelines.md) avail
 
 #### Pull Requests
 
-[Pull Request guidelines](PR-guidelines.md) is best resource to follow to start working on open issues.
+[Pull Request guidelines](PR_GUIDELINES.md) is best resource to follow to start working on open issues.
 
 #### Branching Strategy
 
@@ -69,11 +70,20 @@ For Talawa API, we had employed the following branching strategy to simplify the
 - `alpha-x.x.x`: For stability testing
 - `master`: Where the stable production ready code lies
 
+#### Conflict Resolution
+
+When multiple developers are working on issues there is bound to be a conflict of interest (not to be confused with git conflicts) among issues, PRs or even ideas. Usually these conflicts are resolved in a **First Come First Serve** basis however there are certain exceptions to it.
+
+- In the cases where you feel your potential issues could be an extension or in conflict with other PRs it is important to ask the author of the PR in the slack channel or in their PRs or issues themselves why he/she did not write code for something that would require minimal effort on their part.
+- Based on basic courtesy, it is good practice to let the person who created a function apply and test that function when needed.
+- Last but not the least, communication is important make sure to talk to other contributors, in these cases, in slack channel or in a issue/PR thread.
+- As a last resort the Admins would be responsible for deciding how to resolve this conflict. 
+
 ### Contributing Code
 
 Code contributions to Talawa come in the form of pull requests. These are done by forking the repo and making changes locally.
 
-Make sure you have read the [Documentation for Setting up the Project](./INSTALLATION.md)
+Make sure you have read the [Documentation for Setting up the Project](INSTALLATION.md)
 
 The process of proposing a change to Talawa API can be summarized as:
 
@@ -99,7 +109,7 @@ The process of proposing a change to Talawa API can be summarized as:
       3. Here are some useful testing resources:
          1. Documentation:
             1. [Jest testing documentation](https://jestjs.io/docs/expect)
-            2. The [organizations.spec.js](tests/resolvers/organization_query/organizations.spec.js) test file is a well documented example of what to do for resolver tests.
+            2. The [organizations.spec.ts](tests/resolvers/Query/organizations.spec.ts) test file is a well documented example of what to do for resolver tests.
          2. Videos:
             1. [Introduction To Testing In JavaScript With Jest](https://www.youtube.com/watch?v=FgnxcUQ5vho)
             2. [Jest Crash Course](https://www.youtube.com/watch?v=7r4xVDI2vho)
@@ -223,19 +233,42 @@ To fix formatting issues in code use this command:-
 
 <br/>
 
-We are using the package `Husky` to run a pre-commit hook which automatically runs these checks each time you make a commit and also fixes some of the issues. This way you don't have to run them manually each time.
+We are using the package `Husky` to run git hooks that run according to different git workflows.
+
+<br/>
+
+#### pre-commit hook
+We run a pre-commit hook which automatically runs code quality checks each time you make a commit and also fixes some of the issues. This way you don't have to run them manually each time.
+
 
 If you don't want these pre-commit checks running on each commit, you can manually opt out of it using the `--no-verify` flag with your commit message as shown:-
 
         git commit -m "commit message" --no-verify
 
+<br/>
+
+
+#### post-merge hook
+
+We are also running a post-merge(post-pull) hook which will automatically run "npm install" only if there is any change made to pakage.json file so that the developer has all the required dependencies when pulling files from remote.
+
+
+If you don't want this hook to run, you can manually opt out of this using the `no verify` flag while using the merge command(git pull):
+
+        git pull --no-verify  
+
+<br/>
+
+        
+### Running Queries with talawa-api
+   - Talawa API currently implement `GraphQL Playground` as mediator interface to run and test queries directly from the api. [Learn more](https://www.apollographql.com/docs/apollo-server/v2/testing/graphql-playground/)
+   - In development, Apollo Server enables GraphQL Playground on the same URL as the GraphQL server itself (e.g. http://localhost:4000/graphql) and automatically serves the GUI to web browsers. When NODE_ENV is set to production, GraphQL Playground (as well as introspection) is disabled as a production best-practice.
+    ![image](https://user-images.githubusercontent.com/65951872/221374309-5a6eee74-c0df-4280-a29a-0b8d2c7260b3.png)
+- Note: To access the playground in talawa API append the URL with "/graphql"
+   
 ## Internships
 
-We have internship partnerships with a number of organizations. See below for more details.
-
-### GSoC
-
-If you are participating in the Summer of Code, please read more about us and our processes [here](https://docs.talawa.io/docs/internships/gsoc/gsoc-introduction)
+If you are participating in any of the various internship programs we ar members of then please read the [introduction guides on our documentation website](https://docs.talawa.io/docs/).
 
 ## Community
 

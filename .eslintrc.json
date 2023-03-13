@@ -17,6 +17,12 @@
       "files": ["*.graphql"],
       "parser": "@graphql-eslint/eslint-plugin",
       "plugins": ["@graphql-eslint"]
+    },
+    {
+      "files": ["tests/**/*"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
     }
   ],
   "parser": "@typescript-eslint/parser",
@@ -44,6 +50,12 @@
       {
         "allowTemplateLiterals": true,
         "avoidEscape": true
+      }
+    ],
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": ["**/src/**"]
       }
     ]
   }

@@ -4,12 +4,9 @@ import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
 import { createAccessToken, createRefreshToken } from "../../utilities";
 import {
-  IN_PRODUCTION,
+  INVALID_REFRESH_TOKEN_ERROR,
   REFRESH_TOKEN_SECRET,
-  USER_NOT_FOUND,
-  USER_NOT_FOUND_CODE,
-  USER_NOT_FOUND_MESSAGE,
-  USER_NOT_FOUND_PARAM,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { Interface_JwtTokenPayload } from "../../utilities";
 
@@ -22,17 +19,14 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
     throw new errors.ValidationError(
       [
         {
-          message:
-            IN_PRODUCTION !== true
-              ? "Invalid refreshToken"
-              : requestContext.translate("invalid.refreshToken"),
-          code: "invalid.refreshToken",
-          param: "refreshToken",
+          message: requestContext.translate(
+            INVALID_REFRESH_TOKEN_ERROR.MESSAGE
+          ),
+          code: INVALID_REFRESH_TOKEN_ERROR.CODE,
+          param: INVALID_REFRESH_TOKEN_ERROR.PARAM,
         },
       ],
-      IN_PRODUCTION !== true
-        ? "Invalid refreshToken"
-        : requestContext.translate("invalid.refreshToken")
+      requestContext.translate(INVALID_REFRESH_TOKEN_ERROR.MESSAGE)
     );
   }
 
@@ -49,11 +43,9 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
   // Checks whether user exists.
   if (!user) {
     throw new errors.NotFoundError(
-      IN_PRODUCTION !== true
-        ? USER_NOT_FOUND
-        : requestContext.translate(USER_NOT_FOUND_MESSAGE),
-      USER_NOT_FOUND_CODE,
-      USER_NOT_FOUND_PARAM
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 
@@ -61,17 +53,14 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
     throw new errors.ValidationError(
       [
         {
-          message:
-            IN_PRODUCTION !== true
-              ? "Invalid refreshToken"
-              : requestContext.translate("invalid.refreshToken"),
-          code: "invalid.refreshToken",
-          param: "refreshToken",
+          message: requestContext.translate(
+            INVALID_REFRESH_TOKEN_ERROR.MESSAGE
+          ),
+          code: INVALID_REFRESH_TOKEN_ERROR.CODE,
+          param: INVALID_REFRESH_TOKEN_ERROR.PARAM,
         },
       ],
-      IN_PRODUCTION !== true
-        ? "Invalid refreshToken"
-        : requestContext.translate("invalid.refreshToken")
+      requestContext.translate(INVALID_REFRESH_TOKEN_ERROR.MESSAGE)
     );
   }
 

@@ -1,19 +1,21 @@
 import "dotenv/config";
 import { MutationCreatePluginArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { createPlugin as createPluginResolver } from "../../../src/resolvers/Mutation/createPlugin";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestUserFunc, testUserType } from "../../helpers/user";
 
 let testUser: testUserType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUserFunc();
 });
 
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
 
 describe("resolvers -> Mutation -> createPlugin", () => {

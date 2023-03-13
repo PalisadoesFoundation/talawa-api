@@ -1,55 +1,28 @@
 import "dotenv/config";
 import { MutationOtpArgs } from "../../../src/types/generatedGraphQLTypes";
-// import { Document } from "mongoose";
-// import { Interface_User, User } from "../../../src/models";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
 import { otp as otpResolver } from "../../../src/resolvers/Mutation/otp";
-import { USER_NOT_FOUND } from "../../../src/constants";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import {
+  createTestUserAndOrganization,
+  testUserType,
+} from "../../helpers/userAndOrg";
+import { mailer } from "../../../src/utilities";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { nanoid } from "nanoid";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
-// let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: testUserType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
-  await connect();
-
-  // testUser = await User.create({
-  //   email: `email${nanoid().toLowerCase()}@gmail.com`,
-  //   password: "password",
-  //   firstName: "firstName",
-  //   lastName: "lastName",
-  //   appLanguageCode: "en",
-  // });
+  MONGOOSE_INSTANCE = await connect();
+  const temp = await createTestUserAndOrganization();
+  testUser = temp[0];
 });
-
 afterAll(async () => {
-  await disconnect();
+  await disconnect(MONGOOSE_INSTANCE!);
 });
-
-// describe('Testing otp resolver', () => {
-//   test('otp', async () => {
-
-//     const args = {
-//       data: {
-//         email: generatedEmail,
-//       },
-//     };
-
-//     await expect(() => otp({}, args)).rejects.toEqual(ERROR_IN_SENDING_MAIL);
-//   });
-
-//   test('Testing, when user email is incorrect', async () => {
-//     const args = {
-//       data: {
-//         email: 'abc4321@email.com',
-//       },
-//     };
-
-//     await expect(async () => {
-//       await otp({}, args);
-//     }).rejects.toEqual(Error(USER_NOT_FOUND));
-//   });
-// });
 
 describe("resolvers -> Mutation -> otp", () => {
   it("throws Error if no user exists with email === args.data.email", async () => {
@@ -62,7 +35,33 @@ describe("resolvers -> Mutation -> otp", () => {
 
       await otpResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.DESC);
     }
+  });
+  it("should generate and send OTP to the user", async () => {
+    const args: MutationOtpArgs = {
+      data: {
+        email: testUser!.email,
+      },
+    };
+    vi.mock("../../../src/utilities", () => ({
+      mailer: vi.fn().mockResolvedValue({ message: "success" }),
+    }));
+    vi.doMock("../../../src/constants", async () => {
+      const actualConstants: object = await vi.importActual(
+        "../../../src/constants"
+      );
+      return {
+        ...actualConstants,
+        ACCESS_TOKEN_SECRET: "mysecret",
+        USER_NOT_FOUND_ERROR: { DESC: "User not found" },
+      };
+    });
+
+    const res = await otpResolver?.({}, args, {});
+    const otpToken = res?.otpToken;
+    expect(res).toHaveProperty("otpToken");
+    expect(otpToken).not.toBeNull();
+    expect(mailer).toHaveBeenCalled();
   });
 });
