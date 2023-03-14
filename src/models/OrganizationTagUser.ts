@@ -1,17 +1,17 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
 import { Interface_Organization } from "./Organization";
 
-export interface Interface_Tag {
+export interface Interface_OrganizationTagUser {
   _id: Types.ObjectId;
   organizationId: PopulatedDoc<Interface_Organization & Document>;
-  parentTagId: PopulatedDoc<Interface_Tag & Document>;
+  parentTagId: PopulatedDoc<Interface_OrganizationTagUser & Document>;
   name: string;
 }
 
 // A tag is used for the categorization and the grouping of related objects (for eg. user)
 // Each tag belongs to a particular organization, and is private to the same.
 // Each tag can be nested to hold other sub-tags so as to create a heriecheal structure.
-const TagSchema = new Schema({
+const OrganizationTagUserSchema = new Schema({
   name: {
     type: String,
     required: true,
@@ -23,18 +23,23 @@ const TagSchema = new Schema({
   },
   parentTagId: {
     type: Schema.Types.ObjectId,
-    ref: "Tag",
+    ref: "OrganizationTagUser",
     required: false,
     default: null, // A null parent corresponds to a root tag in the organization
   },
 });
 
-TagSchema.index(
-  { organizationId: 1, parentTagId: 1, name: 1 },
+OrganizationTagUserSchema.index(
+  { organizationId: 1, parentOrganizationTagUserId: 1, name: 1 },
   { unique: true }
 );
 
-const TagModel = () => model<Interface_Tag>("Tag", TagSchema);
+const OrganizationTagUserModel = () =>
+  model<Interface_OrganizationTagUser>(
+    "OrganizationTagUser",
+    OrganizationTagUserSchema
+  );
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const Tag = (models.Tag || TagModel()) as ReturnType<typeof TagModel>;
+export const OrganizationTagUser = (models.OrganizationTagUser ||
+  OrganizationTagUserModel()) as ReturnType<typeof OrganizationTagUserModel>;

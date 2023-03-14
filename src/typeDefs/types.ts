@@ -94,12 +94,6 @@ export const types = gql`
     admins(adminId: ID): [User]
     tasks: [Task]
     status: Status!
-    tagsAssignedWith(
-      after: String
-      before: String
-      first: Int
-      last: Int
-    ): TagsConnection
   }
 
   # type EventProject {
@@ -205,12 +199,12 @@ export const types = gql`
     apiUrl: URL!
     createdAt: DateTime
     pinnedPosts: [Post]
-    tags(
+    userTags(
       after: String
       before: String
       first: PositiveInt
       last: PositiveInt
-    ): TagsConnection
+    ): UserTagsConnection
   }
 
   type OrganizationInfoNode {
@@ -309,38 +303,32 @@ export const types = gql`
     aggregate: AggregatePost!
   }
 
-  type Tag {
+  type UserTag {
     _id: ID!
     name: String!
     organization: Organization!
-    parentTag: Tag
+    parentTag: UserTag
     childTags(
       after: String
       before: String
       first: PositiveInt
       last: PositiveInt
-    ): TagsConnection
+    ): UserTagsConnection
     usersAssignedTo(
       after: String
       before: String
       first: PositiveInt
       last: PositiveInt
     ): UsersConnection
-    eventsAssignedTo(
-      after: String
-      before: String
-      first: PositiveInt
-      last: PositiveInt
-    ): EventsConnection
   }
 
-  type TagsConnection {
-    edges: [TagEdge]
+  type UserTagsConnection {
+    edges: [UserTagEdge]
     pageInfo: PageInfo!
   }
 
-  type TagEdge {
-    node: Tag
+  type UserTagEdge {
+    node: UserTag
     cursor: String!
   }
 
@@ -351,16 +339,6 @@ export const types = gql`
 
   type UserEdge {
     node: User
-    cursor: String!
-  }
-
-  type EventsConnection {
-    edges: [EventEdge]
-    pageInfo: PageInfo!
-  }
-
-  type EventEdge {
-    node: Event
     cursor: String!
   }
 
@@ -407,7 +385,7 @@ export const types = gql`
       before: String
       first: PositiveInt
       last: PositiveInt
-    ): TagsConnection
+    ): UserTagsConnection
   }
 
   type UserAttende {

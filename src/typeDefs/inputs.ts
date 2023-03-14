@@ -17,7 +17,7 @@ export const inputs = gql`
     title: String!
   }
 
-  input CreateTagInput {
+  input CreateUserTagInput {
     name: String!
     parentTagId: ID
     organizationId: ID!
@@ -228,7 +228,7 @@ export const inputs = gql`
     deadline: DateTime
   }
 
-  input ToggleTagAssignInput {
+  input ToggleUserTagAssignInput {
     objectId: ID!
     tagId: ID!
   }
@@ -263,7 +263,7 @@ export const inputs = gql`
     location: String
   }
 
-  type UpdateTagInput {
+  type UpdateUserTagInput {
     _id: ID!
     name: String!
   }

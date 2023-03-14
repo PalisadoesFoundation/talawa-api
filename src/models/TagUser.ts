@@ -1,11 +1,11 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { Interface_Tag } from "./Tag";
+import { Interface_OrganizationTagUser } from "./OrganizationTagUser";
 import { Interface_User } from "./User";
 
 export interface Interface_TagUser {
   _id: Types.ObjectId;
   userId: PopulatedDoc<Interface_User & Document>;
-  tagId: PopulatedDoc<Interface_Tag & Document>;
+  tagId: PopulatedDoc<Interface_OrganizationTagUser & Document>;
 }
 
 const TagUserSchema = new Schema({
@@ -16,7 +16,7 @@ const TagUserSchema = new Schema({
   },
   tagId: {
     type: Schema.Types.ObjectId,
-    ref: "Tag",
+    ref: "OrganizationTagUser",
     required: true,
   },
 });

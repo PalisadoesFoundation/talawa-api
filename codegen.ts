@@ -68,7 +68,8 @@ const config: CodegenConfig = {
 
           Task: "../models/Task#Interface_Task",
 
-          Tag: "../models/Tag#Interface_Tag",
+          OrganizationTagUser:
+            "../models/OrganizationTagUser#Interface_OrganizationTagUser",
 
           EventTag: "../models/EventTag#Interface_EventTag",
 
