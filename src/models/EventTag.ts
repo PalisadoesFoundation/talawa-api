@@ -8,7 +8,7 @@ export interface Interface_EventTag {
 }
 
 const EventTagSchema = new Schema({
-  objectId: {
+  eventId: {
     type: Schema.Types.ObjectId,
     required: true,
     ref: "Event",
