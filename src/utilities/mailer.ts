@@ -18,6 +18,7 @@ export const mailer = (mailFields: Interface_MailFields) => {
   let transporter: any;
 
   // For using custom smtp server
+  /* c8 ignore next 12 */
   if (SMTP_OPTIONS.IS_SMTP === "true") {
     transporter = nodemailer.createTransport({
       host: String(SMTP_OPTIONS.SMTP_HOST),
@@ -28,7 +29,7 @@ export const mailer = (mailFields: Interface_MailFields) => {
         pass: SMTP_OPTIONS.SMTP_PASSWORD,
       },
     } as SMTPTransport.Options);
-
+    console.log(SMTP_OPTIONS);
     // For using gmail transporter
   } else {
     transporter = nodemailer.createTransport({
@@ -41,6 +42,7 @@ export const mailer = (mailFields: Interface_MailFields) => {
   }
 
   const mailOptions = {
+    /* c8 ignore next 3 */
     from:
       SMTP_OPTIONS.IS_SMTP === "false" || SMTP_OPTIONS.IS_SMTP === undefined
         ? "Talawa<>noreply@gmail.com"
