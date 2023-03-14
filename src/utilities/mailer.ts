@@ -29,7 +29,6 @@ export const mailer = (mailFields: Interface_MailFields) => {
         pass: SMTP_OPTIONS.SMTP_PASSWORD,
       },
     } as SMTPTransport.Options);
-    console.log(SMTP_OPTIONS);
     // For using gmail transporter
   } else {
     transporter = nodemailer.createTransport({
