@@ -6,7 +6,17 @@ import {
   CHAT_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-
+/**
+ * This function enables to send message to group chat.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the group chat exists.
+ * 2. If the user exists
+ * 3. If the group chat contains the user.
+ * @returns Group chat message.
+ */
 export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"] =
   async (_parent, args, context) => {
     const groupChat = await GroupChat.findOne({

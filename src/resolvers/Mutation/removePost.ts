@@ -6,7 +6,18 @@ import {
   POST_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
-
+/**
+ * This function enables to remove a post.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists.
+ * 2. If the post exists
+ * 3. If the user is the creator of the post.
+ * 4. If the user to be removed is a member of the organization.
+ * @returns Deleted Post.
+ */
 export const removePost: MutationResolvers["removePost"] = async (
   _parent,
   args,
