@@ -208,9 +208,9 @@ export const types = gql`
     tags(
       after: String
       before: String
-      first: Int
-      last: Int
-    ): OrganizationTagsConnection
+      first: PositiveInt
+      last: PostiveInt
+    ): TagsConnection
   }
 
   type OrganizationInfoNode {
@@ -222,11 +222,6 @@ export const types = gql`
     creator: User!
     visibleInSearch: Boolean!
     apiUrl: URL!
-  }
-
-  type OrganizationTagsConnection {
-    edges: [TagEdge]
-    pageInfo: PageInfo
   }
 
   type OtpData {
