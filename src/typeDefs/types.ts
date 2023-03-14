@@ -342,6 +342,11 @@ export const types = gql`
     cursor: String!
   }
 
+  type Error {
+    message: String!
+    path: String!
+  }
+
   type Task {
     _id: ID!
     title: String!
