@@ -21,4 +21,5 @@ export * from "./Post";
 export * from "./Tag";
 export * from "./Task";
 export * from "./User";
-export * from "./TagAssign";
+export * from "./EventTag";
+export * from "./TagUser";

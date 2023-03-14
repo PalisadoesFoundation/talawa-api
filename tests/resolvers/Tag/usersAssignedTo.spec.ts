@@ -8,7 +8,7 @@ import {
   createAndAssignUsersToTag,
   createTwoLevelTagsWithOrg,
 } from "../../helpers/tags";
-import { TagAssign, User } from "../../../src/models";
+import { TagUser, User } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testRootTag: testTagType, testChildTag1: testTagType;
@@ -30,7 +30,7 @@ describe("resolvers -> Tag -> usersAssignedTo", () => {
     const payload = await usersAssignedToResolver?.(parent, {}, {});
 
     // Getting all the assigned users
-    const allUsers = await TagAssign.find({
+    const allUsers = await TagUser.find({
       tagId: parent._id,
       objectType: "USER",
     })

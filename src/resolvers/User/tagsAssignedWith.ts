@@ -1,5 +1,5 @@
 import { UserResolvers } from "../../types/generatedGraphQLTypes";
-import { TagAssign } from "../../models";
+import { TagUser } from "../../models";
 import { errors } from "../../libraries";
 import {
   PAGINATION_FIRST_CANT_BE_NEGATIVE_ERROR,
@@ -13,7 +13,7 @@ export const tagsAssignedWith: UserResolvers["tagsAssignedWith"] = async (
   // This pagination follows the Relay specification
   // Passing the value of both first and last is STRONGLY DISCOURAGED as it leads to confusing results
 
-  const allTagAssigns = await TagAssign.find({
+  const allTagUsers = await TagUser.find({
     // @ts-ignore
     _id: {
       $gt: args.after,
@@ -25,7 +25,7 @@ export const tagsAssignedWith: UserResolvers["tagsAssignedWith"] = async (
     .populate("tagId")
     .lean();
 
-  let edges = allTagAssigns.map((tagAssign) => ({
+  let edges = allTagUsers.map((tagAssign) => ({
     node: tagAssign.tagId,
     cursor: tagAssign.tagId._id,
   }));
@@ -35,7 +35,7 @@ export const tagsAssignedWith: UserResolvers["tagsAssignedWith"] = async (
 
   if (args.after) {
     hasNextPage = edges.length > (args.first || 0);
-    hasPreviousPage = await TagAssign.exists({
+    hasPreviousPage = await TagUser.exists({
       _id: {
         $lt: args.after,
       },
@@ -46,7 +46,7 @@ export const tagsAssignedWith: UserResolvers["tagsAssignedWith"] = async (
 
   if (args.last) {
     // @ts-ignore
-    hasNextPage = await TagAssign.exists({
+    hasNextPage = await TagUser.exists({
       _id: {
         // @ts-ignore
         $gte: args.before,

@@ -99,7 +99,7 @@ export const types = gql`
       before: String
       first: Int
       last: Int
-    ): TagsAssignedWithConnection
+    ): TagsConnection
   }
 
   # type EventProject {
@@ -235,6 +235,7 @@ export const types = gql`
 
   """
   Information about pagination in a connection.
+  A compound type adhering to the Relay Specification for both cursor based and offset based navigation
   """
   type PageInfo {
     """
@@ -246,6 +247,8 @@ export const types = gql`
     When paginating backwards, are there more items?
     """
     hasPreviousPage: Boolean!
+    startCursor: String
+    endCursor: String
     totalPages: Int
     nextPageNo: Int
     prevPageNo: Int
@@ -316,18 +319,53 @@ export const types = gql`
     name: String!
     organization: Organization!
     parentTag: Tag
-    childTags: [Tag]
-    usersAssignedTo: [User]
-    eventsAssignedTo: [Event]
+    childTags(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+    ): TagsConnection
+    usersAssignedTo(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+    ): UsersConnection
+    eventsAssignedTo(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+    ): EventsConnection
   }
 
-  type TagsAssignedWithConnection {
+  type TagsConnection {
     edges: [TagEdge]
-    pageInfo: PageInfo
+    pageInfo: PageInfo!
   }
 
   type TagEdge {
     node: Tag
+    cursor: String!
+  }
+
+  type UsersConnection {
+    edges: [UserEdge]
+    pageInfo: PageInfo!
+  }
+
+  type UserEdge {
+    node: User
+    cursor: String!
+  }
+
+  type EventsConnection {
+    edges: [EventEdge]
+    pageInfo: PageInfo!
+  }
+
+  type EventEdge {
+    node: Event
     cursor: String!
   }
 
@@ -372,9 +410,9 @@ export const types = gql`
     tagsAssignedWith(
       after: String
       before: String
-      first: Int
-      last: Int
-    ): TagsAssignedWithConnection
+      first: PositiveInt
+      last: PositiveInt
+    ): TagsConnection
   }
 
   type UserAttende {

@@ -70,7 +70,9 @@ const config: CodegenConfig = {
 
           Tag: "../models/Tag#Interface_Tag",
 
-          TagAssign: "../models/TagAssign#Interface_TagAssign",
+          EventTag: "../models/EventTag#Interface_EventTag",
+
+          TagUser: "../models/TagUser#Interface_TagUser",
 
           User: "../models/User#Interface_User",
         },

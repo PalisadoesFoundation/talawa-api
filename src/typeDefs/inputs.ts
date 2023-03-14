@@ -20,7 +20,7 @@ export const inputs = gql`
   input CreateTagInput {
     name: String!
     parentTagId: ID
-    organizationId: ID
+    organizationId: ID!
   }
 
   input DonationWhereInput {

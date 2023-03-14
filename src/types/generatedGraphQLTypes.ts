@@ -17,7 +17,8 @@ import type { Interface_PluginField as Interface_PluginFieldModel } from '../mod
 import type { Interface_Post as Interface_PostModel } from '../models/Post';
 import type { Interface_Task as Interface_TaskModel } from '../models/Task';
 import type { Interface_Tag as Interface_TagModel } from '../models/Tag';
-import type { Interface_TagAssign as Interface_TagAssignModel } from '../models/TagAssign';
+import type { Interface_EventTag as Interface_EventTagModel } from '../models/EventTag';
+import type { Interface_TagUser as Interface_TagUserModel } from '../models/TagUser';
 import type { Interface_User as Interface_UserModel } from '../models/User';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
@@ -39,6 +40,7 @@ export type Scalars = {
   Latitude: any;
   Longitude: any;
   PhoneNumber: any;
+  PositiveInt: any;
   Time: any;
   URL: any;
   Upload: any;
@@ -89,7 +91,7 @@ export type CommentInput = {
 
 export type CreateTagInput = {
   name: Scalars['String'];
-  organizationId?: InputMaybe<Scalars['ID']>;
+  organizationId: Scalars['ID'];
   parentTagId?: InputMaybe<Scalars['ID']>;
 };
 
@@ -164,7 +166,7 @@ export type Event = {
   startDate: Scalars['Date'];
   startTime?: Maybe<Scalars['Time']>;
   status: Status;
-  tagsAssignedWith?: Maybe<TagsAssignedWithConnection>;
+  tagsAssignedWith?: Maybe<TagsConnection>;
   tasks?: Maybe<Array<Maybe<Task>>>;
   title: Scalars['String'];
 };
@@ -180,6 +182,12 @@ export type EventTagsAssignedWithArgs = {
   before?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['Int']>;
   last?: InputMaybe<Scalars['Int']>;
+};
+
+export type EventEdge = {
+  __typename?: 'EventEdge';
+  cursor: Scalars['String'];
+  node?: Maybe<Event>;
 };
 
 export type EventInput = {
@@ -254,6 +262,12 @@ export type EventWhereInput = {
   title_not?: InputMaybe<Scalars['String']>;
   title_not_in?: InputMaybe<Array<Scalars['String']>>;
   title_starts_with?: InputMaybe<Scalars['String']>;
+};
+
+export type EventsConnection = {
+  __typename?: 'EventsConnection';
+  edges?: Maybe<Array<Maybe<EventEdge>>>;
+  pageInfo: PageInfo;
 };
 
 export type ExtendSession = {
@@ -578,7 +592,7 @@ export type MutationCreatePostArgs = {
 
 
 export type MutationCreateTagArgs = {
-  input?: InputMaybe<CreateTagInput>;
+  input: CreateTagInput;
 };
 
 
@@ -754,7 +768,7 @@ export type MutationTogglePostPinArgs = {
 
 
 export type MutationToggleTagAssignArgs = {
-  input?: InputMaybe<ToggleTagAssignInput>;
+  input: ToggleTagAssignInput;
 };
 
 
@@ -815,7 +829,7 @@ export type MutationUpdatePostArgs = {
 
 
 export type MutationUpdateTagArgs = {
-  input?: InputMaybe<UpdateTagInput>;
+  input: UpdateTagInput;
 };
 
 
@@ -945,16 +959,21 @@ export type OtpData = {
   otpToken: Scalars['String'];
 };
 
-/** Information about pagination in a connection. */
+/**
+ * Information about pagination in a connection.
+ * A compound type adhering to the Relay Specification for both cursor based and offset based navigation
+ */
 export type PageInfo = {
   __typename?: 'PageInfo';
   currPageNo?: Maybe<Scalars['Int']>;
+  endCursor?: Maybe<Scalars['String']>;
   /** When paginating forwards, are there more items? */
   hasNextPage: Scalars['Boolean'];
   /** When paginating backwards, are there more items? */
   hasPreviousPage: Scalars['Boolean'];
   nextPageNo?: Maybe<Scalars['Int']>;
   prevPageNo?: Maybe<Scalars['Int']>;
+  startCursor?: Maybe<Scalars['String']>;
   totalPages?: Maybe<Scalars['Int']>;
 };
 
@@ -1314,12 +1333,36 @@ export type Subscription = {
 export type Tag = {
   __typename?: 'Tag';
   _id: Scalars['ID'];
-  childTags?: Maybe<Array<Maybe<Tag>>>;
-  eventsAssignedTo?: Maybe<Array<Maybe<Event>>>;
+  childTags?: Maybe<TagsConnection>;
+  eventsAssignedTo?: Maybe<EventsConnection>;
   name: Scalars['String'];
   organization: Organization;
   parentTag?: Maybe<Tag>;
-  usersAssignedTo?: Maybe<Array<Maybe<User>>>;
+  usersAssignedTo?: Maybe<UsersConnection>;
+};
+
+
+export type TagChildTagsArgs = {
+  after?: InputMaybe<Scalars['String']>;
+  before?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['PositiveInt']>;
+  last?: InputMaybe<Scalars['PositiveInt']>;
+};
+
+
+export type TagEventsAssignedToArgs = {
+  after?: InputMaybe<Scalars['String']>;
+  before?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['PositiveInt']>;
+  last?: InputMaybe<Scalars['PositiveInt']>;
+};
+
+
+export type TagUsersAssignedToArgs = {
+  after?: InputMaybe<Scalars['String']>;
+  before?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['PositiveInt']>;
+  last?: InputMaybe<Scalars['PositiveInt']>;
 };
 
 export type TagEdge = {
@@ -1328,10 +1371,10 @@ export type TagEdge = {
   node?: Maybe<Tag>;
 };
 
-export type TagsAssignedWithConnection = {
-  __typename?: 'TagsAssignedWithConnection';
+export type TagsConnection = {
+  __typename?: 'TagsConnection';
   edges?: Maybe<Array<Maybe<TagEdge>>>;
-  pageInfo?: Maybe<PageInfo>;
+  pageInfo: PageInfo;
 };
 
 export type Task = {
@@ -1448,7 +1491,7 @@ export type User = {
   organizationsBlockedBy?: Maybe<Array<Maybe<Organization>>>;
   pluginCreationAllowed?: Maybe<Scalars['Boolean']>;
   registeredEvents?: Maybe<Array<Maybe<Event>>>;
-  tagsAssignedWith?: Maybe<TagsAssignedWithConnection>;
+  tagsAssignedWith?: Maybe<TagsConnection>;
   tokenVersion: Scalars['Int'];
   userType?: Maybe<Scalars['String']>;
 };
@@ -1457,8 +1500,8 @@ export type User = {
 export type UserTagsAssignedWithArgs = {
   after?: InputMaybe<Scalars['String']>;
   before?: InputMaybe<Scalars['String']>;
-  first?: InputMaybe<Scalars['Int']>;
-  last?: InputMaybe<Scalars['Int']>;
+  first?: InputMaybe<Scalars['PositiveInt']>;
+  last?: InputMaybe<Scalars['PositiveInt']>;
 };
 
 export type UserAndOrganizationInput = {
@@ -1480,6 +1523,12 @@ export type UserConnection = {
   aggregate: AggregateUser;
   edges: Array<Maybe<User>>;
   pageInfo: PageInfo;
+};
+
+export type UserEdge = {
+  __typename?: 'UserEdge';
+  cursor: Scalars['String'];
+  node?: Maybe<User>;
 };
 
 export type UserInput = {
@@ -1541,6 +1590,12 @@ export type UserWhereInput = {
   lastName_not?: InputMaybe<Scalars['String']>;
   lastName_not_in?: InputMaybe<Array<Scalars['String']>>;
   lastName_starts_with?: InputMaybe<Scalars['String']>;
+};
+
+export type UsersConnection = {
+  __typename?: 'UsersConnection';
+  edges?: Maybe<Array<Maybe<UserEdge>>>;
+  pageInfo: PageInfo;
 };
 
 export type CreateChatInput = {
@@ -1636,10 +1691,12 @@ export type ResolversTypes = {
   DonationWhereInput: DonationWhereInput;
   EmailAddress: ResolverTypeWrapper<Scalars['EmailAddress']>;
   Event: ResolverTypeWrapper<Interface_EventModel>;
+  EventEdge: ResolverTypeWrapper<Omit<EventEdge, 'node'> & { node?: Maybe<ResolversTypes['Event']> }>;
   EventInput: EventInput;
   EventOrderByInput: EventOrderByInput;
   EventRegistrants: ResolverTypeWrapper<Omit<EventRegistrants, 'event'> & { event: ResolversTypes['Event'] }>;
   EventWhereInput: EventWhereInput;
+  EventsConnection: ResolverTypeWrapper<Omit<EventsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['EventEdge']>>> }>;
   ExtendSession: ResolverTypeWrapper<ExtendSession>;
   Float: ResolverTypeWrapper<Scalars['Float']>;
   ForgotPasswordData: ForgotPasswordData;
@@ -1675,6 +1732,7 @@ export type ResolversTypes = {
   PluginField: ResolverTypeWrapper<Interface_PluginFieldModel>;
   PluginFieldInput: PluginFieldInput;
   PluginInput: PluginInput;
+  PositiveInt: ResolverTypeWrapper<Scalars['PositiveInt']>;
   Post: ResolverTypeWrapper<Interface_PostModel>;
   PostConnection: ResolverTypeWrapper<Omit<PostConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['Post']>> }>;
   PostInput: PostInput;
@@ -1689,7 +1747,7 @@ export type ResolversTypes = {
   Subscription: ResolverTypeWrapper<{}>;
   Tag: ResolverTypeWrapper<Interface_TagModel>;
   TagEdge: ResolverTypeWrapper<Omit<TagEdge, 'node'> & { node?: Maybe<ResolversTypes['Tag']> }>;
-  TagsAssignedWithConnection: ResolverTypeWrapper<Omit<TagsAssignedWithConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['TagEdge']>>> }>;
+  TagsConnection: ResolverTypeWrapper<Omit<TagsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['TagEdge']>>> }>;
   Task: ResolverTypeWrapper<Interface_TaskModel>;
   TaskInput: TaskInput;
   TaskOrderByInput: TaskOrderByInput;
@@ -1709,10 +1767,12 @@ export type ResolversTypes = {
   UserAndOrganizationInput: UserAndOrganizationInput;
   UserAttende: ResolverTypeWrapper<Omit<UserAttende, 'user'> & { user: ResolversTypes['User'] }>;
   UserConnection: ResolverTypeWrapper<Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['User']>> }>;
+  UserEdge: ResolverTypeWrapper<Omit<UserEdge, 'node'> & { node?: Maybe<ResolversTypes['User']> }>;
   UserInput: UserInput;
   UserOrderByInput: UserOrderByInput;
   UserType: UserType;
   UserWhereInput: UserWhereInput;
+  UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['UserEdge']>>> }>;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
 };
@@ -1736,9 +1796,11 @@ export type ResolversParentTypes = {
   DonationWhereInput: DonationWhereInput;
   EmailAddress: Scalars['EmailAddress'];
   Event: Interface_EventModel;
+  EventEdge: Omit<EventEdge, 'node'> & { node?: Maybe<ResolversParentTypes['Event']> };
   EventInput: EventInput;
   EventRegistrants: Omit<EventRegistrants, 'event'> & { event: ResolversParentTypes['Event'] };
   EventWhereInput: EventWhereInput;
+  EventsConnection: Omit<EventsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['EventEdge']>>> };
   ExtendSession: ExtendSession;
   Float: Scalars['Float'];
   ForgotPasswordData: ForgotPasswordData;
@@ -1773,6 +1835,7 @@ export type ResolversParentTypes = {
   PluginField: Interface_PluginFieldModel;
   PluginFieldInput: PluginFieldInput;
   PluginInput: PluginInput;
+  PositiveInt: Scalars['PositiveInt'];
   Post: Interface_PostModel;
   PostConnection: Omit<PostConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['Post']>> };
   PostInput: PostInput;
@@ -1784,7 +1847,7 @@ export type ResolversParentTypes = {
   Subscription: {};
   Tag: Interface_TagModel;
   TagEdge: Omit<TagEdge, 'node'> & { node?: Maybe<ResolversParentTypes['Tag']> };
-  TagsAssignedWithConnection: Omit<TagsAssignedWithConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['TagEdge']>>> };
+  TagsConnection: Omit<TagsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['TagEdge']>>> };
   Task: Interface_TaskModel;
   TaskInput: TaskInput;
   Time: Scalars['Time'];
@@ -1802,8 +1865,10 @@ export type ResolversParentTypes = {
   UserAndOrganizationInput: UserAndOrganizationInput;
   UserAttende: Omit<UserAttende, 'user'> & { user: ResolversParentTypes['User'] };
   UserConnection: Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['User']>> };
+  UserEdge: Omit<UserEdge, 'node'> & { node?: Maybe<ResolversParentTypes['User']> };
   UserInput: UserInput;
   UserWhereInput: UserWhereInput;
+  UsersConnection: Omit<UsersConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['UserEdge']>>> };
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
 };
@@ -1924,15 +1989,27 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   startTime?: Resolver<Maybe<ResolversTypes['Time']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
-  tagsAssignedWith?: Resolver<Maybe<ResolversTypes['TagsAssignedWithConnection']>, ParentType, ContextType, Partial<EventTagsAssignedWithArgs>>;
+  tagsAssignedWith?: Resolver<Maybe<ResolversTypes['TagsConnection']>, ParentType, ContextType, Partial<EventTagsAssignedWithArgs>>;
   tasks?: Resolver<Maybe<Array<Maybe<ResolversTypes['Task']>>>, ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type EventEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventEdge'] = ResolversParentTypes['EventEdge']> = {
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type EventRegistrantsResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventRegistrants'] = ResolversParentTypes['EventRegistrants']> = {
   event?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
   isRegistered?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type EventsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventsConnection'] = ResolversParentTypes['EventsConnection']> = {
+  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['EventEdge']>>>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2056,7 +2133,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, Partial<MutationCreateOrganizationArgs>>;
   createPlugin?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationCreatePluginArgs, 'pluginCreatedBy' | 'pluginDesc' | 'pluginInstallStatus' | 'pluginName'>>;
   createPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'data'>>;
-  createTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType, Partial<MutationCreateTagArgs>>;
+  createTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<MutationCreateTagArgs, 'input'>>;
   createTask?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationCreateTaskArgs, 'eventId'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;
@@ -2092,7 +2169,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   sendMessageToGroupChat?: Resolver<ResolversTypes['GroupChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToGroupChatArgs, 'chatId' | 'messageContent'>>;
   signUp?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'data'>>;
   togglePostPin?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationTogglePostPinArgs, 'id'>>;
-  toggleTagAssign?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<MutationToggleTagAssignArgs>>;
+  toggleTagAssign?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationToggleTagAssignArgs, 'input'>>;
   unblockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUnblockUserArgs, 'organizationId' | 'userId'>>;
   unlikeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationUnlikeCommentArgs, 'id'>>;
   unlikePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUnlikePostArgs, 'id'>>;
@@ -2103,7 +2180,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updatePluginInstalledOrgs?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginInstalledOrgsArgs, 'id' | 'orgId'>>;
   updatePluginStatus?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginStatusArgs, 'id' | 'status'>>;
   updatePost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationUpdatePostArgs, 'id'>>;
-  updateTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType, Partial<MutationUpdateTagArgs>>;
+  updateTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType, RequireFields<MutationUpdateTagArgs, 'input'>>;
   updateTask?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<MutationUpdateTaskArgs, 'id'>>;
   updateUserProfile?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;
   updateUserType?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateUserTypeArgs, 'data'>>;
@@ -2154,10 +2231,12 @@ export type OtpDataResolvers<ContextType = any, ParentType extends ResolversPare
 
 export type PageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['PageInfo'] = ResolversParentTypes['PageInfo']> = {
   currPageNo?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  endCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   hasNextPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   hasPreviousPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   nextPageNo?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   prevPageNo?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  startCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   totalPages?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2183,6 +2262,10 @@ export type PluginFieldResolvers<ContextType = any, ParentType extends Resolvers
   value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
+
+export interface PositiveIntScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['PositiveInt'], any> {
+  name: 'PositiveInt';
+}
 
 export type PostResolvers<ContextType = any, ParentType extends ResolversParentTypes['Post'] = ResolversParentTypes['Post']> = {
   _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
@@ -2258,12 +2341,12 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
 
 export type TagResolvers<ContextType = any, ParentType extends ResolversParentTypes['Tag'] = ResolversParentTypes['Tag']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  childTags?: Resolver<Maybe<Array<Maybe<ResolversTypes['Tag']>>>, ParentType, ContextType>;
-  eventsAssignedTo?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
+  childTags?: Resolver<Maybe<ResolversTypes['TagsConnection']>, ParentType, ContextType, Partial<TagChildTagsArgs>>;
+  eventsAssignedTo?: Resolver<Maybe<ResolversTypes['EventsConnection']>, ParentType, ContextType, Partial<TagEventsAssignedToArgs>>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
   parentTag?: Resolver<Maybe<ResolversTypes['Tag']>, ParentType, ContextType>;
-  usersAssignedTo?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
+  usersAssignedTo?: Resolver<Maybe<ResolversTypes['UsersConnection']>, ParentType, ContextType, Partial<TagUsersAssignedToArgs>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2273,9 +2356,9 @@ export type TagEdgeResolvers<ContextType = any, ParentType extends ResolversPare
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type TagsAssignedWithConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TagsAssignedWithConnection'] = ResolversParentTypes['TagsAssignedWithConnection']> = {
+export type TagsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TagsConnection'] = ResolversParentTypes['TagsConnection']> = {
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['TagEdge']>>>, ParentType, ContextType>;
-  pageInfo?: Resolver<Maybe<ResolversTypes['PageInfo']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2335,7 +2418,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   organizationsBlockedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   pluginCreationAllowed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   registeredEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
-  tagsAssignedWith?: Resolver<Maybe<ResolversTypes['TagsAssignedWithConnection']>, ParentType, ContextType, Partial<UserTagsAssignedWithArgs>>;
+  tagsAssignedWith?: Resolver<Maybe<ResolversTypes['TagsConnection']>, ParentType, ContextType, Partial<UserTagsAssignedWithArgs>>;
   tokenVersion?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   userType?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -2357,6 +2440,18 @@ export type UserConnectionResolvers<ContextType = any, ParentType extends Resolv
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type UserEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserEdge'] = ResolversParentTypes['UserEdge']> = {
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UsersConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnection'] = ResolversParentTypes['UsersConnection']> = {
+  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserEdge']>>>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type Resolvers<ContextType = any> = {
   AggregatePost?: AggregatePostResolvers<ContextType>;
   AggregateUser?: AggregateUserResolvers<ContextType>;
@@ -2371,7 +2466,9 @@ export type Resolvers<ContextType = any> = {
   Donation?: DonationResolvers<ContextType>;
   EmailAddress?: GraphQLScalarType;
   Event?: EventResolvers<ContextType>;
+  EventEdge?: EventEdgeResolvers<ContextType>;
   EventRegistrants?: EventRegistrantsResolvers<ContextType>;
+  EventsConnection?: EventsConnectionResolvers<ContextType>;
   ExtendSession?: ExtendSessionResolvers<ContextType>;
   Group?: GroupResolvers<ContextType>;
   GroupChat?: GroupChatResolvers<ContextType>;
@@ -2393,13 +2490,14 @@ export type Resolvers<ContextType = any> = {
   PhoneNumber?: GraphQLScalarType;
   Plugin?: PluginResolvers<ContextType>;
   PluginField?: PluginFieldResolvers<ContextType>;
+  PositiveInt?: GraphQLScalarType;
   Post?: PostResolvers<ContextType>;
   PostConnection?: PostConnectionResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   Tag?: TagResolvers<ContextType>;
   TagEdge?: TagEdgeResolvers<ContextType>;
-  TagsAssignedWithConnection?: TagsAssignedWithConnectionResolvers<ContextType>;
+  TagsConnection?: TagsConnectionResolvers<ContextType>;
   Task?: TaskResolvers<ContextType>;
   Time?: GraphQLScalarType;
   Translation?: TranslationResolvers<ContextType>;
@@ -2409,6 +2507,8 @@ export type Resolvers<ContextType = any> = {
   User?: UserResolvers<ContextType>;
   UserAttende?: UserAttendeResolvers<ContextType>;
   UserConnection?: UserConnectionResolvers<ContextType>;
+  UserEdge?: UserEdgeResolvers<ContextType>;
+  UsersConnection?: UsersConnectionResolvers<ContextType>;
 };
 
 export type DirectiveResolvers<ContextType = any> = {
