@@ -71,6 +71,7 @@ import { updatePost } from "./updatePost";
 import { updateTag } from "./updateTag";
 import { updateTask } from "./updateTask";
 import { updateUserProfile } from "./updateUserProfile";
+import { updateUserPassword } from "./updateUserPassword";
 import { updateUserType } from "./updateUserType";
 
 export const Mutation: MutationResolvers = {
@@ -145,6 +146,7 @@ export const Mutation: MutationResolvers = {
   updateTag,
   updateTask,
   updateUserProfile,
+  updateUserPassword,
   updateUserType,
   updatePost,
 };

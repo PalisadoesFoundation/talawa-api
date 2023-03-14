@@ -2,7 +2,9 @@ import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
 import { Interface_DirectChatMessage } from "./DirectChatMessage";
 import { Interface_Organization } from "./Organization";
 import { Interface_User } from "./User";
-
+/**
+ * This is an interface representing a document for direct chat in the database(MongoDB).
+ */
 export interface Interface_DirectChat {
   _id: Types.ObjectId;
   users: Array<PopulatedDoc<Interface_User & Document>>;
@@ -11,7 +13,14 @@ export interface Interface_DirectChat {
   organization: PopulatedDoc<Interface_Organization & Document>;
   status: string;
 }
-
+/**
+ * This is the Structure of the direct chat.
+ * @param users - Users of the chat
+ * @param messages -  Messages
+ * @param creator - Creator of the chat
+ * @param organization - Organization
+ * @param status - whether the chat is active, blocked or deleted.
+ */
 const directChatSchema = new Schema({
   users: [
     {

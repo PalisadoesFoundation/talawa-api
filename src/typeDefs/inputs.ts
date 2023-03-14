@@ -280,6 +280,12 @@ export const inputs = gql`
     email: EmailAddress
   }
 
+  input UpdateUserPasswordInput {
+    previousPassword: String!
+    newPassword: String!
+    confirmNewPassword: String!
+  }
+
   input UpdateUserTypeInput {
     userType: String
     id: ID

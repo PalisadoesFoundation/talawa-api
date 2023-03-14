@@ -6,7 +6,17 @@ import {
   CHAT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
 } from "../../constants";
-
+/**
+ * This function enables to remove direct chat.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the organization exists
+ * 2. If the chat exists
+ * 3. If the user is an admin of the organization.
+ * @returns Deleted chat.
+ */
 export const removeDirectChat: MutationResolvers["removeDirectChat"] = async (
   _parent,
   args,
@@ -39,7 +49,7 @@ export const removeDirectChat: MutationResolvers["removeDirectChat"] = async (
   }
 
   // Checks whether currentUser with _id === context.userId is an admin of organzation.
-  adminCheck(context.userId, organization);
+  await adminCheck(context.userId, organization);
 
   // Deletes all directChatMessages with _id as one of the ids in directChat.messages list.
   await DirectChatMessage.deleteMany({

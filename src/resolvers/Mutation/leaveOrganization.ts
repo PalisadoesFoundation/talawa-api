@@ -7,7 +7,18 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
-
+/**
+ * This function enables to leave an organization.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the organization exists
+ * 2. If the user exists
+ * 3. If the user is the creator of the organization
+ * 4. If the user is a member of the organization
+ * @returns Updated user
+ */
 export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   _parent,
   args,

@@ -3,7 +3,15 @@ import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
-
+/**
+ * This function adds User Image.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the current user exists
+ * @returns Updated User
+ */
 export const addUserImage: MutationResolvers["addUserImage"] = async (
   _parent,
   args,

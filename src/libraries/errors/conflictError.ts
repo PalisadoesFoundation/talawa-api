@@ -1,5 +1,7 @@
 import { ApplicationError } from "./applicationError";
-
+/**
+ * This class detects conflict errors and sends those errors to the superclass ApplicationError.
+ */
 export class ConflictError extends ApplicationError {
   constructor(
     message: string = "Conflicting entry found",

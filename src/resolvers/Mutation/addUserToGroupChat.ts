@@ -9,7 +9,19 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-
+/**
+ * This function adds user to group chat.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the group chat exists
+ * 2. If the organization exists
+ * 3. If the user trying to add the user is an admin of organization
+ * 4. If the user exists
+ * 5. If the user is already a member of the chat
+ * @returns Updated Group chat
+ */
 export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
   async (_parent, args, context) => {
     const groupChat = await GroupChat.findOne({
@@ -39,7 +51,7 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
     }
 
     // Checks whether currentUser with _id === context.userId is an admin of organization.
-    adminCheck(context.userId, organization);
+    await adminCheck(context.userId, organization);
 
     const userExists = await User.exists({
       _id: args.userId,

@@ -4,7 +4,9 @@ export interface Interface_Error {
   param: string | null;
   metadata?: Record<any, any>;
 }
-
+/**
+ * This class is responsible for finding the application errors. It adds those errors to superclass called Error.
+ */
 export class ApplicationError extends Error {
   public errors: Interface_Error[];
   public httpCode: number;

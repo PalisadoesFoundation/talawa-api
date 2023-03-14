@@ -6,7 +6,15 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
-
+/**
+ * This function enables to update user profile.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists.
+ * @returns Updated user profile.
+ */
 export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
   _parent,
   args,
@@ -25,11 +33,13 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
   }
 
   if (args.data!.email !== undefined) {
-    const userWithEmailExists = await User.exists({
+    const userWithEmailExists = await User.find({
       email: args.data?.email?.toLowerCase(),
     });
-
-    if (userWithEmailExists === true) {
+    if (
+      userWithEmailExists.length > 0 &&
+      userWithEmailExists[0]._id.toString() !== context.userId.toString()
+    ) {
       throw new errors.ConflictError(
         requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
         EMAIL_ALREADY_EXISTS_ERROR.MESSAGE,

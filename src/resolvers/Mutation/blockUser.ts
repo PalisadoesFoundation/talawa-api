@@ -9,7 +9,18 @@ import {
   USER_BLOCKING_SELF,
 } from "../../constants";
 import { Organization, User } from "../../models";
-
+/**
+ * This function enables blocking a user.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the organization exists
+ * 2. If the user exists
+ * 3. If the user is an admin of organization
+ * 4. If the user to be blocked is already blocked by the organization
+ * @returns Deleted updated user
+ */
 export const blockUser: MutationResolvers["blockUser"] = async (
   _parent,
   args,
@@ -63,7 +74,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   }
 
   // Checks whether currentUser with _id === context.userId is an admin of organization.
-  adminCheck(context.userId, organization);
+  await adminCheck(context.userId, organization);
 
   const userIsBlocked = organization.blockedUsers.some(
     (blockedUser) => blockedUser.toString() === args.userId.toString()

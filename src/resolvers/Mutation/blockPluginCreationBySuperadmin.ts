@@ -3,7 +3,16 @@ import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { superAdminCheck } from "../../utilities";
-
+/**
+ * This function enables an admin to create block plugin.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists
+ * 2. If the user is the SUPERADMIN of organization
+ * @returns Deleted updated user
+ */
 export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCreationBySuperadmin"] =
   async (_parent, args, context) => {
     const userExists = await User.exists({
