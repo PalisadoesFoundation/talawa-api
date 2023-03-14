@@ -284,7 +284,7 @@ For example:
 SMTP_HOST=smtp.hostgator.com
 SMTP_PORT=465
 SMTP_USERNAME=example@website.com
-SMTP_PASSWORD=sEcREt@123
+SMTP_PASSWORD=
 SMTP_SSL_TLS=true
 ```
 
