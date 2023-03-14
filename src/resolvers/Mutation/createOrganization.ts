@@ -6,7 +6,15 @@ import { LENGTH_VALIDATION_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
 import { superAdminCheck } from "../../utilities";
 import { isValidString } from "../../libraries/validators/validateString";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
-
+/**
+ * This function enables to create an organization.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists
+ * @returns Created organization
+ */
 export const createOrganization: MutationResolvers["createOrganization"] =
   async (_parent, args, context) => {
     const currentUserExists = await User.exists({
