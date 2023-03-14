@@ -1,9 +1,10 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
 import { Interface_Tag } from "./Tag";
+import { Interface_User } from "./User";
 
 export interface Interface_TagUser {
   _id: Types.ObjectId;
-  userId: Types.ObjectId;
+  userId: PopulatedDoc<Interface_User & Document>;
   tagId: PopulatedDoc<Interface_Tag & Document>;
 }
 

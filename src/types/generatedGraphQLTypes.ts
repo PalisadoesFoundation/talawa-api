@@ -869,7 +869,7 @@ export type Organization = {
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
   name: Scalars['String'];
   pinnedPosts?: Maybe<Array<Maybe<Post>>>;
-  tags?: Maybe<OrganizationTagsConnection>;
+  tags?: Maybe<TagsConnection>;
   visibleInSearch: Scalars['Boolean'];
 };
 
@@ -882,8 +882,8 @@ export type OrganizationAdminsArgs = {
 export type OrganizationTagsArgs = {
   after?: InputMaybe<Scalars['String']>;
   before?: InputMaybe<Scalars['String']>;
-  first?: InputMaybe<Scalars['Int']>;
-  last?: InputMaybe<Scalars['Int']>;
+  first?: InputMaybe<Scalars['PositiveInt']>;
+  last?: InputMaybe<Scalars['PositiveInt']>;
 };
 
 export type OrganizationInfoNode = {
@@ -918,12 +918,6 @@ export type OrganizationOrderByInput =
   | 'id_DESC'
   | 'name_ASC'
   | 'name_DESC';
-
-export type OrganizationTagsConnection = {
-  __typename?: 'OrganizationTagsConnection';
-  edges?: Maybe<Array<Maybe<TagEdge>>>;
-  pageInfo?: Maybe<PageInfo>;
-};
 
 export type OrganizationWhereInput = {
   apiUrl?: InputMaybe<Scalars['URL']>;
@@ -1723,7 +1717,6 @@ export type ResolversTypes = {
   OrganizationInfoNode: ResolverTypeWrapper<Omit<OrganizationInfoNode, 'creator'> & { creator: ResolversTypes['User'] }>;
   OrganizationInput: OrganizationInput;
   OrganizationOrderByInput: OrganizationOrderByInput;
-  OrganizationTagsConnection: ResolverTypeWrapper<Omit<OrganizationTagsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['TagEdge']>>> }>;
   OrganizationWhereInput: OrganizationWhereInput;
   OtpData: ResolverTypeWrapper<OtpData>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
@@ -1826,7 +1819,6 @@ export type ResolversParentTypes = {
   Organization: Interface_OrganizationModel;
   OrganizationInfoNode: Omit<OrganizationInfoNode, 'creator'> & { creator: ResolversParentTypes['User'] };
   OrganizationInput: OrganizationInput;
-  OrganizationTagsConnection: Omit<OrganizationTagsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['TagEdge']>>> };
   OrganizationWhereInput: OrganizationWhereInput;
   OtpData: OtpData;
   PageInfo: PageInfo;
@@ -2201,7 +2193,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pinnedPosts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType>;
-  tags?: Resolver<Maybe<ResolversTypes['OrganizationTagsConnection']>, ParentType, ContextType, Partial<OrganizationTagsArgs>>;
+  tags?: Resolver<Maybe<ResolversTypes['TagsConnection']>, ParentType, ContextType, Partial<OrganizationTagsArgs>>;
   visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2215,12 +2207,6 @@ export type OrganizationInfoNodeResolvers<ContextType = any, ParentType extends 
   isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type OrganizationTagsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrganizationTagsConnection'] = ResolversParentTypes['OrganizationTagsConnection']> = {
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['TagEdge']>>>, ParentType, ContextType>;
-  pageInfo?: Resolver<Maybe<ResolversTypes['PageInfo']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2484,7 +2470,6 @@ export type Resolvers<ContextType = any> = {
   Mutation?: MutationResolvers<ContextType>;
   Organization?: OrganizationResolvers<ContextType>;
   OrganizationInfoNode?: OrganizationInfoNodeResolvers<ContextType>;
-  OrganizationTagsConnection?: OrganizationTagsConnectionResolvers<ContextType>;
   OtpData?: OtpDataResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
   PhoneNumber?: GraphQLScalarType;

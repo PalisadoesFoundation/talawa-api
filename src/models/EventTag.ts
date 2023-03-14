@@ -1,9 +1,10 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
 import { Interface_Tag } from "./Tag";
+import { Interface_Event } from "./Event";
 
 export interface Interface_EventTag {
   _id: Types.ObjectId;
-  eventId: Types.ObjectId;
+  eventId: PopulatedDoc<Interface_Event & Document>;
   tagId: PopulatedDoc<Interface_Tag & Document>;
 }
 

@@ -209,7 +209,7 @@ export const types = gql`
       after: String
       before: String
       first: PositiveInt
-      last: PostiveInt
+      last: PositiveInt
     ): TagsConnection
   }
 
