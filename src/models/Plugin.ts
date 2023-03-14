@@ -1,5 +1,7 @@
 import { Schema, Types, model, models } from "mongoose";
-
+/**
+ * This is an interface that represents a database(MongoDB) document for Plugin.
+ */
 export interface Interface_Plugin {
   _id: Types.ObjectId;
   pluginName: string;

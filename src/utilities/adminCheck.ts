@@ -1,9 +1,9 @@
 import { Types } from "mongoose";
 import { errors, requestContext } from "../libraries";
 import { USER_NOT_AUTHORIZED_ADMIN } from "../constants";
-import { Interface_Organization } from "../models";
+import { Interface_Organization, User } from "../models";
 
-export const adminCheck = (
+export const adminCheck = async (
   userId: string | Types.ObjectId,
   organization: Interface_Organization
 ) => {
@@ -11,7 +11,13 @@ export const adminCheck = (
     admin.equals(userId)
   );
 
-  if (userIsOrganizationAdmin === false) {
+  const user = await User.findOne({
+    _id: userId,
+  });
+
+  const isUserSuperAdmin: boolean = user!.userType === "SUPERADMIN";
+
+  if (!userIsOrganizationAdmin && !isUserSuperAdmin) {
     throw new errors.UnauthorizedError(
       requestContext.translate(`${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`),
       USER_NOT_AUTHORIZED_ADMIN.CODE,

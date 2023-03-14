@@ -48,7 +48,7 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
     }
 
     // Checks whether currentUser with _id === context.userId is an admin of organization.
-    adminCheck(context.userId, organization);
+    await adminCheck(context.userId, organization);
 
     // Upload Image
     const uploadImageFileName = await uploadEncodedImage(

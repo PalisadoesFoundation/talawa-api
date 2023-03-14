@@ -7,9 +7,9 @@ import mongoose from "mongoose";
 import { removeAdmin as removeAdminResolver } from "../../../src/resolvers/Mutation/removeAdmin";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_ERROR,
+  USER_NOT_ORGANIZATION_ADMIN,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -142,9 +142,9 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
 
       await removeAdminAdminError?.({}, args, context);
     } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_ORGANIZATION_ADMIN.MESSAGE);
       expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
+        `Translated ${USER_NOT_ORGANIZATION_ADMIN.MESSAGE}`
       );
     }
   });

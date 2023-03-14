@@ -20,7 +20,7 @@ export const updateOrganization: MutationResolvers["updateOrganization"] =
     }
 
     // checks if the current user is an admin of the organization
-    adminCheck(context.userId, organization);
+    await adminCheck(context.userId, organization);
 
     return await Organization.findOneAndUpdate(
       {
