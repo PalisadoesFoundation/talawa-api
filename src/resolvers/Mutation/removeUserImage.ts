@@ -6,7 +6,16 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
 import { deleteImage } from "../../utilities";
-
+/**
+ * This function enables to remove user image.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists.
+ * 2. If the image exists
+ * @returns Updated user.
+ */
 export const removeUserImage: MutationResolvers["removeUserImage"] = async (
   _parent,
   _args,

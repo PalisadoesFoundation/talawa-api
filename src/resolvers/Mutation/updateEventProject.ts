@@ -6,7 +6,16 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-
+/**
+ * This function enables to update an event project.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists.
+ * 2. If the event project exists.
+ * @returns Updated event project.
+ */
 export const updateEventProject = async (
   _parent: any,
   args: any,

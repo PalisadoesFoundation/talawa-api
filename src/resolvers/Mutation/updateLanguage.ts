@@ -2,7 +2,15 @@ import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
-
+/**
+ * This function enables to update language.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists.
+ * @returns Updated language.
+ */
 export const updateLanguage: MutationResolvers["updateLanguage"] = async (
   _parent,
   args,
