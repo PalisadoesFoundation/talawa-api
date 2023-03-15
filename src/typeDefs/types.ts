@@ -122,7 +122,7 @@ export const types = gql`
     title: String
     description: String
     createdAt: DateTime
-    organization: Organization
+    organization: Organization!
     admins: [User]
   }
 
@@ -377,7 +377,7 @@ export const types = gql`
   type UserTag {
     _id: ID!
     name: String!
-    organization: Organization!
+    organization: Organization
     parentTag: UserTag
     childTags(
       after: String
