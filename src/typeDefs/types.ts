@@ -37,7 +37,7 @@ export const types = gql`
   }
 
   # A page info type adhering to Relay Specification for both cursor based pagination
-  type CursorPageInfo {
+  type ConnectionPageInfo {
     hasNextPage: Boolean!
     hasPreviousPage: Boolean!
     startCursor: String
@@ -395,7 +395,7 @@ export const types = gql`
 
   type UserTagsConnection {
     edges: [UserTagEdge]
-    pageInfo: CursorPageInfo!
+    pageInfo: ConnectionPageInfo!
   }
 
   type UserTagEdge {
@@ -405,6 +405,6 @@ export const types = gql`
 
   type UsersConnection {
     edges: [UserEdge]
-    pageInfo: CursorPageInfo!
+    pageInfo: ConnectionPageInfo!
   }
 `;

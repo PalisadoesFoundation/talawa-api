@@ -88,18 +88,18 @@ export type CommentInput = {
   text: Scalars['String'];
 };
 
-export type CreateUserTagInput = {
-  name: Scalars['String'];
-  organizationId: Scalars['ID'];
-  parentTagId?: InputMaybe<Scalars['ID']>;
-};
-
-export type CursorPageInfo = {
-  __typename?: 'CursorPageInfo';
+export type ConnectionPageInfo = {
+  __typename?: 'ConnectionPageInfo';
   endCursor?: Maybe<Scalars['String']>;
   hasNextPage: Scalars['Boolean'];
   hasPreviousPage: Scalars['Boolean'];
   startCursor?: Maybe<Scalars['String']>;
+};
+
+export type CreateUserTagInput = {
+  name: Scalars['String'];
+  organizationId: Scalars['ID'];
+  parentTagId?: InputMaybe<Scalars['ID']>;
 };
 
 export type DeletePayload = {
@@ -1527,7 +1527,7 @@ export type UserTagEdge = {
 export type UserTagsConnection = {
   __typename?: 'UserTagsConnection';
   edges?: Maybe<Array<Maybe<UserTagEdge>>>;
-  pageInfo: CursorPageInfo;
+  pageInfo: ConnectionPageInfo;
 };
 
 export type UserType =
@@ -1573,7 +1573,7 @@ export type UserWhereInput = {
 export type UsersConnection = {
   __typename?: 'UsersConnection';
   edges?: Maybe<Array<Maybe<UserEdge>>>;
-  pageInfo: CursorPageInfo;
+  pageInfo: ConnectionPageInfo;
 };
 
 export type CreateChatInput = {
@@ -1659,8 +1659,8 @@ export type ResolversTypes = {
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Comment: ResolverTypeWrapper<Interface_CommentModel>;
   CommentInput: CommentInput;
+  ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
   CreateUserTagInput: CreateUserTagInput;
-  CursorPageInfo: ResolverTypeWrapper<CursorPageInfo>;
   Date: ResolverTypeWrapper<Scalars['Date']>;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']>;
   DeletePayload: ResolverTypeWrapper<DeletePayload>;
@@ -1763,8 +1763,8 @@ export type ResolversParentTypes = {
   Boolean: Scalars['Boolean'];
   Comment: Interface_CommentModel;
   CommentInput: CommentInput;
+  ConnectionPageInfo: ConnectionPageInfo;
   CreateUserTagInput: CreateUserTagInput;
-  CursorPageInfo: CursorPageInfo;
   Date: Scalars['Date'];
   DateTime: Scalars['DateTime'];
   DeletePayload: DeletePayload;
@@ -1898,7 +1898,7 @@ export type CommentResolvers<ContextType = any, ParentType extends ResolversPare
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type CursorPageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['CursorPageInfo'] = ResolversParentTypes['CursorPageInfo']> = {
+export type ConnectionPageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectionPageInfo'] = ResolversParentTypes['ConnectionPageInfo']> = {
   endCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   hasNextPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   hasPreviousPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -2405,13 +2405,13 @@ export type UserTagEdgeResolvers<ContextType = any, ParentType extends Resolvers
 
 export type UserTagsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnection'] = ResolversParentTypes['UserTagsConnection']> = {
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserTagEdge']>>>, ParentType, ContextType>;
-  pageInfo?: Resolver<ResolversTypes['CursorPageInfo'], ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['ConnectionPageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type UsersConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnection'] = ResolversParentTypes['UsersConnection']> = {
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserEdge']>>>, ParentType, ContextType>;
-  pageInfo?: Resolver<ResolversTypes['CursorPageInfo'], ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['ConnectionPageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2421,7 +2421,7 @@ export type Resolvers<ContextType = any> = {
   AndroidFirebaseOptions?: AndroidFirebaseOptionsResolvers<ContextType>;
   AuthData?: AuthDataResolvers<ContextType>;
   Comment?: CommentResolvers<ContextType>;
-  CursorPageInfo?: CursorPageInfoResolvers<ContextType>;
+  ConnectionPageInfo?: ConnectionPageInfoResolvers<ContextType>;
   Date?: GraphQLScalarType;
   DateTime?: GraphQLScalarType;
   DeletePayload?: DeletePayloadResolvers<ContextType>;
