@@ -10,11 +10,11 @@
   ],
   "overrides": [
     {
-      "files": ["*.ts"],
+      "files": ["./src/typeDefs/**/*.ts"],
       "processor": "@graphql-eslint/graphql"
     },
     {
-      "files": ["*.graphql"],
+      "files": ["./src/typeDefs/**/*.graphql"],
       "parser": "@graphql-eslint/eslint-plugin",
       "plugins": ["@graphql-eslint"]
     },
