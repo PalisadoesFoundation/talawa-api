@@ -303,50 +303,6 @@ export const types = gql`
     aggregate: AggregatePost!
   }
 
-  type UserTag {
-    _id: ID!
-    name: String!
-    organization: Organization!
-    parentTag: UserTag
-    childTags(
-      after: String
-      before: String
-      first: PositiveInt
-      last: PositiveInt
-    ): UserTagsConnection
-    usersAssignedTo(
-      after: String
-      before: String
-      first: PositiveInt
-      last: PositiveInt
-    ): UsersConnection
-  }
-
-  type UserTagsConnection {
-    edges: [UserTagEdge]
-    pageInfo: PageInfo!
-  }
-
-  type UserTagEdge {
-    node: UserTag
-    cursor: String!
-  }
-
-  type UsersConnection {
-    edges: [UserEdge]
-    pageInfo: PageInfo!
-  }
-
-  type UserEdge {
-    node: User
-    cursor: String!
-  }
-
-  type Error {
-    message: String!
-    path: String!
-  }
-
   type Task {
     _id: ID!
     title: String!
@@ -405,5 +361,44 @@ export const types = gql`
     pageInfo: PageInfo!
     edges: [User]!
     aggregate: AggregateUser!
+  }
+
+  type UserEdge {
+    node: User
+    cursor: String!
+  }
+
+  type UserTag {
+    _id: ID!
+    name: String!
+    organization: Organization!
+    parentTag: UserTag
+    childTags(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+    ): UserTagsConnection
+    usersAssignedTo(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+    ): UsersConnection
+  }
+
+  type UserTagsConnection {
+    edges: [UserTagEdge]
+    pageInfo: PageInfo!
+  }
+
+  type UserTagEdge {
+    node: UserTag
+    cursor: String!
+  }
+
+  type UsersConnection {
+    edges: [UserEdge]
+    pageInfo: PageInfo!
   }
 `;

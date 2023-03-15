@@ -17,7 +17,6 @@ import type { Interface_PluginField as Interface_PluginFieldModel } from '../mod
 import type { Interface_Post as Interface_PostModel } from '../models/Post';
 import type { Interface_Task as Interface_TaskModel } from '../models/Task';
 import type { Interface_OrganizationTagUser as Interface_OrganizationTagUserModel } from '../models/OrganizationTagUser';
-import type { Interface_EventTag as Interface_EventTagModel } from '../models/EventTag';
 import type { Interface_TagUser as Interface_TagUserModel } from '../models/TagUser';
 import type { Interface_User as Interface_UserModel } from '../models/User';
 export type Maybe<T> = T | null;

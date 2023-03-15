@@ -7,7 +7,6 @@ import { addUserImage } from "./addUserImage";
 import { addUserToGroupChat } from "./addUserToGroupChat";
 import { adminRemoveEvent } from "./adminRemoveEvent";
 import { adminRemoveGroup } from "./adminRemoveGroup";
-import { assignTag } from "./assignTag";
 import { blockPluginCreationBySuperadmin } from "./blockPluginCreationBySuperadmin";
 import { blockUser } from "./blockUser";
 import { cancelMembershipRequest } from "./cancelMembershipRequest";
@@ -21,7 +20,6 @@ import { createMessageChat } from "./createMessageChat";
 import { createOrganization } from "./createOrganization";
 import { createPlugin } from "./createPlugin";
 import { createPost } from "./createPost";
-import { createTag } from "./createTag";
 import { createTask } from "./createTask";
 import { deleteDonationById } from "./deleteDonationById";
 import { forgotPassword } from "./forgotPassword";
@@ -46,7 +44,6 @@ import { removeMember } from "./removeMember";
 import { removeOrganization } from "./removeOrganization";
 import { removeOrganizationImage } from "./removeOrganizationImage";
 import { removePost } from "./removePost";
-import { removeTag } from "./removeTag";
 import { removeTask } from "./removeTask";
 import { removeUserFromGroupChat } from "./removeUserFromGroupChat";
 import { removeUserImage } from "./removeUserImage";
@@ -57,7 +54,6 @@ import { sendMessageToDirectChat } from "./sendMessageToDirectChat";
 import { sendMessageToGroupChat } from "./sendMessageToGroupChat";
 import { signUp } from "./signUp";
 import { togglePostPin } from "./togglePostPin";
-import { unassignTag } from "./unassignTag";
 import { unblockUser } from "./unblockUser";
 import { unlikeComment } from "./unlikeComment";
 import { unlikePost } from "./unlikePost";
@@ -68,7 +64,6 @@ import { updateOrganization } from "./updateOrganization";
 import { updatePluginInstalledOrgs } from "./updatePluginInstalledOrgs";
 import { updatePluginStatus } from "./updatePluginStatus";
 import { updatePost } from "./updatePost";
-import { updateTag } from "./updateTag";
 import { updateTask } from "./updateTask";
 import { updateUserProfile } from "./updateUserProfile";
 import { updateUserPassword } from "./updateUserPassword";
@@ -83,7 +78,6 @@ export const Mutation: MutationResolvers = {
   addUserToGroupChat,
   adminRemoveEvent,
   adminRemoveGroup,
-  assignTag,
   blockPluginCreationBySuperadmin,
   blockUser,
   cancelMembershipRequest,
@@ -97,7 +91,6 @@ export const Mutation: MutationResolvers = {
   createOrganization,
   createPlugin,
   createPost,
-  createTag,
   createTask,
   deleteDonationById,
   forgotPassword,
@@ -122,7 +115,6 @@ export const Mutation: MutationResolvers = {
   removeOrganization,
   removeOrganizationImage,
   removePost,
-  removeTag,
   removeTask,
   removeUserFromGroupChat,
   removeUserImage,
@@ -133,7 +125,6 @@ export const Mutation: MutationResolvers = {
   sendMessageToGroupChat,
   signUp,
   togglePostPin,
-  unassignTag,
   unblockUser,
   unlikeComment,
   unlikePost,
@@ -143,7 +134,6 @@ export const Mutation: MutationResolvers = {
   updateOrganization,
   updatePluginInstalledOrgs,
   updatePluginStatus,
-  updateTag,
   updateTask,
   updateUserProfile,
   updateUserPassword,

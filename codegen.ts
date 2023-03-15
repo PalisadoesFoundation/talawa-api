@@ -71,8 +71,6 @@ const config: CodegenConfig = {
           OrganizationTagUser:
             "../models/OrganizationTagUser#Interface_OrganizationTagUser",
 
-          EventTag: "../models/EventTag#Interface_EventTag",
-
           TagUser: "../models/TagUser#Interface_TagUser",
 
           User: "../models/User#Interface_User",
