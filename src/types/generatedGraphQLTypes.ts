@@ -94,6 +94,14 @@ export type CreateUserTagInput = {
   parentTagId?: InputMaybe<Scalars['ID']>;
 };
 
+export type CursorPageInfo = {
+  __typename?: 'CursorPageInfo';
+  endCursor?: Maybe<Scalars['String']>;
+  hasNextPage: Scalars['Boolean'];
+  hasPreviousPage: Scalars['Boolean'];
+  startCursor?: Maybe<Scalars['String']>;
+};
+
 export type DeletePayload = {
   __typename?: 'DeletePayload';
   success: Scalars['Boolean'];
@@ -266,7 +274,7 @@ export type Group = {
   admins?: Maybe<Array<Maybe<User>>>;
   createdAt?: Maybe<Scalars['DateTime']>;
   description?: Maybe<Scalars['String']>;
-  organization: Organization;
+  organization?: Maybe<Organization>;
   title?: Maybe<Scalars['String']>;
 };
 
@@ -937,21 +945,16 @@ export type OtpData = {
   otpToken: Scalars['String'];
 };
 
-/**
- * Information about pagination in a connection.
- * A compound type adhering to the Relay Specification for both cursor based and offset based navigation
- */
+/** Information about pagination in a connection. */
 export type PageInfo = {
   __typename?: 'PageInfo';
   currPageNo?: Maybe<Scalars['Int']>;
-  endCursor?: Maybe<Scalars['String']>;
   /** When paginating forwards, are there more items? */
   hasNextPage: Scalars['Boolean'];
   /** When paginating backwards, are there more items? */
   hasPreviousPage: Scalars['Boolean'];
   nextPageNo?: Maybe<Scalars['Int']>;
   prevPageNo?: Maybe<Scalars['Int']>;
-  startCursor?: Maybe<Scalars['String']>;
   totalPages?: Maybe<Scalars['Int']>;
 };
 
@@ -1338,8 +1341,8 @@ export type TaskOrderByInput =
   | 'title_DESC';
 
 export type ToggleUserTagAssignInput = {
-  objectId: Scalars['ID'];
   tagId: Scalars['ID'];
+  userId: Scalars['ID'];
 };
 
 export type Translation = {
@@ -1465,7 +1468,7 @@ export type UserConnection = {
 export type UserEdge = {
   __typename?: 'UserEdge';
   cursor: Scalars['String'];
-  node?: Maybe<User>;
+  node: User;
 };
 
 export type UserInput = {
@@ -1518,13 +1521,13 @@ export type UserTagUsersAssignedToArgs = {
 export type UserTagEdge = {
   __typename?: 'UserTagEdge';
   cursor: Scalars['String'];
-  node?: Maybe<UserTag>;
+  node: UserTag;
 };
 
 export type UserTagsConnection = {
   __typename?: 'UserTagsConnection';
   edges?: Maybe<Array<Maybe<UserTagEdge>>>;
-  pageInfo: PageInfo;
+  pageInfo: CursorPageInfo;
 };
 
 export type UserType =
@@ -1570,7 +1573,7 @@ export type UserWhereInput = {
 export type UsersConnection = {
   __typename?: 'UsersConnection';
   edges?: Maybe<Array<Maybe<UserEdge>>>;
-  pageInfo: PageInfo;
+  pageInfo: CursorPageInfo;
 };
 
 export type CreateChatInput = {
@@ -1657,6 +1660,7 @@ export type ResolversTypes = {
   Comment: ResolverTypeWrapper<Interface_CommentModel>;
   CommentInput: CommentInput;
   CreateUserTagInput: CreateUserTagInput;
+  CursorPageInfo: ResolverTypeWrapper<CursorPageInfo>;
   Date: ResolverTypeWrapper<Scalars['Date']>;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']>;
   DeletePayload: ResolverTypeWrapper<DeletePayload>;
@@ -1737,11 +1741,11 @@ export type ResolversTypes = {
   UserAndOrganizationInput: UserAndOrganizationInput;
   UserAttende: ResolverTypeWrapper<Omit<UserAttende, 'user'> & { user: ResolversTypes['User'] }>;
   UserConnection: ResolverTypeWrapper<Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['User']>> }>;
-  UserEdge: ResolverTypeWrapper<Omit<UserEdge, 'node'> & { node?: Maybe<ResolversTypes['User']> }>;
+  UserEdge: ResolverTypeWrapper<Omit<UserEdge, 'node'> & { node: ResolversTypes['User'] }>;
   UserInput: UserInput;
   UserOrderByInput: UserOrderByInput;
   UserTag: ResolverTypeWrapper<Omit<UserTag, 'childTags' | 'organization' | 'parentTag' | 'usersAssignedTo'> & { childTags?: Maybe<ResolversTypes['UserTagsConnection']>, organization: ResolversTypes['Organization'], parentTag?: Maybe<ResolversTypes['UserTag']>, usersAssignedTo?: Maybe<ResolversTypes['UsersConnection']> }>;
-  UserTagEdge: ResolverTypeWrapper<Omit<UserTagEdge, 'node'> & { node?: Maybe<ResolversTypes['UserTag']> }>;
+  UserTagEdge: ResolverTypeWrapper<Omit<UserTagEdge, 'node'> & { node: ResolversTypes['UserTag'] }>;
   UserTagsConnection: ResolverTypeWrapper<Omit<UserTagsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['UserTagEdge']>>> }>;
   UserType: UserType;
   UserWhereInput: UserWhereInput;
@@ -1760,6 +1764,7 @@ export type ResolversParentTypes = {
   Comment: Interface_CommentModel;
   CommentInput: CommentInput;
   CreateUserTagInput: CreateUserTagInput;
+  CursorPageInfo: CursorPageInfo;
   Date: Scalars['Date'];
   DateTime: Scalars['DateTime'];
   DeletePayload: DeletePayload;
@@ -1833,10 +1838,10 @@ export type ResolversParentTypes = {
   UserAndOrganizationInput: UserAndOrganizationInput;
   UserAttende: Omit<UserAttende, 'user'> & { user: ResolversParentTypes['User'] };
   UserConnection: Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['User']>> };
-  UserEdge: Omit<UserEdge, 'node'> & { node?: Maybe<ResolversParentTypes['User']> };
+  UserEdge: Omit<UserEdge, 'node'> & { node: ResolversParentTypes['User'] };
   UserInput: UserInput;
   UserTag: Omit<UserTag, 'childTags' | 'organization' | 'parentTag' | 'usersAssignedTo'> & { childTags?: Maybe<ResolversParentTypes['UserTagsConnection']>, organization: ResolversParentTypes['Organization'], parentTag?: Maybe<ResolversParentTypes['UserTag']>, usersAssignedTo?: Maybe<ResolversParentTypes['UsersConnection']> };
-  UserTagEdge: Omit<UserTagEdge, 'node'> & { node?: Maybe<ResolversParentTypes['UserTag']> };
+  UserTagEdge: Omit<UserTagEdge, 'node'> & { node: ResolversParentTypes['UserTag'] };
   UserTagsConnection: Omit<UserTagsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['UserTagEdge']>>> };
   UserWhereInput: UserWhereInput;
   UsersConnection: Omit<UsersConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['UserEdge']>>> };
@@ -1890,6 +1895,14 @@ export type CommentResolvers<ContextType = any, ParentType extends ResolversPare
   likedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   post?: Resolver<ResolversTypes['Post'], ParentType, ContextType>;
   text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type CursorPageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['CursorPageInfo'] = ResolversParentTypes['CursorPageInfo']> = {
+  endCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  hasNextPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  hasPreviousPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  startCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -1982,7 +1995,7 @@ export type GroupResolvers<ContextType = any, ParentType extends ResolversParent
   admins?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
+  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2184,12 +2197,10 @@ export type OtpDataResolvers<ContextType = any, ParentType extends ResolversPare
 
 export type PageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['PageInfo'] = ResolversParentTypes['PageInfo']> = {
   currPageNo?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  endCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   hasNextPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   hasPreviousPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   nextPageNo?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   prevPageNo?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  startCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   totalPages?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2372,7 +2383,7 @@ export type UserConnectionResolvers<ContextType = any, ParentType extends Resolv
 
 export type UserEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserEdge'] = ResolversParentTypes['UserEdge']> = {
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  node?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2388,19 +2399,19 @@ export type UserTagResolvers<ContextType = any, ParentType extends ResolversPare
 
 export type UserTagEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagEdge'] = ResolversParentTypes['UserTagEdge']> = {
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  node?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['UserTag'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type UserTagsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnection'] = ResolversParentTypes['UserTagsConnection']> = {
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserTagEdge']>>>, ParentType, ContextType>;
-  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['CursorPageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type UsersConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnection'] = ResolversParentTypes['UsersConnection']> = {
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserEdge']>>>, ParentType, ContextType>;
-  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['CursorPageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2410,6 +2421,7 @@ export type Resolvers<ContextType = any> = {
   AndroidFirebaseOptions?: AndroidFirebaseOptionsResolvers<ContextType>;
   AuthData?: AuthDataResolvers<ContextType>;
   Comment?: CommentResolvers<ContextType>;
+  CursorPageInfo?: CursorPageInfoResolvers<ContextType>;
   Date?: GraphQLScalarType;
   DateTime?: GraphQLScalarType;
   DeletePayload?: DeletePayloadResolvers<ContextType>;

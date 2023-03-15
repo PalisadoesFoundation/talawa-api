@@ -36,6 +36,14 @@ export const types = gql`
     likeCount: Int
   }
 
+  # A page info type adhering to Relay Specification for both cursor based based navigation
+  type CursorPageInfo {
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
+    startCursor: String
+    endCursor: String
+  }
+
   type DeletePayload {
     success: Boolean!
   }
@@ -114,7 +122,7 @@ export const types = gql`
     title: String
     description: String
     createdAt: DateTime
-    organization: Organization!
+    organization: Organization
     admins: [User]
   }
 
@@ -224,7 +232,6 @@ export const types = gql`
 
   """
   Information about pagination in a connection.
-  A compound type adhering to the Relay Specification for both cursor based and offset based navigation
   """
   type PageInfo {
     """
@@ -236,8 +243,7 @@ export const types = gql`
     When paginating backwards, are there more items?
     """
     hasPreviousPage: Boolean!
-    startCursor: String
-    endCursor: String
+
     totalPages: Int
     nextPageNo: Int
     prevPageNo: Int
@@ -364,7 +370,7 @@ export const types = gql`
   }
 
   type UserEdge {
-    node: User
+    node: User!
     cursor: String!
   }
 
@@ -389,16 +395,16 @@ export const types = gql`
 
   type UserTagsConnection {
     edges: [UserTagEdge]
-    pageInfo: PageInfo!
+    pageInfo: CursorPageInfo!
   }
 
   type UserTagEdge {
-    node: UserTag
+    node: UserTag!
     cursor: String!
   }
 
   type UsersConnection {
     edges: [UserEdge]
-    pageInfo: PageInfo!
+    pageInfo: CursorPageInfo!
   }
 `;
