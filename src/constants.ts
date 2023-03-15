@@ -85,9 +85,9 @@ export const INVALID_FILE_TYPE = {
 };
 
 export const SAME_FILE_ERROR = {
-  message: "The newer image is the same as the previous image in the database",
-  code: "internalServerError",
-  param: "internalServerError",
+  MESSAGE: "The newer image is the same as the previous image in the database",
+  CODE: "internalServerError",
+  PARAM: "internalServerError",
 };
 
 export const INTERNAL_SERVER_ERROR = {
@@ -163,6 +163,34 @@ export const USER_NOT_AUTHORIZED_TO_PIN = {
   CODE: "user.notAuthorizedToPin",
   PARAM: "user.notAuthorizedToPin",
 };
+
+export const TAG_NOT_FOUND = {
+  MESSAGE: "The tag with the specified ID doesn't exist.",
+  CODE: "tag.doesNotExist",
+  PARAM: "tag.doesNotExist",
+};
+
+export const INVALID_TAG_INPUT = {
+  MESSAGE:
+    "Either an organizatin ID or a parent tag ID must be provided for this operation.",
+  CODE: "invalidArgs",
+  PARAM: "invalidArgs",
+};
+
+export const INCORRECT_TAG_INPUT = {
+  MESSAGE:
+    "The tag does not belong to the organization provided. Try sending only one correct PARAMeter.",
+  CODE: "invalidArgs.tag",
+  PARAM: "invalidArgs.tag",
+};
+
+export const USER_NOT_AUTHORIZED_TO_CREATE_TAG = {
+  MESSAGE:
+    "The user must be a superadmin or an admin of the organization to create the tag.",
+  CODE: "user.notAuth.createTag",
+  PARAM: "user.notAuth.createTag",
+};
+
 export const TASK_NOT_FOUND_ERROR = {
   DESC: "Task not found",
   CODE: "task.notFound",
