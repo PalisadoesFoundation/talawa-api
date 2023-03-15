@@ -144,12 +144,6 @@ export type DonationWhereInput = {
   name_of_user_starts_with?: InputMaybe<Scalars['String']>;
 };
 
-export type Error = {
-  __typename?: 'Error';
-  message: Scalars['String'];
-  path: Scalars['String'];
-};
-
 export type Event = {
   __typename?: 'Event';
   _id: Scalars['ID'];
@@ -1671,7 +1665,6 @@ export type ResolversTypes = {
   Donation: ResolverTypeWrapper<Interface_DonationModel>;
   DonationWhereInput: DonationWhereInput;
   EmailAddress: ResolverTypeWrapper<Scalars['EmailAddress']>;
-  Error: ResolverTypeWrapper<Error>;
   Event: ResolverTypeWrapper<Interface_EventModel>;
   EventInput: EventInput;
   EventOrderByInput: EventOrderByInput;
@@ -1775,7 +1768,6 @@ export type ResolversParentTypes = {
   Donation: Interface_DonationModel;
   DonationWhereInput: DonationWhereInput;
   EmailAddress: Scalars['EmailAddress'];
-  Error: Error;
   Event: Interface_EventModel;
   EventInput: EventInput;
   EventRegistrants: Omit<EventRegistrants, 'event'> & { event: ResolversParentTypes['Event'] };
@@ -1947,12 +1939,6 @@ export type DonationResolvers<ContextType = any, ParentType extends ResolversPar
 export interface EmailAddressScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['EmailAddress'], any> {
   name: 'EmailAddress';
 }
-
-export type ErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Error'] = ResolversParentTypes['Error']> = {
-  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
 
 export type EventResolvers<ContextType = any, ParentType extends ResolversParentTypes['Event'] = ResolversParentTypes['Event']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -2431,7 +2417,6 @@ export type Resolvers<ContextType = any> = {
   DirectChatMessage?: DirectChatMessageResolvers<ContextType>;
   Donation?: DonationResolvers<ContextType>;
   EmailAddress?: GraphQLScalarType;
-  Error?: ErrorResolvers<ContextType>;
   Event?: EventResolvers<ContextType>;
   EventRegistrants?: EventRegistrantsResolvers<ContextType>;
   ExtendSession?: ExtendSessionResolvers<ContextType>;
