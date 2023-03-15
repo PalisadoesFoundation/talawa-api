@@ -1442,6 +1442,7 @@ export type UserTagsAssignedWithArgs = {
   before?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['PositiveInt']>;
   last?: InputMaybe<Scalars['PositiveInt']>;
+  organizationId: Scalars['ID'];
 };
 
 export type UserAndOrganizationInput = {
@@ -2359,7 +2360,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   organizationsBlockedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   pluginCreationAllowed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   registeredEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
-  tagsAssignedWith?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<UserTagsAssignedWithArgs>>;
+  tagsAssignedWith?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, RequireFields<UserTagsAssignedWithArgs, 'organizationId'>>;
   tokenVersion?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   userType?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
