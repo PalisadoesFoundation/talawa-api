@@ -36,7 +36,7 @@ export const types = gql`
     likeCount: Int
   }
 
-  # A page info type adhering to Relay Specification for both cursor based based navigation
+  # A page info type adhering to Relay Specification for both cursor based pagination
   type CursorPageInfo {
     hasNextPage: Boolean!
     hasPreviousPage: Boolean!
