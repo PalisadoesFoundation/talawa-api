@@ -8,7 +8,7 @@ export interface Interface_OrganizationTagUser {
   name: string;
 }
 
-// A tag is used for the categorization and the grouping of related objects (for eg. user)
+// A User Tag is used for the categorization and the grouping of related users
 // Each tag belongs to a particular organization, and is private to the same.
 // Each tag can be nested to hold other sub-tags so as to create a heriecheal structure.
 const OrganizationTagUserSchema = new Schema({

@@ -8,6 +8,7 @@ export interface Interface_TagUser {
   tagId: PopulatedDoc<Interface_OrganizationTagUser & Document>;
 }
 
+// Relational schema used to keep track of assigned tags to users
 const TagUserSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
