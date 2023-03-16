@@ -32,6 +32,7 @@ beforeAll(async () => {
   usersAssignedTo = await TagUser.find({
     tagId: testTag!._id,
   })
+    .sort({ userId: 1 })
     .populate("userId")
     .lean();
 
@@ -76,18 +77,18 @@ describe("resolvers -> UserTag -> usersAssignedTo", () => {
     // Testing the pageInfo object
     expect(payload!.pageInfo.hasNextPage).toEqual(false);
     expect(payload!.pageInfo.hasPreviousPage).toEqual(true);
-    expect(payload!.pageInfo.startCursor).toEqual(userIds[2]);
+    expect(payload!.pageInfo.startCursor).toEqual(userIds[3]);
     expect(payload!.pageInfo.endCursor).toEqual(userIds[4]);
 
     // Testing the edges object
-    expect(payload!.edges!.length).toEqual(3);
+    expect(payload!.edges!.length).toEqual(2);
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.node)).toEqual(
-      usersAssignedTo.slice(-3)
+      usersAssignedTo.slice(-2)
     );
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.cursor)).toEqual(
-      userIds.slice(-3)
+      userIds.slice(-2)
     );
   });
 
@@ -103,17 +104,17 @@ describe("resolvers -> UserTag -> usersAssignedTo", () => {
     expect(payload!.pageInfo.hasNextPage).toEqual(true);
     expect(payload!.pageInfo.hasPreviousPage).toEqual(false);
     expect(payload!.pageInfo.startCursor).toEqual(userIds[0]);
-    expect(payload!.pageInfo.endCursor).toEqual(userIds[1]);
+    expect(payload!.pageInfo.endCursor).toEqual(userIds[2]);
 
     // Testing the edges object
-    expect(payload!.edges!.length).toEqual(2);
+    expect(payload!.edges!.length).toEqual(3);
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.node)).toEqual(
-      usersAssignedTo.slice(0, 2)
+      usersAssignedTo.slice(0, 3)
     );
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.cursor)).toEqual(
-      userIds.slice(0, 2)
+      userIds.slice(0, 3)
     );
   });
 

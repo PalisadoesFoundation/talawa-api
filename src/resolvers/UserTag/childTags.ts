@@ -20,7 +20,9 @@ export const childTags: UserTagResolvers["childTags"] = async (
         $gt: args.after,
       },
       parentTagId: parent._id,
-    }).lean();
+    })
+      .sort({ _id: 1 })
+      .lean();
 
     hasPreviousPage = await OrganizationTagUser.exists({
       _id: {
@@ -34,7 +36,9 @@ export const childTags: UserTagResolvers["childTags"] = async (
         $lte: args.before,
       },
       parentTagId: parent._id,
-    }).lean();
+    })
+      .sort({ _id: 1 })
+      .lean();
 
     hasNextPage = await OrganizationTagUser.exists({
       _id: {
@@ -45,7 +49,9 @@ export const childTags: UserTagResolvers["childTags"] = async (
   } else {
     allChildTags = await OrganizationTagUser.find({
       parentTagId: parent._id,
-    }).lean();
+    })
+      .sort({ _id: 1 })
+      .lean();
   }
 
   let edges = allChildTags.map((childTag) => ({
