@@ -5,7 +5,7 @@ import {
 } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import { USER_NOT_FOUND_ERROR } from "../../constants";
+import { UNAUTHENTICATED_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
 /**
  * This query will fetch all the users in specified order from the database.
@@ -27,6 +27,14 @@ export const users: QueryResolvers["users"] = async (
     _id: context.userId,
   });
 
+  if (!queryUser) {
+    throw new errors.UnauthenticatedError(
+      UNAUTHENTICATED_ERROR.MESSAGE,
+      UNAUTHENTICATED_ERROR.CODE,
+      UNAUTHENTICATED_ERROR.PARAM
+    );
+  }
+
   const users = await User.find(inputArg)
     .sort(sort)
     .select(["-password"])
@@ -47,12 +55,14 @@ export const users: QueryResolvers["users"] = async (
     );
   } else
     return users.map((user) => {
+      const { userType } = queryUser;
+
       return {
         ...user,
         image: user.image ? `${context.apiRootUrl}${user.image}` : null,
         organizationsBlockedBy:
-          queryUser?.userType === "ADMIN" ||
-          queryUser?.userType === "SUPERADMIN"
+          (userType === "ADMIN" || userType === "SUPERADMIN") &&
+          queryUser._id !== user._id
             ? user.organizationsBlockedBy
             : [],
       };
