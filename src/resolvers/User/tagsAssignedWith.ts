@@ -15,32 +15,34 @@ export const tagsAssignedWith: UserResolvers["tagsAssignedWith"] = async (
 
   if (args.after) {
     allTagUsers = await TagUser.find({
-      _id: {
+      tagId: {
         $gt: args.after,
       },
       userId: parent._id,
     })
+      .sort({ tagId: 1 })
       .populate("tagId")
       .lean();
 
     hasPreviousPage = await TagUser.exists({
-      _id: {
+      tagId: {
         $lte: args.after,
       },
       userId: parent._id,
     });
   } else if (args.before) {
     allTagUsers = await TagUser.find({
-      _id: {
+      tagId: {
         $lte: args.before,
       },
       userId: parent._id,
     })
+      .sort({ tagId: 1 })
       .populate("tagId")
       .lean();
 
     hasNextPage = await TagUser.exists({
-      _id: {
+      tagId: {
         $gt: args.before,
       },
       userId: parent._id,
@@ -49,6 +51,7 @@ export const tagsAssignedWith: UserResolvers["tagsAssignedWith"] = async (
     allTagUsers = await TagUser.find({
       userId: parent._id,
     })
+      .sort({ tagId: 1 })
       .populate("tagId")
       .lean();
   }

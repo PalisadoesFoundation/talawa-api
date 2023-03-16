@@ -1,59 +1,49 @@
 import "dotenv/config";
-import { tagsAssignedWith as tagsAssignedWithResolver } from "../../../src/resolvers/User/tagsAssignedWith";
+import { userTags as userTagsResolver } from "../../../src/resolvers/Organization/userTags";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTagsAndAssignToUser } from "../../helpers/tags";
+import { createRootTagsWithOrg, testUserTagType } from "../../helpers/tags";
+import { OrganizationTagUser } from "../../../src/models";
 import {
-  Interface_OrganizationTagUser,
-  TagUser,
-  Interface_TagUser,
-} from "../../../src/models";
-import { testOrganizationType, testUserType } from "../../helpers/userAndOrg";
+  createTestUserAndOrganization,
+  testOrganizationType,
+} from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
-let tagsAssignedWith: any;
+let orgTags: any;
 
-let testUser: testUserType;
 let testOrganization: testOrganizationType;
-
+let randomTestOrganization: testOrganizationType;
 let testTagIds: string[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
-  [testUser, testOrganization] = await createTagsAndAssignToUser(5);
+  [, testOrganization] = await createRootTagsWithOrg(5);
+  [, randomTestOrganization] = await createTestUserAndOrganization();
 
-  tagsAssignedWith = await TagUser.find({
-    userId: testUser!._id,
+  orgTags = await OrganizationTagUser.find({
+    organizationId: testOrganization!._id,
+    parentTagId: null,
   })
-    .populate("tagId")
     .sort({ _id: 1 })
     .lean();
 
-  tagsAssignedWith = tagsAssignedWith
-    .map((tagAssign: Interface_TagUser) => tagAssign!.tagId)
-    .filter(
-      (tag: Interface_OrganizationTagUser) =>
-        tag.organizationId.toString() === testOrganization!._id.toString()
-    );
-
-  testTagIds = tagsAssignedWith.map((tag: Interface_TagUser) => tag!._id);
+  testTagIds = orgTags.map((tag: testUserTagType) => tag!._id);
 });
 
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE!);
 });
 
-describe("resolvers -> User -> tagsAssignedWith", () => {
+describe("resolvers -> Organization -> orgTags", () => {
   it(`returns all the tags if no args are provided`, async () => {
-    const parent = testUser!.toObject();
-    const args = {
-      organizationId: testOrganization!._id,
-    };
+    const parent = testOrganization!.toObject();
+    const args = {};
 
-    const payload = await tagsAssignedWithResolver?.(parent, args, {});
+    const payload = await userTagsResolver?.(parent, args, {});
 
     // Testing the pageInfo object
     expect(payload!.pageInfo.hasNextPage).toEqual(false);
@@ -64,19 +54,18 @@ describe("resolvers -> User -> tagsAssignedWith", () => {
     // Testing the edges object
     expect(payload!.edges!.length).toEqual(5);
     // @ts-ignore
-    expect(payload!.edges!.map((edge) => edge.node)).toEqual(tagsAssignedWith);
+    expect(payload!.edges!.map((edge) => edge.node)).toEqual(orgTags);
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.cursor)).toEqual(testTagIds);
   });
 
   it(`returns the correct tags when after argument is provided`, async () => {
-    const parent = testUser!.toObject();
+    const parent = testOrganization!.toObject();
     const args = {
-      organizationId: testOrganization!._id,
       after: testTagIds[2],
     };
 
-    const payload = await tagsAssignedWithResolver?.(parent, args, {});
+    const payload = await userTagsResolver?.(parent, args, {});
 
     // Testing the pageInfo object
     expect(payload!.pageInfo.hasNextPage).toEqual(false);
@@ -88,7 +77,7 @@ describe("resolvers -> User -> tagsAssignedWith", () => {
     expect(payload!.edges!.length).toEqual(2);
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.node)).toEqual(
-      tagsAssignedWith.slice(-2)
+      orgTags.slice(-2)
     );
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.cursor)).toEqual(
@@ -97,13 +86,12 @@ describe("resolvers -> User -> tagsAssignedWith", () => {
   });
 
   it(`returns the correct tags when before argument is provided`, async () => {
-    const parent = testUser!.toObject();
+    const parent = testOrganization!.toObject();
     const args = {
-      organizationId: testOrganization!._id,
       before: testTagIds[2],
     };
 
-    const payload = await tagsAssignedWithResolver?.(parent, args, {});
+    const payload = await userTagsResolver?.(parent, args, {});
 
     // Testing the pageInfo object
     expect(payload!.pageInfo.hasNextPage).toEqual(true);
@@ -115,7 +103,7 @@ describe("resolvers -> User -> tagsAssignedWith", () => {
     expect(payload!.edges!.length).toEqual(3);
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.node)).toEqual(
-      tagsAssignedWith.slice(0, 3)
+      orgTags.slice(0, 3)
     );
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.cursor)).toEqual(
@@ -124,13 +112,12 @@ describe("resolvers -> User -> tagsAssignedWith", () => {
   });
 
   it(`returns the correct child tags when first argument is provided`, async () => {
-    const parent = testUser!.toObject();
+    const parent = testOrganization!.toObject();
     const args = {
-      organizationId: testOrganization!._id,
       first: 3,
     };
 
-    const payload = await tagsAssignedWithResolver?.(parent, args, {});
+    const payload = await userTagsResolver?.(parent, args, {});
 
     // Testing the pageInfo object
     expect(payload!.pageInfo.hasNextPage).toEqual(true);
@@ -142,7 +129,7 @@ describe("resolvers -> User -> tagsAssignedWith", () => {
     expect(payload!.edges!.length).toEqual(3);
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.node)).toEqual(
-      tagsAssignedWith.slice(0, 3)
+      orgTags.slice(0, 3)
     );
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.cursor)).toEqual(
@@ -151,13 +138,12 @@ describe("resolvers -> User -> tagsAssignedWith", () => {
   });
 
   it(`returns the correct child tags when last argument is provided`, async () => {
-    const parent = testUser!.toObject();
+    const parent = testOrganization!.toObject();
     const args = {
-      organizationId: testOrganization!._id,
       last: 3,
     };
 
-    const payload = await tagsAssignedWithResolver?.(parent, args, {});
+    const payload = await userTagsResolver?.(parent, args, {});
 
     // Testing the pageInfo object
     expect(payload!.pageInfo.hasNextPage).toEqual(false);
@@ -169,7 +155,7 @@ describe("resolvers -> User -> tagsAssignedWith", () => {
     expect(payload!.edges!.length).toEqual(3);
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.node)).toEqual(
-      tagsAssignedWith.slice(-3)
+      orgTags.slice(-3)
     );
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.cursor)).toEqual(
@@ -178,12 +164,10 @@ describe("resolvers -> User -> tagsAssignedWith", () => {
   });
 
   it(`returns the correct response when no edges exist`, async () => {
-    const parent = testUser!.toObject();
-    const args = {
-      organizationId: "anyRandomID",
-    };
+    const parent = randomTestOrganization!.toObject();
+    const args = {};
 
-    const payload = await tagsAssignedWithResolver?.(parent, args, {});
+    const payload = await userTagsResolver?.(parent, args, {});
 
     // Testing the pageInfo object
     expect(payload!.pageInfo.hasNextPage).toEqual(false);

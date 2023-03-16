@@ -31,6 +31,24 @@ export const createRootTagWithOrg = async (): Promise<
   return [testUser, testOrganization, testTag];
 };
 
+export const createRootTagsWithOrg = async (
+  numberOfTags = 1
+): Promise<[testUserType, testOrganizationType, testUserTagType[]]> => {
+  const [testUser, testOrganization] = await createTestUserAndOrganization();
+  const tags: testUserTagType[] = [];
+
+  for (let i = 0; i < numberOfTags; i++) {
+    const testTag = await OrganizationTagUser.create({
+      name: `TagTitle${nanoid()}`,
+      parentTagId: null,
+      organizationId: testOrganization!._id,
+    });
+    tags.push(testTag);
+  }
+
+  return [testUser, testOrganization, tags];
+};
+
 export const createTwoLevelTagsWithOrg = async (): Promise<
   [
     testUserType,
