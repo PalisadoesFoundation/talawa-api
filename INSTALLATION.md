@@ -15,6 +15,7 @@ This document provides instructions on how to set up and start a running instanc
   - [Install the Required Packages](#install-the-required-packages)
   - [Install MongoDB](#install-mongodb)
     - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
+- [Automated Installation via Python script](#install-api-via-python-script)
 - [Configuration](#configuration)
   - [The .env Configuration File](#the-env-configuration-file)
   - [Generating Token Secrets](#generating-token-secrets)
@@ -100,6 +101,47 @@ We're listing some common approaches to set up a running instance of MongoDB dat
 1. `System native database approach:` (Highly Recommended) You can install MongoDB natively on your system and create/connect to the database. Follow the setup guide on official [MongoDB Docs](https://www.mongodb.com/docs/manual/administration/install-community/) for your respective operating system.
 1. `Hosted database approach:` MongoDB Atlas is the easiest way to get a running instance of mongodb database. It is a hosted(remote) mongodb database provided by mongodb itself. If you're a beginner and don't want too much of a hassle setting up the database you should use this approach but you should eventually switch to local instance. Follow the setup guide on official [MongoDB Atlas Docs](https://www.mongodb.com/docs/atlas/getting-started/). Mongodb Atlas is just one of the many hosted database solutions. Some issues that you might face while using this are slower tests, slower API requests, dependence on Internet connection etc.
 1. `Docker container approach:` If you are fluent in working with docker you should use this approach. Docker is a great way to manage and run applications without natively installing anything on your system. With this you can set up the mongodb database inside a docker container and manage it as per your will. Follow this [video tutorial](https://www.youtube.com/watch?v=uklyCSKQ1Po) to set up a mongodb docker container.
+
+# Install API via Python script
+
+Please follow these instructions carefully to setup the Talawa-API instance smoothly via the provided Python script.
+
+Install `Python 3.8` or higher from [here](https://www.python.org/downloads/).
+
+(Recommended) Create a virtual environment for the project.
+
+You can use `virtualenv` or `venv` for this purpose. If you're using `venv` you can create a virtual environment by running the following command in the root directory of the project:
+
+        virtualenv venv
+
+Activate the virtual environment by running the following command:
+
+        source venv/bin/activate
+
+Install the required packages by running the following command:
+        
+        pip install -r requirements.txt
+
+
+Once you are done with the installation of the packages, run this command to generate the `.env` file:
+
+        cp .env.template .env
+
+Now, you need to run the python script, you can use the following command:
+
+        python installer.py
+
+If it doesn't work, try running the following command:
+
+        python3 installer.py
+
+Then you just need to follow the instructions on the screen.
+If you have doubts, you can refer to the INSTALLATION.md file.
+
+### Note: 
+
+If you have a pre-existing `.env` file, either delete it, or ensure that it is similar to the `.env.template` file, else the script will not work.
+If it is similar to the `.env.template` file, you can opt to add any custom values manually.
 
 # Configuration
 It's important to configure Talawa-Admin. Here's how to do it.
