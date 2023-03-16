@@ -10,7 +10,14 @@ export interface Interface_MailFields {
   subject: string;
   body: string;
 }
-
+/**
+ * This function sends emails to the specified user using the node mailer module.
+ * @remarks
+ * This is a utility method.
+ *
+ * @param Interface_MailFields - `Interface` type with emailTo(`string`), subject(`string`), and body(`string`) necessary attributes.
+ * @returns Promise along with resolve and reject methods.
+ */
 export const mailer = (mailFields: Interface_MailFields) => {
   // Nodemailer configuration
   const transporter = nodemailer.createTransport({

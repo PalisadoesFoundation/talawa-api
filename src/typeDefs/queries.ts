@@ -1,5 +1,7 @@
 import { gql } from "apollo-server-core";
-
+/**
+ * This graphQL typeDef defines the logic for different queries defined in the talawa-api.
+ */
 // Place fields alphabetically to ensure easier lookup and navigation.
 export const queries = gql`
   type Query {
