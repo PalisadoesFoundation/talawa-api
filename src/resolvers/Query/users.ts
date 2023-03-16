@@ -23,6 +23,10 @@ export const users: QueryResolvers["users"] = async (
   const inputArg = getInputArg(args.where);
   const sort = getSort(args.orderBy);
 
+  const queryUser = await User.findOne({
+    _id: context.userId,
+  });
+
   const users = await User.find(inputArg)
     .sort(sort)
     .select(["-password"])
@@ -32,6 +36,7 @@ export const users: QueryResolvers["users"] = async (
     .populate("registeredEvents")
     .populate("eventAdmin")
     .populate("adminFor")
+    .populate("organizationsBlockedBy")
     .lean();
 
   if (!users[0]) {
@@ -45,7 +50,11 @@ export const users: QueryResolvers["users"] = async (
       return {
         ...user,
         image: user.image ? `${context.apiRootUrl}${user.image}` : null,
-        organizationsBlockedBy: [],
+        organizationsBlockedBy:
+          queryUser?.userType === "ADMIN" ||
+          queryUser?.userType === "SUPERADMIN"
+            ? user.organizationsBlockedBy
+            : [],
       };
     });
 };
