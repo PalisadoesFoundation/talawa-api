@@ -6,7 +6,7 @@ import { image } from "./image";
 import { members } from "./members";
 import { pinnedPosts } from "./pinnedPosts";
 import { membershipRequests } from "./membershipRequests";
-import { userTags } from "./userTags";
+// import { userTags } from "./userTags";
 
 export const Organization: OrganizationResolvers = {
   admins,
@@ -16,5 +16,5 @@ export const Organization: OrganizationResolvers = {
   members,
   membershipRequests,
   pinnedPosts,
-  userTags,
+  // userTags,
 };
