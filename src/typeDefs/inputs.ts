@@ -263,7 +263,7 @@ export const inputs = gql`
     location: String
   }
 
-  type UpdateUserTagInput {
+  input UpdateUserTagInput {
     _id: ID!
     name: String!
   }
