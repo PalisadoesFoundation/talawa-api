@@ -1,0 +1,250 @@
+import "dotenv/config";
+import { Types } from "mongoose";
+import { MutationCreateUserTagArgs } from "../../../src/types/generatedGraphQLTypes";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
+import {
+  USER_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_TO_CREATE_TAG,
+  INCORRECT_TAG_INPUT,
+  ORGANIZATION_NOT_FOUND_ERROR,
+  TAG_NOT_FOUND,
+} from "../../../src/constants";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  afterEach,
+  vi,
+} from "vitest";
+import {
+  testOrganizationType,
+  testUserType,
+  createTestUser,
+} from "../../helpers/userAndOrg";
+import { OrganizationTagUser } from "../../../src/models";
+import { createRootTagWithOrg, testUserTagType } from "../../helpers/tags";
+
+let testUser: testUserType;
+let randomUser: testUserType;
+let testOrganization: testOrganizationType;
+let testTag: testUserTagType;
+let randomTestTag: testUserTagType;
+let MONGOOSE_INSTANCE: typeof mongoose | null;
+
+beforeAll(async () => {
+  MONGOOSE_INSTANCE = await connect();
+
+  [testUser, testOrganization, testTag] = await createRootTagWithOrg();
+  [, , randomTestTag] = await createRootTagWithOrg();
+  randomUser = await createTestUser();
+});
+
+afterAll(async () => {
+  await disconnect(MONGOOSE_INSTANCE!);
+});
+
+describe("resolvers -> Mutation -> createUserTag", () => {
+  afterEach(() => {
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+    vi.resetAllMocks();
+  });
+
+  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationCreateUserTagArgs = {
+        input: {
+          organizationId: Types.ObjectId().toString(),
+          name: "TestUserTag",
+        },
+      };
+
+      const context = {
+        userId: Types.ObjectId().toString(),
+      };
+
+      const { createUserTag: createUserTagResolver } = await import(
+        "../../../src/resolvers/Mutation/createUserTag"
+      );
+
+      await createUserTagResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
+    }
+  });
+
+  it(`throws NotFoundError if no organization exists with _id === args.input.organizationId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationCreateUserTagArgs = {
+        input: {
+          organizationId: Types.ObjectId().toString(),
+          name: "TestUserTag",
+        },
+      };
+
+      const context = {
+        userId: testUser!.id,
+      };
+
+      const { createUserTag: createUserTagResolver } = await import(
+        "../../../src/resolvers/Mutation/createUserTag"
+      );
+
+      await createUserTagResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
+      );
+    }
+  });
+
+  it(`throws TAG_NOT_FOUND error if the parent tag doesn't exist`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationCreateUserTagArgs = {
+        input: {
+          organizationId: testOrganization!._id,
+          name: "TestUserTag",
+          parentTagId: Types.ObjectId().toString(),
+        },
+      };
+
+      const context = {
+        userId: testUser!.id,
+      };
+
+      const { createUserTag: createUserTagResolver } = await import(
+        "../../../src/resolvers/Mutation/createUserTag"
+      );
+
+      await createUserTagResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toBeCalledWith(TAG_NOT_FOUND.MESSAGE);
+      expect(error.message).toEqual(`Translated ${TAG_NOT_FOUND.MESSAGE}`);
+    }
+  });
+
+  it(`throws INCORRECT_TAG_INPUT error if the parent tag doesn't belong to the provided organization`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationCreateUserTagArgs = {
+        input: {
+          organizationId: testOrganization!._id,
+          name: "TestUserTag",
+          parentTagId: randomTestTag!._id,
+        },
+      };
+
+      const context = {
+        userId: testUser!.id,
+      };
+
+      const { createUserTag: createUserTagResolver } = await import(
+        "../../../src/resolvers/Mutation/createUserTag"
+      );
+
+      await createUserTagResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toBeCalledWith(INCORRECT_TAG_INPUT.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${INCORRECT_TAG_INPUT.MESSAGE}`
+      );
+    }
+  });
+
+  it(`throws USER_NOT_AUTHORIZED_TO_CREATE_TAG error if the user is not authorized to create the tag`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationCreateUserTagArgs = {
+        input: {
+          organizationId: testOrganization!._id,
+          name: "TestUserTag",
+          parentTagId: testTag!._id,
+        },
+      };
+
+      const context = {
+        userId: randomUser!.id,
+      };
+
+      const { createUserTag: createUserTagResolver } = await import(
+        "../../../src/resolvers/Mutation/createUserTag"
+      );
+
+      await createUserTagResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_TO_CREATE_TAG.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_TO_CREATE_TAG.MESSAGE}`
+      );
+    }
+  });
+
+  it(`tag should be successfully added`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => `Translated ${message}`
+    );
+
+    const args: MutationCreateUserTagArgs = {
+      input: {
+        organizationId: testOrganization!._id,
+        name: "TestUserTag",
+        parentTagId: testTag!._id,
+      },
+    };
+
+    const context = {
+      userId: testUser!.id,
+    };
+
+    const { createUserTag: createUserTagResolver } = await import(
+      "../../../src/resolvers/Mutation/createUserTag"
+    );
+
+    const createdTag = await createUserTagResolver?.({}, args, context);
+
+    expect(createdTag).toEqual(
+      expect.objectContaining({
+        organizationId: testOrganization!._id,
+        name: "TestUserTag",
+        parentTagId: testTag!._id,
+      })
+    );
+
+    const createdTagExists = await OrganizationTagUser.exists({
+      _id: createdTag!._id,
+    });
+
+    expect(createdTagExists).toBeTruthy();
+  });
+});

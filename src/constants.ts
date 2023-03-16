@@ -178,8 +178,7 @@ export const INVALID_TAG_INPUT = {
 };
 
 export const INCORRECT_TAG_INPUT = {
-  MESSAGE:
-    "The tag does not belong to the organization provided. Try sending only one correct PARAMeter.",
+  MESSAGE: "The tag does not belong to the organization provided.",
   CODE: "invalidArgs.tag",
   PARAM: "invalidArgs.tag",
 };
