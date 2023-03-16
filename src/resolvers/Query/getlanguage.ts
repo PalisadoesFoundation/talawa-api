@@ -1,6 +1,11 @@
 import { QueryResolvers, Translation } from "../../types/generatedGraphQLTypes";
 import { Language } from "../../models";
-
+/**
+ * This query fetch a language for specified `lang_code` from the database.
+ * @param _parent
+ * @param args - An object that contains `lang_code`.
+ * @returns An object `filteredLanguages`.
+ */
 export const getlanguage: QueryResolvers["getlanguage"] = async (
   _parent,
   args
