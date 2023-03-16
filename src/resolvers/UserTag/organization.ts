@@ -5,7 +5,6 @@ export const organization: UserTagResolvers["organization"] = async (
   parent
 ) => {
   return await Organization.findOne({
-    // @ts-ignore
     _id: parent.organizationId,
   }).lean();
 };

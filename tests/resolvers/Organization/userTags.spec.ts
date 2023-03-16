@@ -97,17 +97,17 @@ describe("resolvers -> Organization -> orgTags", () => {
     expect(payload!.pageInfo.hasNextPage).toEqual(true);
     expect(payload!.pageInfo.hasPreviousPage).toEqual(false);
     expect(payload!.pageInfo.startCursor).toEqual(testTagIds[0]);
-    expect(payload!.pageInfo.endCursor).toEqual(testTagIds[2]);
+    expect(payload!.pageInfo.endCursor).toEqual(testTagIds[1]);
 
     // Testing the edges object
-    expect(payload!.edges!.length).toEqual(3);
+    expect(payload!.edges!.length).toEqual(2);
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.node)).toEqual(
-      orgTags.slice(0, 3)
+      orgTags.slice(0, 2)
     );
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.cursor)).toEqual(
-      testTagIds.slice(0, 3)
+      testTagIds.slice(0, 2)
     );
   });
 

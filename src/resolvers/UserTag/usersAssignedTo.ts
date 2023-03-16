@@ -23,14 +23,14 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
 
     hasPreviousPage = await TagUser.exists({
       userId: {
-        $lt: args.after,
+        $lte: args.after,
       },
       tagId: parent._id,
     });
   } else if (args.before) {
     allusersAssignedTo = await TagUser.find({
       userId: {
-        $lte: args.before,
+        $lt: args.before,
       },
       tagId: parent._id,
     })
@@ -40,7 +40,7 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
 
     hasNextPage = await TagUser.exists({
       userId: {
-        $gt: args.before,
+        $gte: args.before,
       },
       tagId: parent!._id,
     });

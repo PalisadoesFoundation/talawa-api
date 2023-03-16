@@ -26,14 +26,14 @@ export const childTags: UserTagResolvers["childTags"] = async (
 
     hasPreviousPage = await OrganizationTagUser.exists({
       _id: {
-        $lt: args.after,
+        $lte: args.after,
       },
       parentTagId: parent._id,
     });
   } else if (args.before) {
     allChildTags = await OrganizationTagUser.find({
       _id: {
-        $lte: args.before,
+        $lt: args.before,
       },
       parentTagId: parent._id,
     })
@@ -42,7 +42,7 @@ export const childTags: UserTagResolvers["childTags"] = async (
 
     hasNextPage = await OrganizationTagUser.exists({
       _id: {
-        $gt: args.before,
+        $gte: args.before,
       },
       parentTagId: parent._id,
     });

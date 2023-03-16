@@ -58,7 +58,7 @@ describe("resolvers -> Tag -> childTags", () => {
 
     // Testing the pageInfo object
     expect(payload!.pageInfo.hasNextPage).toEqual(false);
-    expect(payload!.pageInfo.hasPreviousPage).toEqual(false);
+    expect(payload!.pageInfo.hasPreviousPage).toEqual(true);
     expect(payload!.pageInfo.startCursor).toEqual(testChildTag2!._id);
     expect(payload!.pageInfo.endCursor).toEqual(testChildTag2!._id);
 
@@ -80,19 +80,18 @@ describe("resolvers -> Tag -> childTags", () => {
     const payload = await childTagsResolver?.(parent, args, {});
 
     // Testing the pageInfo object
-    expect(payload!.pageInfo.hasNextPage).toEqual(false);
+    expect(payload!.pageInfo.hasNextPage).toEqual(true);
     expect(payload!.pageInfo.hasPreviousPage).toEqual(false);
     expect(payload!.pageInfo.startCursor).toEqual(testChildTag1!._id);
-    expect(payload!.pageInfo.endCursor).toEqual(testChildTag2!._id);
+    expect(payload!.pageInfo.endCursor).toEqual(testChildTag1!._id);
 
     // Testing the edges object
-    expect(payload!.edges!.length).toEqual(2);
+    expect(payload!.edges!.length).toEqual(1);
     // @ts-ignore
-    expect(payload!.edges!.map((edge) => edge!.node)).toEqual(childTags);
+    expect(payload!.edges!.map((edge) => edge!.node)).toEqual([childTags[0]]);
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.cursor)).toEqual([
       testChildTag1!._id,
-      testChildTag2!._id,
     ]);
   });
 

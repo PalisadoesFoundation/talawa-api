@@ -33,7 +33,7 @@ export const tagsAssignedWith: UserResolvers["tagsAssignedWith"] = async (
   } else if (args.before) {
     allTagUsers = await TagUser.find({
       tagId: {
-        $lte: args.before,
+        $lt: args.before,
       },
       userId: parent._id,
     })
@@ -43,7 +43,7 @@ export const tagsAssignedWith: UserResolvers["tagsAssignedWith"] = async (
 
     hasNextPage = await TagUser.exists({
       tagId: {
-        $gt: args.before,
+        $gte: args.before,
       },
       userId: parent._id,
     });

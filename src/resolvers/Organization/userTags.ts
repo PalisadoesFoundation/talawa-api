@@ -40,7 +40,7 @@ export const userTags: OrganizationResolvers["userTags"] = async (
   } else if (args.before) {
     allTags = await OrganizationTagUser.find({
       _id: {
-        $lte: args.before,
+        $lt: args.before,
       },
       organizationId: parent._id,
       parentTagId: null,
@@ -52,7 +52,7 @@ export const userTags: OrganizationResolvers["userTags"] = async (
 
     hasNextPage = await OrganizationTagUser.exists({
       _id: {
-        $gt: args.before,
+        $gte: args.before,
       },
       organizationId: parent._id,
       parentTagId: null,
