@@ -348,11 +348,11 @@ export const types = gql`
     adminApproved: Boolean
     createdAt: DateTime
     tagsAssignedWith(
-      organizationId: ID
       after: String
       before: String
       first: PositiveInt
       last: PositiveInt
+      organizationId: ID
     ): UserTagsConnection
   }
 
