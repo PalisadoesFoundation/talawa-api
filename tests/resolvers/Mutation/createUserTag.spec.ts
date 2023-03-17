@@ -9,6 +9,7 @@ import {
   INCORRECT_TAG_INPUT,
   ORGANIZATION_NOT_FOUND_ERROR,
   TAG_NOT_FOUND,
+  TAG_ALREADY_EXISTS,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -25,13 +26,13 @@ import {
   createTestUser,
 } from "../../helpers/userAndOrg";
 import { OrganizationTagUser } from "../../../src/models";
-import { createRootTagWithOrg, testUserTagType } from "../../helpers/tags";
+import { createRootTagWithOrg, TestUserTagType } from "../../helpers/tags";
 
 let testUser: testUserType;
 let randomUser: testUserType;
 let testOrganization: testOrganizationType;
-let testTag: testUserTagType;
-let randomTestTag: testUserTagType;
+let testTag: TestUserTagType;
+let randomTestTag: TestUserTagType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
@@ -156,7 +157,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
         input: {
           organizationId: testOrganization!._id,
           name: "TestUserTag",
-          parentTagId: randomTestTag!._id,
+          parentTagId: randomTestTag!._id.toString(),
         },
       };
 
@@ -188,7 +189,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
         input: {
           organizationId: testOrganization!._id,
           name: "TestUserTag",
-          parentTagId: testTag!._id,
+          parentTagId: testTag!._id.toString(),
         },
       };
 
@@ -209,6 +210,36 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     }
   });
 
+  it(`throws TAG_ALREADY_EXISTS error if the tag with the same name and same parent already exists`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationCreateUserTagArgs = {
+        input: {
+          organizationId: testOrganization!._id,
+          name: testTag!.name,
+          parentTagId: testTag!.parentTagId,
+        },
+      };
+
+      const context = {
+        userId: testUser!.id,
+      };
+
+      const { createUserTag: createUserTagResolver } = await import(
+        "../../../src/resolvers/Mutation/createUserTag"
+      );
+
+      await createUserTagResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toBeCalledWith(TAG_ALREADY_EXISTS.MESSAGE);
+      expect(error.message).toEqual(`Translated ${TAG_ALREADY_EXISTS.MESSAGE}`);
+    }
+  });
+
   it(`tag should be successfully added`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
@@ -219,7 +250,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
       input: {
         organizationId: testOrganization!._id,
         name: "TestUserTag",
-        parentTagId: testTag!._id,
+        parentTagId: testTag!._id.toString(),
       },
     };
 

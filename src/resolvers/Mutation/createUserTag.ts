@@ -7,6 +7,7 @@ import {
   INCORRECT_TAG_INPUT,
   ORGANIZATION_NOT_FOUND_ERROR,
   TAG_NOT_FOUND,
+  TAG_ALREADY_EXISTS,
 } from "../../constants";
 
 export const createUserTag: MutationResolvers["createUserTag"] = async (
@@ -69,7 +70,7 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
     }
   }
 
-  // Check if the user has privileges to pin the post
+  // Check if the user has privileges to create the tag
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
     (organizationId) =>
       organizationId.toString() === args.input.organizationId.toString()
@@ -83,6 +84,19 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
       requestContext.translate(USER_NOT_AUTHORIZED_TO_CREATE_TAG.MESSAGE),
       USER_NOT_AUTHORIZED_TO_CREATE_TAG.CODE,
       USER_NOT_AUTHORIZED_TO_CREATE_TAG.PARAM
+    );
+  }
+
+  // Check if another tag with the same name exists under the same parent tag
+  const anotherTagExists = await OrganizationTagUser.exists({
+    ...args.input,
+  });
+
+  if (anotherTagExists) {
+    throw new errors.ConflictError(
+      requestContext.translate(TAG_ALREADY_EXISTS.MESSAGE),
+      TAG_ALREADY_EXISTS.CODE,
+      TAG_ALREADY_EXISTS.PARAM
     );
   }
 
