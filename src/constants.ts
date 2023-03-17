@@ -170,6 +170,13 @@ export const TAG_NOT_FOUND = {
   PARAM: "tag.doesNotExist",
 };
 
+export const USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION = {
+  MESSAGE:
+    "The user to which the tag is being assigned hasn't joined the tag's parent organization.",
+  CODE: "user.notJoinedOrg",
+  PARAM: "user.notJoinedOrg",
+};
+
 export const INVALID_TAG_INPUT = {
   MESSAGE:
     "Either an organizatin ID or a parent tag ID must be provided for this operation.",
