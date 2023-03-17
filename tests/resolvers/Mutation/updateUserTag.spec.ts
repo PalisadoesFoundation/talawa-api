@@ -1,0 +1,164 @@
+import "dotenv/config";
+import { Types } from "mongoose";
+import { MutationUpdateUserTagArgs } from "../../../src/types/generatedGraphQLTypes";
+import { connect, disconnect } from "../../helpers/db";
+import mongoose from "mongoose";
+import {
+  USER_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  TAG_NOT_FOUND,
+} from "../../../src/constants";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  vi,
+  afterEach,
+} from "vitest";
+import { createTestUser, testUserType } from "../../helpers/userAndOrg";
+import { testUserTagType, createRootTagWithOrg } from "../../helpers/tags";
+import { OrganizationTagUser } from "../../../src/models";
+
+let MONGOOSE_INSTANCE: typeof mongoose | null;
+
+let testUser: testUserType;
+let testTag: testUserTagType;
+let randomUser: testUserType;
+
+beforeAll(async () => {
+  MONGOOSE_INSTANCE = await connect();
+  [testUser, , testTag] = await createRootTagWithOrg();
+  randomUser = await createTestUser();
+});
+
+afterAll(async () => {
+  await disconnect(MONGOOSE_INSTANCE!);
+});
+
+describe("resolvers -> Mutation -> updateUserTag", () => {
+  afterEach(() => {
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+    vi.resetAllMocks();
+  });
+
+  it(`throws NotFoundError if no user exists with _id === context.userId `, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationUpdateUserTagArgs = {
+        input: {
+          _id: testTag!._id,
+          name: "NewName",
+        },
+      };
+
+      const context = { userId: Types.ObjectId().toString() };
+
+      const { updateUserTag: updateUserTagResolver } = await import(
+        "../../../src/resolvers/Mutation/updateUserTag"
+      );
+
+      await updateUserTagResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+      );
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
+
+  it(`throws NotFoundError if no tag exists with _id === args.input._id `, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationUpdateUserTagArgs = {
+        input: {
+          _id: Types.ObjectId().toString(),
+          name: "NewName",
+        },
+      };
+
+      const context = {
+        userId: testUser!._id,
+      };
+
+      const { updateUserTag: updateUserTagResolver } = await import(
+        "../../../src/resolvers/Mutation/updateUserTag"
+      );
+
+      await updateUserTagResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenLastCalledWith(TAG_NOT_FOUND.MESSAGE);
+      expect(error.message).toEqual(`Translated ${TAG_NOT_FOUND.MESSAGE}`);
+    }
+  });
+
+  it(`throws Not Authorized Error if the user is not a superadmin or admin of the organization of the tag beind updated`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationUpdateUserTagArgs = {
+        input: {
+          _id: testTag!._id,
+          name: "NewName",
+        },
+      };
+
+      const context = {
+        userId: randomUser!._id,
+      };
+
+      const { updateUserTag: updateUserTagResolver } = await import(
+        "../../../src/resolvers/Mutation/updateUserTag"
+      );
+
+      await updateUserTagResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
+      expect(spy).toHaveBeenLastCalledWith(
+        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
+    }
+  });
+
+  it(`updates the task with _id === args.id and returns it`, async () => {
+    const args: MutationUpdateUserTagArgs = {
+      input: {
+        _id: testTag!._id,
+        name: "NewName",
+      },
+    };
+    const context = {
+      userId: testUser!._id,
+    };
+
+    const { updateUserTag: updateUserTagResolver } = await import(
+      "../../../src/resolvers/Mutation/updateUserTag"
+    );
+
+    await updateUserTagResolver?.({}, args, context);
+
+    const updatedTag = await OrganizationTagUser.findOne({
+      _id: testTag!._id,
+    }).lean();
+
+    expect(updatedTag!.name).toEqual("NewName");
+  });
+});
