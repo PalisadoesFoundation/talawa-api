@@ -26,7 +26,7 @@ export const createAccessToken = async (user: Interface_User) => {
     },
     ACCESS_TOKEN_SECRET!,
     {
-      expiresIn: "15m",
+      expiresIn: "40m",
     }
   );
 };
