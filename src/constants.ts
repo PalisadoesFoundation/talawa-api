@@ -184,6 +184,20 @@ export const INCORRECT_TAG_INPUT = {
   PARAM: "invalidArgs.tag",
 };
 
+export const NO_CHANGE_IN_TAG_NAME = {
+  MESSAGE:
+    "The tag name is the already set to the value it is being requested to be changed to.",
+  CODE: "invalidArgs.tagName",
+  PARAM: "invalidArgs.tagName",
+};
+
+export const TAG_ALREADY_EXISTS = {
+  MESSAGE:
+    "A tag with the same name and the same parent tag already exists for this organization.",
+  CODE: "tag.alreadyExists",
+  PARAM: "tag.alreadyExists",
+};
+
 export const USER_NOT_AUTHORIZED_TO_CREATE_TAG = {
   MESSAGE:
     "The user must be a superadmin or an admin of the organization to create the tag.",

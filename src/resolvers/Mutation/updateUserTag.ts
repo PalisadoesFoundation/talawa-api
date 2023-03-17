@@ -5,6 +5,8 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   TAG_NOT_FOUND,
+  NO_CHANGE_IN_TAG_NAME,
+  TAG_ALREADY_EXISTS,
 } from "../../constants";
 
 export const updateUserTag: MutationResolvers["updateUserTag"] = async (
@@ -38,6 +40,29 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
     );
   }
 
+  // Throw error if the new tag name is the same as the old one
+  if (tag.name === args.input.name) {
+    throw new errors.ConflictError(
+      requestContext.translate(NO_CHANGE_IN_TAG_NAME.MESSAGE),
+      NO_CHANGE_IN_TAG_NAME.CODE,
+      NO_CHANGE_IN_TAG_NAME.PARAM
+    );
+  }
+
+  // Check if another tag with the new name exists under the same parent tag
+  const anotherTagExists = await OrganizationTagUser.exists({
+    name: args.input.name,
+    parentTagId: tag!.parentTagId,
+  });
+
+  if (anotherTagExists) {
+    throw new errors.ConflictError(
+      requestContext.translate(TAG_ALREADY_EXISTS.MESSAGE),
+      TAG_ALREADY_EXISTS.CODE,
+      TAG_ALREADY_EXISTS.PARAM
+    );
+  }
+
   // Boolean to determine whether user is an admin of organization of the tag folder.
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
     (organization) => organization.toString() === tag!.organizationId.toString()
@@ -55,15 +80,13 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
     );
   }
 
-  // Update the title of the tag folder
-  const updatedTag = await OrganizationTagUser.findOneAndUpdate(
+  // Update the title of the tag and return it
+  return await OrganizationTagUser.findOneAndUpdate(
     {
       _id: args.input._id,
     },
     {
       name: args.input.name,
     }
-  );
-
-  return updatedTag!;
+  ).lean();
 };
