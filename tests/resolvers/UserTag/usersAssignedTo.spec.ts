@@ -6,7 +6,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
   createAndAssignUsersToTag,
   createRootTagWithOrg,
-  testUserTagType,
+  TestUserTagType,
 } from "../../helpers/tags";
 import { TagUser, Interface_TagUser } from "../../../src/models";
 import { testUserType } from "../../helpers/userAndOrg";
@@ -17,8 +17,8 @@ let usersAssignedTo: any;
 let userIds: string[];
 
 let testUsers: testUserType[];
-let testTag: testUserTagType;
-let randomTag: testUserTagType;
+let testTag: TestUserTagType;
+let randomTag: TestUserTagType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -47,7 +47,7 @@ afterAll(async () => {
 
 describe("resolvers -> UserTag -> usersAssignedTo", () => {
   it(`returns all the users if no args are provided`, async () => {
-    const parent = testTag!.toObject();
+    const parent = testTag!;
     const args = {};
 
     const payload = await usersAssignedToResolver?.(parent, args, {});
@@ -67,7 +67,7 @@ describe("resolvers -> UserTag -> usersAssignedTo", () => {
   });
 
   it(`returns the correct users when after argument is provided`, async () => {
-    const parent = testTag!.toObject();
+    const parent = testTag!;
     const args = {
       after: userIds[2],
     };
@@ -93,7 +93,7 @@ describe("resolvers -> UserTag -> usersAssignedTo", () => {
   });
 
   it(`returns the correct users when before argument is provided`, async () => {
-    const parent = testTag!.toObject();
+    const parent = testTag!;
     const args = {
       before: userIds[2],
     };
@@ -119,7 +119,7 @@ describe("resolvers -> UserTag -> usersAssignedTo", () => {
   });
 
   it(`returns the correct users when both before and after argument are provided`, async () => {
-    const parent = testTag!.toObject();
+    const parent = testTag!;
     const args = {
       after: userIds[1],
       before: userIds[4],
@@ -146,7 +146,7 @@ describe("resolvers -> UserTag -> usersAssignedTo", () => {
   });
 
   it(`returns the correct users when first argument is provided`, async () => {
-    const parent = testTag!.toObject();
+    const parent = testTag!;
     const args = {
       first: 3,
     };
@@ -172,7 +172,7 @@ describe("resolvers -> UserTag -> usersAssignedTo", () => {
   });
 
   it(`returns the correct users when last argument is provided`, async () => {
-    const parent = testTag!.toObject();
+    const parent = testTag!;
     const args = {
       last: 3,
     };
@@ -198,7 +198,7 @@ describe("resolvers -> UserTag -> usersAssignedTo", () => {
   });
 
   it(`returns the correct response when no edges exist`, async () => {
-    const parent = randomTag!.toObject();
+    const parent = randomTag!;
     const args = {};
 
     const payload = await usersAssignedToResolver?.(parent, args, {});
