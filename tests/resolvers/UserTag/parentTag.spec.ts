@@ -3,11 +3,11 @@ import { parentTag as parentTagResolver } from "../../../src/resolvers/UserTag/p
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTwoLevelTagsWithOrg, testUserTagType } from "../../helpers/tags";
+import { createTwoLevelTagsWithOrg, TestUserTagType } from "../../helpers/tags";
 import { OrganizationTagUser } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testChildTag: testUserTagType, testParentTag: testUserTagType;
+let testChildTag: TestUserTagType, testParentTag: TestUserTagType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

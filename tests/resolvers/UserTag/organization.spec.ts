@@ -3,12 +3,12 @@ import { organization as organizationResolver } from "../../../src/resolvers/Use
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createRootTagWithOrg, testUserTagType } from "../../helpers/tags";
+import { createRootTagWithOrg, TestUserTagType } from "../../helpers/tags";
 import { testOrganizationType } from "../../helpers/userAndOrg";
 import { Organization } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testTag: testUserTagType, testOrg: testOrganizationType;
+let testTag: TestUserTagType, testOrg: testOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
