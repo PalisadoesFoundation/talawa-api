@@ -34,7 +34,7 @@ export const toggleUserTagAssign: MutationResolvers["toggleUserTagAssign"] =
 
     if (!tag) {
       throw new errors.NotFoundError(
-        TAG_NOT_FOUND.MESSAGE,
+        requestContext.translate(TAG_NOT_FOUND.MESSAGE),
         TAG_NOT_FOUND.CODE,
         TAG_NOT_FOUND.PARAM
       );
@@ -81,11 +81,11 @@ export const toggleUserTagAssign: MutationResolvers["toggleUserTagAssign"] =
     });
 
     if (userAlreadyHasTag) {
-      await OrganizationTagUser.findOneAndDelete({
+      await TagUser.deleteOne({
         ...args.input,
       });
     } else {
-      await OrganizationTagUser.findOneAndDelete({
+      await TagUser.create({
         ...args.input,
       });
     }
