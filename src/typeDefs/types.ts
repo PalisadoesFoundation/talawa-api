@@ -348,7 +348,7 @@ export const types = gql`
     adminApproved: Boolean
     createdAt: DateTime
     tagsAssignedWith(
-      organizationId: ID!
+      organizationId: ID
       after: String
       before: String
       first: PositiveInt

@@ -4,7 +4,6 @@ import {
   TagUser,
 } from "../../src/models";
 import { nanoid } from "nanoid";
-import { Document } from "mongoose";
 import {
   createTestUserAndOrganization,
   testUserType,
@@ -12,10 +11,7 @@ import {
   createTestUser,
 } from "./userAndOrg";
 
-export type testUserTagType =
-  | (Interface_OrganizationTagUser &
-      Document<any, any, Interface_OrganizationTagUser>)
-  | null;
+export type testUserTagType = Interface_OrganizationTagUser | null;
 
 export const createRootTagWithOrg = async (): Promise<
   [testUserType, testOrganizationType, testUserTagType]
@@ -28,7 +24,7 @@ export const createRootTagWithOrg = async (): Promise<
     organizationId: testOrganization!._id,
   });
 
-  return [testUser, testOrganization, testTag];
+  return [testUser, testOrganization, testTag!.toObject()];
 };
 
 export const createRootTagsWithOrg = async (
@@ -43,7 +39,7 @@ export const createRootTagsWithOrg = async (
       parentTagId: null,
       organizationId: testOrganization!._id,
     });
-    tags.push(testTag);
+    tags.push(testTag.toObject());
   }
 
   return [testUser, testOrganization, tags];
@@ -68,7 +64,11 @@ export const createTwoLevelTagsWithOrg = async (): Promise<
     organizationId: testOrg!._id,
   });
 
-  return [testUser, testOrg, [testRootTag, testTag1, testTag2]];
+  return [
+    testUser,
+    testOrg,
+    [testRootTag, testTag1.toObject(), testTag2.toObject()],
+  ];
 };
 
 export const createAndAssignUsersToTag = async (
@@ -105,7 +105,7 @@ export const createTagsAndAssignToUser = async (
       organizationId: testOrg!._id,
       name: `TagTitle${nanoid()}`,
     });
-    tags.push(newTag);
+    tags.push(newTag.toObject());
 
     await TagUser.create({
       tagId: newTag!._id,

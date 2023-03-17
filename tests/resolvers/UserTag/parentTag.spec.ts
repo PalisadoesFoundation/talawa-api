@@ -20,7 +20,7 @@ afterAll(async () => {
 
 describe("resolvers -> Tag -> parentTag", () => {
   it(`returns the correct parentTag object`, async () => {
-    const parent = testChildTag!.toObject();
+    const parent = testChildTag!;
 
     const payload = await parentTagResolver?.(parent, {}, {});
 
@@ -32,7 +32,7 @@ describe("resolvers -> Tag -> parentTag", () => {
   });
 
   it(`returns null as parentTag for root objects`, async () => {
-    const parent = testParentTag!.toObject();
+    const parent = testParentTag!;
 
     const payload = await parentTagResolver?.(parent, {}, {});
 
