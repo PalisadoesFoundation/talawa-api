@@ -29,7 +29,7 @@ export const users: QueryResolvers["users"] = async (
 
   if (!queryUser) {
     throw new errors.UnauthenticatedError(
-      UNAUTHENTICATED_ERROR.MESSAGE,
+      requestContext.translate(UNAUTHENTICATED_ERROR.MESSAGE),
       UNAUTHENTICATED_ERROR.CODE,
       UNAUTHENTICATED_ERROR.PARAM
     );
