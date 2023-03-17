@@ -6,10 +6,13 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
   args
 ) => {
   const allusersAssignedTo: Interface_TagUser[] = await TagUser.find({
-    userId: {
-      $gt: args.after ? args.after : "0".repeat(24),
-      $lt: args.before ? args.before : "f".repeat(24),
-    },
+    // Conditional check to see if either after or before is recieved
+    ...((args.after || args.before) && {
+      userId: {
+        ...(args.after && { $gt: args.after }),
+        ...(args.before && { $lt: args.before }),
+      },
+    }),
     tagId: parent._id,
   })
     .sort({ userId: 1 })
