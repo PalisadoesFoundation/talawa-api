@@ -49,7 +49,7 @@ export const updateOrganization: MutationResolvers["updateOrganization"] =
       {
         $set: {
           ...args.data,
-          image: uploadImageFileName || undefined,
+          image: uploadImageFileName || organization.image,
         },
       },
       {

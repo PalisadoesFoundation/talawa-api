@@ -722,7 +722,7 @@ describe("resolvers -> Query -> posts", () => {
       .lean();
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
       ...post,
-      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : null,
     }));
     expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });

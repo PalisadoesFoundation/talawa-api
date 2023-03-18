@@ -171,6 +171,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       return {
         ...user,
         password: null,
+        image: user.image || null,
         id: String(user._id),
       };
     });
@@ -246,6 +247,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       return {
         ...user,
         password: null,
+        image: user.image || null,
         id: String(user._id),
       };
     });
@@ -320,6 +322,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       return {
         ...user,
         password: null,
+        image: user.image || null,
         id: String(user._id),
       };
     });
@@ -397,6 +400,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       return {
         ...user,
         password: null,
+        image: user.image || null,
         id: String(user._id),
       };
     });
@@ -474,6 +478,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       return {
         ...user,
         password: null,
+        image: user.image || null,
         id: String(user._id),
       };
     });
@@ -539,6 +544,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       return {
         ...user,
         password: null,
+        image: user.image || null,
         id: String(user._id),
       };
     });
@@ -593,6 +599,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       return {
         ...user,
         password: null,
+        image: user.image || null,
         id: String(user._id),
       };
     });
@@ -647,6 +654,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       return {
         ...user,
         password: null,
+        image: user.image || null,
         id: String(user._id),
       };
     });
@@ -701,6 +709,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       return {
         ...user,
         password: null,
+        image: user.image || null,
         id: String(user._id),
       };
     });
@@ -755,6 +764,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       return {
         ...user,
         password: null,
+        image: user.image || null,
         id: String(user._id),
       };
     });
@@ -837,6 +847,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       return {
         ...user._doc,
         password: null,
+        image: null,
       };
     });
 
@@ -1003,15 +1014,4 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       },
     });
   });
-
-  // await User.updateMany(
-  //   {
-
-  //   } ,
-  //   {
-  //     $set:{
-  //       image:`image/image.png`
-  //     }
-  //   }
-  // )
 });

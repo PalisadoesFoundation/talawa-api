@@ -39,7 +39,7 @@ export const users: QueryResolvers["users"] = async (_parent, args) => {
     return users.map((user) => {
       return {
         ...user,
-        image: user.image ? `${BASE_URL}${user.image}` : undefined,
+        image: user.image ? `${BASE_URL}${user.image}` : null,
         organizationsBlockedBy: [],
       };
     });

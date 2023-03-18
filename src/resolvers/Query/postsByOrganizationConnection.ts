@@ -58,7 +58,7 @@ export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationC
     const posts = postsmodel.docs.map((post) => {
       post.likeCount = post.likedBy.length || 0;
       post.commentCount = post.comments.length || 0;
-      post.imageUrl = post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined;
+      post.imageUrl = post.imageUrl ? `${BASE_URL}${post.imageUrl}` : null;
 
       return post;
     });

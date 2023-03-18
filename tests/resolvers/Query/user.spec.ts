@@ -57,6 +57,7 @@ describe("resolvers -> Query -> user", () => {
     expect(userPayload).toEqual({
       ...user,
       organizationsBlockedBy: [],
+      image: null,
     });
   });
   it(`returns user object with image`, async () => {
@@ -90,7 +91,7 @@ describe("resolvers -> Query -> user", () => {
     expect(userPayload).toEqual({
       ...user,
       organizationsBlockedBy: [],
-      image: `${BASE_URL}${user?.image}`,
+      image: user?.image ? `${BASE_URL}${user.image}` : null,
     });
   });
 });

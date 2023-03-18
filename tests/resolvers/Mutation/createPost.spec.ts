@@ -228,7 +228,7 @@ describe("resolvers -> Mutation -> createPost", () => {
         videoUrl: "videoUrl",
         creator: testUser!._id,
         organization: testOrganization!._id,
-        imageUrl: undefined,
+        imageUrl: null,
       })
     );
   });
@@ -246,6 +246,7 @@ describe("resolvers -> Mutation -> createPost", () => {
 
     const context = {
       userId: testUser!.id,
+      apiRootUrl: BASE_URL,
     };
 
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
@@ -264,7 +265,7 @@ describe("resolvers -> Mutation -> createPost", () => {
         videoUrl: "videoUrl",
         creator: testUser!._id,
         organization: testOrganization!._id,
-        imageUrl: `${BASE_URL}${testImagePath}`,
+        imageUrl: `${context.apiRootUrl}${testImagePath}`,
       })
     );
   });

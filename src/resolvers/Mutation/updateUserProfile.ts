@@ -1,5 +1,4 @@
 import {
-  BASE_URL,
   EMAIL_ALREADY_EXISTS_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
@@ -72,7 +71,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
         lastName: args.data?.lastName
           ? args.data.lastName
           : currentUser?.lastName,
-        image: args.file ? uploadImageFileName : null,
+        image: args.file ? uploadImageFileName : currentUser.image,
       },
     },
     {
@@ -80,8 +79,8 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
     }
   ).lean();
   updatedUser!.image = updatedUser?.image
-    ? `${BASE_URL}${updatedUser?.image}`
-    : undefined;
+    ? `${context.apiRootUrl}${updatedUser?.image}`
+    : null;
 
   return updatedUser!;
 };

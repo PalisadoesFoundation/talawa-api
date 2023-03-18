@@ -179,7 +179,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
-        image: user.image ? `${BASE_URL}${user.image}` : undefined,
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -239,7 +239,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
-        image: user.image ? `${BASE_URL}${user.image}` : undefined,
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -299,7 +299,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
-        image: user.image ? `${BASE_URL}${user.image}` : undefined,
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -359,7 +359,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
-        image: user.image ? `${BASE_URL}${user.image}` : undefined,
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -419,7 +419,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
-        image: user.image ? `${BASE_URL}${user.image}` : undefined,
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -467,7 +467,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
-        image: user.image ? `${BASE_URL}${user.image}` : undefined,
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -502,7 +502,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
-        image: user.image ? `${BASE_URL}${user.image}` : undefined,
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -537,7 +537,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
-        image: user.image ? `${BASE_URL}${user.image}` : undefined,
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -572,7 +572,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
-        image: user.image ? `${BASE_URL}${user.image}` : undefined,
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -607,7 +607,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
-        image: user.image ? `${BASE_URL}${user.image}` : undefined,
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -651,7 +651,7 @@ describe("resolvers -> Query -> users", () => {
     users = users.map((user) => ({
       ...user,
       organizationsBlockedBy: [],
-      image: user.image ? `${BASE_URL}${user.image}` : undefined,
+      image: user.image ? `${BASE_URL}${user.image}` : null,
     }));
 
     expect(usersPayload).toEqual(users);

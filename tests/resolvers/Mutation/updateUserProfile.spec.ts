@@ -201,6 +201,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       email: args.data?.email,
       firstName: "firstName",
       lastName: "lastName",
+      image: null,
     });
   });
 
@@ -228,6 +229,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       email: testUserobj?.email,
       firstName: args.data?.firstName,
       lastName: testUser.lastName,
+      image: null,
     });
   });
 
@@ -255,6 +257,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       email: testUserobj?.email,
       firstName: testUserobj?.firstName,
       lastName: args.data?.lastName,
+      image: null,
     });
   });
 
@@ -282,6 +285,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       email: args.data?.email,
       firstName: "newFirstName",
       lastName: "newLastName",
+      image: null,
     });
   });
 
@@ -301,6 +305,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
 
     const context = {
       userId: testUser._id,
+      apiRootUrl: BASE_URL,
     };
 
     const updateUserProfilePayload = await updateUserProfileResolver?.(
@@ -329,6 +334,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
 
     const context = {
       userId: testUser._id,
+      apiRootUrl: BASE_URL,
     };
 
     const updateUserProfilePayload = await updateUserProfileResolver?.(
