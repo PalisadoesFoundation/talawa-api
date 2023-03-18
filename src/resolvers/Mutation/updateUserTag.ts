@@ -71,6 +71,7 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
   const anotherTagExists = await OrganizationTagUser.exists({
     name: args.input.name,
     parentTagId: existingTag!.parentTagId,
+    organizationId: existingTag!.organizationId,
   });
 
   if (anotherTagExists) {

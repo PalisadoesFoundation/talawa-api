@@ -140,7 +140,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     }
   });
 
-  it(`throws error if current name of the tag and the new name is the same`, async () => {
+  it(`throws error if current name of the tag and the new name provided is the same`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
@@ -172,7 +172,7 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     }
   });
 
-  it(`throws error if another tag with the same new name already exists in the organization`, async () => {
+  it(`throws error if another tag with the same new name already exists in the same organization and the same parent tag`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
