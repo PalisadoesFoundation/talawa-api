@@ -10,7 +10,18 @@ import {
   ADMIN_REMOVING_ADMIN,
   ADMIN_REMOVING_CREATOR,
 } from "../../constants";
-
+/**
+ * This function enables to remove a member.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the organization exists
+ * 2. If the user to be removed exists.
+ * 3. If the user is the admin of the organization.
+ * 4. If the user to be removed is a member of the organization.
+ * @returns Organization.
+ */
 export const removeMember: MutationResolvers["removeMember"] = async (
   _parent,
   args,

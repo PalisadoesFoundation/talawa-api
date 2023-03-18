@@ -2,7 +2,13 @@ import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 import { errors } from "../../libraries";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
-
+/**
+ * This query fetch the current user from the database.
+ * @param _parent
+ * @param _args
+ * @param context - An object that contains `userId`.
+ * @returns An object `currentUser` for the current user. If the user not found then it throws a `NotFoundError` error.
+ */
 // Resolver function for field 'me' of type 'Query'
 export const me: QueryResolvers["me"] = async (_parent, _args, context) => {
   const currentUser = await User.findOne({

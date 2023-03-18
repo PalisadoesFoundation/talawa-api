@@ -30,6 +30,7 @@ This document provides instructions on how to set up and start a running instanc
   - [Configuring Google ReCAPTCHA](#configuring-google-recaptcha)
     - [Setting up RECAPTCHA\_SECRET\_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
     - [Setting up .env MAIL\_USERNAME and MAIL\_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
+    - [Setting up .env SMTP Variables](#setting-up-env-smtp-variables)
   - [Configuring Google Firebase](#configuring-google-firebase)
     - [Generate Firebase Keys for the Talawa Notification Service](#generate-firebase-keys-for-the-talawa-notification-service)
     - [(Mobile Developers Only) Applying the Firebase Keys to the Talawa Mobile App](#mobile-developers-only-applying-the-firebase-keys-to-the-talawa-mobile-app)
@@ -261,22 +262,37 @@ The MAIL_USERNAME and MAIL_PASSWORD parameters are required to enable an app to 
 1. Under `Signing in to Google` section select `App Passwords`.
 1. Click on `Select app` section and choose `Other(Custom name)`, enter `talawa` as the custom name and press `Generate` button.
 1.  Copy the 16 character generated app password to the variable named `MAIL_PASSWORD` in `.env` file.
-1.  Copy you usual gmail address to the variable named `MAIL_USERNAME` in `.env` file.
+1.  Copy your usual gmail address to the variable named `MAIL_USERNAME` in `.env` file.
 
 For more info refer to this [Google Answer](https://support.google.com/accounts/answer/185833).
 
+### Setting up .env SMTP Variables
+
+For using SMTP server instead of Gmail, following steps need to be followed:
+
+1. Set the ```IS_SMTP``` variable to ```true``` for example ```IS_SMTP=true```
+1. Go to your your SMTP server, and note the following variables:
+```
+SMTP_HOST=your-smtp-server-hostname
+SMTP_PORT=your-smtp-server-port
+SMTP_USERNAME=your-smtp-username
+SMTP_PASSWORD=your-smtp-password
+SMTP_SSL_TLS=true-or-false
+```
+For example:
+```
+SMTP_HOST=smtp.hostgator.com
+SMTP_PORT=465
+SMTP_USERNAME=example@website.com
+SMTP_PASSWORD=
+SMTP_SSL_TLS=true
+```
+
+For more information on setting up a smtp server, here's a [useful article](https://sendgrid.com/blog/what-is-an-smtp-server/)
+
 ## Configuring Google Firebase
 
-We use firebase for mobile app notifications. To configure the notification service create a new firebase project and follow these steps:
-3.  Under `Signing in to Google` section select `App Passwords`.
-
-4.  Click on `Select app` section and choose `Other(Custom name)`, enter `talawa` as the custom name and press `Generate` button.
-
-5.  Copy the 16 character generated app password to the variable named `MAIL_PASSWORD` in `.env` file.
-
-6.  Copy you usual gmail address to the variable named `MAIL_USERNAME` in `.env` file.
-
-For more info refer to [this](https://support.google.com/accounts/answer/185833).
+You need to have a `google` account to follow the following steps.
 
 <br/>
 
@@ -320,7 +336,7 @@ The key generated in the previous step is in a format suitable for use in a mobi
 
 1.  Run any commands about exporting variables from the previous `dart` command.
 1.  Run the following command to configure the application for Firebase
-    flutterfire configure
+    `flutterfire configure`
 1.  Select the project you created in the firebase console.
 1.  Add `iOS` and `android` platforms to the project.
 1.  Overwrite the `firebase_options.dart` file if asked so.
