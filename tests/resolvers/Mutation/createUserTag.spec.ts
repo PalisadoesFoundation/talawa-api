@@ -116,7 +116,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     }
   });
 
-  it(`throws TAG_NOT_FOUND error if the parent tag doesn't exist`, async () => {
+  it(`throws TAG_NOT_FOUND error if the parent tag is provided (not null) but the same doesn't exist in the organization of the tag being created`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -146,7 +146,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     }
   });
 
-  it(`throws INCORRECT_TAG_INPUT error if the parent tag doesn't belong to the provided organization`, async () => {
+  it(`throws INCORRECT_TAG_INPUT error if the parent tag is provided (not null) but the parent tag doesn't belong to the provided organization (specified by args.input.organizationId)`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
