@@ -42,6 +42,23 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
     );
   }
 
+  // Check if the user has privileges to create the tag
+  const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
+    (organizationId) =>
+      organizationId.toString() === args.input.organizationId.toString()
+  );
+
+  if (
+    !(currentUser!.userType === "SUPERADMIN") &&
+    !currentUserIsOrganizationAdmin
+  ) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_TO_CREATE_TAG.MESSAGE),
+      USER_NOT_AUTHORIZED_TO_CREATE_TAG.CODE,
+      USER_NOT_AUTHORIZED_TO_CREATE_TAG.PARAM
+    );
+  }
+
   // Additonal checks if the parent folder is provided
   if (args.input.parentTagId) {
     const parentTag = await OrganizationTagUser.findOne({
@@ -70,23 +87,6 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
     }
   }
 
-  // Check if the user has privileges to create the tag
-  const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organizationId) =>
-      organizationId.toString() === args.input.organizationId.toString()
-  );
-
-  if (
-    !(currentUser!.userType === "SUPERADMIN") &&
-    !currentUserIsOrganizationAdmin
-  ) {
-    throw new errors.UnauthorizedError(
-      requestContext.translate(USER_NOT_AUTHORIZED_TO_CREATE_TAG.MESSAGE),
-      USER_NOT_AUTHORIZED_TO_CREATE_TAG.CODE,
-      USER_NOT_AUTHORIZED_TO_CREATE_TAG.PARAM
-    );
-  }
-
   // Check if another tag with the same name exists under the same parent tag
   const anotherTagExists = await OrganizationTagUser.exists({
     ...args.input,
@@ -101,7 +101,9 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
   }
 
   // Creates new tag and returns the same
-  return await OrganizationTagUser.create({
+  const newTag = await OrganizationTagUser.create({
     ...args.input,
   });
+
+  return newTag.toObject();
 };
