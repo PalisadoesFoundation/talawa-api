@@ -21,6 +21,7 @@ import { createOrganization } from "./createOrganization";
 import { createPlugin } from "./createPlugin";
 import { createPost } from "./createPost";
 import { createTask } from "./createTask";
+import { createUserTag } from "./createUserTag";
 import { deleteDonationById } from "./deleteDonationById";
 import { forgotPassword } from "./forgotPassword";
 import { joinPublicOrganization } from "./joinPublicOrganization";
@@ -93,6 +94,7 @@ export const Mutation: MutationResolvers = {
   createPlugin,
   createPost,
   createTask,
+  createUserTag,
   deleteDonationById,
   forgotPassword,
   joinPublicOrganization,

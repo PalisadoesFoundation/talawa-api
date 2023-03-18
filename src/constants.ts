@@ -178,11 +178,11 @@ export const INVALID_TAG_INPUT = {
 };
 
 export const INCORRECT_TAG_INPUT = {
-  MESSAGE:
-    "The tag does not belong to the organization provided. Try sending only one correct PARAMeter.",
+  MESSAGE: "The tag does not belong to the organization provided.",
   CODE: "invalidArgs.tag",
   PARAM: "invalidArgs.tag",
 };
+
 
 export const NO_CHANGE_IN_TAG_NAME = {
   MESSAGE:
@@ -190,6 +190,7 @@ export const NO_CHANGE_IN_TAG_NAME = {
   CODE: "invalidArgs.tagName",
   PARAM: "invalidArgs.tagName",
 };
+
 
 export const TAG_ALREADY_EXISTS = {
   MESSAGE:
@@ -273,6 +274,7 @@ export const EMAIL_ALREADY_EXISTS_ERROR = {
   MESSAGE: "email.alreadyExists",
   PARAM: "email",
 };
+
 export const BASE_URL = `http://localhost:${process.env.port || 4000}/`;
 
 export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
