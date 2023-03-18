@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { Types } from "mongoose";
-import { MutationToggleUserTagAssignArgs } from "../../../src/types/generatedGraphQLTypes";
+import { MutationAssignUserTagArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
@@ -8,6 +8,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   TAG_NOT_FOUND,
   USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION,
+  USER_ALREADY_HAS_TAG,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -19,13 +20,13 @@ import {
   afterEach,
 } from "vitest";
 import { createTestUser, testUserType } from "../../helpers/userAndOrg";
-import { testUserTagType, createRootTagWithOrg } from "../../helpers/tags";
+import { TestUserTagType, createRootTagWithOrg } from "../../helpers/tags";
 import { TagUser } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 let adminUser: testUserType;
-let testTag: testUserTagType;
+let testTag: TestUserTagType;
 let randomUser: testUserType;
 
 beforeAll(async () => {
@@ -38,7 +39,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE!);
 });
 
-describe("resolvers -> Mutation -> toggleUserTagAssign", () => {
+describe("resolvers -> Mutation -> assignUserTag", () => {
   afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
@@ -53,20 +54,20 @@ describe("resolvers -> Mutation -> toggleUserTagAssign", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
-      const args: MutationToggleUserTagAssignArgs = {
+      const args: MutationAssignUserTagArgs = {
         input: {
           userId: adminUser!._id,
-          tagId: testTag!.id,
+          tagId: testTag!._id.toString(),
         },
       };
 
       const context = { userId: Types.ObjectId().toString() };
 
-      const { toggleUserTagAssign: toggleUserTagAssignResolver } = await import(
-        "../../../src/resolvers/Mutation/toggleUserTagAssign"
+      const { assignUserTag: assignUserTagResolver } = await import(
+        "../../../src/resolvers/Mutation/assignUserTag"
       );
 
-      await toggleUserTagAssignResolver?.({}, args, context);
+      await assignUserTagResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
@@ -83,20 +84,20 @@ describe("resolvers -> Mutation -> toggleUserTagAssign", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
-      const args: MutationToggleUserTagAssignArgs = {
+      const args: MutationAssignUserTagArgs = {
         input: {
           userId: Types.ObjectId().toString(),
-          tagId: testTag!.id,
+          tagId: testTag!._id.toString(),
         },
       };
 
       const context = { userId: adminUser!._id };
 
-      const { toggleUserTagAssign: toggleUserTagAssignResolver } = await import(
-        "../../../src/resolvers/Mutation/toggleUserTagAssign"
+      const { assignUserTag: assignUserTagResolver } = await import(
+        "../../../src/resolvers/Mutation/assignUserTag"
       );
 
-      await toggleUserTagAssignResolver?.({}, args, context);
+      await assignUserTagResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
@@ -113,7 +114,7 @@ describe("resolvers -> Mutation -> toggleUserTagAssign", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
-      const args: MutationToggleUserTagAssignArgs = {
+      const args: MutationAssignUserTagArgs = {
         input: {
           userId: adminUser!._id,
           tagId: Types.ObjectId().toString(),
@@ -124,11 +125,11 @@ describe("resolvers -> Mutation -> toggleUserTagAssign", () => {
         userId: adminUser!._id,
       };
 
-      const { toggleUserTagAssign: toggleUserTagAssignResolver } = await import(
-        "../../../src/resolvers/Mutation/toggleUserTagAssign"
+      const { assignUserTag: assignUserTagResolver } = await import(
+        "../../../src/resolvers/Mutation/assignUserTag"
       );
 
-      await toggleUserTagAssignResolver?.({}, args, context);
+      await assignUserTagResolver?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(TAG_NOT_FOUND.MESSAGE);
       expect(error.message).toEqual(`Translated ${TAG_NOT_FOUND.MESSAGE}`);
@@ -143,10 +144,10 @@ describe("resolvers -> Mutation -> toggleUserTagAssign", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
-      const args: MutationToggleUserTagAssignArgs = {
+      const args: MutationAssignUserTagArgs = {
         input: {
           userId: adminUser!._id,
-          tagId: testTag!._id,
+          tagId: testTag!._id.toString(),
         },
       };
 
@@ -154,11 +155,11 @@ describe("resolvers -> Mutation -> toggleUserTagAssign", () => {
         userId: randomUser!._id,
       };
 
-      const { toggleUserTagAssign: toggleUserTagAssignResolver } = await import(
-        "../../../src/resolvers/Mutation/toggleUserTagAssign"
+      const { assignUserTag: assignUserTagResolver } = await import(
+        "../../../src/resolvers/Mutation/assignUserTag"
       );
 
-      await toggleUserTagAssignResolver?.({}, args, context);
+      await assignUserTagResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
@@ -177,10 +178,10 @@ describe("resolvers -> Mutation -> toggleUserTagAssign", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
-      const args: MutationToggleUserTagAssignArgs = {
+      const args: MutationAssignUserTagArgs = {
         input: {
           userId: randomUser!._id,
-          tagId: testTag!._id,
+          tagId: testTag!._id.toString(),
         },
       };
 
@@ -188,11 +189,11 @@ describe("resolvers -> Mutation -> toggleUserTagAssign", () => {
         userId: adminUser!._id,
       };
 
-      const { toggleUserTagAssign: toggleUserTagAssignResolver } = await import(
-        "../../../src/resolvers/Mutation/toggleUserTagAssign"
+      const { assignUserTag: assignUserTagResolver } = await import(
+        "../../../src/resolvers/Mutation/assignUserTag"
       );
 
-      await toggleUserTagAssignResolver?.({}, args, context);
+      await assignUserTagResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
         `Translated ${USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION.MESSAGE}`
@@ -204,21 +205,21 @@ describe("resolvers -> Mutation -> toggleUserTagAssign", () => {
   });
 
   it(`tag assign should be successful`, async () => {
-    const args: MutationToggleUserTagAssignArgs = {
+    const args: MutationAssignUserTagArgs = {
       input: {
         userId: adminUser!._id,
-        tagId: testTag!._id,
+        tagId: testTag!._id.toString(),
       },
     };
     const context = {
       userId: adminUser!._id,
     };
 
-    const { toggleUserTagAssign: toggleUserTagAssignResolver } = await import(
-      "../../../src/resolvers/Mutation/toggleUserTagAssign"
+    const { assignUserTag: assignUserTagResolver } = await import(
+      "../../../src/resolvers/Mutation/assignUserTag"
     );
 
-    await toggleUserTagAssignResolver?.({}, args, context);
+    await assignUserTagResolver?.({}, args, context);
 
     const tagAssigned = await TagUser.exists({
       ...args.input,
@@ -227,27 +228,34 @@ describe("resolvers -> Mutation -> toggleUserTagAssign", () => {
     expect(tagAssigned).toBeTruthy();
   });
 
-  it(`tag unassign should be successful`, async () => {
-    const args: MutationToggleUserTagAssignArgs = {
-      input: {
+  it(`tag assign should give USER_ALREADY_HAS_TAG error if the request tries to reassign the same tag again to the user`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationAssignUserTagArgs = {
+        input: {
+          userId: adminUser!._id,
+          tagId: testTag!._id.toString(),
+        },
+      };
+      const context = {
         userId: adminUser!._id,
-        tagId: testTag!._id,
-      },
-    };
-    const context = {
-      userId: adminUser!._id,
-    };
+      };
 
-    const { toggleUserTagAssign: toggleUserTagAssignResolver } = await import(
-      "../../../src/resolvers/Mutation/toggleUserTagAssign"
-    );
+      const { assignUserTag: assignUserTagResolver } = await import(
+        "../../../src/resolvers/Mutation/assignUserTag"
+      );
 
-    await toggleUserTagAssignResolver?.({}, args, context);
-
-    const tagAssigned = await TagUser.exists({
-      ...args.input,
-    });
-
-    expect(tagAssigned).toBeFalsy();
+      await assignUserTagResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        `Translated ${USER_ALREADY_HAS_TAG.MESSAGE}`
+      );
+      expect(spy).toHaveBeenLastCalledWith(`${USER_ALREADY_HAS_TAG.MESSAGE}`);
+    }
   });
 });

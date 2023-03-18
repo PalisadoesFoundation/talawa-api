@@ -7,6 +7,7 @@ import { addUserImage } from "./addUserImage";
 import { addUserToGroupChat } from "./addUserToGroupChat";
 import { adminRemoveEvent } from "./adminRemoveEvent";
 import { adminRemoveGroup } from "./adminRemoveGroup";
+import { assignUserTag } from "./assignUserTag";
 import { blockPluginCreationBySuperadmin } from "./blockPluginCreationBySuperadmin";
 import { blockUser } from "./blockUser";
 import { cancelMembershipRequest } from "./cancelMembershipRequest";
@@ -68,6 +69,7 @@ import { updateTask } from "./updateTask";
 import { updateUserProfile } from "./updateUserProfile";
 import { updateUserPassword } from "./updateUserPassword";
 import { updateUserType } from "./updateUserType";
+import { unassignUserTag } from "./unassignUserTag";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,
@@ -78,6 +80,7 @@ export const Mutation: MutationResolvers = {
   addUserToGroupChat,
   adminRemoveEvent,
   adminRemoveGroup,
+  assignUserTag,
   blockPluginCreationBySuperadmin,
   blockUser,
   cancelMembershipRequest,
@@ -139,4 +142,5 @@ export const Mutation: MutationResolvers = {
   updateUserPassword,
   updateUserType,
   updatePost,
+  unassignUserTag,
 };

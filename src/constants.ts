@@ -198,6 +198,20 @@ export const USER_NOT_AUTHORIZED_TO_CREATE_TAG = {
   PARAM: "user.notAuth.createTag",
 };
 
+export const USER_ALREADY_HAS_TAG = {
+  MESSAGE:
+    "The user already has the tag that it is being requested to assigned.",
+  CODE: "user.alreadyHasTag",
+  PARAM: "user.alreadyHasTag",
+};
+
+export const USER_DOES_NOT_HAVE_THE_TAG = {
+  MESSAGE:
+    "The user does not have the tag that is being requested to be removed.",
+  CODE: "user.doesNotHaveTag",
+  PARAM: "user.doesNotHaveTag",
+};
+
 export const TASK_NOT_FOUND_ERROR = {
   DESC: "Task not found",
   CODE: "task.notFound",
