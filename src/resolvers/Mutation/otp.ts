@@ -5,7 +5,14 @@ import { User } from "../../models";
 import { mailer } from "../../utilities";
 import { ACCESS_TOKEN_SECRET, USER_NOT_FOUND_ERROR } from "../../constants";
 import { logger } from "../../libraries";
-
+/**
+ * This function generates otp.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @remarks The following checks are done:
+ * 1. If the user exists
+ * @returns Email to the user with the otp.
+ */
 export const otp: MutationResolvers["otp"] = async (_parent, args) => {
   const user = await User.findOne({
     email: args.data.email,

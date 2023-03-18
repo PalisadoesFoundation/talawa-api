@@ -3,7 +3,17 @@ import { User } from "../../models";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { superAdminCheck } from "../../utilities";
-
+/**
+ * This function enables to reject an admin.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists
+ * 2. If the user is the SUPERADMIN of the organization.
+ * 3. If the user to be removed exists.
+ * @returns True if the operation is successful.
+ */
 export const rejectAdmin: MutationResolvers["rejectAdmin"] = async (
   _parent,
   args,

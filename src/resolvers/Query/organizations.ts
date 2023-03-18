@@ -3,7 +3,14 @@ import { Organization } from "../../models";
 import { errors } from "../../libraries";
 import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
-
+/**
+ * If a 'id' is specified, this query will return an organisation;
+ * otherwise, it will return all organisations with a size of limit 100.
+ * @param _parent
+ * @param args - An object containing `orderBy` and `id` of the Organization.
+ * @returns The organization if valid `id` is provided else return organizations with size limit 100.
+ * @remarks `id` in the args is optional.
+ */
 export const organizations: QueryResolvers["organizations"] = async (
   _parent,
   args
