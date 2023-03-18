@@ -58,8 +58,6 @@ describe("resolvers -> Query -> users", () => {
       );
       await mockedInProductionUserResolver?.({}, args, {});
     } catch (error: any) {
-      console.log(error);
-
       expect(spy).toBeCalledWith(UNAUTHENTICATED_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${UNAUTHENTICATED_ERROR.MESSAGE}`
@@ -139,6 +137,22 @@ describe("resolvers -> Query -> users", () => {
           lastName: `lastName${nanoid()}`,
           appLanguageCode: `en${nanoid()}`,
         },
+        {
+          email: `email${nanoid().toLowerCase()}@gmail.com`,
+          password: "password",
+          firstName: `firstName${nanoid()}`,
+          lastName: `lastName${nanoid()}`,
+          appLanguageCode: `en${nanoid()}`,
+          userType: "SUPERADMIN",
+        },
+        {
+          email: `email${nanoid().toLowerCase()}@gmail.com`,
+          password: "password",
+          firstName: `firstName${nanoid()}`,
+          lastName: `lastName${nanoid()}`,
+          appLanguageCode: `en${nanoid()}`,
+          userType: "ADMIN",
+        },
       ]);
 
       const testOrganization = await Organization.create({
@@ -147,7 +161,7 @@ describe("resolvers -> Query -> users", () => {
         isPublic: true,
         creator: testUsers[0]._id,
         admins: [testUsers[0]._id],
-        members: [testUsers[0]._id],
+        members: [testUsers[0]._id, testUsers[1]._id],
         apiUrl: "apiUrl1",
       });
 
@@ -185,6 +199,129 @@ describe("resolvers -> Query -> users", () => {
           },
         }
       );
+
+      await User.updateOne(
+        {
+          _id: testUsers[1]._id,
+        },
+        {
+          $push: {
+            joinedOrganizations: testOrganization._id,
+            organizationsBlockedBy: testOrganization._id,
+          },
+        }
+      );
+
+      await Organization.updateOne(
+        {
+          _id: testOrganization._id,
+        },
+        {
+          $push: {
+            blockedUsers: testUsers[1]._id,
+          },
+        }
+      );
+    });
+
+    it(`returns empty array for organizationsBlockedBy fields when the client is a normal user`, async () => {
+      const args: QueryUsersArgs = {
+        where: {
+          id: testUsers[1].id,
+        },
+      };
+
+      const sort = {
+        _id: 1,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, {
+        userId: testUsers[1]._id,
+      });
+
+      let users = await User.find({
+        _id: testUsers[1].id,
+      })
+        .sort(sort)
+        .select(["-password"])
+        .populate("createdOrganizations")
+        .populate("createdEvents")
+        .populate("joinedOrganizations")
+        .populate("registeredEvents")
+        .populate("eventAdmin")
+        .populate("adminFor")
+        .lean();
+
+      users = users.map((user) => ({
+        ...user,
+        organizationsBlockedBy: [],
+      }));
+
+      expect(usersPayload).toEqual(users);
+    });
+
+    it(`returns populated array for organizationsBlockedBy fields when the client is a SUPERADMIN`, async () => {
+      const args: QueryUsersArgs = {
+        where: {
+          id: testUsers[1].id,
+        },
+      };
+
+      const sort = {
+        _id: 1,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, {
+        userId: testUsers[3]._id,
+      });
+
+      const users = await User.find({
+        _id: testUsers[1].id,
+      })
+        .sort(sort)
+        .select(["-password"])
+        .populate("createdOrganizations")
+        .populate("createdEvents")
+        .populate("joinedOrganizations")
+        .populate("registeredEvents")
+        .populate("eventAdmin")
+        .populate("adminFor")
+        .populate("organizationsBlockedBy")
+        .lean();
+
+      expect(usersPayload).toEqual(users);
+    });
+
+    it(`returns populated array for organizationsBlockedBy fields when the client is a ADMIN`, async () => {
+      const args: QueryUsersArgs = {
+        where: {
+          id: testUsers[1].id,
+        },
+      };
+
+      const sort = {
+        _id: 1,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, {
+        userId: testUsers[4]._id,
+      });
+
+      const users = await User.find({
+        _id: testUsers[1].id,
+      })
+        .sort(sort)
+        .select(["-password"])
+        .populate("createdOrganizations")
+        .populate("createdEvents")
+        .populate("joinedOrganizations")
+        .populate("registeredEvents")
+        .populate("eventAdmin")
+        .populate("adminFor")
+        .populate("organizationsBlockedBy")
+        .lean();
+
+      expect(usersPayload).toEqual(users);
     });
 
     it(`returns list of all existing users filtered by
