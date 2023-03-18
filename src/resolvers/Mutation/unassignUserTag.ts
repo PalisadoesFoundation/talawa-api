@@ -71,11 +71,12 @@ export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
       USER_DOES_NOT_HAVE_THE_TAG.CODE,
       USER_DOES_NOT_HAVE_THE_TAG.PARAM
     );
-  } else {
-    await TagUser.deleteOne({
-      ...args.input,
-    });
   }
+
+  // Unassign the tag
+  await TagUser.deleteOne({
+    ...args.input,
+  });
 
   return requestUser;
 };

@@ -89,11 +89,12 @@ export const assignUserTag: MutationResolvers["assignUserTag"] = async (
       USER_ALREADY_HAS_TAG.CODE,
       USER_ALREADY_HAS_TAG.PARAM
     );
-  } else {
-    await TagUser.create({
-      ...args.input,
-    });
   }
+
+  // Assign the tag
+  await TagUser.create({
+    ...args.input,
+  });
 
   return requestUser;
 };
