@@ -106,6 +106,40 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     }
   });
 
+  it(`throws Not Authorized Error if the user is not a superadmin or admin of the organization of the tag beind updated`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationUpdateUserTagArgs = {
+        input: {
+          _id: testTag!._id.toString(),
+          name: "NewName",
+        },
+      };
+
+      const context = {
+        userId: randomUser!._id,
+      };
+
+      const { updateUserTag: updateUserTagResolver } = await import(
+        "../../../src/resolvers/Mutation/updateUserTag"
+      );
+
+      await updateUserTagResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
+      expect(spy).toHaveBeenLastCalledWith(
+        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
+    }
+  });
+
   it(`throws error if current name of the tag and the new name is the same`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
@@ -165,40 +199,6 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     } catch (error: any) {
       expect(error.message).toEqual(`Translated ${TAG_ALREADY_EXISTS.MESSAGE}`);
       expect(spy).toHaveBeenLastCalledWith(`${TAG_ALREADY_EXISTS.MESSAGE}`);
-    }
-  });
-
-  it(`throws Not Authorized Error if the user is not a superadmin or admin of the organization of the tag beind updated`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
-    try {
-      const args: MutationUpdateUserTagArgs = {
-        input: {
-          _id: testTag!._id.toString(),
-          name: "NewName",
-        },
-      };
-
-      const context = {
-        userId: randomUser!._id,
-      };
-
-      const { updateUserTag: updateUserTagResolver } = await import(
-        "../../../src/resolvers/Mutation/updateUserTag"
-      );
-
-      await updateUserTagResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
-      );
-      expect(spy).toHaveBeenLastCalledWith(
-        `${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
-      );
     }
   });
 

@@ -28,11 +28,11 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
   }
 
   // Get the tag object
-  const tag = await OrganizationTagUser.findOne({
+  const existingTag = await OrganizationTagUser.findOne({
     _id: args.input._id,
   }).lean();
 
-  if (!tag) {
+  if (!existingTag) {
     throw new errors.NotFoundError(
       requestContext.translate(TAG_NOT_FOUND.MESSAGE),
       TAG_NOT_FOUND.CODE,
@@ -40,32 +40,10 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
     );
   }
 
-  // Throw error if the new tag name is the same as the old one
-  if (tag.name === args.input.name) {
-    throw new errors.ConflictError(
-      requestContext.translate(NO_CHANGE_IN_TAG_NAME.MESSAGE),
-      NO_CHANGE_IN_TAG_NAME.CODE,
-      NO_CHANGE_IN_TAG_NAME.PARAM
-    );
-  }
-
-  // Check if another tag with the new name exists under the same parent tag
-  const anotherTagExists = await OrganizationTagUser.exists({
-    name: args.input.name,
-    parentTagId: tag!.parentTagId,
-  });
-
-  if (anotherTagExists) {
-    throw new errors.ConflictError(
-      requestContext.translate(TAG_ALREADY_EXISTS.MESSAGE),
-      TAG_ALREADY_EXISTS.CODE,
-      TAG_ALREADY_EXISTS.PARAM
-    );
-  }
-
   // Boolean to determine whether user is an admin of organization of the tag folder.
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) => organization.toString() === tag!.organizationId.toString()
+    (organization) =>
+      organization.toString() === existingTag!.organizationId.toString()
   );
 
   // Checks whether currentUser can update the tag
@@ -80,6 +58,29 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
     );
   }
 
+  // Throw error if the new tag name is the same as the old one
+  if (existingTag!.name === args.input.name) {
+    throw new errors.ConflictError(
+      requestContext.translate(NO_CHANGE_IN_TAG_NAME.MESSAGE),
+      NO_CHANGE_IN_TAG_NAME.CODE,
+      NO_CHANGE_IN_TAG_NAME.PARAM
+    );
+  }
+
+  // Check if another tag with the new name exists under the same parent tag
+  const anotherTagExists = await OrganizationTagUser.exists({
+    name: args.input.name,
+    parentTagId: existingTag!.parentTagId,
+  });
+
+  if (anotherTagExists) {
+    throw new errors.ConflictError(
+      requestContext.translate(TAG_ALREADY_EXISTS.MESSAGE),
+      TAG_ALREADY_EXISTS.CODE,
+      TAG_ALREADY_EXISTS.PARAM
+    );
+  }
+
   // Update the title of the tag and return it
   return await OrganizationTagUser.findOneAndUpdate(
     {
@@ -87,6 +88,9 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
     },
     {
       name: args.input.name,
+    },
+    {
+      new: true,
     }
   ).lean();
 };
