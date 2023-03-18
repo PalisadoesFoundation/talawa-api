@@ -299,3 +299,12 @@ export const iosBundleId = process.env.iosBundleId;
 
 export const LAST_RESORT_SUPERADMIN_EMAIL =
   process.env.LAST_RESORT_SUPERADMIN_EMAIL;
+
+export const SMTP_OPTIONS = {
+  IS_SMTP: process.env.IS_SMTP,
+  SMTP_HOST: process.env.SMTP_HOST,
+  SMTP_PASSWORD: process.env.SMTP_PASSWORD,
+  SMTP_USERNAME: process.env.SMTP_USERNAME,
+  SMTP_PORT: process.env.SMTP_PORT,
+  SMTP_SSL_TLS: process.env.SMTP_SSL_TLS,
+};

@@ -9,7 +9,12 @@ export interface Interface_JwtTokenPayload {
   lastName: string;
   email: string;
 }
-
+/**
+ * This function creates a json web token which expires in 15 minutes.
+ * It signs the given payload(user data) into a JSON Web Token string payload.
+ * @param user - User data
+ * @returns JSON Web Token string payload
+ */
 export const createAccessToken = async (user: Interface_User) => {
   return jwt.sign(
     {
@@ -21,7 +26,7 @@ export const createAccessToken = async (user: Interface_User) => {
     },
     ACCESS_TOKEN_SECRET!,
     {
-      expiresIn: "15m",
+      expiresIn: "40m",
     }
   );
 };

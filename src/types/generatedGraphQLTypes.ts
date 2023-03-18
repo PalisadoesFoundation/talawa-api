@@ -1400,7 +1400,6 @@ export type UpdateUserPasswordInput = {
 };
 
 export type UpdateUserTagInput = {
-  __typename?: 'UpdateUserTagInput';
   _id: Scalars['ID'];
   name: Scalars['String'];
 };
@@ -1441,6 +1440,7 @@ export type UserTagsAssignedWithArgs = {
   before?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['PositiveInt']>;
   last?: InputMaybe<Scalars['PositiveInt']>;
+  organizationId?: InputMaybe<Scalars['ID']>;
 };
 
 export type UserAndOrganizationInput = {
@@ -1733,7 +1733,7 @@ export type ResolversTypes = {
   UpdateTaskInput: UpdateTaskInput;
   UpdateUserInput: UpdateUserInput;
   UpdateUserPasswordInput: UpdateUserPasswordInput;
-  UpdateUserTagInput: ResolverTypeWrapper<UpdateUserTagInput>;
+  UpdateUserTagInput: UpdateUserTagInput;
   UpdateUserTypeInput: UpdateUserTypeInput;
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
   User: ResolverTypeWrapper<Interface_UserModel>;
@@ -2329,12 +2329,6 @@ export interface UrlScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes[
   name: 'URL';
 }
 
-export type UpdateUserTagInputResolvers<ContextType = any, ParentType extends ResolversParentTypes['UpdateUserTagInput'] = ResolversParentTypes['UpdateUserTagInput']> = {
-  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
   name: 'Upload';
 }
@@ -2459,7 +2453,6 @@ export type Resolvers<ContextType = any> = {
   Time?: GraphQLScalarType;
   Translation?: TranslationResolvers<ContextType>;
   URL?: GraphQLScalarType;
-  UpdateUserTagInput?: UpdateUserTagInputResolvers<ContextType>;
   Upload?: GraphQLScalarType;
   User?: UserResolvers<ContextType>;
   UserAttende?: UserAttendeResolvers<ContextType>;

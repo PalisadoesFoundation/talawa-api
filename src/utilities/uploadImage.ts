@@ -5,7 +5,14 @@ import { logger } from "../libraries";
 import { imageAlreadyInDbCheck } from "./imageAlreadyInDbCheck";
 import { deleteImage } from "./deleteImage";
 import { imageExtensionCheck } from "./imageExtensionCheck";
-
+/**
+ * This function uploads the new image and deletes the previously uploaded image if exists.
+ * @remarks
+ * This is a utility method.
+ * @param newImageFile - File of a new Image with `any` type.
+ * @param oldImagePath - File of a current Image. It can be `null`.
+ * @returns Path of an uploaded image.
+ */
 export const uploadImage = async (
   newImageFile: any,
   oldImagePath: string | null

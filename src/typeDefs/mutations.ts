@@ -1,5 +1,7 @@
 import { gql } from "apollo-server-core";
-
+/**
+ * This graphQL typeDef defines the logic for different mutations defined in the talawa-api.
+ */
 // Place fields alphabetically to ensure easier lookup and navigation.
 export const mutations = gql`
   type Mutation {
