@@ -116,7 +116,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     }
   });
 
-  it(`throws TAG_NOT_FOUND error if the parent tag is provided (not null) but the same doesn't exist in the organization of the tag being created`, async () => {
+  it(`throws TAG_NOT_FOUND error if the parentTagId is provided (not null) but no tag exists with _id === args.input.parentTagId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
