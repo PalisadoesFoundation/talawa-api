@@ -178,10 +178,16 @@ export const INVALID_TAG_INPUT = {
 };
 
 export const INCORRECT_TAG_INPUT = {
-  MESSAGE:
-    "The tag does not belong to the organization provided. Try sending only one correct PARAMeter.",
+  MESSAGE: "The tag does not belong to the organization provided.",
   CODE: "invalidArgs.tag",
   PARAM: "invalidArgs.tag",
+};
+
+export const TAG_ALREADY_EXISTS = {
+  MESSAGE:
+    "A tag with the same name and the same parent tag already exists for this organization.",
+  CODE: "tag.alreadyExists",
+  PARAM: "tag.alreadyExists",
 };
 
 export const USER_NOT_AUTHORIZED_TO_CREATE_TAG = {
