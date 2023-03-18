@@ -1,7 +1,6 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Post } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
-import { BASE_URL } from "../../constants";
 
 /**
  * This query will fetch the list of all post within an Organization from database.
@@ -12,7 +11,7 @@ import { BASE_URL } from "../../constants";
  */
 
 export const postsByOrganization: QueryResolvers["postsByOrganization"] =
-  async (_parent, args) => {
+  async (_parent, args, context) => {
     const sort = getSort(args.orderBy);
 
     const postsInOrg = await Post.find({
@@ -32,7 +31,7 @@ export const postsByOrganization: QueryResolvers["postsByOrganization"] =
 
     const postsWithImageURLResolved = postsInOrg.map((post) => ({
       ...post,
-      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : null,
+      imageUrl: post.imageUrl ? `${context.apiRootUrl}${post.imageUrl}` : null,
     }));
 
     return postsWithImageURLResolved;

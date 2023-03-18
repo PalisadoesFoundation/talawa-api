@@ -112,8 +112,11 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       orderBy: "id_ASC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
     const postsByOrganizationConnectionPayload =
-      await postsByOrganizationConnectionResolver?.({}, args, {});
+      await postsByOrganizationConnectionResolver?.({}, args, context);
 
     const posts = await Post.find(where).sort(sort).populate("creator").lean();
 
@@ -182,9 +185,11 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       orderBy: "id_DESC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
     const postsByOrganizationConnectionPayload =
-      await postsByOrganizationConnectionResolver?.({}, args, {});
-
+      await postsByOrganizationConnectionResolver?.({}, args, context);
     const posts = await Post.find(where)
       .limit(2)
       .sort(sort)
@@ -256,9 +261,11 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       orderBy: "title_ASC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
     const postsByOrganizationConnectionPayload =
-      await postsByOrganizationConnectionResolver?.({}, args, {});
-
+      await postsByOrganizationConnectionResolver?.({}, args, context);
     const posts = await Post.find(where)
       .limit(2)
       .sort(sort)
@@ -329,9 +336,11 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       orderBy: "title_DESC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
     const postsByOrganizationConnectionPayload =
-      await postsByOrganizationConnectionResolver?.({}, args, {});
-
+      await postsByOrganizationConnectionResolver?.({}, args, context);
     const posts = await Post.find(where)
       .limit(2)
       .skip(1)
@@ -401,8 +410,11 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       orderBy: "text_ASC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
     const postsByOrganizationConnectionPayload =
-      await postsByOrganizationConnectionResolver?.({}, args, {});
+      await postsByOrganizationConnectionResolver?.({}, args, context);
 
     const posts = await Post.find(where)
       .limit(2)
@@ -467,8 +479,11 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       orderBy: "text_DESC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
     const postsByOrganizationConnectionPayload =
-      await postsByOrganizationConnectionResolver?.({}, args, {});
+      await postsByOrganizationConnectionResolver?.({}, args, context);
 
     const posts = await Post.find(where)
       .limit(2)

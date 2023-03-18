@@ -5,7 +5,6 @@ import {
 } from "../../types/generatedGraphQLTypes";
 import { Post } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
-import { BASE_URL } from "../../constants";
 
 // @ts-ignore
 /**
@@ -20,7 +19,7 @@ import { BASE_URL } from "../../constants";
  * learn more about Connection {@link https://relay.dev/graphql/connections.htm | here}.
  */
 export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationConnection"] =
-  async (_parent, args) => {
+  async (_parent, args, context) => {
     const sort = getSort(args.orderBy);
     const inputArg = getInputArg(args.where);
 
@@ -58,7 +57,9 @@ export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationC
     const posts = postsmodel.docs.map((post) => {
       post.likeCount = post.likedBy.length || 0;
       post.commentCount = post.comments.length || 0;
-      post.imageUrl = post.imageUrl ? `${BASE_URL}${post.imageUrl}` : null;
+      post.imageUrl = post.imageUrl
+        ? `${context.apiRootUrl}${post.imageUrl}`
+        : null;
 
       return post;
     });

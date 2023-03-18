@@ -894,9 +894,12 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       orderBy: "email_DESC",
     };
 
-    const organizationsMemberConnectionPayload =
-      await organizationsMemberConnectionResolver?.({}, args, {});
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
 
+    const organizationsMemberConnectionPayload =
+      await organizationsMemberConnectionResolver?.({}, args, context);
     const users = await User.find(where)
       .sort(sort)
       .limit(2)
@@ -952,8 +955,12 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       orderBy: null,
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
     const organizationsMemberConnectionPayload =
-      await organizationsMemberConnectionResolver?.({}, args, {});
+      await organizationsMemberConnectionResolver?.({}, args, context);
 
     const usersTestModel = await User.paginate(where, {
       pagination: false,

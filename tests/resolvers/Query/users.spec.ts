@@ -223,7 +223,11 @@ describe("resolvers -> Query -> users", () => {
         orderBy: "id_DESC",
       };
 
-      const usersPayload = await usersResolver?.({}, args, {});
+      const context = {
+        apiRootUrl: BASE_URL,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
         .sort(sort)
@@ -343,7 +347,11 @@ describe("resolvers -> Query -> users", () => {
         orderBy: "firstName_DESC",
       };
 
-      const usersPayload = await usersResolver?.({}, args, {});
+      const context = {
+        apiRootUrl: BASE_URL,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
         .sort(sort)
@@ -403,7 +411,11 @@ describe("resolvers -> Query -> users", () => {
         orderBy: "lastName_ASC",
       };
 
-      const usersPayload = await usersResolver?.({}, args, {});
+      const context = {
+        apiRootUrl: BASE_URL,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
         .sort(sort)
@@ -451,7 +463,10 @@ describe("resolvers -> Query -> users", () => {
         orderBy: "lastName_DESC",
       };
 
-      const usersPayload = await usersResolver?.({}, args, {});
+      const context = {
+        apiRootUrl: BASE_URL,
+      };
+      const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
         .sort(sort)
@@ -486,7 +501,11 @@ describe("resolvers -> Query -> users", () => {
         orderBy: "appLanguageCode_ASC",
       };
 
-      const usersPayload = await usersResolver?.({}, args, {});
+      const context = {
+        apiRootUrl: BASE_URL,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
         .sort(sort)
@@ -521,7 +540,11 @@ describe("resolvers -> Query -> users", () => {
         orderBy: "appLanguageCode_DESC",
       };
 
-      const usersPayload = await usersResolver?.({}, args, {});
+      const context = {
+        apiRootUrl: BASE_URL,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
         .sort(sort)
@@ -556,7 +579,11 @@ describe("resolvers -> Query -> users", () => {
         orderBy: "email_ASC",
       };
 
-      const usersPayload = await usersResolver?.({}, args, {});
+      const context = {
+        apiRootUrl: BASE_URL,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
         .sort(sort)
@@ -591,7 +618,11 @@ describe("resolvers -> Query -> users", () => {
         orderBy: "email_DESC",
       };
 
-      const usersPayload = await usersResolver?.({}, args, {});
+      const context = {
+        apiRootUrl: BASE_URL,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
         .sort(sort)
@@ -635,7 +666,11 @@ describe("resolvers -> Query -> users", () => {
       orderBy: "email_DESC",
     };
 
-    const usersPayload = await usersResolver?.({}, args, {});
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
+    const usersPayload = await usersResolver?.({}, args, context);
 
     let users = await User.find(where)
       .sort(sort)
@@ -651,7 +686,7 @@ describe("resolvers -> Query -> users", () => {
     users = users.map((user) => ({
       ...user,
       organizationsBlockedBy: [],
-      image: user.image ? `${BASE_URL}${user.image}` : null,
+      image: user.image ? `${context.apiRootUrl}${user.image}` : null,
     }));
 
     expect(usersPayload).toEqual(users);

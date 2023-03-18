@@ -1,4 +1,4 @@
-import { BASE_URL, USER_NOT_FOUND_ERROR } from "../../constants";
+import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { errors } from "../../libraries";
 import { User } from "../../models";
@@ -31,7 +31,7 @@ export const user: QueryResolvers["user"] = async (_parent, args, context) => {
   // This Query field doesn't allow client to see organizations they are blocked by
   return {
     ...user!,
-    image: user?.image ? `${BASE_URL}${user!.image}` : null,
+    image: user?.image ? `${context.apiRootUrl}${user!.image}` : null,
     organizationsBlockedBy: [],
   };
 };
