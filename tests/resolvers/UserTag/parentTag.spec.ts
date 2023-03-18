@@ -31,7 +31,7 @@ describe("resolvers -> Tag -> parentTag", () => {
     expect(payload).toEqual(parentTag);
   });
 
-  it(`returns null as parentTag for root objects`, async () => {
+  it(`returns null if the tag is a root tag and has no parent tag i.e. tag.parentTagId === null`, async () => {
     const parent = testParentTag!;
 
     const payload = await parentTagResolver?.(parent, {}, {});

@@ -20,7 +20,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Tag -> organization", () => {
-  it(`returns the correct organization object`, async () => {
+  it(`returns the organization object for organization with _id === tag.organizationId`, async () => {
     const parent = testTag!;
 
     const payload = await organizationResolver?.(parent, {}, {});
