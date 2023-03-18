@@ -55,6 +55,7 @@ import { sendMessageToDirectChat } from "./sendMessageToDirectChat";
 import { sendMessageToGroupChat } from "./sendMessageToGroupChat";
 import { signUp } from "./signUp";
 import { togglePostPin } from "./togglePostPin";
+import { unassignUserTag } from "./unassignUserTag";
 import { unblockUser } from "./unblockUser";
 import { unlikeComment } from "./unlikeComment";
 import { unlikePost } from "./unlikePost";
@@ -69,7 +70,6 @@ import { updateTask } from "./updateTask";
 import { updateUserProfile } from "./updateUserProfile";
 import { updateUserPassword } from "./updateUserPassword";
 import { updateUserType } from "./updateUserType";
-import { unassignUserTag } from "./unassignUserTag";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,
@@ -128,6 +128,7 @@ export const Mutation: MutationResolvers = {
   sendMessageToGroupChat,
   signUp,
   togglePostPin,
+  unassignUserTag,
   unblockUser,
   unlikeComment,
   unlikePost,
@@ -142,5 +143,4 @@ export const Mutation: MutationResolvers = {
   updateUserPassword,
   updateUserType,
   updatePost,
-  unassignUserTag,
 };

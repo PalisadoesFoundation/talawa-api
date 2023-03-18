@@ -5,7 +5,6 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   TAG_NOT_FOUND,
-  USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION,
   USER_DOES_NOT_HAVE_THE_TAG,
 } from "../../constants";
 
@@ -58,23 +57,6 @@ export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
       USER_NOT_AUTHORIZED_ERROR.PARAM
-    );
-  }
-
-  // Check that the user to which the tag is to be assigned is a member of the tag's organization
-  const requestUserBelongsToTagOrganization =
-    requestUser.joinedOrganizations.some(
-      (organization) =>
-        organization.toString() === tag!.organizationId.toString()
-    );
-
-  if (!requestUserBelongsToTagOrganization) {
-    throw new errors.UnauthorizedError(
-      requestContext.translate(
-        USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION.MESSAGE
-      ),
-      USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION.CODE,
-      USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION.PARAM
     );
   }
 
