@@ -1089,6 +1089,7 @@ export type Query = {
   getDonationByOrgId?: Maybe<Array<Maybe<Donation>>>;
   getDonationByOrgIdConnection: Array<Donation>;
   getDonations?: Maybe<Array<Maybe<Donation>>>;
+  getOrganizationWithUserID?: Maybe<Array<Maybe<Organization>>>;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
   groupChatMessages?: Maybe<Array<Maybe<GroupChatMessage>>>;
@@ -1176,6 +1177,11 @@ export type QueryGetDonationByOrgIdConnectionArgs = {
   orgId: Scalars['ID'];
   skip?: InputMaybe<Scalars['Int']>;
   where?: InputMaybe<DonationWhereInput>;
+};
+
+
+export type QueryGetOrganizationWithUserIdArgs = {
+  id?: InputMaybe<Scalars['ID']>;
 };
 
 
@@ -2271,6 +2277,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getDonationByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Donation']>>>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdArgs, 'orgId'>>;
   getDonationByOrgIdConnection?: Resolver<Array<ResolversTypes['Donation']>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdConnectionArgs, 'orgId'>>;
   getDonations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Donation']>>>, ParentType, ContextType>;
+  getOrganizationWithUserID?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType, Partial<QueryGetOrganizationWithUserIdArgs>>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
   groupChatMessages?: Resolver<Maybe<Array<Maybe<ResolversTypes['GroupChatMessage']>>>, ParentType, ContextType>;
