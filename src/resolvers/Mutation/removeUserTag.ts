@@ -32,7 +32,7 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
 
   if (!tag) {
     throw new errors.NotFoundError(
-      TAG_NOT_FOUND.MESSAGE,
+      requestContext.translate(TAG_NOT_FOUND.MESSAGE),
       TAG_NOT_FOUND.CODE,
       TAG_NOT_FOUND.PARAM
     );
@@ -56,27 +56,29 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
   }
 
   // Get all the child tags of the current tag (including itself)
-  // using a graph lookup aggregate query on the OrganizationTagUser model
-  const TOP_LEVEL_PARENT = tag._id;
+  // on the OrganizationTagUser model
+  // The following implementation makes number of queries = max depth of nesting in the tag provided
+  let allTagIds: string[] = [];
+  let currentParents = [tag._id.toString()];
 
-  const allTags = await OrganizationTagUser.aggregate([
-    {
-      $graphLookup: {
-        from: "OrganizationTagUser",
-        startWith: "$parentTagId",
-        connectFromField: "parentTagId",
-        connectToField: "_id",
-        as: "hierarchy",
+  while (currentParents.length) {
+    allTagIds = allTagIds.concat(currentParents);
+    // @ts-ignore
+    currentParents = await OrganizationTagUser.find(
+      {
+        organizationId: tag.organizationId,
+        parentTagId: {
+          $in: currentParents,
+        },
       },
-    },
-    {
-      $match: {
-        $or: [{ "hierarchy._id": TOP_LEVEL_PARENT }, { _id: TOP_LEVEL_PARENT }],
-      },
-    },
-  ]);
-
-  const allTagIds = allTags.map(({ _id }: { _id: string }) => _id);
+      {
+        _id: 1,
+      }
+    );
+    currentParents = currentParents
+      .map((tag) => tag._id)
+      .filter((id: string | null) => id);
+  }
 
   // Delete all the tags
   await OrganizationTagUser.deleteMany({
