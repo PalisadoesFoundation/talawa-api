@@ -14,12 +14,12 @@ import mongoose from "mongoose";
 import { nanoid } from "nanoid";
 import { INVALID_FILE_TYPE } from "../../src/constants";
 
-const testNewImagePath: string = `${nanoid()}-testNewImagePath`;
-const testOldImagePath: string = `${nanoid()}-testOldImagePath`;
-const testHash: string = `${nanoid()}-testHash`;
-const testDifferentHash: string = `${nanoid()}-testDifferentHash`;
+const testNewImagePath = `${nanoid()}-testNewImagePath`;
+const testOldImagePath = `${nanoid()}-testOldImagePath`;
+const testHash = `${nanoid()}-testHash`;
+const testDifferentHash = `${nanoid()}-testDifferentHash`;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-const testMessage: string = "invalid.fileType";
+const testMessage = "invalid.fileType";
 
 const testErrors = [
   {
