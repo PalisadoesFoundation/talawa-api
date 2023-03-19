@@ -119,7 +119,7 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
     }
   });
 
-  it(`throws USER_NOT_AUTHORIZED error if the user is not authorized to remove the tag`, async () => {
+  it(`throws USER_NOT_AUTHORIZED error if the current user is not authorized to remove the tag`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
