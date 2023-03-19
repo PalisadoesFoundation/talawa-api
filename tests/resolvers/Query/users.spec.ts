@@ -255,6 +255,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: null,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -275,7 +276,7 @@ describe("resolvers -> Query -> users", () => {
         userId: testUsers[3]._id,
       });
 
-      const users = await User.find({
+      let users = await User.find({
         _id: testUsers[1].id,
       })
         .sort(sort)
@@ -288,6 +289,11 @@ describe("resolvers -> Query -> users", () => {
         .populate("adminFor")
         .populate("organizationsBlockedBy")
         .lean();
+
+      users = users.map((user) => ({
+        ...user,
+        image: null,
+      }));
 
       expect(usersPayload).toEqual(users);
     });
@@ -307,7 +313,7 @@ describe("resolvers -> Query -> users", () => {
         userId: testUsers[4]._id,
       });
 
-      const users = await User.find({
+      let users = await User.find({
         _id: testUsers[1].id,
       })
         .sort(sort)
@@ -320,6 +326,11 @@ describe("resolvers -> Query -> users", () => {
         .populate("adminFor")
         .populate("organizationsBlockedBy")
         .lean();
+
+      users = users.map((user) => ({
+        ...user,
+        image: null,
+      }));
 
       expect(usersPayload).toEqual(users);
     });
