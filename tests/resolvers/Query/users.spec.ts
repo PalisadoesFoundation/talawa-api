@@ -882,6 +882,7 @@ describe("resolvers -> Query -> users", () => {
 
     const context = {
       apiRootUrl: BASE_URL,
+      userId: testUsers[0]._id,
     };
 
     const usersPayload = await usersResolver?.({}, args, context);
