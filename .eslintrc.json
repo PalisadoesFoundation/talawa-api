@@ -5,16 +5,16 @@
   },
   "extends": [
     "eslint:recommended",
-    "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:prettier/recommended"
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
   ],
   "overrides": [
     {
-      "files": ["*.ts"],
+      "files": ["./src/typeDefs/**/*.ts"],
       "processor": "@graphql-eslint/graphql"
     },
     {
-      "files": ["*.graphql"],
+      "files": ["./src/typeDefs/**/*.graphql"],
       "parser": "@graphql-eslint/eslint-plugin",
       "plugins": ["@graphql-eslint"]
     },
@@ -27,36 +27,34 @@
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
+    "project": "./tsconfig.json",
+    "tsconfigRootDir": ".",
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "plugins": ["@typescript-eslint"],
+  "plugins": ["@typescript-eslint", "eslint-plugin-tsdoc"],
   "root": true,
   "rules": {
-    "eqeqeq": ["error", "always"],
-    "linebreak-style": ["error", "unix"],
-    "no-unused-vars": [
-      "error",
-      {
-        "argsIgnorePattern": "^_",
-        "caughtErrorsIgnorePattern": "^_",
-        "destructuredArrayIgnorePattern": "^_",
-        "varsIgnorePattern": "^_"
-      }
-    ],
-    "quotes": [
-      "error",
-      "double",
-      {
-        "allowTemplateLiterals": true,
-        "avoidEscape": true
-      }
-    ],
     "no-restricted-imports": [
       "error",
       {
         "patterns": ["**/src/**"]
       }
-    ]
+    ],
+
+    // warn/1, error/2, off/0
+    "tsdoc/syntax": "off", // toggle off/ warn
+
+    // Typescript Rules
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-inferrable-types": "off",
+    "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-var-requires": "off",
+
+    // Extension Rules
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-unused-vars": "off"
   }
 }

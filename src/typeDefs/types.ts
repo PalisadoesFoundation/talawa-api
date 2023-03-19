@@ -36,6 +36,14 @@ export const types = gql`
     likeCount: Int
   }
 
+  # A page info type adhering to Relay Specification for both cursor based pagination
+  type ConnectionPageInfo {
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
+    startCursor: String
+    endCursor: String
+  }
+
   type DeletePayload {
     success: Boolean!
   }
@@ -199,6 +207,12 @@ export const types = gql`
     apiUrl: URL!
     createdAt: DateTime
     pinnedPosts: [Post]
+    userTags(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+    ): UserTagsConnection
   }
 
   type OrganizationInfoNode {
@@ -229,6 +243,7 @@ export const types = gql`
     When paginating backwards, are there more items?
     """
     hasPreviousPage: Boolean!
+
     totalPages: Int
     nextPageNo: Int
     prevPageNo: Int
@@ -332,6 +347,13 @@ export const types = gql`
     pluginCreationAllowed: Boolean
     adminApproved: Boolean
     createdAt: DateTime
+    tagsAssignedWith(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+      organizationId: ID
+    ): UserTagsConnection
   }
 
   type UserAttende {
@@ -346,5 +368,44 @@ export const types = gql`
     pageInfo: PageInfo!
     edges: [User]!
     aggregate: AggregateUser!
+  }
+
+  type UserEdge {
+    node: User!
+    cursor: String!
+  }
+
+  type UserTag {
+    _id: ID!
+    name: String!
+    organization: Organization
+    parentTag: UserTag
+    childTags(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+    ): UserTagsConnection
+    usersAssignedTo(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+    ): UsersConnection
+  }
+
+  type UserTagsConnection {
+    edges: [UserTagEdge]
+    pageInfo: ConnectionPageInfo!
+  }
+
+  type UserTagEdge {
+    node: UserTag!
+    cursor: String!
+  }
+
+  type UsersConnection {
+    edges: [UserEdge]
+    pageInfo: ConnectionPageInfo!
   }
 `;

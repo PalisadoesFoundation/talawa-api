@@ -21,6 +21,7 @@ import { createOrganization } from "./createOrganization";
 import { createPlugin } from "./createPlugin";
 import { createPost } from "./createPost";
 import { createTask } from "./createTask";
+import { createUserTag } from "./createUserTag";
 import { deleteDonationById } from "./deleteDonationById";
 import { forgotPassword } from "./forgotPassword";
 import { joinPublicOrganization } from "./joinPublicOrganization";
@@ -66,6 +67,8 @@ import { updatePluginStatus } from "./updatePluginStatus";
 import { updatePost } from "./updatePost";
 import { updateTask } from "./updateTask";
 import { updateUserProfile } from "./updateUserProfile";
+import { updateUserPassword } from "./updateUserPassword";
+import { updateUserTag } from "./updateUserTag";
 import { updateUserType } from "./updateUserType";
 
 export const Mutation: MutationResolvers = {
@@ -91,6 +94,7 @@ export const Mutation: MutationResolvers = {
   createPlugin,
   createPost,
   createTask,
+  createUserTag,
   deleteDonationById,
   forgotPassword,
   joinPublicOrganization,
@@ -135,6 +139,8 @@ export const Mutation: MutationResolvers = {
   updatePluginStatus,
   updateTask,
   updateUserProfile,
+  updateUserPassword,
   updateUserType,
+  updateUserTag,
   updatePost,
 };

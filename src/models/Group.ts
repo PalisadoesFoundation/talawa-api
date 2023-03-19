@@ -1,7 +1,9 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
 import { Interface_Organization } from "./Organization";
 import { Interface_User } from "./User";
-
+/**
+ * This is an interface representing a document for a group in the database(MongoDB).
+ */
 export interface Interface_Group {
   _id: Types.ObjectId;
   title: string;
@@ -11,7 +13,14 @@ export interface Interface_Group {
   status: string;
   admins: Array<PopulatedDoc<Interface_User & Document>>;
 }
-
+/**
+ * This is the structure of a group
+ * @param title - Title
+ * @param description - Description
+ * @param createdAt - Created at Date
+ * @param status - Status
+ * @param admins - Admins
+ */
 const groupSchema = new Schema({
   title: {
     type: String,

@@ -1,5 +1,7 @@
 import { Schema, model, Types, models } from "mongoose";
-
+/**
+ * This is an interface that represents a database(MongoDB) document for Plugin Field.
+ */
 export interface Interface_PluginField {
   _id: Types.ObjectId;
   key: string;
@@ -7,7 +9,13 @@ export interface Interface_PluginField {
   status: string;
   createdAt: Date;
 }
-
+/**
+ * This describes the schema for a `PluginField` that corresponds to `Interface_PluginField` document.
+ * @param key - Plugin key.
+ * @param value - Value.
+ * @param status - Status.
+ * @param createdAt - Time stamp of data creation.
+ */
 const pluginFieldSchema = new Schema({
   key: {
     type: String,

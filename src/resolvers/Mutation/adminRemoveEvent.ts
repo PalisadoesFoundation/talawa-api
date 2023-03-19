@@ -7,7 +7,18 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
 } from "../../constants";
-
+/**
+ * This function enables an admin to remove a event
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the event exists
+ * 2. If the organization exists
+ * 3. If the user exists
+ * 4. If the user is an admin of organization
+ * @returns Deleted event
+ */
 export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
   _parent,
   args,
@@ -53,7 +64,7 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
   }
 
   // Checks whether currentUser is an admin of organization.
-  adminCheck(currentUser._id, organization);
+  await adminCheck(currentUser._id, organization);
 
   /*
   Removes event._id from eventAdmin, createdEvents and registeredEvents lists on

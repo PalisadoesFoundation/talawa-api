@@ -8,6 +8,8 @@ import { Mutation } from "./Mutation";
 import { Organization } from "./Organization";
 import { Query } from "./Query";
 import { Subscription } from "./Subscription";
+import { User } from "./User";
+import { UserTag } from "./UserTag";
 import {
   DateResolver,
   DateTimeResolver,
@@ -15,6 +17,7 @@ import {
   LatitudeResolver,
   LongitudeResolver,
   PhoneNumberResolver,
+  PositiveIntResolver,
   TimeResolver,
   URLResolver,
 } from "graphql-scalars";
@@ -29,6 +32,8 @@ export const resolvers: Resolvers = {
   Organization,
   Query,
   Subscription,
+  User,
+  UserTag,
 
   // graphql-scalar resolver
   Date: DateResolver,
@@ -37,6 +42,7 @@ export const resolvers: Resolvers = {
   Latitude: LatitudeResolver,
   Longitude: LongitudeResolver,
   PhoneNumber: PhoneNumberResolver,
+  PositiveInt: PositiveIntResolver,
   Time: TimeResolver,
   URL: URLResolver,
 };

@@ -1,9 +1,16 @@
 import { Types } from "mongoose";
 import { errors, requestContext } from "../libraries";
 import { USER_NOT_AUTHORIZED_ADMIN } from "../constants";
-import { Interface_Organization } from "../models";
-
-export const adminCheck = (
+import { Interface_Organization, User } from "../models";
+/**
+ * If the current user is an admin of the organisation, this function returns `true` otherwise it returns `false`.
+ * @remarks
+ * This is a utility method.
+ * @param userId - Current user id.
+ * @param organization - Organization data of `Interface_Organization` type.
+ * @returns `True` or `False`.
+ */
+export const adminCheck = async (
   userId: string | Types.ObjectId,
   organization: Interface_Organization
 ) => {
@@ -11,7 +18,13 @@ export const adminCheck = (
     admin.equals(userId)
   );
 
-  if (userIsOrganizationAdmin === false) {
+  const user = await User.findOne({
+    _id: userId,
+  });
+
+  const isUserSuperAdmin: boolean = user!.userType === "SUPERADMIN";
+
+  if (!userIsOrganizationAdmin && !isUserSuperAdmin) {
     throw new errors.UnauthorizedError(
       requestContext.translate(`${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`),
       USER_NOT_AUTHORIZED_ADMIN.CODE,

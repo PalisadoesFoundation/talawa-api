@@ -9,7 +9,16 @@ import {
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
-
+/**
+ * This function enables to create a post.
+ * @param _parent - parent of current request
+ * @param args -  payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists
+ * 2. If the organization exists
+ * @returns Created Post
+ */
 export const createPost: MutationResolvers["createPost"] = async (
   _parent,
   args,
@@ -108,5 +117,10 @@ export const createPost: MutationResolvers["createPost"] = async (
   }
 
   // Returns createdPost.
-  return createdPost.toObject();
+  return {
+    ...createdPost.toObject(),
+    imageUrl: createdPost.imageUrl
+      ? `${context.apiRootUrl}${uploadImageFileName}`
+      : null,
+  };
 };

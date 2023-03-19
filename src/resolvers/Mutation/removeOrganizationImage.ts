@@ -7,7 +7,17 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Organization } from "../../models";
 import { adminCheck, deleteImage } from "../../utilities";
-
+/**
+ * This function enables to remove an organization's image.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists.
+ * 2. If the organization exists
+ * 3. If the user is the admin of the organization.
+ * @returns Updated Organization.
+ */
 export const removeOrganizationImage: MutationResolvers["removeOrganizationImage"] =
   async (_parent, args, context) => {
     const currentUserExists = await User.exists({
@@ -37,7 +47,7 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
     }
 
     // Checks whether currentUser with _id === context.userId is an admin of organization
-    adminCheck(context.userId, organization);
+    await adminCheck(context.userId, organization);
 
     // Checks whether organization.image exists.
     if (!organization.image) {

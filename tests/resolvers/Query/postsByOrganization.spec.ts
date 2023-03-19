@@ -2,7 +2,6 @@ import "dotenv/config";
 import { postsByOrganization as postsByOrganizationResolver } from "../../../src/resolvers/Query/postsByOrganization";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
-
 import { Post } from "../../../src/models";
 import { QueryPostsByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -12,6 +11,7 @@ import {
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
 import { createSinglePostwithComment } from "../../helpers/posts";
+import { BASE_URL } from "../../../src/constants";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testOrganization: testOrganizationType;
@@ -38,10 +38,14 @@ describe("resolvers -> Query -> posts", () => {
       orderBy: null,
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      {}
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -59,7 +63,11 @@ describe("resolvers -> Query -> posts", () => {
       .populate("creator", "-password")
       .lean();
 
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -73,10 +81,14 @@ describe("resolvers -> Query -> posts", () => {
       orderBy: "id_ASC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      {}
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -93,8 +105,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -108,10 +123,14 @@ describe("resolvers -> Query -> posts", () => {
       orderBy: "id_DESC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      {}
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -128,8 +147,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -143,10 +165,14 @@ describe("resolvers -> Query -> posts", () => {
       orderBy: "text_ASC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      {}
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -163,8 +189,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -178,12 +207,15 @@ describe("resolvers -> Query -> posts", () => {
       orderBy: "text_DESC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      {}
+      context
     );
-
     const postsByOrganization = await Post.find({
       organization: testOrganization?._id,
     })
@@ -199,7 +231,11 @@ describe("resolvers -> Query -> posts", () => {
       .populate("creator", "-password")
       .lean();
 
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -213,12 +249,15 @@ describe("resolvers -> Query -> posts", () => {
       orderBy: "title_ASC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      {}
+      context
     );
-
     const postsByOrganization = await Post.find({
       organization: testOrganization?._id,
     })
@@ -233,8 +272,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -248,10 +290,14 @@ describe("resolvers -> Query -> posts", () => {
       orderBy: "title_DESC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      {}
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -268,8 +314,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -283,10 +332,14 @@ describe("resolvers -> Query -> posts", () => {
       orderBy: "createdAt_ASC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      {}
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -303,8 +356,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -318,10 +374,14 @@ describe("resolvers -> Query -> posts", () => {
       orderBy: "createdAt_DESC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      {}
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -338,8 +398,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -353,10 +416,14 @@ describe("resolvers -> Query -> posts", () => {
       orderBy: "imageUrl_ASC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      {}
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -374,7 +441,11 @@ describe("resolvers -> Query -> posts", () => {
       .populate("creator", "-password")
       .lean();
 
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -388,10 +459,14 @@ describe("resolvers -> Query -> posts", () => {
       orderBy: "imageUrl_DESC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      {}
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -408,8 +483,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -423,10 +501,14 @@ describe("resolvers -> Query -> posts", () => {
       orderBy: "videoUrl_ASC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      {}
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -444,7 +526,11 @@ describe("resolvers -> Query -> posts", () => {
       .populate("creator", "-password")
       .lean();
 
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -458,10 +544,14 @@ describe("resolvers -> Query -> posts", () => {
       orderBy: "videoUrl_DESC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      {}
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -478,8 +568,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -493,10 +586,14 @@ describe("resolvers -> Query -> posts", () => {
       orderBy: "likeCount_ASC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      {}
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -513,8 +610,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -528,10 +628,14 @@ describe("resolvers -> Query -> posts", () => {
       orderBy: "likeCount_DESC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      {}
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -548,8 +652,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -563,12 +670,15 @@ describe("resolvers -> Query -> posts", () => {
       orderBy: "commentCount_ASC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      {}
+      context
     );
-
     const postsByOrganization = await Post.find({
       organization: testOrganization?._id,
     })
@@ -583,8 +693,11 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
-
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 
   it(`returns list of all existing posts having post.organization with _id === args.id
@@ -598,10 +711,14 @@ describe("resolvers -> Query -> posts", () => {
       orderBy: "commentCount_DESC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
     const postsByOrganizationPayload = await postsByOrganizationResolver?.(
       {},
       args,
-      {}
+      context
     );
 
     const postsByOrganization = await Post.find({
@@ -618,7 +735,63 @@ describe("resolvers -> Query -> posts", () => {
       })
       .populate("creator", "-password")
       .lean();
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
+  });
 
-    expect(postsByOrganizationPayload).toEqual(postsByOrganization);
+  it(`returns list of all existing posts having post.organization with _id === args.id
+  sorted by descending order of post.commentCount if args.orderBy === 'commentCount_DESC' when post.imageUrl === undefined`, async () => {
+    await Post.findOneAndUpdate(
+      {
+        creator: testUser?.id,
+      },
+      {
+        $set: {
+          imageUrl: undefined,
+        },
+      }
+    );
+
+    const sort = {
+      commentCount: -1,
+    };
+
+    const args: QueryPostsByOrganizationArgs = {
+      id: testOrganization?.id,
+      orderBy: "commentCount_DESC",
+    };
+
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
+    const postsByOrganizationPayload = await postsByOrganizationResolver?.(
+      {},
+      args,
+      context
+    );
+
+    const postsByOrganization = await Post.find({
+      organization: testOrganization?._id,
+    })
+      .sort(sort)
+      .populate("organization")
+      .populate("likedBy")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "creator",
+        },
+      })
+      .populate("creator", "-password")
+      .lean();
+    const postsWithImageURLResolved = postsByOrganization.map((post) => ({
+      ...post,
+      imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : null,
+    }));
+    expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
 });

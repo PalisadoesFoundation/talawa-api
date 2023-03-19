@@ -11,14 +11,16 @@ import mongoosePaginate from "mongoose-paginate-v2";
 import { Interface_Comment } from "./Comment";
 import { Interface_Organization } from "./Organization";
 import { Interface_User } from "./User";
-
+/**
+ * This is an interface that represents a database(MongoDB) document for Post.
+ */
 export interface Interface_Post {
   _id: Types.ObjectId;
   text: string;
   title: string | undefined;
   status: string;
   createdAt: Date;
-  imageUrl: string | undefined;
+  imageUrl: string | undefined | null;
   videoUrl: string | undefined;
   creator: PopulatedDoc<Interface_User & Document>;
   organization: PopulatedDoc<Interface_Organization & Document>;
@@ -28,7 +30,21 @@ export interface Interface_Post {
   commentCount: number;
   pinned: boolean;
 }
-
+/**
+ * This describes the schema for a `Post` that corresponds to `Interface_Post` document.
+ * @param text - Post description.
+ * @param title - Post title.
+ * @param status - Status.
+ * @param createdAt - Time stamp of data creation.
+ * @param imageUrl - Post attached image URL(if attached).
+ * @param videoUrl - Post attached video URL(if attached).
+ * @param creator - Post creator, refer to `User` model.
+ * @param organization - Organization data where the post is uploaded, refer to `Organization` model.
+ * @param likedBy - Collection of user liked the post, each object refer to `User` model.
+ * @param comments - Collection of user commented on the post, each object refer to `Comment` model.
+ * @param likeCount - Post likes count.
+ * @param commentCount - Post comments count.
+ */
 const postSchema = new Schema({
   text: {
     type: String,

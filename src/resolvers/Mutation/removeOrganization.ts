@@ -12,7 +12,17 @@ import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
 } from "../../constants";
-
+/**
+ * This function enables to remove an organization.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists.
+ * 2. If the organization exists
+ * 3. If the user is the creator of the organization.
+ * @returns Updated user.
+ */
 export const removeOrganization: MutationResolvers["removeOrganization"] =
   async (_parent, args, context) => {
     const currentUser = await User.findOne({

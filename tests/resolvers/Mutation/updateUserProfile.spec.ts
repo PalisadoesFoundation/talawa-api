@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { updateUserProfile as updateUserProfileResolver } from "../../../src/resolvers/Mutation/updateUserProfile";
 import {
+  BASE_URL,
   EMAIL_ALREADY_EXISTS_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -27,7 +28,7 @@ let testUser: Interface_User & Document<any, any, Interface_User>;
 vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),
 }));
-
+const email = `email${nanoid().toLowerCase()}@gmail.com`;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
@@ -38,6 +39,15 @@ beforeAll(async () => {
     lastName: "lastName",
     appLanguageCode: "en",
   });
+  const testUser2 = await User.create({
+    email: email,
+    password: "password",
+    firstName: "firstName",
+    lastName: "lastName",
+    appLanguageCode: "en",
+  });
+  testUser2.save();
+  testUser.save();
 });
 
 afterAll(async () => {
@@ -118,7 +128,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     try {
       const args: MutationUpdateUserProfileArgs = {
         data: {
-          email: testUser.email,
+          email: email,
         },
       };
 
@@ -191,6 +201,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       email: args.data?.email,
       firstName: "firstName",
       lastName: "lastName",
+      image: null,
     });
   });
 
@@ -218,6 +229,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       email: testUserobj?.email,
       firstName: args.data?.firstName,
       lastName: testUser.lastName,
+      image: null,
     });
   });
 
@@ -245,6 +257,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       email: testUserobj?.email,
       firstName: testUserobj?.firstName,
       lastName: args.data?.lastName,
+      image: null,
     });
   });
 
@@ -272,6 +285,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       email: args.data?.email,
       firstName: "newFirstName",
       lastName: "newLastName",
+      image: null,
     });
   });
 
@@ -291,6 +305,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
 
     const context = {
       userId: testUser._id,
+      apiRootUrl: BASE_URL,
     };
 
     const updateUserProfilePayload = await updateUserProfileResolver?.(
@@ -304,7 +319,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       email: args.data?.email,
       firstName: "newFirstName",
       lastName: "newLastName",
-      image: "newImageFile.png",
+      image: BASE_URL + "newImageFile.png",
     });
   });
   it("When Image is give updates the current user's object with the uploaded image and returns it", async () => {
@@ -319,6 +334,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
 
     const context = {
       userId: testUser._id,
+      apiRootUrl: BASE_URL,
     };
 
     const updateUserProfilePayload = await updateUserProfileResolver?.(
@@ -332,7 +348,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       email: updateUserProfilePayload?.email,
       firstName: "newFirstName",
       lastName: "newLastName",
-      image: "newImageFile.png",
+      image: BASE_URL + "newImageFile.png",
     });
   });
 });

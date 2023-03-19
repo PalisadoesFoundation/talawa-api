@@ -17,6 +17,12 @@ export const inputs = gql`
     title: String!
   }
 
+  input CreateUserTagInput {
+    name: String!
+    parentTagId: ID
+    organizationId: ID!
+  }
+
   input DonationWhereInput {
     id: ID
     id_not: ID
@@ -222,6 +228,11 @@ export const inputs = gql`
     deadline: DateTime
   }
 
+  input ToggleUserTagAssignInput {
+    userId: ID!
+    tagId: ID!
+  }
+
   input UpdateEventInput {
     title: String
     description: String
@@ -252,6 +263,11 @@ export const inputs = gql`
     location: String
   }
 
+  input UpdateUserTagInput {
+    _id: ID!
+    name: String!
+  }
+
   input UpdateTaskInput {
     title: String
     description: String
@@ -262,6 +278,12 @@ export const inputs = gql`
     firstName: String
     lastName: String
     email: EmailAddress
+  }
+
+  input UpdateUserPasswordInput {
+    previousPassword: String!
+    newPassword: String!
+    confirmNewPassword: String!
   }
 
   input UpdateUserTypeInput {

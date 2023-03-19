@@ -2,7 +2,15 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { Language } from "../../models";
 import { TRANSLATION_ALREADY_PRESENT_ERROR } from "../../constants";
-
+/**
+ * This function adds language translation.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @remarks The following checks are done:
+ * 1. If the language exists
+ * 2. If the translation already exists.
+ * @returns Updated langauge
+ */
 export const addLanguageTranslation: MutationResolvers["addLanguageTranslation"] =
   async (_parent, args) => {
     const language = await Language.findOne({
