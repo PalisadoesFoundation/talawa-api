@@ -7,7 +7,17 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { Organization, User } from "../../models";
-
+/**
+ * This function enables to unblock user.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the organization exists.
+ * 2. If the user exists
+ * 3. If the user is an admin of the organization
+ * @returns updated organization.
+ */
 export const unblockUser: MutationResolvers["unblockUser"] = async (
   _parent,
   args,
@@ -63,12 +73,11 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
     {
       $set: {
         blockedUsers: organization.blockedUsers.filter(
-          (blockedUser) => blockedUser !== user._id
+          (blockedUser) => !user._id.equals(blockedUser)
         ),
       },
     }
   );
-
   // remove the organization from the organizationsBlockedBy array inside the user record
   return await User.findOneAndUpdate(
     {
@@ -77,7 +86,8 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
     {
       $set: {
         organizationsBlockedBy: user.organizationsBlockedBy.filter(
-          (organizationBlockedBy) => organizationBlockedBy !== organization._id
+          (organizationBlockedBy) =>
+            !organization._id.equals(organizationBlockedBy)
         ),
       },
     },

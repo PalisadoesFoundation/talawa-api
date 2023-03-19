@@ -2,7 +2,16 @@ import { COMMENT_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Comment } from "../../models";
-
+/**
+ * This function enables to unlike a comment.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the user exists.
+ * 2. If the comment exists
+ * @returns Comment.
+ */
 export const unlikeComment: MutationResolvers["unlikeComment"] = async (
   _parent,
   args,

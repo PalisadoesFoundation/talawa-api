@@ -1,5 +1,7 @@
 import { gql } from "apollo-server-core";
-
+/**
+ * This graphQL typeDef defines the logic for different mutations defined in the talawa-api.
+ */
 // Place fields alphabetically to ensure easier lookup and navigation.
 export const mutations = gql`
   type Mutation {
@@ -67,6 +69,8 @@ export const mutations = gql`
 
     createPost(data: PostInput!, file: String): Post @auth
 
+    createUserTag(input: CreateUserTagInput!): UserTag @auth
+
     createTask(data: TaskInput, eventId: ID!): Task! @auth
 
     deleteDonationById(id: ID!): DeletePayload!
@@ -117,6 +121,8 @@ export const mutations = gql`
 
     removePost(id: ID!): Post @auth
 
+    removeUserTag(id: ID!): UserTag @auth
+
     removeTask(id: ID!): Task @auth
 
     removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
@@ -143,6 +149,8 @@ export const mutations = gql`
 
     togglePostPin(id: ID!): Post! @auth
 
+    toggleUserTagAssign(input: ToggleUserTagAssignInput!): User @auth
+
     unblockUser(organizationId: ID!, userId: ID!): User! @auth
 
     unlikeComment(id: ID!): Comment @auth
@@ -157,12 +165,17 @@ export const mutations = gql`
 
     updateLanguage(languageCode: String!): User! @auth
 
-    updateOrganization(id: ID!, data: UpdateOrganizationInput): Organization!
-      @auth
+    updateOrganization(
+      id: ID!
+      data: UpdateOrganizationInput
+      file: String
+    ): Organization! @auth
 
     updatePluginInstalledOrgs(id: ID!, orgId: ID!): Plugin!
 
     updatePluginStatus(id: ID!, status: Boolean!): Plugin!
+
+    updateUserTag(input: UpdateUserTagInput!): UserTag @auth
 
     updateTask(id: ID!, data: UpdateTaskInput): Task @auth
 

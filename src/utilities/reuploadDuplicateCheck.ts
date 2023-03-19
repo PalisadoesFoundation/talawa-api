@@ -25,7 +25,17 @@ const getImageHash = (oldSrc: Type_ImagePath) => {
     });
   });
 };
-
+/**
+ * This function determines whether a user or an organisation is
+ * attempting to re-upload the same profile photo or organisation image.
+ *
+ * @remarks
+ * This is a utility method.
+ *
+ * @param oldImagePath - Path of a current Org/User image of `type: Type_ImagePath`.
+ * @param newImagePath - Path of a new image of `type: Type_ImagePath`.
+ * @returns If the identical image is trying to reuploaded, `true`; otherwise, `false`.
+ */
 export const reuploadDuplicateCheck = async (
   oldImagePath: Type_ImagePath | null,
   newImagePath: Type_ImagePath

@@ -6,9 +6,20 @@ import {
 import { User } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 
+/**
+ * This query will retrieve from the database a list of members
+ * in the organisation under the specified limit for the specified page in the pagination.
+ * @param _parent
+ * @param args - An object holds the data required to execute the query.
+ * `args.first` specifies the number of members to retrieve, and `args.after` specifies
+ * the unique identification for each item in the returned list.
+ * @returns An object containing the list of members and pagination information.
+ * @remarks Connection in graphQL means pagination,
+ * learn more about Connection {@link https://relay.dev/graphql/connections.htm | here}.
+ */
 // @ts-ignore
 export const organizationsMemberConnection: QueryResolvers["organizationsMemberConnection"] =
-  async (_parent, args) => {
+  async (_parent, args, context) => {
     const inputArg = getInputArg(args.where);
     const sort = getSort(args.orderBy);
 
@@ -58,6 +69,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
       users = usersModel.docs.map((user) => {
         return {
           ...user,
+          image: user.image ? `${context.apiRootUrl}${user.image}` : null,
           password: null,
         };
       });
@@ -65,6 +77,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
       users = usersModel.docs.map((user) => {
         return {
           ...user._doc,
+          image: user.image ? `${context.apiRootUrl}${user.image}` : null,
           password: null,
         };
       });

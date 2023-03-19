@@ -85,9 +85,9 @@ export const INVALID_FILE_TYPE = {
 };
 
 export const SAME_FILE_ERROR = {
-  message: "The newer image is the same as the previous image in the database",
-  code: "internalServerError",
-  param: "internalServerError",
+  MESSAGE: "The newer image is the same as the previous image in the database",
+  CODE: "internalServerError",
+  PARAM: "internalServerError",
 };
 
 export const INTERNAL_SERVER_ERROR = {
@@ -163,6 +163,47 @@ export const USER_NOT_AUTHORIZED_TO_PIN = {
   CODE: "user.notAuthorizedToPin",
   PARAM: "user.notAuthorizedToPin",
 };
+
+export const TAG_NOT_FOUND = {
+  MESSAGE: "The tag with the specified ID doesn't exist.",
+  CODE: "tag.doesNotExist",
+  PARAM: "tag.doesNotExist",
+};
+
+export const INVALID_TAG_INPUT = {
+  MESSAGE:
+    "Either an organizatin ID or a parent tag ID must be provided for this operation.",
+  CODE: "invalidArgs",
+  PARAM: "invalidArgs",
+};
+
+export const INCORRECT_TAG_INPUT = {
+  MESSAGE: "The tag does not belong to the organization provided.",
+  CODE: "invalidArgs.tag",
+  PARAM: "invalidArgs.tag",
+};
+
+export const NO_CHANGE_IN_TAG_NAME = {
+  MESSAGE:
+    "The tag name is the already set to the value it is being requested to be changed to.",
+  CODE: "invalidArgs.tagName",
+  PARAM: "invalidArgs.tagName",
+};
+
+export const TAG_ALREADY_EXISTS = {
+  MESSAGE:
+    "A tag with the same name and the same parent tag already exists for this organization.",
+  CODE: "tag.alreadyExists",
+  PARAM: "tag.alreadyExists",
+};
+
+export const USER_NOT_AUTHORIZED_TO_CREATE_TAG = {
+  MESSAGE:
+    "The user must be a superadmin or an admin of the organization to create the tag.",
+  CODE: "user.notAuth.createTag",
+  PARAM: "user.notAuth.createTag",
+};
+
 export const TASK_NOT_FOUND_ERROR = {
   DESC: "Task not found",
   CODE: "task.notFound",
@@ -231,6 +272,7 @@ export const EMAIL_ALREADY_EXISTS_ERROR = {
   MESSAGE: "email.alreadyExists",
   PARAM: "email",
 };
+
 export const BASE_URL = `http://localhost:${process.env.port || 4000}/`;
 
 export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
@@ -271,3 +313,12 @@ export const iosBundleId = process.env.iosBundleId;
 
 export const LAST_RESORT_SUPERADMIN_EMAIL =
   process.env.LAST_RESORT_SUPERADMIN_EMAIL;
+
+export const SMTP_OPTIONS = {
+  IS_SMTP: process.env.IS_SMTP,
+  SMTP_HOST: process.env.SMTP_HOST,
+  SMTP_PASSWORD: process.env.SMTP_PASSWORD,
+  SMTP_USERNAME: process.env.SMTP_USERNAME,
+  SMTP_PORT: process.env.SMTP_PORT,
+  SMTP_SSL_TLS: process.env.SMTP_SSL_TLS,
+};

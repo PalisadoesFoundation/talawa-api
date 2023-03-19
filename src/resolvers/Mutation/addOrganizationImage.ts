@@ -8,7 +8,17 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
-
+/**
+ * This function adds Organization Image.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the current user exists
+ * 2. If the organization exists
+ * 3. If the user trying to add the image is an admin of organization
+ * @returns Updated Organization
+ */
 export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
   async (_parent, args, context) => {
     const currentUserExists = await User.exists({

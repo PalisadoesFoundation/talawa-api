@@ -7,7 +7,18 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   CHAT_NOT_FOUND_ERROR,
 } from "../../constants";
-
+/**
+ * This function enables an admin to remove a group.
+ * @param _parent - parent of current request
+ * @param args - payload provided with the request
+ * @param context - context of entire application
+ * @remarks The following checks are done:
+ * 1. If the group chat exists
+ * 2. If the organization exists
+ * 3. If the user exists
+ * 4. If the user is an admin of organization
+ * @returns Deleted group chat
+ */
 // @ts-ignore
 export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
   _parent,
