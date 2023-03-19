@@ -46,7 +46,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> UserTag -> usersAssignedTo", () => {
-  it(`returns all the users if no args are provided`, async () => {
+  it(`returns all the users which have been assigned the tag if no arguments are provided`, async () => {
     const parent = testTag!;
     const args = {};
 
@@ -66,7 +66,7 @@ describe("resolvers -> UserTag -> usersAssignedTo", () => {
     expect(payload!.edges!.map((edge) => edge!.cursor)).toEqual(userIds);
   });
 
-  it(`returns the correct users when after argument is provided`, async () => {
+  it(`returns the users with _id > args.after when the after argument is provided`, async () => {
     const parent = testTag!;
     const args = {
       after: userIds[2],
@@ -92,7 +92,7 @@ describe("resolvers -> UserTag -> usersAssignedTo", () => {
     );
   });
 
-  it(`returns the correct users when before argument is provided`, async () => {
+  it(`returns the users with _id < args.before when the before argument is provided`, async () => {
     const parent = testTag!;
     const args = {
       before: userIds[2],
@@ -118,7 +118,7 @@ describe("resolvers -> UserTag -> usersAssignedTo", () => {
     );
   });
 
-  it(`returns the correct users when both before and after argument are provided`, async () => {
+  it(`returns the users with args.after < _id < args.before when both before and after arguments are provided`, async () => {
     const parent = testTag!;
     const args = {
       after: userIds[1],
@@ -145,7 +145,7 @@ describe("resolvers -> UserTag -> usersAssignedTo", () => {
     );
   });
 
-  it(`returns the correct users when first argument is provided`, async () => {
+  it(`returns only "args.first" number of users with the least _id's when the first argument is provided`, async () => {
     const parent = testTag!;
     const args = {
       first: 3,
@@ -171,7 +171,7 @@ describe("resolvers -> UserTag -> usersAssignedTo", () => {
     );
   });
 
-  it(`returns the correct users when last argument is provided`, async () => {
+  it(`returns only "args.last" number of users with the greatest _id's when the last argument is provided`, async () => {
     const parent = testTag!;
     const args = {
       last: 3,
@@ -197,7 +197,7 @@ describe("resolvers -> UserTag -> usersAssignedTo", () => {
     );
   });
 
-  it(`returns the correct response when no edges exist`, async () => {
+  it(`returns edges = [], hasNextPage = hasPreviousPage = false and startCursor = endCursor = null when there are no users who have been assigned the tag`, async () => {
     const parent = randomTag!;
     const args = {};
 
