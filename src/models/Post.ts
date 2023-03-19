@@ -20,7 +20,7 @@ export interface Interface_Post {
   title: string | undefined;
   status: string;
   createdAt: Date;
-  imageUrl: string | undefined;
+  imageUrl: string | undefined | null;
   videoUrl: string | undefined;
   creator: PopulatedDoc<Interface_User & Document>;
   organization: PopulatedDoc<Interface_Organization & Document>;

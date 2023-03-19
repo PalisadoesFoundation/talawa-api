@@ -8,6 +8,7 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   LENGTH_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
+  BASE_URL,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -245,6 +246,7 @@ describe("resolvers -> Mutation -> createPost", () => {
 
     const context = {
       userId: testUser!.id,
+      apiRootUrl: BASE_URL,
     };
 
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
@@ -263,7 +265,7 @@ describe("resolvers -> Mutation -> createPost", () => {
         videoUrl: "videoUrl",
         creator: testUser!._id,
         organization: testOrganization!._id,
-        imageUrl: testImagePath,
+        imageUrl: `${context.apiRootUrl}${testImagePath}`,
       })
     );
   });

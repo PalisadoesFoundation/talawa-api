@@ -8,6 +8,8 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
+import { updateOrganization as updateOrganizationResolver } from "../../../src/resolvers/Mutation/updateOrganization";
 import {
   beforeAll,
   afterAll,
@@ -26,6 +28,10 @@ import {
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
+
+vi.mock("../../utilities/uploadEncodedImage", () => ({
+  uploadEncodedImage: vi.fn(),
+}));
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -148,6 +154,61 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
     const { updateOrganization: updateOrganizationResolver } = await import(
       "../../../src/resolvers/Mutation/updateOrganization"
     );
+
+    const updateOrganizationPayload = await updateOrganizationResolver?.(
+      {},
+      args,
+      context
+    );
+
+    const testUpdateOrganizationPayload = await Organization.findOne({
+      _id: testOrganization!._id,
+    }).lean();
+
+    expect(updateOrganizationPayload).toEqual(testUpdateOrganizationPayload);
+  });
+
+  it(`updates the organization with _id === args.id and returns the updated organization when image is given`, async () => {
+    await Organization.updateOne(
+      {
+        _id: testOrganization!._id,
+      },
+      {
+        $set: {
+          admins: [testUser!._id],
+        },
+      }
+    );
+
+    await User.updateOne(
+      {
+        _id: testUser!._id,
+      },
+      {
+        $set: {
+          adminFor: [testOrganization!._id],
+        },
+      }
+    );
+
+    const args: MutationUpdateOrganizationArgs = {
+      id: testOrganization!._id,
+      data: {
+        description: "newDescription",
+        isPublic: false,
+        name: "newName",
+        visibleInSearch: false,
+      },
+      file: "newImageFile.png",
+    };
+
+    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
+      async (encodedImageURL: string) => encodedImageURL
+    );
+
+    const context = {
+      userId: testUser!._id,
+    };
 
     const updateOrganizationPayload = await updateOrganizationResolver?.(
       {},

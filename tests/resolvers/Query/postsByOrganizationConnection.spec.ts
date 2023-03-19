@@ -13,6 +13,7 @@ import {
 } from "../../helpers/userAndOrg";
 import { Post, Interface_Post } from "../../../src/models";
 import { nanoid } from "nanoid";
+import { BASE_URL } from "../../../src/constants";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testOrganization: testOrganizationType;
@@ -111,8 +112,11 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       orderBy: "id_ASC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
     const postsByOrganizationConnectionPayload =
-      await postsByOrganizationConnectionResolver?.({}, args, {});
+      await postsByOrganizationConnectionResolver?.({}, args, context);
 
     const posts = await Post.find(where).sort(sort).populate("creator").lean();
 
@@ -120,6 +124,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       return {
         ...post,
         id: String(post._id),
+        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
       };
     });
 
@@ -180,9 +185,11 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       orderBy: "id_DESC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
     const postsByOrganizationConnectionPayload =
-      await postsByOrganizationConnectionResolver?.({}, args, {});
-
+      await postsByOrganizationConnectionResolver?.({}, args, context);
     const posts = await Post.find(where)
       .limit(2)
       .sort(sort)
@@ -193,6 +200,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       return {
         ...post,
         id: String(post._id),
+        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
       };
     });
 
@@ -253,9 +261,11 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       orderBy: "title_ASC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
     const postsByOrganizationConnectionPayload =
-      await postsByOrganizationConnectionResolver?.({}, args, {});
-
+      await postsByOrganizationConnectionResolver?.({}, args, context);
     const posts = await Post.find(where)
       .limit(2)
       .sort(sort)
@@ -265,6 +275,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       return {
         ...post,
         id: String(post._id),
+        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
       };
     });
 
@@ -325,9 +336,11 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       orderBy: "title_DESC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
     const postsByOrganizationConnectionPayload =
-      await postsByOrganizationConnectionResolver?.({}, args, {});
-
+      await postsByOrganizationConnectionResolver?.({}, args, context);
     const posts = await Post.find(where)
       .limit(2)
       .skip(1)
@@ -339,6 +352,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       return {
         ...post,
         id: String(post._id),
+        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
       };
     });
 
@@ -396,8 +410,11 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       orderBy: "text_ASC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
     const postsByOrganizationConnectionPayload =
-      await postsByOrganizationConnectionResolver?.({}, args, {});
+      await postsByOrganizationConnectionResolver?.({}, args, context);
 
     const posts = await Post.find(where)
       .limit(2)
@@ -409,6 +426,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       return {
         ...post,
         id: String(post._id),
+        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
       };
     });
 
@@ -461,8 +479,11 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       orderBy: "text_DESC",
     };
 
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
     const postsByOrganizationConnectionPayload =
-      await postsByOrganizationConnectionResolver?.({}, args, {});
+      await postsByOrganizationConnectionResolver?.({}, args, context);
 
     const posts = await Post.find(where)
       .limit(2)
@@ -474,6 +495,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       return {
         ...post,
         id: String(post._id),
+        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
       };
     });
 
@@ -535,6 +557,68 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
   });
 
   it(`returns non-paginated list of posts if args.first === undefined`, async () => {
+    const where = {
+      creator: {
+        $in: testUser?._id,
+      },
+    };
+
+    const args: QueryPostsByOrganizationConnectionArgs = {
+      id: testOrganization?._id,
+      skip: 1,
+      where: {},
+      orderBy: null,
+    };
+
+    const postsByOrganizationConnectionPayload =
+      await postsByOrganizationConnectionResolver?.({}, args, {});
+
+    const postsTestModel = await Post.paginate(where, {
+      pagination: false,
+      sort: {},
+    });
+
+    const postsWithId = postsTestModel.docs.map((post) => {
+      return {
+        ...post,
+        id: String(post._id),
+      };
+    });
+    postsByOrganizationConnectionPayload?.edges.map((post) => {
+      return {
+        ...post,
+        organization: post?.organization._id,
+      };
+    });
+    postsByOrganizationConnectionPayload!.edges = postsWithId;
+
+    expect(postsByOrganizationConnectionPayload).toEqual({
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        totalPages: 1,
+        nextPageNo: null,
+        prevPageNo: null,
+        currPageNo: 1,
+      },
+      edges: postsWithId,
+      aggregate: {
+        count: 3,
+      },
+    });
+  });
+  it(`returns non-paginated list of posts if args.first === undefined and post.imageUrl === undefined`, async () => {
+    await Post.findOneAndUpdate(
+      {
+        creator: testUser?.id,
+      },
+      {
+        $set: {
+          imageUrl: undefined,
+        },
+      }
+    );
+
     const where = {
       creator: {
         $in: testUser?._id,

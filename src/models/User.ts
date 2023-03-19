@@ -17,7 +17,7 @@ import { Interface_Organization } from "./Organization";
  */
 export interface Interface_User {
   _id: Types.ObjectId;
-  image: string | undefined;
+  image: string | undefined | null;
   token: string | undefined;
   tokenVersion: number;
   firstName: string;

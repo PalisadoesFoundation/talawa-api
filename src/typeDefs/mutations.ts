@@ -165,8 +165,11 @@ export const mutations = gql`
 
     updateLanguage(languageCode: String!): User! @auth
 
-    updateOrganization(id: ID!, data: UpdateOrganizationInput): Organization!
-      @auth
+    updateOrganization(
+      id: ID!
+      data: UpdateOrganizationInput
+      file: String
+    ): Organization! @auth
 
     updatePluginInstalledOrgs(id: ID!, orgId: ID!): Plugin!
 
