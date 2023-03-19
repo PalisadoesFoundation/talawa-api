@@ -136,7 +136,7 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
     }
   });
 
-  it(`throws Not Authorized Error if the user is not a superadmin or admin of the organization of the tag beind assigned`, async () => {
+  it(`throws Not Authorized Error if the current user is not a superadmin or admin of the organization of the tag being assigned`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
@@ -170,7 +170,7 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
     }
   });
 
-  it(`throws Error if the user being assigned have not joined the  organization of the tag beind assigned`, async () => {
+  it(`throws Error if the request user is not a member of organization of the tag being assigned`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
@@ -204,7 +204,7 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
     }
   });
 
-  it(`tag assign should be successful`, async () => {
+  it(`Tag assign should be successful and the user who has been assigned the tag is returned`, async () => {
     const args: MutationAssignUserTagArgs = {
       input: {
         userId: adminUser!._id,
@@ -219,7 +219,9 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
       "../../../src/resolvers/Mutation/assignUserTag"
     );
 
-    await assignUserTagResolver?.({}, args, context);
+    const payload = await assignUserTagResolver?.({}, args, context);
+
+    expect(payload!._id.toString()).toEqual(adminUser!._id.toString());
 
     const tagAssigned = await TagUser.exists({
       ...args.input,
@@ -228,7 +230,7 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
     expect(tagAssigned).toBeTruthy();
   });
 
-  it(`tag assign should give USER_ALREADY_HAS_TAG error if the request tries to reassign the same tag again to the user`, async () => {
+  it(`Throws USER_ALREADY_HAS_TAG error if tag with _id === args.input.tagId is already assigned to user with _id === args.input.userId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi

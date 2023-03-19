@@ -17,12 +17,8 @@ export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
     _id: context.userId,
   }).lean();
 
-  const requestUser = await User.findOne({
-    _id: args.input.userId,
-  }).lean();
-
-  // Checks whether currentUser and the requestUser both exist.
-  if (!currentUser || !requestUser) {
+  // Checks whether the currentUser exists.
+  if (!currentUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
@@ -57,6 +53,19 @@ export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
       USER_NOT_AUTHORIZED_ERROR.PARAM
+    );
+  }
+
+  // Check if the request user (to whom the tag is to be assigned) exists
+  const requestUser = await User.findOne({
+    _id: args.input.userId,
+  }).lean();
+
+  if (!requestUser) {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
     );
   }
 

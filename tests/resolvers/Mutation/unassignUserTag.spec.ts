@@ -135,7 +135,7 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
     }
   });
 
-  it(`throws Not Authorized Error if the user is not a superadmin or admin of the organization of the tag beind assigned`, async () => {
+  it(`throws Not Authorized Error if the current user is not a superadmin or admin of the organization of the tag being assigned`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
@@ -169,7 +169,7 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
     }
   });
 
-  it(`tag unassign should give USER_DOES_NOT_HAVE_THE_TAG error if the request tries to unassign the tag from a user who has not been tagged with tag with ,_id === args.input.tagId`, async () => {
+  it(`throws USER_DOES_NOT_HAVE_THE_TAG error if the request tries to unassign the tag from a user who has not been tagged with the tag with _id === args.input.tagId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
@@ -202,7 +202,7 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
     }
   });
 
-  it(`tag unassign should be successful`, async () => {
+  it(`tag unassign should be successful and the user who has been unassigned the tag is returned`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
@@ -229,7 +229,9 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
       "../../../src/resolvers/Mutation/unassignUserTag"
     );
 
-    await unassignUserTagResolver?.({}, args, context);
+    const payload = await unassignUserTagResolver?.({}, args, context);
+
+    expect(payload!._id.toString()).toEqual(adminUser!._id.toString());
 
     const tagAssigned = await TagUser.exists({
       ...args.input,
