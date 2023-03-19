@@ -8,6 +8,7 @@ import { Event } from "../../../src/models";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { createEventWithRegistrant, testEventType } from "../../helpers/events";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { createTestTask } from "../../helpers/task";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testEvents: testEventType[];
@@ -34,6 +35,7 @@ beforeAll(async () => {
     "DAILY"
   );
   testEvents = [testEvent1, testEvent2, testEvent3];
+  createTestTask(testEvent1!._id, testUser!._id);
 });
 
 afterAll(async () => {
@@ -63,7 +65,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     expect(eventsByOrganizationConnectionPayload).toEqual(events);
   });
   it(`returns list of all existing events filtered by args.where ===
-  { id: testEvent[1]._id, title: testEvents[1].title, description:testEvents[1].description }
+  { id: testEvent[1]._id, title: testEvents[1].title, description:testEvents[1].description, organization: testEvents[1].organization._id, location: testEvents[1].location}
   and sorted by ascending order of event._id if args.orderBy === 'id_ASC'`, async () => {
     const sort = {
       _id: 1,
@@ -96,15 +98,19 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     eventsByOrganizationConnectionPayload =
       eventsByOrganizationConnectionPayload!.map((event) => {
-        const admin_array = event.admins;
         const admin_ids = [];
-        for (let i = 0; i < admin_array.length; i++) {
-          admin_ids.push(admin_array[i]._id);
+        for (let i = 0; i < event.admins.length; i++) {
+          admin_ids.push(event.admins[i]._id);
+        }
+        const tasks_ids = [];
+        for (let i = 0; i < event.tasks.length; i++) {
+          tasks_ids.push(event.tasks[i]._id);
         }
         return {
           ...event,
           creator: event!.creator._id,
           admins: admin_ids,
+          tasks: tasks_ids,
         };
       });
     expect(eventsByOrganizationConnectionPayload).toEqual(events);
@@ -149,15 +155,19 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     eventsByOrganizationConnectionPayload =
       eventsByOrganizationConnectionPayload!.map((event) => {
-        const admin_array = event.admins;
         const admin_ids = [];
-        for (let i = 0; i < admin_array.length; i++) {
-          admin_ids.push(admin_array[i]._id);
+        for (let i = 0; i < event.admins.length; i++) {
+          admin_ids.push(event.admins[i]._id);
+        }
+        const tasks_ids = [];
+        for (let i = 0; i < event.tasks.length; i++) {
+          tasks_ids.push(event.tasks[i]._id);
         }
         return {
           ...event,
           creator: event!.creator._id,
           admins: admin_ids,
+          tasks: tasks_ids,
         };
       });
     expect(eventsByOrganizationConnectionPayload).toEqual(events);
@@ -184,8 +194,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     };
 
     const args: QueryEventsByOrganizationConnectionArgs = {
-      first: 2,
-      skip: 1,
       where: {
         id_not_in: [testEvents[0]!._id],
         title_not_in: [testEvents[0]!.title],
@@ -195,22 +203,26 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       orderBy: "title_DESC",
     };
 
-    const events = await Event.find(where).limit(2).skip(1).sort(sort).lean();
+    const events = await Event.find(where).sort(sort).lean();
 
     let eventsByOrganizationConnectionPayload =
       await eventsByOrganizationConnectionResolver?.({}, args, {});
 
     eventsByOrganizationConnectionPayload =
       eventsByOrganizationConnectionPayload!.map((event) => {
-        const admin_array = event.admins;
         const admin_ids = [];
-        for (let i = 0; i < admin_array.length; i++) {
-          admin_ids.push(admin_array[i]._id);
+        for (let i = 0; i < event.admins.length; i++) {
+          admin_ids.push(event.admins[i]._id);
+        }
+        const tasks_ids = [];
+        for (let i = 0; i < event.tasks.length; i++) {
+          tasks_ids.push(event.tasks[i]._id);
         }
         return {
           ...event,
           creator: event!.creator._id,
           admins: admin_ids,
+          tasks: tasks_ids,
         };
       });
     expect(eventsByOrganizationConnectionPayload).toEqual(events);
@@ -255,15 +267,19 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     eventsByOrganizationConnectionPayload =
       eventsByOrganizationConnectionPayload!.map((event) => {
-        const admin_array = event.admins;
         const admin_ids = [];
-        for (let i = 0; i < admin_array.length; i++) {
-          admin_ids.push(admin_array[i]._id);
+        for (let i = 0; i < event.admins.length; i++) {
+          admin_ids.push(event.admins[i]._id);
+        }
+        const tasks_ids = [];
+        for (let i = 0; i < event.tasks.length; i++) {
+          tasks_ids.push(event.tasks[i]._id);
         }
         return {
           ...event,
           creator: event!.creator._id,
           admins: admin_ids,
+          tasks: tasks_ids,
         };
       });
     expect(eventsByOrganizationConnectionPayload).toEqual(events);
@@ -307,15 +323,19 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     eventsByOrganizationConnectionPayload =
       eventsByOrganizationConnectionPayload!.map((event) => {
-        const admin_array = event.admins;
         const admin_ids = [];
-        for (let i = 0; i < admin_array.length; i++) {
-          admin_ids.push(admin_array[i]._id);
+        for (let i = 0; i < event.admins.length; i++) {
+          admin_ids.push(event.admins[i]._id);
+        }
+        const tasks_ids = [];
+        for (let i = 0; i < event.tasks.length; i++) {
+          tasks_ids.push(event.tasks[i]._id);
         }
         return {
           ...event,
           creator: event!.creator._id,
           admins: admin_ids,
+          tasks: tasks_ids,
         };
       });
     expect(eventsByOrganizationConnectionPayload).toEqual(events);
@@ -348,15 +368,19 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
 
     eventsByOrganizationConnectionPayload =
       eventsByOrganizationConnectionPayload!.map((event) => {
-        const admin_array = event.admins;
         const admin_ids = [];
-        for (let i = 0; i < admin_array.length; i++) {
-          admin_ids.push(admin_array[i]._id);
+        for (let i = 0; i < event.admins.length; i++) {
+          admin_ids.push(event.admins[i]._id);
+        }
+        const tasks_ids = [];
+        for (let i = 0; i < event.tasks.length; i++) {
+          tasks_ids.push(event.tasks[i]._id);
         }
         return {
           ...event,
           creator: event!.creator._id,
           admins: admin_ids,
+          tasks: tasks_ids,
         };
       });
     expect(eventsByOrganizationConnectionPayload).toEqual(events);
