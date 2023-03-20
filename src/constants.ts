@@ -259,6 +259,44 @@ export const EMAIL_ALREADY_EXISTS_ERROR = {
   MESSAGE: "email.alreadyExists",
   PARAM: "email",
 };
+
+export const PAGINATION_EITHER_FIRST_OR_LAST_MUST_BE_PROVIDED_ERROR = {
+  MESSAGE:
+    "The pagination arguments must either contain a positive integer for first or last argument.",
+  CODE: "pagination.firstOrLastMustExist",
+  PARAM: "pagination.firstOrLastMustExist",
+};
+
+export const PAGINATION_BOTH_FIRST_AND_LAST_MUST_NOT_BE_PROVIDED_ERROR = {
+  MESSAGE:
+    "The pagination arguments must not contain both first and last arguments.",
+  CODE: "pagination.bothFirstAndLastProvided",
+  PARAM: "pagination.bothFirstAndLastProvided",
+};
+
+export const PAGINATION_BEFORE_AND_LAST_MUST_NOT_BE_PROVIDED_WITH_FIRST_ERROR =
+  {
+    MESSAGE:
+      "The pagination arguments must not contain before or last argument if first argument is provided.",
+    CODE: "pagination.noBeforeAndLastIfFirstProvided",
+    PARAM: "pagination.noBeforeAndLastIfFirstProvided",
+  };
+
+export const PAGINATION_AFTER_AND_FIRST_MUST_NOT_BE_PROVIDED_WITH_LAST_ERROR = {
+  MESSAGE:
+    "The pagination arguments must not contain after or first argument if last argument is provided.",
+  CODE: "pagination.noafterAndFirstIfLastProvided",
+  PARAM: "pagination.noafterAndFirstIfLastProvided",
+};
+
+export const MAXIMUM_FETCH_LIMIT = 100;
+
+export const PAGINATION_MAXIMUM_FETCH_LIMIT_CROSSED = {
+  MESSAGE: `Atmost ${MAXIMUM_FETCH_LIMIT} items can be fetched in a single request.`,
+  CODE: "pagination.maximumFetchLimitCrossed",
+  PARAM: "pagination.maximumFetchLimitCrossed",
+};
+
 export const BASE_URL = `http://localhost:${process.env.port || 4000}/`;
 
 export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
