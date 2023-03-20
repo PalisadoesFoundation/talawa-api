@@ -382,6 +382,7 @@ export type Mutation = {
   addUserToGroupChat: GroupChat;
   adminRemoveEvent: Event;
   adminRemoveGroup: Message;
+  assignUserTag?: Maybe<User>;
   blockPluginCreationBySuperadmin: User;
   blockUser: User;
   cancelMembershipRequest: MembershipRequest;
@@ -432,7 +433,7 @@ export type Mutation = {
   sendMessageToGroupChat: GroupChatMessage;
   signUp: AuthData;
   togglePostPin: Post;
-  toggleUserTagAssign?: Maybe<User>;
+  unassignUserTag?: Maybe<User>;
   unblockUser: User;
   unlikeComment?: Maybe<Comment>;
   unlikePost?: Maybe<Post>;
@@ -490,6 +491,11 @@ export type MutationAdminRemoveEventArgs = {
 
 export type MutationAdminRemoveGroupArgs = {
   groupId: Scalars['ID'];
+};
+
+
+export type MutationAssignUserTagArgs = {
+  input: ToggleUserTagAssignInput;
 };
 
 
@@ -753,7 +759,7 @@ export type MutationTogglePostPinArgs = {
 };
 
 
-export type MutationToggleUserTagAssignArgs = {
+export type MutationUnassignUserTagArgs = {
   input: ToggleUserTagAssignInput;
 };
 
@@ -2090,6 +2096,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addUserToGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationAddUserToGroupChatArgs, 'chatId' | 'userId'>>;
   adminRemoveEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationAdminRemoveEventArgs, 'eventId'>>;
   adminRemoveGroup?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<MutationAdminRemoveGroupArgs, 'groupId'>>;
+  assignUserTag?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAssignUserTagArgs, 'input'>>;
   blockPluginCreationBySuperadmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockPluginCreationBySuperadminArgs, 'blockUser' | 'userId'>>;
   blockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockUserArgs, 'organizationId' | 'userId'>>;
   cancelMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationCancelMembershipRequestArgs, 'membershipRequestId'>>;
@@ -2140,7 +2147,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   sendMessageToGroupChat?: Resolver<ResolversTypes['GroupChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToGroupChatArgs, 'chatId' | 'messageContent'>>;
   signUp?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'data'>>;
   togglePostPin?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationTogglePostPinArgs, 'id'>>;
-  toggleUserTagAssign?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationToggleUserTagAssignArgs, 'input'>>;
+  unassignUserTag?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUnassignUserTagArgs, 'input'>>;
   unblockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUnblockUserArgs, 'organizationId' | 'userId'>>;
   unlikeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationUnlikeCommentArgs, 'id'>>;
   unlikePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUnlikePostArgs, 'id'>>;
