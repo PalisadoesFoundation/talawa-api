@@ -19,7 +19,7 @@ import { getSort } from "./helperFunctions/getSort";
  */
 // @ts-ignore
 export const organizationsMemberConnection: QueryResolvers["organizationsMemberConnection"] =
-  async (_parent, args) => {
+  async (_parent, args, context) => {
     const inputArg = getInputArg(args.where);
     const sort = getSort(args.orderBy);
 
@@ -69,6 +69,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
       users = usersModel.docs.map((user) => {
         return {
           ...user,
+          image: user.image ? `${context.apiRootUrl}${user.image}` : null,
           password: null,
         };
       });
@@ -76,6 +77,7 @@ export const organizationsMemberConnection: QueryResolvers["organizationsMemberC
       users = usersModel.docs.map((user) => {
         return {
           ...user._doc,
+          image: user.image ? `${context.apiRootUrl}${user.image}` : null,
           password: null,
         };
       });

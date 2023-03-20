@@ -5,9 +5,14 @@ import { connect, disconnect } from "../../helpers/db";
 import { QueryUsersArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
-import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
+import {
+  BASE_URL,
+  UNAUTHENTICATED_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import * as mongoose from "mongoose";
+import { createTestUser } from "../../helpers/user";
 
 let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
 
@@ -22,7 +27,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Query -> users", () => {
-  it("throws NotFoundError if no user exists", async () => {
+  it("throws UnauthenticatedError if userId is not passed in context", async () => {
     const testObjectId = new mongoose.Types.ObjectId();
 
     vi.doMock("../../../src/constants", async () => {
@@ -52,6 +57,51 @@ describe("resolvers -> Query -> users", () => {
         "../../../src/resolvers/Query/users"
       );
       await mockedInProductionUserResolver?.({}, args, {});
+    } catch (error: any) {
+      expect(spy).toBeCalledWith(UNAUTHENTICATED_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${UNAUTHENTICATED_ERROR.MESSAGE}`
+      );
+    }
+
+    vi.doUnmock("../../../src/constants");
+    vi.resetModules();
+  });
+
+  it("throws NotFoundError if no user exists", async () => {
+    const testObjectId = new mongoose.Types.ObjectId();
+
+    vi.doMock("../../../src/constants", async () => {
+      const actualConstants: object = await vi.importActual(
+        "../../../src/constants"
+      );
+      return {
+        ...actualConstants,
+      };
+    });
+
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    const testUser = await createTestUser();
+
+    try {
+      const args: QueryUsersArgs = {
+        orderBy: null,
+        where: {
+          id: testObjectId as unknown as string,
+        },
+      };
+
+      const { users: mockedInProductionUserResolver } = await import(
+        "../../../src/resolvers/Query/users"
+      );
+      await mockedInProductionUserResolver?.({}, args, {
+        userId: testUser?._id,
+      });
     } catch (error: any) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
@@ -87,6 +137,22 @@ describe("resolvers -> Query -> users", () => {
           lastName: `lastName${nanoid()}`,
           appLanguageCode: `en${nanoid()}`,
         },
+        {
+          email: `email${nanoid().toLowerCase()}@gmail.com`,
+          password: "password",
+          firstName: `firstName${nanoid()}`,
+          lastName: `lastName${nanoid()}`,
+          appLanguageCode: `en${nanoid()}`,
+          userType: "SUPERADMIN",
+        },
+        {
+          email: `email${nanoid().toLowerCase()}@gmail.com`,
+          password: "password",
+          firstName: `firstName${nanoid()}`,
+          lastName: `lastName${nanoid()}`,
+          appLanguageCode: `en${nanoid()}`,
+          userType: "ADMIN",
+        },
       ]);
 
       const testOrganization = await Organization.create({
@@ -95,7 +161,7 @@ describe("resolvers -> Query -> users", () => {
         isPublic: true,
         creator: testUsers[0]._id,
         admins: [testUsers[0]._id],
-        members: [testUsers[0]._id],
+        members: [testUsers[0]._id, testUsers[1]._id],
         apiUrl: "apiUrl1",
       });
 
@@ -133,6 +199,140 @@ describe("resolvers -> Query -> users", () => {
           },
         }
       );
+
+      await User.updateOne(
+        {
+          _id: testUsers[1]._id,
+        },
+        {
+          $push: {
+            joinedOrganizations: testOrganization._id,
+            organizationsBlockedBy: testOrganization._id,
+          },
+        }
+      );
+
+      await Organization.updateOne(
+        {
+          _id: testOrganization._id,
+        },
+        {
+          $push: {
+            blockedUsers: testUsers[1]._id,
+          },
+        }
+      );
+    });
+
+    it(`returns empty array for organizationsBlockedBy fields when the client is a normal user`, async () => {
+      const args: QueryUsersArgs = {
+        where: {
+          id: testUsers[1].id,
+        },
+      };
+
+      const sort = {
+        _id: 1,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, {
+        userId: testUsers[1]._id,
+      });
+
+      let users = await User.find({
+        _id: testUsers[1].id,
+      })
+        .sort(sort)
+        .select(["-password"])
+        .populate("createdOrganizations")
+        .populate("createdEvents")
+        .populate("joinedOrganizations")
+        .populate("registeredEvents")
+        .populate("eventAdmin")
+        .populate("adminFor")
+        .lean();
+
+      users = users.map((user) => ({
+        ...user,
+        organizationsBlockedBy: [],
+        image: null,
+      }));
+
+      expect(usersPayload).toEqual(users);
+    });
+
+    it(`returns populated array for organizationsBlockedBy fields when the client is a SUPERADMIN`, async () => {
+      const args: QueryUsersArgs = {
+        where: {
+          id: testUsers[1].id,
+        },
+      };
+
+      const sort = {
+        _id: 1,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, {
+        userId: testUsers[3]._id,
+      });
+
+      let users = await User.find({
+        _id: testUsers[1].id,
+      })
+        .sort(sort)
+        .select(["-password"])
+        .populate("createdOrganizations")
+        .populate("createdEvents")
+        .populate("joinedOrganizations")
+        .populate("registeredEvents")
+        .populate("eventAdmin")
+        .populate("adminFor")
+        .populate("organizationsBlockedBy")
+        .lean();
+
+      users = users.map((user) => ({
+        ...user,
+        image: null,
+      }));
+
+      expect(usersPayload).toEqual(users);
+    });
+
+    it(`returns populated array for organizationsBlockedBy fields when the client is a ADMIN`, async () => {
+      const args: QueryUsersArgs = {
+        where: {
+          id: testUsers[1].id,
+        },
+      };
+
+      const sort = {
+        _id: 1,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, {
+        userId: testUsers[4]._id,
+      });
+
+      let users = await User.find({
+        _id: testUsers[1].id,
+      })
+        .sort(sort)
+        .select(["-password"])
+        .populate("createdOrganizations")
+        .populate("createdEvents")
+        .populate("joinedOrganizations")
+        .populate("registeredEvents")
+        .populate("eventAdmin")
+        .populate("adminFor")
+        .populate("organizationsBlockedBy")
+        .lean();
+
+      users = users.map((user) => ({
+        ...user,
+        image: null,
+      }));
+
+      expect(usersPayload).toEqual(users);
     });
 
     it(`returns list of all existing users filtered by
@@ -163,7 +363,11 @@ describe("resolvers -> Query -> users", () => {
         orderBy: "id_ASC",
       };
 
-      const usersPayload = await usersResolver?.({}, args, {});
+      // const user = await createTestUser();
+
+      const usersPayload = await usersResolver?.({}, args, {
+        userId: testUsers[0]._id,
+      });
 
       let users = await User.find(where)
         .sort(sort)
@@ -179,6 +383,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -222,7 +427,12 @@ describe("resolvers -> Query -> users", () => {
         orderBy: "id_DESC",
       };
 
-      const usersPayload = await usersResolver?.({}, args, {});
+      const context = {
+        apiRootUrl: BASE_URL,
+        userId: testUsers[0]._id,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
         .sort(sort)
@@ -238,6 +448,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -281,7 +492,9 @@ describe("resolvers -> Query -> users", () => {
         orderBy: "firstName_ASC",
       };
 
-      const usersPayload = await usersResolver?.({}, args, {});
+      const usersPayload = await usersResolver?.({}, args, {
+        userId: testUsers[0]._id,
+      });
 
       let users = await User.find(where)
         .sort(sort)
@@ -297,6 +510,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -340,7 +554,12 @@ describe("resolvers -> Query -> users", () => {
         orderBy: "firstName_DESC",
       };
 
-      const usersPayload = await usersResolver?.({}, args, {});
+      const context = {
+        apiRootUrl: BASE_URL,
+        userId: testUsers[0]._id,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
         .sort(sort)
@@ -356,6 +575,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -399,7 +619,12 @@ describe("resolvers -> Query -> users", () => {
         orderBy: "lastName_ASC",
       };
 
-      const usersPayload = await usersResolver?.({}, args, {});
+      const context = {
+        apiRootUrl: BASE_URL,
+        userId: testUsers[0]._id,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
         .sort(sort)
@@ -415,6 +640,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -446,7 +672,11 @@ describe("resolvers -> Query -> users", () => {
         orderBy: "lastName_DESC",
       };
 
-      const usersPayload = await usersResolver?.({}, args, {});
+      const context = {
+        apiRootUrl: BASE_URL,
+        userId: testUsers[0]._id,
+      };
+      const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
         .sort(sort)
@@ -462,6 +692,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -480,7 +711,12 @@ describe("resolvers -> Query -> users", () => {
         orderBy: "appLanguageCode_ASC",
       };
 
-      const usersPayload = await usersResolver?.({}, args, {});
+      const context = {
+        apiRootUrl: BASE_URL,
+        userId: testUsers[0]._id,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
         .sort(sort)
@@ -496,6 +732,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -514,7 +751,12 @@ describe("resolvers -> Query -> users", () => {
         orderBy: "appLanguageCode_DESC",
       };
 
-      const usersPayload = await usersResolver?.({}, args, {});
+      const context = {
+        apiRootUrl: BASE_URL,
+        userId: testUsers[0]._id,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
         .sort(sort)
@@ -530,6 +772,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -548,7 +791,12 @@ describe("resolvers -> Query -> users", () => {
         orderBy: "email_ASC",
       };
 
-      const usersPayload = await usersResolver?.({}, args, {});
+      const context = {
+        apiRootUrl: BASE_URL,
+        userId: testUsers[0]._id,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
         .sort(sort)
@@ -564,6 +812,7 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(usersPayload).toEqual(users);
@@ -582,7 +831,12 @@ describe("resolvers -> Query -> users", () => {
         orderBy: "email_DESC",
       };
 
-      const usersPayload = await usersResolver?.({}, args, {});
+      const context = {
+        apiRootUrl: BASE_URL,
+        userId: testUsers[0]._id,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, context);
 
       let users = await User.find(where)
         .sort(sort)
@@ -598,9 +852,58 @@ describe("resolvers -> Query -> users", () => {
       users = users.map((user) => ({
         ...user,
         organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : null,
       }));
 
       expect(usersPayload).toEqual(users);
     });
+  });
+  it(`returns list of all existing users
+  sorted by args.orderBy === 'email_DESC' and when images exist`, async () => {
+    const where = {};
+
+    const sort = {
+      email: -1,
+    };
+
+    await User.updateMany(
+      {},
+      {
+        $set: {
+          image: "images/image.png",
+        },
+      }
+    );
+
+    const args: QueryUsersArgs = {
+      where: null,
+      orderBy: "email_DESC",
+    };
+
+    const context = {
+      apiRootUrl: BASE_URL,
+      userId: testUsers[0]._id,
+    };
+
+    const usersPayload = await usersResolver?.({}, args, context);
+
+    let users = await User.find(where)
+      .sort(sort)
+      .select(["-password"])
+      .populate("createdOrganizations")
+      .populate("createdEvents")
+      .populate("joinedOrganizations")
+      .populate("registeredEvents")
+      .populate("eventAdmin")
+      .populate("adminFor")
+      .lean();
+
+    users = users.map((user) => ({
+      ...user,
+      organizationsBlockedBy: [],
+      image: user.image ? `${context.apiRootUrl}${user.image}` : null,
+    }));
+
+    expect(usersPayload).toEqual(users);
   });
 });

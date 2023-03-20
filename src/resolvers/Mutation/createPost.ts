@@ -117,5 +117,10 @@ export const createPost: MutationResolvers["createPost"] = async (
   }
 
   // Returns createdPost.
-  return createdPost.toObject();
+  return {
+    ...createdPost.toObject(),
+    imageUrl: createdPost.imageUrl
+      ? `${context.apiRootUrl}${uploadImageFileName}`
+      : null,
+  };
 };

@@ -7,6 +7,7 @@ import { addUserImage } from "./addUserImage";
 import { addUserToGroupChat } from "./addUserToGroupChat";
 import { adminRemoveEvent } from "./adminRemoveEvent";
 import { adminRemoveGroup } from "./adminRemoveGroup";
+import { assignUserTag } from "./assignUserTag";
 import { blockPluginCreationBySuperadmin } from "./blockPluginCreationBySuperadmin";
 import { blockUser } from "./blockUser";
 import { cancelMembershipRequest } from "./cancelMembershipRequest";
@@ -21,6 +22,7 @@ import { createOrganization } from "./createOrganization";
 import { createPlugin } from "./createPlugin";
 import { createPost } from "./createPost";
 import { createTask } from "./createTask";
+import { createUserTag } from "./createUserTag";
 import { deleteDonationById } from "./deleteDonationById";
 import { forgotPassword } from "./forgotPassword";
 import { joinPublicOrganization } from "./joinPublicOrganization";
@@ -54,6 +56,7 @@ import { sendMessageToDirectChat } from "./sendMessageToDirectChat";
 import { sendMessageToGroupChat } from "./sendMessageToGroupChat";
 import { signUp } from "./signUp";
 import { togglePostPin } from "./togglePostPin";
+import { unassignUserTag } from "./unassignUserTag";
 import { unblockUser } from "./unblockUser";
 import { unlikeComment } from "./unlikeComment";
 import { unlikePost } from "./unlikePost";
@@ -67,6 +70,7 @@ import { updatePost } from "./updatePost";
 import { updateTask } from "./updateTask";
 import { updateUserProfile } from "./updateUserProfile";
 import { updateUserPassword } from "./updateUserPassword";
+import { updateUserTag } from "./updateUserTag";
 import { updateUserType } from "./updateUserType";
 
 export const Mutation: MutationResolvers = {
@@ -78,6 +82,7 @@ export const Mutation: MutationResolvers = {
   addUserToGroupChat,
   adminRemoveEvent,
   adminRemoveGroup,
+  assignUserTag,
   blockPluginCreationBySuperadmin,
   blockUser,
   cancelMembershipRequest,
@@ -92,6 +97,7 @@ export const Mutation: MutationResolvers = {
   createPlugin,
   createPost,
   createTask,
+  createUserTag,
   deleteDonationById,
   forgotPassword,
   joinPublicOrganization,
@@ -125,6 +131,7 @@ export const Mutation: MutationResolvers = {
   sendMessageToGroupChat,
   signUp,
   togglePostPin,
+  unassignUserTag,
   unblockUser,
   unlikeComment,
   unlikePost,
@@ -138,5 +145,6 @@ export const Mutation: MutationResolvers = {
   updateUserProfile,
   updateUserPassword,
   updateUserType,
+  updateUserTag,
   updatePost,
 };
