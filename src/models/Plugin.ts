@@ -12,13 +12,11 @@ export interface Interface_Plugin {
 }
 
 /**
- * @name pluginSchema
- * @description Schema for MongoDB database
- * @param  {string} pluginName Name of the plugin preferred having underscores "_"
- * @param {string} pluginCreatedBy name of the plugin creator ex.John Doe
- * @param {string} pluginDesc brief description of the plugin and it's features
- * @param {Boolean} pluginInstallStatus shows if the plugin is enabled or not
- * @param {String[]} installedOrgs list of orgIDs on which the plugin is enabled
+ * @param pluginName - Name of the plugin preferred having underscores "_",(Type:string)
+ * @param  pluginCreatedBy - name of the plugin creator ex.John Doe,(Type:string)
+ * @param pluginDesc - brief description of the plugin and it's features,(Type:string)
+ * @param  pluginInstallStatus - shows if the plugin is enabled or not,(Type:Boolean)
+ * @param installedOrgs - list of orgIDs on which the plugin is enabled,(Type:String[])
  */
 
 const pluginSchema = new Schema({

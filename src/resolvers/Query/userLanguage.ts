@@ -4,7 +4,7 @@ import { errors } from "../../libraries";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
 /**
  * This query will fetch the language code for the user from the database.
- * @param _parent
+ * @param _parent -
  * @param args - An object that contains `userId`.
  * @returns The language code of the user.
  */

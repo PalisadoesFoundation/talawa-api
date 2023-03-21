@@ -4,7 +4,7 @@ import { errors } from "../../libraries";
 import { POST_NOT_FOUND_ERROR } from "../../constants";
 /**
  * This query will fetch the specified Post from the database.
- * @param _parent
+ * @param _parent -
  * @param args - An object that contains `id` of the Post.
  * @returns An object `post`. If the `appLanguageCode` field not found then it throws a `NotFoundError` error.
  */
