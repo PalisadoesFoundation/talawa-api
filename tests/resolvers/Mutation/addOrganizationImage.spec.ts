@@ -26,7 +26,7 @@ import {
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
 
-const testImagePath: string = `${nanoid().toLowerCase()}test.png`;
+const testImagePath = `${nanoid().toLowerCase()}test.png`;
 let testUser: testUserType;
 let testOrganization: testOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
