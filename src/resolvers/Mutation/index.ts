@@ -49,6 +49,7 @@ import { removePost } from "./removePost";
 import { removeTask } from "./removeTask";
 import { removeUserFromGroupChat } from "./removeUserFromGroupChat";
 import { removeUserImage } from "./removeUserImage";
+import { removeUserTag } from "./removeUserTag";
 import { revokeRefreshTokenForUser } from "./revokeRefreshTokenForUser";
 import { saveFcmToken } from "./saveFcmToken";
 import { sendMembershipRequest } from "./sendMembershipRequest";
@@ -124,6 +125,7 @@ export const Mutation: MutationResolvers = {
   removeTask,
   removeUserFromGroupChat,
   removeUserImage,
+  removeUserTag,
   revokeRefreshTokenForUser,
   saveFcmToken,
   sendMembershipRequest,
