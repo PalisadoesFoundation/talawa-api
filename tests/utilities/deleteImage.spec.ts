@@ -15,9 +15,9 @@ import mongoose from "mongoose";
 import { Document } from "mongoose";
 import { ImageHash, Interface_ImageHash } from "../../src/models";
 
-const testImageToBeDeleted: string = `${nanoid()}-testNewImagePath`;
-const testOldImagePath: string = `${nanoid()}-testOldImagePath`;
-const testHashString: string = `${nanoid()}-testHash`;
+const testImageToBeDeleted = `${nanoid()}-testNewImagePath`;
+const testOldImagePath = `${nanoid()}-testOldImagePath`;
+const testHashString = `${nanoid()}-testHash`;
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testHash: Interface_ImageHash & Document<any, any, Interface_ImageHash>;
