@@ -28,7 +28,7 @@ let MONGOOSE_INSTANCE: typeof mongoose | null;
 try {
   beforeAll(async () => {
     MONGOOSE_INSTANCE = await connect();
-    await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
+    await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE);
     const testUserObj = await createTestUserAndOrganization();
     testUser = testUserObj[0];
     try {
@@ -45,8 +45,10 @@ try {
   });
 
   afterAll(async () => {
-    await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
-    await disconnect(MONGOOSE_INSTANCE!);
+    if (MONGOOSE_INSTANCE) {
+      await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE);
+      await disconnect(MONGOOSE_INSTANCE);
+    }
   });
 
   describe("utilities -> uploadImage", () => {
@@ -83,7 +85,7 @@ try {
         const uploadImagePayload = await uploadImage(pngImage, null);
         const testUserObj = await User.findByIdAndUpdate(
           {
-            _id: testUser!.id,
+            _id: testUser?.id,
           },
           {
             $set: {
@@ -139,7 +141,7 @@ try {
           );
         const { uploadImage } = await import("../../src/utilities/uploadImage");
         const testUserBeforeObj = await User.findById({
-          _id: testUser!.id,
+          _id: testUser?.id,
         });
         const oldImagePath = testUserBeforeObj?.image!;
         console.log(oldImagePath);
@@ -152,7 +154,7 @@ try {
         const uploadImagePayload = await uploadImage(pngImage, oldImagePath);
         const testUserObj = await User.findByIdAndUpdate(
           {
-            _id: testUser!.id,
+            _id: testUser?.id,
           },
           {
             $set: {
