@@ -20,7 +20,7 @@ import { createTestUserFunc, testUserType } from "../../helpers/user";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: testUserType;
-const testImage: string = "testImage";
+const testImage = "testImage";
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
