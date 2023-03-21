@@ -16,7 +16,7 @@ import { Type_ImagePath } from "../../src/utilities/reuploadDuplicateCheck";
 
 const testNewImagePath: Type_ImagePath = `${nanoid()}-testNewImagePath`;
 const testOldImagePath: Type_ImagePath = `${nanoid()}-testOldImagePath`;
-const testNewImageHash: string = `${nanoid()}-testHash`;
+const testNewImageHash = `${nanoid()}-testHash`;
 
 const testErrors = [
   {
