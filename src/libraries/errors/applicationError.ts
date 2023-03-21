@@ -11,11 +11,7 @@ export class ApplicationError extends Error {
   public errors: Interface_Error[];
   public httpCode: number;
 
-  constructor(
-    errors: Interface_Error[],
-    httpCode = 422,
-    message = "Error"
-  ) {
+  constructor(errors: Interface_Error[], httpCode = 422, message = "Error") {
     super(message);
     this.errors = errors;
     this.httpCode = httpCode;
