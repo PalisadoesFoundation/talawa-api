@@ -22,7 +22,7 @@ export type testCommentType =
   | null;
 
 export const createTestPost = async (
-  pinned: boolean = false
+  pinned = false
 ): Promise<[testUserType, testOrganizationType, testPostType]> => {
   const resultsArray = await createTestUserAndOrganization();
   const testUser = resultsArray[0];
