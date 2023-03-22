@@ -206,10 +206,29 @@ describe(`resolvers -> UserTag -> usersAssignedTo`, () => {
     );
   });
 
-  it(`returns edges = [], hasNextPage = hasPreviousPage = false and startCursor = endCursor = null when there are no users who have been assigned the tag`, async () => {
+  it(`returns edges = [], hasNextPage = hasPreviousPage = false and startCursor = endCursor = null when there are no users who have been assigned the tag (in forward pagination)`, async () => {
     const parent = randomTag!;
     const args = {
       first: 10,
+    };
+
+    const payload = await usersAssignedToResolver?.(parent, args, {});
+
+    // Testing the pageInfo object
+    expect(payload!.pageInfo.hasNextPage).toEqual(false);
+    expect(payload!.pageInfo.hasPreviousPage).toEqual(false);
+    expect(payload!.pageInfo.startCursor).toEqual(null);
+    expect(payload!.pageInfo.endCursor).toEqual(null);
+
+    // Testing the edges object
+    expect(payload!.edges!.length).toEqual(0);
+    expect(payload!.edges!).toEqual([]);
+  });
+
+  it(`returns edges = [], hasNextPage = hasPreviousPage = false and startCursor = endCursor = null when there are no users who have been assigned the tag (in backward pagination)`, async () => {
+    const parent = randomTag!;
+    const args = {
+      last: 10,
     };
 
     const payload = await usersAssignedToResolver?.(parent, args, {});
