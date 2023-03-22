@@ -96,7 +96,6 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
     }
   });
 
-
   it(`throws ConflictError if user with _id === context.userId is not a member
   of organization with _id === args.organizationId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
