@@ -142,7 +142,7 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
           messageSentToGroupChat: Interface_GroupChatMessage;
         }
       ) => {
-        return;
+        return {_action, _payload};
       },
     };
 

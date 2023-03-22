@@ -186,7 +186,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
 
     const deleteImageSpy = vi
       .spyOn(utilities, "deleteImage")
-      .mockImplementation((_imageToBeDeleted: string) => {
+      .mockImplementation(() => {
         return Promise.resolve();
       });
 

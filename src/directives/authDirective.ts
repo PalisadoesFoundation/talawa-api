@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { SchemaDirectiveVisitor } from "apollo-server-express";
 import {
   GraphQLInterfaceType,

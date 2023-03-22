@@ -1,5 +1,4 @@
 import "dotenv/config";
-import _ from "lodash";
 import { describe, expect, it, vi } from "vitest";
 import { appConfig } from "./../../src/config/appConfig";
 

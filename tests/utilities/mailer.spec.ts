@@ -41,7 +41,7 @@ describe("utilities -> mailer", () => {
 
     const mockCreateTransport = vi
       .spyOn(nodemailer, "createTransport")
-      .mockImplementationOnce((_transport: object) => {
+      .mockImplementationOnce(() => {
         const mockSendMail = (
           _mailOptions: Mail.Options,
           callBackFn: (_err: Error | null, _info: object) => void
@@ -61,7 +61,7 @@ describe("utilities -> mailer", () => {
   it("returns rejected Promise with ERROR_IN_SENDING_MAIL", () => {
     const mockCreateTransport = vi
       .spyOn(nodemailer, "createTransport")
-      .mockImplementationOnce((_transport: object) => {
+      .mockImplementationOnce(() => {
         const mockSendMail = (
           _mailOptions: Mail.Options,
           callBackFn: (_err: Error | null, _info: object | null) => void

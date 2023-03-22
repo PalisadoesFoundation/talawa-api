@@ -108,7 +108,7 @@ describe("middleware -> isAuth", () => {
   it("returns authData if decoded token is not set", () => {
     const verifyMocked = vi
       .spyOn(jwt, "verify")
-      .mockImplementationOnce((..._args: any) => {
+      .mockImplementationOnce(() => {
         return "";
       });
 
@@ -138,7 +138,7 @@ describe("middleware -> isAuth", () => {
   });
 
   it("returns authData if jwt.verify throws error", () => {
-    vi.spyOn(jwt, "verify").mockImplementationOnce((..._args: any) => {
+    vi.spyOn(jwt, "verify").mockImplementationOnce(() => {
       throw new Error();
     });
 

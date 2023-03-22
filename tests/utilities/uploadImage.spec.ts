@@ -148,7 +148,7 @@ try {
         );
         const mockedDeleteImage = vi
           .spyOn(deleteDuplicatedImage, "deleteImage")
-          .mockImplementation(async () => {});
+          .mockImplementation(async () => undefined);
         const uploadImagePayload = await uploadImage(pngImage, oldImagePath);
         const testUserObj = await User.findByIdAndUpdate(
           {

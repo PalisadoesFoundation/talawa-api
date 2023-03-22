@@ -31,7 +31,7 @@ describe("src -> resolvers -> Subscription -> messageSentToGroupChat", () => {
     const context = {
       pubsub: {
         asyncIterator: (_action: "MESSAGE_SENT_TO_GROUP_CHAT") => {
-          return;
+          return _action;
         },
       },
       context: { currentUserId: testGroupChat!.users[0] },
