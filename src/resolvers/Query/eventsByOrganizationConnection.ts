@@ -10,7 +10,7 @@ import { getSort } from "./helperFunctions/getSort";
 //  The following TSDoc tags are no longer defined
 //  @name eventsByOrganizationConnection a GraphQL Query
 //  @description returns list of events of an organization that matches all the query parameters
-//  
+//
 export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizationConnection"] =
   async (_parent, args) => {
     let inputArg = getInputArg(args.where);
