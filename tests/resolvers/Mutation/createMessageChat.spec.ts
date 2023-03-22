@@ -99,7 +99,7 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
           directMessageChat: Interface_MessageChat;
         }
       ) => {
-        return {_action, _payload};
+        return { _action, _payload };
       },
     };
 
