@@ -110,7 +110,7 @@ const apolloServer = new ApolloServer({
      * Resolver functions can use this to construct absolute URLs for serving static files.
      * For example, http://testDomain.com/ is apiRootUrl for a server with testDomain.com as Domain Name
      * with no SSL certificate (http://)
-     * In local environment, apiRootUrl will be http://localhost:{port}/
+     * In local environment, apiRootUrl will be http://localhost:\{port\}/
      */
     const apiRootUrl = `${req.protocol}://${req.get("host")}/`;
     if (connection) {

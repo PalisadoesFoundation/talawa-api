@@ -3,7 +3,7 @@ import { errors } from "../../libraries";
 import { DirectChat } from "../../models";
 /**
  * This query will fetch all the Direct chats for the current user from the database.
- * @param _parent
+ * @param _parent -
  * @param args - An object that contains `id` of the user.
  * @returns An object `directChats` that contains all direct chats of the current user.
  * If the `directChats` object is null then it throws `NotFoundError` error.

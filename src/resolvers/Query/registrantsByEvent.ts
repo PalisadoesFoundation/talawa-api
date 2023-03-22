@@ -4,7 +4,7 @@ import { errors } from "../../libraries";
 import { EVENT_NOT_FOUND_ERROR } from "../../constants";
 /**
  * This query will fetch all the registrants of the Event from the database.
- * @param _parent
+ * @param _parent -
  * @param args - An object that contains `id` of the event.
  * @returns An object that contains list of all the Registrants.
  * If the event is not found then it throws an `NotFoundError` error.
