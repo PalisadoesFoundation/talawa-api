@@ -50,14 +50,6 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     );
   }
 
-  // Checks whether currentUser is the creator of organzation.
-  if (currentUser._id.toString() === organization.creator.toString()) {
-    throw new errors.UnauthorizedError(
-      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-      USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
-    );
-  }
 
   const currentUserIsOrganizationMember = organization.members.some(
     (member) => member.toString() === currentUser!._id.toString()
