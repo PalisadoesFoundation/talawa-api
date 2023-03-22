@@ -5,10 +5,10 @@ import {
 } from "../../types/generatedGraphQLTypes";
 import { Donation } from "../../models";
 
-/**
- * @name getDonationByOrgIdConnection a GraphQL Query
- * @description returns list of donations as a transactions that matches the provided orgId property from database and all the query parameters
- */
+// The following TSDoc tags are no longer defined
+//  @name getDonationByOrgIdConnection a GraphQL Query
+//  @description returns list of donations as a transactions that matches the provided orgId property from database and all the query parameters
+//
 export const getDonationByOrgIdConnection: QueryResolvers["getDonationByOrgIdConnection"] =
   async (_parent, args) => {
     const inputArg = getInputArg(args.where);

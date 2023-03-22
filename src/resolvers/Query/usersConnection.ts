@@ -7,7 +7,7 @@ import { User } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 /**
  * This query will fetch all the users in a specified order to paginate from the database.
- * @param _parent
+ * @param _parent -
  * @param args - An object that contains relevant data to execute the query.
  * @returns An object that contains list of the users.
  * @remarks Connection in graphQL means pagination,

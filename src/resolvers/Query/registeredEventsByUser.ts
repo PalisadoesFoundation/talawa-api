@@ -4,7 +4,7 @@ import { getSort } from "./helperFunctions/getSort";
 
 /**
  * This query will fetch all the events for which user registered from the database.
- * @param _parent
+ * @param _parent -
  * @param args - An object that contains `id` of the user and `orderBy`.
  * @returns An object that contains the Event data.
  * @remarks The query function uses `getSort()` function to sort the data in specified.
