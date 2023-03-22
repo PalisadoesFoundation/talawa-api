@@ -1,7 +1,12 @@
 import { UserTagResolvers } from "../../types/generatedGraphQLTypes";
-import { TagUser, Interface_TagUser } from "../../models";
+import { TagUser, Interface_TagUser, Interface_User } from "../../models";
 import { validatePaginationArgs } from "../../libraries/validators/validatePaginationArgs";
+import {
+  graphqlConnectionFactory,
+  ConnectionEdge,
+} from "../../utilities/graphqlConnectionFactory";
 
+// @ts-ignore
 export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
   parent,
   args
@@ -9,10 +14,9 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
   // Check if the args provided are either correct forward pagination or backward pagination arguments
   validatePaginationArgs(args);
 
-  let hasNextPage = false,
-    hasPreviousPage = false;
-
   let allusersAssignedTo: Interface_TagUser[] | null;
+
+  const connectionObject = graphqlConnectionFactory<Interface_User>();
 
   // Forward pagination
   if (args.first) {
@@ -30,11 +34,15 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
       .populate("userId")
       .lean();
 
-    // Populate the page pointer variables
-    hasPreviousPage = args.after ? true : false;
-    hasNextPage = allusersAssignedTo!.length === args.first + 1;
+    // Return the default object if the recieved list is empty
+    if (!allusersAssignedTo!.length) return connectionObject;
 
-    if (hasNextPage) allusersAssignedTo!.pop();
+    // Populate the page pointer variables
+    if (args.after) connectionObject.pageInfo.hasPreviousPage = true;
+    if (allusersAssignedTo!.length === args.first + 1) {
+      connectionObject.pageInfo.hasNextPage = true;
+      allusersAssignedTo!.pop();
+    }
   }
 
   // Backward pagination
@@ -53,11 +61,15 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
       .populate("userId")
       .lean();
 
-    // Populate the page pointer variables
-    hasPreviousPage = args.before ? true : false;
-    hasNextPage = allusersAssignedTo!.length === args.last + 1;
+    // Return the default object if the recieved list is empty
+    if (!allusersAssignedTo!.length) return connectionObject;
 
-    if (hasNextPage) allusersAssignedTo!.pop();
+    // Populate the page pointer variables
+    if (args.before) connectionObject.pageInfo.hasPreviousPage = true;
+    if (allusersAssignedTo!.length === args.last + 1) {
+      connectionObject.pageInfo.hasNextPage = true;
+      allusersAssignedTo!.pop();
+    }
 
     // Reverse the order of the fetched objects as according to Relay Specification the order of
     // returned objects must always be ascending on the basis of the cursor used
@@ -65,18 +77,18 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
   }
 
   // Create edges from the fetched objects
-  const edges = allusersAssignedTo!.map((tagUser) => ({
-    node: tagUser.userId,
-    cursor: tagUser.userId._id,
-  }));
+  connectionObject.edges = allusersAssignedTo!.map(
+    (tagUser) =>
+      ({
+        node: tagUser.userId,
+        cursor: tagUser.userId._id,
+      } as ConnectionEdge<Interface_User>)
+  );
 
-  return {
-    edges,
-    pageInfo: {
-      hasNextPage,
-      hasPreviousPage,
-      startCursor: edges.length ? edges[0].cursor : null,
-      endCursor: edges.length ? edges[edges.length - 1].cursor : null,
-    },
-  };
+  // Set the start and end cursor
+  connectionObject.pageInfo.startCursor = connectionObject.edges[0]!.cursor;
+  connectionObject.pageInfo.endCursor =
+    connectionObject.edges[connectionObject.edges.length - 1]!.cursor;
+
+  return connectionObject;
 };
