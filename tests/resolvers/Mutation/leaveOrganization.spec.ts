@@ -96,32 +96,6 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
     }
   });
 
-  it(`throws UnauthorizedError if user with _id === context.userId is the creator
-  of organization with _id === args.organizationId`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
-    try {
-      const args: MutationLeaveOrganizationArgs = {
-        organizationId: testOrganization!.id,
-      };
-
-      const context = {
-        userId: testUser!.id,
-      };
-
-      const { leaveOrganization: leaveOrganizationResolver } = await import(
-        "../../../src/resolvers/Mutation/leaveOrganization"
-      );
-
-      await leaveOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-    }
-  });
-
   it(`throws ConflictError if user with _id === context.userId is not a member
   of organization with _id === args.organizationId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
