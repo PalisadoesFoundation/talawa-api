@@ -17,7 +17,7 @@ import { FilterQuery } from "mongoose";
  * learn more about Connection {@link https://relay.dev/graphql/connections.htm | here}.
  */
 export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationConnection"] =
-  async (_parent, args) => {
+  async (_parent, args, context) => {
     const sort = getSort(args.orderBy);
     const inputArg: FilterQuery<Interface_Post> = getInputArgs(args.where);
 
@@ -55,6 +55,9 @@ export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationC
     const posts = postsmodel.docs.map((post) => {
       post.likeCount = post.likedBy.length || 0;
       post.commentCount = post.comments.length || 0;
+      post.imageUrl = post.imageUrl
+        ? `${context.apiRootUrl}${post.imageUrl}`
+        : null;
 
       return post;
     });

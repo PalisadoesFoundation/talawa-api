@@ -8,6 +8,8 @@ import { Mutation } from "./Mutation";
 import { Organization } from "./Organization";
 import { Query } from "./Query";
 import { Subscription } from "./Subscription";
+import { User } from "./User";
+import { UserTag } from "./UserTag";
 import {
   DateResolver,
   DateTimeResolver,
@@ -30,6 +32,8 @@ export const resolvers: Resolvers = {
   Organization,
   Query,
   Subscription,
+  User,
+  UserTag,
 
   // graphql-scalar resolver
   Date: DateResolver,

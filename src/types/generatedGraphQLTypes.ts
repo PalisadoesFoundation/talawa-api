@@ -17,7 +17,6 @@ import type { Interface_PluginField as Interface_PluginFieldModel } from '../mod
 import type { Interface_Post as Interface_PostModel } from '../models/Post';
 import type { Interface_Task as Interface_TaskModel } from '../models/Task';
 import type { Interface_OrganizationTagUser as Interface_OrganizationTagUserModel } from '../models/OrganizationTagUser';
-import type { Interface_TagUser as Interface_TagUserModel } from '../models/TagUser';
 import type { Interface_User as Interface_UserModel } from '../models/User';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
@@ -383,6 +382,7 @@ export type Mutation = {
   addUserToGroupChat: GroupChat;
   adminRemoveEvent: Event;
   adminRemoveGroup: Message;
+  assignUserTag?: Maybe<User>;
   blockPluginCreationBySuperadmin: User;
   blockUser: User;
   cancelMembershipRequest: MembershipRequest;
@@ -433,7 +433,7 @@ export type Mutation = {
   sendMessageToGroupChat: GroupChatMessage;
   signUp: AuthData;
   togglePostPin: Post;
-  toggleUserTagAssign?: Maybe<User>;
+  unassignUserTag?: Maybe<User>;
   unblockUser: User;
   unlikeComment?: Maybe<Comment>;
   unlikePost?: Maybe<Post>;
@@ -491,6 +491,11 @@ export type MutationAdminRemoveEventArgs = {
 
 export type MutationAdminRemoveGroupArgs = {
   groupId: Scalars['ID'];
+};
+
+
+export type MutationAssignUserTagArgs = {
+  input: ToggleUserTagAssignInput;
 };
 
 
@@ -754,7 +759,7 @@ export type MutationTogglePostPinArgs = {
 };
 
 
-export type MutationToggleUserTagAssignArgs = {
+export type MutationUnassignUserTagArgs = {
   input: ToggleUserTagAssignInput;
 };
 
@@ -793,6 +798,7 @@ export type MutationUpdateLanguageArgs = {
 
 export type MutationUpdateOrganizationArgs = {
   data?: InputMaybe<UpdateOrganizationInput>;
+  file?: InputMaybe<Scalars['String']>;
   id: Scalars['ID'];
 };
 
@@ -1441,6 +1447,7 @@ export type UserTagsAssignedWithArgs = {
   before?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['PositiveInt']>;
   last?: InputMaybe<Scalars['PositiveInt']>;
+  organizationId?: InputMaybe<Scalars['ID']>;
 };
 
 export type UserAndOrganizationInput = {
@@ -1743,7 +1750,7 @@ export type ResolversTypes = {
   UserEdge: ResolverTypeWrapper<Omit<UserEdge, 'node'> & { node: ResolversTypes['User'] }>;
   UserInput: UserInput;
   UserOrderByInput: UserOrderByInput;
-  UserTag: ResolverTypeWrapper<Omit<UserTag, 'childTags' | 'organization' | 'parentTag' | 'usersAssignedTo'> & { childTags?: Maybe<ResolversTypes['UserTagsConnection']>, organization?: Maybe<ResolversTypes['Organization']>, parentTag?: Maybe<ResolversTypes['UserTag']>, usersAssignedTo?: Maybe<ResolversTypes['UsersConnection']> }>;
+  UserTag: ResolverTypeWrapper<Interface_OrganizationTagUserModel>;
   UserTagEdge: ResolverTypeWrapper<Omit<UserTagEdge, 'node'> & { node: ResolversTypes['UserTag'] }>;
   UserTagsConnection: ResolverTypeWrapper<Omit<UserTagsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['UserTagEdge']>>> }>;
   UserType: UserType;
@@ -1839,7 +1846,7 @@ export type ResolversParentTypes = {
   UserConnection: Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['User']>> };
   UserEdge: Omit<UserEdge, 'node'> & { node: ResolversParentTypes['User'] };
   UserInput: UserInput;
-  UserTag: Omit<UserTag, 'childTags' | 'organization' | 'parentTag' | 'usersAssignedTo'> & { childTags?: Maybe<ResolversParentTypes['UserTagsConnection']>, organization?: Maybe<ResolversParentTypes['Organization']>, parentTag?: Maybe<ResolversParentTypes['UserTag']>, usersAssignedTo?: Maybe<ResolversParentTypes['UsersConnection']> };
+  UserTag: Interface_OrganizationTagUserModel;
   UserTagEdge: Omit<UserTagEdge, 'node'> & { node: ResolversParentTypes['UserTag'] };
   UserTagsConnection: Omit<UserTagsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['UserTagEdge']>>> };
   UserWhereInput: UserWhereInput;
@@ -2089,6 +2096,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addUserToGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationAddUserToGroupChatArgs, 'chatId' | 'userId'>>;
   adminRemoveEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationAdminRemoveEventArgs, 'eventId'>>;
   adminRemoveGroup?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<MutationAdminRemoveGroupArgs, 'groupId'>>;
+  assignUserTag?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAssignUserTagArgs, 'input'>>;
   blockPluginCreationBySuperadmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockPluginCreationBySuperadminArgs, 'blockUser' | 'userId'>>;
   blockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockUserArgs, 'organizationId' | 'userId'>>;
   cancelMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationCancelMembershipRequestArgs, 'membershipRequestId'>>;
@@ -2139,7 +2147,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   sendMessageToGroupChat?: Resolver<ResolversTypes['GroupChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToGroupChatArgs, 'chatId' | 'messageContent'>>;
   signUp?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'data'>>;
   togglePostPin?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationTogglePostPinArgs, 'id'>>;
-  toggleUserTagAssign?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationToggleUserTagAssignArgs, 'input'>>;
+  unassignUserTag?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUnassignUserTagArgs, 'input'>>;
   unblockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUnblockUserArgs, 'organizationId' | 'userId'>>;
   unlikeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationUnlikeCommentArgs, 'id'>>;
   unlikePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUnlikePostArgs, 'id'>>;

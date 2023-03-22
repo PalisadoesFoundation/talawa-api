@@ -29,8 +29,11 @@ This document provides instructions on how to set up and start a running instanc
   - [Setting up .env LAST\_RESORT\_SUPERADMIN\_EMAIL parameter](#setting-up-env-last_resort_superadmin_email-parameter)
   - [Configuring Google ReCAPTCHA](#configuring-google-recaptcha)
     - [Setting up RECAPTCHA\_SECRET\_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
-    - [Setting up .env MAIL\_USERNAME and MAIL\_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
+    - [Setting up .env MAIL\_USERNAME and MAIL\_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters) 
     - [Setting up .env SMTP Variables](#setting-up-env-smtp-variables)
+  - [Setting up Logger configurations (optional)](#setting-up-logger-configurations-optional)
+    - [Setting up COLORIZE_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
+    - [Setting up LOG_LEVEL in .env file](#setting-up-log_level-in-env-file) 
   - [Configuring Google Firebase](#configuring-google-firebase)
     - [Generate Firebase Keys for the Talawa Notification Service](#generate-firebase-keys-for-the-talawa-notification-service)
     - [(Mobile Developers Only) Applying the Firebase Keys to the Talawa Mobile App](#mobile-developers-only-applying-the-firebase-keys-to-the-talawa-mobile-app)
@@ -120,6 +123,8 @@ This `.env` file must be populated with the following environment variables for 
 | MAIL_USERNAME                | Used for mailing service                               |
 | MAIL_PASSWORD                | Used for mailing service                               |
 | LAST_RESORT_SUPERADMIN_EMAIL | Used for promoting the default super admin             |
+| COLORIZE_LOGS                | Used for colorized log formats in console              |
+| LOG_LEVEL                    | Used for setting the logging level                     |
 
 The following sections will show you how to configure each of these parameters.
 
@@ -289,6 +294,36 @@ SMTP_SSL_TLS=true
 ```
 
 For more information on setting up a smtp server, here's a [useful article](https://sendgrid.com/blog/what-is-an-smtp-server/)
+
+## Setting up Logger configurations *(optional)*
+
+You can set up and customize logs by configuring the following parameters
+
+### Setting up COLORIZE_LOGS in .env file
+The parameter `COLORIZE_LOGS` is a boolean field and can be set to true or false. It customizes the log colorization formats displayed in console. You can set the value in `.env` file as 
+```
+COLORIZE_LOGS = false
+```
+If the parameter value is set to `true`, you should be able to see colorized logs in console, or else logs will display in the console's default simple format.
+
+![Colorized logs in console](./image/colorize-logs.jpg)
+
+### Setting up LOG_LEVEL in .env file
+There are different logging levels that can be configured by setting this parameter. The severity order of levels are displayed numerically ascending from most important to least important.<br>
+```
+ levels = {
+    error: 0,
+    warn: 1,
+    info: 2,
+    http: 3,
+    verbose: 4,
+    debug: 5,
+    silly: 6
+  }
+```
+<br>On setting this parameter value, log messages are displayed in the console only if the `message.level` is less than or equal to setted `LOG_LEVEL`
+<br><br>
+For our application, the most appropriate setting is `LOG_LEVEL = info` since most of information logged on the console are error messages, warnings or info texts.
 
 ## Configuring Google Firebase
 
