@@ -4,11 +4,11 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { Post } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { testOrganizationType } from "../../helpers/userAndOrg";
+import { TestOrganizationType } from "../../helpers/userAndOrg";
 import { createTestPost } from "../../helpers/posts";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testOrganization: testOrganizationType;
+let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

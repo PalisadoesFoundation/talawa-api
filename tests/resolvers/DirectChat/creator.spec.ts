@@ -6,10 +6,10 @@ import { User } from "../../../src/models";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   createTestDirectChat,
-  testDirectChatType,
+  TestDirectChatType,
 } from "../../helpers/directChat";
 
-let testDirectChat: testDirectChatType;
+let testDirectChat: TestDirectChatType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {

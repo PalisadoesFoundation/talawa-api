@@ -1,7 +1,7 @@
 import {
   createTestUserAndOrganization,
-  testOrganizationType,
-  testUserType,
+  TestOrganizationType,
+  TestUserType,
 } from "./userAndOrg";
 import {
   Interface_Post,
@@ -13,17 +13,17 @@ import {
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
-export type testPostType =
+export type TestPostType =
   | (Interface_Post & Document<any, any, Interface_Post>)
   | null;
 
-export type testCommentType =
+export type TestCommentType =
   | (Interface_Comment & Document<any, any, Interface_Comment>)
   | null;
 
 export const createTestPost = async (
   pinned: boolean = false
-): Promise<[testUserType, testOrganizationType, testPostType]> => {
+): Promise<[TestUserType, TestOrganizationType, TestPostType]> => {
   const resultsArray = await createTestUserAndOrganization();
   const testUser = resultsArray[0];
   const testOrganization = resultsArray[1];
@@ -50,7 +50,7 @@ export const createTestPost = async (
 };
 
 export const createPostwithComment = async (): Promise<
-  [testUserType, testOrganizationType, testPostType, testCommentType]
+  [TestUserType, TestOrganizationType, TestPostType, TestCommentType]
 > => {
   const resultArray = await createTestPost();
   const testUser = resultArray[0];
@@ -98,7 +98,7 @@ export const createPostwithComment = async (): Promise<
 export const createSinglePostwithComment = async (
   userId: string,
   organizationId: string
-): Promise<[testPostType, testCommentType]> => {
+): Promise<[TestPostType, TestCommentType]> => {
   const testPost = await Post.create({
     text: `text${nanoid().toLowerCase()}`,
     title: `title${nanoid()}`,
@@ -136,7 +136,7 @@ export const createTestSinglePost = async (
   userId: string,
   organizationId: string,
   pinned = false
-): Promise<testPostType> => {
+): Promise<TestPostType> => {
   const testPost = await Post.create({
     text: `text${nanoid().toLowerCase()}`,
     title: `title${nanoid()}`,

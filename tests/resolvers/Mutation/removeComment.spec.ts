@@ -19,12 +19,12 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { testUserType } from "../../helpers/userAndOrg";
-import { createTestPost, testPostType } from "../../helpers/posts";
+import { TestUserType } from "../../helpers/userAndOrg";
+import { createTestPost, TestPostType } from "../../helpers/posts";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
-let testPost: testPostType;
+let testUser: TestUserType;
+let testPost: TestPostType;
 let testComment:
   | (Interface_Comment & Document<any, any, Interface_Comment>)
   | null;

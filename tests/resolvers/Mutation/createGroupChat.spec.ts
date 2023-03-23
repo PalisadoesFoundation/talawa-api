@@ -10,14 +10,14 @@ import {
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
-  testOrganizationType,
-  testUserType,
+  TestOrganizationType,
+  TestUserType,
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
 
-let testUser: testUserType;
+let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testOrganization: testOrganizationType;
+let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

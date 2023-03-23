@@ -6,16 +6,16 @@ import { Post } from "../../../src/models";
 import { QueryPostsByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
-  testUserType,
-  testOrganizationType,
+  TestUserType,
+  TestOrganizationType,
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
 import { createSinglePostwithComment } from "../../helpers/posts";
 import { BASE_URL } from "../../../src/constants";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testOrganization: testOrganizationType;
-let testUser: testUserType;
+let testOrganization: TestOrganizationType;
+let testUser: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

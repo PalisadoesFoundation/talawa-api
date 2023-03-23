@@ -4,12 +4,12 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { User } from "../../../src/models";
 import {
-  testMembershipRequestType,
+  TestMembershipRequestType,
   createTestMembershipRequest,
 } from "../../helpers/membershipRequests";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
-let testMembershipRequest: testMembershipRequestType;
+let testMembershipRequest: TestMembershipRequestType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {

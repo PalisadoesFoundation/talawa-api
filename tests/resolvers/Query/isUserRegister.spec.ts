@@ -7,18 +7,18 @@ import { QueryIsUserRegisterArgs } from "../../../src/types/generatedGraphQLType
 import { EVENT_NOT_FOUND_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
-  testUserType,
-  testOrganizationType,
+  TestUserType,
+  TestOrganizationType,
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
-import { testEventType, createEventWithRegistrant } from "../../helpers/events";
+import { TestEventType, createEventWithRegistrant } from "../../helpers/events";
 import { createTestTask } from "../../helpers/task";
 import mongoose from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testEvent: testEventType;
-let testUser: testUserType;
-let testOrganization: testOrganizationType;
+let testEvent: TestEventType;
+let testUser: TestUserType;
+let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

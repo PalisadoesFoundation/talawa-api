@@ -14,11 +14,11 @@ import {
 import {
   createTestDirectChatwithUsers,
   createDirectChatMessage,
-  testDirectChatType,
+  TestDirectChatType,
 } from "../../helpers/directChat";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testDirectChats: testDirectChatType[];
+let testDirectChats: TestDirectChatType[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

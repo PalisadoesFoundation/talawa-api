@@ -1,7 +1,7 @@
 import {
   createTestUser,
-  testUserType,
-  testOrganizationType,
+  TestUserType,
+  TestOrganizationType,
   createTestUserAndOrganization,
 } from "./userAndOrg";
 import {
@@ -13,13 +13,13 @@ import {
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
-export type testMembershipRequestType =
+export type TestMembershipRequestType =
   | (Interface_MembershipRequest &
       Document<any, any, Interface_MembershipRequest>)
   | null;
 
 export const createTestMembershipRequest = async (): Promise<
-  [testUserType, testOrganizationType, testMembershipRequestType]
+  [TestUserType, TestOrganizationType, TestMembershipRequestType]
 > => {
   const testUser = await createTestUser();
 
@@ -65,7 +65,7 @@ export const createTestMembershipRequest = async (): Promise<
 };
 
 export const createTestMembershipRequestAsNew = async (): Promise<
-  [testUserType, testOrganizationType, testMembershipRequestType]
+  [TestUserType, TestOrganizationType, TestMembershipRequestType]
 > => {
   const resultsArray = await createTestUserAndOrganization();
 

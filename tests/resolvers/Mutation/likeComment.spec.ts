@@ -18,10 +18,10 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { testUserType } from "../../helpers/userAndOrg";
+import { TestUserType } from "../../helpers/userAndOrg";
 import { createTestPost } from "../../helpers/posts";
 
-let testUser: testUserType;
+let testUser: TestUserType;
 let testComment: Interface_Comment & Document<any, any, Interface_Comment>;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 

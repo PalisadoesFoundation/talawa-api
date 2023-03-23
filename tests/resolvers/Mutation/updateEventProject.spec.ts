@@ -23,13 +23,13 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
-import { createTestUserFunc, testUserType } from "../../helpers/user";
-import { createTestEvent, testEventType } from "../../helpers/events";
+import { createTestUserFunc, TestUserType } from "../../helpers/user";
+import { createTestEvent, TestEventType } from "../../helpers/events";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
-let testAdminUser: testUserType;
-let testEvent: testEventType;
+let testUser: TestUserType;
+let testAdminUser: TestUserType;
+let testEvent: TestEventType;
 let testEventProject: Interface_EventProject &
   Document<any, any, Interface_EventProject>;
 

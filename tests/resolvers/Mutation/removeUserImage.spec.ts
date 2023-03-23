@@ -16,10 +16,10 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { createTestUserFunc, testUserType } from "../../helpers/user";
+import { createTestUserFunc, TestUserType } from "../../helpers/user";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
+let testUser: TestUserType;
 const testImage: string = "testImage";
 
 beforeAll(async () => {

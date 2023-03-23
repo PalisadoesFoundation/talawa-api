@@ -5,16 +5,16 @@ import { QueryEventsByOrganizationArgs } from "../../../src/types/generatedGraph
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
   createTestUserAndOrganization,
-  testUserType,
-  testOrganizationType,
+  TestUserType,
+  TestOrganizationType,
 } from "../../helpers/userAndOrg";
 import { createEventWithRegistrant } from "../../helpers/events";
 import { createTestTask } from "../../helpers/task";
 import mongoose from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
-let testOrganization: testOrganizationType;
+let testUser: TestUserType;
+let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

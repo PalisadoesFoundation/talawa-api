@@ -15,13 +15,13 @@ import {
 } from "vitest";
 import {
   createTestUserAndOrganization,
-  testUserType,
-  testOrganizationType,
+  TestUserType,
+  TestOrganizationType,
 } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
-let testOrganization: testOrganizationType;
+let testUser: TestUserType;
+let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

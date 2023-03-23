@@ -22,16 +22,16 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { testOrganizationType, testUserType } from "../../helpers/userAndOrg";
+import { TestOrganizationType, TestUserType } from "../../helpers/userAndOrg";
 import {
   createTestDirectChat,
-  testDirectChatType,
+  TestDirectChatType,
 } from "../../helpers/directChat";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
-let testOrganization: testOrganizationType;
-let testDirectChat: testDirectChatType;
+let testUser: TestUserType;
+let testOrganization: TestOrganizationType;
+let testDirectChat: TestDirectChatType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

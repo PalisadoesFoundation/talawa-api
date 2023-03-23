@@ -18,10 +18,10 @@ import {
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUserFunc } from "../../helpers/user";
-import { testUserType } from "../../helpers/userAndOrg";
+import { TestUserType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUsers: testUserType[];
+let testUsers: TestUserType[];
 let testTask: Interface_Task & Document<any, any, Interface_Task>;
 
 beforeAll(async () => {
