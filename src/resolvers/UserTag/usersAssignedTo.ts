@@ -25,13 +25,13 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
     // Fetch the users
     allusersAssignedTo = await TagUser.find({
       ...(args.after && {
-        userId: {
+        _id: {
           $gte: args.after,
         },
       }),
       tagId: parent._id,
     })
-      .sort({ userId: 1 })
+      .sort({ _id: 1 })
       .limit(args.after ? args.first + 2 : args.first + 1)
       .populate("userId")
       .lean();
@@ -40,7 +40,7 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
       // If args.before is provided, then the first element fetched must coincide to the provided cursor
       if (
         allusersAssignedTo!.length === 0 ||
-        allusersAssignedTo![0].userId._id.toString() !== args.after.toString()
+        allusersAssignedTo![0]._id.toString() !== args.after.toString()
       ) {
         throw new errors.InputValidationError(
           requestContext.translate(INVALID_CURSOR_PROVIDED.MESSAGE),
@@ -70,13 +70,13 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
     // Fetch the users
     allusersAssignedTo = await TagUser.find({
       ...(args.before && {
-        userId: {
+        _id: {
           $lte: args.before,
         },
       }),
       tagId: parent._id,
     })
-      .sort({ userId: -1 })
+      .sort({ _id: -1 })
       .limit(args.before ? args.last + 2 : args.last + 1)
       .populate("userId")
       .lean();
@@ -85,7 +85,7 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
       // If args.before is provided, then the first element fetched must coincide to the provided cursor
       if (
         allusersAssignedTo!.length === 0 ||
-        allusersAssignedTo![0].userId._id.toString() !== args.before.toString()
+        allusersAssignedTo![0]._id.toString() !== args.before.toString()
       ) {
         throw new errors.InputValidationError(
           requestContext.translate(INVALID_CURSOR_PROVIDED.MESSAGE),
@@ -118,7 +118,7 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
     (tagUser) =>
       ({
         node: tagUser.userId,
-        cursor: tagUser.userId._id,
+        cursor: tagUser._id.toString(),
       } as ConnectionEdge<Interface_User>)
   );
 

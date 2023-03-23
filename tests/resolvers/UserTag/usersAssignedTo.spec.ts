@@ -16,9 +16,8 @@ import { INVALID_CURSOR_PROVIDED } from "../../../src/constants";
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 let usersAssignedTo: any;
-let userIds: string[];
+let cursors: string[];
 
-let testUsers: testUserType[];
 let testTag: TestUserTagType;
 let randomTag: TestUserTagType;
 
@@ -27,18 +26,17 @@ beforeAll(async () => {
 
   [, , testTag] = await createRootTagWithOrg();
   [, , randomTag] = await createRootTagWithOrg();
-  testUsers = await createAndAssignUsersToTag(testTag, 5);
+  await createAndAssignUsersToTag(testTag, 5);
 
-  userIds = testUsers.map((user) => user!._id);
-
-  usersAssignedTo = await TagUser.find({
+  const allUsers = await TagUser.find({
     tagId: testTag!._id,
   })
-    .sort({ userId: 1 })
+    .sort({ _id: 1 })
     .populate("userId")
     .lean();
 
-  usersAssignedTo = usersAssignedTo.map(
+  cursors = allUsers.map((userTag) => userTag!._id.toString());
+  usersAssignedTo = allUsers.map(
     (tagAssign: Interface_TagUser) => tagAssign!.userId
   );
 });
@@ -59,8 +57,8 @@ describe(`resolvers -> UserTag -> usersAssignedTo`, () => {
     // Testing the pageInfo object
     expect(payload!.pageInfo.hasNextPage).toEqual(true);
     expect(payload!.pageInfo.hasPreviousPage).toEqual(false);
-    expect(payload!.pageInfo.startCursor).toEqual(userIds[0]);
-    expect(payload!.pageInfo.endCursor).toEqual(userIds[2]);
+    expect(payload!.pageInfo.startCursor).toEqual(cursors[0]);
+    expect(payload!.pageInfo.endCursor).toEqual(cursors[2]);
 
     // Testing the edges object
     expect(payload!.edges!.length).toEqual(3);
@@ -70,7 +68,7 @@ describe(`resolvers -> UserTag -> usersAssignedTo`, () => {
     );
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.cursor)).toEqual(
-      userIds.slice(0, 3)
+      cursors.slice(0, 3)
     );
   });
 
@@ -78,7 +76,7 @@ describe(`resolvers -> UserTag -> usersAssignedTo`, () => {
     const parent = testTag!;
     const args = {
       first: 10,
-      after: userIds[2],
+      after: cursors[2],
     };
 
     const payload = await usersAssignedToResolver?.(parent, args, {});
@@ -86,8 +84,8 @@ describe(`resolvers -> UserTag -> usersAssignedTo`, () => {
     // Testing the pageInfo object
     expect(payload!.pageInfo.hasNextPage).toEqual(false);
     expect(payload!.pageInfo.hasPreviousPage).toEqual(true);
-    expect(payload!.pageInfo.startCursor).toEqual(userIds[3]);
-    expect(payload!.pageInfo.endCursor).toEqual(userIds[4]);
+    expect(payload!.pageInfo.startCursor).toEqual(cursors[3]);
+    expect(payload!.pageInfo.endCursor).toEqual(cursors[4]);
 
     // Testing the edges object
     expect(payload!.edges!.length).toEqual(2);
@@ -97,7 +95,7 @@ describe(`resolvers -> UserTag -> usersAssignedTo`, () => {
     );
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.cursor)).toEqual(
-      userIds.slice(-2)
+      cursors.slice(-2)
     );
   });
 
@@ -105,7 +103,7 @@ describe(`resolvers -> UserTag -> usersAssignedTo`, () => {
     const parent = testTag!;
     const args = {
       first: 2,
-      after: userIds[1],
+      after: cursors[1],
     };
 
     const payload = await usersAssignedToResolver?.(parent, args, {});
@@ -113,8 +111,8 @@ describe(`resolvers -> UserTag -> usersAssignedTo`, () => {
     // Testing the pageInfo object
     expect(payload!.pageInfo.hasNextPage).toEqual(true);
     expect(payload!.pageInfo.hasPreviousPage).toEqual(true);
-    expect(payload!.pageInfo.startCursor).toEqual(userIds[2]);
-    expect(payload!.pageInfo.endCursor).toEqual(userIds[3]);
+    expect(payload!.pageInfo.startCursor).toEqual(cursors[2]);
+    expect(payload!.pageInfo.endCursor).toEqual(cursors[3]);
 
     // Testing the edges object
     expect(payload!.edges!.length).toEqual(2);
@@ -124,7 +122,7 @@ describe(`resolvers -> UserTag -> usersAssignedTo`, () => {
     );
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.cursor)).toEqual(
-      userIds.slice(2, 4)
+      cursors.slice(2, 4)
     );
   });
 
@@ -139,8 +137,8 @@ describe(`resolvers -> UserTag -> usersAssignedTo`, () => {
     // Testing the pageInfo object
     expect(payload!.pageInfo.hasNextPage).toEqual(true);
     expect(payload!.pageInfo.hasPreviousPage).toEqual(false);
-    expect(payload!.pageInfo.startCursor).toEqual(userIds[2]);
-    expect(payload!.pageInfo.endCursor).toEqual(userIds[4]);
+    expect(payload!.pageInfo.startCursor).toEqual(cursors[2]);
+    expect(payload!.pageInfo.endCursor).toEqual(cursors[4]);
 
     // Testing the edges object
     expect(payload!.edges!.length).toEqual(3);
@@ -150,7 +148,7 @@ describe(`resolvers -> UserTag -> usersAssignedTo`, () => {
     );
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.cursor)).toEqual(
-      userIds.slice(-3)
+      cursors.slice(-3)
     );
   });
 
@@ -158,7 +156,7 @@ describe(`resolvers -> UserTag -> usersAssignedTo`, () => {
     const parent = testTag!;
     const args = {
       last: 10,
-      before: userIds[2],
+      before: cursors[2],
     };
 
     const payload = await usersAssignedToResolver?.(parent, args, {});
@@ -166,8 +164,8 @@ describe(`resolvers -> UserTag -> usersAssignedTo`, () => {
     // Testing the pageInfo object
     expect(payload!.pageInfo.hasNextPage).toEqual(false);
     expect(payload!.pageInfo.hasPreviousPage).toEqual(true);
-    expect(payload!.pageInfo.startCursor).toEqual(userIds[0]);
-    expect(payload!.pageInfo.endCursor).toEqual(userIds[1]);
+    expect(payload!.pageInfo.startCursor).toEqual(cursors[0]);
+    expect(payload!.pageInfo.endCursor).toEqual(cursors[1]);
 
     // Testing the edges object
     expect(payload!.edges!.length).toEqual(2);
@@ -177,7 +175,7 @@ describe(`resolvers -> UserTag -> usersAssignedTo`, () => {
     );
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.cursor)).toEqual(
-      userIds.slice(0, 2)
+      cursors.slice(0, 2)
     );
   });
 
@@ -185,7 +183,7 @@ describe(`resolvers -> UserTag -> usersAssignedTo`, () => {
     const parent = testTag!;
     const args = {
       last: 3,
-      before: userIds[4],
+      before: cursors[4],
     };
 
     const payload = await usersAssignedToResolver?.(parent, args, {});
@@ -193,8 +191,8 @@ describe(`resolvers -> UserTag -> usersAssignedTo`, () => {
     // Testing the pageInfo object
     expect(payload!.pageInfo.hasNextPage).toEqual(true);
     expect(payload!.pageInfo.hasPreviousPage).toEqual(true);
-    expect(payload!.pageInfo.startCursor).toEqual(userIds[1]);
-    expect(payload!.pageInfo.endCursor).toEqual(userIds[3]);
+    expect(payload!.pageInfo.startCursor).toEqual(cursors[1]);
+    expect(payload!.pageInfo.endCursor).toEqual(cursors[3]);
 
     // Testing the edges object
     expect(payload!.edges!.length).toEqual(3);
@@ -204,7 +202,7 @@ describe(`resolvers -> UserTag -> usersAssignedTo`, () => {
     );
     // @ts-ignore
     expect(payload!.edges!.map((edge) => edge!.cursor)).toEqual(
-      userIds.slice(1, 4)
+      cursors.slice(1, 4)
     );
   });
 
