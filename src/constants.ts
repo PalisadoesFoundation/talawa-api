@@ -331,6 +331,13 @@ export const PAGINATION_MAXIMUM_FETCH_LIMIT_CROSSED = {
   PARAM: "pagination.maximumFetchLimitCrossed",
 };
 
+export const INVALID_CURSOR_PROVIDED = {
+  MESSAGE:
+    "The provided cursor in args.before / args.after is invalid and does not exist in the database.",
+  CODE: "invalidArgs.cursor",
+  PARAM: "invalidArgs.cursor",
+};
+
 export const BASE_URL = `http://localhost:${process.env.port || 4000}/`;
 
 export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;

@@ -2,7 +2,8 @@ import "dotenv/config";
 import { usersAssignedTo as usersAssignedToResolver } from "../../../src/resolvers/UserTag/usersAssignedTo";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { Types } from "mongoose";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
   createAndAssignUsersToTag,
   createRootTagWithOrg,
@@ -10,6 +11,7 @@ import {
 } from "../../helpers/tags";
 import { TagUser, Interface_TagUser } from "../../../src/models";
 import { testUserType } from "../../helpers/userAndOrg";
+import { INVALID_CURSOR_PROVIDED } from "../../../src/constants";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
@@ -223,6 +225,50 @@ describe(`resolvers -> UserTag -> usersAssignedTo`, () => {
     // Testing the edges object
     expect(payload!.edges!.length).toEqual(0);
     expect(payload!.edges!).toEqual([]);
+  });
+
+  it(`throws INVALID_CURSOR_PROVIDED error if the value of cursor in args.after is invalid (in forward pagination)`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
+    try {
+      const parent = randomTag!;
+      const args = {
+        first: 10,
+        after: Types.ObjectId().toString(),
+      };
+
+      await usersAssignedToResolver?.(parent, args, {});
+    } catch (error: any) {
+      expect(spy).toHaveBeenCalledWith(INVALID_CURSOR_PROVIDED.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${INVALID_CURSOR_PROVIDED.MESSAGE}`
+      );
+    }
+  });
+
+  it(`throws INVALID_CURSOR_PROVIDED error if the value of cursor in args.before is invalid (in backward pagination)`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
+    try {
+      const parent = randomTag!;
+      const args = {
+        last: 10,
+        before: Types.ObjectId().toString(),
+      };
+
+      await usersAssignedToResolver?.(parent, args, {});
+    } catch (error: any) {
+      expect(spy).toHaveBeenCalledWith(INVALID_CURSOR_PROVIDED.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${INVALID_CURSOR_PROVIDED.MESSAGE}`
+      );
+    }
   });
 
   it(`returns edges = [], hasNextPage = hasPreviousPage = false and startCursor = endCursor = null when there are no users who have been assigned the tag (in backward pagination)`, async () => {
