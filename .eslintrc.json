@@ -16,7 +16,10 @@
     {
       "files": ["./src/typeDefs/**/*.graphql"],
       "parser": "@graphql-eslint/eslint-plugin",
-      "plugins": ["@graphql-eslint"]
+      "plugins": ["@graphql-eslint"],
+      "rules": {
+        "@typescript-eslint/naming-convention": "off"
+      }
     },
     {
       "files": ["tests/**/*"],
@@ -25,6 +28,7 @@
       }
     }
   ],
+
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "project": "./tsconfig.json",
@@ -52,6 +56,20 @@
     "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/no-var-requires": "off",
+
+    // Typescript rule to enforce PascalCase naming for types and interfaces
+    "@typescript-eslint/naming-convention": [
+      "error",
+      {
+        "selector": "interface",
+        "format": ["PascalCase"],
+        "prefix": ["Interface_", "Test_Interface_"]
+      },
+      {
+        "selector": "typeAlias",
+        "format": ["PascalCase"]
+      }
+    ],
 
     // Extension Rules
     "@typescript-eslint/no-empty-function": "off",
