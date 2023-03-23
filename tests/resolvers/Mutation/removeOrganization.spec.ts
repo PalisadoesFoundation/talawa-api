@@ -29,10 +29,10 @@ import {
   afterEach,
 } from "vitest";
 import { createTestUserFunc } from "../../helpers/user";
-import { testUserType } from "../../helpers/userAndOrg";
+import { TestUserType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUsers: testUserType[];
+let testUsers: TestUserType[];
 let testOrganization: Interface_Organization &
   Document<any, any, Interface_Organization>;
 let testPost: Interface_Post & Document<any, any, Interface_Post>;

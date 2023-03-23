@@ -16,17 +16,17 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { testEventType } from "../../helpers/events";
+import { TestEventType } from "../../helpers/events";
 import {
   createTestUser,
-  testOrganizationType,
-  testUserType,
+  TestOrganizationType,
+  TestUserType,
 } from "../../helpers/userAndOrg";
 
-let testUser: testUserType;
-let testAdminUser: testUserType;
-let testOrganization: testOrganizationType;
-let testEvent: testEventType;
+let testUser: TestUserType;
+let testAdminUser: TestUserType;
+let testOrganization: TestOrganizationType;
+let testEvent: TestEventType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {

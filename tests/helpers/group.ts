@@ -1,17 +1,17 @@
 import {
   createTestUserAndOrganization,
-  testOrganizationType,
-  testUserType,
+  TestOrganizationType,
+  TestUserType,
 } from "./userAndOrg";
 import { Interface_Group, Group } from "../../src/models";
 import { Document } from "mongoose";
 
-export type testGroupType =
+export type TestGroupType =
   | (Interface_Group & Document<any, any, Interface_Group>)
   | null;
 
 export const createTestGroup = async (): Promise<
-  [testUserType, testOrganizationType, testGroupType]
+  [TestUserType, TestOrganizationType, TestGroupType]
 > => {
   const resultsArray = await createTestUserAndOrganization();
   const testUser = resultsArray[0];

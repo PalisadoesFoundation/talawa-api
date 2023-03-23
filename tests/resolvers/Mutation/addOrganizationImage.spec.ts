@@ -21,14 +21,14 @@ import {
   afterEach,
 } from "vitest";
 import {
-  testUserType,
-  testOrganizationType,
+  TestUserType,
+  TestOrganizationType,
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
 
 const testImagePath: string = `${nanoid().toLowerCase()}test.png`;
-let testUser: testUserType;
-let testOrganization: testOrganizationType;
+let testUser: TestUserType;
+let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({

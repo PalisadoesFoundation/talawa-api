@@ -17,11 +17,11 @@ import {
   it,
   vi,
 } from "vitest";
-import { createTestUser, testUserType } from "../../helpers/userAndOrg";
+import { createTestUser, TestUserType } from "../../helpers/userAndOrg";
 import { User } from "../../../src/models";
 
-let testUserSuperAdmin: testUserType;
-let testUserAdmin: testUserType;
+let testUserSuperAdmin: TestUserType;
+let testUserAdmin: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {

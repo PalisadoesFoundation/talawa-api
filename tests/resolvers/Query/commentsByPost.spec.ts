@@ -12,13 +12,13 @@ import {
 } from "../../../src/constants";
 import { QueryCommentsByPostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createPostwithComment, testPostType } from "../../helpers/posts";
-import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
+import { createPostwithComment, TestPostType } from "../../helpers/posts";
+import { TestUserType, TestOrganizationType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
-let testOrganization: testOrganizationType;
-let testPost: testPostType;
+let testUser: TestUserType;
+let testOrganization: TestOrganizationType;
+let testPost: TestPostType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

@@ -20,15 +20,15 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
+import { TestUserType, TestOrganizationType } from "../../helpers/userAndOrg";
 import {
-  testMembershipRequestType,
+  TestMembershipRequestType,
   createTestMembershipRequest,
 } from "../../helpers/membershipRequests";
 
-let testUser: testUserType;
-let testOrganization: testOrganizationType;
-let testMembershipRequest: testMembershipRequestType;
+let testUser: TestUserType;
+let testOrganization: TestOrganizationType;
+let testMembershipRequest: TestMembershipRequestType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {

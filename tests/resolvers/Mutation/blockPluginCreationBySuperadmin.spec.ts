@@ -18,9 +18,9 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { testUserType, createTestUser } from "../../helpers/userAndOrg";
+import { TestUserType, createTestUser } from "../../helpers/userAndOrg";
 
-let testUser: testUserType;
+let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {

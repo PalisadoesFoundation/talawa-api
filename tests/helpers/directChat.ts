@@ -7,12 +7,12 @@ import {
 } from "../../src/models";
 import {
   createTestUserAndOrganization,
-  testOrganizationType,
-  testUserType,
+  TestOrganizationType,
+  TestUserType,
 } from "./userAndOrg";
 import { Document } from "mongoose";
 
-export type testDirectChatType =
+export type TestDirectChatType =
   | (Interface_DirectChat & Document<any, any, Interface_DirectChat>)
   | null;
 
@@ -22,7 +22,7 @@ export type TestDirectChatMessageType =
   | null;
 
 export const createTestDirectChat = async (): Promise<
-  [testUserType, testOrganizationType, testDirectChatType]
+  [TestUserType, TestOrganizationType, TestDirectChatType]
 > => {
   const [testUser, testOrganization] = await createTestUserAndOrganization();
   const testDirectChat = await DirectChat.create({
@@ -36,9 +36,9 @@ export const createTestDirectChat = async (): Promise<
 
 export const createTestDirectChatMessage = async (): Promise<
   [
-    testUserType,
-    testOrganizationType,
-    testDirectChatType,
+    TestUserType,
+    TestOrganizationType,
+    TestDirectChatType,
     TestDirectChatMessageType
   ]
 > => {
@@ -60,7 +60,7 @@ export const createTestDirectMessageForMultipleUser = async (
   sender_id: string,
   receiver_id: string,
   organization_id: string
-): Promise<testDirectChatType> => {
+): Promise<TestDirectChatType> => {
   const testDirectChat = await DirectChat.create({
     creator: sender_id,
     users: [sender_id],
@@ -82,7 +82,7 @@ export const createTestDirectChatwithUsers = async (
   creator: string,
   organization_id: string,
   users: string[]
-): Promise<testDirectChatType> => {
+): Promise<TestDirectChatType> => {
   const testDirectChat = await DirectChat.create({
     creator: creator,
     users: users,

@@ -7,8 +7,8 @@ import { Document, Types } from "mongoose";
 import { QueryPostsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
-  testUserType,
-  testOrganizationType,
+  TestUserType,
+  TestOrganizationType,
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
 import { Post, Interface_Post } from "../../../src/models";
@@ -16,8 +16,8 @@ import { nanoid } from "nanoid";
 import { BASE_URL } from "../../../src/constants";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testOrganization: testOrganizationType;
-let testUser: testUserType;
+let testOrganization: TestOrganizationType;
+let testUser: TestUserType;
 let testPosts: (Interface_Post & Document<any, any, Interface_Post>)[];
 
 beforeAll(async () => {

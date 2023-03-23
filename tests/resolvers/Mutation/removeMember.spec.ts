@@ -23,12 +23,12 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { testOrganizationType, testUserType } from "../../helpers/userAndOrg";
+import { TestOrganizationType, TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserFunc } from "../../helpers/user";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUsers: testUserType[];
-let testOrganization: testOrganizationType;
+let testUsers: TestUserType[];
+let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

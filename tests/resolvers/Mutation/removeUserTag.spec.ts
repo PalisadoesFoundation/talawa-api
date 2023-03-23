@@ -17,12 +17,12 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { testUserType, createTestUser } from "../../helpers/userAndOrg";
+import { TestUserType, createTestUser } from "../../helpers/userAndOrg";
 import { OrganizationTagUser, TagUser } from "../../../src/models";
 import { createTwoLevelTagsWithOrg, TestUserTagType } from "../../helpers/tags";
 
-let testUser: testUserType;
-let randomUser: testUserType;
+let testUser: TestUserType;
+let randomUser: TestUserType;
 
 let rootTag: TestUserTagType,
   childTag1: TestUserTagType,

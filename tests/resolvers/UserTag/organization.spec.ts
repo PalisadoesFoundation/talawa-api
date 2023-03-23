@@ -4,11 +4,11 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createRootTagWithOrg, TestUserTagType } from "../../helpers/tags";
-import { testOrganizationType } from "../../helpers/userAndOrg";
+import { TestOrganizationType } from "../../helpers/userAndOrg";
 import { Organization } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testTag: TestUserTagType, testOrg: testOrganizationType;
+let testTag: TestUserTagType, testOrg: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

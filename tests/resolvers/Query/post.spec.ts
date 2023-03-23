@@ -6,11 +6,11 @@ import { Types } from "mongoose";
 import { POST_NOT_FOUND_ERROR } from "../../../src/constants";
 import { QueryPostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { testPostType, createPostwithComment } from "../../helpers/posts";
+import { TestPostType, createPostwithComment } from "../../helpers/posts";
 import mongoose from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testPost: testPostType;
+let testPost: TestPostType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
