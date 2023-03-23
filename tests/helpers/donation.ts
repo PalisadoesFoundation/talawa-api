@@ -32,9 +32,9 @@ export const createTestDonation = async (): Promise<
   return [testUser, testOrganization, testDonation];
 };
 
-export const createTestDonationsForOrganization = async (organization: testOrganizationType): Promise<
-Array<testDonationType>
-> => {
+export const createTestDonationsForOrganization = async (
+  organization: testOrganizationType
+): Promise<Array<testDonationType>> => {
   const testUser1 = await createTestUser();
   const testDonation1 = await Donation.create({
     amount: 1,
@@ -43,7 +43,7 @@ Array<testDonationType>
     orgId: organization?._id,
     payPalId: `payPalId${nanoid().toLowerCase()}`,
     userId: testUser1?._id,
-  })
+  });
 
   const testUser2 = await createTestUser();
   const testDonation2 = await Donation.create({
@@ -53,7 +53,7 @@ Array<testDonationType>
     orgId: organization?._id,
     payPalId: `payPalId${nanoid().toLowerCase()}`,
     userId: testUser2?._id,
-  })
+  });
 
   const testUser3 = await createTestUser();
   const testDonation3 = await Donation.create({
@@ -63,7 +63,7 @@ Array<testDonationType>
     orgId: organization?._id,
     payPalId: `payPalId${nanoid().toLowerCase()}`,
     userId: testUser3?._id,
-  })
+  });
 
   return [testDonation1, testDonation2, testDonation3];
-}
+};
