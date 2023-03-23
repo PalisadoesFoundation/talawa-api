@@ -17,6 +17,7 @@
       "files": ["./src/typeDefs/**/*.graphql"],
       "parser": "@graphql-eslint/eslint-plugin",
       "plugins": ["@graphql-eslint"],
+      // Do not apply naming conventions to .graphql files
       "rules": {
         "@typescript-eslint/naming-convention": "off"
       }
@@ -60,11 +61,13 @@
     // Typescript rule to enforce PascalCase naming for types and interfaces
     "@typescript-eslint/naming-convention": [
       "error",
+      // Interfaces but begin with Interface_ or Test_Interface_ followed by a PascalCase name
       {
         "selector": "interface",
         "format": ["PascalCase"],
         "prefix": ["Interface_", "Test_Interface_"]
       },
+      // Type Alias must be in PascalCase
       {
         "selector": "typeAlias",
         "format": ["PascalCase"]
