@@ -207,7 +207,7 @@ export const getInputArgs = (
     };
   }
 
-  // Returns provided name events
+  // Returns provided name donations
   if (where.name_of_user) {
     inputArgsPayload = {
       ...inputArgsPayload,
@@ -215,7 +215,7 @@ export const getInputArgs = (
     };
   }
 
-  // Returns events with not that name_of_user
+  // Returns donations with not that name_of_user
   if (where.name_of_user_not) {
     inputArgsPayload = {
       ...inputArgsPayload,
@@ -223,7 +223,7 @@ export const getInputArgs = (
     };
   }
 
-  // Return events with the given list name_of_user
+  // Return donations with the given list name_of_user
   if (where.name_of_user_in) {
     inputArgsPayload = {
       ...inputArgsPayload,
@@ -231,7 +231,7 @@ export const getInputArgs = (
     };
   }
 
-  // Returns events with name_of_user not in the provided list
+  // Returns donations with name_of_user not in the provided list
   if (where.name_of_user_not_in) {
     inputArgsPayload = {
       ...inputArgsPayload,
@@ -239,7 +239,7 @@ export const getInputArgs = (
     };
   }
 
-  // Returns events with name_of_user containing provided string
+  // Returns donations with name_of_user containing provided string
   if (where.name_of_user_contains) {
     inputArgsPayload = {
       ...inputArgsPayload,
@@ -247,7 +247,7 @@ export const getInputArgs = (
     };
   }
 
-  // Returns events with name_of_user starts with that provided string
+  // Returns donations with name_of_user starts with that provided string
   if (where.name_of_user_starts_with) {
     const regexp = new RegExp("^" + where.name_of_user_starts_with);
     inputArgsPayload = {
