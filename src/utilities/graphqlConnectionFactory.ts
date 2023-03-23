@@ -1,12 +1,12 @@
 import { ConnectionPageInfo } from "../types/generatedGraphQLTypes";
 
-interface ConnectionEdge<T> {
+interface Interface_ConnectionEdge<T> {
   cursor: string;
   node: T;
 }
 
-interface Connection<T> {
-  edges?: Array<ConnectionEdge<T> | null | undefined>;
+interface Interface_Connection<T> {
+  edges?: Array<Interface_ConnectionEdge<T> | null | undefined>;
   pageInfo: ConnectionPageInfo;
 }
 
@@ -25,7 +25,7 @@ other constraints like filters if any) is completely empty in database.
 This object will need to be transformed according to different
 logic inside resolvers.
 */
-export function graphqlConnectionFactory<T>(): Connection<T> {
+export function graphqlConnectionFactory<T>(): Interface_Connection<T> {
   return {
     edges: [],
     pageInfo: {
