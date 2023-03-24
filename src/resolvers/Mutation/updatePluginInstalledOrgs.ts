@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { Plugin } from "../../models";
 

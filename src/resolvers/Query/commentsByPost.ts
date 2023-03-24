@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { errors } from "../../libraries";
 import { Comment, Organization } from "../../models";
