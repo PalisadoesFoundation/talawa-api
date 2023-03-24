@@ -1,7 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwtDecode from "jwt-decode";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User } from "../../models";
 import { INVALID_OTP } from "../../constants";
 /**
  * This function enables a user to restore password.
@@ -14,7 +13,7 @@ import { INVALID_OTP } from "../../constants";
  * 4. Updates password field for user's document with email === email.
  * @returns True if the operation is successful.
  */
-export const forgotPassword: MutationResolvers["forgotPassword"] = async (
+export const otpCheck: MutationResolvers["otpCheck"] = async (
   _parent,
   args
 ) => {
@@ -33,20 +32,5 @@ export const forgotPassword: MutationResolvers["forgotPassword"] = async (
   if (otpIsValid === false) {
     throw new Error(INVALID_OTP);
   }
-
-  //const hashedPassword = await bcrypt.hash(newPassword, 12);
-
-  //Updates password field for user's document with email === email.
-
-  //await User.updateOne(
-    //{
-      //email,
-    //},
-    //{
-     // password: hashedPassword,
-    //}
-  //);
-
-  // Returns true if operation is successful.
   return true;
 };

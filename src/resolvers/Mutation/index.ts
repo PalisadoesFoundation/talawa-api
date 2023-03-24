@@ -25,6 +25,7 @@ import { createTask } from "./createTask";
 import { createUserTag } from "./createUserTag";
 import { deleteDonationById } from "./deleteDonationById";
 import { forgotPassword } from "./forgotPassword";
+import { otpCheck } from "./otpCheck";
 import { joinPublicOrganization } from "./joinPublicOrganization";
 import { leaveOrganization } from "./leaveOrganization";
 import { likeComment } from "./likeComment";
@@ -32,6 +33,7 @@ import { likePost } from "./likePost";
 import { login } from "./login";
 import { logout } from "./logout";
 import { otp } from "./otp";
+import { emailVerification } from "./emailVerification";
 import { recaptcha } from "./recaptcha";
 import { refreshToken } from "./refreshToken";
 import { registerForEvent } from "./registerForEvent";
@@ -101,6 +103,7 @@ export const Mutation: MutationResolvers = {
   createUserTag,
   deleteDonationById,
   forgotPassword,
+  otpCheck,
   joinPublicOrganization,
   leaveOrganization,
   likeComment,
@@ -108,6 +111,7 @@ export const Mutation: MutationResolvers = {
   login,
   logout,
   otp,
+  emailVerification,
   recaptcha,
   refreshToken,
   registerForEvent,

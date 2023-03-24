@@ -400,6 +400,7 @@ export type Mutation = {
   createTask: Task;
   createUserTag?: Maybe<UserTag>;
   deleteDonationById: DeletePayload;
+  emailVerification: OtpData;
   forgotPassword: Scalars['Boolean'];
   joinPublicOrganization: User;
   leaveOrganization: User;
@@ -408,6 +409,7 @@ export type Mutation = {
   login: AuthData;
   logout: Scalars['Boolean'];
   otp: OtpData;
+  otpCheck: Scalars['Boolean'];
   recaptcha: Scalars['Boolean'];
   refreshToken: ExtendSession;
   registerForEvent: Event;
@@ -599,6 +601,11 @@ export type MutationDeleteDonationByIdArgs = {
 };
 
 
+export type MutationEmailVerificationArgs = {
+  data: OtpInput;
+};
+
+
 export type MutationForgotPasswordArgs = {
   data: ForgotPasswordData;
 };
@@ -631,6 +638,11 @@ export type MutationLoginArgs = {
 
 export type MutationOtpArgs = {
   data: OtpInput;
+};
+
+
+export type MutationOtpCheckArgs = {
+  data: ForgotPasswordData;
 };
 
 
@@ -2114,6 +2126,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createTask?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationCreateTaskArgs, 'eventId'>>;
   createUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationCreateUserTagArgs, 'input'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
+  emailVerification?: Resolver<ResolversTypes['OtpData'], ParentType, ContextType, RequireFields<MutationEmailVerificationArgs, 'data'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;
   joinPublicOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationJoinPublicOrganizationArgs, 'organizationId'>>;
   leaveOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationLeaveOrganizationArgs, 'organizationId'>>;
@@ -2122,6 +2135,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   login?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'data'>>;
   logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   otp?: Resolver<ResolversTypes['OtpData'], ParentType, ContextType, RequireFields<MutationOtpArgs, 'data'>>;
+  otpCheck?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationOtpCheckArgs, 'data'>>;
   recaptcha?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRecaptchaArgs, 'data'>>;
   refreshToken?: Resolver<ResolversTypes['ExtendSession'], ParentType, ContextType, RequireFields<MutationRefreshTokenArgs, 'refreshToken'>>;
   registerForEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRegisterForEventArgs, 'id'>>;

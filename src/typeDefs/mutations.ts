@@ -79,6 +79,8 @@ export const mutations = gql`
 
     forgotPassword(data: ForgotPasswordData!): Boolean!
 
+    otpCheck(data: ForgotPasswordData!): Boolean!
+
     joinPublicOrganization(organizationId: ID!): User! @auth
 
     leaveOrganization(organizationId: ID!): User! @auth
@@ -92,6 +94,8 @@ export const mutations = gql`
     logout: Boolean! @auth
 
     otp(data: OTPInput!): OtpData!
+
+    emailVerification(data: OTPInput!): OtpData!
 
     recaptcha(data: RecaptchaVerification!): Boolean!
 

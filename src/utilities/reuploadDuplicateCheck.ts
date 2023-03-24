@@ -1,23 +1,20 @@
 import { imageHash } from "image-hash";
 import { requestContext, errors, logger } from "../libraries";
 
-interface Interface_UrlRequestObject {
+interface UrlRequestObject {
   encoding?: string | null;
   url: string | null;
 }
 
-interface Interface_BufferObject {
+interface BufferObject {
   ext?: string;
   data: Buffer;
   name?: string;
 }
 
-export type TypeImagePath =
-  | string
-  | Interface_UrlRequestObject
-  | Interface_BufferObject;
+export type Type_ImagePath = string | UrlRequestObject | BufferObject;
 
-const getImageHash = (oldSrc: TypeImagePath) => {
+const getImageHash = (oldSrc: Type_ImagePath) => {
   return new Promise((resolve, reject) => {
     imageHash(oldSrc, 16, true, (error: Error, data: any) => {
       if (error) {
@@ -35,13 +32,13 @@ const getImageHash = (oldSrc: TypeImagePath) => {
  * @remarks
  * This is a utility method.
  *
- * @param oldImagePath - Path of a current Org/User image of `type: TypeImagePath`.
- * @param newImagePath - Path of a new image of `type: TypeImagePath`.
+ * @param oldImagePath - Path of a current Org/User image of `type: Type_ImagePath`.
+ * @param newImagePath - Path of a new image of `type: Type_ImagePath`.
  * @returns If the identical image is trying to reuploaded, `true`; otherwise, `false`.
  */
 export const reuploadDuplicateCheck = async (
-  oldImagePath: TypeImagePath | null,
-  newImagePath: TypeImagePath
+  oldImagePath: Type_ImagePath | null,
+  newImagePath: Type_ImagePath
 ) => {
   /*
   This function checks whether a user is trying to re-upload the same profile picture

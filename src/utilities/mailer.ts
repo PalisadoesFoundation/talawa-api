@@ -51,7 +51,7 @@ export const mailer = (mailFields: Interface_MailFields) => {
     /* c8 ignore next 6 */
     from:
       SMTP_OPTIONS.IS_SMTP === "false" || SMTP_OPTIONS.IS_SMTP === undefined
-        ? "Talawa<>noreply@gmail.com"
+        ? "science60221023@gmail.com"
         : SMTP_OPTIONS.SMTP_USERNAME,
     to: mailFields.emailTo,
     subject: mailFields.subject,
