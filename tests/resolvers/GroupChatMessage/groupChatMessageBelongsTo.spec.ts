@@ -6,10 +6,10 @@ import { GroupChat } from "../../../src/models";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   createTestGroupChatMessage,
-  testGroupChatMessageType,
+  TestGroupChatMessageType,
 } from "../../helpers/groupChat";
 
-let testGroupChatMessage: testGroupChatMessageType;
+let testGroupChatMessage: TestGroupChatMessageType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {

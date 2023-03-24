@@ -18,16 +18,16 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { testOrganizationType, testUserType } from "../../helpers/userAndOrg";
+import { TestOrganizationType, TestUserType } from "../../helpers/userAndOrg";
 import {
   createTestGroupChatMessage,
-  testGroupChatType,
+  TestGroupChatType,
 } from "../../helpers/groupChat";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
-let testOrganization: testOrganizationType;
-let testGroupChat: testGroupChatType;
+let testUser: TestUserType;
+let testOrganization: TestOrganizationType;
+let testGroupChat: TestGroupChatType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

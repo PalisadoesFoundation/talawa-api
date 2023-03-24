@@ -6,12 +6,12 @@ import { Event } from "../../../src/models";
 import { QueryRegisteredEventsByUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
-  testUserType,
+  TestUserType,
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
+let testUser: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

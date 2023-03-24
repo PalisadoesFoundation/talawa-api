@@ -7,22 +7,22 @@ import {
 } from "../../src/models";
 import {
   createTestUserAndOrganization,
-  testOrganizationType,
-  testUserType,
+  TestOrganizationType,
+  TestUserType,
 } from "./userAndOrg";
 import { Document } from "mongoose";
 
-export type testGroupChatType =
+export type TestGroupChatType =
   | (Interface_GroupChat & Document<any, any, Interface_GroupChat>)
   | null;
 
-export type testGroupChatMessageType =
+export type TestGroupChatMessageType =
   | (Interface_GroupChatMessage &
       Document<any, any, Interface_GroupChatMessage>)
   | null;
 
 export const createTestGroupChat = async (): Promise<
-  [testUserType, testOrganizationType, testGroupChatType]
+  [TestUserType, TestOrganizationType, TestGroupChatType]
 > => {
   const [testUser, testOrganization] = await createTestUserAndOrganization();
   const testGroupChat = await GroupChat.create({
@@ -37,10 +37,10 @@ export const createTestGroupChat = async (): Promise<
 
 export const createTestGroupChatMessage = async (): Promise<
   [
-    testUserType,
-    testOrganizationType,
-    testGroupChatType,
-    testGroupChatMessageType
+    TestUserType,
+    TestOrganizationType,
+    TestGroupChatType,
+    TestGroupChatMessageType
   ]
 > => {
   const [testUser, testOrganization, testGroupChat] =

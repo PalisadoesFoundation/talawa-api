@@ -6,15 +6,15 @@ import {
 import { nanoid } from "nanoid";
 import {
   createTestUserAndOrganization,
-  testUserType,
-  testOrganizationType,
+  TestUserType,
+  TestOrganizationType,
   createTestUser,
 } from "./userAndOrg";
 
 export type TestUserTagType = Interface_OrganizationTagUser | null;
 
 export const createRootTagWithOrg = async (): Promise<
-  [testUserType, testOrganizationType, TestUserTagType]
+  [TestUserType, TestOrganizationType, TestUserTagType]
 > => {
   const [testUser, testOrganization] = await createTestUserAndOrganization();
 
@@ -29,7 +29,7 @@ export const createRootTagWithOrg = async (): Promise<
 
 export const createRootTagsWithOrg = async (
   numberOfTags = 1
-): Promise<[testUserType, testOrganizationType, TestUserTagType[]]> => {
+): Promise<[TestUserType, TestOrganizationType, TestUserTagType[]]> => {
   const [testUser, testOrganization] = await createTestUserAndOrganization();
   const tags: TestUserTagType[] = [];
 
@@ -47,8 +47,8 @@ export const createRootTagsWithOrg = async (
 
 export const createTwoLevelTagsWithOrg = async (): Promise<
   [
-    testUserType,
-    testOrganizationType,
+    TestUserType,
+    TestOrganizationType,
     [TestUserTagType, TestUserTagType, TestUserTagType]
   ]
 > => {
@@ -74,8 +74,8 @@ export const createTwoLevelTagsWithOrg = async (): Promise<
 export const createAndAssignUsersToTag = async (
   tag: TestUserTagType,
   numberOfUsers = 1
-): Promise<testUserType[]> => {
-  const testUsers: testUserType[] = [];
+): Promise<TestUserType[]> => {
+  const testUsers: TestUserType[] = [];
 
   for (let i = 0; i < numberOfUsers; i++) {
     const user = await createTestUser();
@@ -91,7 +91,7 @@ export const createAndAssignUsersToTag = async (
 
 export const createTagsAndAssignToUser = async (
   numberOfTags = 1
-): Promise<[testUserType, testOrganizationType, TestUserTagType[]]> => {
+): Promise<[TestUserType, TestOrganizationType, TestUserTagType[]]> => {
   const [testUser, testOrg, testTag] = await createRootTagWithOrg();
   await TagUser.create({
     userId: testUser!._id,

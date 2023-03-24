@@ -6,13 +6,13 @@ import { User, Organization, MembershipRequest } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
   createTestUserAndOrganization,
-  testOrganizationType,
-  testUserType,
+  TestOrganizationType,
+  TestUserType,
 } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
-let testOrganization: testOrganizationType;
+let testUser: TestUserType;
+let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

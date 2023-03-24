@@ -13,13 +13,13 @@ import { Organization } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 import {
   createTestUserAndOrganization,
-  testOrganizationType,
-  testUserType,
+  TestOrganizationType,
+  TestUserType,
 } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
-let testOrganization: testOrganizationType;
+let testUser: TestUserType;
+let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

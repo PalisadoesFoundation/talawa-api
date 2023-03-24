@@ -24,13 +24,13 @@ import {
   USER_NOT_FOUND_ERROR,
   EVENT_PROJECT_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { testUserType } from "../../helpers/userAndOrg";
-import { createTestEvent, testEventType } from "../../helpers/events";
+import { TestUserType } from "../../helpers/userAndOrg";
+import { createTestEvent, TestEventType } from "../../helpers/events";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
-let testUserNotCreatorOfEventProject: testUserType;
-let testEvent: testEventType;
+let testUser: TestUserType;
+let testUserNotCreatorOfEventProject: TestUserType;
+let testEvent: TestEventType;
 let testEventProject: Interface_EventProject &
   Document<any, any, Interface_EventProject>;
 

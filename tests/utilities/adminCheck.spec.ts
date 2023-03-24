@@ -12,14 +12,14 @@ import { connect, disconnect } from "../helpers/db";
 import { USER_NOT_AUTHORIZED_ADMIN } from "../../src/constants";
 import {
   createTestUserAndOrganization,
-  testOrganizationType,
-  testUserType,
+  TestOrganizationType,
+  TestUserType,
 } from "../helpers/userAndOrg";
 import mongoose from "mongoose";
 import { Organization, User } from "../../src/models";
 
-let testUser: testUserType;
-let testOrganization: testOrganizationType;
+let testUser: TestUserType;
+let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {

@@ -8,8 +8,8 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { createTestUser, testUserType } from "../../helpers/userAndOrg";
-import { testPostType, createTestPost } from "../../helpers/posts";
+import { createTestUser, TestUserType } from "../../helpers/userAndOrg";
+import { TestPostType, createTestPost } from "../../helpers/posts";
 import {
   beforeAll,
   afterAll,
@@ -21,9 +21,9 @@ import {
 } from "vitest";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
-let testPost: testPostType;
-let randomUser: testUserType;
+let testUser: TestUserType;
+let testPost: TestPostType;
+let randomUser: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

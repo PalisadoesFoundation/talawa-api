@@ -19,13 +19,13 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { testUserType } from "../../helpers/userAndOrg";
-import { testEventType } from "../../helpers/events";
+import { TestUserType } from "../../helpers/userAndOrg";
+import { TestEventType } from "../../helpers/events";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 
-let testUser: testUserType;
+let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testEvent: testEventType;
+let testEvent: TestEventType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

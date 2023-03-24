@@ -21,16 +21,16 @@ import {
   vi,
 } from "vitest";
 import {
-  testOrganizationType,
-  testUserType,
+  TestOrganizationType,
+  TestUserType,
   createTestUser,
 } from "../../helpers/userAndOrg";
 import { OrganizationTagUser } from "../../../src/models";
 import { createRootTagWithOrg, TestUserTagType } from "../../helpers/tags";
 
-let testUser: testUserType;
-let randomUser: testUserType;
-let testOrganization: testOrganizationType;
+let testUser: TestUserType;
+let randomUser: TestUserType;
+let testOrganization: TestOrganizationType;
 let testTag: TestUserTagType;
 let randomTestTag: TestUserTagType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;

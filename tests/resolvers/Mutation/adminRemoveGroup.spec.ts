@@ -12,15 +12,15 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
+import { TestUserType, TestOrganizationType } from "../../helpers/userAndOrg";
 import {
-  testGroupChatType,
+  TestGroupChatType,
   createTestGroupChat,
 } from "../../helpers/groupChat";
 
-let testUser: testUserType;
-let testOrganization: testOrganizationType;
-let testGroupChat: testGroupChatType;
+let testUser: TestUserType;
+let testOrganization: TestOrganizationType;
+let testGroupChat: TestGroupChatType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
