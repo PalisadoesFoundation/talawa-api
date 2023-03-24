@@ -3,7 +3,7 @@ import { TagUser, Interface_TagUser, Interface_User } from "../../models";
 import { validatePaginationArgs } from "../../libraries/validators/validatePaginationArgs";
 import {
   graphqlConnectionFactory,
-  ConnectionEdge,
+  Interface_ConnectionEdge,
 } from "../../utilities/graphqlConnectionFactory";
 import { errors, requestContext } from "../../libraries";
 import { INVALID_CURSOR_PROVIDED } from "../../constants";
@@ -119,7 +119,7 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
       ({
         node: tagUser.userId,
         cursor: tagUser._id.toString(),
-      } as ConnectionEdge<Interface_User>)
+      } as Interface_ConnectionEdge<Interface_User>)
   );
 
   // Set the start and end cursor

@@ -10,7 +10,6 @@ import {
   TestUserTagType,
 } from "../../helpers/tags";
 import { TagUser, Interface_TagUser } from "../../../src/models";
-import { testUserType } from "../../helpers/userAndOrg";
 import { INVALID_CURSOR_PROVIDED } from "../../../src/constants";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
