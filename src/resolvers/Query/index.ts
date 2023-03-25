@@ -15,7 +15,6 @@ import { getDonationByOrgId } from "./getDonationByOrgId";
 import { getDonationByOrgIdConnection } from "./getDonationByOrgIdConnection";
 import { getDonations } from "./getDonations";
 import { getlanguage } from "./getlanguage";
-import { getOrganizationWithUserID } from "./getOrganizationWithUserID"
 import { getPlugins } from "./getPlugins";
 import { groupChatMessages } from "./groupChatMessages";
 import { groupChats } from "./groupChats";
@@ -56,7 +55,6 @@ export const Query: QueryResolvers = {
   getDonationByOrgIdConnection,
   getDonations,
   getlanguage,
-  getOrganizationWithUserID,
   getPlugins,
   groupChatMessages,
   groupChats,
