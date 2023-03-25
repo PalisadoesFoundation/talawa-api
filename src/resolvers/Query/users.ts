@@ -9,9 +9,9 @@ import { UNAUTHENTICATED_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
 /**
  * This query will fetch all the users in specified order from the database.
- * @param _parent
+ * @param _parent-
  * @param args - An object that contains relevant data to perform the query.
- * @param context
+ * @param context-
  * @returns An object that contains the list of all the users.
  * @remarks The query function uses `getSort()` function to sort the data in specified.
  */

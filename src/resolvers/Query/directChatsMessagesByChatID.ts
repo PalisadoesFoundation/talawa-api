@@ -4,7 +4,7 @@ import { DirectChatMessage } from "../../models";
 import { CHAT_NOT_FOUND_ERROR } from "../../constants";
 /**
  * This query will fetch all messages for a certain direct chat for the user from database.
- * @param _parent
+ * @param _parent-
  * @param args - An object that contains `id` of the direct chat.
  * @returns A `directChatsMessages` object that holds all of the messages from the specified direct chat.
  * If the `directChatsMessages` object is null then it throws `NotFoundError` error.
