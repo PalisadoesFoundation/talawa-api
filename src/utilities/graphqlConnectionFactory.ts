@@ -1,6 +1,6 @@
 import { ConnectionPageInfo } from "../types/generatedGraphQLTypes";
 
-export interface Interface_ConnectionEdge<T> {
+interface Interface_ConnectionEdge<T> {
   cursor: string;
   node: T;
 }

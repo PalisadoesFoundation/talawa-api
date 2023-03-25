@@ -1,10 +1,7 @@
 import { UserTagResolvers } from "../../types/generatedGraphQLTypes";
 import { TagUser, Interface_TagUser, Interface_User } from "../../models";
 import { validatePaginationArgs } from "../../libraries/validators/validatePaginationArgs";
-import {
-  graphqlConnectionFactory,
-  Interface_ConnectionEdge,
-} from "../../utilities/graphqlConnectionFactory";
+import { graphqlConnectionFactory } from "../../utilities/graphqlConnectionFactory";
 import { errors, requestContext } from "../../libraries";
 import { INVALID_CURSOR_PROVIDED } from "../../constants";
 
@@ -114,13 +111,10 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
   }
 
   // Create edges from the fetched objects
-  connectionObject.edges = allusersAssignedTo!.map(
-    (tagUser) =>
-      ({
-        node: tagUser.userId,
-        cursor: tagUser._id.toString(),
-      } as Interface_ConnectionEdge<Interface_User>)
-  );
+  connectionObject.edges = allusersAssignedTo!.map((tagUser) => ({
+    node: tagUser.userId,
+    cursor: tagUser._id.toString(),
+  }));
 
   // Set the start and end cursor
   connectionObject.pageInfo.startCursor = connectionObject.edges[0]!.cursor;
