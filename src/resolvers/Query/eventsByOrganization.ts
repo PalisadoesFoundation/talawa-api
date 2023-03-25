@@ -4,7 +4,7 @@ import { STATUS_ACTIVE } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
 /**
  * This query will fetch all events for the organization which have `ACTIVE` status from database.
- * @param _parent
+ * @param _parent-
  * @param args - An object that contains `orderBy` to sort the object as specified and `id` of the Organization.
  * @returns An `events` object that holds all events with `ACTIVE` status for the Organization.
  */

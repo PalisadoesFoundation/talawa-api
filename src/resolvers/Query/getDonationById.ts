@@ -3,7 +3,7 @@ import { Donation } from "../../models";
 
 /**
  * This query will fetch the donation as a transaction from database.
- * @param _parent
+ * @param _parent-
  * @param args - An object that contains `id` of the donation.
  * @returns A `donation` object.
  */
