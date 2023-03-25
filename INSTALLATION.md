@@ -362,7 +362,7 @@ The key generated in the previous step is in a format suitable for use in a mobi
             $env:GOOGLE_APPLICATION_CREDENTIALS="C:\PATH\TO\JSON\FILE\filename.json"
 
 1.  Install the [Firebase CLI](https://firebase.google.com/docs/cli#install_the_firebase_cli).
-1.  Save the origintal copy the `lib/firebase_options.dart` file as it will be modified.
+1.  Save the original copy the `lib/firebase_options.dart` file as it will be modified.
 1.  Run the following commands in the project directory of talawa mobile app:
 
         firebase login
