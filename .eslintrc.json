@@ -48,7 +48,7 @@
     ],
 
     // warn/1, error/2, off/0
-    "tsdoc/syntax": "off", // toggle off/ warn
+    "tsdoc/syntax": "warn", // toggle off/ warn
 
     // Typescript Rules
     "@typescript-eslint/ban-ts-comment": "off",
