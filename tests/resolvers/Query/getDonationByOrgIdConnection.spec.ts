@@ -7,16 +7,16 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
   createTestDonationsForOrganization,
-  testDonationType,
+  TestDonationType,
 } from "../../helpers/donation";
 import {
   createTestUserAndOrganization,
-  testOrganizationType,
+  TestOrganizationType,
 } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testDonations: Array<testDonationType>;
-let testOrganization: testOrganizationType;
+let testDonations: Array<TestDonationType>;
+let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

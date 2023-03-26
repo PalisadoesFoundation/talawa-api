@@ -33,8 +33,8 @@ export const createTestDonation = async (): Promise<
 };
 
 export const createTestDonationsForOrganization = async (
-  organization: testOrganizationType
-): Promise<Array<testDonationType>> => {
+  organization: TestOrganizationType
+): Promise<Array<TestDonationType>> => {
   const testUser1 = await createTestUser();
   const testDonation1 = await Donation.create({
     amount: 1,
