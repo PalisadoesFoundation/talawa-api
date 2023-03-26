@@ -347,7 +347,7 @@ export const inputs = gql`
     event_title_contains: String
   }
   input UpdatePostInput {
-    id: ID!,
+    id: ID!
     text: String
     title: String
     imageUrl: URL
