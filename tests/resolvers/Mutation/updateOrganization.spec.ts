@@ -64,7 +64,9 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
 
     try {
       const args: MutationUpdateOrganizationArgs = {
-        id: Types.ObjectId().toString(),
+        data : {
+          id: Types.ObjectId().toString(),
+        }
       };
 
       const context = {
@@ -94,8 +96,8 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
 
     try {
       const args: MutationUpdateOrganizationArgs = {
-        id: testOrganization!._id,
-      };
+        data : {id: testOrganization!._id,
+      }};
 
       const context = {
         userId: testUser!._id,
@@ -138,8 +140,8 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
     );
 
     const args: MutationUpdateOrganizationArgs = {
-      id: testOrganization!._id,
       data: {
+        id: testOrganization!._id,
         description: "newDescription",
         isPublic: false,
         name: "newName",
@@ -192,8 +194,8 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
     );
 
     const args: MutationUpdateOrganizationArgs = {
-      id: testOrganization!._id,
       data: {
+        id: testOrganization!._id,
         description: "newDescription",
         isPublic: false,
         name: "newName",

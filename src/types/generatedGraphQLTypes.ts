@@ -797,9 +797,8 @@ export type MutationUpdateLanguageArgs = {
 
 
 export type MutationUpdateOrganizationArgs = {
-  data?: InputMaybe<UpdateOrganizationInput>;
+  data: UpdateOrganizationInput;
   file?: InputMaybe<Scalars['String']>;
-  id: Scalars['ID'];
 };
 
 
@@ -816,8 +815,7 @@ export type MutationUpdatePluginStatusArgs = {
 
 
 export type MutationUpdatePostArgs = {
-  data?: InputMaybe<PostUpdateInput>;
-  id: Scalars['ID'];
+  data: UpdatePostInput;
 };
 
 
@@ -1048,13 +1046,6 @@ export type PostOrderByInput =
   | 'title_DESC'
   | 'videoUrl_ASC'
   | 'videoUrl_DESC';
-
-export type PostUpdateInput = {
-  imageUrl?: InputMaybe<Scalars['URL']>;
-  text?: InputMaybe<Scalars['String']>;
-  title?: InputMaybe<Scalars['String']>;
-  videoUrl?: InputMaybe<Scalars['URL']>;
-};
 
 export type PostWhereInput = {
   id?: InputMaybe<Scalars['ID']>;
@@ -1388,10 +1379,19 @@ export type UpdateEventInput = {
 
 export type UpdateOrganizationInput = {
   description?: InputMaybe<Scalars['String']>;
+  id: Scalars['ID'];
   isPublic?: InputMaybe<Scalars['Boolean']>;
   location?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   visibleInSearch?: InputMaybe<Scalars['Boolean']>;
+};
+
+export type UpdatePostInput = {
+  id: Scalars['ID'];
+  imageUrl?: InputMaybe<Scalars['URL']>;
+  text?: InputMaybe<Scalars['String']>;
+  title?: InputMaybe<Scalars['String']>;
+  videoUrl?: InputMaybe<Scalars['URL']>;
 };
 
 export type UpdateTaskInput = {
@@ -1725,7 +1725,6 @@ export type ResolversTypes = {
   PostConnection: ResolverTypeWrapper<Omit<PostConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['Post']>> }>;
   PostInput: PostInput;
   PostOrderByInput: PostOrderByInput;
-  PostUpdateInput: PostUpdateInput;
   PostWhereInput: PostWhereInput;
   Query: ResolverTypeWrapper<{}>;
   RecaptchaVerification: RecaptchaVerification;
@@ -1743,6 +1742,7 @@ export type ResolversTypes = {
   URL: ResolverTypeWrapper<Scalars['URL']>;
   UpdateEventInput: UpdateEventInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
+  UpdatePostInput: UpdatePostInput;
   UpdateTaskInput: UpdateTaskInput;
   UpdateUserInput: UpdateUserInput;
   UpdateUserPasswordInput: UpdateUserPasswordInput;
@@ -1826,7 +1826,6 @@ export type ResolversParentTypes = {
   Post: Interface_PostModel;
   PostConnection: Omit<PostConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['Post']>> };
   PostInput: PostInput;
-  PostUpdateInput: PostUpdateInput;
   PostWhereInput: PostWhereInput;
   Query: {};
   RecaptchaVerification: RecaptchaVerification;
@@ -1840,6 +1839,7 @@ export type ResolversParentTypes = {
   URL: Scalars['URL'];
   UpdateEventInput: UpdateEventInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
+  UpdatePostInput: UpdatePostInput;
   UpdateTaskInput: UpdateTaskInput;
   UpdateUserInput: UpdateUserInput;
   UpdateUserPasswordInput: UpdateUserPasswordInput;
@@ -2160,10 +2160,10 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   unregisterForEventByUser?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUnregisterForEventByUserArgs, 'id'>>;
   updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'id'>>;
   updateLanguage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateLanguageArgs, 'languageCode'>>;
-  updateOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateOrganizationArgs, 'id'>>;
+  updateOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateOrganizationArgs, 'data'>>;
   updatePluginInstalledOrgs?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginInstalledOrgsArgs, 'id' | 'orgId'>>;
   updatePluginStatus?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginStatusArgs, 'id' | 'status'>>;
-  updatePost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationUpdatePostArgs, 'id'>>;
+  updatePost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationUpdatePostArgs, 'data'>>;
   updateTask?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<MutationUpdateTaskArgs, 'id'>>;
   updateUserPassword?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationUpdateUserPasswordArgs>>;
   updateUserProfile?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;

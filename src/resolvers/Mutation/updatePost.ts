@@ -28,7 +28,7 @@ export const updatePost: MutationResolvers["updatePost"] = async (
   }
 
   const post = await Post.findOne({
-    _id: args.id,
+    _id: args.data.id,
   }).lean();
 
   // checks if there exists a post with _id === args.id
@@ -74,7 +74,7 @@ export const updatePost: MutationResolvers["updatePost"] = async (
 
   return await Post.findOneAndUpdate(
     {
-      _id: args.id,
+      _id: args.data.id,
     },
     // @ts-ignore
     {

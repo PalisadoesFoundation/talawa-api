@@ -256,6 +256,7 @@ export const inputs = gql`
   # }
 
   input UpdateOrganizationInput {
+    id: ID!
     name: String
     description: String
     isPublic: Boolean
@@ -345,7 +346,8 @@ export const inputs = gql`
 
     event_title_contains: String
   }
-  input PostUpdateInput {
+  input UpdatePostInput {
+    id: ID!,
     text: String
     title: String
     imageUrl: URL

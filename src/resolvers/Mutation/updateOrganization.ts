@@ -19,7 +19,7 @@ import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEn
 export const updateOrganization: MutationResolvers["updateOrganization"] =
   async (_parent, args, context) => {
     const organization = await Organization.findOne({
-      _id: args.id,
+      _id: args.data.id,
     }).lean();
 
     // Checks if organization with _id === args.id exists.
