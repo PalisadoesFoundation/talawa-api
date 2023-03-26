@@ -8,11 +8,11 @@ import { updatePluginStatus as updatePluginStatusResolver } from "../../../src/r
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
   createTestUserAndOrganization,
-  testUserType,
+  TestUserType,
 } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
+let testUser: TestUserType;
 let testPlugin: Interface_Plugin & Document<any, any, Interface_Plugin>;
 
 beforeAll(async () => {

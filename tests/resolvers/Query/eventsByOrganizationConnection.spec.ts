@@ -6,12 +6,12 @@ import mongoose from "mongoose";
 import { QueryEventsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Event } from "../../../src/models";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import { createEventWithRegistrant, testEventType } from "../../helpers/events";
+import { createEventWithRegistrant, TestEventType } from "../../helpers/events";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestTask } from "../../helpers/task";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testEvents: testEventType[];
+let testEvents: TestEventType[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

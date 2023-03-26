@@ -21,8 +21,8 @@ import {
 } from "vitest";
 import {
   createTestUserAndOrganization,
-  testOrganizationType,
-  testUserType,
+  TestOrganizationType,
+  TestUserType,
   createTestUser,
 } from "../../helpers/userAndOrg";
 import { Organization } from "../../../src/models";
@@ -31,9 +31,9 @@ import { nanoid } from "nanoid";
 import { createPost as createPostResolverImage } from "../../../src/resolvers/Mutation/createPost";
 
 const testImagePath: string = `${nanoid().toLowerCase()}test.png`;
-let testUser: testUserType;
-let randomUser: testUserType;
-let testOrganization: testOrganizationType;
+let testUser: TestUserType;
+let randomUser: TestUserType;
+let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({

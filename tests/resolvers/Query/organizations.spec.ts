@@ -7,16 +7,16 @@ import { Organization } from "../../../src/models";
 import { QueryOrganizationsArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
-  testUserType,
-  testOrganizationType,
+  TestUserType,
+  TestOrganizationType,
   createTestUserAndOrganization,
   createTestOrganizationWithAdmin,
 } from "../../helpers/userAndOrg";
 import { Types } from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
-let testOrganization1: testOrganizationType;
+let testUser: TestUserType;
+let testOrganization1: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

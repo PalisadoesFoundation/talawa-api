@@ -1101,6 +1101,7 @@ export type Query = {
   groupChats?: Maybe<Array<Maybe<GroupChat>>>;
   groups?: Maybe<Array<Maybe<Group>>>;
   isUserRegister?: Maybe<EventRegistrants>;
+  joinedOrganizations?: Maybe<Array<Maybe<Organization>>>;
   me: User;
   myLanguage?: Maybe<Scalars['String']>;
   organizations?: Maybe<Array<Maybe<Organization>>>;
@@ -1192,6 +1193,11 @@ export type QueryGetlanguageArgs = {
 
 export type QueryIsUserRegisterArgs = {
   eventId: Scalars['ID'];
+};
+
+
+export type QueryJoinedOrganizationsArgs = {
+  id?: InputMaybe<Scalars['ID']>;
 };
 
 
@@ -2284,6 +2290,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   groupChats?: Resolver<Maybe<Array<Maybe<ResolversTypes['GroupChat']>>>, ParentType, ContextType>;
   groups?: Resolver<Maybe<Array<Maybe<ResolversTypes['Group']>>>, ParentType, ContextType>;
   isUserRegister?: Resolver<Maybe<ResolversTypes['EventRegistrants']>, ParentType, ContextType, RequireFields<QueryIsUserRegisterArgs, 'eventId'>>;
+  joinedOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType, Partial<QueryJoinedOrganizationsArgs>>;
   me?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   myLanguage?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   organizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType, Partial<QueryOrganizationsArgs>>;

@@ -7,7 +7,7 @@ import { FilterQuery } from "mongoose";
 /**
  * This query will retrieve from the database a list of
  * organisation under the specified limit for the specified page in the pagination.
- * @param _parent
+ * @param _parent-
  * @param args - An object holds the data required to execute the query.
  * `args.first` specifies the number of members to retrieve, and `args.after` specifies
  * the unique identification for each item in the returned list.

@@ -7,10 +7,10 @@ import { User } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
   createTestGroupChat,
-  testGroupChatType,
+  TestGroupChatType,
 } from "../../helpers/groupChat";
 
-let testGroupChat: testGroupChatType;
+let testGroupChat: TestGroupChatType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {

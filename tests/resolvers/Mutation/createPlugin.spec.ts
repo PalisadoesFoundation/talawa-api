@@ -4,9 +4,9 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { createPlugin as createPluginResolver } from "../../../src/resolvers/Mutation/createPlugin";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestUserFunc, testUserType } from "../../helpers/user";
+import { createTestUserFunc, TestUserType } from "../../helpers/user";
 
-let testUser: testUserType;
+let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {

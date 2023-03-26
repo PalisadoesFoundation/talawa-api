@@ -17,11 +17,11 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { testUserType } from "../../helpers/userAndOrg";
-import { createTestPost, testPostType } from "../../helpers/posts";
+import { TestUserType } from "../../helpers/userAndOrg";
+import { createTestPost, TestPostType } from "../../helpers/posts";
 
-let testUser: testUserType;
-let testPost: testPostType;
+let testUser: TestUserType;
+let testPost: TestPostType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {

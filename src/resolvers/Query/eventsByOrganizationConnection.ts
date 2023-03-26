@@ -5,10 +5,6 @@ import { getSort } from "./helperFunctions/getSort";
 import { getInputArgs } from "./helperFunctions/getInputArgs";
 import { FilterQuery } from "mongoose";
 
-/**
- * @name eventsByOrganizationConnection a GraphQL Query
- * @description returns list of events of an organization that matches all the query parameters
- */
 export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizationConnection"] =
   async (_parent, args) => {
     let inputArg: FilterQuery<Interface_Event> = getInputArgs(args.where);

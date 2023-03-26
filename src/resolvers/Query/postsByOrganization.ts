@@ -4,7 +4,7 @@ import { getSort } from "./helperFunctions/getSort";
 
 /**
  * This query will fetch the list of all post within an Organization from database.
- * @param _parent
+ * @param _parent-
  * @param args - An object that contains `id` of the organization, `orderBy` fields.
  * @returns An object that contains the Post.
  * @remarks The query function uses `getSort()` function to sort the data in specified order.

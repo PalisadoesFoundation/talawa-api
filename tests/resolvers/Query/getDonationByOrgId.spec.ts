@@ -6,10 +6,10 @@ import { QueryGetDonationByOrgIdArgs } from "../../../src/types/generatedGraphQL
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { createTestDonation } from "../../helpers/donation";
-import { testOrganizationType } from "../../helpers/userAndOrg";
+import { TestOrganizationType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testOrganization: testOrganizationType;
+let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

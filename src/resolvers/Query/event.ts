@@ -4,7 +4,7 @@ import { errors } from "../../libraries";
 import { EVENT_NOT_FOUND_ERROR } from "../../constants";
 /**
  * This query will fetch the event with `ACTIVE` status from database.
- * @param _parent
+ * @param _parent-
  * @param args - An object that contains `id` of the event that need to be fetched.
  * @returns An `event` object. If the `event` object is null then it throws `NotFoundError` error.
  * @remarks You can learn about GraphQL `Resolvers`

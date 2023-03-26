@@ -7,11 +7,11 @@ import mongoose from "mongoose";
 import { createComment as createCommentResolver } from "../../../src/resolvers/Mutation/createComment";
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { createTestPost, testPostType } from "../../helpers/posts";
-import { testUserType } from "../../helpers/userAndOrg";
+import { createTestPost, TestPostType } from "../../helpers/posts";
+import { TestUserType } from "../../helpers/userAndOrg";
 
-let testUser: testUserType;
-let testPost: testPostType;
+let testUser: TestUserType;
+let testPost: TestPostType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {

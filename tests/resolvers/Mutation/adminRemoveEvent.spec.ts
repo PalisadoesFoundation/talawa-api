@@ -12,12 +12,12 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { testUserType, testOrganizationType } from "../../helpers/userAndOrg";
-import { testEventType, createTestEvent } from "../../helpers/events";
+import { TestUserType, TestOrganizationType } from "../../helpers/userAndOrg";
+import { TestEventType, createTestEvent } from "../../helpers/events";
 
-let testUser: testUserType;
-let testOrganization: testOrganizationType;
-let testEvent: testEventType;
+let testUser: TestUserType;
+let testOrganization: TestOrganizationType;
+let testEvent: TestEventType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {

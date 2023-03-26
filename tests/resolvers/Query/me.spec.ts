@@ -6,11 +6,11 @@ import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { User } from "../../../src/models";
 import { Types } from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { testUserType } from "../../helpers/userAndOrg";
+import { TestUserType } from "../../helpers/userAndOrg";
 import { createTestEvent } from "../../helpers/events";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
+let testUser: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

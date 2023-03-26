@@ -7,15 +7,15 @@ import {
 import { nanoid } from "nanoid";
 import { Document } from "mongoose";
 
-export type testOrganizationType =
+export type TestOrganizationType =
   | (Interface_Organization & Document<any, any, Interface_Organization>)
   | null;
 
-export type testUserType =
+export type TestUserType =
   | (Interface_User & Document<any, any, Interface_User>)
   | null;
 
-export const createTestUser = async (): Promise<testUserType> => {
+export const createTestUser = async (): Promise<TestUserType> => {
   const testUser = await User.create({
     email: `email${nanoid().toLowerCase()}@gmail.com`,
     password: `pass${nanoid().toLowerCase()}`,
@@ -32,7 +32,7 @@ export const createTestOrganizationWithAdmin = async (
   isMember = true,
   isAdmin = true,
   isPublic = true
-): Promise<testOrganizationType> => {
+): Promise<TestOrganizationType> => {
   const testOrganization = await Organization.create({
     name: `orgName${nanoid().toLowerCase()}`,
     description: `orgDesc${nanoid().toLowerCase()}`,
@@ -62,7 +62,7 @@ export const createTestUserAndOrganization = async (
   isMember = true,
   isAdmin = true,
   isPublic = true
-): Promise<[testUserType, testOrganizationType]> => {
+): Promise<[TestUserType, TestOrganizationType]> => {
   const testUser = await createTestUser();
   const testOrganization = await createTestOrganizationWithAdmin(
     testUser!._id,
@@ -76,7 +76,7 @@ export const createTestUserAndOrganization = async (
 export const createOrganizationwithVisibility = async (
   userID: string,
   visibleInSearch: boolean
-): Promise<testOrganizationType> => {
+): Promise<TestOrganizationType> => {
   const testOrganization = await Organization.create({
     name: `orgName${nanoid().toLowerCase()}`,
     description: `orgDesc${nanoid().toLowerCase()}`,

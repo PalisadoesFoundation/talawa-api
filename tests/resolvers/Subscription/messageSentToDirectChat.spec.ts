@@ -6,12 +6,12 @@ import {
   TestDirectChatMessageType,
   createTestDirectChatMessage,
 } from "../../helpers/directChat";
-import { testUserType } from "../../helpers/userAndOrg";
+import { TestUserType } from "../../helpers/userAndOrg";
 import { filterFunction } from "../../../src/resolvers/Subscription/messageSentToDirectChat";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testDirectChatMessage: TestDirectChatMessageType;
-let testCurrentUser: testUserType;
+let testCurrentUser: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

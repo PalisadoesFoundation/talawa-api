@@ -21,12 +21,12 @@ import {
 } from "vitest";
 import {
   createTestUserAndOrganization,
-  testOrganizationType,
-  testUserType,
+  TestOrganizationType,
+  TestUserType,
 } from "../../helpers/userAndOrg";
 
-let testUser: testUserType;
-let testOrganization: testOrganizationType;
+let testUser: TestUserType;
+let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
@@ -182,6 +182,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
       _id: testUser!._id,
     })
       .select(["-password"])
+      .populate("joinedOrganizations")
       .lean();
 
     expect(joinPublicOrganizationPayload).toEqual(updatedTestUser);

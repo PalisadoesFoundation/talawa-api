@@ -1,18 +1,18 @@
 import {
   createTestUserAndOrganization,
-  testOrganizationType,
-  testUserType,
+  TestOrganizationType,
+  TestUserType,
 } from "./userAndOrg";
 import { Event, User, Interface_Event } from "../../src/models";
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
-export type testEventType =
+export type TestEventType =
   | (Interface_Event & Document<any, any, Interface_Event>)
   | null;
 
 export const createTestEvent = async (): Promise<
-  [testUserType, testOrganizationType, testEventType]
+  [TestUserType, TestOrganizationType, TestEventType]
 > => {
   const resultsArray = await createTestUserAndOrganization();
   const testUser = resultsArray[0];
@@ -53,7 +53,7 @@ export const createEventWithRegistrant = async (
   organization_id: string,
   allDay: boolean,
   recurrance: string
-): Promise<testEventType> => {
+): Promise<TestEventType> => {
   const testEvent = await Event.create({
     creator: user_id,
     registrants: [

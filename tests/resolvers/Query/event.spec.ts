@@ -7,13 +7,13 @@ import { Event } from "../../../src/models";
 import { Types } from "mongoose";
 import { QueryEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { testUserType } from "../../helpers/userAndOrg";
-import { createTestEvent, testEventType } from "../../helpers/events";
+import { TestUserType } from "../../helpers/userAndOrg";
+import { createTestEvent, TestEventType } from "../../helpers/events";
 import { createTestTask } from "../../helpers/task";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testEvent: testEventType;
-let testUser: testUserType;
+let testEvent: TestEventType;
+let testUser: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

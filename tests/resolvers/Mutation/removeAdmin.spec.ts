@@ -23,14 +23,14 @@ import {
 import {
   createTestUser,
   createTestUserAndOrganization,
-  testOrganizationType,
-  testUserType,
+  TestOrganizationType,
+  TestUserType,
 } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUserRemoved: testUserType;
-let testUserRemover: testUserType;
-let testOrganization: testOrganizationType;
+let testUserRemoved: TestUserType;
+let testUserRemover: TestUserType;
+let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
