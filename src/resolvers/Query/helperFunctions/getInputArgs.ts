@@ -1,11 +1,3 @@
-import { FilterQuery } from "mongoose";
-import {
-  Interface_Donation,
-  Interface_Event,
-  Interface_Organization,
-  Interface_Post,
-  Interface_User,
-} from "../../../models";
 import {
   DonationWhereInput,
   EventWhereInput,
@@ -15,29 +7,23 @@ import {
   UserWhereInput,
 } from "../../../types/generatedGraphQLTypes";
 
-type returnType<T> = T extends EventWhereInput
-  ? FilterQuery<Interface_Event>
-  : T extends OrganizationWhereInput
-  ? FilterQuery<Interface_Organization>
-  : T extends DonationWhereInput
-  ? FilterQuery<Interface_Donation>
-  : T extends PostWhereInput
-  ? FilterQuery<Interface_Post>
-  : FilterQuery<Interface_User>;
-
-export const getInputArgs = <
-  T extends EventWhereInput &
-    OrganizationWhereInput &
-    DonationWhereInput &
-    PostWhereInput &
-    UserWhereInput
->(
-  where: InputMaybe<T> | undefined
-): returnType<T> => {
-  let inputArgsPayload = {} as returnType<T>;
+export const getInputArgs = <T>(
+  where:
+    | InputMaybe<
+        Partial<
+          EventWhereInput &
+            OrganizationWhereInput &
+            PostWhereInput &
+            UserWhereInput &
+            DonationWhereInput
+        >
+      >
+    | undefined
+) => {
+  let inputArgsPayload = {};
 
   if (!where) {
-    return inputArgsPayload;
+    return inputArgsPayload as T;
   }
 
   if (where.id) {
@@ -704,5 +690,5 @@ export const getInputArgs = <
     };
   }
 
-  return inputArgsPayload;
+  return inputArgsPayload as T;
 };

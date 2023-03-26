@@ -1,7 +1,8 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { User } from "../../models";
+import { Interface_User, User } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 import { getInputArgs } from "./helperFunctions/getInputArgs";
+import { FilterQuery } from "mongoose";
 
 /**
  * This query will retrieve from the database a list of members
@@ -17,7 +18,7 @@ import { getInputArgs } from "./helperFunctions/getInputArgs";
 // @ts-ignore
 export const organizationsMemberConnection: QueryResolvers["organizationsMemberConnection"] =
   async (_parent, args, context) => {
-    const inputArg = getInputArgs(args.where);
+    const inputArg: FilterQuery<Interface_User> = getInputArgs(args.where);
     const sort = getSort(args.orderBy);
 
     // Pagination based Options

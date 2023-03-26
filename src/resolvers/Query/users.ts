@@ -1,9 +1,10 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { User } from "../../models";
+import { Interface_User, User } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import { UNAUTHENTICATED_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
 import { getInputArgs } from "./helperFunctions/getInputArgs";
+import { FilterQuery } from "mongoose";
 
 /**
  * This query will fetch all the users in specified order from the database.
@@ -18,7 +19,7 @@ export const users: QueryResolvers["users"] = async (
   args,
   context
 ) => {
-  const inputArg = getInputArgs(args.where);
+  const inputArg: FilterQuery<Interface_User> = getInputArgs(args.where);
   const sort = getSort(args.orderBy);
 
   const queryUser = await User.findOne({
