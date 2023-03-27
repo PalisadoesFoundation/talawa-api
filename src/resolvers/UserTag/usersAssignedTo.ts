@@ -29,12 +29,17 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
       tagId: parent._id,
     })
       .sort({ _id: 1 })
+      // Let n = args.first
+      // If the args.after argument is provided, then n + 2 objects are fetched so that later we can
+      // check that the first object should correspond to the after cursor, and the last object is used to
+      // determine the existence of the next page
+      // If args.after is not provided, only n + 1 objects are fetched to check for the existence of next page
       .limit(args.after ? args.first + 2 : args.first + 1)
       .populate("userId")
       .lean();
 
     if (args.after) {
-      // If args.before is provided, then the first element fetched must coincide to the provided cursor
+      // If args.before is provided, then the first element fetched must coincide with the provided cursor
       if (
         allusersAssignedTo!.length === 0 ||
         allusersAssignedTo![0]._id.toString() !== args.after.toString()
@@ -74,12 +79,17 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
       tagId: parent._id,
     })
       .sort({ _id: -1 })
+      // Let n = args.last
+      // If the args.before argument is provided, then n + 2 objects are fetched so that later we can
+      // check that the first object should correspond to the before cursor, and the last object is used to
+      // determine the existence of the next page
+      // If args.before is not provided, only n + 1 objects are fetched to check for the existence of next page
       .limit(args.before ? args.last + 2 : args.last + 1)
       .populate("userId")
       .lean();
 
     if (args.before) {
-      // If args.before is provided, then the first element fetched must coincide to the provided cursor
+      // If args.before is provided, then the first element fetched must coincide with the provided cursor
       if (
         allusersAssignedTo!.length === 0 ||
         allusersAssignedTo![0]._id.toString() !== args.before.toString()
@@ -105,7 +115,7 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
       allusersAssignedTo!.pop();
     }
 
-    // Reverse the order of the fetched objects as according to Relay Specification the order of
+    // Reverse the order of the fetched objects as according to Relay Specification, the order of
     // returned objects must always be ascending on the basis of the cursor used
     allusersAssignedTo = allusersAssignedTo!.reverse();
   }

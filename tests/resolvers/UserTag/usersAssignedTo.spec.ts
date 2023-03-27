@@ -98,7 +98,7 @@ describe(`resolvers -> UserTag -> usersAssignedTo`, () => {
     );
   });
 
-  it(`returns only "first" number of users with _id > args.after when the after argument is provided and when number of users <= args.first`, async () => {
+  it(`returns only "args.first" number of users with _id > args.after when the after argument is provided and when number of users <= args.first`, async () => {
     const parent = testTag!;
     const args = {
       first: 2,
@@ -178,7 +178,7 @@ describe(`resolvers -> UserTag -> usersAssignedTo`, () => {
     );
   });
 
-  it(`returns only "last" number of users with _id < args.before when the before argument is provided and when number of users <= args.last`, async () => {
+  it(`returns only "args.last" number of users with _id < args.before when the before argument is provided and when number of users <= args.last`, async () => {
     const parent = testTag!;
     const args = {
       last: 3,
