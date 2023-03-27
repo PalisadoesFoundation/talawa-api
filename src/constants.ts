@@ -263,6 +263,12 @@ export const USER_NOT_FOUND_ERROR = {
   MESSAGE: "user.notFound",
   PARAM: "user",
 };
+export const SUPERADMIN_CANT_CHANGE_OWN_ROLE = {
+  MESSAGE:
+    "Superadmin's are not allowed to change their own roles. This is done as SUPERADMIN is the highest level of access to the system, and downgrading their own role may result in them being locked out of the system.",
+  CODE: "superadmin.NotChangeSelf",
+  PARAM: "superadmin.NotChangeSelf",
+};
 export const TRANSLATION_ALREADY_PRESENT_ERROR = {
   DESC: "Translation Already Present",
   CODE: "translation.alreadyPresent",
