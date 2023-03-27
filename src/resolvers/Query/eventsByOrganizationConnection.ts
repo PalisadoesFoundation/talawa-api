@@ -15,7 +15,7 @@ export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizatio
       status: "ACTIVE",
     };
 
-    const events = await Event.find(inputArg as Interface_Event)
+    const events = await Event.find(inputArg)
       .sort(sort)
       .limit(args.first!)
       .skip(args.skip!)

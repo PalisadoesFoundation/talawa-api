@@ -7,6 +7,25 @@ import {
   UserWhereInput,
 } from "../../../types/generatedGraphQLTypes";
 
+/**
+ * This function returns FilterQuery object which can be used to find out documents matching specific args as mentioned in `where`.
+ * When modifying this function, check if the arg to be added isn't present before, and place `where` argument
+ * type if not present before in the intersection type.
+ * @typeParam T - Type of object to be returned
+ * @param where - an object that contains properties that can be used to filter out documents.
+ * @returns a FilterQuery object to filter out documents
+ * @remarks You can learn about Generics {@link https://www.typescriptlang.org/docs/handbook/2/generics.html | here}.
+ * @example Here's an example showing how `getInputArgs()` can be used to get Events matching certain args mentioned in `where`
+ * ```
+ * function getEvents(_parent, args) {
+ * // Object type should be specified because getInputArgs returns an object of generic type.
+ * const inputArgs: FilterQuery<Interface_Event> = getInputArgs(args.where);
+ *
+ * const events = await Event.find(inputArg);
+ * return events;
+ * }
+ * ```
+ */
 export const getInputArgs = <T>(
   where:
     | InputMaybe<
