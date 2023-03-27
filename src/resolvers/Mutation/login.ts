@@ -11,6 +11,7 @@ import { androidFirebaseOptions, iosFirebaseOptions } from "../../config";
 import {
   INVALID_CREDENTIALS_ERROR,
   USER_NOT_FOUND_ERROR,
+  LAST_RESORT_SUPERADMIN_EMAIL,
 } from "../../constants";
 /**
  * This function enables login.
@@ -56,6 +57,21 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
   copyToClipboard(`{
     "Authorization": "Bearer ${accessToken}"
   }`);
+
+  // Updates the user to SUPERADMIN if the email of the user matches the LAST_RESORT_SUPERADMIN_EMAIL
+  if (
+    user!.email.toLowerCase() === LAST_RESORT_SUPERADMIN_EMAIL?.toLowerCase() &&
+    user!.userType !== "SUPERADMIN"
+  ) {
+    await User.updateOne(
+      {
+        _id: user!._id,
+      },
+      {
+        userType: "SUPERADMIN",
+      }
+    );
+  }
 
   // Assigns new value with populated fields to user object.
   user = await User.findOne({
