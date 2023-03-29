@@ -59,6 +59,8 @@ export const queries = gql`
 
     isUserRegister(eventId: ID!): EventRegistrants
 
+    joinedOrganizations(id: ID): [Organization]
+
     me: User! @auth
 
     myLanguage: String @auth

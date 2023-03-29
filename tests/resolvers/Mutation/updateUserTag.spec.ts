@@ -19,15 +19,15 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { createTestUser, testUserType } from "../../helpers/userAndOrg";
+import { createTestUser, TestUserType } from "../../helpers/userAndOrg";
 import { TestUserTagType, createRootTagsWithOrg } from "../../helpers/tags";
 import { OrganizationTagUser } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
-let testUser: testUserType;
+let testUser: TestUserType;
 let testTag: TestUserTagType, testTag2: TestUserTagType;
-let randomUser: testUserType;
+let randomUser: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

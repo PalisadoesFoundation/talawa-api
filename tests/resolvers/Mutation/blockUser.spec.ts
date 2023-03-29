@@ -24,14 +24,14 @@ import {
   afterEach,
 } from "vitest";
 import {
-  testUserType,
-  testOrganizationType,
+  TestUserType,
+  TestOrganizationType,
   createTestUser,
 } from "../../helpers/userAndOrg";
 
-let testUser: testUserType;
-let testUser2: testUserType;
-let testOrganization: testOrganizationType;
+let testUser: TestUserType;
+let testUser2: TestUserType;
+let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {

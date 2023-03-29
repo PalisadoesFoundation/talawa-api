@@ -1,18 +1,18 @@
 import {
   createTestUserAndOrganization,
-  testOrganizationType,
-  testUserType,
+  TestOrganizationType,
+  TestUserType,
 } from "./userAndOrg";
 import { Plugin, Interface_Plugin } from "../../src/models";
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
-export type testPluginType =
+export type TestPluginType =
   | (Interface_Plugin & Document<any, any, Interface_Plugin>)
   | null;
 
 export const createTestPlugin = async (): Promise<
-  [testUserType, testOrganizationType, testPluginType]
+  [TestUserType, TestOrganizationType, TestPluginType]
 > => {
   const resultsArray = await createTestUserAndOrganization();
   const testUser = resultsArray[0];

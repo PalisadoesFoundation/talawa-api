@@ -17,11 +17,11 @@ import {
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
   createTestUserAndOrganization,
-  testUserType,
+  TestUserType,
 } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
+let testUser: TestUserType;
 let testGroupChat: Interface_GroupChat &
   Document<any, any, Interface_GroupChat>;
 

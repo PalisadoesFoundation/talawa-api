@@ -10,11 +10,11 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { testUserType } from "../../helpers/userAndOrg";
+import { TestUserType } from "../../helpers/userAndOrg";
 import { createTestPost } from "../../helpers/posts";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
+let testUser: TestUserType;
 let testComment: Interface_Comment & Document<any, any, Interface_Comment>;
 
 beforeAll(async () => {

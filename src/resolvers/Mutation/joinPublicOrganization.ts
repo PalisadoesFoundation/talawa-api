@@ -99,5 +99,6 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
       }
     )
       .select(["-password"])
+      .populate("joinedOrganizations")
       .lean();
   };

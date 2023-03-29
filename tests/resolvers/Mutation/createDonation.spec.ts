@@ -5,13 +5,13 @@ import mongoose from "mongoose";
 import { createDonation as createDonationResolver } from "../../../src/resolvers/Mutation/createDonation";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
-  testOrganizationType,
-  testUserType,
+  TestOrganizationType,
+  TestUserType,
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
 
-let testUser: testUserType;
-let testOrganization: testOrganizationType;
+let testUser: TestUserType;
+let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {

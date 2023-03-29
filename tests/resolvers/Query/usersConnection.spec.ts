@@ -6,14 +6,14 @@ import { User } from "../../../src/models";
 import { QueryUsersConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
-  testUserType,
+  TestUserType,
   createTestUserAndOrganization,
   createTestUser,
 } from "../../helpers/userAndOrg";
 import { createEventWithRegistrant } from "../../helpers/events";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUsers: testUserType[];
+let testUsers: TestUserType[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

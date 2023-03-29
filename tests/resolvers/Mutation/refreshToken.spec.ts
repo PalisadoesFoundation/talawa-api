@@ -18,9 +18,9 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { createTestUserFunc, testUserType } from "../../helpers/user";
+import { createTestUserFunc, TestUserType } from "../../helpers/user";
 
-let testUser: testUserType;
+let testUser: TestUserType;
 let refreshToken: string;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 

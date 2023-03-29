@@ -24,16 +24,16 @@ import {
 } from "vitest";
 import {
   createTestUserAndOrganization,
-  testOrganizationType,
-  testUserType,
+  TestOrganizationType,
+  TestUserType,
 } from "../../helpers/userAndOrg";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { signUp as signUpResolverImage } from "../../../src/resolvers/Mutation/signUp";
 
 const testImagePath: string = `${nanoid().toLowerCase()}test.png`;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
-let testOrganization: testOrganizationType;
+let testUser: TestUserType;
+let testOrganization: TestOrganizationType;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),

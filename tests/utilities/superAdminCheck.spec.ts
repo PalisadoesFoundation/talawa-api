@@ -10,10 +10,10 @@ import {
 } from "vitest";
 import { connect, disconnect } from "../../src/db";
 import { USER_NOT_AUTHORIZED_SUPERADMIN } from "../../src/constants";
-import { testUserType } from "../helpers/userAndOrg";
+import { TestUserType } from "../helpers/userAndOrg";
 import { createTestUserFunc } from "../helpers/user";
 
-let testUser: testUserType;
+let testUser: TestUserType;
 
 beforeAll(async () => {
   connect();

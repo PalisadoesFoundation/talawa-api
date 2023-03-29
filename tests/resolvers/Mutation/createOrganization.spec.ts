@@ -20,10 +20,10 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { createTestUserFunc, testUserType } from "../../helpers/user";
+import { createTestUserFunc, TestUserType } from "../../helpers/user";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 
-let testUser: testUserType;
+let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({

@@ -23,10 +23,10 @@ import {
   expect,
   vi,
 } from "vitest";
-import { testUserType } from "../../helpers/userAndOrg";
+import { TestUserType } from "../../helpers/userAndOrg";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 
-let testUser: testUserType;
+let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {
@@ -135,6 +135,33 @@ email === args.data.email`, async () => {
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(INVALID_CREDENTIALS_ERROR.MESSAGE);
     }
+  });
+
+  it(`updates the user with email === LAST_RESORT_SUPERADMIN_EMAIL to the superadmin role`, async () => {
+    // Set the LAST_RESORT_SUPERADMIN_EMAIL to equal to the test user's email
+    vi.doMock("../../../src/constants", async () => {
+      const constants: object = await vi.importActual("../../../src/constants");
+      return {
+        ...constants,
+        LAST_RESORT_SUPERADMIN_EMAIL: testUser!.email,
+      };
+    });
+
+    const args: MutationLoginArgs = {
+      data: {
+        email: testUser!.email,
+        password: "password",
+      },
+    };
+
+    const { login: loginResolver } = await import(
+      "../../../src/resolvers/Mutation/login"
+    );
+
+    const loginPayload = await loginResolver?.({}, args, {});
+
+    // @ts-ignore
+    expect(loginPayload!.user.userType).toEqual("SUPERADMIN");
   });
 
   it(`returns the user object with populated fields joinedOrganizations, createdOrganizations,

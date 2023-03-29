@@ -13,14 +13,14 @@ import { updatePluginInstalledOrgs as updatePluginInstalledOrgsResolver } from "
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
   createTestUserAndOrganization,
-  testOrganizationType,
-  testUserType,
+  TestOrganizationType,
+  TestUserType,
 } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
+let testUser: TestUserType;
 let testPlugin: Interface_Plugin & Document<any, any, Interface_Plugin>;
-let testOrganization: testOrganizationType;
+let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

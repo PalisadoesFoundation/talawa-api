@@ -12,13 +12,13 @@ import {
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
   createTestUserAndOrganization,
-  testUserType,
+  TestUserType,
 } from "../../helpers/userAndOrg";
-import { testPostType } from "../../helpers/posts";
+import { TestPostType } from "../../helpers/posts";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: testUserType;
-let testPost: testPostType;
+let testUser: TestUserType;
+let testPost: TestPostType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

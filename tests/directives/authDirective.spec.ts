@@ -8,7 +8,7 @@ import "dotenv/config";
 import i18n from "i18n";
 import express from "express";
 import { appConfig } from "../../src/config";
-import { testUserType } from "../helpers/userAndOrg";
+import { TestUserType } from "../helpers/userAndOrg";
 import { createTestUserFunc } from "../helpers/user";
 
 const app = express();
@@ -30,7 +30,7 @@ i18n.configure({
 });
 app.use(i18n.init);
 
-let testUser: testUserType;
+let testUser: TestUserType;
 
 const typeDefs = gql`
   directive @auth on FIELD_DEFINITION

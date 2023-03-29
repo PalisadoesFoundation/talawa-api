@@ -18,11 +18,11 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { createTestUserFunc, testUserType } from "../../helpers/user";
+import { createTestUserFunc, TestUserType } from "../../helpers/user";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser1: testUserType;
-let testUser2: testUserType;
+let testUser1: TestUserType;
+let testUser2: TestUserType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import {
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_ERROR,
+  SUPERADMIN_CANT_CHANGE_OWN_ROLE,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -17,10 +18,10 @@ import {
   vi,
   expect,
 } from "vitest";
-import { createTestUserFunc, testUserType } from "../../helpers/user";
+import { createTestUserFunc, TestUserType } from "../../helpers/user";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUsers: testUserType[];
+let testUsers: TestUserType[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -141,7 +142,54 @@ describe("resolvers -> Mutation -> updateUserType", () => {
     }
   });
 
+  it(`throws SUPERADMIN_CANT_CHANGE_OWN_ROLE_ERROR if the user is a superadmin and tries to downgrade their own role`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementation((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationUpdateUserTypeArgs = {
+        data: {
+          id: testUsers[0]!._id,
+        },
+      };
+
+      const context = {
+        userId: testUsers[0]!._id,
+      };
+
+      const { updateUserType: updateUserTypeResolver } = await import(
+        "../../../src/resolvers/Mutation/updateUserType"
+      );
+
+      await updateUserTypeResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenCalledWith(SUPERADMIN_CANT_CHANGE_OWN_ROLE.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${SUPERADMIN_CANT_CHANGE_OWN_ROLE.MESSAGE}`
+      );
+    }
+  });
+
   it(`updates user.userType of user with _id === args.data.id to args.data.userType`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => `Translated ${message}`
+    );
+
+    await User.updateOne(
+      {
+        _id: testUsers[0]!._id,
+      },
+      {
+        userType: "SUPERADMIN",
+      },
+      {
+        new: true,
+      }
+    );
+
     const args: MutationUpdateUserTypeArgs = {
       data: {
         id: testUsers[1]!._id,

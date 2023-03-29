@@ -1,18 +1,18 @@
 import {
   createTestUserAndOrganization,
-  testOrganizationType,
-  testUserType,
+  TestOrganizationType,
+  TestUserType,
 } from "./userAndOrg";
 import { Event, User, Interface_Event } from "../../src/models";
 import { Document } from "mongoose";
 
-export type testEventType =
+export type TestEventType =
   | (Interface_Event & Document<any, any, Interface_Event>)
   | null;
 
 export const createTestEventWithRegistrants = async (
   isAdmin = true
-): Promise<[testUserType, testOrganizationType, testEventType]> => {
+): Promise<[TestUserType, TestOrganizationType, TestEventType]> => {
   const resultsArray = await createTestUserAndOrganization();
   const testUser = resultsArray[0];
   const testOrganization = resultsArray[1];

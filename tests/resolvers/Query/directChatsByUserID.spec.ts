@@ -7,9 +7,9 @@ import { DirectChat } from "../../../src/models";
 import { QueryDirectChatsByUserIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestDirectChat } from "../../helpers/directChat";
-import { testUserType } from "../../helpers/userAndOrg";
+import { TestUserType } from "../../helpers/userAndOrg";
 
-let testUser: testUserType;
+let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 beforeAll(async () => {

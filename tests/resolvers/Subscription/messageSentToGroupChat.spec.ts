@@ -3,13 +3,13 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import {
-  testGroupChatType,
+  TestGroupChatType,
   createTestGroupChatMessage,
 } from "../../helpers/groupChat";
 import { filterFunction } from "../../../src/resolvers/Subscription/messageSentToGroupChat";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testGroupChat: testGroupChatType;
+let testGroupChat: TestGroupChatType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

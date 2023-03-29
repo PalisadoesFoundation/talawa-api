@@ -19,10 +19,10 @@ import { User } from "../../src/models";
 import path from "path";
 import {
   createTestUserAndOrganization,
-  testUserType,
+  TestUserType,
 } from "../helpers/userAndOrg";
 
-let testUser: testUserType;
+let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 try {

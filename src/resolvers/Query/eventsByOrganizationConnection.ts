@@ -7,10 +7,6 @@ import { Event, Interface_Event, Interface_UserAttende } from "../../models";
 import { STATUS_ACTIVE } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
 
-/**
- * @name eventsByOrganizationConnection a GraphQL Query
- * @description returns list of events of an organization that matches all the query parameters
- */
 export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizationConnection"] =
   async (_parent, args) => {
     let inputArg = getInputArg(args.where);

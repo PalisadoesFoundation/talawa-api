@@ -170,6 +170,13 @@ export const TAG_NOT_FOUND = {
   PARAM: "tag.doesNotExist",
 };
 
+export const USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION = {
+  MESSAGE:
+    "The user to which the tag is being assigned hasn't joined the tag's parent organization.",
+  CODE: "user.notJoinedOrg",
+  PARAM: "user.notJoinedOrg",
+};
+
 export const INVALID_TAG_INPUT = {
   MESSAGE:
     "Either an organizatin ID or a parent tag ID must be provided for this operation.",
@@ -202,6 +209,20 @@ export const USER_NOT_AUTHORIZED_TO_CREATE_TAG = {
     "The user must be a superadmin or an admin of the organization to create the tag.",
   CODE: "user.notAuth.createTag",
   PARAM: "user.notAuth.createTag",
+};
+
+export const USER_ALREADY_HAS_TAG = {
+  MESSAGE:
+    "The user already has the tag that it is being requested to assigned.",
+  CODE: "user.alreadyHasTag",
+  PARAM: "user.alreadyHasTag",
+};
+
+export const USER_DOES_NOT_HAVE_THE_TAG = {
+  MESSAGE:
+    "The user does not have the tag that is being requested to be removed.",
+  CODE: "user.doesNotHaveTag",
+  PARAM: "user.doesNotHaveTag",
 };
 
 export const TASK_NOT_FOUND_ERROR = {
@@ -241,6 +262,12 @@ export const USER_NOT_FOUND_ERROR = {
   CODE: "user.notFound",
   MESSAGE: "user.notFound",
   PARAM: "user",
+};
+export const SUPERADMIN_CANT_CHANGE_OWN_ROLE = {
+  MESSAGE:
+    "Superadmin's are not allowed to change their own roles. This is done as SUPERADMIN is the highest level of access to the system, and downgrading their own role may result in them being locked out of the system.",
+  CODE: "superadmin.NotChangeSelf",
+  PARAM: "superadmin.NotChangeSelf",
 };
 export const TRANSLATION_ALREADY_PRESENT_ERROR = {
   DESC: "Translation Already Present",

@@ -13,11 +13,11 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { testUserType, createTestUser } from "../../helpers/userAndOrg";
+import { TestUserType, createTestUser } from "../../helpers/userAndOrg";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { addUserImage as addUserImageResolverUserImage } from "../../../src/resolvers/Mutation/addUserImage";
 
-let testUser: testUserType;
+let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
