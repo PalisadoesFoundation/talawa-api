@@ -10,7 +10,7 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
   parent,
   args
 ) => {
-  // Check if the args provided are either correct forward pagination or backward pagination arguments
+  // Check that the provided arguments must either be correct forward pagination arguments or correct backward pagination arguments
   validatePaginationArgs(args);
 
   let allusersAssignedTo: Interface_TagUser[] | null;
@@ -30,16 +30,16 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
     })
       .sort({ _id: 1 })
       // Let n = args.first
-      // If the args.after argument is provided, then n + 2 objects are fetched so that later we can
-      // check that the first object should correspond to the after cursor, and the last object is used to
-      // determine the existence of the next page
-      // If args.after is not provided, only n + 1 objects are fetched to check for the existence of next page
+      // If args.after argument is provided, then n + 2 objects are fetched so that we can
+      // ensure the validity of the after cursor by comparing it with the first object, and
+      // then use the last fetched object to determine the existence of the next page.
+      // If args.after is not provided, only n + 1 objects are fetched to check for the existence of the next page.
       .limit(args.after ? args.first + 2 : args.first + 1)
       .populate("userId")
       .lean();
 
     if (args.after) {
-      // If args.before is provided, then the first element fetched must coincide with the provided cursor
+      // If args.after is provided, then the first fetched element must coincide with the provided cursor
       if (
         allusersAssignedTo!.length === 0 ||
         allusersAssignedTo![0]._id.toString() !== args.after.toString()
@@ -80,16 +80,16 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
     })
       .sort({ _id: -1 })
       // Let n = args.last
-      // If the args.before argument is provided, then n + 2 objects are fetched so that later we can
-      // check that the first object should correspond to the before cursor, and the last object is used to
-      // determine the existence of the next page
-      // If args.before is not provided, only n + 1 objects are fetched to check for the existence of next page
+      // If args.before argument is provided, then n + 2 objects are fetched so that we can
+      // ensure the validity of the before cursor by comparing it with the first object, and
+      // then use the last fetched object to determine the existence of the next page.
+      // If args.before is not provided, only n + 1 objects are fetched to check for the existence of the next page.
       .limit(args.before ? args.last + 2 : args.last + 1)
       .populate("userId")
       .lean();
 
     if (args.before) {
-      // If args.before is provided, then the first element fetched must coincide with the provided cursor
+      // If args.before is provided, then the first fetched element must coincide with the provided cursor
       if (
         allusersAssignedTo!.length === 0 ||
         allusersAssignedTo![0]._id.toString() !== args.before.toString()
