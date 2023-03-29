@@ -72,10 +72,6 @@
         "selector": "typeAlias",
         "format": ["PascalCase"]
       }
-    ],
-
-    // Extension Rules
-    "@typescript-eslint/no-empty-function": "error",
-    "@typescript-eslint/no-unused-vars": "error"
+    ]
   }
 }
