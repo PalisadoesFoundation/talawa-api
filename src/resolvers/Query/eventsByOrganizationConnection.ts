@@ -3,11 +3,10 @@ import { Event, Interface_Event, Interface_UserAttende } from "../../models";
 import { STATUS_ACTIVE } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
 import { getInputArgs } from "./helperFunctions/getInputArgs";
-import { FilterQuery } from "mongoose";
 
 export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizationConnection"] =
   async (_parent, args) => {
-    let inputArg: FilterQuery<Interface_Event> = getInputArgs(args.where);
+    let inputArg = getInputArgs<Interface_Event>(args.where);
     const sort = getSort(args.orderBy);
 
     inputArg = {

@@ -2,7 +2,6 @@ import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Interface_Post, Post } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 import { getInputArgs } from "./helperFunctions/getInputArgs";
-import { FilterQuery } from "mongoose";
 
 // @ts-ignore
 /**
@@ -19,7 +18,7 @@ import { FilterQuery } from "mongoose";
 export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationConnection"] =
   async (_parent, args, context) => {
     const sort = getSort(args.orderBy);
-    const inputArg: FilterQuery<Interface_Post> = getInputArgs(args.where);
+    const inputArg = getInputArgs<Interface_Post>(args.where);
 
     // Pagination based Options
     let options = {};
