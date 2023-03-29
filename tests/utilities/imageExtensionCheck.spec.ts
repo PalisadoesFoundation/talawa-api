@@ -24,7 +24,7 @@ describe("utilities -> imageExtensionCheck", () => {
   it("throws Validation Error and calls deleteImage", async () => {
     const mockedDeleteImage = vi
       .spyOn(deleteImage, "deleteImage")
-      .mockImplementation((_filename: string) => {
+      .mockImplementation(() => {
         return Promise.resolve();
       });
 

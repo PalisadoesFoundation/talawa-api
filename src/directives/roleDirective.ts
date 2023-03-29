@@ -1,10 +1,5 @@
 import { SchemaDirectiveVisitor } from "apollo-server-express";
-import {
-  defaultFieldResolver,
-  GraphQLField,
-  GraphQLInterfaceType,
-  GraphQLObjectType,
-} from "graphql";
+import { defaultFieldResolver, GraphQLField } from "graphql";
 import { USER_NOT_AUTHORIZED_ERROR, USER_NOT_FOUND_ERROR } from "../constants";
 import { errors, requestContext } from "../libraries";
 import { User } from "../models";
@@ -17,15 +12,16 @@ export class RoleAuthorizationDirective extends SchemaDirectiveVisitor {
    * @returns resolver function
    */
   visitFieldDefinition(
-    field: GraphQLField<any, any>,
+    field: GraphQLField<any, any>
     /*
     In typescript '_' as prefix of a function argument means that argument is
     never used in the function definition. When the argument finds it's use
     in the function definition '_' should be removed from the argument.
     */
-    _details: {
-      objectType: GraphQLObjectType | GraphQLInterfaceType;
-    }
+    // uncomment below when _details needs to be used
+    // _details: {
+    //   objectType: GraphQLObjectType | GraphQLInterfaceType;
+    // }
   ): GraphQLField<any, any> | void | null {
     const resolver = field.resolve || defaultFieldResolver;
 

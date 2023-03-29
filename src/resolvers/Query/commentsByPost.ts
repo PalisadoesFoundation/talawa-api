@@ -16,10 +16,10 @@ import {
  * @remarks You can learn about GraphQL `Resolvers`
  * {@link https://www.apollographql.com/docs/apollo-server/data/resolvers/ | here}.
  */
+
 export const commentsByPost: QueryResolvers["commentsByPost"] = async (
   _parent,
-  args,
-  _context
+  args
 ) => {
   const comments = await Comment.find({
     post: args.id,
