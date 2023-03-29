@@ -1,7 +1,5 @@
 import { SchemaDirectiveVisitor } from "apollo-server-express";
 import {
-  GraphQLInterfaceType,
-  GraphQLObjectType,
   defaultFieldResolver,
   GraphQLField,
 } from "graphql";
@@ -21,9 +19,10 @@ export class AuthenticationDirective extends SchemaDirectiveVisitor {
     never used in the function definition. When the argument finds it's use
     in the function definition '_' should be removed from the argument.
     */
-    _details: {
-      objectType: GraphQLObjectType | GraphQLInterfaceType;
-    }
+    // uncomment when the below object is in use 
+    // _details: {
+    //   objectType: GraphQLObjectType | GraphQLInterfaceType;
+    // }
   ): GraphQLField<any, any> | void | null {
     const resolver = field.resolve || defaultFieldResolver;
 

@@ -2,8 +2,6 @@ import { SchemaDirectiveVisitor } from "apollo-server-express";
 import {
   defaultFieldResolver,
   GraphQLField,
-  GraphQLInterfaceType,
-  GraphQLObjectType,
 } from "graphql";
 import { USER_NOT_AUTHORIZED_ERROR, USER_NOT_FOUND_ERROR } from "../constants";
 import { errors, requestContext } from "../libraries";
@@ -23,9 +21,10 @@ export class RoleAuthorizationDirective extends SchemaDirectiveVisitor {
     never used in the function definition. When the argument finds it's use
     in the function definition '_' should be removed from the argument.
     */
-    _details: {
-      objectType: GraphQLObjectType | GraphQLInterfaceType;
-    }
+    // uncomment below when _details needs to be used
+    // _details: {
+    //   objectType: GraphQLObjectType | GraphQLInterfaceType;
+    // }
   ): GraphQLField<any, any> | void | null {
     const resolver = field.resolve || defaultFieldResolver;
 

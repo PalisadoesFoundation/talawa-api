@@ -19,8 +19,7 @@ import {
 
 export const commentsByPost: QueryResolvers["commentsByPost"] = async (
   _parent,
-  args,
-  _context
+  args
 ) => {
   const comments = await Comment.find({
     post: args.id,

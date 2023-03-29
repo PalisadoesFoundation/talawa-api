@@ -10,7 +10,7 @@ import { Plugin } from "../../models";
  */
 
 export const updatePluginStatus: MutationResolvers["updatePluginStatus"] =
-  async (_parent, args, _context) => {
+  async (_parent, args) => {
     return await Plugin.findOneAndUpdate(
       {
         _id: args.id,

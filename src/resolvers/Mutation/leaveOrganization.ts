@@ -5,7 +5,6 @@ import {
   USER_NOT_FOUND_ERROR,
   MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 /**
  * This function enables to leave an organization.

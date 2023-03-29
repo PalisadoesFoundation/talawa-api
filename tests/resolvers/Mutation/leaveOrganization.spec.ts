@@ -8,7 +8,6 @@ import { leaveOrganization as leaveOrganizationResolver } from "../../../src/res
 import {
   MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {

@@ -10,7 +10,7 @@ import { Plugin } from "../../models";
  */
 
 export const updatePluginInstalledOrgs: MutationResolvers["updatePluginInstalledOrgs"] =
-  async (_parent, args, _context) => {
+  async (_parent, args ) => {
     const plugin = await Plugin.findOne({
       _id: args.id,
     }).lean();
