@@ -5,8 +5,9 @@ import {
 } from "../libraries/validators/validatePaginationArgs";
 import { Model } from "mongoose";
 import { FilterQuery } from "mongoose";
-import { errors } from "../libraries";
+import { errors, requestContext } from "../libraries";
 import { INVALID_CURSOR_PROVIDED } from "../constants";
+
 interface Interface_ConnectionEdge<T> {
   cursor: string;
   node: T;
@@ -100,6 +101,14 @@ export async function createGraphQLConnection<S, T, U>(
     }),
   };
 
+  const beforeFilterQuery = {
+    ...(args.before && {
+      _id: {
+        $lte: args.before,
+      },
+    }),
+  };
+
   // Forward pagination
   if (args.first) {
     // Fetch the users
@@ -152,14 +161,11 @@ export async function createGraphQLConnection<S, T, U>(
   // Backward pagination
   if (args.last) {
     // Fetch the users
-    allFetchedObjects = await TagUser.find({
-      ...(args.before && {
-        _id: {
-          $lte: args.before,
-        },
-      }),
-      tagId: parent._id,
-    })
+    allFetchedObjects = await databaseModel
+      .find({
+        ...beforeFilterQuery,
+        ...filterQuery,
+      })
       .sort({ _id: -1 })
       // Let n = args.last
       // If args.before argument is provided, then n + 2 objects are fetched so that we can
@@ -167,14 +173,16 @@ export async function createGraphQLConnection<S, T, U>(
       // then use the last fetched object to determine the existence of the next page.
       // If args.before is not provided, only n + 1 objects are fetched to check for the existence of the next page.
       .limit(args.before ? args.last + 2 : args.last + 1)
-      .populate("userId")
+      // .populate("userId")
       .lean();
 
     if (args.before) {
       // If args.before is provided, then the first fetched element must coincide with the provided cursor
       if (
-        allFetchedObjects!.length === 0 ||
-        allFetchedObjects![0]._id.toString() !== args.before.toString()
+        !allFetchedObjects ||
+        allFetchedObjects.length === 0 ||
+        getCursorFromNode(getNodeFromResult(allFetchedObjects[0])) !==
+          args.before.toString()
       ) {
         throw new errors.InputValidationError(
           requestContext.translate(INVALID_CURSOR_PROVIDED.MESSAGE),
