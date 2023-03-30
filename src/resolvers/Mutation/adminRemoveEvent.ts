@@ -1,12 +1,12 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { adminCheck } from "../../utilities";
-import { User, Organization, Event } from "../../models";
 import {
-  USER_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_FOUND_ERROR,
-  EVENT_NOT_FOUND_ERROR,
-} from "../../constants";
+  adminCheck,
+  getValidOrganizationById,
+  getValidUserById,
+} from "../../utilities";
+import { User, Event } from "../../models";
+import { EVENT_NOT_FOUND_ERROR } from "../../constants";
 /**
  * This function enables an admin to remove a event
  * @param _parent - parent of current request
@@ -37,31 +37,9 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
     );
   }
 
-  const organization = await Organization.findOne({
-    _id: event.organization,
-  }).lean();
+  const organization = await getValidOrganizationById(event.organization);
 
-  // Checks whether organization exists.
-  if (!organization) {
-    throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
-      ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
-    );
-  }
-
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  }).lean();
-
-  // Checks whether currentUser exists.
-  if (!currentUser) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
-  }
+  const currentUser = await getValidUserById(context.userId);
 
   // Checks whether currentUser is an admin of organization.
   await adminCheck(currentUser._id, organization);

@@ -1,12 +1,11 @@
 import "dotenv/config";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { adminCheck } from "../../utilities";
-import { User, GroupChat, Organization } from "../../models";
+import { adminCheck, getValidOrganizationById } from "../../utilities";
+import { User, GroupChat } from "../../models";
 import {
   CHAT_NOT_FOUND_ERROR,
   USER_ALREADY_MEMBER_ERROR,
-  ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 /**
@@ -37,18 +36,7 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
       );
     }
 
-    const organization = await Organization.findOne({
-      _id: groupChat.organization,
-    }).lean();
-
-    // Checks whether organization exists.
-    if (!organization) {
-      throw new errors.NotFoundError(
-        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
-        ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
-      );
-    }
+    const organization = await getValidOrganizationById(groupChat.organization);
 
     // Checks whether currentUser with _id === context.userId is an admin of organization.
     await adminCheck(context.userId, organization);

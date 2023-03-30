@@ -1,12 +1,9 @@
 import "dotenv/config";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { adminCheck } from "../../utilities";
+import { adminCheck, getValidOrganizationById } from "../../utilities";
 import { User, Organization } from "../../models";
-import {
-  ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
-} from "../../constants";
+import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 /**
  * This function adds Organization Image.
@@ -34,18 +31,7 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
       );
     }
 
-    const organization = await Organization.findOne({
-      _id: args.organizationId,
-    }).lean();
-
-    // Checks whether organization exists.
-    if (!organization) {
-      throw new errors.NotFoundError(
-        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
-        ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
-      );
-    }
+    const organization = await getValidOrganizationById(args.organizationId);
 
     // Checks whether currentUser with _id === context.userId is an admin of organization.
     await adminCheck(context.userId, organization);

@@ -1,12 +1,14 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { adminCheck } from "../../utilities";
+import {
+  adminCheck,
+  getValidOrganizationById,
+  getValidUserById,
+} from "../../utilities";
 import { MembershipRequest, Organization, User } from "../../models";
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
   USER_ALREADY_MEMBER_ERROR,
-  ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 /**
  * This function accepts the membership request sent by a user.
@@ -35,31 +37,11 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       );
     }
 
-    const organization = await Organization.findOne({
-      _id: membershipRequest.organization,
-    }).lean();
+    const organization = await getValidOrganizationById(
+      membershipRequest.organization
+    );
 
-    // Checks whether organization exists.
-    if (!organization) {
-      throw new errors.NotFoundError(
-        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
-        ORGANIZATION_NOT_FOUND_ERROR.CODE,
-        ORGANIZATION_NOT_FOUND_ERROR.PARAM
-      );
-    }
-
-    const user = await User.findOne({
-      _id: membershipRequest.user,
-    }).lean();
-
-    // Checks whether user exists.
-    if (!user) {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
-      );
-    }
+    const user = await getValidUserById(membershipRequest.user);
 
     // Checks whether currentUser with _id === context.userId is an admin of organization.
     await adminCheck(context.userId, organization);
