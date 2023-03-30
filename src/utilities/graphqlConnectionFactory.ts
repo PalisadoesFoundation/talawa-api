@@ -49,8 +49,8 @@ type GetNodeFromResultFnType<T, U> = {
   (result: U): T;
 };
 
-type GetCursorFromNodeFnType<T> = {
-  (node: T): string;
+type GetCursorFromResultFnType<U> = {
+  (result: U): string;
 };
 
 /*
@@ -60,7 +60,6 @@ The function takes the following arguments:
 
 A. TYPE PARAMETERS
 
-1. S: Refers to the parent type for which the resolver is being implemented
 2. T: Refers the type of the node that the connection and it's edges would refer. 
 Example values include `Interface_User`, `Interface_Organization`, `Interface_Event`, `Interface_Post`.
 3. U: Regers to the type of interface that is implemented by the model that you want to query. 
@@ -68,7 +67,6 @@ For example, if you want to query the TagUser Model, then you would send Interfa
 
 B. DATA PARAMETERS
 
-1. parent: Refers to the parent object that is returned by the previous resolver.
 2. args: These are the actual args that are send by the client in the request.
 3. databaseModel: Refers to the actual database model that you want to query.
 4. filerQuery: Refers to the filter object that you want to pass to the .find() query which quering the databaseModel 
@@ -77,13 +75,12 @@ For example, User, Tag, Post, Organization etc.
 
 The function returns a promise which would resolve to the desired connection object (of the type Interface_Connection<T>).
 */
-export async function createGraphQLConnection<S, T, U>(
-  parent: S,
+export async function createGraphQLConnection<T, U>(
   args: CursorPaginationArgsType,
   databaseModel: Model<U>,
   filterQuery: FilterQuery<U>,
   getNodeFromResult: GetNodeFromResultFnType<T, U>,
-  getCursorFromNode: GetCursorFromNodeFnType<T>
+  getCursorFromResult: GetCursorFromResultFnType<U>
 ): Promise<Interface_Connection<T>> {
   // Check that the provided arguments must either be correct forward pagination
   // arguments or correct backward pagination arguments
@@ -124,7 +121,7 @@ export async function createGraphQLConnection<S, T, U>(
       // then use the last fetched object to determine the existence of the next page.
       // If args.after is not provided, only n + 1 objects are fetched to check for the existence of the next page.
       .limit(args.after ? args.first + 2 : args.first + 1)
-      // .populate("userId")
+      .populate("userId")
       .lean();
 
     if (args.after) {
@@ -132,8 +129,7 @@ export async function createGraphQLConnection<S, T, U>(
       if (
         !allFetchedObjects ||
         allFetchedObjects.length === 0 ||
-        getCursorFromNode(getNodeFromResult(allFetchedObjects[0])) !==
-          args.after.toString()
+        getCursorFromResult(allFetchedObjects[0]) !== args.after.toString()
       ) {
         throw new errors.InputValidationError(
           requestContext.translate(INVALID_CURSOR_PROVIDED.MESSAGE),
@@ -173,7 +169,7 @@ export async function createGraphQLConnection<S, T, U>(
       // then use the last fetched object to determine the existence of the next page.
       // If args.before is not provided, only n + 1 objects are fetched to check for the existence of the next page.
       .limit(args.before ? args.last + 2 : args.last + 1)
-      // .populate("userId")
+      .populate("userId")
       .lean();
 
     if (args.before) {
@@ -181,8 +177,7 @@ export async function createGraphQLConnection<S, T, U>(
       if (
         !allFetchedObjects ||
         allFetchedObjects.length === 0 ||
-        getCursorFromNode(getNodeFromResult(allFetchedObjects[0])) !==
-          args.before.toString()
+        getCursorFromResult(allFetchedObjects[0]) !== args.before.toString()
       ) {
         throw new errors.InputValidationError(
           requestContext.translate(INVALID_CURSOR_PROVIDED.MESSAGE),
@@ -207,13 +202,10 @@ export async function createGraphQLConnection<S, T, U>(
   }
 
   // Create edges from the fetched objects
-  connectionObject.edges = allFetchedObjects!.map((object: U) => {
-    const node = getNodeFromResult(object);
-    return {
-      node,
-      cursor: getCursorFromNode(node),
-    };
-  });
+  connectionObject.edges = allFetchedObjects!.map((object: U) => ({
+    node: getNodeFromResult(object),
+    cursor: getCursorFromResult(object),
+  }));
 
   // Set the start and end cursor
   connectionObject.pageInfo.startCursor = connectionObject.edges[0]!.cursor;
