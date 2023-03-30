@@ -5,7 +5,7 @@ import { User } from "../models";
 
 /**
  * Throws error if there exists no `user` with the given `id` else returns `user`
- * @param userId `id` of the desried user
+ * @param userId - `id` of the desried user
  */
 export const getValidUserById = async (userId: string | Types.ObjectId) => {
   const user = await User.findOne({
