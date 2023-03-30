@@ -1,7 +1,7 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Interface_Organization, Organization } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
-import { getInputArgs } from "./helperFunctions/getInputArgs";
+import { getWhere } from "./helperFunctions/getWhere";
 
 /**
  * This query will retrieve from the database a list of
@@ -16,10 +16,10 @@ import { getInputArgs } from "./helperFunctions/getInputArgs";
  */
 export const organizationsConnection: QueryResolvers["organizationsConnection"] =
   async (_parent, args) => {
-    const inputArg = getInputArgs<Interface_Organization>(args.where);
+    const where = getWhere<Interface_Organization>(args.where);
     const sort = getSort(args.orderBy);
 
-    const organizations = await Organization.find(inputArg)
+    const organizations = await Organization.find(where)
       .sort(sort)
       .limit(args.first!)
       .skip(args.skip!)

@@ -1,14 +1,14 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Donation, Interface_Donation } from "../../models";
-import { getInputArgs } from "./helperFunctions/getInputArgs";
+import { getWhere } from "./helperFunctions/getWhere";
 
 export const getDonationByOrgIdConnection: QueryResolvers["getDonationByOrgIdConnection"] =
   async (_parent, args) => {
-    const inputArg = getInputArgs<Interface_Donation>(args.where);
+    const where = getWhere<Interface_Donation>(args.where);
 
     return await Donation.find({
       orgId: args.orgId,
-      ...inputArg,
+      ...where,
     })
       .limit(args.first!)
       .skip(args.skip!)

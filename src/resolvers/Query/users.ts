@@ -3,7 +3,7 @@ import { Interface_User, User } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import { UNAUTHENTICATED_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
-import { getInputArgs } from "./helperFunctions/getInputArgs";
+import { getWhere } from "./helperFunctions/getWhere";
 
 /**
  * This query will fetch all the users in specified order from the database.
@@ -18,7 +18,7 @@ export const users: QueryResolvers["users"] = async (
   args,
   context
 ) => {
-  const inputArg = getInputArgs<Interface_User>(args.where);
+  const where = getWhere<Interface_User>(args.where);
   const sort = getSort(args.orderBy);
 
   const queryUser = await User.findOne({
@@ -33,7 +33,7 @@ export const users: QueryResolvers["users"] = async (
     );
   }
 
-  const users = await User.find(inputArg)
+  const users = await User.find(where)
     .sort(sort)
     .select(["-password"])
     .populate("createdOrganizations")

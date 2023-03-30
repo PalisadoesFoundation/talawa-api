@@ -1,7 +1,7 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Interface_User, User } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
-import { getInputArgs } from "./helperFunctions/getInputArgs";
+import { getWhere } from "./helperFunctions/getWhere";
 
 /**
  * This query will fetch all the users in a specified order to paginate from the database.
@@ -15,10 +15,10 @@ export const usersConnection: QueryResolvers["usersConnection"] = async (
   _parent,
   args
 ) => {
-  const inputArg = getInputArgs<Interface_User>(args.where);
+  const where = getWhere<Interface_User>(args.where);
   const sort = getSort(args.orderBy);
 
-  const users = await User.find(inputArg)
+  const users = await User.find(where)
     .sort(sort)
     .limit(args.first!)
     .skip(args.skip!)

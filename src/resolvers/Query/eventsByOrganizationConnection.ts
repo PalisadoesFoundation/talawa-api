@@ -2,19 +2,19 @@ import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Event, Interface_Event, Interface_UserAttende } from "../../models";
 import { STATUS_ACTIVE } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
-import { getInputArgs } from "./helperFunctions/getInputArgs";
+import { getWhere } from "./helperFunctions/getWhere";
 
 export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizationConnection"] =
   async (_parent, args) => {
-    let inputArg = getInputArgs<Interface_Event>(args.where);
+    let where = getWhere<Interface_Event>(args.where);
     const sort = getSort(args.orderBy);
 
-    inputArg = {
-      ...inputArg,
+    where = {
+      ...where,
       status: "ACTIVE",
     };
 
-    const events = await Event.find(inputArg)
+    const events = await Event.find(where)
       .sort(sort)
       .limit(args.first!)
       .skip(args.skip!)
