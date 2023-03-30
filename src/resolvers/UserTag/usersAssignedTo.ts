@@ -101,9 +101,9 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
         );
       }
 
-      // Remove the object with _id = args.before and set hasPreviousPage as true
+      // Remove the object with _id = args.before and set hasNextPage as true
       allusersAssignedTo!.shift();
-      connectionObject.pageInfo.hasPreviousPage = true;
+      connectionObject.pageInfo.hasNextPage = true;
     }
 
     // Return the default object if the recieved list is empty
@@ -111,13 +111,9 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
 
     // Populate the page pointer variables
     if (allusersAssignedTo!.length === args.last + 1) {
-      connectionObject.pageInfo.hasNextPage = true;
+      connectionObject.pageInfo.hasPreviousPage = true;
       allusersAssignedTo!.pop();
     }
-
-    // Reverse the order of the fetched objects as according to Relay Specification, the order of
-    // returned objects must always be ascending on the basis of the cursor used
-    allusersAssignedTo = allusersAssignedTo!.reverse();
   }
 
   // Create edges from the fetched objects

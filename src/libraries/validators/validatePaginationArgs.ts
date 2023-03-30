@@ -9,12 +9,14 @@ import {
 } from "../../constants";
 import { InputMaybe, Scalars } from "../../types/generatedGraphQLTypes";
 
-export const validatePaginationArgs = (args: {
+export type CursorPaginationArgsType = {
   after?: InputMaybe<Scalars["String"]>;
   before?: InputMaybe<Scalars["String"]>;
   first?: InputMaybe<Scalars["PositiveInt"]>;
   last?: InputMaybe<Scalars["PositiveInt"]>;
-}) => {
+};
+
+export const validatePaginationArgs = (args: CursorPaginationArgsType) => {
   // Check that one of first of last must be provided
   if (!args.first && !args.last) {
     throw new errors.InputValidationError(
