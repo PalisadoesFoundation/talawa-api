@@ -2,7 +2,6 @@ import "dotenv/config";
 import { usersAssignedTo as usersAssignedToResolver } from "../../../src/resolvers/UserTag/usersAssignedTo";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
-import { Types } from "mongoose";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
   createAndAssignUsersToTag,
@@ -34,7 +33,7 @@ beforeAll(async () => {
     .populate("userId")
     .lean();
 
-  cursors = allUsers.map((userTag) => userTag!.userId._id.toString());
+  cursors = allUsers.map((userTag) => userTag!._id.toString());
   usersAssignedTo = allUsers.map(
     (tagAssign: Interface_TagUser) => tagAssign!.userId
   );
