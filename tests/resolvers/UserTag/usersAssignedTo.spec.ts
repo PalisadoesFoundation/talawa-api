@@ -11,7 +11,6 @@ import {
 } from "../../helpers/tags";
 import { INVALID_CURSOR_PROVIDED } from "../../../src/constants";
 import { TagUser, Interface_TagUser } from "../../../src/models";
-import { executeCodegen } from "@graphql-codegen/cli";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
