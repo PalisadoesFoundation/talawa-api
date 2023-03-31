@@ -228,6 +228,10 @@ export async function createGraphQLConnection<T, U>(
       connectionObject.pageInfo.hasPreviousPage = true;
       allFetchedObjects!.pop();
     }
+
+    // Reverse the order of the fetched objects as according to Relay Specification, the order of
+    // returned objects must always be ascending on the basis of the cursor used
+    allFetchedObjects = allFetchedObjects!.reverse();
   }
 
   // Create edges from the fetched objects
