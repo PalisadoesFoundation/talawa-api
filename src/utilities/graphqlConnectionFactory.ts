@@ -138,20 +138,31 @@ export async function createGraphQLConnection<T, U>(
   // Forward pagination
   if (args.first) {
     // Fetch the users
-    allFetchedObjects = await databaseModel
-      .find({
-        ...afterFilterQuery,
-        ...filterQuery,
-      })
-      .sort(getSortingObject(1))
-      // Let n = args.first
-      // If args.after argument is provided, then n + 2 objects are fetched so that we can
-      // ensure the validity of the after cursor by comparing it with the first object, and
-      // then use the last fetched object to determine the existence of the next page.
-      // If args.after is not provided, only n + 1 objects are fetched to check for the existence of the next page.
-      .limit(args.after ? args.first + 2 : args.first + 1)
-      .populate(fieldsToPopulate)
-      .lean();
+    if (fieldsToPopulate) {
+      allFetchedObjects = await databaseModel
+        .find({
+          ...afterFilterQuery,
+          ...filterQuery,
+        })
+        .sort(getSortingObject(1))
+        // Let n = args.first
+        // If args.after argument is provided, then n + 2 objects are fetched so that we can
+        // ensure the validity of the after cursor by comparing it with the first object, and
+        // then use the last fetched object to determine the existence of the next page.
+        // If args.after is not provided, only n + 1 objects are fetched to check for the existence of the next page.
+        .limit(args.after ? args.first + 2 : args.first + 1)
+        .populate(fieldsToPopulate)
+        .lean();
+    } else {
+      allFetchedObjects = await databaseModel
+        .find({
+          ...afterFilterQuery,
+          ...filterQuery,
+        })
+        .sort(getSortingObject(1))
+        .limit(args.after ? args.first + 2 : args.first + 1)
+        .lean();
+    }
 
     if (args.after) {
       // If args.after is provided, then the first fetched element must coincide with the provided cursor
@@ -186,20 +197,32 @@ export async function createGraphQLConnection<T, U>(
   // Backward pagination
   if (args.last) {
     // Fetch the users
-    allFetchedObjects = await databaseModel
-      .find({
-        ...beforeFilterQuery,
-        ...filterQuery,
-      })
-      .sort(getSortingObject(-1))
-      // Let n = args.last
-      // If args.before argument is provided, then n + 2 objects are fetched so that we can
-      // ensure the validity of the before cursor by comparing it with the first object, and
-      // then use the last fetched object to determine the existence of the next page.
-      // If args.before is not provided, only n + 1 objects are fetched to check for the existence of the next page.
-      .limit(args.before ? args.last + 2 : args.last + 1)
-      .populate(fieldsToPopulate)
-      .lean();
+    if (fieldsToPopulate) {
+      allFetchedObjects = await databaseModel
+        .find({
+          ...beforeFilterQuery,
+          ...filterQuery,
+        })
+        .sort(getSortingObject(-1))
+        // Let n = args.last
+        // If args.before argument is provided, then n + 2 objects are fetched so that we can
+        // ensure the validity of the before cursor by comparing it with the first object, and
+        // then use the last fetched object to determine the existence of the next page.
+        // If args.before is not provided, only n + 1 objects are fetched to check for the existence of the next page.
+        .limit(args.before ? args.last + 2 : args.last + 1)
+        .populate(fieldsToPopulate)
+        .lean();
+    } else {
+      allFetchedObjects = await databaseModel
+        .find({
+          ...beforeFilterQuery,
+          ...filterQuery,
+        })
+        .sort(getSortingObject(-1))
+        .limit(args.before ? args.last + 2 : args.last + 1)
+        .populate(fieldsToPopulate)
+        .lean();
+    }
 
     if (args.before) {
       // If args.before is provided, then the first fetched element must coincide with the provided cursor
