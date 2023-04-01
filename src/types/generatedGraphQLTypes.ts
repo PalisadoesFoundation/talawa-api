@@ -261,6 +261,13 @@ export type ExtendSession = {
   refreshToken: Scalars['String'];
 };
 
+export type FetchLimitExceeded = PaginationArgsError & {
+  __typename?: 'FetchLimitExceeded';
+  limit: Scalars['Int'];
+  message: Scalars['String'];
+  path: Scalars['String'];
+};
+
 export type ForgotPasswordData = {
   newPassword: Scalars['String'];
   otpToken: Scalars['String'];
@@ -310,6 +317,12 @@ export type IosFirebaseOptions = {
   messagingSenderId?: Maybe<Scalars['String']>;
   projectId?: Maybe<Scalars['String']>;
   storageBucket?: Maybe<Scalars['String']>;
+};
+
+export type IncorrectPairingOfArguments = PaginationArgsError & {
+  __typename?: 'IncorrectPairingOfArguments';
+  message: Scalars['String'];
+  path: Scalars['String'];
 };
 
 export type Language = {
@@ -370,6 +383,12 @@ export type MessageChat = {
 export type MessageChatInput = {
   message: Scalars['String'];
   receiver: Scalars['ID'];
+};
+
+export type MissingArguments = PaginationArgsError & {
+  __typename?: 'MissingArguments';
+  message: Scalars['String'];
+  path: Scalars['String'];
 };
 
 export type Mutation = {
@@ -963,6 +982,13 @@ export type PageInfo = {
   prevPageNo?: Maybe<Scalars['Int']>;
   totalPages?: Maybe<Scalars['Int']>;
 };
+
+export type PaginationArgsError = {
+  message: Scalars['String'];
+  path: Scalars['String'];
+};
+
+export type PaginationError = FetchLimitExceeded | IncorrectPairingOfArguments | MissingArguments | PaginationArgsError;
 
 export type Plugin = {
   __typename?: 'Plugin';
@@ -1681,6 +1707,7 @@ export type ResolversTypes = {
   EventRegistrants: ResolverTypeWrapper<Omit<EventRegistrants, 'event'> & { event: ResolversTypes['Event'] }>;
   EventWhereInput: EventWhereInput;
   ExtendSession: ResolverTypeWrapper<ExtendSession>;
+  FetchLimitExceeded: ResolverTypeWrapper<FetchLimitExceeded>;
   Float: ResolverTypeWrapper<Scalars['Float']>;
   ForgotPasswordData: ForgotPasswordData;
   Group: ResolverTypeWrapper<Interface_GroupModel>;
@@ -1689,6 +1716,7 @@ export type ResolversTypes = {
   GroupInput: GroupInput;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   IOSFirebaseOptions: ResolverTypeWrapper<IosFirebaseOptions>;
+  IncorrectPairingOfArguments: ResolverTypeWrapper<IncorrectPairingOfArguments>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   Language: ResolverTypeWrapper<Interface_LanguageModel>;
   LanguageInput: LanguageInput;
@@ -1700,6 +1728,7 @@ export type ResolversTypes = {
   Message: ResolverTypeWrapper<Interface_MessageModel>;
   MessageChat: ResolverTypeWrapper<Interface_MessageChatModel>;
   MessageChatInput: MessageChatInput;
+  MissingArguments: ResolverTypeWrapper<MissingArguments>;
   Mutation: ResolverTypeWrapper<{}>;
   OTPInput: OtpInput;
   Organization: ResolverTypeWrapper<Interface_OrganizationModel>;
@@ -1709,6 +1738,8 @@ export type ResolversTypes = {
   OrganizationWhereInput: OrganizationWhereInput;
   OtpData: ResolverTypeWrapper<OtpData>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
+  PaginationArgsError: ResolversTypes['FetchLimitExceeded'] | ResolversTypes['IncorrectPairingOfArguments'] | ResolversTypes['MissingArguments'];
+  PaginationError: ResolversTypes['FetchLimitExceeded'] | ResolversTypes['IncorrectPairingOfArguments'] | ResolversTypes['MissingArguments'] | ResolversTypes['PaginationArgsError'];
   PhoneNumber: ResolverTypeWrapper<Scalars['PhoneNumber']>;
   Plugin: ResolverTypeWrapper<Interface_PluginModel>;
   PluginField: ResolverTypeWrapper<Interface_PluginFieldModel>;
@@ -1784,6 +1815,7 @@ export type ResolversParentTypes = {
   EventRegistrants: Omit<EventRegistrants, 'event'> & { event: ResolversParentTypes['Event'] };
   EventWhereInput: EventWhereInput;
   ExtendSession: ExtendSession;
+  FetchLimitExceeded: FetchLimitExceeded;
   Float: Scalars['Float'];
   ForgotPasswordData: ForgotPasswordData;
   Group: Interface_GroupModel;
@@ -1792,6 +1824,7 @@ export type ResolversParentTypes = {
   GroupInput: GroupInput;
   ID: Scalars['ID'];
   IOSFirebaseOptions: IosFirebaseOptions;
+  IncorrectPairingOfArguments: IncorrectPairingOfArguments;
   Int: Scalars['Int'];
   Language: Interface_LanguageModel;
   LanguageInput: LanguageInput;
@@ -1803,6 +1836,7 @@ export type ResolversParentTypes = {
   Message: Interface_MessageModel;
   MessageChat: Interface_MessageChatModel;
   MessageChatInput: MessageChatInput;
+  MissingArguments: MissingArguments;
   Mutation: {};
   OTPInput: OtpInput;
   Organization: Interface_OrganizationModel;
@@ -1811,6 +1845,8 @@ export type ResolversParentTypes = {
   OrganizationWhereInput: OrganizationWhereInput;
   OtpData: OtpData;
   PageInfo: PageInfo;
+  PaginationArgsError: ResolversParentTypes['FetchLimitExceeded'] | ResolversParentTypes['IncorrectPairingOfArguments'] | ResolversParentTypes['MissingArguments'];
+  PaginationError: ResolversParentTypes['FetchLimitExceeded'] | ResolversParentTypes['IncorrectPairingOfArguments'] | ResolversParentTypes['MissingArguments'] | ResolversParentTypes['PaginationArgsError'];
   PhoneNumber: Scalars['PhoneNumber'];
   Plugin: Interface_PluginModel;
   PluginField: Interface_PluginFieldModel;
@@ -1996,6 +2032,13 @@ export type ExtendSessionResolvers<ContextType = any, ParentType extends Resolve
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type FetchLimitExceededResolvers<ContextType = any, ParentType extends ResolversParentTypes['FetchLimitExceeded'] = ResolversParentTypes['FetchLimitExceeded']> = {
+  limit?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type GroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['Group'] = ResolversParentTypes['Group']> = {
   _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   admins?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
@@ -2032,6 +2075,12 @@ export type IosFirebaseOptionsResolvers<ContextType = any, ParentType extends Re
   messagingSenderId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   projectId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   storageBucket?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type IncorrectPairingOfArgumentsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IncorrectPairingOfArguments'] = ResolversParentTypes['IncorrectPairingOfArguments']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2084,6 +2133,12 @@ export type MessageChatResolvers<ContextType = any, ParentType extends Resolvers
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   receiver?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   sender?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type MissingArgumentsResolvers<ContextType = any, ParentType extends ResolversParentTypes['MissingArguments'] = ResolversParentTypes['MissingArguments']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2210,6 +2265,16 @@ export type PageInfoResolvers<ContextType = any, ParentType extends ResolversPar
   prevPageNo?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   totalPages?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type PaginationArgsErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['PaginationArgsError'] = ResolversParentTypes['PaginationArgsError']> = {
+  __resolveType: TypeResolveFn<'FetchLimitExceeded' | 'IncorrectPairingOfArguments' | 'MissingArguments', ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+};
+
+export type PaginationErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['PaginationError'] = ResolversParentTypes['PaginationError']> = {
+  __resolveType: TypeResolveFn<'FetchLimitExceeded' | 'IncorrectPairingOfArguments' | 'MissingArguments' | 'PaginationArgsError', ParentType, ContextType>;
 };
 
 export interface PhoneNumberScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['PhoneNumber'], any> {
@@ -2433,10 +2498,12 @@ export type Resolvers<ContextType = any> = {
   Event?: EventResolvers<ContextType>;
   EventRegistrants?: EventRegistrantsResolvers<ContextType>;
   ExtendSession?: ExtendSessionResolvers<ContextType>;
+  FetchLimitExceeded?: FetchLimitExceededResolvers<ContextType>;
   Group?: GroupResolvers<ContextType>;
   GroupChat?: GroupChatResolvers<ContextType>;
   GroupChatMessage?: GroupChatMessageResolvers<ContextType>;
   IOSFirebaseOptions?: IosFirebaseOptionsResolvers<ContextType>;
+  IncorrectPairingOfArguments?: IncorrectPairingOfArgumentsResolvers<ContextType>;
   Language?: LanguageResolvers<ContextType>;
   LanguageModel?: LanguageModelResolvers<ContextType>;
   Latitude?: GraphQLScalarType;
@@ -2444,11 +2511,14 @@ export type Resolvers<ContextType = any> = {
   MembershipRequest?: MembershipRequestResolvers<ContextType>;
   Message?: MessageResolvers<ContextType>;
   MessageChat?: MessageChatResolvers<ContextType>;
+  MissingArguments?: MissingArgumentsResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Organization?: OrganizationResolvers<ContextType>;
   OrganizationInfoNode?: OrganizationInfoNodeResolvers<ContextType>;
   OtpData?: OtpDataResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
+  PaginationArgsError?: PaginationArgsErrorResolvers<ContextType>;
+  PaginationError?: PaginationErrorResolvers<ContextType>;
   PhoneNumber?: GraphQLScalarType;
   Plugin?: PluginResolvers<ContextType>;
   PluginField?: PluginFieldResolvers<ContextType>;

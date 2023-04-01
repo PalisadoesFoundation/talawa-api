@@ -1,4 +1,7 @@
-import { ConnectionPageInfo } from "../types/generatedGraphQLTypes";
+import {
+  ConnectionPageInfo,
+  PaginationError,
+} from "../types/generatedGraphQLTypes";
 import {
   validatePaginationArgs,
   CursorPaginationArgsType,
@@ -16,6 +19,11 @@ interface Interface_ConnectionEdge<T> {
 interface Interface_Connection<T> {
   edges?: Array<Interface_ConnectionEdge<T> | null | undefined>;
   pageInfo: ConnectionPageInfo;
+}
+
+interface Interface_ConnectionResult<T> {
+  connectionData: Interface_Connection<T> | null;
+  connectionErrors: PaginationError[] | null;
 }
 
 /*
@@ -108,11 +116,17 @@ export async function createGraphQLConnection<T, U>(
   fieldsToPopulate: string | null,
   getNodeFromResult: GetNodeFromResultFnType<T, U>,
   getCursorFromResult: GetCursorFromResultFnType<U>
-): Promise<Interface_Connection<T>> {
+): Promise<Interface_ConnectionResult<T>> {
   // Check that the provided arguments must either be correct forward pagination
   // arguments or correct backward pagination arguments
-  validatePaginationArgs(args);
+  const connectionErrors = validatePaginationArgs(args);
 
+  if (connectionErrors.length !== 0) {
+    return {
+      connectionData: null,
+      connectionErrors,
+    };
+  }
   // Initialize the object list and the connection object
   let allFetchedObjects: U[] | null;
   const connectionObject = graphqlConnectionFactory<T>();
