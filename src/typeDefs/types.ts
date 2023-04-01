@@ -385,13 +385,23 @@ export const types = gql`
       before: String
       first: PositiveInt
       last: PositiveInt
-    ): UserTagsConnection
+    ): UserTagsConnectionResult
     usersAssignedTo(
       after: String
       before: String
       first: PositiveInt
       last: PositiveInt
-    ): UsersConnection
+    ): UsersConnectionResult
+  }
+
+  type UsersConnectionResult {
+    connectionData: UsersConnection
+    connectionErrors: [PaginationError]
+  }
+
+  type UserTagsConnectionResult {
+    connectionData: UserTagsConnection
+    connectionErrors: [PaginationError]
   }
 
   type UserTagsConnection {

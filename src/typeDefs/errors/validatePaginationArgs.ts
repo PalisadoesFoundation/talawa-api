@@ -6,6 +6,7 @@ export const paginationErrors = gql`
     | MissingArguments
     | IncorrectPairingOfArguments
     | FetchLimitExceeded
+    | IncorrectCursor
 
   interface PaginationArgsError {
     message: String!
@@ -26,5 +27,10 @@ export const paginationErrors = gql`
     message: String!
     path: String!
     limit: Int!
+  }
+
+  type IncorrectCursor implements PaginationArgsError {
+    message: String!
+    path: String
   }
 `;

@@ -8,8 +8,6 @@ import {
 } from "../libraries/validators/validatePaginationArgs";
 import { Model } from "mongoose";
 import { FilterQuery } from "mongoose";
-import { errors, requestContext } from "../libraries";
-import { INVALID_CURSOR_PROVIDED } from "../constants";
 
 interface Interface_ConnectionEdge<T> {
   cursor: string;
@@ -27,19 +25,12 @@ interface Interface_ConnectionResult<T> {
 }
 
 /*
-This is a factory function to quickly create a graphql
-connection object. The function accepts a generic type
-'T' which is used to reference the type of node that this
-connection and it's edges will reference. A node is
-a business object which can be uniquely identified in graphql.
-For example `User`, `Organization`, `Event`, `Post` etc.
-All of these objects are viable candiates for a node and
-can be paginated using graphql connections. The default object
-returned by this function represents a connection which has no
-data at all, i.e., the table/collection for that node(along with
-other constraints like filters if any) is completely empty in database.
-This object will need to be transformed according to different
-logic inside resolvers.
+This is a factory function to quickly create a graphql connection object. The function accepts a generic type
+'T' which is used to reference the type of node that this connection and it's edges will reference. A node is
+a business object which can be uniquely identified in graphql. For example `User`, `Organization`, `Event`, `Post` etc.
+All of these objects are viable candiates for a node and can be paginated using graphql connections. The default object
+returned by this function represents a connection which has no data at all, i.e., the table/collection for that node(along with ther constraints like filters if any) is completely empty in database. This object will need to be 
+transformed according to different logic inside resolvers.
 */
 export function graphqlConnectionFactory<T>(): Interface_Connection<T> {
   return {
@@ -127,6 +118,7 @@ export async function createGraphQLConnection<T, U>(
       connectionErrors,
     };
   }
+
   // Initialize the object list and the connection object
   let allFetchedObjects: U[] | null;
   const connectionObject = graphqlConnectionFactory<T>();
@@ -185,11 +177,17 @@ export async function createGraphQLConnection<T, U>(
         allFetchedObjects.length === 0 ||
         getCursorFromResult(allFetchedObjects[0]) !== args.after.toString()
       ) {
-        throw new errors.InputValidationError(
-          requestContext.translate(INVALID_CURSOR_PROVIDED.MESSAGE),
-          INVALID_CURSOR_PROVIDED.PARAM,
-          INVALID_CURSOR_PROVIDED.CODE
-        );
+        return {
+          connectionData: null,
+          connectionErrors: [
+            {
+              __typename: "IncorrectCursor",
+              message:
+                "The provided after cursor does not exist in the database.",
+              path: "after",
+            },
+          ],
+        };
       }
 
       // Remove the object with _id = args.after and set hasPreviousPage as true
@@ -199,7 +197,10 @@ export async function createGraphQLConnection<T, U>(
 
     if (allFetchedObjects!.length === 0)
       // Return the default object if the recieved list is empty
-      return connectionObject;
+      return {
+        connectionData: connectionObject,
+        connectionErrors: null,
+      };
 
     // Populate the page pointer variables
     if (allFetchedObjects!.length === args.first + 1) {
@@ -245,11 +246,17 @@ export async function createGraphQLConnection<T, U>(
         allFetchedObjects.length === 0 ||
         getCursorFromResult(allFetchedObjects[0]) !== args.before.toString()
       ) {
-        throw new errors.InputValidationError(
-          requestContext.translate(INVALID_CURSOR_PROVIDED.MESSAGE),
-          INVALID_CURSOR_PROVIDED.PARAM,
-          INVALID_CURSOR_PROVIDED.CODE
-        );
+        return {
+          connectionData: null,
+          connectionErrors: [
+            {
+              __typename: "IncorrectCursor",
+              message:
+                "The provided before cursor does not exist in the database.",
+              path: "before",
+            },
+          ],
+        };
       }
 
       // Remove the object with _id = args.before and set hasNextPage as true
@@ -258,7 +265,11 @@ export async function createGraphQLConnection<T, U>(
     }
 
     // Return the default object if the recieved list is empty
-    if (allFetchedObjects!.length === 0) return connectionObject;
+    if (allFetchedObjects!.length === 0)
+      return {
+        connectionData: connectionObject,
+        connectionErrors: null,
+      };
 
     // Populate the page pointer variables
     if (allFetchedObjects!.length === args.last + 1) {
@@ -282,5 +293,8 @@ export async function createGraphQLConnection<T, U>(
   connectionObject.pageInfo.endCursor =
     connectionObject.edges[connectionObject.edges.length - 1]!.cursor;
 
-  return connectionObject;
+  return {
+    connectionData: connectionObject,
+    connectionErrors: null,
+  };
 }

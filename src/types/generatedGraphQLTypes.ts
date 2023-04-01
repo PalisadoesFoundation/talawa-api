@@ -319,6 +319,12 @@ export type IosFirebaseOptions = {
   storageBucket?: Maybe<Scalars['String']>;
 };
 
+export type IncorrectCursor = PaginationArgsError & {
+  __typename?: 'IncorrectCursor';
+  message: Scalars['String'];
+  path?: Maybe<Scalars['String']>;
+};
+
 export type IncorrectPairingOfArguments = PaginationArgsError & {
   __typename?: 'IncorrectPairingOfArguments';
   message: Scalars['String'];
@@ -988,7 +994,7 @@ export type PaginationArgsError = {
   path: Scalars['String'];
 };
 
-export type PaginationError = FetchLimitExceeded | IncorrectPairingOfArguments | MissingArguments | PaginationArgsError;
+export type PaginationError = FetchLimitExceeded | IncorrectCursor | IncorrectPairingOfArguments | MissingArguments | PaginationArgsError;
 
 export type Plugin = {
   __typename?: 'Plugin';
@@ -1527,11 +1533,11 @@ export type UserOrderByInput =
 export type UserTag = {
   __typename?: 'UserTag';
   _id: Scalars['ID'];
-  childTags?: Maybe<UserTagsConnection>;
+  childTags?: Maybe<UserTagsConnectionResult>;
   name: Scalars['String'];
   organization?: Maybe<Organization>;
   parentTag?: Maybe<UserTag>;
-  usersAssignedTo?: Maybe<UsersConnection>;
+  usersAssignedTo?: Maybe<UsersConnectionResult>;
 };
 
 
@@ -1560,6 +1566,12 @@ export type UserTagsConnection = {
   __typename?: 'UserTagsConnection';
   edges?: Maybe<Array<Maybe<UserTagEdge>>>;
   pageInfo: ConnectionPageInfo;
+};
+
+export type UserTagsConnectionResult = {
+  __typename?: 'UserTagsConnectionResult';
+  connectionData?: Maybe<UserTagsConnection>;
+  connectionErrors?: Maybe<Array<Maybe<PaginationError>>>;
 };
 
 export type UserType =
@@ -1606,6 +1618,12 @@ export type UsersConnection = {
   __typename?: 'UsersConnection';
   edges?: Maybe<Array<Maybe<UserEdge>>>;
   pageInfo: ConnectionPageInfo;
+};
+
+export type UsersConnectionResult = {
+  __typename?: 'UsersConnectionResult';
+  connectionData?: Maybe<UsersConnection>;
+  connectionErrors?: Maybe<Array<Maybe<PaginationError>>>;
 };
 
 export type CreateChatInput = {
@@ -1716,6 +1734,7 @@ export type ResolversTypes = {
   GroupInput: GroupInput;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   IOSFirebaseOptions: ResolverTypeWrapper<IosFirebaseOptions>;
+  IncorrectCursor: ResolverTypeWrapper<IncorrectCursor>;
   IncorrectPairingOfArguments: ResolverTypeWrapper<IncorrectPairingOfArguments>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   Language: ResolverTypeWrapper<Interface_LanguageModel>;
@@ -1738,8 +1757,8 @@ export type ResolversTypes = {
   OrganizationWhereInput: OrganizationWhereInput;
   OtpData: ResolverTypeWrapper<OtpData>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
-  PaginationArgsError: ResolversTypes['FetchLimitExceeded'] | ResolversTypes['IncorrectPairingOfArguments'] | ResolversTypes['MissingArguments'];
-  PaginationError: ResolversTypes['FetchLimitExceeded'] | ResolversTypes['IncorrectPairingOfArguments'] | ResolversTypes['MissingArguments'] | ResolversTypes['PaginationArgsError'];
+  PaginationArgsError: ResolversTypes['FetchLimitExceeded'] | ResolversTypes['IncorrectCursor'] | ResolversTypes['IncorrectPairingOfArguments'] | ResolversTypes['MissingArguments'];
+  PaginationError: ResolversTypes['FetchLimitExceeded'] | ResolversTypes['IncorrectCursor'] | ResolversTypes['IncorrectPairingOfArguments'] | ResolversTypes['MissingArguments'] | ResolversTypes['PaginationArgsError'];
   PhoneNumber: ResolverTypeWrapper<Scalars['PhoneNumber']>;
   Plugin: ResolverTypeWrapper<Interface_PluginModel>;
   PluginField: ResolverTypeWrapper<Interface_PluginFieldModel>;
@@ -1784,9 +1803,11 @@ export type ResolversTypes = {
   UserTag: ResolverTypeWrapper<Interface_OrganizationTagUserModel>;
   UserTagEdge: ResolverTypeWrapper<Omit<UserTagEdge, 'node'> & { node: ResolversTypes['UserTag'] }>;
   UserTagsConnection: ResolverTypeWrapper<Omit<UserTagsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['UserTagEdge']>>> }>;
+  UserTagsConnectionResult: ResolverTypeWrapper<Omit<UserTagsConnectionResult, 'connectionData' | 'connectionErrors'> & { connectionData?: Maybe<ResolversTypes['UserTagsConnection']>, connectionErrors?: Maybe<Array<Maybe<ResolversTypes['PaginationError']>>> }>;
   UserType: UserType;
   UserWhereInput: UserWhereInput;
   UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['UserEdge']>>> }>;
+  UsersConnectionResult: ResolverTypeWrapper<Omit<UsersConnectionResult, 'connectionData' | 'connectionErrors'> & { connectionData?: Maybe<ResolversTypes['UsersConnection']>, connectionErrors?: Maybe<Array<Maybe<ResolversTypes['PaginationError']>>> }>;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
 };
@@ -1824,6 +1845,7 @@ export type ResolversParentTypes = {
   GroupInput: GroupInput;
   ID: Scalars['ID'];
   IOSFirebaseOptions: IosFirebaseOptions;
+  IncorrectCursor: IncorrectCursor;
   IncorrectPairingOfArguments: IncorrectPairingOfArguments;
   Int: Scalars['Int'];
   Language: Interface_LanguageModel;
@@ -1845,8 +1867,8 @@ export type ResolversParentTypes = {
   OrganizationWhereInput: OrganizationWhereInput;
   OtpData: OtpData;
   PageInfo: PageInfo;
-  PaginationArgsError: ResolversParentTypes['FetchLimitExceeded'] | ResolversParentTypes['IncorrectPairingOfArguments'] | ResolversParentTypes['MissingArguments'];
-  PaginationError: ResolversParentTypes['FetchLimitExceeded'] | ResolversParentTypes['IncorrectPairingOfArguments'] | ResolversParentTypes['MissingArguments'] | ResolversParentTypes['PaginationArgsError'];
+  PaginationArgsError: ResolversParentTypes['FetchLimitExceeded'] | ResolversParentTypes['IncorrectCursor'] | ResolversParentTypes['IncorrectPairingOfArguments'] | ResolversParentTypes['MissingArguments'];
+  PaginationError: ResolversParentTypes['FetchLimitExceeded'] | ResolversParentTypes['IncorrectCursor'] | ResolversParentTypes['IncorrectPairingOfArguments'] | ResolversParentTypes['MissingArguments'] | ResolversParentTypes['PaginationArgsError'];
   PhoneNumber: Scalars['PhoneNumber'];
   Plugin: Interface_PluginModel;
   PluginField: Interface_PluginFieldModel;
@@ -1885,8 +1907,10 @@ export type ResolversParentTypes = {
   UserTag: Interface_OrganizationTagUserModel;
   UserTagEdge: Omit<UserTagEdge, 'node'> & { node: ResolversParentTypes['UserTag'] };
   UserTagsConnection: Omit<UserTagsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['UserTagEdge']>>> };
+  UserTagsConnectionResult: Omit<UserTagsConnectionResult, 'connectionData' | 'connectionErrors'> & { connectionData?: Maybe<ResolversParentTypes['UserTagsConnection']>, connectionErrors?: Maybe<Array<Maybe<ResolversParentTypes['PaginationError']>>> };
   UserWhereInput: UserWhereInput;
   UsersConnection: Omit<UsersConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['UserEdge']>>> };
+  UsersConnectionResult: Omit<UsersConnectionResult, 'connectionData' | 'connectionErrors'> & { connectionData?: Maybe<ResolversParentTypes['UsersConnection']>, connectionErrors?: Maybe<Array<Maybe<ResolversParentTypes['PaginationError']>>> };
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
 };
@@ -2075,6 +2099,12 @@ export type IosFirebaseOptionsResolvers<ContextType = any, ParentType extends Re
   messagingSenderId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   projectId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   storageBucket?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type IncorrectCursorResolvers<ContextType = any, ParentType extends ResolversParentTypes['IncorrectCursor'] = ResolversParentTypes['IncorrectCursor']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2268,13 +2298,13 @@ export type PageInfoResolvers<ContextType = any, ParentType extends ResolversPar
 };
 
 export type PaginationArgsErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['PaginationArgsError'] = ResolversParentTypes['PaginationArgsError']> = {
-  __resolveType: TypeResolveFn<'FetchLimitExceeded' | 'IncorrectPairingOfArguments' | 'MissingArguments', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'FetchLimitExceeded' | 'IncorrectCursor' | 'IncorrectPairingOfArguments' | 'MissingArguments', ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 };
 
 export type PaginationErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['PaginationError'] = ResolversParentTypes['PaginationError']> = {
-  __resolveType: TypeResolveFn<'FetchLimitExceeded' | 'IncorrectPairingOfArguments' | 'MissingArguments' | 'PaginationArgsError', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'FetchLimitExceeded' | 'IncorrectCursor' | 'IncorrectPairingOfArguments' | 'MissingArguments' | 'PaginationArgsError', ParentType, ContextType>;
 };
 
 export interface PhoneNumberScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['PhoneNumber'], any> {
@@ -2455,11 +2485,11 @@ export type UserEdgeResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type UserTagResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTag'] = ResolversParentTypes['UserTag']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  childTags?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<UserTagChildTagsArgs>>;
+  childTags?: Resolver<Maybe<ResolversTypes['UserTagsConnectionResult']>, ParentType, ContextType, Partial<UserTagChildTagsArgs>>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   parentTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType>;
-  usersAssignedTo?: Resolver<Maybe<ResolversTypes['UsersConnection']>, ParentType, ContextType, Partial<UserTagUsersAssignedToArgs>>;
+  usersAssignedTo?: Resolver<Maybe<ResolversTypes['UsersConnectionResult']>, ParentType, ContextType, Partial<UserTagUsersAssignedToArgs>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2475,9 +2505,21 @@ export type UserTagsConnectionResolvers<ContextType = any, ParentType extends Re
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type UserTagsConnectionResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnectionResult'] = ResolversParentTypes['UserTagsConnectionResult']> = {
+  connectionData?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType>;
+  connectionErrors?: Resolver<Maybe<Array<Maybe<ResolversTypes['PaginationError']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type UsersConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnection'] = ResolversParentTypes['UsersConnection']> = {
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['ConnectionPageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UsersConnectionResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnectionResult'] = ResolversParentTypes['UsersConnectionResult']> = {
+  connectionData?: Resolver<Maybe<ResolversTypes['UsersConnection']>, ParentType, ContextType>;
+  connectionErrors?: Resolver<Maybe<Array<Maybe<ResolversTypes['PaginationError']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2503,6 +2545,7 @@ export type Resolvers<ContextType = any> = {
   GroupChat?: GroupChatResolvers<ContextType>;
   GroupChatMessage?: GroupChatMessageResolvers<ContextType>;
   IOSFirebaseOptions?: IosFirebaseOptionsResolvers<ContextType>;
+  IncorrectCursor?: IncorrectCursorResolvers<ContextType>;
   IncorrectPairingOfArguments?: IncorrectPairingOfArgumentsResolvers<ContextType>;
   Language?: LanguageResolvers<ContextType>;
   LanguageModel?: LanguageModelResolvers<ContextType>;
@@ -2539,7 +2582,9 @@ export type Resolvers<ContextType = any> = {
   UserTag?: UserTagResolvers<ContextType>;
   UserTagEdge?: UserTagEdgeResolvers<ContextType>;
   UserTagsConnection?: UserTagsConnectionResolvers<ContextType>;
+  UserTagsConnectionResult?: UserTagsConnectionResultResolvers<ContextType>;
   UsersConnection?: UsersConnectionResolvers<ContextType>;
+  UsersConnectionResult?: UsersConnectionResultResolvers<ContextType>;
 };
 
 export type DirectiveResolvers<ContextType = any> = {
