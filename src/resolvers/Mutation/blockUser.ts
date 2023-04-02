@@ -65,7 +65,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     );
   }
 
-  if (args.input. userId === context.userId) {
+  if (args.input.userId === context.userId) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_BLOCKING_SELF.MESSAGE),
       USER_BLOCKING_SELF.CODE,

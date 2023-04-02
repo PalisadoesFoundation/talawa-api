@@ -64,7 +64,9 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
     },
     {
       $set: {
-        email: args.input.data?.email ? args.input.data.email : currentUser?.email,
+        email: args.input.data?.email
+          ? args.input.data.email
+          : currentUser?.email,
         firstName: args.input.data?.firstName
           ? args.input.data.firstName
           : currentUser?.firstName,

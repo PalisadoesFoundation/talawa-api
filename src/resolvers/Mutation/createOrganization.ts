@@ -48,7 +48,10 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       args.input.data!.description,
       500
     );
-    const validationResult_Location = isValidString(args.input.data!.location!, 50);
+    const validationResult_Location = isValidString(
+      args.input.data!.location!,
+      50
+    );
 
     if (!validationResult_Name.isLessThanMaxLength) {
       throw new errors.InputValidationError(
