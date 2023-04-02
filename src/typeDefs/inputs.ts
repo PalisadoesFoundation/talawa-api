@@ -2,25 +2,24 @@ import { gql } from "apollo-server-core";
 
 // Place fields alphabetically to ensure easier lookup and navigation.
 export const inputs = gql`
-
   input AcceptAdminInput {
-    id:ID!
+    id: ID!
   }
 
   input AddOrganizationImageInput {
-    file: String!,
+    file: String!
     organizationId: String!
   }
 
-  input AddUserImageInput{
+  input AddUserImageInput {
     file: String!
   }
 
   input AddUserToGroupChatInput {
-    userId: ID!, 
+    userId: ID!
     chatId: ID!
   }
- 
+
   input AdminRemoveEventInput {
     eventId: ID!
   }
@@ -29,18 +28,18 @@ export const inputs = gql`
     groupId: ID!
   }
 
-  input blockPluginCreationBySuperadminInput{
-    userId: ID!,
+  input blockPluginCreationBySuperadminInput {
+    userId: ID!
     blockUser: Boolean!
   }
 
   input BlockUserInput {
-    organizationId: ID!,
+    organizationId: ID!
     userId: ID!
   }
- 
+
   input CreateCommentInput {
-    postId: ID!, 
+    postId: ID!
     data: CommentInput!
   }
 
@@ -55,11 +54,11 @@ export const inputs = gql`
 
   input CreateDonationInput {
     userId: ID!
-      orgId: ID!
-      payPalId: ID!
-      nameOfUser: String!
-      amount: Float!
-      nameOfOrg: String!
+    orgId: ID!
+    payPalId: ID!
+    nameOfUser: String!
+    amount: Float!
+    nameOfOrg: String!
   }
 
   input CreateGroupChatInput {
@@ -69,7 +68,7 @@ export const inputs = gql`
   }
 
   input CreateOrganizationInput {
-    data: OrganizationInput!,
+    data: OrganizationInput!
     file: String
   }
 
@@ -82,7 +81,7 @@ export const inputs = gql`
   }
 
   input CreatePostInput {
-    data: PostInput!, 
+    data: PostInput!
     file: String
   }
 
@@ -91,9 +90,9 @@ export const inputs = gql`
     parentTagId: ID
     organizationId: ID!
   }
-  
+
   input CreateTaskInput {
-    data: TaskInput!,
+    data: TaskInput!
     eventId: ID!
   }
 
@@ -192,18 +191,17 @@ export const inputs = gql`
   }
 
   input LikeCommentInput {
-    commentId:ID!
+    commentId: ID!
   }
 
   input LikePostInput {
-    postId:ID!
+    postId: ID!
   }
 
   input LoginInput {
     email: EmailAddress!
     password: String!
   }
-
 
   input MembershipRequestInput {
     membershipRequestId: ID!
@@ -225,8 +223,8 @@ export const inputs = gql`
     image: String
   }
 
-  input OrganizationIdInput{
-    organizationId:ID!
+  input OrganizationIdInput {
+    organizationId: ID!
   }
 
   input OrganizationWhereInput {
@@ -326,7 +324,7 @@ export const inputs = gql`
   }
 
   input RejectAdminInput {
-    userId:ID!
+    userId: ID!
   }
 
   input RemoveCommentInput {
@@ -334,7 +332,7 @@ export const inputs = gql`
   }
 
   input RemoveDirectChatInput {
-    chatId: ID!, 
+    chatId: ID!
     organizationId: ID!
   }
   input RemoveEventInput {
@@ -358,7 +356,7 @@ export const inputs = gql`
   }
 
   input RemoveUserFromGroupChatInput {
-    userId: ID!,
+    userId: ID!
     chatId: ID!
   }
 
@@ -376,7 +374,7 @@ export const inputs = gql`
   }
 
   input SignUpInput {
-    data: UserInput!,
+    data: UserInput!
     file: String
   }
 
@@ -396,7 +394,7 @@ export const inputs = gql`
   }
 
   input UpdateEventInput {
-    id: ID!,
+    id: ID!
     title: String
     description: String
     recurring: Boolean
@@ -449,12 +447,12 @@ export const inputs = gql`
   }
 
   input UpdatePluginInstalledOrgsInput {
-    id: ID!,
+    id: ID!
     orgId: ID!
   }
 
   input UpdatePluginStatusInput {
-    id: ID!,
+    id: ID!
     status: Boolean!
   }
 
@@ -464,13 +462,13 @@ export const inputs = gql`
   }
 
   input UpdateTaskData {
-    title: String 
+    title: String
     description: String
     deadline: DateTime
   }
 
   input UpdateTaskInput {
-    id: ID!, 
+    id: ID!
     data: UpdateTaskData!
   }
 
@@ -481,7 +479,7 @@ export const inputs = gql`
   }
 
   input UpdateUserProfileInput {
-    data: UpdateUserData!,
+    data: UpdateUserData!
     file: String
   }
 
