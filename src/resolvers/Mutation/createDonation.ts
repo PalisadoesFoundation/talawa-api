@@ -4,7 +4,7 @@ import { Donation } from "../../models";
 /**
  * This function enables to create a donation as transaction
  * @param _parent - parent of current request
- * @param args.input - payload provided with the request
+ * @param args- payload provided with the request
  * @param context - context of entire application
  * @returns Created Donation
  */

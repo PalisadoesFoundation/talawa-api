@@ -5,7 +5,7 @@ import { USER_NOT_FOUND_ERROR, EVENT_NOT_FOUND_ERROR } from "../../constants";
 /**
  * This function enables to create a task.
  * @param _parent - parent of current request
- * @param args.input - payload provided with the request
+ * @param args - payload provided with the request
  * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the user exists
