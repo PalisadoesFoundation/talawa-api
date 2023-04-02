@@ -38,7 +38,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
   }
 
   const event = await Event.findOne({
-    _id: args.id,
+    _id: args.input.id,
   }).lean();
 
   // checks if there exists an event with _id === args.id
@@ -64,12 +64,12 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
   }
 
   // Checks if the recieved arguments are valid according to standard input norms
-  const validationResult_Title = isValidString(args.data!.title!, 256);
+  const validationResult_Title = isValidString(args.input!.title!, 256);
   const validationResult_Description = isValidString(
-    args.data!.description!,
+    args.input!.description!,
     500
   );
-  const validationResult_Location = isValidString(args.data!.location!, 50);
+  const validationResult_Location = isValidString(args.input!.location!, 50);
   if (!validationResult_Title.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
@@ -97,11 +97,11 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
 
   return await Event.findOneAndUpdate(
     {
-      _id: args.id,
+      _id: args.input.id,
     },
     // @ts-ignore
     {
-      ...args.data,
+      ...args.input,
     },
     {
       new: true,

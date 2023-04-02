@@ -5,7 +5,7 @@ import { USER_NOT_FOUND_ERROR, EVENT_NOT_FOUND_ERROR } from "../../constants";
 /**
  * This function enables to create a task.
  * @param _parent - parent of current request
- * @param args - payload provided with the request
+ * @param args.input - payload provided with the request
  * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the user exists
@@ -31,10 +31,10 @@ export const createTask: MutationResolvers["createTask"] = async (
   }
 
   const eventExists = await Event.exists({
-    _id: args.eventId,
+    _id: args.input.eventId,
   });
 
-  // Checks whether event with _id == args.eventId exists.
+  // Checks whether event with _id == args.input.eventId exists.
   if (eventExists === false) {
     throw new errors.NotFoundError(
       requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
@@ -45,15 +45,15 @@ export const createTask: MutationResolvers["createTask"] = async (
 
   // Creates new task.
   const createdTask = await Task.create({
-    ...args.data,
-    event: args.eventId,
+    ...args.input.data,
+    event: args.input.eventId,
     creator: context.userId,
   });
 
-  // Adds createdTask._id to tasks list on event's document with _id === args.eventId.
+  // Adds createdTask._id to tasks list on event's document with _id === args.input.eventId.
   await Event.updateOne(
     {
-      _id: args.eventId,
+      _id: args.input.eventId,
     },
     {
       $push: {

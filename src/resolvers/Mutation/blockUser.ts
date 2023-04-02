@@ -27,7 +27,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   context
 ) => {
   const organization = await Organization.findOne({
-    _id: args.organizationId,
+    _id: args.input.organizationId,
   }).lean();
 
   // Checks whether organization exists.
@@ -40,7 +40,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   }
 
   const userExists = await User.exists({
-    _id: args.userId,
+    _id: args.input.userId,
   });
 
   // Checks whether user with _id === args.userId exists.
@@ -54,7 +54,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
 
   // Check whether the user - args.userId is a member of the organization before blocking
   const userIsOrganizationMember = organization?.members.some(
-    (member) => member.toString() === args.userId.toString()
+    (member) => member.toString() === args.input.userId.toString()
   );
 
   if (!userIsOrganizationMember) {
@@ -65,7 +65,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     );
   }
 
-  if (args.userId === context.userId) {
+  if (args.input. userId === context.userId) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_BLOCKING_SELF.MESSAGE),
       USER_BLOCKING_SELF.CODE,
@@ -77,7 +77,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   await adminCheck(context.userId, organization);
 
   const userIsBlocked = organization.blockedUsers.some(
-    (blockedUser) => blockedUser.toString() === args.userId.toString()
+    (blockedUser) => blockedUser.toString() === args.input.userId.toString()
   );
 
   // Checks whether user with _id === args.userId is already blocked from organization.
@@ -96,7 +96,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     },
     {
       $push: {
-        blockedUsers: args.userId,
+        blockedUsers: args.input.userId,
       },
     }
   );
@@ -107,7 +107,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   */
   return await User.findOneAndUpdate(
     {
-      _id: args.userId,
+      _id: args.input.userId,
     },
     {
       $push: {

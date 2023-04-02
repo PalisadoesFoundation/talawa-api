@@ -16,7 +16,7 @@ import { superAdminCheck } from "../../utilities";
 export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCreationBySuperadmin"] =
   async (_parent, args, context) => {
     const userExists = await User.exists({
-      _id: args.userId,
+      _id: args.input.userId,
     });
 
     // Checks whether user with _id === args.userId exists.
@@ -50,11 +50,11 @@ export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCrea
     */
     return await User.findOneAndUpdate(
       {
-        _id: args.userId,
+        _id: args.input.userId,
       },
       {
         $set: {
-          pluginCreationAllowed: !args.blockUser,
+          pluginCreationAllowed: !args.input.blockUser,
         },
       },
       {

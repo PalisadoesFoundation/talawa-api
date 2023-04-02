@@ -13,10 +13,10 @@ export const updatePluginStatus: MutationResolvers["updatePluginStatus"] =
   async (_parent, args, _context) => {
     return await Plugin.findOneAndUpdate(
       {
-        _id: args.id,
+        _id: args.input.id,
       },
       {
-        pluginInstallStatus: args.status,
+        pluginInstallStatus: args.input.status,
       },
       {
         new: true,

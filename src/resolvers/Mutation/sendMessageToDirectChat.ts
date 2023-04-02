@@ -15,7 +15,7 @@ import { CHAT_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
 export const sendMessageToDirectChat: MutationResolvers["sendMessageToDirectChat"] =
   async (_parent, args, context) => {
     const directChat = await DirectChat.findOne({
-      _id: args.chatId,
+      _id: args.input.chatId,
     }).lean();
 
     if (!directChat) {
@@ -48,7 +48,7 @@ export const sendMessageToDirectChat: MutationResolvers["sendMessageToDirectChat
       sender: context.userId,
       receiver: directChat.users[receiverIndex],
       createdAt: new Date(),
-      messageContent: args.messageContent,
+      messageContent: args.input.messageContent,
     });
 
     // add createdDirectChatMessage to directChat

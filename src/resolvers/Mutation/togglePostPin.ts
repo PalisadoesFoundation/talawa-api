@@ -28,7 +28,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
 
   // Check if the post object exists
   const post = await Post.findOne({
-    _id: args.id,
+    _id: args.input.id,
   }).lean();
 
   if (!post) {
@@ -62,7 +62,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
   }).lean();
 
   const currentPostIsPinned = organization!.pinnedPosts.some(
-    (postID) => postID.toString() === args.id.toString()
+    (postID) => postID.toString() === args.input.id.toString()
   );
 
   if (currentPostIsPinned) {
@@ -72,7 +72,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       },
       {
         $pull: {
-          pinnedPosts: args.id,
+          pinnedPosts: args.input.id,
         },
       },
       {
@@ -81,7 +81,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     );
     return await Post.findOneAndUpdate(
       {
-        _id: args.id,
+        _id: args.input.id,
       },
       {
         $set: {
@@ -96,7 +96,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       },
       {
         $push: {
-          pinnedPosts: args.id,
+          pinnedPosts: args.input.id,
         },
       },
       {
@@ -105,7 +105,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     );
     return await Post.findOneAndUpdate(
       {
-        _id: args.id,
+        _id: args.input.id,
       },
       {
         $set: {

@@ -23,7 +23,7 @@ import {
 export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest"] =
   async (_parent, args, context) => {
     const membershipRequest = await MembershipRequest.findOne({
-      _id: args.membershipRequestId,
+      _id: args.input?.membershipRequestId,
     }).lean();
 
     // Checks whether membershipRequest exists.

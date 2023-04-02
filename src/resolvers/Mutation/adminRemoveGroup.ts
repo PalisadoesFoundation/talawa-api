@@ -26,7 +26,7 @@ export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
   context
 ) => {
   const groupChat = await GroupChat.findOne({
-    _id: args.groupId,
+    _id: args.input.groupId,
   }).lean();
 
   // Checks whether groupChat exists.

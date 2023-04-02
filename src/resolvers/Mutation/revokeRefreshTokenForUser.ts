@@ -10,7 +10,7 @@ export const revokeRefreshTokenForUser: MutationResolvers["revokeRefreshTokenFor
   async (_parent, args) => {
     await User.updateOne(
       {
-        _id: args.userId,
+        _id: args.input.userId,
       },
       {
         $inc: {

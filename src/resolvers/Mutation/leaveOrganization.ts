@@ -25,7 +25,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   context
 ) => {
   const organization = await Organization.findOne({
-    _id: args.organizationId,
+    _id: args.input.organizationId,
   }).lean();
 
   // Checks whether organization exists.

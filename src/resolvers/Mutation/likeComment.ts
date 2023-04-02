@@ -32,7 +32,7 @@ export const likeComment: MutationResolvers["likeComment"] = async (
   }
 
   const comment = await Comment.findOne({
-    _id: args.id,
+    _id: args.input.commentId,
   }).lean();
 
   // Checks whether comment exists.

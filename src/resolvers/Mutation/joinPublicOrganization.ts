@@ -22,7 +22,7 @@ import {
 export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"] =
   async (_parent, args, context) => {
     const organization = await Organization.findOne({
-      _id: args.organizationId,
+      _id: args.input.organizationId,
     }).lean();
 
     // Checks whether organization exists.

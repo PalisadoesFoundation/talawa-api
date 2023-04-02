@@ -26,7 +26,7 @@ import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEn
  */
 export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   const userWithEmailExists = await User.exists({
-    email: args.data.email.toLowerCase(),
+    email: args.input.data.email.toLowerCase(),
   });
 
   if (userWithEmailExists === true) {
@@ -39,9 +39,9 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
 
   // TODO: this check is to be removed
   let organization;
-  if (args.data.organizationUserBelongsToId) {
+  if (args.input.data.organizationUserBelongsToId) {
     organization = await Organization.findOne({
-      _id: args.data.organizationUserBelongsToId,
+      _id: args.input.data.organizationUserBelongsToId,
     }).lean();
 
     if (!organization) {
@@ -98,21 +98,21 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   //   );
   // }
 
-  const hashedPassword = await bcrypt.hash(args.data.password, 12);
+  const hashedPassword = await bcrypt.hash(args.input.data.password, 12);
 
   // Upload file
   let uploadImageFileName;
-  if (args.file) {
-    uploadImageFileName = await uploadEncodedImage(args.file, null);
+  if (args.input.file) {
+    uploadImageFileName = await uploadEncodedImage(args.input.file, null);
   }
 
   const isLastResortSuperAdmin =
-    args.data.email === LAST_RESORT_SUPERADMIN_EMAIL;
+    args.input.data.email === LAST_RESORT_SUPERADMIN_EMAIL;
 
   const createdUser = await User.create({
-    ...args.data,
+    ...args.input.data,
     organizationUserBelongsTo: organization ? organization._id : null,
-    email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
+    email: args.input.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
     image: uploadImageFileName ? uploadImageFileName : null,
     password: hashedPassword,
     userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",

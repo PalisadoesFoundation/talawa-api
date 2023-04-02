@@ -23,7 +23,7 @@ export const removeGroupChat: MutationResolvers["removeGroupChat"] = async (
   context
 ) => {
   const groupChat = await GroupChat.findOne({
-    _id: args.chatId,
+    _id: args.input.chatId,
   }).lean();
 
   // Checks if a groupChat with _id === args.chatId exists.

@@ -32,7 +32,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
     }
 
     const organization = await Organization.findOne({
-      _id: args.organizationId,
+      _id: args.input.organizationId,
     }).lean();
 
     if (!organization) {

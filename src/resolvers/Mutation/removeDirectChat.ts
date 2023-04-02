@@ -23,7 +23,7 @@ export const removeDirectChat: MutationResolvers["removeDirectChat"] = async (
   context
 ) => {
   const organization = await Organization.findOne({
-    _id: args.organizationId,
+    _id: args.input.organizationId,
   }).lean();
 
   // Checks whether organization exists.
@@ -36,7 +36,7 @@ export const removeDirectChat: MutationResolvers["removeDirectChat"] = async (
   }
 
   const directChat = await DirectChat.findOne({
-    _id: args.chatId,
+    _id: args.input.chatId,
   }).lean();
 
   // Checks whether directChat exists.
@@ -60,7 +60,7 @@ export const removeDirectChat: MutationResolvers["removeDirectChat"] = async (
 
   // Deletes the directChat.
   await DirectChat.deleteOne({
-    _id: args.chatId,
+    _id: args.input.chatId,
   });
 
   // Returns deleted directChat.

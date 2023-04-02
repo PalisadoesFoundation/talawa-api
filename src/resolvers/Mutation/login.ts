@@ -23,7 +23,7 @@ import {
  */
 export const login: MutationResolvers["login"] = async (_parent, args) => {
   let user = await User.findOne({
-    email: args.data.email.toLowerCase(),
+    email: args.input.email.toLowerCase(),
   }).lean();
 
   // Checks whether user exists.
@@ -35,7 +35,7 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     );
   }
   const isPasswordValid = await bcrypt.compare(
-    args.data.password,
+    args.input.password,
     user.password
   );
   // Checks whether password is invalid.

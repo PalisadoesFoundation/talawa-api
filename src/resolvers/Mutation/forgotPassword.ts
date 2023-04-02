@@ -18,7 +18,7 @@ export const forgotPassword: MutationResolvers["forgotPassword"] = async (
   _parent,
   args
 ) => {
-  const { userOtp, newPassword, otpToken } = args.data;
+  const { userOtp, newPassword, otpToken } = args.input;
 
   // Extracts email and otp out of otpToken.
   const { email, otp } = jwtDecode<{

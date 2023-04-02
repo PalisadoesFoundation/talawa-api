@@ -32,7 +32,7 @@ export const likePost: MutationResolvers["likePost"] = async (
   }
 
   const post = await Post.findOne({
-    _id: args.id,
+    _id: args.input.postId,
   }).lean();
 
   // Checks whether post exists.
@@ -56,7 +56,7 @@ export const likePost: MutationResolvers["likePost"] = async (
     */
     return await Post.findOneAndUpdate(
       {
-        _id: args.id,
+        _id: args.input.postId,
       },
       {
         $push: {

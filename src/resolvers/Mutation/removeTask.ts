@@ -36,7 +36,7 @@ export const removeTask: MutationResolvers["removeTask"] = async (
   }
 
   const task = await Task.findOne({
-    _id: args.id,
+    _id: args.input.id,
   }).lean();
 
   // Checks whether task exists.

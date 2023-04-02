@@ -22,7 +22,7 @@ export const createMessageChat: MutationResolvers["createMessageChat"] = async (
   }).lean();
 
   const receiverUser = await User.findOne({
-    _id: args.data.receiver,
+    _id: args.input.receiver,
   }).lean();
 
   // Checks whether receiverUser exists.
@@ -42,7 +42,7 @@ export const createMessageChat: MutationResolvers["createMessageChat"] = async (
   const createdMessageChat = await MessageChat.create({
     sender: currentUser?._id,
     receiver: receiverUser._id,
-    message: args.data.message,
+    message: args.input.message,
     languageBarrier: !isSenderReceiverLanguageSame,
   });
 

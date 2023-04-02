@@ -34,10 +34,10 @@ export const createGroupChat: MutationResolvers["createGroupChat"] = async (
   }
 
   const organizationExists = await Organization.exists({
-    _id: args.data?.organizationId,
+    _id: args.input?.organizationId,
   });
 
-  // Checks whether organization with _id === args.data.organizationId exists.
+  // Checks whether organization with _id === args.input.organizationId exists.
   if (organizationExists === false) {
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
@@ -49,8 +49,8 @@ export const createGroupChat: MutationResolvers["createGroupChat"] = async (
   // Variable to store list of users to be members of groupChat.
   const usersInGroupChat = [];
 
-  // Loops over each item in args.data.userIds list.
-  for await (const userId of args.data!.userIds) {
+  // Loops over each item in args.input.userIds list.
+  for await (const userId of args.input!.userIds) {
     const userExists = await User.exists({
       _id: userId,
     });
@@ -71,8 +71,8 @@ export const createGroupChat: MutationResolvers["createGroupChat"] = async (
   const createdGroupChat = await GroupChat.create({
     creator: context.userId,
     users: usersInGroupChat,
-    organization: args.data?.organizationId,
-    title: args.data?.title,
+    organization: args.input?.organizationId,
+    title: args.input?.title,
   });
 
   // Returns createdGroupChat.

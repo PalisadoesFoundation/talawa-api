@@ -34,7 +34,7 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
     }
 
     const organization = await Organization.findOne({
-      _id: args.organizationId,
+      _id: args.input.organizationId,
     }).lean();
 
     // Checks whether organization exists.

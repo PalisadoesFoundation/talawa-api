@@ -38,17 +38,17 @@ export const createOrganization: MutationResolvers["createOrganization"] =
 
     //Upload file
     let uploadImageFileName = null;
-    if (args.file) {
-      uploadImageFileName = await uploadEncodedImage(args.file!, null);
+    if (args.input.file) {
+      uploadImageFileName = await uploadEncodedImage(args.input.file!, null);
     }
 
     // Checks if the recieved arguments are valid according to standard input norms
-    const validationResult_Name = isValidString(args.data!.name, 256);
+    const validationResult_Name = isValidString(args.input.data!.name, 256);
     const validationResult_Description = isValidString(
-      args.data!.description,
+      args.input.data!.description,
       500
     );
-    const validationResult_Location = isValidString(args.data!.location!, 50);
+    const validationResult_Location = isValidString(args.input.data!.location!, 50);
 
     if (!validationResult_Name.isLessThanMaxLength) {
       throw new errors.InputValidationError(
@@ -77,7 +77,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
 
     // Creates new organization.
     const createdOrganization = await Organization.create({
-      ...args.data,
+      ...args.input.data,
       image: uploadImageFileName ? uploadImageFileName : null,
       creator: context.userId,
       admins: [context.userId],

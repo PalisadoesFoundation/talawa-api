@@ -32,7 +32,7 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
   superAdminCheck(currentUser!);
 
   const userExists = await User.exists({
-    _id: args.id,
+    _id: args.input?.id,
   });
 
   if (userExists === false) {
@@ -45,7 +45,7 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
 
   await User.updateOne(
     {
-      _id: args.id,
+      _id: args.input?.id,
     },
     {
       $set: {

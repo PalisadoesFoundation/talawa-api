@@ -25,7 +25,7 @@ import {
 export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
   async (_parent, args, context) => {
     const groupChat = await GroupChat.findOne({
-      _id: args.chatId,
+      _id: args.input.chatId,
     }).lean();
 
     // Checks whether groupChat exists.
@@ -54,7 +54,7 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
     await adminCheck(context.userId, organization);
 
     const userExists = await User.exists({
-      _id: args.userId,
+      _id: args.input.userId,
     });
 
     // Checks whether user with _id === args.userId exists.
@@ -67,7 +67,7 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
     }
 
     const isUserGroupChatMember = groupChat.users.some(
-      (user) => user.toString() === args.userId.toString()
+      (user) => user.toString() === args.input.userId.toString()
     );
 
     // Checks whether user with _id === args.userId is already a member of groupChat.
@@ -82,11 +82,11 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
     // Adds args.userId to users list on groupChat's document and returns the updated groupChat.
     return await GroupChat.findOneAndUpdate(
       {
-        _id: args.chatId,
+        _id: args.input.chatId,
       },
       {
         $push: {
-          users: args.userId,
+          users: args.input.userId,
         },
       },
       {

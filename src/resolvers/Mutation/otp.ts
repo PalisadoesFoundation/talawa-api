@@ -15,7 +15,7 @@ import { logger } from "../../libraries";
  */
 export const otp: MutationResolvers["otp"] = async (_parent, args) => {
   const user = await User.findOne({
-    email: args.data.email,
+    email: args.input.email,
   }).lean();
 
   if (!user) {
@@ -30,7 +30,7 @@ export const otp: MutationResolvers["otp"] = async (_parent, args) => {
 
   const otpToken = jwt.sign(
     {
-      email: args.data.email,
+      email: args.input.email,
       otp: hashedOtp,
     },
     ACCESS_TOKEN_SECRET!,
@@ -42,7 +42,7 @@ export const otp: MutationResolvers["otp"] = async (_parent, args) => {
   const subject = "OTP for Talawa-admin forgot password";
   const body = `<h2>Hi, ${username}</h2><p>Your OTP: ${otp}</p> <p>Your OTP will expires in 5 minutes.</p><br><br> <small>Do not share your otp with others.</small>`;
   return mailer({
-    emailTo: args.data.email,
+    emailTo: args.input.email,
     subject,
     body,
   }).then((info) => {

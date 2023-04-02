@@ -22,7 +22,7 @@ import { adminCheck } from "../../utilities";
 export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat"] =
   async (_parent, args, context) => {
     const groupChat = await GroupChat.findOne({
-      _id: args.chatId,
+      _id: args.input.chatId,
     }).lean();
 
     // Checks whether groupChat exists.
@@ -51,7 +51,7 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
     await adminCheck(context.userId, organization);
 
     const userIsMemberOfGroupChat = groupChat.users.some(
-      (user) => user.toString() === args.userId.toString()
+      (user) => user.toString() === args.input.userId.toString()
     );
 
     // Checks if user with _id === args.userId is not a member of groupChat.
@@ -66,12 +66,12 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
     // Removes args.userId from users list of groupChat and returns the updated groupChat.
     return await GroupChat.findOneAndUpdate(
       {
-        _id: args.chatId,
+        _id: args.input.chatId,
       },
       {
         $set: {
           users: groupChat.users.filter(
-            (user) => user.toString() !== args.userId.toString()
+            (user) => user.toString() !== args.input.userId.toString()
           ),
         },
       },

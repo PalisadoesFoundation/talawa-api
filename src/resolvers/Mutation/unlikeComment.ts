@@ -30,7 +30,7 @@ export const unlikeComment: MutationResolvers["unlikeComment"] = async (
   }
 
   const comment = await Comment.findOne({
-    _id: args.id,
+    _id: args.input.id,
   }).lean();
 
   if (!comment) {
@@ -48,7 +48,7 @@ export const unlikeComment: MutationResolvers["unlikeComment"] = async (
   if (currentUserHasLikedComment === true) {
     return await Comment.findOneAndUpdate(
       {
-        _id: args.id,
+        _id: args.input.id,
       },
       {
         $pull: {

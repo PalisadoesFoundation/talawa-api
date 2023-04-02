@@ -34,7 +34,7 @@ export const updateUserType: MutationResolvers["updateUserType"] = async (
   superAdminCheck(currentUser);
 
   const userExists = await User.exists({
-    _id: args.data.id!,
+    _id: args.input.id!,
   });
 
   if (userExists === false) {
@@ -47,10 +47,10 @@ export const updateUserType: MutationResolvers["updateUserType"] = async (
 
   await User.updateOne(
     {
-      _id: args.data.id!,
+      _id: args.input.id!,
     },
     {
-      userType: args.data.userType!,
+      userType: args.input.userType!,
       adminApproved: true,
     }
   );

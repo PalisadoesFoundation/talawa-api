@@ -12,26 +12,26 @@ import { Plugin } from "../../models";
 export const updatePluginInstalledOrgs: MutationResolvers["updatePluginInstalledOrgs"] =
   async (_parent, args, _context) => {
     const plugin = await Plugin.findOne({
-      _id: args.id,
+      _id: args.input.id,
     }).lean();
 
     const organizationHasPluginInstalled = plugin?.installedOrgs.some(
-      (organization) => organization.equals(args.orgId)
+      (organization) => organization.equals(args.input.orgId)
     );
 
     /*
-    Remove args.orgId from installedOrgs ifplugin is already installed for
-    organization with _id === args.orgId
+    Remove args.input.orgId from installedOrgs ifplugin is already installed for
+    organization with _id === args.input.orgId
     */
 
     if (organizationHasPluginInstalled) {
       return await Plugin.findOneAndUpdate(
         {
-          _id: args.id,
+          _id: args.input.id,
         },
         {
           $pull: {
-            installedOrgs: args.orgId,
+            installedOrgs: args.input.orgId,
           },
         },
         {
@@ -41,11 +41,11 @@ export const updatePluginInstalledOrgs: MutationResolvers["updatePluginInstalled
     } else {
       return await Plugin.findOneAndUpdate(
         {
-          _id: args.id,
+          _id: args.input.id,
         },
         {
           $push: {
-            installedOrgs: args.orgId,
+            installedOrgs: args.input.orgId,
           },
         },
         {

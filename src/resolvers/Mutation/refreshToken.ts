@@ -20,7 +20,7 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
   args
 ) => {
   // This route should not be protected because the access token will be expired.
-  if (!args.refreshToken) {
+  if (!args.input.refreshToken) {
     throw new errors.ValidationError(
       [
         {
@@ -36,7 +36,7 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
   }
 
   const jwtPayload: Interface_JwtTokenPayload = jwt.verify(
-    args.refreshToken,
+    args.input.refreshToken,
     REFRESH_TOKEN_SECRET!
   ) as Interface_JwtTokenPayload;
 

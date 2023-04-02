@@ -34,7 +34,7 @@ export const saveFcmToken: MutationResolvers["saveFcmToken"] = async (
     },
     {
       $set: {
-        token: args.token,
+        token: args.input.token,
       },
     }
   );

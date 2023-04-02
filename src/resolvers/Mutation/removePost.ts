@@ -38,7 +38,7 @@ export const removePost: MutationResolvers["removePost"] = async (
   }
 
   const post = await Post.findOne({
-    _id: args.id,
+    _id: args.input.id,
   }).lean();
 
   // Checks whether post exists.
@@ -67,7 +67,7 @@ export const removePost: MutationResolvers["removePost"] = async (
 
   // Deletes the post.
   await Post.deleteOne({
-    _id: args.id,
+    _id: args.input.id,
   });
 
   // Removes the post from the organization, doesn't fail if the post wasn't pinned
@@ -77,7 +77,7 @@ export const removePost: MutationResolvers["removePost"] = async (
     },
     {
       $pull: {
-        pinnedPosts: args.id,
+        pinnedPosts: args.input.id,
       },
     }
   );

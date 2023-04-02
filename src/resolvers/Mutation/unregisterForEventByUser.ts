@@ -33,7 +33,7 @@ export const unregisterForEventByUser: MutationResolvers["unregisterForEventByUs
     }
 
     const event = await Event.findOne({
-      _id: args.id,
+      _id: args.input.id,
     }).lean();
 
     // checks if there exists an event with _id === args.id
@@ -71,7 +71,7 @@ export const unregisterForEventByUser: MutationResolvers["unregisterForEventByUs
 
       return await Event.findOneAndUpdate(
         {
-          _id: args.id,
+          _id: args.input.id,
           status: "ACTIVE",
         },
         {

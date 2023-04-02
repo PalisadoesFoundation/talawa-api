@@ -25,7 +25,7 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
   context
 ) => {
   const organization = await Organization.findOne({
-    _id: args.data.organizationId,
+    _id: args.input.organizationId,
   }).lean();
 
   // Checks whether organization exists.
@@ -38,7 +38,7 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
   }
 
   const user = await User.findOne({
-    _id: args.data.userId,
+    _id: args.input.userId,
   }).lean();
 
   const currentUser = await User.findOne({

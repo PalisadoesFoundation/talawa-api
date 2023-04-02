@@ -27,7 +27,7 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
 
   // Get the tag object
   const tag = await OrganizationTagUser.findOne({
-    _id: args.id,
+    _id: args.input.id,
   });
 
   if (!tag) {

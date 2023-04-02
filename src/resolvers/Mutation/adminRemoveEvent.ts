@@ -25,7 +25,7 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
   context
 ) => {
   const event = await Event.findOne({
-    _id: args.eventId,
+    _id: args.input.eventId,
   }).lean();
 
   // Checks whether event exists.

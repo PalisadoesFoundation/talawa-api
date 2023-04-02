@@ -16,7 +16,7 @@ export const createPlugin: MutationResolvers["createPlugin"] = async (
 ) => {
   // Creates new plugin.
   const createdPlugin = await Plugin.create({
-    ...args,
+    ...args.input,
   });
 
   // Returns createdPlugin.

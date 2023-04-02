@@ -30,7 +30,7 @@ export const unlikePost: MutationResolvers["unlikePost"] = async (
   }
 
   const post = await Post.findOne({
-    _id: args.id,
+    _id: args.input.id,
   }).lean();
 
   if (!post) {

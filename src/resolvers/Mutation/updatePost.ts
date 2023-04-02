@@ -28,7 +28,7 @@ export const updatePost: MutationResolvers["updatePost"] = async (
   }
 
   const post = await Post.findOne({
-    _id: args.data.id,
+    _id: args.input.id,
   }).lean();
 
   // checks if there exists a post with _id === args.id
@@ -53,8 +53,8 @@ export const updatePost: MutationResolvers["updatePost"] = async (
   }
 
   // Checks if the recieved arguments are valid according to standard input norms
-  const validationResult_Title = isValidString(args.data!.title!, 256);
-  const validationResult_Text = isValidString(args.data!.text!, 500);
+  const validationResult_Title = isValidString(args.input!.title!, 256);
+  const validationResult_Text = isValidString(args.input!.text!, 500);
   if (!validationResult_Title.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
@@ -74,11 +74,11 @@ export const updatePost: MutationResolvers["updatePost"] = async (
 
   return await Post.findOneAndUpdate(
     {
-      _id: args.data.id,
+      _id: args.input.id,
     },
     // @ts-ignore
     {
-      ...args.data,
+      ...args.input,
     },
     {
       new: true,

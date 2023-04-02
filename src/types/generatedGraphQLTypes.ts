@@ -44,6 +44,32 @@ export type Scalars = {
   Upload: any;
 };
 
+export type AcceptAdminInput = {
+  id: Scalars['ID'];
+};
+
+export type AddOrganizationImageInput = {
+  file: Scalars['String'];
+  organizationId: Scalars['String'];
+};
+
+export type AddUserImageInput = {
+  file: Scalars['String'];
+};
+
+export type AddUserToGroupChatInput = {
+  chatId: Scalars['ID'];
+  userId: Scalars['ID'];
+};
+
+export type AdminRemoveEventInput = {
+  eventId: Scalars['ID'];
+};
+
+export type AdminRemoveGroupInput = {
+  groupId: Scalars['ID'];
+};
+
 export type AggregatePost = {
   __typename?: 'AggregatePost';
   count: Scalars['Int'];
@@ -72,6 +98,11 @@ export type AuthData = {
   user: User;
 };
 
+export type BlockUserInput = {
+  organizationId: Scalars['ID'];
+  userId: Scalars['ID'];
+};
+
 export type Comment = {
   __typename?: 'Comment';
   _id?: Maybe<Scalars['ID']>;
@@ -95,10 +126,62 @@ export type ConnectionPageInfo = {
   startCursor?: Maybe<Scalars['String']>;
 };
 
+export type CreateChatInput = {
+  organizationId: Scalars['ID'];
+  userIds: Array<Scalars['ID']>;
+};
+
+export type CreateCommentInput = {
+  data: CommentInput;
+  postId: Scalars['ID'];
+};
+
+export type CreateDonationInput = {
+  amount: Scalars['Float'];
+  nameOfOrg: Scalars['String'];
+  nameOfUser: Scalars['String'];
+  orgId: Scalars['ID'];
+  payPalId: Scalars['ID'];
+  userId: Scalars['ID'];
+};
+
+export type CreateGroupChatInput = {
+  organizationId: Scalars['ID'];
+  title: Scalars['String'];
+  userIds: Array<Scalars['ID']>;
+};
+
+export type CreateOrganizationInput = {
+  data: OrganizationInput;
+  file?: InputMaybe<Scalars['String']>;
+};
+
+export type CreatePluginInput = {
+  installedOrgs?: InputMaybe<Array<Scalars['ID']>>;
+  pluginCreatedBy: Scalars['String'];
+  pluginDesc: Scalars['String'];
+  pluginInstallStatus: Scalars['Boolean'];
+  pluginName: Scalars['String'];
+};
+
+export type CreatePostInput = {
+  data: PostInput;
+  file?: InputMaybe<Scalars['String']>;
+};
+
+export type CreateTaskInput = {
+  data: TaskInput;
+  eventId: Scalars['ID'];
+};
+
 export type CreateUserTagInput = {
   name: Scalars['String'];
   organizationId: Scalars['ID'];
   parentTagId?: InputMaybe<Scalars['ID']>;
+};
+
+export type DeleteDonationByIdInput = {
+  donationId: Scalars['ID'];
 };
 
 export type DeletePayload = {
@@ -335,6 +418,14 @@ export type LanguageModel = {
   verified: Scalars['Boolean'];
 };
 
+export type LikeCommentInput = {
+  commentId: Scalars['ID'];
+};
+
+export type LikePostInput = {
+  postId: Scalars['ID'];
+};
+
 export type LoginInput = {
   email: Scalars['EmailAddress'];
   password: Scalars['String'];
@@ -345,6 +436,10 @@ export type MembershipRequest = {
   _id: Scalars['ID'];
   organization: Organization;
   user: User;
+};
+
+export type MembershipRequestInput = {
+  membershipRequestId: Scalars['ID'];
 };
 
 export type Message = {
@@ -453,44 +548,42 @@ export type Mutation = {
 
 
 export type MutationAcceptAdminArgs = {
-  id: Scalars['ID'];
+  input: AcceptAdminInput;
 };
 
 
 export type MutationAcceptMembershipRequestArgs = {
-  membershipRequestId: Scalars['ID'];
+  input: MembershipRequestInput;
 };
 
 
 export type MutationAddLanguageTranslationArgs = {
-  data: LanguageInput;
+  input: LanguageInput;
 };
 
 
 export type MutationAddOrganizationImageArgs = {
-  file: Scalars['String'];
-  organizationId: Scalars['String'];
+  input: AddOrganizationImageInput;
 };
 
 
 export type MutationAddUserImageArgs = {
-  file: Scalars['String'];
+  input: AddUserImageInput;
 };
 
 
 export type MutationAddUserToGroupChatArgs = {
-  chatId: Scalars['ID'];
-  userId: Scalars['ID'];
+  input: AddUserToGroupChatInput;
 };
 
 
 export type MutationAdminRemoveEventArgs = {
-  eventId: Scalars['ID'];
+  input: AdminRemoveEventInput;
 };
 
 
 export type MutationAdminRemoveGroupArgs = {
-  groupId: Scalars['ID'];
+  input: AdminRemoveGroupInput;
 };
 
 
@@ -500,92 +593,77 @@ export type MutationAssignUserTagArgs = {
 
 
 export type MutationBlockPluginCreationBySuperadminArgs = {
-  blockUser: Scalars['Boolean'];
-  userId: Scalars['ID'];
+  input: BlockPluginCreationBySuperadminInput;
 };
 
 
 export type MutationBlockUserArgs = {
-  organizationId: Scalars['ID'];
-  userId: Scalars['ID'];
+  input: BlockUserInput;
 };
 
 
 export type MutationCancelMembershipRequestArgs = {
-  membershipRequestId: Scalars['ID'];
+  input: MembershipRequestInput;
 };
 
 
 export type MutationCreateAdminArgs = {
-  data: UserAndOrganizationInput;
+  input: UserAndOrganizationInput;
 };
 
 
 export type MutationCreateCommentArgs = {
-  data: CommentInput;
-  postId: Scalars['ID'];
+  input: CreateCommentInput;
 };
 
 
 export type MutationCreateDirectChatArgs = {
-  data?: InputMaybe<CreateChatInput>;
+  input: CreateChatInput;
 };
 
 
 export type MutationCreateDonationArgs = {
-  amount: Scalars['Float'];
-  nameOfOrg: Scalars['String'];
-  nameOfUser: Scalars['String'];
-  orgId: Scalars['ID'];
-  payPalId: Scalars['ID'];
-  userId: Scalars['ID'];
+  input: CreateDonationInput;
 };
 
 
 export type MutationCreateEventArgs = {
-  data?: InputMaybe<EventInput>;
+  input: EventInput;
 };
 
 
 export type MutationCreateGroupArgs = {
-  data: GroupInput;
+  input: GroupInput;
 };
 
 
 export type MutationCreateGroupChatArgs = {
-  data?: InputMaybe<CreateGroupChatInput>;
+  input: CreateGroupChatInput;
 };
 
 
 export type MutationCreateMessageChatArgs = {
-  data: MessageChatInput;
+  input: MessageChatInput;
 };
 
 
 export type MutationCreateOrganizationArgs = {
-  data?: InputMaybe<OrganizationInput>;
-  file?: InputMaybe<Scalars['String']>;
+  input: CreateOrganizationInput;
 };
 
 
 export type MutationCreatePluginArgs = {
-  installedOrgs?: InputMaybe<Array<Scalars['ID']>>;
-  pluginCreatedBy: Scalars['String'];
-  pluginDesc: Scalars['String'];
-  pluginInstallStatus: Scalars['Boolean'];
-  pluginName: Scalars['String'];
+  input: CreatePluginInput;
 };
 
 
 export type MutationCreatePostArgs = {
-  data: PostInput;
-  file?: InputMaybe<Scalars['String']>;
+  input: CreatePostInput;
 };
 
 
 export type MutationCreateTaskArgs = {
-  data?: InputMaybe<TaskInput>;
-  eventId: Scalars['ID'];
+  input: CreateTaskInput;
 };
 
 
@@ -595,167 +673,162 @@ export type MutationCreateUserTagArgs = {
 
 
 export type MutationDeleteDonationByIdArgs = {
-  id: Scalars['ID'];
+  input: DeleteDonationByIdInput;
 };
 
 
 export type MutationForgotPasswordArgs = {
-  data: ForgotPasswordData;
+  input: ForgotPasswordData;
 };
 
 
 export type MutationJoinPublicOrganizationArgs = {
-  organizationId: Scalars['ID'];
+  input: OrganizationIdInput;
 };
 
 
 export type MutationLeaveOrganizationArgs = {
-  organizationId: Scalars['ID'];
+  input: OrganizationIdInput;
 };
 
 
 export type MutationLikeCommentArgs = {
-  id: Scalars['ID'];
+  input: LikeCommentInput;
 };
 
 
 export type MutationLikePostArgs = {
-  id: Scalars['ID'];
+  input: LikePostInput;
 };
 
 
 export type MutationLoginArgs = {
-  data: LoginInput;
+  input: LoginInput;
 };
 
 
 export type MutationOtpArgs = {
-  data: OtpInput;
+  input: OtpInput;
 };
 
 
 export type MutationRecaptchaArgs = {
-  data: RecaptchaVerification;
+  input: RecaptchaVerification;
 };
 
 
 export type MutationRefreshTokenArgs = {
-  refreshToken: Scalars['String'];
+  input: RefreshTokenInput;
 };
 
 
 export type MutationRegisterForEventArgs = {
-  id: Scalars['ID'];
+  input: RegisterForEventInput;
 };
 
 
 export type MutationRejectAdminArgs = {
-  id: Scalars['ID'];
+  input: RejectAdminInput;
 };
 
 
 export type MutationRejectMembershipRequestArgs = {
-  membershipRequestId: Scalars['ID'];
+  input: MembershipRequestInput;
 };
 
 
 export type MutationRemoveAdminArgs = {
-  data: UserAndOrganizationInput;
+  input: UserAndOrganizationInput;
 };
 
 
 export type MutationRemoveCommentArgs = {
-  id: Scalars['ID'];
+  input: RemoveCommentInput;
 };
 
 
 export type MutationRemoveDirectChatArgs = {
-  chatId: Scalars['ID'];
-  organizationId: Scalars['ID'];
+  input: RemoveDirectChatInput;
 };
 
 
 export type MutationRemoveEventArgs = {
-  id: Scalars['ID'];
+  input: RemoveEventInput;
 };
 
 
 export type MutationRemoveGroupChatArgs = {
-  chatId: Scalars['ID'];
+  input: RemoveGroupChatInput;
 };
 
 
 export type MutationRemoveMemberArgs = {
-  data: UserAndOrganizationInput;
+  input: UserAndOrganizationInput;
 };
 
 
 export type MutationRemoveOrganizationArgs = {
-  id: Scalars['ID'];
+  input: OrganizationIdInput;
 };
 
 
 export type MutationRemoveOrganizationImageArgs = {
-  organizationId: Scalars['String'];
+  input: OrganizationIdInput;
 };
 
 
 export type MutationRemovePostArgs = {
-  id: Scalars['ID'];
+  input: RemovePostInput;
 };
 
 
 export type MutationRemoveTaskArgs = {
-  id: Scalars['ID'];
+  input: RemoveTaskInput;
 };
 
 
 export type MutationRemoveUserFromGroupChatArgs = {
-  chatId: Scalars['ID'];
-  userId: Scalars['ID'];
+  input: RemoveUserFromGroupChatInput;
 };
 
 
 export type MutationRemoveUserTagArgs = {
-  id: Scalars['ID'];
+  input: RemoveUserTagInput;
 };
 
 
 export type MutationRevokeRefreshTokenForUserArgs = {
-  userId: Scalars['String'];
+  input: RevokeRefreshTokenForUserInput;
 };
 
 
 export type MutationSaveFcmTokenArgs = {
-  token?: InputMaybe<Scalars['String']>;
+  input: SaveFcmTokenInput;
 };
 
 
 export type MutationSendMembershipRequestArgs = {
-  organizationId: Scalars['ID'];
+  input: OrganizationIdInput;
 };
 
 
 export type MutationSendMessageToDirectChatArgs = {
-  chatId: Scalars['ID'];
-  messageContent: Scalars['String'];
+  input: SendMessageToChatInput;
 };
 
 
 export type MutationSendMessageToGroupChatArgs = {
-  chatId: Scalars['ID'];
-  messageContent: Scalars['String'];
+  input: SendMessageToChatInput;
 };
 
 
 export type MutationSignUpArgs = {
-  data: UserInput;
-  file?: InputMaybe<Scalars['String']>;
+  input: SignUpInput;
 };
 
 
 export type MutationTogglePostPinArgs = {
-  id: Scalars['ID'];
+  input: TogglePostPinInput;
 };
 
 
@@ -765,74 +838,67 @@ export type MutationUnassignUserTagArgs = {
 
 
 export type MutationUnblockUserArgs = {
-  organizationId: Scalars['ID'];
-  userId: Scalars['ID'];
+  input: UserAndOrganizationInput;
 };
 
 
 export type MutationUnlikeCommentArgs = {
-  id: Scalars['ID'];
+  input: UnlikeCommentInput;
 };
 
 
 export type MutationUnlikePostArgs = {
-  id: Scalars['ID'];
+  input: UnlikePostInput;
 };
 
 
 export type MutationUnregisterForEventByUserArgs = {
-  id: Scalars['ID'];
+  input: UnregisterForEventByUserInput;
 };
 
 
 export type MutationUpdateEventArgs = {
-  data?: InputMaybe<UpdateEventInput>;
-  id: Scalars['ID'];
+  input: UpdateEventInput;
 };
 
 
 export type MutationUpdateLanguageArgs = {
-  languageCode: Scalars['String'];
+  input: UpdateLanguageInput;
 };
 
 
 export type MutationUpdateOrganizationArgs = {
-  data: UpdateOrganizationInput;
-  file?: InputMaybe<Scalars['String']>;
+  input: UpdateOrganizationInput;
 };
 
 
 export type MutationUpdatePluginInstalledOrgsArgs = {
-  id: Scalars['ID'];
-  orgId: Scalars['ID'];
+  input: UpdatePluginInstalledOrgsInput;
 };
 
 
 export type MutationUpdatePluginStatusArgs = {
-  id: Scalars['ID'];
-  status: Scalars['Boolean'];
+  input: UpdatePluginStatusInput;
 };
 
 
 export type MutationUpdatePostArgs = {
-  data: UpdatePostInput;
+  input: UpdatePostInput;
 };
 
 
 export type MutationUpdateTaskArgs = {
-  data?: InputMaybe<UpdateTaskInput>;
-  id: Scalars['ID'];
+  input: UpdateTaskInput;
 };
 
 
 export type MutationUpdateUserPasswordArgs = {
-  data?: InputMaybe<UpdateUserPasswordInput>;
+  input: UpdateUserPasswordInput;
 };
 
 
 export type MutationUpdateUserProfileArgs = {
-  data?: InputMaybe<UpdateUserInput>;
-  file?: InputMaybe<Scalars['String']>;
+  input: UpdateUserProfileInput;
 };
 
 
@@ -842,7 +908,7 @@ export type MutationUpdateUserTagArgs = {
 
 
 export type MutationUpdateUserTypeArgs = {
-  data: UpdateUserTypeInput;
+  input: UpdateUserTypeInput;
 };
 
 export type OtpInput = {
@@ -880,6 +946,10 @@ export type OrganizationUserTagsArgs = {
   before?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['PositiveInt']>;
   last?: InputMaybe<Scalars['PositiveInt']>;
+};
+
+export type OrganizationIdInput = {
+  organizationId: Scalars['ID'];
 };
 
 export type OrganizationInfoNode = {
@@ -1302,6 +1372,70 @@ export type Recurrance =
   | 'WEEKLY'
   | 'YEARLY';
 
+export type RefreshTokenInput = {
+  refreshToken: Scalars['String'];
+};
+
+export type RegisterForEventInput = {
+  eventId: Scalars['ID'];
+};
+
+export type RejectAdminInput = {
+  userId: Scalars['ID'];
+};
+
+export type RemoveCommentInput = {
+  commentId: Scalars['ID'];
+};
+
+export type RemoveDirectChatInput = {
+  chatId: Scalars['ID'];
+  organizationId: Scalars['ID'];
+};
+
+export type RemoveEventInput = {
+  id: Scalars['ID'];
+};
+
+export type RemoveGroupChatInput = {
+  chatId: Scalars['ID'];
+};
+
+export type RemovePostInput = {
+  id: Scalars['ID'];
+};
+
+export type RemoveTaskInput = {
+  id: Scalars['ID'];
+};
+
+export type RemoveUserFromGroupChatInput = {
+  chatId: Scalars['ID'];
+  userId: Scalars['ID'];
+};
+
+export type RemoveUserTagInput = {
+  id: Scalars['ID'];
+};
+
+export type RevokeRefreshTokenForUserInput = {
+  userId: Scalars['ID'];
+};
+
+export type SaveFcmTokenInput = {
+  token?: InputMaybe<Scalars['String']>;
+};
+
+export type SendMessageToChatInput = {
+  chatId: Scalars['ID'];
+  messageContent: Scalars['String'];
+};
+
+export type SignUpInput = {
+  data: UserInput;
+  file?: InputMaybe<Scalars['String']>;
+};
+
 export type Status =
   | 'ACTIVE'
   | 'BLOCKED'
@@ -1343,6 +1477,10 @@ export type TaskOrderByInput =
   | 'title_ASC'
   | 'title_DESC';
 
+export type TogglePostPinInput = {
+  id: Scalars['ID'];
+};
+
 export type ToggleUserTagAssignInput = {
   tagId: Scalars['ID'];
   userId: Scalars['ID'];
@@ -1360,11 +1498,24 @@ export type Type =
   | 'PRIVATE'
   | 'UNIVERSAL';
 
+export type UnlikeCommentInput = {
+  id: Scalars['ID'];
+};
+
+export type UnlikePostInput = {
+  id: Scalars['ID'];
+};
+
+export type UnregisterForEventByUserInput = {
+  id: Scalars['ID'];
+};
+
 export type UpdateEventInput = {
   allDay?: InputMaybe<Scalars['Boolean']>;
   description?: InputMaybe<Scalars['String']>;
   endDate?: InputMaybe<Scalars['Date']>;
   endTime?: InputMaybe<Scalars['Time']>;
+  id: Scalars['ID'];
   isPublic?: InputMaybe<Scalars['Boolean']>;
   isRegisterable?: InputMaybe<Scalars['Boolean']>;
   latitude?: InputMaybe<Scalars['Latitude']>;
@@ -1377,13 +1528,32 @@ export type UpdateEventInput = {
   title?: InputMaybe<Scalars['String']>;
 };
 
-export type UpdateOrganizationInput = {
+export type UpdateLanguageInput = {
+  languageCode: Scalars['String'];
+};
+
+export type UpdateOrganization = {
   description?: InputMaybe<Scalars['String']>;
   id: Scalars['ID'];
   isPublic?: InputMaybe<Scalars['Boolean']>;
   location?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   visibleInSearch?: InputMaybe<Scalars['Boolean']>;
+};
+
+export type UpdateOrganizationInput = {
+  data: UpdateOrganization;
+  file?: InputMaybe<Scalars['String']>;
+};
+
+export type UpdatePluginInstalledOrgsInput = {
+  id: Scalars['ID'];
+  orgId: Scalars['ID'];
+};
+
+export type UpdatePluginStatusInput = {
+  id: Scalars['ID'];
+  status: Scalars['Boolean'];
 };
 
 export type UpdatePostInput = {
@@ -1394,13 +1564,18 @@ export type UpdatePostInput = {
   videoUrl?: InputMaybe<Scalars['URL']>;
 };
 
-export type UpdateTaskInput = {
+export type UpdateTaskData = {
   deadline?: InputMaybe<Scalars['DateTime']>;
   description?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
 };
 
-export type UpdateUserInput = {
+export type UpdateTaskInput = {
+  data: UpdateTaskData;
+  id: Scalars['ID'];
+};
+
+export type UpdateUserData = {
   email?: InputMaybe<Scalars['EmailAddress']>;
   firstName?: InputMaybe<Scalars['String']>;
   lastName?: InputMaybe<Scalars['String']>;
@@ -1410,6 +1585,11 @@ export type UpdateUserPasswordInput = {
   confirmNewPassword: Scalars['String'];
   newPassword: Scalars['String'];
   previousPassword: Scalars['String'];
+};
+
+export type UpdateUserProfileInput = {
+  data: UpdateUserData;
+  file?: InputMaybe<Scalars['String']>;
 };
 
 export type UpdateUserTagInput = {
@@ -1588,15 +1768,9 @@ export type UsersConnection = {
   pageInfo: ConnectionPageInfo;
 };
 
-export type CreateChatInput = {
-  organizationId: Scalars['ID'];
-  userIds: Array<Scalars['ID']>;
-};
-
-export type CreateGroupChatInput = {
-  organizationId: Scalars['ID'];
-  title: Scalars['String'];
-  userIds: Array<Scalars['ID']>;
+export type BlockPluginCreationBySuperadminInput = {
+  blockUser: Scalars['Boolean'];
+  userId: Scalars['ID'];
 };
 
 
@@ -1664,17 +1838,33 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  AcceptAdminInput: AcceptAdminInput;
+  AddOrganizationImageInput: AddOrganizationImageInput;
+  AddUserImageInput: AddUserImageInput;
+  AddUserToGroupChatInput: AddUserToGroupChatInput;
+  AdminRemoveEventInput: AdminRemoveEventInput;
+  AdminRemoveGroupInput: AdminRemoveGroupInput;
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
   AndroidFirebaseOptions: ResolverTypeWrapper<AndroidFirebaseOptions>;
   AuthData: ResolverTypeWrapper<Omit<AuthData, 'user'> & { user: ResolversTypes['User'] }>;
+  BlockUserInput: BlockUserInput;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Comment: ResolverTypeWrapper<Interface_CommentModel>;
   CommentInput: CommentInput;
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
+  CreateChatInput: CreateChatInput;
+  CreateCommentInput: CreateCommentInput;
+  CreateDonationInput: CreateDonationInput;
+  CreateGroupChatInput: CreateGroupChatInput;
+  CreateOrganizationInput: CreateOrganizationInput;
+  CreatePluginInput: CreatePluginInput;
+  CreatePostInput: CreatePostInput;
+  CreateTaskInput: CreateTaskInput;
   CreateUserTagInput: CreateUserTagInput;
   Date: ResolverTypeWrapper<Scalars['Date']>;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']>;
+  DeleteDonationByIdInput: DeleteDonationByIdInput;
   DeletePayload: ResolverTypeWrapper<DeletePayload>;
   DirectChat: ResolverTypeWrapper<Interface_DirectChatModel>;
   DirectChatMessage: ResolverTypeWrapper<Interface_DirectChatMessageModel>;
@@ -1700,15 +1890,19 @@ export type ResolversTypes = {
   LanguageInput: LanguageInput;
   LanguageModel: ResolverTypeWrapper<LanguageModel>;
   Latitude: ResolverTypeWrapper<Scalars['Latitude']>;
+  LikeCommentInput: LikeCommentInput;
+  LikePostInput: LikePostInput;
   LoginInput: LoginInput;
   Longitude: ResolverTypeWrapper<Scalars['Longitude']>;
   MembershipRequest: ResolverTypeWrapper<Interface_MembershipRequestModel>;
+  MembershipRequestInput: MembershipRequestInput;
   Message: ResolverTypeWrapper<Interface_MessageModel>;
   MessageChat: ResolverTypeWrapper<Interface_MessageChatModel>;
   MessageChatInput: MessageChatInput;
   Mutation: ResolverTypeWrapper<{}>;
   OTPInput: OtpInput;
   Organization: ResolverTypeWrapper<Interface_OrganizationModel>;
+  OrganizationIdInput: OrganizationIdInput;
   OrganizationInfoNode: ResolverTypeWrapper<Omit<OrganizationInfoNode, 'creator'> & { creator: ResolversTypes['User'] }>;
   OrganizationInput: OrganizationInput;
   OrganizationOrderByInput: OrganizationOrderByInput;
@@ -1729,6 +1923,21 @@ export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>;
   RecaptchaVerification: RecaptchaVerification;
   Recurrance: Recurrance;
+  RefreshTokenInput: RefreshTokenInput;
+  RegisterForEventInput: RegisterForEventInput;
+  RejectAdminInput: RejectAdminInput;
+  RemoveCommentInput: RemoveCommentInput;
+  RemoveDirectChatInput: RemoveDirectChatInput;
+  RemoveEventInput: RemoveEventInput;
+  RemoveGroupChatInput: RemoveGroupChatInput;
+  RemovePostInput: RemovePostInput;
+  RemoveTaskInput: RemoveTaskInput;
+  RemoveUserFromGroupChatInput: RemoveUserFromGroupChatInput;
+  RemoveUserTagInput: RemoveUserTagInput;
+  RevokeRefreshTokenForUserInput: RevokeRefreshTokenForUserInput;
+  SaveFcmTokenInput: SaveFcmTokenInput;
+  SendMessageToChatInput: SendMessageToChatInput;
+  SignUpInput: SignUpInput;
   Status: Status;
   String: ResolverTypeWrapper<Scalars['String']>;
   Subscription: ResolverTypeWrapper<{}>;
@@ -1736,16 +1945,26 @@ export type ResolversTypes = {
   TaskInput: TaskInput;
   TaskOrderByInput: TaskOrderByInput;
   Time: ResolverTypeWrapper<Scalars['Time']>;
+  TogglePostPinInput: TogglePostPinInput;
   ToggleUserTagAssignInput: ToggleUserTagAssignInput;
   Translation: ResolverTypeWrapper<Translation>;
   Type: Type;
   URL: ResolverTypeWrapper<Scalars['URL']>;
+  UnlikeCommentInput: UnlikeCommentInput;
+  UnlikePostInput: UnlikePostInput;
+  UnregisterForEventByUserInput: UnregisterForEventByUserInput;
   UpdateEventInput: UpdateEventInput;
+  UpdateLanguageInput: UpdateLanguageInput;
+  UpdateOrganization: UpdateOrganization;
   UpdateOrganizationInput: UpdateOrganizationInput;
+  UpdatePluginInstalledOrgsInput: UpdatePluginInstalledOrgsInput;
+  UpdatePluginStatusInput: UpdatePluginStatusInput;
   UpdatePostInput: UpdatePostInput;
+  UpdateTaskData: UpdateTaskData;
   UpdateTaskInput: UpdateTaskInput;
-  UpdateUserInput: UpdateUserInput;
+  UpdateUserData: UpdateUserData;
   UpdateUserPasswordInput: UpdateUserPasswordInput;
+  UpdateUserProfileInput: UpdateUserProfileInput;
   UpdateUserTagInput: UpdateUserTagInput;
   UpdateUserTypeInput: UpdateUserTypeInput;
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
@@ -1762,23 +1981,38 @@ export type ResolversTypes = {
   UserType: UserType;
   UserWhereInput: UserWhereInput;
   UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['UserEdge']>>> }>;
-  createChatInput: CreateChatInput;
-  createGroupChatInput: CreateGroupChatInput;
+  blockPluginCreationBySuperadminInput: BlockPluginCreationBySuperadminInput;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  AcceptAdminInput: AcceptAdminInput;
+  AddOrganizationImageInput: AddOrganizationImageInput;
+  AddUserImageInput: AddUserImageInput;
+  AddUserToGroupChatInput: AddUserToGroupChatInput;
+  AdminRemoveEventInput: AdminRemoveEventInput;
+  AdminRemoveGroupInput: AdminRemoveGroupInput;
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
   AndroidFirebaseOptions: AndroidFirebaseOptions;
   AuthData: Omit<AuthData, 'user'> & { user: ResolversParentTypes['User'] };
+  BlockUserInput: BlockUserInput;
   Boolean: Scalars['Boolean'];
   Comment: Interface_CommentModel;
   CommentInput: CommentInput;
   ConnectionPageInfo: ConnectionPageInfo;
+  CreateChatInput: CreateChatInput;
+  CreateCommentInput: CreateCommentInput;
+  CreateDonationInput: CreateDonationInput;
+  CreateGroupChatInput: CreateGroupChatInput;
+  CreateOrganizationInput: CreateOrganizationInput;
+  CreatePluginInput: CreatePluginInput;
+  CreatePostInput: CreatePostInput;
+  CreateTaskInput: CreateTaskInput;
   CreateUserTagInput: CreateUserTagInput;
   Date: Scalars['Date'];
   DateTime: Scalars['DateTime'];
+  DeleteDonationByIdInput: DeleteDonationByIdInput;
   DeletePayload: DeletePayload;
   DirectChat: Interface_DirectChatModel;
   DirectChatMessage: Interface_DirectChatMessageModel;
@@ -1803,15 +2037,19 @@ export type ResolversParentTypes = {
   LanguageInput: LanguageInput;
   LanguageModel: LanguageModel;
   Latitude: Scalars['Latitude'];
+  LikeCommentInput: LikeCommentInput;
+  LikePostInput: LikePostInput;
   LoginInput: LoginInput;
   Longitude: Scalars['Longitude'];
   MembershipRequest: Interface_MembershipRequestModel;
+  MembershipRequestInput: MembershipRequestInput;
   Message: Interface_MessageModel;
   MessageChat: Interface_MessageChatModel;
   MessageChatInput: MessageChatInput;
   Mutation: {};
   OTPInput: OtpInput;
   Organization: Interface_OrganizationModel;
+  OrganizationIdInput: OrganizationIdInput;
   OrganizationInfoNode: Omit<OrganizationInfoNode, 'creator'> & { creator: ResolversParentTypes['User'] };
   OrganizationInput: OrganizationInput;
   OrganizationWhereInput: OrganizationWhereInput;
@@ -1829,20 +2067,45 @@ export type ResolversParentTypes = {
   PostWhereInput: PostWhereInput;
   Query: {};
   RecaptchaVerification: RecaptchaVerification;
+  RefreshTokenInput: RefreshTokenInput;
+  RegisterForEventInput: RegisterForEventInput;
+  RejectAdminInput: RejectAdminInput;
+  RemoveCommentInput: RemoveCommentInput;
+  RemoveDirectChatInput: RemoveDirectChatInput;
+  RemoveEventInput: RemoveEventInput;
+  RemoveGroupChatInput: RemoveGroupChatInput;
+  RemovePostInput: RemovePostInput;
+  RemoveTaskInput: RemoveTaskInput;
+  RemoveUserFromGroupChatInput: RemoveUserFromGroupChatInput;
+  RemoveUserTagInput: RemoveUserTagInput;
+  RevokeRefreshTokenForUserInput: RevokeRefreshTokenForUserInput;
+  SaveFcmTokenInput: SaveFcmTokenInput;
+  SendMessageToChatInput: SendMessageToChatInput;
+  SignUpInput: SignUpInput;
   String: Scalars['String'];
   Subscription: {};
   Task: Interface_TaskModel;
   TaskInput: TaskInput;
   Time: Scalars['Time'];
+  TogglePostPinInput: TogglePostPinInput;
   ToggleUserTagAssignInput: ToggleUserTagAssignInput;
   Translation: Translation;
   URL: Scalars['URL'];
+  UnlikeCommentInput: UnlikeCommentInput;
+  UnlikePostInput: UnlikePostInput;
+  UnregisterForEventByUserInput: UnregisterForEventByUserInput;
   UpdateEventInput: UpdateEventInput;
+  UpdateLanguageInput: UpdateLanguageInput;
+  UpdateOrganization: UpdateOrganization;
   UpdateOrganizationInput: UpdateOrganizationInput;
+  UpdatePluginInstalledOrgsInput: UpdatePluginInstalledOrgsInput;
+  UpdatePluginStatusInput: UpdatePluginStatusInput;
   UpdatePostInput: UpdatePostInput;
+  UpdateTaskData: UpdateTaskData;
   UpdateTaskInput: UpdateTaskInput;
-  UpdateUserInput: UpdateUserInput;
+  UpdateUserData: UpdateUserData;
   UpdateUserPasswordInput: UpdateUserPasswordInput;
+  UpdateUserProfileInput: UpdateUserProfileInput;
   UpdateUserTagInput: UpdateUserTagInput;
   UpdateUserTypeInput: UpdateUserTypeInput;
   Upload: Scalars['Upload'];
@@ -1857,8 +2120,7 @@ export type ResolversParentTypes = {
   UserTagsConnection: Omit<UserTagsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['UserTagEdge']>>> };
   UserWhereInput: UserWhereInput;
   UsersConnection: Omit<UsersConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['UserEdge']>>> };
-  createChatInput: CreateChatInput;
-  createGroupChatInput: CreateGroupChatInput;
+  blockPluginCreationBySuperadminInput: BlockPluginCreationBySuperadminInput;
 };
 
 export type AuthDirectiveArgs = { };
@@ -2094,81 +2356,81 @@ export type MessageChatResolvers<ContextType = any, ParentType extends Resolvers
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
-  acceptAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationAcceptAdminArgs, 'id'>>;
-  acceptMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationAcceptMembershipRequestArgs, 'membershipRequestId'>>;
-  addLanguageTranslation?: Resolver<ResolversTypes['Language'], ParentType, ContextType, RequireFields<MutationAddLanguageTranslationArgs, 'data'>>;
-  addOrganizationImage?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationAddOrganizationImageArgs, 'file' | 'organizationId'>>;
-  addUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddUserImageArgs, 'file'>>;
-  addUserToGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationAddUserToGroupChatArgs, 'chatId' | 'userId'>>;
-  adminRemoveEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationAdminRemoveEventArgs, 'eventId'>>;
-  adminRemoveGroup?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<MutationAdminRemoveGroupArgs, 'groupId'>>;
+  acceptAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationAcceptAdminArgs, 'input'>>;
+  acceptMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationAcceptMembershipRequestArgs, 'input'>>;
+  addLanguageTranslation?: Resolver<ResolversTypes['Language'], ParentType, ContextType, RequireFields<MutationAddLanguageTranslationArgs, 'input'>>;
+  addOrganizationImage?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationAddOrganizationImageArgs, 'input'>>;
+  addUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddUserImageArgs, 'input'>>;
+  addUserToGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationAddUserToGroupChatArgs, 'input'>>;
+  adminRemoveEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationAdminRemoveEventArgs, 'input'>>;
+  adminRemoveGroup?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<MutationAdminRemoveGroupArgs, 'input'>>;
   assignUserTag?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAssignUserTagArgs, 'input'>>;
-  blockPluginCreationBySuperadmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockPluginCreationBySuperadminArgs, 'blockUser' | 'userId'>>;
-  blockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockUserArgs, 'organizationId' | 'userId'>>;
-  cancelMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationCancelMembershipRequestArgs, 'membershipRequestId'>>;
-  createAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
-  createComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'data' | 'postId'>>;
-  createDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, Partial<MutationCreateDirectChatArgs>>;
-  createDonation?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<MutationCreateDonationArgs, 'amount' | 'nameOfOrg' | 'nameOfUser' | 'orgId' | 'payPalId' | 'userId'>>;
-  createEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, Partial<MutationCreateEventArgs>>;
-  createGroup?: Resolver<ResolversTypes['Group'], ParentType, ContextType, RequireFields<MutationCreateGroupArgs, 'data'>>;
-  createGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, Partial<MutationCreateGroupChatArgs>>;
-  createMessageChat?: Resolver<ResolversTypes['MessageChat'], ParentType, ContextType, RequireFields<MutationCreateMessageChatArgs, 'data'>>;
-  createOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, Partial<MutationCreateOrganizationArgs>>;
-  createPlugin?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationCreatePluginArgs, 'pluginCreatedBy' | 'pluginDesc' | 'pluginInstallStatus' | 'pluginName'>>;
-  createPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'data'>>;
-  createTask?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationCreateTaskArgs, 'eventId'>>;
+  blockPluginCreationBySuperadmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockPluginCreationBySuperadminArgs, 'input'>>;
+  blockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockUserArgs, 'input'>>;
+  cancelMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationCancelMembershipRequestArgs, 'input'>>;
+  createAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'input'>>;
+  createComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'input'>>;
+  createDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationCreateDirectChatArgs, 'input'>>;
+  createDonation?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<MutationCreateDonationArgs, 'input'>>;
+  createEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationCreateEventArgs, 'input'>>;
+  createGroup?: Resolver<ResolversTypes['Group'], ParentType, ContextType, RequireFields<MutationCreateGroupArgs, 'input'>>;
+  createGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationCreateGroupChatArgs, 'input'>>;
+  createMessageChat?: Resolver<ResolversTypes['MessageChat'], ParentType, ContextType, RequireFields<MutationCreateMessageChatArgs, 'input'>>;
+  createOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationCreateOrganizationArgs, 'input'>>;
+  createPlugin?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationCreatePluginArgs, 'input'>>;
+  createPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'input'>>;
+  createTask?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationCreateTaskArgs, 'input'>>;
   createUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationCreateUserTagArgs, 'input'>>;
-  deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
-  forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;
-  joinPublicOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationJoinPublicOrganizationArgs, 'organizationId'>>;
-  leaveOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationLeaveOrganizationArgs, 'organizationId'>>;
-  likeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationLikeCommentArgs, 'id'>>;
-  likePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationLikePostArgs, 'id'>>;
-  login?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'data'>>;
+  deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'input'>>;
+  forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'input'>>;
+  joinPublicOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationJoinPublicOrganizationArgs, 'input'>>;
+  leaveOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationLeaveOrganizationArgs, 'input'>>;
+  likeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationLikeCommentArgs, 'input'>>;
+  likePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationLikePostArgs, 'input'>>;
+  login?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'input'>>;
   logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  otp?: Resolver<ResolversTypes['OtpData'], ParentType, ContextType, RequireFields<MutationOtpArgs, 'data'>>;
-  recaptcha?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRecaptchaArgs, 'data'>>;
-  refreshToken?: Resolver<ResolversTypes['ExtendSession'], ParentType, ContextType, RequireFields<MutationRefreshTokenArgs, 'refreshToken'>>;
-  registerForEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRegisterForEventArgs, 'id'>>;
-  rejectAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRejectAdminArgs, 'id'>>;
-  rejectMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationRejectMembershipRequestArgs, 'membershipRequestId'>>;
-  removeAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveAdminArgs, 'data'>>;
-  removeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationRemoveCommentArgs, 'id'>>;
-  removeDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationRemoveDirectChatArgs, 'chatId' | 'organizationId'>>;
-  removeEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRemoveEventArgs, 'id'>>;
-  removeGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationRemoveGroupChatArgs, 'chatId'>>;
-  removeMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationRemoveMemberArgs, 'data'>>;
-  removeOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationArgs, 'id'>>;
-  removeOrganizationImage?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationImageArgs, 'organizationId'>>;
-  removePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationRemovePostArgs, 'id'>>;
-  removeTask?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<MutationRemoveTaskArgs, 'id'>>;
-  removeUserFromGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationRemoveUserFromGroupChatArgs, 'chatId' | 'userId'>>;
+  otp?: Resolver<ResolversTypes['OtpData'], ParentType, ContextType, RequireFields<MutationOtpArgs, 'input'>>;
+  recaptcha?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRecaptchaArgs, 'input'>>;
+  refreshToken?: Resolver<ResolversTypes['ExtendSession'], ParentType, ContextType, RequireFields<MutationRefreshTokenArgs, 'input'>>;
+  registerForEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRegisterForEventArgs, 'input'>>;
+  rejectAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRejectAdminArgs, 'input'>>;
+  rejectMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationRejectMembershipRequestArgs, 'input'>>;
+  removeAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveAdminArgs, 'input'>>;
+  removeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationRemoveCommentArgs, 'input'>>;
+  removeDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationRemoveDirectChatArgs, 'input'>>;
+  removeEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRemoveEventArgs, 'input'>>;
+  removeGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationRemoveGroupChatArgs, 'input'>>;
+  removeMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationRemoveMemberArgs, 'input'>>;
+  removeOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationArgs, 'input'>>;
+  removeOrganizationImage?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationImageArgs, 'input'>>;
+  removePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationRemovePostArgs, 'input'>>;
+  removeTask?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<MutationRemoveTaskArgs, 'input'>>;
+  removeUserFromGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationRemoveUserFromGroupChatArgs, 'input'>>;
   removeUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  removeUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationRemoveUserTagArgs, 'id'>>;
-  revokeRefreshTokenForUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRevokeRefreshTokenForUserArgs, 'userId'>>;
-  saveFcmToken?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, Partial<MutationSaveFcmTokenArgs>>;
-  sendMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationSendMembershipRequestArgs, 'organizationId'>>;
-  sendMessageToDirectChat?: Resolver<ResolversTypes['DirectChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToDirectChatArgs, 'chatId' | 'messageContent'>>;
-  sendMessageToGroupChat?: Resolver<ResolversTypes['GroupChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToGroupChatArgs, 'chatId' | 'messageContent'>>;
-  signUp?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'data'>>;
-  togglePostPin?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationTogglePostPinArgs, 'id'>>;
+  removeUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationRemoveUserTagArgs, 'input'>>;
+  revokeRefreshTokenForUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRevokeRefreshTokenForUserArgs, 'input'>>;
+  saveFcmToken?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationSaveFcmTokenArgs, 'input'>>;
+  sendMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationSendMembershipRequestArgs, 'input'>>;
+  sendMessageToDirectChat?: Resolver<ResolversTypes['DirectChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToDirectChatArgs, 'input'>>;
+  sendMessageToGroupChat?: Resolver<ResolversTypes['GroupChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToGroupChatArgs, 'input'>>;
+  signUp?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'input'>>;
+  togglePostPin?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationTogglePostPinArgs, 'input'>>;
   unassignUserTag?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUnassignUserTagArgs, 'input'>>;
-  unblockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUnblockUserArgs, 'organizationId' | 'userId'>>;
-  unlikeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationUnlikeCommentArgs, 'id'>>;
-  unlikePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUnlikePostArgs, 'id'>>;
-  unregisterForEventByUser?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUnregisterForEventByUserArgs, 'id'>>;
-  updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'id'>>;
-  updateLanguage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateLanguageArgs, 'languageCode'>>;
-  updateOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateOrganizationArgs, 'data'>>;
-  updatePluginInstalledOrgs?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginInstalledOrgsArgs, 'id' | 'orgId'>>;
-  updatePluginStatus?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginStatusArgs, 'id' | 'status'>>;
-  updatePost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationUpdatePostArgs, 'data'>>;
-  updateTask?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<MutationUpdateTaskArgs, 'id'>>;
-  updateUserPassword?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationUpdateUserPasswordArgs>>;
-  updateUserProfile?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;
+  unblockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUnblockUserArgs, 'input'>>;
+  unlikeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationUnlikeCommentArgs, 'input'>>;
+  unlikePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUnlikePostArgs, 'input'>>;
+  unregisterForEventByUser?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUnregisterForEventByUserArgs, 'input'>>;
+  updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'input'>>;
+  updateLanguage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateLanguageArgs, 'input'>>;
+  updateOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateOrganizationArgs, 'input'>>;
+  updatePluginInstalledOrgs?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginInstalledOrgsArgs, 'input'>>;
+  updatePluginStatus?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginStatusArgs, 'input'>>;
+  updatePost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationUpdatePostArgs, 'input'>>;
+  updateTask?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<MutationUpdateTaskArgs, 'input'>>;
+  updateUserPassword?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserPasswordArgs, 'input'>>;
+  updateUserProfile?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserProfileArgs, 'input'>>;
   updateUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationUpdateUserTagArgs, 'input'>>;
-  updateUserType?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateUserTypeArgs, 'data'>>;
+  updateUserType?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateUserTypeArgs, 'input'>>;
 };
 
 export type OrganizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Organization'] = ResolversParentTypes['Organization']> = {

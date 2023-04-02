@@ -20,7 +20,7 @@ import {
 export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"] =
   async (_parent, args, context) => {
     const groupChat = await GroupChat.findOne({
-      _id: args.chatId,
+      _id: args.input.chatId,
     }).lean();
 
     if (!groupChat) {
@@ -63,13 +63,13 @@ export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"]
       groupChatMessageBelongsTo: groupChat._id,
       sender: context.userId,
       createdAt: new Date(),
-      messageContent: args.messageContent,
+      messageContent: args.input.messageContent,
     });
 
     // add createdGroupChatMessage to groupChat
     await GroupChat.updateOne(
       {
-        _id: args.chatId,
+        _id: args.input.chatId,
       },
       {
         $push: {

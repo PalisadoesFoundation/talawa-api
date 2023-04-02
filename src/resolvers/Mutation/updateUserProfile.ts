@@ -32,9 +32,9 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
     );
   }
 
-  if (args.data!.email !== undefined) {
+  if (args.input.data!.email !== undefined) {
     const userWithEmailExists = await User.find({
-      email: args.data?.email?.toLowerCase(),
+      email: args.input.data?.email?.toLowerCase(),
     });
     if (
       userWithEmailExists.length > 0 &&
@@ -50,9 +50,9 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
 
   // Upload file
   let uploadImageFileName;
-  if (args.file) {
+  if (args.input.file) {
     uploadImageFileName = await uploadEncodedImage(
-      args.file,
+      args.input.file,
       currentUser?.image
     );
   }
@@ -64,14 +64,14 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
     },
     {
       $set: {
-        email: args.data?.email ? args.data.email : currentUser?.email,
-        firstName: args.data?.firstName
-          ? args.data.firstName
+        email: args.input.data?.email ? args.input.data.email : currentUser?.email,
+        firstName: args.input.data?.firstName
+          ? args.input.data.firstName
           : currentUser?.firstName,
-        lastName: args.data?.lastName
-          ? args.data.lastName
+        lastName: args.input.data?.lastName
+          ? args.input.data.lastName
           : currentUser?.lastName,
-        image: args.file ? uploadImageFileName : currentUser.image,
+        image: args.input.file ? uploadImageFileName : currentUser.image,
       },
     },
     {

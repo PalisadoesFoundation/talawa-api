@@ -19,7 +19,7 @@ import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEn
 export const updateOrganization: MutationResolvers["updateOrganization"] =
   async (_parent, args, context) => {
     const organization = await Organization.findOne({
-      _id: args.data.id,
+      _id: args.input.data.id,
     }).lean();
 
     // Checks if organization with _id === args.id exists.
@@ -35,9 +35,9 @@ export const updateOrganization: MutationResolvers["updateOrganization"] =
     await adminCheck(context.userId, organization);
 
     let uploadImageFileName;
-    if (args.file) {
+    if (args.input.file) {
       uploadImageFileName = await uploadEncodedImage(
-        args.file,
+        args.input.file,
         organization?.image
       );
     }
@@ -48,7 +48,7 @@ export const updateOrganization: MutationResolvers["updateOrganization"] =
       },
       {
         $set: {
-          ...args.data,
+          ...args.input.data,
           image: uploadImageFileName || organization.image,
         },
       },

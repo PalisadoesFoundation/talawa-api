@@ -36,7 +36,7 @@ export const removeComment: MutationResolvers["removeComment"] = async (
   }
 
   const comment = await Comment.findOne({
-    _id: args.id,
+    _id: args.input.commentId,
   }).lean();
 
   // Checks whether comment exists.

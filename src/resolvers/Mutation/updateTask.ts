@@ -34,7 +34,7 @@ export const updateTask: MutationResolvers["updateTask"] = async (
   }
 
   const task = await Task.findOne({
-    _id: args.id,
+    _id: args.input.id,
   }).lean();
 
   if (!task) {
@@ -59,7 +59,7 @@ export const updateTask: MutationResolvers["updateTask"] = async (
       _id: task._id,
     },
     {
-      ...args,
+      ...args.input,
     },
     {
       new: true,

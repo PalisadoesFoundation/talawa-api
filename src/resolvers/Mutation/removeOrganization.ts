@@ -39,7 +39,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     }
 
     const organization = await Organization.findOne({
-      _id: args.id,
+      _id: args.input.organizationId,
     }).lean();
 
     // Checks whether organization exists.

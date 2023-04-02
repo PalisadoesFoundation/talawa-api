@@ -39,10 +39,10 @@ export const createPost: MutationResolvers["createPost"] = async (
   }
 
   const organizationExists = await Organization.exists({
-    _id: args.data.organizationId,
+    _id: args.input.data.organizationId,
   });
 
-  // Checks whether organization with _id == args.data.organizationId exists.
+  // Checks whether organization with _id == args.input.data.organizationId exists.
   if (organizationExists === false) {
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
@@ -53,13 +53,13 @@ export const createPost: MutationResolvers["createPost"] = async (
 
   let uploadImageFileName;
 
-  if (args.file) {
-    uploadImageFileName = await uploadEncodedImage(args.file!, null);
+  if (args.input.file) {
+    uploadImageFileName = await uploadEncodedImage(args.input.file!, null);
   }
 
   // Checks if the recieved arguments are valid according to standard input norms
-  const validationResult_Title = isValidString(args.data!.title!, 256);
-  const validationResult_Text = isValidString(args.data!.text, 500);
+  const validationResult_Title = isValidString(args.input.data!.title!, 256);
+  const validationResult_Text = isValidString(args.input.data!.text, 500);
   if (!validationResult_Title.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
@@ -77,10 +77,10 @@ export const createPost: MutationResolvers["createPost"] = async (
     );
   }
 
-  if (args.data.pinned) {
+  if (args.input.data.pinned) {
     // Check if the user has privileges to pin the post
     const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-      (organizationId) => organizationId.toString() === args.data.organizationId
+      (organizationId) => organizationId.toString() === args.input.data.organizationId
     );
 
     if (
@@ -97,17 +97,17 @@ export const createPost: MutationResolvers["createPost"] = async (
 
   // Creates new post
   const createdPost = await Post.create({
-    ...args.data,
-    pinned: args.data.pinned ? true : false,
+    ...args.input.data,
+    pinned: args.input.data.pinned ? true : false,
     creator: context.userId,
-    organization: args.data.organizationId,
-    imageUrl: args.file ? uploadImageFileName : null,
+    organization: args.input.data.organizationId,
+    imageUrl: args.input.file ? uploadImageFileName : null,
   });
 
-  if (args.data.pinned) {
+  if (args.input.data.pinned) {
     // Add the post to pinnedPosts of the organization
     await Organization.updateOne(
-      { _id: args.data.organizationId },
+      { _id: args.input.data.organizationId },
       {
         $push: {
           pinnedPosts: createdPost._id,

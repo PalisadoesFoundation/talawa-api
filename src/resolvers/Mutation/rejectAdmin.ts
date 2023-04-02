@@ -36,7 +36,7 @@ export const rejectAdmin: MutationResolvers["rejectAdmin"] = async (
   superAdminCheck(currentUser!);
 
   const userExists = await User.exists({
-    _id: args.id,
+    _id: args.input.userId,
   });
 
   // Checks whether user with _id === args.id exists.
@@ -51,7 +51,7 @@ export const rejectAdmin: MutationResolvers["rejectAdmin"] = async (
   // Rejects the user as admin.
   await User.updateOne(
     {
-      _id: args.id,
+      _id: args.input.userId,
     },
     {
       $set: {

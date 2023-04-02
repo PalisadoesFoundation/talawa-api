@@ -9,7 +9,7 @@ import {
 /**
  * This function enables to remove an event.
  * @param _parent - parent of current request
- * @param args - payload provided with the request
+ * @param args- payload provided with the request
  * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the user exists
@@ -37,7 +37,7 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
   }
 
   const event = await Event.findOne({
-    _id: args.id,
+    _id: args.input.id,
   }).lean();
 
   // Checks whether event exists.

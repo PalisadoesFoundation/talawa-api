@@ -36,7 +36,7 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
   }
 
   const event = await Event.findOne({
-    _id: args.id,
+    _id: args.input.eventId,
   }).lean();
 
   // Checks whether event exists.

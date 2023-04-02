@@ -35,7 +35,7 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
     }
 
     const organization = await Organization.findOne({
-      _id: args.organizationId,
+      _id: args.input.organizationId,
     }).lean();
 
     // Checks whether organization exists.
@@ -52,7 +52,7 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
 
     // Upload Image
     const uploadImageFileName = await uploadEncodedImage(
-      args.file!,
+      args.input.file!,
       organization.image
     );
     // Updates the organization with new image and returns the updated organization.

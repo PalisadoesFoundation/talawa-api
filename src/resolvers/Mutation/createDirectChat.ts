@@ -34,10 +34,10 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
   }
 
   const organizationExists = await Organization.exists({
-    _id: args.data?.organizationId,
+    _id: args.input?.organizationId,
   });
 
-  // Checks whether organization with _id === args.data.organizationId exists.
+  // Checks whether organization with _id === args.input.organizationId exists.
   if (organizationExists === false) {
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
@@ -49,8 +49,8 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
   // Variable to store list of users to be members of directChat.
   const usersInDirectChat = [];
 
-  // Loops over each item in args.data.userIds list.
-  for await (const userId of args.data!.userIds) {
+  // Loops over each item in args.input.userIds list.
+  for await (const userId of args.input!.userIds) {
     const userExists = await User.exists({
       _id: userId,
     });
@@ -71,7 +71,7 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
   const createdDirectChat = await DirectChat.create({
     creator: context.userId,
     users: usersInDirectChat,
-    organization: args.data?.organizationId,
+    organization: args.input?.organizationId,
   });
 
   // Returns createdDirectChat.

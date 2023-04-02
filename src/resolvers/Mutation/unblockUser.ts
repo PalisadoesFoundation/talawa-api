@@ -24,7 +24,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
   context
 ) => {
   const organization = await Organization.findOne({
-    _id: args.organizationId,
+    _id: args.input.organizationId,
   }).lean();
 
   // checks if there exists an organization with _id === args.organizationId
@@ -38,7 +38,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
 
   // ensure user exists
   const user = await User.findOne({
-    _id: args.userId,
+    _id: args.input.userId,
   }).lean();
 
   if (!user) {

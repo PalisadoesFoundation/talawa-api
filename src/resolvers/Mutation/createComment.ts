@@ -31,9 +31,9 @@ export const createComment: MutationResolvers["createComment"] = async (
 
   // Creates new comment.
   const createdComment = await Comment.create({
-    ...args.data,
+    ...args.input.data,
     creator: context.userId,
-    post: args.postId,
+    post: args.input.postId,
   });
 
   /*
@@ -42,7 +42,7 @@ export const createComment: MutationResolvers["createComment"] = async (
   */
   await Post.updateOne(
     {
-      _id: args.postId,
+      _id: args.input.postId,
     },
     {
       $push: {

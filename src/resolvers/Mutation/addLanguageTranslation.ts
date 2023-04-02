@@ -14,14 +14,14 @@ import { TRANSLATION_ALREADY_PRESENT_ERROR } from "../../constants";
 export const addLanguageTranslation: MutationResolvers["addLanguageTranslation"] =
   async (_parent, args) => {
     const language = await Language.findOne({
-      en: args.data.en_value,
+      en: args.input.en_value,
     }).lean();
 
     // Checks if language exists.
     if (language) {
       language.translation.forEach((element) => {
         // Checks whether the translation already exists.
-        if (element.lang_code === args.data.translation_lang_code) {
+        if (element.lang_code === args.input.translation_lang_code) {
           throw new errors.ConflictError(
             requestContext.translate(TRANSLATION_ALREADY_PRESENT_ERROR.MESSAGE),
             TRANSLATION_ALREADY_PRESENT_ERROR.CODE,
@@ -33,13 +33,13 @@ export const addLanguageTranslation: MutationResolvers["addLanguageTranslation"]
       // Updates language with new translation and returns the updated language.
       return await Language.findOneAndUpdate(
         {
-          en: args.data.en_value,
+          en: args.input.en_value,
         },
         {
           $push: {
             translation: {
-              lang_code: args.data.translation_lang_code,
-              value: args.data.translation_value,
+              lang_code: args.input.translation_lang_code,
+              value: args.input.translation_value,
             },
           },
         },
@@ -51,11 +51,11 @@ export const addLanguageTranslation: MutationResolvers["addLanguageTranslation"]
 
     // Creates new language.
     const createdLanguage = await Language.create({
-      en: args.data.en_value,
+      en: args.input.en_value,
       translation: [
         {
-          lang_code: args.data.translation_lang_code,
-          value: args.data.translation_value,
+          lang_code: args.input.translation_lang_code,
+          value: args.input.translation_value,
         },
       ],
     });

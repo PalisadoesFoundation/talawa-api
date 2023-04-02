@@ -10,7 +10,7 @@ import { Donation } from "../../models";
 export const deleteDonationById: MutationResolvers["deleteDonationById"] =
   async (_parent, args) => {
     const deletedDonation = await Donation.deleteOne({
-      _id: args.id,
+      _id: args.input.donationId,
     });
 
     return { success: deletedDonation.deletedCount ? true : false };
