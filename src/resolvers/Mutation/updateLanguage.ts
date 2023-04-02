@@ -35,7 +35,7 @@ export const updateLanguage: MutationResolvers["updateLanguage"] = async (
     },
     {
       $set: {
-        appLanguageCode: args.languageCode,
+        appLanguageCode: args.input.languageCode,
       },
     },
     {
