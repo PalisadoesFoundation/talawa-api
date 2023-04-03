@@ -27,6 +27,7 @@ import { resolvers } from "./resolvers";
 import { Interface_JwtTokenPayload } from "./utilities";
 import { ACCESS_TOKEN_SECRET, LAST_RESORT_SUPERADMIN_EMAIL } from "./constants";
 import { User } from "./models";
+import { express as voyagerMiddleware } from "graphql-voyager/middleware";
 
 const app = express();
 
@@ -84,6 +85,9 @@ app.use(
 
 app.use("/images", express.static(path.join(__dirname, "./../images")));
 app.use(requestContext.middleware());
+
+if (process.env.NODE_ENV === "development")
+  app.use("/voyager", voyagerMiddleware({ endpointUrl: "/graphql" }));
 
 app.get("/", (req, res) =>
   res.json({
@@ -211,6 +215,13 @@ const serverStart = async () => {
           apolloServer.subscriptionsPath
         }`
       );
+      if (process.env.NODE_ENV === "development")
+        logger.info(
+          "\x1b[1m\x1b[32m%s\x1b[0m",
+          `🚀 Visualise the schema at http://localhost:${
+            process.env.PORT || 4000
+          }/voyager`
+        );
     });
   } catch (error) {
     logger.error("Error while connecting to database", error);
