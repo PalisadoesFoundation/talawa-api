@@ -1,8 +1,7 @@
 name: Expose Server with Docker Compose for Updating Documentation
-
 on:
   push:
-    branches: [ develop ]
+    branches: [ auto ]
   workflow_dispatch:
 
 jobs:
