@@ -267,6 +267,13 @@ export type ForgotPasswordData = {
   userOtp: Scalars['String'];
 };
 
+export type OtpCheckData = {
+  newPassword: Scalars['String'];
+  otpToken: Scalars['String'];
+  userOtp: Scalars['String'];
+};
+
+
 export type Group = {
   __typename?: 'Group';
   _id?: Maybe<Scalars['ID']>;
@@ -400,6 +407,7 @@ export type Mutation = {
   createTask: Task;
   createUserTag?: Maybe<UserTag>;
   deleteDonationById: DeletePayload;
+  emailVerification: EmailOtpData;
   forgotPassword: Scalars['Boolean'];
   joinPublicOrganization: User;
   leaveOrganization: User;
@@ -408,6 +416,7 @@ export type Mutation = {
   login: AuthData;
   logout: Scalars['Boolean'];
   otp: OtpData;
+  otpCheck: Scalars['Boolean'];
   recaptcha: Scalars['Boolean'];
   refreshToken: ExtendSession;
   registerForEvent: Event;
@@ -599,6 +608,11 @@ export type MutationDeleteDonationByIdArgs = {
 };
 
 
+export type MutationEmailVerificationArgs = {
+  data: EmailOtpInput;
+};
+
+
 export type MutationForgotPasswordArgs = {
   data: ForgotPasswordData;
 };
@@ -631,6 +645,11 @@ export type MutationLoginArgs = {
 
 export type MutationOtpArgs = {
   data: OtpInput;
+};
+
+
+export type MutationOtpCheckArgs = {
+  data: OtpCheckData;
 };
 
 
@@ -851,6 +870,11 @@ export type OtpInput = {
   email: Scalars['EmailAddress'];
 };
 
+export type EmailOtpInput = {
+  email: Scalars['EmailAddress'];
+};
+
+
 export type Organization = {
   __typename?: 'Organization';
   _id: Scalars['ID'];
@@ -948,6 +972,11 @@ export type OrganizationWhereInput = {
 
 export type OtpData = {
   __typename?: 'OtpData';
+  otpToken: Scalars['String'];
+};
+
+export type EmailOtpData = {
+  __typename?: 'EmailOtpData';
   otpToken: Scalars['String'];
 };
 
@@ -1683,6 +1712,7 @@ export type ResolversTypes = {
   ExtendSession: ResolverTypeWrapper<ExtendSession>;
   Float: ResolverTypeWrapper<Scalars['Float']>;
   ForgotPasswordData: ForgotPasswordData;
+  OtpCheckData : OtpCheckData;
   Group: ResolverTypeWrapper<Interface_GroupModel>;
   GroupChat: ResolverTypeWrapper<Interface_GroupChatModel>;
   GroupChatMessage: ResolverTypeWrapper<Interface_GroupChatMessageModel>;
@@ -1702,12 +1732,14 @@ export type ResolversTypes = {
   MessageChatInput: MessageChatInput;
   Mutation: ResolverTypeWrapper<{}>;
   OTPInput: OtpInput;
+  EmailOTPInput :EmailOtpInput;
   Organization: ResolverTypeWrapper<Interface_OrganizationModel>;
   OrganizationInfoNode: ResolverTypeWrapper<Omit<OrganizationInfoNode, 'creator'> & { creator: ResolversTypes['User'] }>;
   OrganizationInput: OrganizationInput;
   OrganizationOrderByInput: OrganizationOrderByInput;
   OrganizationWhereInput: OrganizationWhereInput;
   OtpData: ResolverTypeWrapper<OtpData>;
+  EmailOtpData : ResolverTypeWrapper<EmailOtpData>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
   PhoneNumber: ResolverTypeWrapper<Scalars['PhoneNumber']>;
   Plugin: ResolverTypeWrapper<Interface_PluginModel>;
@@ -1786,6 +1818,7 @@ export type ResolversParentTypes = {
   ExtendSession: ExtendSession;
   Float: Scalars['Float'];
   ForgotPasswordData: ForgotPasswordData;
+  OtpCheckData: OtpCheckData;
   Group: Interface_GroupModel;
   GroupChat: Interface_GroupChatModel;
   GroupChatMessage: Interface_GroupChatMessageModel;
@@ -1805,11 +1838,13 @@ export type ResolversParentTypes = {
   MessageChatInput: MessageChatInput;
   Mutation: {};
   OTPInput: OtpInput;
+  EmailOTPInput : EmailOtpInput;
   Organization: Interface_OrganizationModel;
   OrganizationInfoNode: Omit<OrganizationInfoNode, 'creator'> & { creator: ResolversParentTypes['User'] };
   OrganizationInput: OrganizationInput;
   OrganizationWhereInput: OrganizationWhereInput;
   OtpData: OtpData;
+  EmailOtpData:EmailOtpData;
   PageInfo: PageInfo;
   PhoneNumber: Scalars['PhoneNumber'];
   Plugin: Interface_PluginModel;
@@ -2114,6 +2149,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createTask?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationCreateTaskArgs, 'eventId'>>;
   createUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationCreateUserTagArgs, 'input'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
+  emailVerification?: Resolver<ResolversTypes['EmailOtpData'], ParentType, ContextType, RequireFields<MutationEmailVerificationArgs, 'data'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;
   joinPublicOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationJoinPublicOrganizationArgs, 'organizationId'>>;
   leaveOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationLeaveOrganizationArgs, 'organizationId'>>;
@@ -2122,6 +2158,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   login?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'data'>>;
   logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   otp?: Resolver<ResolversTypes['OtpData'], ParentType, ContextType, RequireFields<MutationOtpArgs, 'data'>>;
+  otpCheck?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationOtpCheckArgs, 'data'>>;
   recaptcha?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRecaptchaArgs, 'data'>>;
   refreshToken?: Resolver<ResolversTypes['ExtendSession'], ParentType, ContextType, RequireFields<MutationRefreshTokenArgs, 'refreshToken'>>;
   registerForEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRegisterForEventArgs, 'id'>>;
@@ -2198,6 +2235,11 @@ export type OrganizationInfoNodeResolvers<ContextType = any, ParentType extends 
 };
 
 export type OtpDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['OtpData'] = ResolversParentTypes['OtpData']> = {
+  otpToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type EmailOtpDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['EmailOtpData'] = ResolversParentTypes['EmailOtpData']> = {
   otpToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2448,6 +2490,7 @@ export type Resolvers<ContextType = any> = {
   Organization?: OrganizationResolvers<ContextType>;
   OrganizationInfoNode?: OrganizationInfoNodeResolvers<ContextType>;
   OtpData?: OtpDataResolvers<ContextType>;
+  EmailOtpData?: EmailOtpDataResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
   PhoneNumber?: GraphQLScalarType;
   Plugin?: PluginResolvers<ContextType>;
