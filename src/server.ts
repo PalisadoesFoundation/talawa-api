@@ -86,7 +86,7 @@ app.use(
 app.use("/images", express.static(path.join(__dirname, "./../images")));
 app.use(requestContext.middleware());
 
-if (process.env.NODE_ENV === "development")
+if (process.env.NODE_ENV !== "production")
   app.use("/voyager", voyagerMiddleware({ endpointUrl: "/graphql" }));
 
 app.get("/", (req, res) =>
@@ -215,7 +215,7 @@ const serverStart = async () => {
           apolloServer.subscriptionsPath
         }`
       );
-      if (process.env.NODE_ENV === "development")
+      if (process.env.NODE_ENV !== "production")
         logger.info(
           "\x1b[1m\x1b[32m%s\x1b[0m",
           `🚀 Visualise the schema at http://localhost:${
