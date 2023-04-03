@@ -216,7 +216,7 @@ const serverStart = async () => {
       );
       logger.info(
         "\x1b[1m\x1b[32m%s\x1b[0m",
-        `🚀 Visualise the schema at ws://localhost:${
+        `🚀 Visualise the schema at http://localhost:${
           process.env.PORT || 4000
         }/voyager`
       );

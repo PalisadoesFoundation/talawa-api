@@ -79,11 +79,3 @@ You can use `#` symbol to comment out stuff in the graphQL schema as shown for t
 # Schema represents a contract
 
 A graphQL schema represents a contract between the server and the clients. Be very careful when editing the schema as you can unknowingly edit stuff which breaks functionality for all clients relying on the schema. Read the [graphQL spec](https://spec.graphql.org/October2021/) for more information.
-
-# GraphQL Voyager
-
-We use the open source project [GraphQL Voyager](https://github.com/IvanGoncharov/graphql-voyager) to help you interact and explore the complete schema in an interactive manner!
-
-Go to `http://localhost:4000/voyager` after running the development server to explore the same!
-
-![Voyager Demo for User Model](../../image/GraphQL_Voyager.png)
