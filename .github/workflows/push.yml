@@ -25,8 +25,8 @@ jobs:
   # code coverage (post PR merge) is reported
   ##############################################################################
 
-  Test-Application:
-    name: Testing Application
+  Push-Workflow:
+    name: Testing Application and Updating Documentation
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -62,10 +62,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Start the development server in detach mode
+        run: |
+          npm run dev &
+          echo "Development server started..."
+
       - name: Sleep for 10s
         uses: juliangruber/sleep-action@v1
         with:
           time: 10s
+
+      - name: Generate the documentation
+        run: npm run schema
+
+      - name: Commit the changes to Schema Documentation (if any)
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: "Update schema documentation"
 
       - name: Run the tests
         run: npm run test
