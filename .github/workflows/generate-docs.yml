@@ -1,0 +1,35 @@
+name: Expose Server with Docker Compose for Updating Documentation
+
+on:
+  push:
+    branches: [ develop ]
+  workflow_dispatch:
+
+jobs:
+  expose:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install Docker Compose
+      run: |
+        sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+
+    - name: Start server
+      uses: docker/compose-action@v2
+      with:
+        compose-file: docker-compose.yml
+        detached: true
+
+    - name: Wait for server to start
+      run: sleep 10
+
+    - name: Generate Schema Documentation
+      run: npm run schema
+
+    - name: Commit the changes to Schema Documentation (if any)
+      uses: EndBug/add-and-commit@v9
+      with:
+        message: "Update Schema Documentation"
