@@ -9,8 +9,9 @@ export const mutations = gql`
       @auth
       @role(requires: SUPERADMIN)
 
-    acceptMembershipRequest(input: AcceptMembershipRequestInput!): MembershipRequest!
-      @auth
+    acceptMembershipRequest(
+      input: AcceptMembershipRequestInput!
+    ): MembershipRequest! @auth
 
     addLanguageTranslation(input: AddLanguageTranslationInput!): Language! @auth
 
@@ -32,8 +33,9 @@ export const mutations = gql`
 
     blockUser(input: BlockUserInput!): User! @auth
 
-    cancelMembershipRequest(input: CancelMembershipRequestInput!): MembershipRequest!
-      @auth
+    cancelMembershipRequest(
+      input: CancelMembershipRequestInput!
+    ): MembershipRequest! @auth
 
     createAdmin(input: CreateAdminInput!): User!
       @auth
@@ -93,8 +95,9 @@ export const mutations = gql`
       @auth
       @role(requires: SUPERADMIN)
 
-    rejectMembershipRequest(input: RejectMembershipRequestInput!): MembershipRequest!
-      @auth
+    rejectMembershipRequest(
+      input: RejectMembershipRequestInput!
+    ): MembershipRequest! @auth
 
     removeAdmin(input: RemoveAdminInput!): User!
       @auth
@@ -114,7 +117,9 @@ export const mutations = gql`
       @auth
       @role(requires: SUPERADMIN)
 
-    removeOrganizationImage(input: RemoveOrganizationImageInput!): Organization! @auth
+    removeOrganizationImage(
+      input: RemoveOrganizationImageInput!
+    ): Organization! @auth
 
     removePost(input: RemovePostInput!): Post @auth
 
@@ -131,7 +136,9 @@ export const mutations = gql`
 
     saveFcmToken(input: SaveFcmTokenInput!): Boolean! @auth
 
-    sendMembershipRequest(input: SendMembershipRequestInput!): MembershipRequest! @auth
+    sendMembershipRequest(
+      input: SendMembershipRequestInput!
+    ): MembershipRequest! @auth
 
     sendMessageToDirectChat(input: SendMessageToChatInput!): DirectChatMessage!
       @auth

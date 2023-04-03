@@ -57,7 +57,6 @@ export const inputs = gql`
     userId: ID!
   }
 
-
   input CreateCommentInput {
     postId: ID!
     data: CommentInput!
@@ -80,7 +79,6 @@ export const inputs = gql`
     amount: Float!
     nameOfOrg: String!
   }
-
 
   input CreateEventInput {
     title: String!
@@ -105,7 +103,6 @@ export const inputs = gql`
     description: String
     organizationId: ID!
   }
-
 
   input CreateGroupChatInput {
     userIds: [ID!]!
@@ -388,8 +385,7 @@ export const inputs = gql`
 
   input RejectMembershipRequestInput {
     membershipRequestId: ID!
-  }  
-
+  }
 
   input RemoveAdminInput {
     organizationId: ID!
@@ -451,7 +447,7 @@ export const inputs = gql`
   }
 
   input SendMembershipRequestInput {
-    organizationId:ID!
+    organizationId: ID!
   }
 
   input SendMessageToChatInput {
