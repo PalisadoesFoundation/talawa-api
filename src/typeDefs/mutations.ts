@@ -9,10 +9,10 @@ export const mutations = gql`
       @auth
       @role(requires: SUPERADMIN)
 
-    acceptMembershipRequest(input: MembershipRequestInput!): MembershipRequest!
+    acceptMembershipRequest(input: AcceptMembershipRequestInput!): MembershipRequest!
       @auth
 
-    addLanguageTranslation(input: LanguageInput!): Language! @auth
+    addLanguageTranslation(input: AddLanguageTranslationInput!): Language! @auth
 
     addOrganizationImage(input: AddOrganizationImageInput!): Organization! @auth
 
@@ -32,10 +32,10 @@ export const mutations = gql`
 
     blockUser(input: BlockUserInput!): User! @auth
 
-    cancelMembershipRequest(input: MembershipRequestInput!): MembershipRequest!
+    cancelMembershipRequest(input: CancelMembershipRequestInput!): MembershipRequest!
       @auth
 
-    createAdmin(input: UserAndOrganizationInput!): User!
+    createAdmin(input: CreateAdminInput!): User!
       @auth
       @role(requires: SUPERADMIN)
 
@@ -45,13 +45,13 @@ export const mutations = gql`
 
     createDonation(input: CreateDonationInput!): Donation!
 
-    createEvent(input: EventInput!): Event! @auth
+    createEvent(input: CreateEventInput!): Event! @auth
 
-    createGroup(input: GroupInput!): Group! @auth
+    createGroup(input: CreateGroupInput!): Group! @auth
 
     createGroupChat(input: CreateGroupChatInput!): GroupChat! @auth
 
-    createMessageChat(input: MessageChatInput!): MessageChat! @auth
+    createMessageChat(input: CreateEventInput!): MessageChat! @auth
 
     createOrganization(input: CreateOrganizationInput!): Organization!
       @auth
@@ -67,11 +67,11 @@ export const mutations = gql`
 
     deleteDonationById(input: DeleteDonationByIdInput!): DeletePayload!
 
-    forgotPassword(input: ForgotPasswordData!): Boolean!
+    forgotPassword(input: ForgotPasswordInput!): Boolean!
 
-    joinPublicOrganization(input: OrganizationIdInput!): User! @auth
+    joinPublicOrganization(input: JoinPublicOrganizationInput!): User! @auth
 
-    leaveOrganization(input: OrganizationIdInput!): User! @auth
+    leaveOrganization(input: LeaveOrganizationInput!): User! @auth
 
     likeComment(input: LikeCommentInput!): Comment @auth
 
@@ -93,10 +93,10 @@ export const mutations = gql`
       @auth
       @role(requires: SUPERADMIN)
 
-    rejectMembershipRequest(input: MembershipRequestInput!): MembershipRequest!
+    rejectMembershipRequest(input: RejectMembershipRequestInput!): MembershipRequest!
       @auth
 
-    removeAdmin(input: UserAndOrganizationInput!): User!
+    removeAdmin(input: RemoveAdminInput!): User!
       @auth
       @role(requires: SUPERADMIN)
 
@@ -108,13 +108,13 @@ export const mutations = gql`
 
     removeGroupChat(input: RemoveGroupChatInput!): GroupChat! @auth
 
-    removeMember(input: UserAndOrganizationInput!): Organization! @auth
+    removeMember(input: RemoveMemberInput!): Organization! @auth
 
-    removeOrganization(input: OrganizationIdInput!): User!
+    removeOrganization(input: RemoveOrganizationInput!): User!
       @auth
       @role(requires: SUPERADMIN)
 
-    removeOrganizationImage(input: OrganizationIdInput!): Organization! @auth
+    removeOrganizationImage(input: RemoveOrganizationImageInput!): Organization! @auth
 
     removePost(input: RemovePostInput!): Post @auth
 
@@ -131,7 +131,7 @@ export const mutations = gql`
 
     saveFcmToken(input: SaveFcmTokenInput!): Boolean! @auth
 
-    sendMembershipRequest(input: OrganizationIdInput!): MembershipRequest! @auth
+    sendMembershipRequest(input: SendMembershipRequestInput!): MembershipRequest! @auth
 
     sendMessageToDirectChat(input: SendMessageToChatInput!): DirectChatMessage!
       @auth

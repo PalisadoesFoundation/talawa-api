@@ -6,6 +6,16 @@ export const inputs = gql`
     id: ID!
   }
 
+  input AcceptMembershipRequestInput {
+    membershipRequestId: ID!
+  }
+
+  input AddLanguageTranslationInput {
+    en_value: String!
+    translation_lang_code: String!
+    translation_value: String!
+  }
+
   input AddOrganizationImageInput {
     file: String!
     organizationId: String!
@@ -38,6 +48,16 @@ export const inputs = gql`
     userId: ID!
   }
 
+  input CancelMembershipRequestInput {
+    membershipRequestId: ID!
+  }
+
+  input CreateAdminInput {
+    organizationId: ID!
+    userId: ID!
+  }
+
+
   input CreateCommentInput {
     postId: ID!
     data: CommentInput!
@@ -61,10 +81,41 @@ export const inputs = gql`
     nameOfOrg: String!
   }
 
+
+  input CreateEventInput {
+    title: String!
+    description: String!
+    startDate: Date!
+    endDate: Date
+    startTime: Time
+    endTime: Time
+    allDay: Boolean!
+    recurring: Boolean!
+    recurrance: Recurrance
+    isPublic: Boolean!
+    isRegisterable: Boolean!
+    location: String
+    latitude: Latitude
+    longitude: Longitude
+    organizationId: ID!
+  }
+
+  input CreateGroupInput {
+    title: String
+    description: String
+    organizationId: ID!
+  }
+
+
   input CreateGroupChatInput {
     userIds: [ID!]!
     organizationId: ID!
     title: String!
+  }
+
+  input CreateMessageChatInput {
+    message: String!
+    receiver: ID!
   }
 
   input CreateOrganizationInput {
@@ -172,10 +223,18 @@ export const inputs = gql`
   #   eventId: String
   # }
 
-  input ForgotPasswordData {
+  input ForgotPasswordInput {
     userOtp: String!
     newPassword: String!
     otpToken: String!
+  }
+
+  input JoinPublicOrganizationInput {
+    organizationId: ID!
+  }
+
+  input LeaveOrganizationInput {
+    organizationId: ID!
   }
 
   input GroupInput {
@@ -327,6 +386,16 @@ export const inputs = gql`
     userId: ID!
   }
 
+  input RejectMembershipRequestInput {
+    membershipRequestId: ID!
+  }  
+
+
+  input RemoveAdminInput {
+    organizationId: ID!
+    userId: ID!
+  }
+
   input RemoveCommentInput {
     commentId: ID!
   }
@@ -341,6 +410,19 @@ export const inputs = gql`
 
   input RemoveGroupChatInput {
     chatId: ID!
+  }
+
+  input RemoveMemberInput {
+    organizationId: ID!
+    userId: ID!
+  }
+
+  input RemoveOrganizationInput {
+    organizationId: ID!
+  }
+
+  input RemoveOrganizationImageInput {
+    organizationId: ID!
   }
 
   input RemovePostInput {
@@ -366,6 +448,10 @@ export const inputs = gql`
 
   input SaveFcmTokenInput {
     token: String
+  }
+
+  input SendMembershipRequestInput {
+    organizationId:ID!
   }
 
   input SendMessageToChatInput {

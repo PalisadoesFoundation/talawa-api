@@ -48,6 +48,16 @@ export type AcceptAdminInput = {
   id: Scalars['ID'];
 };
 
+export type AcceptMembershipRequestInput = {
+  membershipRequestId: Scalars['ID'];
+};
+
+export type AddLanguageTranslationInput = {
+  en_value: Scalars['String'];
+  translation_lang_code: Scalars['String'];
+  translation_value: Scalars['String'];
+};
+
 export type AddOrganizationImageInput = {
   file: Scalars['String'];
   organizationId: Scalars['String'];
@@ -103,6 +113,10 @@ export type BlockUserInput = {
   userId: Scalars['ID'];
 };
 
+export type CancelMembershipRequestInput = {
+  membershipRequestId: Scalars['ID'];
+};
+
 export type Comment = {
   __typename?: 'Comment';
   _id?: Maybe<Scalars['ID']>;
@@ -126,6 +140,11 @@ export type ConnectionPageInfo = {
   startCursor?: Maybe<Scalars['String']>;
 };
 
+export type CreateAdminInput = {
+  organizationId: Scalars['ID'];
+  userId: Scalars['ID'];
+};
+
 export type CreateChatInput = {
   organizationId: Scalars['ID'];
   userIds: Array<Scalars['ID']>;
@@ -145,10 +164,39 @@ export type CreateDonationInput = {
   userId: Scalars['ID'];
 };
 
+export type CreateEventInput = {
+  allDay: Scalars['Boolean'];
+  description: Scalars['String'];
+  endDate?: InputMaybe<Scalars['Date']>;
+  endTime?: InputMaybe<Scalars['Time']>;
+  isPublic: Scalars['Boolean'];
+  isRegisterable: Scalars['Boolean'];
+  latitude?: InputMaybe<Scalars['Latitude']>;
+  location?: InputMaybe<Scalars['String']>;
+  longitude?: InputMaybe<Scalars['Longitude']>;
+  organizationId: Scalars['ID'];
+  recurrance?: InputMaybe<Recurrance>;
+  recurring: Scalars['Boolean'];
+  startDate: Scalars['Date'];
+  startTime?: InputMaybe<Scalars['Time']>;
+  title: Scalars['String'];
+};
+
 export type CreateGroupChatInput = {
   organizationId: Scalars['ID'];
   title: Scalars['String'];
   userIds: Array<Scalars['ID']>;
+};
+
+export type CreateGroupInput = {
+  description?: InputMaybe<Scalars['String']>;
+  organizationId: Scalars['ID'];
+  title?: InputMaybe<Scalars['String']>;
+};
+
+export type CreateMessageChatInput = {
+  message: Scalars['String'];
+  receiver: Scalars['ID'];
 };
 
 export type CreateOrganizationInput = {
@@ -344,7 +392,7 @@ export type ExtendSession = {
   refreshToken: Scalars['String'];
 };
 
-export type ForgotPasswordData = {
+export type ForgotPasswordInput = {
   newPassword: Scalars['String'];
   otpToken: Scalars['String'];
   userOtp: Scalars['String'];
@@ -395,6 +443,10 @@ export type IosFirebaseOptions = {
   storageBucket?: Maybe<Scalars['String']>;
 };
 
+export type JoinPublicOrganizationInput = {
+  organizationId: Scalars['ID'];
+};
+
 export type Language = {
   __typename?: 'Language';
   _id: Scalars['ID'];
@@ -416,6 +468,10 @@ export type LanguageModel = {
   lang_code: Scalars['String'];
   value: Scalars['String'];
   verified: Scalars['Boolean'];
+};
+
+export type LeaveOrganizationInput = {
+  organizationId: Scalars['ID'];
 };
 
 export type LikeCommentInput = {
@@ -553,12 +609,12 @@ export type MutationAcceptAdminArgs = {
 
 
 export type MutationAcceptMembershipRequestArgs = {
-  input: MembershipRequestInput;
+  input: AcceptMembershipRequestInput;
 };
 
 
 export type MutationAddLanguageTranslationArgs = {
-  input: LanguageInput;
+  input: AddLanguageTranslationInput;
 };
 
 
@@ -603,12 +659,12 @@ export type MutationBlockUserArgs = {
 
 
 export type MutationCancelMembershipRequestArgs = {
-  input: MembershipRequestInput;
+  input: CancelMembershipRequestInput;
 };
 
 
 export type MutationCreateAdminArgs = {
-  input: UserAndOrganizationInput;
+  input: CreateAdminInput;
 };
 
 
@@ -628,12 +684,12 @@ export type MutationCreateDonationArgs = {
 
 
 export type MutationCreateEventArgs = {
-  input: EventInput;
+  input: CreateEventInput;
 };
 
 
 export type MutationCreateGroupArgs = {
-  input: GroupInput;
+  input: CreateGroupInput;
 };
 
 
@@ -643,7 +699,7 @@ export type MutationCreateGroupChatArgs = {
 
 
 export type MutationCreateMessageChatArgs = {
-  input: MessageChatInput;
+  input: CreateEventInput;
 };
 
 
@@ -678,17 +734,17 @@ export type MutationDeleteDonationByIdArgs = {
 
 
 export type MutationForgotPasswordArgs = {
-  input: ForgotPasswordData;
+  input: ForgotPasswordInput;
 };
 
 
 export type MutationJoinPublicOrganizationArgs = {
-  input: OrganizationIdInput;
+  input: JoinPublicOrganizationInput;
 };
 
 
 export type MutationLeaveOrganizationArgs = {
-  input: OrganizationIdInput;
+  input: LeaveOrganizationInput;
 };
 
 
@@ -733,12 +789,12 @@ export type MutationRejectAdminArgs = {
 
 
 export type MutationRejectMembershipRequestArgs = {
-  input: MembershipRequestInput;
+  input: RejectMembershipRequestInput;
 };
 
 
 export type MutationRemoveAdminArgs = {
-  input: UserAndOrganizationInput;
+  input: RemoveAdminInput;
 };
 
 
@@ -763,17 +819,17 @@ export type MutationRemoveGroupChatArgs = {
 
 
 export type MutationRemoveMemberArgs = {
-  input: UserAndOrganizationInput;
+  input: RemoveMemberInput;
 };
 
 
 export type MutationRemoveOrganizationArgs = {
-  input: OrganizationIdInput;
+  input: RemoveOrganizationInput;
 };
 
 
 export type MutationRemoveOrganizationImageArgs = {
-  input: OrganizationIdInput;
+  input: RemoveOrganizationImageInput;
 };
 
 
@@ -808,7 +864,7 @@ export type MutationSaveFcmTokenArgs = {
 
 
 export type MutationSendMembershipRequestArgs = {
-  input: OrganizationIdInput;
+  input: SendMembershipRequestInput;
 };
 
 
@@ -1384,6 +1440,15 @@ export type RejectAdminInput = {
   userId: Scalars['ID'];
 };
 
+export type RejectMembershipRequestInput = {
+  membershipRequestId: Scalars['ID'];
+};
+
+export type RemoveAdminInput = {
+  organizationId: Scalars['ID'];
+  userId: Scalars['ID'];
+};
+
 export type RemoveCommentInput = {
   commentId: Scalars['ID'];
 };
@@ -1399,6 +1464,19 @@ export type RemoveEventInput = {
 
 export type RemoveGroupChatInput = {
   chatId: Scalars['ID'];
+};
+
+export type RemoveMemberInput = {
+  organizationId: Scalars['ID'];
+  userId: Scalars['ID'];
+};
+
+export type RemoveOrganizationImageInput = {
+  organizationId: Scalars['ID'];
+};
+
+export type RemoveOrganizationInput = {
+  organizationId: Scalars['ID'];
 };
 
 export type RemovePostInput = {
@@ -1424,6 +1502,10 @@ export type RevokeRefreshTokenForUserInput = {
 
 export type SaveFcmTokenInput = {
   token?: InputMaybe<Scalars['String']>;
+};
+
+export type SendMembershipRequestInput = {
+  organizationId: Scalars['ID'];
 };
 
 export type SendMessageToChatInput = {
@@ -1839,6 +1921,8 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
   AcceptAdminInput: AcceptAdminInput;
+  AcceptMembershipRequestInput: AcceptMembershipRequestInput;
+  AddLanguageTranslationInput: AddLanguageTranslationInput;
   AddOrganizationImageInput: AddOrganizationImageInput;
   AddUserImageInput: AddUserImageInput;
   AddUserToGroupChatInput: AddUserToGroupChatInput;
@@ -1850,13 +1934,18 @@ export type ResolversTypes = {
   AuthData: ResolverTypeWrapper<Omit<AuthData, 'user'> & { user: ResolversTypes['User'] }>;
   BlockUserInput: BlockUserInput;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
+  CancelMembershipRequestInput: CancelMembershipRequestInput;
   Comment: ResolverTypeWrapper<Interface_CommentModel>;
   CommentInput: CommentInput;
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
+  CreateAdminInput: CreateAdminInput;
   CreateChatInput: CreateChatInput;
   CreateCommentInput: CreateCommentInput;
   CreateDonationInput: CreateDonationInput;
+  CreateEventInput: CreateEventInput;
   CreateGroupChatInput: CreateGroupChatInput;
+  CreateGroupInput: CreateGroupInput;
+  CreateMessageChatInput: CreateMessageChatInput;
   CreateOrganizationInput: CreateOrganizationInput;
   CreatePluginInput: CreatePluginInput;
   CreatePostInput: CreatePostInput;
@@ -1878,7 +1967,7 @@ export type ResolversTypes = {
   EventWhereInput: EventWhereInput;
   ExtendSession: ResolverTypeWrapper<ExtendSession>;
   Float: ResolverTypeWrapper<Scalars['Float']>;
-  ForgotPasswordData: ForgotPasswordData;
+  ForgotPasswordInput: ForgotPasswordInput;
   Group: ResolverTypeWrapper<Interface_GroupModel>;
   GroupChat: ResolverTypeWrapper<Interface_GroupChatModel>;
   GroupChatMessage: ResolverTypeWrapper<Interface_GroupChatMessageModel>;
@@ -1886,10 +1975,12 @@ export type ResolversTypes = {
   ID: ResolverTypeWrapper<Scalars['ID']>;
   IOSFirebaseOptions: ResolverTypeWrapper<IosFirebaseOptions>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
+  JoinPublicOrganizationInput: JoinPublicOrganizationInput;
   Language: ResolverTypeWrapper<Interface_LanguageModel>;
   LanguageInput: LanguageInput;
   LanguageModel: ResolverTypeWrapper<LanguageModel>;
   Latitude: ResolverTypeWrapper<Scalars['Latitude']>;
+  LeaveOrganizationInput: LeaveOrganizationInput;
   LikeCommentInput: LikeCommentInput;
   LikePostInput: LikePostInput;
   LoginInput: LoginInput;
@@ -1926,16 +2017,22 @@ export type ResolversTypes = {
   RefreshTokenInput: RefreshTokenInput;
   RegisterForEventInput: RegisterForEventInput;
   RejectAdminInput: RejectAdminInput;
+  RejectMembershipRequestInput: RejectMembershipRequestInput;
+  RemoveAdminInput: RemoveAdminInput;
   RemoveCommentInput: RemoveCommentInput;
   RemoveDirectChatInput: RemoveDirectChatInput;
   RemoveEventInput: RemoveEventInput;
   RemoveGroupChatInput: RemoveGroupChatInput;
+  RemoveMemberInput: RemoveMemberInput;
+  RemoveOrganizationImageInput: RemoveOrganizationImageInput;
+  RemoveOrganizationInput: RemoveOrganizationInput;
   RemovePostInput: RemovePostInput;
   RemoveTaskInput: RemoveTaskInput;
   RemoveUserFromGroupChatInput: RemoveUserFromGroupChatInput;
   RemoveUserTagInput: RemoveUserTagInput;
   RevokeRefreshTokenForUserInput: RevokeRefreshTokenForUserInput;
   SaveFcmTokenInput: SaveFcmTokenInput;
+  SendMembershipRequestInput: SendMembershipRequestInput;
   SendMessageToChatInput: SendMessageToChatInput;
   SignUpInput: SignUpInput;
   Status: Status;
@@ -1987,6 +2084,8 @@ export type ResolversTypes = {
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
   AcceptAdminInput: AcceptAdminInput;
+  AcceptMembershipRequestInput: AcceptMembershipRequestInput;
+  AddLanguageTranslationInput: AddLanguageTranslationInput;
   AddOrganizationImageInput: AddOrganizationImageInput;
   AddUserImageInput: AddUserImageInput;
   AddUserToGroupChatInput: AddUserToGroupChatInput;
@@ -1998,13 +2097,18 @@ export type ResolversParentTypes = {
   AuthData: Omit<AuthData, 'user'> & { user: ResolversParentTypes['User'] };
   BlockUserInput: BlockUserInput;
   Boolean: Scalars['Boolean'];
+  CancelMembershipRequestInput: CancelMembershipRequestInput;
   Comment: Interface_CommentModel;
   CommentInput: CommentInput;
   ConnectionPageInfo: ConnectionPageInfo;
+  CreateAdminInput: CreateAdminInput;
   CreateChatInput: CreateChatInput;
   CreateCommentInput: CreateCommentInput;
   CreateDonationInput: CreateDonationInput;
+  CreateEventInput: CreateEventInput;
   CreateGroupChatInput: CreateGroupChatInput;
+  CreateGroupInput: CreateGroupInput;
+  CreateMessageChatInput: CreateMessageChatInput;
   CreateOrganizationInput: CreateOrganizationInput;
   CreatePluginInput: CreatePluginInput;
   CreatePostInput: CreatePostInput;
@@ -2025,7 +2129,7 @@ export type ResolversParentTypes = {
   EventWhereInput: EventWhereInput;
   ExtendSession: ExtendSession;
   Float: Scalars['Float'];
-  ForgotPasswordData: ForgotPasswordData;
+  ForgotPasswordInput: ForgotPasswordInput;
   Group: Interface_GroupModel;
   GroupChat: Interface_GroupChatModel;
   GroupChatMessage: Interface_GroupChatMessageModel;
@@ -2033,10 +2137,12 @@ export type ResolversParentTypes = {
   ID: Scalars['ID'];
   IOSFirebaseOptions: IosFirebaseOptions;
   Int: Scalars['Int'];
+  JoinPublicOrganizationInput: JoinPublicOrganizationInput;
   Language: Interface_LanguageModel;
   LanguageInput: LanguageInput;
   LanguageModel: LanguageModel;
   Latitude: Scalars['Latitude'];
+  LeaveOrganizationInput: LeaveOrganizationInput;
   LikeCommentInput: LikeCommentInput;
   LikePostInput: LikePostInput;
   LoginInput: LoginInput;
@@ -2070,16 +2176,22 @@ export type ResolversParentTypes = {
   RefreshTokenInput: RefreshTokenInput;
   RegisterForEventInput: RegisterForEventInput;
   RejectAdminInput: RejectAdminInput;
+  RejectMembershipRequestInput: RejectMembershipRequestInput;
+  RemoveAdminInput: RemoveAdminInput;
   RemoveCommentInput: RemoveCommentInput;
   RemoveDirectChatInput: RemoveDirectChatInput;
   RemoveEventInput: RemoveEventInput;
   RemoveGroupChatInput: RemoveGroupChatInput;
+  RemoveMemberInput: RemoveMemberInput;
+  RemoveOrganizationImageInput: RemoveOrganizationImageInput;
+  RemoveOrganizationInput: RemoveOrganizationInput;
   RemovePostInput: RemovePostInput;
   RemoveTaskInput: RemoveTaskInput;
   RemoveUserFromGroupChatInput: RemoveUserFromGroupChatInput;
   RemoveUserTagInput: RemoveUserTagInput;
   RevokeRefreshTokenForUserInput: RevokeRefreshTokenForUserInput;
   SaveFcmTokenInput: SaveFcmTokenInput;
+  SendMembershipRequestInput: SendMembershipRequestInput;
   SendMessageToChatInput: SendMessageToChatInput;
   SignUpInput: SignUpInput;
   String: Scalars['String'];
