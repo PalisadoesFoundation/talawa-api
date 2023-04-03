@@ -1,31 +1,64 @@
-name: Expose Server with Docker Compose for Updating Documentation
+##############################################################################
+##############################################################################
+#
+# NOTE!
+#
+# Please read the README.md file in this directory that defines what should
+# be placed in this file
+#
+##############################################################################
+##############################################################################
+
+name: Generate Schema Documentation
 on:
   push:
-    branches: [ auto ]
-  workflow_dispatch:
-
+    branches:
+      - '**'
+                
 jobs:
-  Schema_Update:
+  Schema-Generation:
+    name: Generate Schema
     runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:4.4
+        options: >-
+          --health-cmd mongo
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 27017:27017
+    env:
+      MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
+      ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+      REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Generate Access Token Secret
+        run: echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
+        
+      - name: Generate Refresh Token Secret
+        run: echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
 
-    - name: Start the server in a Docker container
-      uses: isbang/compose-action@v1.4.1
-      with:
-        compose-file: "./docker-compose.yml"
+      - name: Set up Node.js 14.X
+        uses: actions/setup-node@v3
 
-    - name: Wait for server to start
-      run: sleep 10
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Install GraphQL-Markdown
-      run: npm install graphql-markdown
+      - name: Sleep for 10s
+        uses: juliangruber/sleep-action@v1
+        with:
+          time: 10s
 
-    - name: Generate Schema Documentation
-      run: npm run schema
+      - name: Generate the documentation
+        run: npm run schema
 
-    - name: Commit the changes to Schema Documentation (if any)
-      uses: EndBug/add-and-commit@v9
-      with:
-        message: "Update Schema Documentation"
+      - name: Commit the changes to Schema Documentation (if any)
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: "Update Schema Documentation"
