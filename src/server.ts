@@ -86,7 +86,8 @@ app.use(
 app.use("/images", express.static(path.join(__dirname, "./../images")));
 app.use(requestContext.middleware());
 
-app.use("/voyager", voyagerMiddleware({ endpointUrl: "/graphql" }));
+if (process.env.NODE_ENV === "development")
+  app.use("/voyager", voyagerMiddleware({ endpointUrl: "/graphql" }));
 
 app.get("/", (req, res) =>
   res.json({
@@ -214,12 +215,13 @@ const serverStart = async () => {
           apolloServer.subscriptionsPath
         }`
       );
-      logger.info(
-        "\x1b[1m\x1b[32m%s\x1b[0m",
-        `🚀 Visualise the schema at http://localhost:${
-          process.env.PORT || 4000
-        }/voyager`
-      );
+      if (process.env.NODE_ENV === "development")
+        logger.info(
+          "\x1b[1m\x1b[32m%s\x1b[0m",
+          `🚀 Visualise the schema at http://localhost:${
+            process.env.PORT || 4000
+          }/voyager`
+        );
     });
   } catch (error) {
     logger.error("Error while connecting to database", error);
