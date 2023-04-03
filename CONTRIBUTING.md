@@ -271,7 +271,7 @@ We use the open source project [GraphQL Voyager](https://github.com/IvanGoncharo
 
 Go to `http://localhost:4000/voyager` after running the development server to explore the same!
 
-![Voyager Demo for User Model](../../image/GraphQL_Voyager.png)
+![Voyager Demo for User Model](./image/GraphQL_Voyager.png)
 
 ### Running Queries with talawa-api
 
