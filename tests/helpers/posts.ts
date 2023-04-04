@@ -79,7 +79,7 @@ export const createPostwithComment = async (): Promise<
     }
   );
 
-  await Comment.updateOne(
+  const updatedTestComment = await Comment.findOneAndUpdate(
     {
       _id: testComment._id,
     },
@@ -90,9 +90,12 @@ export const createPostwithComment = async (): Promise<
       $inc: {
         likeCount: 1,
       },
+    },
+    {
+      new: true,
     }
   );
-  return [testUser, testOrganization, testPost, testComment];
+  return [testUser, testOrganization, testPost, updatedTestComment];
 };
 
 export const createSinglePostwithComment = async (
