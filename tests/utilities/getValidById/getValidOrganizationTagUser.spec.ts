@@ -40,21 +40,25 @@ describe("utilities -> getValidOrganizationTagUserById", () => {
     const randomTestObejctId = new Types.ObjectId();
 
     try {
-      const { getValidOrganizationTagUserById } = await import("../../../src/utilities");
+      const { getValidOrganizationTagUserById } = await import(
+        "../../../src/utilities"
+      );
 
       await getValidOrganizationTagUserById(randomTestObejctId);
     } catch (error: any) {
-      expect(error.message).toEqual(
-        `Translated ${TAG_NOT_FOUND.MESSAGE}`
-      );
+      expect(error.message).toEqual(`Translated ${TAG_NOT_FOUND.MESSAGE}`);
     }
 
     expect(spy).toBeCalledWith(TAG_NOT_FOUND.MESSAGE);
   });
 
   it("returns valid OrganizationUserTag with matching id", async () => {
-    const { getValidOrganizationTagUserById } = await import("../../../src/utilities");
-    const organizationTagUser = await getValidOrganizationTagUserById(testOrganizationTagUser?._id!);
+    const { getValidOrganizationTagUserById } = await import(
+      "../../../src/utilities"
+    );
+    const organizationTagUser = await getValidOrganizationTagUserById(
+      testOrganizationTagUser?._id!
+    );
 
     expect(organizationTagUser).toEqual(testOrganizationTagUser);
   });
