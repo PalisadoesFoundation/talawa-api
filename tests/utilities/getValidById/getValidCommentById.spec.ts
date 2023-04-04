@@ -56,9 +56,6 @@ describe("utilities -> getValidCommentById", () => {
     const { getValidCommentById } = await import("../../../src/utilities");
     const comment = await getValidCommentById(testComment?._id);
 
-    console.log(comment);
-    console.log(testComment);
-
     expect(comment).toEqual(testComment?.toObject());
   });
 });
