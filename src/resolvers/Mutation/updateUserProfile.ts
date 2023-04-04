@@ -73,7 +73,9 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
         lastName: args.input.data?.lastName
           ? args.input.data.lastName
           : currentUser?.lastName,
-        image: args.input.newUserProfileImage ? uploadImageFileName : currentUser.image,
+        image: args.input.newUserProfileImage
+          ? uploadImageFileName
+          : currentUser.image,
       },
     },
     {

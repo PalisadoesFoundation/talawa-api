@@ -103,7 +103,10 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   // Upload userProfileImage
   let uploadImageFileName;
   if (args.input.userProfileImage) {
-    uploadImageFileName = await uploadEncodedImage(args.input.userProfileImage, null);
+    uploadImageFileName = await uploadEncodedImage(
+      args.input.userProfileImage,
+      null
+    );
   }
 
   const isLastResortSuperAdmin =
