@@ -1,10 +1,10 @@
 import { Types } from "mongoose";
-import { USER_NOT_FOUND_ERROR } from "../constants";
-import { errors, requestContext } from "../libraries";
-import { User } from "../models";
+import { USER_NOT_FOUND_ERROR } from "../../constants";
+import { errors, requestContext } from "../../libraries";
+import { User } from "../../models";
 
 /**
- * Throws error if there exists no `user` with the given `id`
+ * Throws error if there exists no `User` with the given `id`
  * @param userId - `id` of the desried user
  */
 export const validateUserById = async (userId: string | Types.ObjectId) => {

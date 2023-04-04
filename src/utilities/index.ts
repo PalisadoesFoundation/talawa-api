@@ -5,6 +5,5 @@ export * from "./deleteImage";
 export * from "./mailer";
 export * from "./superAdminCheck";
 export * from "./uploadImage";
-export * from "./getValidOrganizationById";
-export * from "./getValidEventById";
-export * from "./getValidUserById";
+export * from "./validateById";
+export * from "./getValidById";
