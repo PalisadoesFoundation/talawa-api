@@ -106,7 +106,7 @@ We're listing some common approaches to set up a running instance of MongoDB dat
 1. `Docker container approach:` If you are fluent in working with docker you should use this approach. Docker is a great way to manage and run applications without natively installing anything on your system. With this you can set up the mongodb database inside a docker container and manage it as per your will. Follow this [video tutorial](https://www.youtube.com/watch?v=uklyCSKQ1Po) to set up a mongodb docker container. You can learn about docker from [Docker docs](https://docs.docker.com/).
 
 # Configuration
-It's important to configure Talawa-Admin. Here's how to do it.
+It's important to configure talawa-api. Here's how to do it.
 ## The .env Configuration File
 
 A file named `.env` is required in the root directory of talawa-api for storing environment variables used at runtime. It is not a part of the repo and you will have to create it. For a sample of `.env` file there is a file named `.env.sample` in the root directory. Create a new `.env` file by copying the contents of the `.env.sample` into `.env` file.
