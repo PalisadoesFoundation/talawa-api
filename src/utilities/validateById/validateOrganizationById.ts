@@ -7,7 +7,9 @@ import { Organization } from "../../models";
  * Throws error if there exists no `Organization` with the given `id`
  * @param organizationId - `id` of the desried organization
  */
-export const validateOrganizationById = async (organizationId: string | Types.ObjectId) => {
+export const validateOrganizationById = async (
+  organizationId: string | Types.ObjectId
+) => {
   const organization = await Organization.exists({
     _id: organizationId,
   });
