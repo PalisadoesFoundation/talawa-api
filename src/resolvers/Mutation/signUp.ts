@@ -100,10 +100,10 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
 
   const hashedPassword = await bcrypt.hash(args.input.data.password, 12);
 
-  // Upload file
+  // Upload userProfileImage
   let uploadImageFileName;
-  if (args.input.file) {
-    uploadImageFileName = await uploadEncodedImage(args.input.file, null);
+  if (args.input.userProfileImage) {
+    uploadImageFileName = await uploadEncodedImage(args.input.userProfileImage, null);
   }
 
   const isLastResortSuperAdmin =

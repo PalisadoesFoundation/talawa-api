@@ -53,8 +53,8 @@ export const createPost: MutationResolvers["createPost"] = async (
 
   let uploadImageFileName;
 
-  if (args.input.file) {
-    uploadImageFileName = await uploadEncodedImage(args.input.file!, null);
+  if (args.input.postImage) {
+    uploadImageFileName = await uploadEncodedImage(args.input.postImage!, null);
   }
 
   // Checks if the recieved arguments are valid according to standard input norms
@@ -102,7 +102,7 @@ export const createPost: MutationResolvers["createPost"] = async (
     pinned: args.input.data.pinned ? true : false,
     creator: context.userId,
     organization: args.input.data.organizationId,
-    imageUrl: args.input.file ? uploadImageFileName : null,
+    imageUrl: args.input.postImage ? uploadImageFileName : null,
   });
 
   if (args.input.data.pinned) {

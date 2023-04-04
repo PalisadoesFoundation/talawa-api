@@ -31,7 +31,7 @@ export const addUserImage: MutationResolvers["addUserImage"] = async (
   }
 
   const imageToUploadFilePath = await uploadEncodedImage(
-    args.input.file!,
+    args.input.userProfileImage!,
     currentUser.image
   );
 

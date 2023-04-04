@@ -52,7 +52,7 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
 
     // Upload Image
     const uploadImageFileName = await uploadEncodedImage(
-      args.input.file!,
+      args.input.organizationImage!,
       organization.image
     );
     // Updates the organization with new image and returns the updated organization.

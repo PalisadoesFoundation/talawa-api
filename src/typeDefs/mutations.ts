@@ -28,7 +28,7 @@ export const mutations = gql`
     assignUserTag(input: ToggleUserTagAssignInput!): User @auth
 
     blockPluginCreationBySuperadmin(
-      input: blockPluginCreationBySuperadminInput!
+      input: BlockPluginCreationBySuperadminInput!
     ): User! @auth @role(requires: SUPERADMIN)
 
     blockUser(input: BlockUserInput!): User! @auth
@@ -152,7 +152,7 @@ export const mutations = gql`
 
     unassignUserTag(input: ToggleUserTagAssignInput!): User @auth
 
-    unblockUser(input: UserAndOrganizationInput!): User! @auth
+    unblockUser(input: UnblockUserInput!): User! @auth
 
     unlikeComment(input: UnlikeCommentInput!): Comment @auth
 

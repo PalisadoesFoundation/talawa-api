@@ -59,12 +59,12 @@ export type AddLanguageTranslationInput = {
 };
 
 export type AddOrganizationImageInput = {
-  file: Scalars['String'];
   organizationId: Scalars['String'];
+  organizationImage: Scalars['String'];
 };
 
 export type AddUserImageInput = {
-  file: Scalars['String'];
+  userProfileImage: Scalars['String'];
 };
 
 export type AddUserToGroupChatInput = {
@@ -106,6 +106,11 @@ export type AuthData = {
   iosFirebaseOptions: IosFirebaseOptions;
   refreshToken: Scalars['String'];
   user: User;
+};
+
+export type BlockPluginCreationBySuperadminInput = {
+  blockUser: Scalars['Boolean'];
+  userId: Scalars['ID'];
 };
 
 export type BlockUserInput = {
@@ -201,7 +206,7 @@ export type CreateMessageChatInput = {
 
 export type CreateOrganizationInput = {
   data: OrganizationInput;
-  file?: InputMaybe<Scalars['String']>;
+  organizationImage?: InputMaybe<Scalars['String']>;
 };
 
 export type CreatePluginInput = {
@@ -214,7 +219,7 @@ export type CreatePluginInput = {
 
 export type CreatePostInput = {
   data: PostInput;
-  file?: InputMaybe<Scalars['String']>;
+  postImage?: InputMaybe<Scalars['String']>;
 };
 
 export type CreateTaskInput = {
@@ -894,7 +899,7 @@ export type MutationUnassignUserTagArgs = {
 
 
 export type MutationUnblockUserArgs = {
-  input: UserAndOrganizationInput;
+  input: UnblockUserInput;
 };
 
 
@@ -1515,7 +1520,7 @@ export type SendMessageToChatInput = {
 
 export type SignUpInput = {
   data: UserInput;
-  file?: InputMaybe<Scalars['String']>;
+  userProfileImage?: InputMaybe<Scalars['String']>;
 };
 
 export type Status =
@@ -1579,6 +1584,11 @@ export type Translation = {
 export type Type =
   | 'PRIVATE'
   | 'UNIVERSAL';
+
+export type UnblockUserInput = {
+  organizationId: Scalars['ID'];
+  userId: Scalars['ID'];
+};
 
 export type UnlikeCommentInput = {
   id: Scalars['ID'];
@@ -1671,7 +1681,7 @@ export type UpdateUserPasswordInput = {
 
 export type UpdateUserProfileInput = {
   data: UpdateUserData;
-  file?: InputMaybe<Scalars['String']>;
+  newUserProfileImage?: InputMaybe<Scalars['String']>;
 };
 
 export type UpdateUserTagInput = {
@@ -1850,11 +1860,6 @@ export type UsersConnection = {
   pageInfo: ConnectionPageInfo;
 };
 
-export type BlockPluginCreationBySuperadminInput = {
-  blockUser: Scalars['Boolean'];
-  userId: Scalars['ID'];
-};
-
 
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
@@ -1932,6 +1937,7 @@ export type ResolversTypes = {
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
   AndroidFirebaseOptions: ResolverTypeWrapper<AndroidFirebaseOptions>;
   AuthData: ResolverTypeWrapper<Omit<AuthData, 'user'> & { user: ResolversTypes['User'] }>;
+  BlockPluginCreationBySuperadminInput: BlockPluginCreationBySuperadminInput;
   BlockUserInput: BlockUserInput;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   CancelMembershipRequestInput: CancelMembershipRequestInput;
@@ -2047,6 +2053,7 @@ export type ResolversTypes = {
   Translation: ResolverTypeWrapper<Translation>;
   Type: Type;
   URL: ResolverTypeWrapper<Scalars['URL']>;
+  UnblockUserInput: UnblockUserInput;
   UnlikeCommentInput: UnlikeCommentInput;
   UnlikePostInput: UnlikePostInput;
   UnregisterForEventByUserInput: UnregisterForEventByUserInput;
@@ -2078,7 +2085,6 @@ export type ResolversTypes = {
   UserType: UserType;
   UserWhereInput: UserWhereInput;
   UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['UserEdge']>>> }>;
-  blockPluginCreationBySuperadminInput: BlockPluginCreationBySuperadminInput;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -2095,6 +2101,7 @@ export type ResolversParentTypes = {
   AggregateUser: AggregateUser;
   AndroidFirebaseOptions: AndroidFirebaseOptions;
   AuthData: Omit<AuthData, 'user'> & { user: ResolversParentTypes['User'] };
+  BlockPluginCreationBySuperadminInput: BlockPluginCreationBySuperadminInput;
   BlockUserInput: BlockUserInput;
   Boolean: Scalars['Boolean'];
   CancelMembershipRequestInput: CancelMembershipRequestInput;
@@ -2203,6 +2210,7 @@ export type ResolversParentTypes = {
   ToggleUserTagAssignInput: ToggleUserTagAssignInput;
   Translation: Translation;
   URL: Scalars['URL'];
+  UnblockUserInput: UnblockUserInput;
   UnlikeCommentInput: UnlikeCommentInput;
   UnlikePostInput: UnlikePostInput;
   UnregisterForEventByUserInput: UnregisterForEventByUserInput;
@@ -2232,7 +2240,6 @@ export type ResolversParentTypes = {
   UserTagsConnection: Omit<UserTagsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['UserTagEdge']>>> };
   UserWhereInput: UserWhereInput;
   UsersConnection: Omit<UsersConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['UserEdge']>>> };
-  blockPluginCreationBySuperadminInput: BlockPluginCreationBySuperadminInput;
 };
 
 export type AuthDirectiveArgs = { };

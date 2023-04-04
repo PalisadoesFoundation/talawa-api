@@ -48,11 +48,11 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
     }
   }
 
-  // Upload file
+  // Upload newUserProfileImage
   let uploadImageFileName;
-  if (args.input.file) {
+  if (args.input.newUserProfileImage) {
     uploadImageFileName = await uploadEncodedImage(
-      args.input.file,
+      args.input.newUserProfileImage,
       currentUser?.image
     );
   }
@@ -73,7 +73,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
         lastName: args.input.data?.lastName
           ? args.input.data.lastName
           : currentUser?.lastName,
-        image: args.input.file ? uploadImageFileName : currentUser.image,
+        image: args.input.newUserProfileImage ? uploadImageFileName : currentUser.image,
       },
     },
     {

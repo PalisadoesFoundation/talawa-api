@@ -17,12 +17,12 @@ export const inputs = gql`
   }
 
   input AddOrganizationImageInput {
-    file: String!
+    organizationImage: String!
     organizationId: String!
   }
 
   input AddUserImageInput {
-    file: String!
+    userProfileImage: String!
   }
 
   input AddUserToGroupChatInput {
@@ -38,7 +38,7 @@ export const inputs = gql`
     groupId: ID!
   }
 
-  input blockPluginCreationBySuperadminInput {
+  input BlockPluginCreationBySuperadminInput {
     userId: ID!
     blockUser: Boolean!
   }
@@ -117,7 +117,7 @@ export const inputs = gql`
 
   input CreateOrganizationInput {
     data: OrganizationInput!
-    file: String
+    organizationImage: String
   }
 
   input CreatePluginInput {
@@ -130,7 +130,7 @@ export const inputs = gql`
 
   input CreatePostInput {
     data: PostInput!
-    file: String
+    postImage: String
   }
 
   input CreateUserTagInput {
@@ -457,7 +457,7 @@ export const inputs = gql`
 
   input SignUpInput {
     data: UserInput!
-    file: String
+    userProfileImage: String
   }
 
   input TaskInput {
@@ -497,6 +497,11 @@ export const inputs = gql`
   #   title: String
   #   description: String
   # }
+
+  input UnblockUserInput {
+    organizationId: ID!
+    userId: ID!
+  }
 
   input UnlikeCommentInput {
     id: ID!
@@ -562,7 +567,7 @@ export const inputs = gql`
 
   input UpdateUserProfileInput {
     data: UpdateUserData!
-    file: String
+    newUserProfileImage: String
   }
 
   input UpdateUserPasswordInput {
