@@ -151,7 +151,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
     try {
       const args: MutationUpdateUserTypeArgs = {
         data: {
-          id: testUsers[0]!._id,
+          id: testUsers[0]!._id.toString(),
         },
       };
 
@@ -191,7 +191,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
 
     const args: MutationUpdateUserTypeArgs = {
       data: {
-        id: testUsers[1]!._id,
+        id: testUsers[1]!._id.toString(),
         userType: "BLOCKED",
       },
     };
