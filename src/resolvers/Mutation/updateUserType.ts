@@ -35,7 +35,6 @@ export const updateUserType: MutationResolvers["updateUserType"] = async (
   }
 
   superAdminCheck(currentUser);
-
   if (args.data.id === currentUser._id.toString()) {
     throw new errors.InputValidationError(
       requestContext.translate(SUPERADMIN_CANT_CHANGE_OWN_ROLE.MESSAGE),

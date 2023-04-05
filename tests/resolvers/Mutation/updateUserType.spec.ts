@@ -151,7 +151,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
     try {
       const args: MutationUpdateUserTypeArgs = {
         data: {
-          id: testUsers[0]!._id,
+          id: testUsers[0]!._id.toString(),
         },
       };
 
@@ -162,7 +162,6 @@ describe("resolvers -> Mutation -> updateUserType", () => {
       const { updateUserType: updateUserTypeResolver } = await import(
         "../../../src/resolvers/Mutation/updateUserType"
       );
-
       await updateUserTypeResolver?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(SUPERADMIN_CANT_CHANGE_OWN_ROLE.MESSAGE);
@@ -192,7 +191,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
 
     const args: MutationUpdateUserTypeArgs = {
       data: {
-        id: testUsers[1]!._id,
+        id: testUsers[1]!._id.toString(),
         userType: "BLOCKED",
       },
     };
