@@ -16,7 +16,7 @@
     "format:fix": "prettier --write \"**/*.{ts,tsx,json,scss,css}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,json,scss,css}\"",
     "prepare": "husky install",
-    "schema": "graphql-markdown http://localhost:4000/graphql > docs/Schema.md"
+    "schema": "graphql-markdown http://localhost:4000/graphql > docs/Schema.md && get-graphql-schema http://localhost:4000/graphql --json > docs/schema.json"
   },
   "repository": {
     "type": "git",
@@ -50,6 +50,7 @@
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^5.5.1",
     "firebase-admin": "^10.3.0",
+    "get-graphql-schema": "^2.1.2",
     "graphql": "^15.8.0",
     "graphql-depth-limit": "^1.1.0",
     "graphql-scalars": "^1.20.1",
