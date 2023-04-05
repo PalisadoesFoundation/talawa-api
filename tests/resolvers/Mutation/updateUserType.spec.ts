@@ -162,7 +162,6 @@ describe("resolvers -> Mutation -> updateUserType", () => {
       const { updateUserType: updateUserTypeResolver } = await import(
         "../../../src/resolvers/Mutation/updateUserType"
       );
-
       await updateUserTypeResolver?.({}, args, context);
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(SUPERADMIN_CANT_CHANGE_OWN_ROLE.MESSAGE);
