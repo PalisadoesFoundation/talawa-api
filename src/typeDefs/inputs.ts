@@ -101,12 +101,6 @@ export const inputs = gql`
     otpToken: String!
   }
 
-  input GroupInput {
-    title: String
-    description: String
-    organizationId: ID!
-  }
-
   input LanguageInput {
     en_value: String!
     translation_lang_code: String!
