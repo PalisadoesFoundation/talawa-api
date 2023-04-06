@@ -100,25 +100,10 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     Remove organization._id from each blockedUser's organizationsBlockedBy
     field for organization.blockedUsers list.
     */
-    for (const blockedUserId of organization.blockedUsers) {
-      const blockedUser = await User.findOne({
-        _id: blockedUserId,
-      });
-
-      await User.updateOne(
-        {
-          _id: blockedUser?._id,
-        },
-        {
-          $set: {
-            organizationsBlockedBy: blockedUser?.organizationsBlockedBy.filter(
-              (organizationBlockedBy) =>
-                organizationBlockedBy.toString() !== organization._id.toString()
-            ),
-          },
-        }
-      );
-    }
+    await User.updateMany(
+      { _id: { $in: organization.blockedUsers } },
+      { $pull: { organizationsBlockedBy: organization._id } }
+    );
 
     // Deletes the organzation.
     await Organization.deleteOne({
