@@ -54,6 +54,15 @@ try {
       vi.resetModules();
       vi.restoreAllMocks();
     });
+
+    it("should throw an error if newImageFile is null", async () => {
+      const { uploadImage } = await import("../../src/utilities/uploadImage");
+      await expect(uploadImage(null, null)).rejects.toThrow(
+        "newImageFile is empty or null"
+      );
+    });
+
+    
     it("should create a new Image", async () => {
       try {
         const pngImage: any = {
@@ -112,6 +121,7 @@ try {
         console.log(error);
       }
     });
+    
     it("should create a new Image when an old Image Path already Exists", async () => {
       try {
         const pngImage: any = {
