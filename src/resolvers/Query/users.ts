@@ -21,11 +21,11 @@ export const users: QueryResolvers["users"] = async (
   const where = getWhere<Interface_User>(args.where);
   const sort = getSort(args.orderBy);
 
-  const queryUser = await User.findOne({
+  const currentUser = await User.findOne({
     _id: context.userId,
   });
 
-  if (!queryUser) {
+  if (!currentUser) {
     throw new errors.UnauthenticatedError(
       requestContext.translate(UNAUTHENTICATED_ERROR.MESSAGE),
       UNAUTHENTICATED_ERROR.CODE,
@@ -46,14 +46,14 @@ export const users: QueryResolvers["users"] = async (
     .lean();
 
   return users.map((user) => {
-    const { userType } = queryUser;
+    const { userType } = currentUser;
 
     return {
       ...user,
       image: user.image ? `${context.apiRootUrl}${user.image}` : null,
       organizationsBlockedBy:
         (userType === "ADMIN" || userType === "SUPERADMIN") &&
-        queryUser._id !== user._id
+        currentUser._id !== user._id
           ? user.organizationsBlockedBy
           : [],
     };
