@@ -87,7 +87,7 @@ try {
           },
           {
             $set: {
-              image: uploadImagePayload.newImagePath,
+              image: uploadImagePayload!.newImagePath,
             },
           },
           {
@@ -102,7 +102,7 @@ try {
         fs.unlink(
           path.join(
             __dirname,
-            "../../".concat(uploadImagePayload.newImagePath)
+            "../../".concat(uploadImagePayload!.newImagePath)
           ),
           (err) => {
             if (err) throw err;
@@ -156,7 +156,7 @@ try {
           },
           {
             $set: {
-              image: uploadImagePayload.newImagePath,
+              image: uploadImagePayload!.newImagePath,
             },
           },
           {
@@ -175,7 +175,7 @@ try {
         fs.unlink(
           path.join(
             __dirname,
-            "../../".concat(uploadImagePayload.newImagePath)
+            "../../".concat(uploadImagePayload!.newImagePath)
           ),
           (err) => {
             if (err) throw err;
