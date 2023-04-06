@@ -18,6 +18,19 @@ jobs:
     name: Pull Request Target
     runs-on: ubuntu-latest
     steps:
+      - name: Add the Commit Signoff Policy
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          comment_tag: code_commit_policy
+          message: |
+            ## Signing-off on Commits
+            
+            To contribute to this project, you must agree to the **Developer Certificate of Origin (DCO)** for each commit you make. The DCO is a simple statement that you, as a contributor, have the legal right to make the contribution.
+            
+            Add the ```-s``` flag to your commit statement for example ```git commit -s -m "message"``` to signoff the commit.
+            
+            Read detailed instructions here: [Signing Commits](https://github.com/PalisadoesFoundation/talawa-api/blob/develop/CONTRIBUTING.md)
+            
       - name: Add the PR Review Policy
         uses: thollander/actions-comment-pull-request@v2
         with:
