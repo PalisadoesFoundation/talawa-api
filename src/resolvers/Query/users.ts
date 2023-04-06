@@ -45,24 +45,17 @@ export const users: QueryResolvers["users"] = async (
     .populate("organizationsBlockedBy")
     .lean();
 
-  if (!users[0]) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
-  } else
-    return users.map((user) => {
-      const { userType } = queryUser;
+  return users.map((user) => {
+    const { userType } = queryUser;
 
-      return {
-        ...user,
-        image: user.image ? `${context.apiRootUrl}${user.image}` : null,
-        organizationsBlockedBy:
-          (userType === "ADMIN" || userType === "SUPERADMIN") &&
-          queryUser._id !== user._id
-            ? user.organizationsBlockedBy
-            : [],
-      };
-    });
+    return {
+      ...user,
+      image: user.image ? `${context.apiRootUrl}${user.image}` : null,
+      organizationsBlockedBy:
+        (userType === "ADMIN" || userType === "SUPERADMIN") &&
+        queryUser._id !== user._id
+          ? user.organizationsBlockedBy
+          : [],
+    };
+  });
 };
