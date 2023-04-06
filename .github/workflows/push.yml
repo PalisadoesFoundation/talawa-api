@@ -82,7 +82,7 @@ jobs:
       # We use this action to commit the same to our repository
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: Automated Change
+          commit_message: Generate GraphQL Schema and Markdown Documentation
           file_pattern: 'docs/Schema.md docs/schema.json'     # The files to be added and committed
           # We need to force commit the changes as they the generated files are in .gitignore
           add_options: '-f'
