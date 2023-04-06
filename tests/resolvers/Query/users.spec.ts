@@ -45,7 +45,7 @@ describe("resolvers -> Query -> users", () => {
       const args: QueryUsersArgs = {
         orderBy: null,
         where: {
-          id: testObjectId as unknown as string,
+          id: testObjectId.toString(),
         },
       };
 
@@ -81,7 +81,7 @@ describe("resolvers -> Query -> users", () => {
     const args: QueryUsersArgs = {
       orderBy: null,
       where: {
-        id: testObjectId as unknown as string,
+        id: testObjectId.toString(),
       },
     };
 
