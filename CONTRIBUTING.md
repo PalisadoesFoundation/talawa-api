@@ -276,7 +276,7 @@ Go to `http://localhost:4000/voyager` after running the development server to ex
 
 ### GraphQL Markdown
 
-We use the [GraphQL Markdown](https://github.com/exogen/graphql-markdown) project to generate the documentation to describe the schema. To generate the same manually, you first need to start the development server locally with `npm run dev`, and then run the script `npm run serve`.
+We use the [GraphQL Markdown](https://github.com/exogen/graphql-markdown) project to generate the documentation to describe the schema. To generate the same manually, you first need to start the development server locally with `npm run dev`, and then run the script `npm run generate:graphql-markdown`.
 
 You can then view the [generated documentation here](./docs/Schema.md).
 

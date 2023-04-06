@@ -72,13 +72,20 @@ jobs:
         with:
           time: 10s
 
-      - name: Generate the documentation
-        run: npm run schema
+      - name: Generate the GraphQL-Markdown documentation
+        run: npm run generate:graphql-markdown
+      
+      - name: Genrate the GraphQL Schema in JSON form
+        run: npm run generate:graphql-schema
 
-      - name: Commit the changes to Schema Documentation (if any)
-        uses: EndBug/add-and-commit@v9
+      # Running the generate::** scripts create the necessary documentation on the server where the GitHub Action is running locally
+      # We use this action to commit the same to our repository
+      - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          message: "Update schema documentation"
+          commit_message: Automated Change
+          file_pattern: 'docs/Schema.md docs/schema.json'     # The files to be added and committed
+          # We need to force commit the changes as they the generated files are in .gitignore
+          add_options: '-f'
 
       - name: Run the tests
         run: npm run test

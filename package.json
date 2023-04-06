@@ -16,7 +16,8 @@
     "format:fix": "prettier --write \"**/*.{ts,tsx,json,scss,css}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,json,scss,css}\"",
     "prepare": "husky install",
-    "schema": "graphql-markdown http://localhost:4000/graphql > docs/Schema.md && get-graphql-schema http://localhost:4000/graphql --json > docs/schema.json"
+    "generate:graphql-markdown": "graphql-markdown http://localhost:4000/graphql > docs/Schema.md",
+    "generate:graphql-schema":"get-graphql-schema http://localhost:4000/graphql --json > docs/schema.json"
   },
   "repository": {
     "type": "git",
