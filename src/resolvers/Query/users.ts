@@ -1,7 +1,7 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Interface_User, User } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import { UNAUTHENTICATED_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
+import { UNAUTHENTICATED_ERROR } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
