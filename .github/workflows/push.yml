@@ -78,6 +78,9 @@ jobs:
       - name: Genrate the GraphQL Schema in JSON form
         run: npm run generate:graphql-schema
 
+      - name: Add the generated docs to stage
+        run: git add docs/Schema.md docs/schema.json -f
+        
       # Running the generate::** scripts create the necessary documentation on the server where the GitHub Action is running locally
       # We use this action to commit the same to our repository
       - uses: stefanzweifel/git-auto-commit-action@v4
