@@ -295,12 +295,6 @@ export type GroupChatMessage = {
   sender: User;
 };
 
-export type GroupInput = {
-  description?: InputMaybe<Scalars['String']>;
-  organizationId: Scalars['ID'];
-  title?: InputMaybe<Scalars['String']>;
-};
-
 export type IosFirebaseOptions = {
   __typename?: 'IOSFirebaseOptions';
   apiKey?: Maybe<Scalars['String']>;
@@ -391,7 +385,6 @@ export type Mutation = {
   createDirectChat: DirectChat;
   createDonation: Donation;
   createEvent: Event;
-  createGroup: Group;
   createGroupChat: GroupChat;
   createMessageChat: MessageChat;
   createOrganization: Organization;
@@ -544,11 +537,6 @@ export type MutationCreateDonationArgs = {
 
 export type MutationCreateEventArgs = {
   data?: InputMaybe<EventInput>;
-};
-
-
-export type MutationCreateGroupArgs = {
-  data: GroupInput;
 };
 
 
@@ -1692,7 +1680,6 @@ export type ResolversTypes = {
   Group: ResolverTypeWrapper<Interface_GroupModel>;
   GroupChat: ResolverTypeWrapper<Interface_GroupChatModel>;
   GroupChatMessage: ResolverTypeWrapper<Interface_GroupChatMessageModel>;
-  GroupInput: GroupInput;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   IOSFirebaseOptions: ResolverTypeWrapper<IosFirebaseOptions>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
@@ -1795,7 +1782,6 @@ export type ResolversParentTypes = {
   Group: Interface_GroupModel;
   GroupChat: Interface_GroupChatModel;
   GroupChatMessage: Interface_GroupChatMessageModel;
-  GroupInput: GroupInput;
   ID: Scalars['ID'];
   IOSFirebaseOptions: IosFirebaseOptions;
   Int: Scalars['Int'];
@@ -2111,7 +2097,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, Partial<MutationCreateDirectChatArgs>>;
   createDonation?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<MutationCreateDonationArgs, 'amount' | 'nameOfOrg' | 'nameOfUser' | 'orgId' | 'payPalId' | 'userId'>>;
   createEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, Partial<MutationCreateEventArgs>>;
-  createGroup?: Resolver<ResolversTypes['Group'], ParentType, ContextType, RequireFields<MutationCreateGroupArgs, 'data'>>;
   createGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, Partial<MutationCreateGroupChatArgs>>;
   createMessageChat?: Resolver<ResolversTypes['MessageChat'], ParentType, ContextType, RequireFields<MutationCreateMessageChatArgs, 'data'>>;
   createOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, Partial<MutationCreateOrganizationArgs>>;

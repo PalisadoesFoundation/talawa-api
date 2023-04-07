@@ -20,7 +20,7 @@ env:
           
 jobs:
   Code-Quality-Checks:
-    name: Check for linting, formatting and typpe errors
+    name: Check for linting, formatting and type errors
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository content
