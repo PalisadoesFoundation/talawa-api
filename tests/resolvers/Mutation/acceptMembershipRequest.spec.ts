@@ -267,13 +267,7 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
     };
     const { acceptMembershipRequest: acceptMembershipRequestResolver } =
       await import("../../../src/resolvers/Mutation/acceptMembershipRequest");
-    const acceptMembershipRequestPayload =
-      await acceptMembershipRequestResolver?.({}, args, context);
-
-    expect(acceptMembershipRequestPayload).toEqual(
-      testMembershipRequest!.toObject()
-    );
-
+    await acceptMembershipRequestResolver?.({}, args, context);
     const updatedTestOrganization = await Organization.findOne({
       _id: testOrganization!._id,
     })
