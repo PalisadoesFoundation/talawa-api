@@ -55,15 +55,6 @@ describe("resolvers -> Mutation -> addUserImage", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
-
       const { addUserImage: addUserImageResolverUserError } = await import(
         "../../../src/resolvers/Mutation/addUserImage"
       );

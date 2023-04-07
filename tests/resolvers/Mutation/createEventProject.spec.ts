@@ -124,15 +124,6 @@ describe("resolvers -> Mutation -> createEventProject", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
 
-    vi.doMock("../../../src/constants", async () => {
-      const actualConstants: object = await vi.importActual(
-        "../../../src/constants"
-      );
-      return {
-        ...actualConstants,
-      };
-    });
-
     const { createEventProject } = await import(
       "../../../src/resolvers/Mutation/createEventProject"
     );
@@ -163,15 +154,6 @@ describe("resolvers -> Mutation -> createEventProject", () => {
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
-
-    vi.doMock("../../../src/constants", async () => {
-      const actualConstants: object = await vi.importActual(
-        "../../../src/constants"
-      );
-      return {
-        ...actualConstants,
-      };
-    });
 
     const { createEventProject } = await import(
       "../../../src/resolvers/Mutation/createEventProject"

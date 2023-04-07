@@ -51,11 +51,13 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
+
   it("throws NotFoundError if no user exists with _id === context.userId", async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
+
     try {
       const args: MutationAddOrganizationImageArgs = {
         organizationId: "",
@@ -64,14 +66,7 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
       const context = {
         userId: Types.ObjectId().toString(),
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { addOrganizationImage } = await import(
         "../../../src/resolvers/Mutation/addOrganizationImage"
       );
@@ -94,14 +89,7 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { addOrganizationImage } = await import(
         "../../../src/resolvers/Mutation/addOrganizationImage"
       );
