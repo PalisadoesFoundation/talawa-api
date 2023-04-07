@@ -25,7 +25,7 @@ jobs:
           message: |
             Thanks for creating a pull request! :thumbsup: A reviewer will be by to give feedback soon. In the meantime, please review our [Pull Request Approval Process](https://github.com/anshgoyalevil/talawa-api/blob/signoff/PR_GUIDELINES.md#our-pull-request-approval-process) and sure to join the [community Slack](https://bit.ly/3nS04GG).
             
-            Be sure to double-check that you have signed your commits. Here are instructions for [making signing an implicit activity while peforming a commit](https://github.com/anshgoyalevil/talawa-api/edit/signoff/CONTRIBUTING.md#signing-off-on-commits).
+            Be sure to double-check that you have signed your commits. Here are instructions for [making signing an implicit activity while peforming a commit](https://github.com/anshgoyalevil/talawa-api/blob/signoff/CONTRIBUTING.md#signing-off-on-commits).
             
       - name: Greeting Message to User
         uses: actions/first-interaction@v1
