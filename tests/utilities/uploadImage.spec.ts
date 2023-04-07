@@ -1,5 +1,6 @@
 require("dotenv").config();
 import fs from "fs";
+import { uploadImage } from "../../src/utilities";
 import {
   afterAll,
   afterEach,
@@ -56,13 +57,11 @@ try {
     });
 
     it("should throw an error if newImageFile is null", async () => {
-      const { uploadImage } = await import("../../src/utilities/uploadImage");
       await expect(uploadImage(null, null)).rejects.toThrow(
         "newImageFile is empty or null"
       );
     });
 
-    
     it("should create a new Image", async () => {
       try {
         const pngImage: any = {
@@ -88,7 +87,6 @@ try {
               return "";
             }
           );
-        const { uploadImage } = await import("../../src/utilities/uploadImage");
         const uploadImagePayload = await uploadImage(pngImage, null);
         const testUserObj = await User.findByIdAndUpdate(
           {
@@ -121,7 +119,7 @@ try {
         console.log(error);
       }
     });
-    
+
     it("should create a new Image when an old Image Path already Exists", async () => {
       try {
         const pngImage: any = {
@@ -147,7 +145,6 @@ try {
               return newImagePath;
             }
           );
-        const { uploadImage } = await import("../../src/utilities/uploadImage");
         const testUserBeforeObj = await User.findById({
           _id: testUser!.id,
         });
