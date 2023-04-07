@@ -990,7 +990,7 @@ export type Post = {
   comments?: Maybe<Array<Maybe<Comment>>>;
   createdAt?: Maybe<Scalars['DateTime']>;
   creator: User;
-  imageUrl?: Maybe<Scalars['URL']>;
+  imageUrl?: Maybe<Scalars['String']>;
   likeCount?: Maybe<Scalars['Int']>;
   likedBy?: Maybe<Array<Maybe<User>>>;
   organization: Organization;
@@ -1011,7 +1011,7 @@ export type PostConnection = {
 
 export type PostInput = {
   _id?: InputMaybe<Scalars['ID']>;
-  imageUrl?: InputMaybe<Scalars['URL']>;
+  imageUrl?: InputMaybe<Scalars['String']>;
   organizationId: Scalars['ID'];
   pinned?: InputMaybe<Scalars['Boolean']>;
   text: Scalars['String'];
@@ -1038,7 +1038,7 @@ export type PostOrderByInput =
   | 'videoUrl_DESC';
 
 export type PostUpdateInput = {
-  imageUrl?: InputMaybe<Scalars['URL']>;
+  imageUrl?: InputMaybe<Scalars['String']>;
   text?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
   videoUrl?: InputMaybe<Scalars['URL']>;
@@ -2235,7 +2235,7 @@ export type PostResolvers<ContextType = any, ParentType extends ResolversParentT
   comments?: Resolver<Maybe<Array<Maybe<ResolversTypes['Comment']>>>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  imageUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
+  imageUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   likeCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   likedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;

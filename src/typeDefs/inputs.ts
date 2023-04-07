@@ -183,7 +183,7 @@ export const inputs = gql`
     _id: ID
     text: String!
     title: String
-    imageUrl: URL
+    imageUrl: String
     videoUrl: URL
     organizationId: ID!
     pinned: Boolean
@@ -342,7 +342,7 @@ export const inputs = gql`
   input PostUpdateInput {
     text: String
     title: String
-    imageUrl: URL
+    imageUrl: String
     videoUrl: URL
   }
 `;

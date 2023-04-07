@@ -8,6 +8,7 @@ import {
   LENGTH_VALIDATION_ERROR,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 
 export const updatePost: MutationResolvers["updatePost"] = async (
   _parent,
@@ -71,14 +72,23 @@ export const updatePost: MutationResolvers["updatePost"] = async (
       LENGTH_VALIDATION_ERROR.CODE
     );
   }
-
+  let uploadImageFileName;
+  if (args.data?.imageUrl) {
+    uploadImageFileName = await uploadEncodedImage(
+      args.data.imageUrl,
+      post?.imageUrl
+    );
+  }
   return await Post.findOneAndUpdate(
     {
       _id: args.id,
     },
     // @ts-ignore
     {
-      ...args.data,
+      $set: {
+        ...args.data,
+        imageUrl: args.data?.imageUrl ? uploadImageFileName : post.imageUrl,
+      },
     },
     {
       new: true,

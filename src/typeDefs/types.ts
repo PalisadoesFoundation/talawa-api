@@ -282,7 +282,7 @@ export const types = gql`
     text: String!
     title: String
     createdAt: DateTime
-    imageUrl: URL
+    imageUrl: String
     videoUrl: URL
     creator: User!
     organization: Organization!
