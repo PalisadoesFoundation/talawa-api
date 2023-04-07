@@ -54,12 +54,8 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     superAdminCheck(currentUser!);
 
     // Remove each post and comments associated to it for organization.posts list.
-    await Promise.all(
-      organization.posts.map(async (postId) => {
-        await Post.deleteOne({ _id: postId });
-        await Comment.deleteMany({ post: postId });
-      })
-    );
+    await Post.deleteMany({ _id: { $in: organization.posts } });
+    await Comment.deleteMany({ post: { $in: organization.posts } });
 
     // Remove organization._id from createdOrganizations list of currentUser.
     await User.updateOne(
