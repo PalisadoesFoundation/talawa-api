@@ -26,15 +26,6 @@ describe("resolvers -> Query -> users", () => {
   it("throws UnauthenticatedError if userId is not passed in context", async () => {
     const testObjectId = new mongoose.Types.ObjectId();
 
-    vi.doMock("../../../src/constants", async () => {
-      const actualConstants: object = await vi.importActual(
-        "../../../src/constants"
-      );
-      return {
-        ...actualConstants,
-      };
-    });
-
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
@@ -60,21 +51,11 @@ describe("resolvers -> Query -> users", () => {
       );
     }
 
-    vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
 
   it("returns empty array if no user exists", async () => {
     const testObjectId = new mongoose.Types.ObjectId();
-
-    vi.doMock("../../../src/constants", async () => {
-      const actualConstants: object = await vi.importActual(
-        "../../../src/constants"
-      );
-      return {
-        ...actualConstants,
-      };
-    });
 
     const testUser = await createTestUser();
 
@@ -95,7 +76,6 @@ describe("resolvers -> Query -> users", () => {
 
     expect(usersPayload).toEqual([]);
 
-    vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
 
