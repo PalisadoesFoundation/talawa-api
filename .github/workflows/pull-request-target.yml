@@ -18,66 +18,15 @@ jobs:
     name: Pull Request Target
     runs-on: ubuntu-latest
     steps:
-      - name: Add the Commit Signoff Policy
+      - name: Add the PR Policy
         uses: thollander/actions-comment-pull-request@v2
         with:
-          comment_tag: code_commit_policy
+          comment_tag: pr_policy
           message: |
-            ## Signing-off on Commits
+            Thanks for creating a pull request! :thumbsup: A reviewer will be by to give feedback soon. In the meantime, please review our [Pull Request Approval Process](https://github.com/anshgoyalevil/talawa-api/blob/signoff/PR_GUIDELINES.md#our-pull-request-approval-process) and sure to join the [community Slack](https://bit.ly/3nS04GG).
             
-            To contribute to this project, you must agree to the **Developer Certificate of Origin (DCO)** for each commit you make. The DCO is a simple statement that you, as a contributor, have the legal right to make the contribution.
+            Be sure to double-check that you have signed your commits. Here are instructions for [making signing an implicit activity while peforming a commit](https://github.com/anshgoyalevil/talawa-api/edit/signoff/CONTRIBUTING.md#signing-off-on-commits).
             
-            Add the ```-s``` flag to your commit statement for example ```git commit -s -m "message"``` to signoff the commit.
-            
-            Read detailed instructions here: [Signing Commits](https://github.com/PalisadoesFoundation/talawa-api/blob/develop/CONTRIBUTING.md)
-            
-      - name: Add the PR Review Policy
-        uses: thollander/actions-comment-pull-request@v2
-        with:
-          comment_tag: pr_review_policy
-          message: |
-            ## Our Pull Request Approval Process
-
-            We have these basic policies to make the approval process smoother for our volunteer team.
-
-            ### Testing Your Code
-
-            Please make sure your code passes all tests. Our test code coverage system will fail if these conditions occur:
-
-            1. The overall code coverage drops below the target threshold of the repository
-            2. Any file in the pull request has code coverage levels below the repository threshold
-            3. Merge conflicts 
-
-            The process helps maintain the overall reliability of the code base and is a prerequisite for getting your PR approved. Assigned reviewers regularly review the PR queue and tend to focus on PRs that are passing.
-
-            ### Reviewers
-
-            When your PR has been assigned reviewers contact them to get your code reviewed and approved via:
-
-            1. comments in this PR or
-            1. our slack channel
-
-            #### Reviewing Your Code
-
-            Your reviewer(s) will have the following roles:
-
-            1.  arbitrators of future discussions with other contributors about the validity of your changes
-            2.  point of contact for evaluating the validity of your work
-            3.  person who verifies matching issues by others that should be closed.
-            4.  person who gives general guidance in fixing your tests
-
-            ### CONTRIBUTING.md
-
-            Read our CONTRIBUTING.md file. Most importantly:
-
-            1. PRs with issues not assigned to you will be closed by the reviewer
-            1. Fix the first comment in the PR so that each issue listed automatically closes
-
-            ### Other
-
-            1. :dart: Please be considerate of our volunteers' time. Contacting the person who assigned the reviewers is not advised unless they ask for your input. Do not @ the person who did the assignment otherwise.
-            2. Read the CONTRIBUTING.md file make 
-
       - name: Greeting Message to User
         uses: actions/first-interaction@v1
         with:
