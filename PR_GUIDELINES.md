@@ -13,6 +13,33 @@ In order to give everyone a chance to submit a pull request and contribute to th
 1. All pull requests must have test units. If, for some reason, it is not possible to add tests, please let us know and explain why. In that case, you'll need to tell us what steps you followed to manually test your changes.
 1. Please read our [CONTRIBUTING.md](CONTRIBUTING.md) document for details on our testing policy.
 
+## Our Pull Request Approval Process
+We have these basic policies to make the approval process smoother for our volunteer team.
+
+### Testing Your Code
+Please make sure your code passes all tests. Our test code coverage system will fail if these conditions occur:
+1. The overall code coverage drops below the target threshold of the repository
+2. Any file in the pull request has code coverage levels below the repository threshold
+3. Merge conflicts 
+The process helps maintain the overall reliability of the code base and is a prerequisite for getting your PR approved. Assigned reviewers regularly review the PR queue and tend to focus on PRs that are passing.
+### Reviewers
+When your PR has been assigned reviewers contact them to get your code reviewed and approved via:
+1. comments in this PR or
+1. our slack channel
+#### Reviewing Your Code
+Your reviewer(s) will have the following roles:
+1.  arbitrators of future discussions with other contributors about the validity of your changes
+2.  point of contact for evaluating the validity of your work
+3.  person who verifies matching issues by others that should be closed.
+4.  person who gives general guidance in fixing your tests
+### CONTRIBUTING.md
+Read our CONTRIBUTING.md file. Most importantly:
+1. PRs with issues not assigned to you will be closed by the reviewer
+1. Fix the first comment in the PR so that each issue listed automatically closes
+### Other
+1. :dart: Please be considerate of our volunteers' time. Contacting the person who assigned the reviewers is not advised unless they ask for your input. Do not @ the person who did the assignment otherwise.
+2. Read the CONTRIBUTING.md file make
+
 ## Pull Request Processing
 These are key guidelines for the procedure:
 1. We do not accept draft Pull Requests. They will be closed if submitted. We focus on work that is ready for immediate review.
