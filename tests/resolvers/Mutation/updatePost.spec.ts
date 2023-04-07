@@ -13,10 +13,13 @@ import {
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import { TestUserType } from "../../helpers/userAndOrg";
 import { createTestPost, TestPostType } from "../../helpers/posts";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 
 let testUser: TestUserType;
 let testPost: TestPostType;
-
+vi.mock("../../utilities/uploadEncodedImage", () => ({
+  uploadEncodedImage: vi.fn(),
+}));
 beforeEach(async () => {
   await connect();
   const temp = await createTestPost();
@@ -169,5 +172,31 @@ describe("resolvers -> Mutation -> updatePost", () => {
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
       );
     }
+  });
+
+  it("updates the current post's object with the uploaded image", async () => {
+    const args: MutationUpdatePostArgs = {
+      id: testPost!._id,
+      data: {
+        title: "updated title",
+        text: "updated text",
+        imageUrl: "updatedImageFile.png",
+        videoUrl: "",
+      },
+    };
+    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
+      async (encodedImageURL: string) => encodedImageURL
+    );
+    const context = {
+      userId: testUser!._id,
+    };
+
+    const updatePostPayload = await updatePostResolver?.({}, args, context);
+
+    const UpdatePostPayload = await Post.findOne({
+      _id: testPost!._id,
+    }).lean();
+
+    expect(updatePostPayload).toEqual(UpdatePostPayload);
   });
 });
