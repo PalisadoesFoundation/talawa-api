@@ -26,6 +26,7 @@ If you are new to contributing to open source, please read the Open Source Guide
     - [Automation using husky](#automation-using-husky)
       - [Pre-Commit hook](#pre-commit-hook)
       - [Post-Merge hook](#post-merge-hook)
+    - [Signing-off on Commits](#signing-off-on-commits)
     - [GraphQL Voyager](#graphql-voyager)
     - [Running Queries with talawa-api](#running-queries-with-talawa-api)
   - [Internships](#internships)
@@ -264,6 +265,49 @@ If you don't want this hook to run, you can manually opt out of this using the `
         git pull --no-verify
 
 <br/>
+
+## Signing-off on Commits
+
+To contribute to this project, you must agree to the **Developer Certificate of
+Origin (DCO)** for each commit you make. The DCO is a simple statement that you,
+as a contributor, have the legal right to make the contribution.
+
+See the [DCO](https://developercertificate.org) file for the full text of what you must agree to
+and how it works [here](https://github.com/probot/dco#how-it-works).
+To signify that you agree to the DCO for contributions, you simply add a line to each of your
+git commit messages:
+
+  ```
+  Signed-off-by: Jane Smith <jane.smith@example.com>
+  ```
+
+**Note:** you don't have to manually include this line on your commits, git does that for you as shown below:
+
+  ```
+  $ git commit -s -m “my commit message w/signoff”
+  ```
+
+In most cases, git automatically adds the signoff to your commit with the use of 
+`-s` or `--signoff` flag to `git commit`. You must use your real name and a reachable email
+address (sorry, no pseudonyms or anonymous contributions).
+
+
+To ensure all your commits are signed, you may choose to add this alias to your global ```.gitconfig```:
+
+  *~/.gitconfig*
+
+  ```
+  [alias]
+    amend = commit -s --amend
+    cm = commit -s -m
+    commit = commit -s
+  ```
+
+Or you may configure your IDE, for example, Visual Studio Code to automatically sign-off commits for you:
+
+<a href="https://raw.githubusercontent.com/layer5io/layer5/master/.github/assets/images/git-signoff-vscode.png" ><img src="https://raw.githubusercontent.com/layer5io/layer5/master/.github/assets/images/git-signoff-vscode.png" width="50%"/><a>
+  
+  <br>
 
 ### GraphQL Voyager
 
