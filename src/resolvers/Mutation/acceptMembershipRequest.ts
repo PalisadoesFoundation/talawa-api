@@ -1,6 +1,7 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
+import { Types } from "mongoose";
 import { MembershipRequest, Organization, User } from "../../models";
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
@@ -22,9 +23,16 @@ import {
  */
 export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest"] =
   async (_parent, args, context) => {
+    /* Finding a single `MembershipRequest` document in the database that matches the
+    `_id` provided in the `args` parameter. It is then populating the `organization` and `user`
+    fields of the `MembershipRequest` document with their respective documents from the
+    `Organization` and `User` collections in the database. Finally, it is executing the query and
+    returning a promise that resolves to the `MembershipRequest` document. */
     const membershipRequest = await MembershipRequest.findOne({
       _id: args.membershipRequestId,
-    }).lean();
+    })
+      .populate(["organization", "user"])
+      .exec();
 
     // Checks whether membershipRequest exists.
     if (!membershipRequest) {
@@ -35,9 +43,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       );
     }
 
-    const organization = await Organization.findOne({
-      _id: membershipRequest.organization,
-    }).lean();
+    const organization = membershipRequest.organization;
 
     // Checks whether organization exists.
     if (!organization) {
@@ -48,9 +54,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       );
     }
 
-    const user = await User.findOne({
-      _id: membershipRequest.user,
-    }).lean();
+    const user = membershipRequest.user;
 
     // Checks whether user exists.
     if (!user) {
@@ -65,7 +69,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
     await adminCheck(context.userId, organization);
 
     const userIsOrganizationMember = organization.members.some(
-      (member) => member.toString() === user?._id.toString()
+      (member: Types.ObjectId) => member.toString() === user?._id.toString()
     );
 
     // Checks whether user is already a member of organization.
@@ -82,10 +86,12 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       _id: membershipRequest._id,
     });
 
-    /*
-   Add user._id to members list and remove membershipRequest._id
-   from membershipRequests list on organization's document.
-   */
+    /* This code is updating the `Organization` document in the database by adding the `user._id` to the
+   `members` array and removing the `membershipRequest._id` from the `membershipRequests` array. It
+   is using the `updateOne` method from the `Organization` model to update the document with the
+   `_id` matching `organization._id`. The `` operator is used to add the `user._id` to the
+   `members` array, and the `` operator is used to remove the `membershipRequest._id` from the
+   `membershipRequests` array. */
     await Organization.updateOne(
       {
         _id: organization._id,
@@ -94,19 +100,18 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
         $push: {
           members: user._id,
         },
-
-        $set: {
-          membershipRequests: organization.membershipRequests.filter(
-            (request) => request.toString() !== membershipRequest._id.toString()
-          ),
+        $pull: {
+          membershipRequests: membershipRequest._id,
         },
       }
     );
 
-    /*
-   Add organization._id to joinedOrganizations list and remove 
-   membershipRequest._id from membershipRequests list on user's document.
-   */
+    /* This code is updating the `User` document in the database by adding the `organization._id` to
+    the `joinedOrganizations` array and removing the `membershipRequest._id` from the
+    `membershipRequests` array. It is using the `updateOne` method from the `User` model to update
+    the document with the `_id` matching `user._id`. The `` operator is used to add the
+    `organization._id` to the `joinedOrganizations` array, and the `` operator is used to
+    remove the `membershipRequest._id` from the `membershipRequests` array. */
     await User.updateOne(
       {
         _id: user._id,
@@ -115,11 +120,8 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
         $push: {
           joinedOrganizations: organization._id,
         },
-
-        $set: {
-          membershipRequests: user.membershipRequests.filter(
-            (request) => request.toString() !== membershipRequest._id.toString()
-          ),
+        $pull: {
+          membershipRequests: membershipRequest._id,
         },
       }
     );
