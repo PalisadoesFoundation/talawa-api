@@ -23,11 +23,6 @@ import {
  */
 export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest"] =
   async (_parent, args, context) => {
-    /* Finding a single `MembershipRequest` document in the database that matches the
-    `_id` provided in the `args` parameter. It is then populating the `organization` and `user`
-    fields of the `MembershipRequest` document with their respective documents from the
-    `Organization` and `User` collections in the database. Finally, it is executing the query and
-    returning a promise that resolves to the `MembershipRequest` document. */
     const membershipRequest = await MembershipRequest.findOne({
       _id: args.membershipRequestId,
     })
@@ -86,12 +81,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       _id: membershipRequest._id,
     });
 
-    /* This code is updating the `Organization` document in the database by adding the `user._id` to the
-   `members` array and removing the `membershipRequest._id` from the `membershipRequests` array. It
-   is using the `updateOne` method from the `Organization` model to update the document with the
-   `_id` matching `organization._id`. The `` operator is used to add the `user._id` to the
-   `members` array, and the `` operator is used to remove the `membershipRequest._id` from the
-   `membershipRequests` array. */
+    // Update the organization
     await Organization.updateOne(
       {
         _id: organization._id,
@@ -106,12 +96,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       }
     );
 
-    /* This code is updating the `User` document in the database by adding the `organization._id` to
-    the `joinedOrganizations` array and removing the `membershipRequest._id` from the
-    `membershipRequests` array. It is using the `updateOne` method from the `User` model to update
-    the document with the `_id` matching `user._id`. The `` operator is used to add the
-    `organization._id` to the `joinedOrganizations` array, and the `` operator is used to
-    remove the `membershipRequest._id` from the `membershipRequests` array. */
+    // Update the user
     await User.updateOne(
       {
         _id: user._id,
