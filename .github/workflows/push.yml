@@ -52,7 +52,8 @@ jobs:
         with:
           path: repo-api
 
-      - run: cd repo-api
+      - name: CD
+        run: cd repo-api
 
       - name: Generate Access Token Secret
         run: echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
@@ -95,7 +96,8 @@ jobs:
         with:
           commit_message: Generate GraphQL Schema and Markdown Documentation
 
-    - run: cd ..
+    - name: CD
+      run: cd ..
 
     - name: Checkout Repository B
       uses: actions/checkout@v3
@@ -104,14 +106,14 @@ jobs:
         path: repo-docs
       
       name: Sync File
-        run: |
-          cp repo-api/docs/schema.json repo-docs/docs/
-          cd repo-docs
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-          git add docs/schema.json
-          git commit -m "Sync schema.json from Talawa API"
-          git push origin docs
+      run: |
+        cp repo-api/docs/schema.json repo-docs/docs/
+        cd repo-docs
+        git config --global user.email "actions@github.com"
+        git config --global user.name "GitHub Actions"
+        git add docs/schema.json
+        git commit -m "Sync schema.json from Talawa API"
+        git push origin docs
 
       # Testing the application
       - name: Run the tests
