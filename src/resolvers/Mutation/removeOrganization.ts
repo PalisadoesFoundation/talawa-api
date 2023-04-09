@@ -27,7 +27,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
   async (_parent, args, context) => {
     const currentUser = await User.findOne({
       _id: context.userId,
-    });
+    }).lean();
 
     // Checks whether currentUser exists.
     if (!currentUser) {
@@ -40,7 +40,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
 
     const organization = await Organization.findOne({
       _id: args.id,
-    });
+    }).lean();
 
     // Checks whether organization exists.
     if (!organization) {
@@ -85,11 +85,10 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     Remove membershipRequest._id from each requester's membershipRequests
     field for membershipRequest.user for organization.membershipRequests list.
     */
-    const membershipRequestIds = organization.membershipRequests;
-    await MembershipRequest.deleteMany({ _id: { $in: membershipRequestIds } });
+    await MembershipRequest.deleteMany({ _id: { $in: organization.membershipRequests } });
     await User.updateMany(
-      { _id: { $in: membershipRequestIds } },
-      { $pull: { membershipRequests: { $in: membershipRequestIds } } }
+      { _id: { $in: organization.membershipRequests } },
+      { $pull: { membershipRequests: { $in: organization.membershipRequests } } }
     );
 
     /* 
