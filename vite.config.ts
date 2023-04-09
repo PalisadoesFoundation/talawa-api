@@ -2,7 +2,7 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    setupFiles: ["./setupFile.ts"],
+    setupFiles: ["./config/vitestSetup.ts"],
 
     // Run the setup and teardown scripts before and after all the tests are run
     // The scripts are used to clear the testing database of all the data.

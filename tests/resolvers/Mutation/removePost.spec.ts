@@ -137,15 +137,6 @@ describe("resolvers -> Mutation -> removePost", () => {
       userId: testUser!.id,
     };
 
-    vi.doMock("../../../src/constants", async () => {
-      const actualConstants: object = await vi.importActual(
-        "../../../src/constants"
-      );
-      return {
-        ...actualConstants,
-      };
-    });
-
     const { removePost: removePostResolver } = await import(
       "../../../src/resolvers/Mutation/removePost"
     );
