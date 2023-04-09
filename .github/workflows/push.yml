@@ -98,10 +98,9 @@ jobs:
     - run: cd ..
 
     - name: Checkout Repository B
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
-        repository: EshaanAgg/talawa-docs # Replace with the name of Repository B
-        ref: docss
+        repository: eshaanagg/talawa-docs
         path: repo-docs
       
       name: Sync File
