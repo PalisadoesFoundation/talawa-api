@@ -1,4 +1,3 @@
-Skip to content
 ##############################################################################
 ##############################################################################
 #
@@ -95,3 +94,34 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Generate GraphQL Schema and Markdown Documentation
+      
+      - name: CD
+        run: cd ..
+
+      - name: Checkout Repository B
+        uses: actions/checkout@v3
+        with:
+          repository: eshaanagg/talawa-docs
+          path: repo-docs
+        
+      - name: Sync File
+        run: |
+          cp api/docs/schema.json repo-docs/docs/
+          cd repo-docs
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add docs/schema.json
+          git commit -m "Sync schema.json from Talawa API"
+          git push origin docs
+
+      # Testing the application
+      - name: Run the tests
+        run: cd ../api && npm run test
+    
+      # Upload Coverage
+      - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
+        uses: codecov/codecov-action@v3
+        with:
+          verbose: true
+          fail_ci_if_error: false
+          name: '${{env.CODECOV_UNIQUE_NAME}}'  
