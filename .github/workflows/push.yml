@@ -91,9 +91,18 @@ jobs:
         with:
           commit_message: Generate GraphQL Schema and Markdown Documentation
 
+      # Upload the generated schema.json as an artifact on GitHub
+      - name: Upload schema.json
+        uses: actions/upload-artifact@v2
+        with:
+          name: Schema
+          path: ./docs/schema.json
+
+      # Testing the application
       - name: Run the tests
         run: npm run test
     
+      # Upload Coverage
       - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
         uses: codecov/codecov-action@v3
         with:
