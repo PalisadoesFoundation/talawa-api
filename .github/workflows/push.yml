@@ -46,6 +46,8 @@ jobs:
       ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
       REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
 
+    # We checkout the content of the Talawa-API repository in a directory called `api`
+    # This is done as we will use the Talawa-Docs repository later too
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -61,9 +63,11 @@ jobs:
       - name: Set up Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
 
+      # Move into the api folder before installing the dependencies
       - name: Install dependencies
         run: cd api && npm ci
 
+      # Move into the api folder before starting the server
       - name: Start the development server in detach mode
         run: |
           cd api && npm run dev &
@@ -73,9 +77,11 @@ jobs:
         with:
           time: 10s
 
+      # Move into the api folder before generating the Markdown schema documentation
       - name: Generate the GraphQL-Markdown documentation
         run: cd api && npm run generate:graphql-markdown
       
+      # Move into the api folder before generating the Schema is json form
       - name: Genrate the GraphQL Schema in JSON form
         run: cd api && npm run generate:graphql-schema
 
@@ -84,7 +90,7 @@ jobs:
       # where the GitHub Action is running locally. We add the same to stage with -f flag as they are a 
       # part of the .gitignore file
       - name: Add the generated docs to stage
-        run: cd api && git add docs/Schema.md docs/schema.json -f
+        run: cd api && git add docs/Schema.md -f
 
       # We use this action to commit the changes above to the repository
       - name: Commit generated docs to the repository
@@ -93,20 +99,26 @@ jobs:
           commit_message: Generate GraphQL Schema and Markdown Documentation
           repository: api
       
-      - name: Checkout Repository B
+      # We will clone the Talawa Docs in the folder called docs so that we can copy the generated
+      # schema.json into the same later
+      - name: Checkout the Talawa-Docs repository
         uses: actions/checkout@v3
         with:
           repository: eshaanagg/talawa-docs
-          path: repo-docs
-        
-      - name: Sync File
-        run: |
-          cp api/docs/schema.json repo-docs/docs/
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-          cd repo-docs && git add docs/schema.json && git commit -m "Sync schema.json from Talawa API" && git push
+          path: docs
+      
+      # Copy the generated schema.json into the Talawa Docs repository 
+      - name: Sync schema.json from Talawa API to Talawa Docs
+        run: cp api/docs/schema.json docs/docs/
 
-      # Testing the application
+      # Commit the changes made to schema.json into Talawa Docs
+      - name: Commit generated docs to the Talawa Docs repository
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Update schema.json
+          repository: docs
+      
+      # Testing the application after moving into the api folder
       - name: Run the tests
         run: cd api && npm run test
     
