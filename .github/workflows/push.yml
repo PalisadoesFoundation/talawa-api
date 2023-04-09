@@ -51,9 +51,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: api
-      
-      - name: CD
-        run: ls -la && cd api
         
       - name: Generate Access Token Secret
         run: echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
@@ -65,11 +62,11 @@ jobs:
         uses: actions/setup-node@v3
 
       - name: Install dependencies
-        run: ls -la && npm ci
+        run: cd api && npm ci
 
       - name: Start the development server in detach mode
         run: |
-          npm run dev &
+          cd api && npm run dev &
           echo "Development server started..."
       - name: Sleep for 10s
         uses: juliangruber/sleep-action@v1
@@ -77,27 +74,25 @@ jobs:
           time: 10s
 
       - name: Generate the GraphQL-Markdown documentation
-        run: npm run generate:graphql-markdown
+        run: cd api && npm run generate:graphql-markdown
       
       - name: Genrate the GraphQL Schema in JSON form
-        run: npm run generate:graphql-schema
+        run: cd api && npm run generate:graphql-schema
 
 
       # Running the generate::** scripts will create the necessary documentation on the server 
       # where the GitHub Action is running locally. We add the same to stage with -f flag as they are a 
       # part of the .gitignore file
       - name: Add the generated docs to stage
-        run: git add docs/Schema.md docs/schema.json -f
+        run: cd api && git add docs/Schema.md docs/schema.json -f
 
       # We use this action to commit the changes above to the repository
       - name: Commit generated docs to the repository
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Generate GraphQL Schema and Markdown Documentation
+          repository: api
       
-      - name: CD
-        run: cd ..
-
       - name: Checkout Repository B
         uses: actions/checkout@v3
         with:
@@ -116,7 +111,7 @@ jobs:
 
       # Testing the application
       - name: Run the tests
-        run: cd ../api && npm run test
+        run: cd api && npm run test
     
       # Upload Coverage
       - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
