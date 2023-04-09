@@ -104,7 +104,7 @@ jobs:
           cp api/docs/schema.json repo-docs/docs/
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
-          cd repo-docs && git add docs/schema.json && git commit -m "Sync schema.json from Talawa API" && git push origin docss
+          cd repo-docs && git add docs/schema.json && git commit -m "Sync schema.json from Talawa API" && git push
 
       # Testing the application
       - name: Run the tests
