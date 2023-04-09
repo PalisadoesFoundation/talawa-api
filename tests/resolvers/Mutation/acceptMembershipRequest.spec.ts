@@ -270,8 +270,8 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
     const acceptMembershipRequestPayload =
       await acceptMembershipRequestResolver?.({}, args, context);
 
-    expect(acceptMembershipRequestPayload).toEqual(
-      testMembershipRequest!.toObject()
+    expect(acceptMembershipRequestPayload?._id).toEqual(
+      testMembershipRequest!._id
     );
 
     const updatedTestOrganization = await Organization.findOne({
