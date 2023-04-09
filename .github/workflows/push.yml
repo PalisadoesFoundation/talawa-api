@@ -53,7 +53,7 @@ jobs:
           path: api
       
       - name: CD
-        run: cd api
+        run: ls -la && cd api
         
       - name: Generate Access Token Secret
         run: echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
