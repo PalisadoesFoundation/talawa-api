@@ -89,11 +89,11 @@ jobs:
       # Running the generate::** scripts will create the necessary documentation on the server 
       # where the GitHub Action is running locally. We add the same to stage with -f flag as they are a 
       # part of the .gitignore file
-      - name: Add the generated docs to stage
+      - name: Add the generated Markdown Documentation to stage
         run: cd api && git add docs/Schema.md -f
 
       # We use this action to commit the changes above to the repository
-      - name: Commit generated docs to the repository
+      - name: Commit generated Markdown Documentation to the Talawa API repository
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Generate GraphQL Schema and Markdown Documentation
@@ -105,14 +105,19 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: eshaanagg/talawa-docs
+          token: ${{ secrets.TALAWA_REPO_SYNC }}
           path: docs
       
       # Copy the generated schema.json into the Talawa Docs repository 
       - name: Sync schema.json from Talawa API to Talawa Docs
         run: cp api/docs/schema.json docs/docs/
 
+      # Add the updated schema.json in Talawa Docs to stage
+      - name: Add the synced schema.json to stage in Talawa Docs
+        run: cd docs && git add docs/schema.json
+
       # Commit the changes made to schema.json into Talawa Docs
-      - name: Commit generated docs to the Talawa Docs repository
+      - name: Commit the synced schema to the Talawa Docs repository
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Update schema.json
