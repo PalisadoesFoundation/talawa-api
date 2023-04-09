@@ -104,7 +104,7 @@ jobs:
       - name: Checkout the Talawa-Docs repository
         uses: actions/checkout@v3
         with:
-          repository: eshaanagg/talawa-docs
+          repository: PalisadoesFoundation/talawa-docs
           token: ${{ secrets.TALAWA_REPO_SYNC }}
           path: docs
       
