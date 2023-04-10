@@ -23,7 +23,10 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
   async (_parent, args, context) => {
     const membershipRequest = await MembershipRequest.findOne({
       _id: args.membershipRequestId,
-    }).lean();
+    })
+      .populate("organization")
+      .populate("user")
+      .lean();
 
     // Checks whether membershipRequest exists.
     if (!membershipRequest) {
@@ -34,12 +37,8 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
       );
     }
 
-    const organzation = await Organization.findOne({
-      _id: membershipRequest.organization,
-    }).lean();
-
     // Checks whether organization exists.
-    if (!organzation) {
+    if (!membershipRequest.organization) {
       throw new errors.NotFoundError(
         requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
@@ -47,12 +46,8 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
       );
     }
 
-    const user = await User.findOne({
-      _id: membershipRequest.user,
-    }).lean();
-
     // Checks whether user exists.
-    if (!user) {
+    if (!membershipRequest.user) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
@@ -61,7 +56,7 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
     }
 
     // Checks whether currentUser with _id === context.userId is an admin of organization.
-    await adminCheck(context.userId, organzation);
+    await adminCheck(context.userId, membershipRequest.organization);
 
     // Deletes the membershipRequest.
     await MembershipRequest.deleteOne({
@@ -71,13 +66,11 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
     // Removes membershipRequest._id from membershipRequests list of organization.
     await Organization.updateOne(
       {
-        _id: organzation._id,
+        _id: membershipRequest.organization._id,
       },
       {
-        $set: {
-          membershipRequests: organzation.membershipRequests.filter(
-            (request) => request.toString() !== membershipRequest._id.toString()
-          ),
+        $pull: {
+          membershipRequests: membershipRequest._id,
         },
       }
     );
@@ -85,13 +78,11 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
     // Removes membershipRequest._id from membershipRequests list of user.
     await User.updateOne(
       {
-        _id: user._id,
+        _id: membershipRequest.user._id,
       },
       {
-        $set: {
-          membershipRequests: user.membershipRequests.filter(
-            (request) => request.toString() !== membershipRequest._id.toString()
-          ),
+        $pull: {
+          membershipRequests: membershipRequest._id,
         },
       }
     );
