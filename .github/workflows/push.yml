@@ -105,7 +105,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: PalisadoesFoundation/talawa-docs
-          token: ${{ secrets.TALAWA_REPO_SYNC }}
+          token: ${{ secrets.API_TOKEN_GITHUB }}
           path: docs
       
       # Copy the generated schema.json into the Talawa Docs repository 
@@ -131,6 +131,7 @@ jobs:
       - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
         uses: codecov/codecov-action@v3
         with:
+          directory: api
           verbose: true
           fail_ci_if_error: false
           name: '${{env.CODECOV_UNIQUE_NAME}}'  
