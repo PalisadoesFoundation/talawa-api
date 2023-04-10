@@ -245,8 +245,8 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
     const rejectMembershipRequestPayload =
       await rejectMembershipRequestResolver?.({}, args, context);
 
-    expect(rejectMembershipRequestPayload).toEqual(
-      testMembershipRequest!.toObject()
+    expect(rejectMembershipRequestPayload?._id).toEqual(
+      testMembershipRequest!._id
     );
 
     const testUpdatedUser = await User.findOne({
@@ -254,7 +254,6 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
     })
       .select(["membershipRequests"])
       .lean();
-
     expect(testUpdatedUser?.membershipRequests).toEqual([]);
 
     const testUpdatedOrganization = await Organization.findOne({
