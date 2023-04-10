@@ -85,7 +85,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     Remove membershipRequest._id from each requester's membershipRequests
     field for membershipRequest.user for organization.membershipRequests list.
     */
-    const membershipRequest = await MembershipRequest.find({
+    const membershipRequests = await MembershipRequest.find({
       _id: { $in: organization.membershipRequests },
     });
 
@@ -94,7 +94,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     });
 
     await User.updateMany(
-      { _id: { $in: membershipRequest.map((r) => r.user._id) } },
+      { _id: { $in: membershipRequests.map((r) => r.user._id) } },
       {
         $pull: {
           membershipRequests: { $in: organization.membershipRequests },
