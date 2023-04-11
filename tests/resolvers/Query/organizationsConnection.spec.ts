@@ -8,7 +8,6 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestUser, TestUserType } from "../../helpers/userAndOrg";
 import { nanoid } from "nanoid";
 
-
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganizations: (InterfaceOrganization &
   Document<any, any, InterfaceOrganization>)[];

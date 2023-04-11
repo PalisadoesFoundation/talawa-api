@@ -14,7 +14,6 @@ import {
 import { TestEventType, createEventWithRegistrant } from "../../helpers/events";
 import { createTestTask } from "../../helpers/task";
 
-
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;
 let testUser: TestUserType;

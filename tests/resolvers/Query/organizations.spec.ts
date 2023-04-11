@@ -13,7 +13,6 @@ import {
   createTestOrganizationWithAdmin,
 } from "../../helpers/userAndOrg";
 
-
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testOrganization1: TestOrganizationType;

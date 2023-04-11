@@ -8,7 +8,6 @@ import { QueryPostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { TestPostType, createPostwithComment } from "../../helpers/posts";
 
-
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testPost: TestPostType;
 
