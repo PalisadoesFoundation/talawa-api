@@ -13,7 +13,7 @@ import {
 import { connect, disconnect } from "../helpers/db";
 import mongoose from "mongoose";
 import { Document } from "mongoose";
-import { ImageHash, Interface_ImageHash } from "../../src/models";
+import { ImageHash, InterfaceImageHash } from "../../src/models";
 
 const testImageToBeDeleted: string = `${nanoid()}-testNewImagePath`;
 const testOldImagePath: string = `${nanoid()}-testOldImagePath`;

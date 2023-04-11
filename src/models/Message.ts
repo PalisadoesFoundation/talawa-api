@@ -1,21 +1,21 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { Interface_Group } from "./Group";
-import { Interface_User } from "./User";
+import { InterfaceGroup } from "./Group";
+import { InterfaceUser } from "./User";
 /**
  * This is an interface that represents a database(MongoDB) document for Message.
  */
-export interface Interface_Message {
+export interface InterfaceMessage {
   _id: Types.ObjectId;
   text: string;
   imageUrl: string | undefined;
   videoUrl: string | undefined;
   createdAt: Date;
-  creator: PopulatedDoc<Interface_User & Document>;
-  group: PopulatedDoc<Interface_Group & Document>;
+  creator: PopulatedDoc<InterfaceUser & Document>;
+  group: PopulatedDoc<InterfaceGroup & Document>;
   status: string;
 }
 /**
- * This describes the schema for a `Message` that corresponds to `Interface_Message` document.
+ * This describes the schema for a `Message` that corresponds to `InterfaceMessage` document.
  * @param text - Message content.
  * @param imageUrl - Image URL attached in the message.
  * @param videoUrl - Video URL attached in the message.
@@ -59,7 +59,7 @@ const messageSchema = new Schema({
   },
 });
 
-const MessageModel = () => model<Interface_Message>("Message", messageSchema);
+const MessageModel = () => model<InterfaceMessage>("Message", messageSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Message = (models.Message || MessageModel()) as ReturnType<

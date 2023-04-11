@@ -2,8 +2,8 @@ import "dotenv/config";
 import { Document, Types } from "mongoose";
 import {
   GroupChat,
-  Interface_GroupChat,
-  Interface_GroupChatMessage,
+  InterfaceGroupChat,
+  InterfaceGroupChatMessage,
 } from "../../../src/models";
 import { MutationSendMessageToGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
@@ -22,8 +22,7 @@ import {
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
-let testGroupChat: Interface_GroupChat &
-  Document<any, any, Interface_GroupChat>;
+let testGroupChat: InterfaceGroupChat & Document<any, any, InterfaceGroupChat>;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -139,7 +138,7 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
       publish: (
         _action: "MESSAGE_SENT_TO_GROUP_CHAT",
         _payload: {
-          messageSentToGroupChat: Interface_GroupChatMessage;
+          messageSentToGroupChat: InterfaceGroupChatMessage;
         }
       ) => {
         return { _action, _payload };

@@ -1,12 +1,12 @@
 import { imageHash } from "image-hash";
 import { requestContext, errors, logger } from "../libraries";
 
-interface Interface_UrlRequestObject {
+interface InterfaceUrlRequestObject {
   encoding?: string | null;
   url: string | null;
 }
 
-interface Interface_BufferObject {
+interface InterfaceBufferObject {
   ext?: string;
   data: Buffer;
   name?: string;
@@ -14,8 +14,8 @@ interface Interface_BufferObject {
 
 export type TypeImagePath =
   | string
-  | Interface_UrlRequestObject
-  | Interface_BufferObject;
+  | InterfaceUrlRequestObject
+  | InterfaceBufferObject;
 
 const getImageHash = (oldSrc: TypeImagePath) => {
   return new Promise((resolve, reject) => {

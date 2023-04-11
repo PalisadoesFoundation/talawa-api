@@ -3,12 +3,12 @@ import { Document, Types } from "mongoose";
 import {
   User,
   Organization,
-  Interface_Organization,
+  InterfaceOrganization,
   Post,
   Comment,
   MembershipRequest,
-  Interface_Comment,
-  Interface_Post,
+  InterfaceComment,
+  InterfacePost,
 } from "../../../src/models";
 import { MutationRemoveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
@@ -33,10 +33,10 @@ import { TestUserType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
-let testPost: Interface_Post & Document<any, any, Interface_Post>;
-let testComment: Interface_Comment & Document<any, any, Interface_Comment>;
+let testOrganization: InterfaceOrganization &
+  Document<any, any, InterfaceOrganization>;
+let testPost: InterfacePost & Document<any, any, InterfacePost>;
+let testComment: InterfaceComment & Document<any, any, InterfaceComment>;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

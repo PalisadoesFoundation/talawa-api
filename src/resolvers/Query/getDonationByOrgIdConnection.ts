@@ -1,10 +1,10 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { Donation, Interface_Donation } from "../../models";
+import { Donation, InterfaceDonation } from "../../models";
 import { getWhere } from "./helperFunctions/getWhere";
 
 export const getDonationByOrgIdConnection: QueryResolvers["getDonationByOrgIdConnection"] =
   async (_parent, args) => {
-    const where = getWhere<Interface_Donation>(args.where);
+    const where = getWhere<InterfaceDonation>(args.where);
 
     return await Donation.find({
       orgId: args.orgId,

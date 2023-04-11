@@ -1,5 +1,5 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { Event, Interface_UserAttende } from "../../models";
+import { Event, InterfaceUserAttende } from "../../models";
 import { STATUS_ACTIVE } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
 /**
@@ -24,7 +24,7 @@ export const eventsByOrganization: QueryResolvers["eventsByOrganization"] =
 
     events.forEach((event) => {
       event.registrants = event.registrants.filter(
-        (registrant: Interface_UserAttende) =>
+        (registrant: InterfaceUserAttende) =>
           registrant.status === STATUS_ACTIVE
       );
     });

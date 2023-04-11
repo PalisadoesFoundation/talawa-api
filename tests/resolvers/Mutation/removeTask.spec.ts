@@ -5,7 +5,7 @@ import {
   Organization,
   Event,
   Task,
-  Interface_Task,
+  InterfaceTask,
 } from "../../../src/models";
 import { MutationRemoveTaskArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
@@ -22,7 +22,7 @@ import { TestUserType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
-let testTask: Interface_Task & Document<any, any, Interface_Task>;
+let testTask: InterfaceTask & Document<any, any, InterfaceTask>;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

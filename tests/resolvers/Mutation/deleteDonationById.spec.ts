@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { Document, Types } from "mongoose";
-import { Interface_Donation, Donation } from "../../../src/models";
+import { InterfaceDonation, Donation } from "../../../src/models";
 import { MutationDeleteDonationByIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";

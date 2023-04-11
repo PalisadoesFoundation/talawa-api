@@ -2,7 +2,7 @@ import { Schema, Types, model, models } from "mongoose";
 /**
  * This is an interface that represents a database(MongoDB) document for Plugin.
  */
-export interface Interface_Plugin {
+export interface InterfacePlugin {
   _id: Types.ObjectId;
   pluginName: string;
   pluginCreatedBy: string;
@@ -46,7 +46,7 @@ const pluginSchema = new Schema({
   ],
 });
 
-const PluginModel = () => model<Interface_Plugin>("Plugin", pluginSchema);
+const PluginModel = () => model<InterfacePlugin>("Plugin", pluginSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Plugin = (models.Plugin || PluginModel()) as ReturnType<

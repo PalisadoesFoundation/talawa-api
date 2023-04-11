@@ -1,17 +1,17 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { Interface_Organization } from "./Organization";
-import { Interface_User } from "./User";
+import { InterfaceOrganization } from "./Organization";
+import { InterfaceUser } from "./User";
 /**
  * This is an interface that represents a database(MongoDB) document for Membership Request.
  */
-export interface Interface_MembershipRequest {
+export interface InterfaceMembershipRequest {
   _id: Types.ObjectId;
-  organization: PopulatedDoc<Interface_Organization & Document>;
-  user: PopulatedDoc<Interface_User & Document> | undefined;
+  organization: PopulatedDoc<InterfaceOrganization & Document>;
+  user: PopulatedDoc<InterfaceUser & Document> | undefined;
   status: string;
 }
 /**
- * This describes the schema for a `MembershipRequest` that corresponds to `Interface_MembershipRequest` document.
+ * This describes the schema for a `MembershipRequest` that corresponds to `InterfaceMembershipRequest` document.
  * @param organization - Organization data for which membership request is added.
  * @param user - User data who requested membership for an organization.
  * @param status - Status.
@@ -35,7 +35,7 @@ const membershipRequestSchema = new Schema({
 });
 
 const MembershipRequestModel = () =>
-  model<Interface_MembershipRequest>(
+  model<InterfaceMembershipRequest>(
     "MembershipRequest",
     membershipRequestSchema
   );

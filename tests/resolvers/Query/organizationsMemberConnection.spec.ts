@@ -1,8 +1,8 @@
 import "dotenv/config";
 import { organizationsMemberConnection as organizationsMemberConnectionResolver } from "../../../src/resolvers/Query/organizationsMemberConnection";
 import {
-  Interface_Organization,
-  Interface_User,
+  InterfaceOrganization,
+  InterfaceUser,
   Organization,
   User,
 } from "../../../src/models";

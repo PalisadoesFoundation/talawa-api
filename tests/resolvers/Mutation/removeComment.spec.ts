@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { Document, Types } from "mongoose";
-import { Comment, Interface_Comment, Post } from "../../../src/models";
+import { Comment, InterfaceComment, Post } from "../../../src/models";
 import { MutationRemoveCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
@@ -26,7 +26,7 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testPost: TestPostType;
 let testComment:
-  | (Interface_Comment & Document<any, any, Interface_Comment>)
+  | (InterfaceComment & Document<any, any, InterfaceComment>)
   | null;
 
 beforeAll(async () => {

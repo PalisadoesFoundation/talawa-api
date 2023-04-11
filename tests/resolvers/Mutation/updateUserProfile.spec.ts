@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { Document, Types } from "mongoose";
-import { Interface_User, User } from "../../../src/models";
+import { InterfaceUser, User } from "../../../src/models";
 import { MutationUpdateUserProfileArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
