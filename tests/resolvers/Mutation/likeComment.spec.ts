@@ -22,7 +22,7 @@ import { TestUserType } from "../../helpers/userAndOrg";
 import { createTestPost } from "../../helpers/posts";
 
 let testUser: TestUserType;
-let testComment: Interface_Comment & Document<any, any, Interface_Comment>;
+let testComment: InterfaceComment & Document<any, any, InterfaceComment>;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {

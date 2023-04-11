@@ -9,8 +9,8 @@ import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testLanguages: (Interface_Language &
-  Document<any, any, Interface_Language>)[];
+let testLanguages: (InterfaceLanguage &
+  Document<any, any, InterfaceLanguage>)[];
 
 const enValue = `en ${nanoid().toLowerCase()}`;
 const deValue = `de ${nanoid().toLowerCase()}`;

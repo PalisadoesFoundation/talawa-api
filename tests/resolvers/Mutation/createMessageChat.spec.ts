@@ -16,7 +16,7 @@ import {
   afterEach,
 } from "vitest";
 
-let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
+let testUsers: (InterfaceUser & Document<any, any, InterfaceUser>)[];
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {

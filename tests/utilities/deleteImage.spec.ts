@@ -20,7 +20,7 @@ const testOldImagePath: string = `${nanoid()}-testOldImagePath`;
 const testHashString: string = `${nanoid()}-testHash`;
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testHash: Interface_ImageHash & Document<any, any, Interface_ImageHash>;
+let testHash: InterfaceImageHash & Document<any, any, InterfaceImageHash>;
 
 vi.mock("fs", () => ({
   unlink: vi.fn(),

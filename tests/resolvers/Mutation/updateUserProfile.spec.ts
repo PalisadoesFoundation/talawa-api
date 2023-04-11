@@ -23,7 +23,7 @@ import {
 } from "vitest";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: InterfaceUser & Document<any, any, InterfaceUser>;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),

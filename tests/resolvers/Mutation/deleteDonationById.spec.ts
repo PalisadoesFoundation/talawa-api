@@ -8,7 +8,7 @@ import { deleteDonationById as deleteDonationByIdResolver } from "../../../src/r
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
-let testDonation: Interface_Donation & Document<any, any, Interface_Donation>;
+let testDonation: InterfaceDonation & Document<any, any, InterfaceDonation>;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {

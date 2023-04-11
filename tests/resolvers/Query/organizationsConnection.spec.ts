@@ -10,8 +10,8 @@ import { nanoid } from "nanoid";
 import { Document } from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testOrganizations: (Interface_Organization &
-  Document<any, any, Interface_Organization>)[];
+let testOrganizations: (InterfaceOrganization &
+  Document<any, any, InterfaceOrganization>)[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
