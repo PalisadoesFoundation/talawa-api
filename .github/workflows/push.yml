@@ -105,7 +105,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: PalisadoesFoundation/talawa-docs
-          token: ${{ secrets.API_TOKEN_GITHUB }}
+          token: ${{ secrets.TALAWA_DOCS_SYNC }}
           path: docs
       
       # Copy the generated schema.json into the Talawa Docs repository 
