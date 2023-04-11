@@ -54,7 +54,6 @@
     * [EventInput](#eventinput)
     * [EventWhereInput](#eventwhereinput)
     * [ForgotPasswordData](#forgotpassworddata)
-    * [GroupInput](#groupinput)
     * [LanguageInput](#languageinput)
     * [LoginInput](#logininput)
     * [MessageChatInput](#messagechatinput)
@@ -849,16 +848,6 @@
 <tr>
 <td colspan="2" align="right" valign="top">data</td>
 <td valign="top"><a href="#eventinput">EventInput</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>createGroup</strong></td>
-<td valign="top"><a href="#group">Group</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">data</td>
-<td valign="top"><a href="#groupinput">GroupInput</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -3772,35 +3761,6 @@ A list of edges.
 <tr>
 <td colspan="2" valign="top"><strong>otpToken</strong></td>
 <td valign="top"><a href="#string">String</a>!</td>
-<td></td>
-</tr>
-</tbody>
-</table>
-
-### GroupInput
-
-<table>
-<thead>
-<tr>
-<th colspan="2" align="left">Field</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td colspan="2" valign="top"><strong>title</strong></td>
-<td valign="top"><a href="#string">String</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>description</strong></td>
-<td valign="top"><a href="#string">String</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>organizationId</strong></td>
-<td valign="top"><a href="#id">ID</a>!</td>
 <td></td>
 </tr>
 </tbody>
