@@ -18,8 +18,8 @@ interface InterfaceConnection<T> {
   pageInfo: ConnectionPageInfo;
 }
 
-interface Interface_ConnectionResult<T> {
-  connectionData: Interface_Connection<T> | null;
+interface InterfaceConnectionResult<T> {
+  connectionData: InterfaceConnection<T> | null;
   connectionErrors: PaginationError[] | null;
 }
 
@@ -82,12 +82,12 @@ type PaginationFilterQueryType = {
 };
 
 // A common interface that denotes all Mongoose objects (all of them must have an _id field)
-interface Interface_MongooseObject {
+interface InterfaceMongooseObject {
   _id: Types.ObjectId;
 }
 
 // Genrates the relevant filterQuery that can be passed into the .find() method
-function getFilterQuery<U extends Interface_MongooseObject>(
+function getFilterQuery<U extends InterfaceMongooseObject>(
   args: CursorPaginationArgsType,
   filterQuery: FilterQuery<U>
 ): PaginationFilterQueryType {
@@ -158,11 +158,11 @@ It is important to know that the function would would sequentially in the follow
 3. Populate the fields provided.
 4. Run the functions getNodeFromResult on each of the fetched objects from the database.
 
-The function returns a promise which would resolve to the desired connection object (of the type Interface_Connection<T>).
+The function returns a promise which would resolve to the desired connection object (of the type InterfaceConnection<T>).
 */
 export async function createGraphQLConnection<
-  T extends Interface_MongooseObject,
-  U extends Interface_MongooseObject
+  T extends InterfaceMongooseObject,
+  U extends InterfaceMongooseObject
 >(
   args: CursorPaginationArgsType,
   databaseModel: Model<U>,
@@ -170,7 +170,7 @@ export async function createGraphQLConnection<
   sortingObject: { [key: string]: number },
   fieldsToPopulate: string | null,
   getNodeFromResult: GetNodeFromResultFnType<T, U>
-): Promise<Interface_ConnectionResult<T>> {
+): Promise<InterfaceConnectionResult<T>> {
   // Check that the provided arguments must either be correct forward pagination
   // arguments or correct backward pagination arguments
   const connectionErrors = validatePaginationArgs(args);

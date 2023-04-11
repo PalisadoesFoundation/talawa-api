@@ -1,7 +1,7 @@
 import { UserTagResolvers } from "../../types/generatedGraphQLTypes";
 import {
   OrganizationTagUser,
-  Interface_OrganizationTagUser,
+  InterfaceOrganizationTagUser,
 } from "../../models";
 import { createGraphQLConnection } from "../../utilities/graphqlConnectionFactory";
 
@@ -11,8 +11,8 @@ export const childTags: UserTagResolvers["childTags"] = async (
   args
 ) => {
   return await createGraphQLConnection<
-    Interface_OrganizationTagUser,
-    Interface_OrganizationTagUser
+    InterfaceOrganizationTagUser,
+    InterfaceOrganizationTagUser
   >(
     args,
     OrganizationTagUser,
