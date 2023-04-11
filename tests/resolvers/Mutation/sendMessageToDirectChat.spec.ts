@@ -4,8 +4,8 @@ import {
   User,
   Organization,
   DirectChat,
-  Interface_DirectChat,
-  Interface_DirectChatMessage,
+  InterfaceDirectChat,
+  InterfaceDirectChatMessage,
 } from "../../../src/models";
 import { MutationSendMessageToDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
@@ -27,10 +27,10 @@ import {
 import { createTestUserFunc } from "../../helpers/user";
 import { TestUserType } from "../../helpers/userAndOrg";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
-let testDirectChat: Interface_DirectChat &
-  Document<any, any, Interface_DirectChat>;
+let testDirectChat: InterfaceDirectChat &
+  Document<any, any, InterfaceDirectChat>;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -70,7 +70,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
@@ -148,7 +148,7 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
       publish: (
         _action: "MESSAGE_SENT_TO_DIRECT_CHAT",
         _payload: {
-          messageSentToDirectChat: Interface_DirectChatMessage;
+          messageSentToDirectChat: InterfaceDirectChatMessage;
         }
       ) => {
         return { _action, _payload };

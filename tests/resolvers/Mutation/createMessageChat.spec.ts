@@ -1,10 +1,6 @@
 import "dotenv/config";
 import { Document, Types } from "mongoose";
-import {
-  Interface_User,
-  User,
-  Interface_MessageChat,
-} from "../../../src/models";
+import { InterfaceUser, User, InterfaceMessageChat } from "../../../src/models";
 import { MutationCreateMessageChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
@@ -20,8 +16,8 @@ import {
   afterEach,
 } from "vitest";
 
-let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let testUsers: (InterfaceUser & Document<any, any, InterfaceUser>)[];
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -45,7 +41,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> createMessageChat", () => {
@@ -96,7 +92,7 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
       publish: (
         _action: "CHAT_CHANNEL",
         _payload: {
-          directMessageChat: Interface_MessageChat;
+          directMessageChat: InterfaceMessageChat;
         }
       ) => {
         return { _action, _payload };

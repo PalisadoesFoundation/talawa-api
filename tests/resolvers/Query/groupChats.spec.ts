@@ -6,7 +6,7 @@ import { GroupChat } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestGroupChat } from "../../helpers/groupChat";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -14,7 +14,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> groupChats", () => {

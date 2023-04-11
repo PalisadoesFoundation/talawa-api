@@ -23,12 +23,12 @@ import {
 } from "../helpers/userAndOrg";
 
 let testUser: TestUserType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 try {
   beforeAll(async () => {
     MONGOOSE_INSTANCE = await connect();
-    await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
+    await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE);
     const testUserObj = await createTestUserAndOrganization();
     testUser = testUserObj[0];
     try {
@@ -45,8 +45,8 @@ try {
   });
 
   afterAll(async () => {
-    await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE!);
-    await disconnect(MONGOOSE_INSTANCE!);
+    await dropAllCollectionsFromDatabase(MONGOOSE_INSTANCE);
+    await disconnect(MONGOOSE_INSTANCE);
   });
 
   describe("utilities -> uploadImage", () => {

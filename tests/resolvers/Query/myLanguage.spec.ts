@@ -8,14 +8,14 @@ import { nanoid } from "nanoid";
 import { Types } from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> myLanguage", () => {

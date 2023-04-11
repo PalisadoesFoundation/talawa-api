@@ -2,15 +2,15 @@ import "dotenv/config";
 import { getlanguage as getLanguageResolver } from "../../../src/resolvers/Query/getlanguage";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
-import { Interface_Language, Language } from "../../../src/models";
+import { InterfaceLanguage, Language } from "../../../src/models";
 import { Document } from "mongoose";
 import { QueryGetlanguageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testLanguages: (Interface_Language &
-  Document<any, any, Interface_Language>)[];
+let MONGOOSE_INSTANCE: typeof mongoose;
+let testLanguages: (InterfaceLanguage &
+  Document<any, any, InterfaceLanguage>)[];
 
 const enValue = `en ${nanoid().toLowerCase()}`;
 const deValue = `de ${nanoid().toLowerCase()}`;
@@ -54,7 +54,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> getLanguage", () => {

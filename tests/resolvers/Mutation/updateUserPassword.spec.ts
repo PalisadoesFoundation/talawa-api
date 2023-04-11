@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { Document, Types } from "mongoose";
-import { Interface_User, User } from "../../../src/models";
+import { InterfaceUser, User } from "../../../src/models";
 import { MutationUpdateUserPasswordArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
@@ -21,8 +21,8 @@ import {
 } from "vitest";
 import bcrypt from "bcryptjs";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let MONGOOSE_INSTANCE: typeof mongoose;
+let testUser: InterfaceUser & Document<any, any, InterfaceUser>;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),
@@ -43,7 +43,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 afterEach(() => {

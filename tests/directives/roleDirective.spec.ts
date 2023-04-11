@@ -1,5 +1,5 @@
 import { RoleAuthorizationDirective } from "../../src/directives/roleDirective";
-import { Interface_User, User } from "../../src/models";
+import { InterfaceUser, User } from "../../src/models";
 import { beforeAll, afterAll, it, expect } from "vitest";
 import { connect, disconnect } from "../helpers/db";
 import mongoose from "mongoose";
@@ -13,7 +13,7 @@ import i18n from "i18n";
 import express from "express";
 import { appConfig } from "../../src/config";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 const app = express();
 i18n.configure({
@@ -34,7 +34,7 @@ i18n.configure({
 });
 app.use(i18n.init);
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: InterfaceUser & Document<any, any, InterfaceUser>;
 
 const typeDefs = gql`
   directive @role(requires: String) on FIELD_DEFINITION
@@ -66,7 +66,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await testUser.remove();
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 it("throws NotFoundError if no user exists with _id === context.userId", async () => {

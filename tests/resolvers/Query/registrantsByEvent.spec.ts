@@ -14,7 +14,7 @@ import {
 } from "../../helpers/userAndOrg";
 import { TestEventType, createEventWithRegistrant } from "../../helpers/events";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -31,7 +31,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> registrantsByEvent", () => {

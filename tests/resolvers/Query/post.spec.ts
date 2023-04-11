@@ -9,7 +9,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { TestPostType, createPostwithComment } from "../../helpers/posts";
 import mongoose from "mongoose";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testPost: TestPostType;
 
 beforeAll(async () => {
@@ -18,7 +18,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> post", () => {

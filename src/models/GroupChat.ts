@@ -1,17 +1,17 @@
 import { Schema, Types, model, PopulatedDoc, Document, models } from "mongoose";
-import { Interface_GroupChatMessage } from "./GroupChatMessage";
-import { Interface_Organization } from "./Organization";
-import { Interface_User } from "./User";
+import { InterfaceGroupChatMessage } from "./GroupChatMessage";
+import { InterfaceOrganization } from "./Organization";
+import { InterfaceUser } from "./User";
 /**
  * This is an interface representing a document for a group chat in the database(MongoDB).
  */
-export interface Interface_GroupChat {
+export interface InterfaceGroupChat {
   _id: Types.ObjectId;
   title: string;
-  users: Array<PopulatedDoc<Interface_User & Document>>;
-  messages: Array<PopulatedDoc<Interface_GroupChatMessage & Document>>;
-  creator: PopulatedDoc<Interface_User & Document>;
-  organization: PopulatedDoc<Interface_Organization & Document>;
+  users: Array<PopulatedDoc<InterfaceUser & Document>>;
+  messages: Array<PopulatedDoc<InterfaceGroupChatMessage & Document>>;
+  creator: PopulatedDoc<InterfaceUser & Document>;
+  organization: PopulatedDoc<InterfaceOrganization & Document>;
   status: string;
 }
 /**
@@ -60,7 +60,7 @@ const groupChatSchema = new Schema({
 });
 
 const GroupChatModel = () =>
-  model<Interface_GroupChat>("GroupChat", groupChatSchema);
+  model<InterfaceGroupChat>("GroupChat", groupChatSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const GroupChat = (models.GroupChat || GroupChatModel()) as ReturnType<

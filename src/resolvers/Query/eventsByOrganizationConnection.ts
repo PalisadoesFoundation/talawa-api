@@ -1,12 +1,12 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { Event, Interface_Event, Interface_UserAttende } from "../../models";
+import { Event, InterfaceEvent, InterfaceUserAttende } from "../../models";
 import { STATUS_ACTIVE } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
 export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizationConnection"] =
   async (_parent, args) => {
-    let where = getWhere<Interface_Event>(args.where);
+    let where = getWhere<InterfaceEvent>(args.where);
     const sort = getSort(args.orderBy);
 
     where = {
@@ -25,7 +25,7 @@ export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizatio
 
     events.forEach((event) => {
       event.registrants = event.registrants.filter(
-        (registrant: Interface_UserAttende) =>
+        (registrant: InterfaceUserAttende) =>
           registrant.status === STATUS_ACTIVE
       );
     });

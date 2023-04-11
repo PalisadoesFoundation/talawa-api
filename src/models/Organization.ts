@@ -1,12 +1,12 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { Interface_MembershipRequest } from "./MembershipRequest";
-import { Interface_Message } from "./Message";
-import { Interface_Post } from "./Post";
-import { Interface_User } from "./User";
+import { InterfaceMembershipRequest } from "./MembershipRequest";
+import { InterfaceMessage } from "./Message";
+import { InterfacePost } from "./Post";
+import { InterfaceUser } from "./User";
 /**
  * This is an interface that represents a database(MongoDB) document for Organization.
  */
-export interface Interface_Organization {
+export interface InterfaceOrganization {
   _id: Types.ObjectId;
   apiUrl: string | undefined;
   image: string | undefined;
@@ -14,22 +14,22 @@ export interface Interface_Organization {
   description: string;
   location: string | undefined;
   isPublic: boolean;
-  creator: PopulatedDoc<Interface_User & Document>;
+  creator: PopulatedDoc<InterfaceUser & Document>;
   status: string;
-  members: Array<PopulatedDoc<Interface_User & Document>>;
-  admins: Array<PopulatedDoc<Interface_User & Document>>;
-  groupChats: Array<PopulatedDoc<Interface_Message & Document>>;
-  posts: Array<PopulatedDoc<Interface_Post & Document>>;
-  pinnedPosts: Array<PopulatedDoc<Interface_Post & Document>>;
+  members: Array<PopulatedDoc<InterfaceUser & Document>>;
+  admins: Array<PopulatedDoc<InterfaceUser & Document>>;
+  groupChats: Array<PopulatedDoc<InterfaceMessage & Document>>;
+  posts: Array<PopulatedDoc<InterfacePost & Document>>;
+  pinnedPosts: Array<PopulatedDoc<InterfacePost & Document>>;
   membershipRequests: Array<
-    PopulatedDoc<Interface_MembershipRequest & Document>
+    PopulatedDoc<InterfaceMembershipRequest & Document>
   >;
-  blockedUsers: Array<PopulatedDoc<Interface_User & Document>>;
+  blockedUsers: Array<PopulatedDoc<InterfaceUser & Document>>;
   visibleInSearch: boolean | undefined;
   createdAt: Date;
 }
 /**
- * This describes the schema for a `Organization` that corresponds to `Interface_Organization` document.
+ * This describes the schema for a `Organization` that corresponds to `InterfaceOrganization` document.
  * @param apiUrl - API URL.
  * @param image - Organization image URL.
  * @param name - Organization name.
@@ -134,7 +134,7 @@ const organizationSchema = new Schema({
 });
 
 const OrganizationModel = () =>
-  model<Interface_Organization>("Organization", organizationSchema);
+  model<InterfaceOrganization>("Organization", organizationSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Organization = (models.Organization ||

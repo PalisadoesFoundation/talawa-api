@@ -1,5 +1,5 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { Interface_User, User } from "../../models";
+import { InterfaceUser, User } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
@@ -15,7 +15,7 @@ export const usersConnection: QueryResolvers["usersConnection"] = async (
   _parent,
   args
 ) => {
-  const where = getWhere<Interface_User>(args.where);
+  const where = getWhere<InterfaceUser>(args.where);
   const sort = getSort(args.orderBy);
 
   const users = await User.find(where)

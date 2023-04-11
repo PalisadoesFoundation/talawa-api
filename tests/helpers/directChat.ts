@@ -2,8 +2,8 @@ import { nanoid } from "nanoid";
 import {
   DirectChat,
   DirectChatMessage,
-  Interface_DirectChat,
-  Interface_DirectChatMessage,
+  InterfaceDirectChat,
+  InterfaceDirectChatMessage,
 } from "../../src/models";
 import {
   createTestUserAndOrganization,
@@ -13,12 +13,12 @@ import {
 import { Document } from "mongoose";
 
 export type TestDirectChatType =
-  | (Interface_DirectChat & Document<any, any, Interface_DirectChat>)
+  | (InterfaceDirectChat & Document<any, any, InterfaceDirectChat>)
   | null;
 
 export type TestDirectChatMessageType =
-  | (Interface_DirectChatMessage &
-      Document<any, any, Interface_DirectChatMessage>)
+  | (InterfaceDirectChatMessage &
+      Document<any, any, InterfaceDirectChatMessage>)
   | null;
 
 export const createTestDirectChat = async (): Promise<

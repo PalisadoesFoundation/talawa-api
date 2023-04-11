@@ -2,7 +2,7 @@ import { Schema, model, Types, models } from "mongoose";
 /**
  * This is an interface representing a document for a donation in the database(MongoDB).
  */
-export interface Interface_Donation {
+export interface InterfaceDonation {
   userId: Types.ObjectId | string;
   orgId: Types.ObjectId | string;
   nameOfOrg: string;
@@ -47,7 +47,7 @@ const donationSchema = new Schema({
 });
 
 const DonationModel = () =>
-  model<Interface_Donation>("Donation", donationSchema);
+  model<InterfaceDonation>("Donation", donationSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Donation = (models.Donation || DonationModel()) as ReturnType<

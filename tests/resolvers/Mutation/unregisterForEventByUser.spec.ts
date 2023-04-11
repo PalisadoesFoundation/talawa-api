@@ -21,7 +21,7 @@ import {
 import { TestUserType } from "../../helpers/userAndOrg";
 import { createTestEvent, TestEventType } from "../../helpers/events";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testEvent: TestEventType;
 
@@ -33,7 +33,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 afterEach(() => {

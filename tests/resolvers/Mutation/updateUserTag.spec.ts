@@ -23,7 +23,7 @@ import { createTestUser, TestUserType } from "../../helpers/userAndOrg";
 import { TestUserTagType, createRootTagsWithOrg } from "../../helpers/tags";
 import { OrganizationTagUser } from "../../../src/models";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 let testUser: TestUserType;
 let testTag: TestUserTagType, testTag2: TestUserTagType;
@@ -36,7 +36,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> updateUserTag", () => {

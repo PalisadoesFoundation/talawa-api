@@ -9,13 +9,13 @@ import { mailer } from "../../src/utilities/mailer";
 import { nanoid } from "nanoid";
 import Mail from "nodemailer/lib/mailer";
 
-interface Test_Interface_MailFields {
+interface TestInterfaceMailFields {
   emailTo: string;
   subject: string;
   body: string;
 }
 
-const testMailFields: Test_Interface_MailFields = {
+const testMailFields: TestInterfaceMailFields = {
   emailTo: `${nanoid().toLowerCase()}@gmail.com`,
   subject: `${nanoid()}`,
   body: `${nanoid()}`,

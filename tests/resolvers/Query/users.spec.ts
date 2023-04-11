@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { users as usersResolver } from "../../../src/resolvers/Query/users";
-import { Event, Interface_User, Organization, User } from "../../../src/models";
+import { Event, InterfaceUser, Organization, User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 import { QueryUsersArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Document } from "mongoose";
@@ -10,16 +10,16 @@ import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import * as mongoose from "mongoose";
 import { createTestUser } from "../../helpers/user";
 
-let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
+let testUsers: (InterfaceUser & Document<any, any, InterfaceUser>)[];
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> users", () => {

@@ -1,5 +1,5 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { Interface_User, User } from "../../models";
+import { InterfaceUser, User } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
@@ -17,7 +17,7 @@ import { getWhere } from "./helperFunctions/getWhere";
 // @ts-ignore
 export const organizationsMemberConnection: QueryResolvers["organizationsMemberConnection"] =
   async (_parent, args, context) => {
-    const where = getWhere<Interface_User>(args.where);
+    const where = getWhere<InterfaceUser>(args.where);
     const sort = getSort(args.orderBy);
 
     // Pagination based Options
