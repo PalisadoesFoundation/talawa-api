@@ -18,8 +18,8 @@ on:
       
 jobs:
   ##############################################################################
-  # This section is added so that the most recent and valid level of
-  # code coverage (post PR merge) is reported
+  # This section is added so that the Talawa Docs repository and Talawa API
+  # are both updated with the latest schema docs post merge.
   ##############################################################################
 
   Push-Workflow:
