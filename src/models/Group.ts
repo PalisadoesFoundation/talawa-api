@@ -1,17 +1,17 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { Interface_Organization } from "./Organization";
-import { Interface_User } from "./User";
+import { InterfaceOrganization } from "./Organization";
+import { InterfaceUser } from "./User";
 /**
  * This is an interface representing a document for a group in the database(MongoDB).
  */
-export interface Interface_Group {
+export interface InterfaceGroup {
   _id: Types.ObjectId;
   title: string;
   description: string | undefined;
   createdAt: Date;
-  organization: PopulatedDoc<Interface_Organization & Document>;
+  organization: PopulatedDoc<InterfaceOrganization & Document>;
   status: string;
-  admins: Array<PopulatedDoc<Interface_User & Document>>;
+  admins: Array<PopulatedDoc<InterfaceUser & Document>>;
 }
 /**
  * This is the structure of a group
@@ -53,7 +53,7 @@ const groupSchema = new Schema({
   ],
 });
 
-const GroupModel = () => model<Interface_Group>("Group", groupSchema);
+const GroupModel = () => model<InterfaceGroup>("Group", groupSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Group = (models.Group || GroupModel()) as ReturnType<

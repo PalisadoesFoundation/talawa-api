@@ -18,7 +18,7 @@ import {
  * @remarks You can learn about Generics {@link https://www.typescriptlang.org/docs/handbook/2/generics.html | here}.
  * @example Here's an example showing how `getWhere()` can be used to get a FilterQuery object matching certain args mentioned in `where`
  * ```
- * const inputArgs = getWhere<Interface_Event>(args.where);
+ * const inputArgs = getWhere<InterfaceEvent>(args.where);
  * ```
  */
 export const getWhere = <T = unknown>(

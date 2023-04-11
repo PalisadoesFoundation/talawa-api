@@ -1,13 +1,13 @@
 import { Schema, Types, model, PopulatedDoc, Document, models } from "mongoose";
-import { Interface_Organization } from "./Organization";
-import { Interface_Task } from "./Task";
-import { Interface_User } from "./User";
+import { InterfaceOrganization } from "./Organization";
+import { InterfaceTask } from "./Task";
+import { InterfaceUser } from "./User";
 /**
  * This is an interface representing a document for a user attendee in the database(MongoDB).
  */
-export interface Interface_UserAttende {
+export interface InterfaceUserAttende {
   userId: string;
-  user: PopulatedDoc<Interface_User & Document>;
+  user: PopulatedDoc<InterfaceUser & Document>;
   status: string;
   createdAt: Date;
 }
@@ -42,7 +42,7 @@ const userAttendeSchema = new Schema({
 /**
  * This is an interface representing a document for an event in the database(MongoDB).
  */
-export interface Interface_Event {
+export interface InterfaceEvent {
   _id: Types.ObjectId;
   title: string;
   description: string;
@@ -59,11 +59,11 @@ export interface Interface_Event {
   recurrance: string;
   isPublic: boolean;
   isRegisterable: boolean;
-  creator: PopulatedDoc<Interface_User & Document>;
-  registrants: Array<PopulatedDoc<Interface_UserAttende & Document>>;
-  admins: Array<PopulatedDoc<Interface_User & Document>>;
-  organization: PopulatedDoc<Interface_Organization & Document>;
-  tasks: Array<PopulatedDoc<Interface_Task & Document>>;
+  creator: PopulatedDoc<InterfaceUser & Document>;
+  registrants: Array<PopulatedDoc<InterfaceUserAttende & Document>>;
+  admins: Array<PopulatedDoc<InterfaceUser & Document>>;
+  organization: PopulatedDoc<InterfaceOrganization & Document>;
+  tasks: Array<PopulatedDoc<InterfaceTask & Document>>;
   status: string;
 }
 /**
@@ -196,7 +196,7 @@ const eventSchema = new Schema({
   },
 });
 
-const EventModel = () => model<Interface_Event>("Event", eventSchema);
+const EventModel = () => model<InterfaceEvent>("Event", eventSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Event = (models.Event || EventModel()) as ReturnType<

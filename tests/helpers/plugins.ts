@@ -3,12 +3,12 @@ import {
   TestOrganizationType,
   TestUserType,
 } from "./userAndOrg";
-import { Plugin, Interface_Plugin } from "../../src/models";
+import { Plugin, InterfacePlugin } from "../../src/models";
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
 export type TestPluginType =
-  | (Interface_Plugin & Document<any, any, Interface_Plugin>)
+  | (InterfacePlugin & Document<any, any, InterfacePlugin>)
   | null;
 
 export const createTestPlugin = async (): Promise<

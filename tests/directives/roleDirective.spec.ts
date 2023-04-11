@@ -1,5 +1,5 @@
 import { RoleAuthorizationDirective } from "../../src/directives/roleDirective";
-import { Interface_User, User } from "../../src/models";
+import { InterfaceUser, User } from "../../src/models";
 import { beforeAll, afterAll, it, expect } from "vitest";
 import { connect, disconnect } from "../helpers/db";
 import mongoose from "mongoose";
@@ -34,7 +34,7 @@ i18n.configure({
 });
 app.use(i18n.init);
 
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let testUser: InterfaceUser & Document<any, any, InterfaceUser>;
 
 const typeDefs = gql`
   directive @role(requires: String) on FIELD_DEFINITION

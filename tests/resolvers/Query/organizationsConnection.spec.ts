@@ -1,10 +1,6 @@
 import "dotenv/config";
 import { organizationsConnection as organizationsConnectionResolver } from "../../../src/resolvers/Query/organizationsConnection";
-import {
-  Organization,
-  User,
-  Interface_Organization,
-} from "../../../src/models";
+import { Organization, User, InterfaceOrganization } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { QueryOrganizationsConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -14,8 +10,8 @@ import { nanoid } from "nanoid";
 import { Document } from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testOrganizations: (Interface_Organization &
-  Document<any, any, Interface_Organization>)[];
+let testOrganizations: (InterfaceOrganization &
+  Document<any, any, InterfaceOrganization>)[];
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const testUser: TestUserType = await createTestUser();
