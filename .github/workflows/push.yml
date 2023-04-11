@@ -26,7 +26,7 @@ jobs:
   ##############################################################################
 
   Push-Workflow:
-    name: Testing Application and Updating Documentation
+    name: Testing Application
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -51,8 +51,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          path: api
         
       - name: Generate Access Token Secret
         run: echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
@@ -63,69 +61,17 @@ jobs:
       - name: Set up Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
 
-      # Move into the api folder before installing the dependencies
       - name: Install dependencies
-        run: cd api && npm ci
+        run: npm ci
 
-      # Move into the api folder before starting the server
-      - name: Start the development server in detach mode
-        run: |
-          cd api && npm run dev &
-          echo "Development server started..."
       - name: Sleep for 10s
         uses: juliangruber/sleep-action@v1
         with:
           time: 10s
 
-      # Move into the api folder before generating the Markdown schema documentation
-      - name: Generate the GraphQL-Markdown documentation
-        run: cd api && npm run generate:graphql-markdown
-      
-      # Move into the api folder before generating the Schema is json form
-      - name: Genrate the GraphQL Schema in JSON form
-        run: cd api && npm run generate:graphql-schema
-
-
-      # Running the generate::** scripts will create the necessary documentation on the server 
-      # where the GitHub Action is running locally. We add the same to stage with -f flag as they are a 
-      # part of the .gitignore file
-      - name: Add the generated Markdown Documentation to stage
-        run: cd api && git add docs/Schema.md -f
-
-      # We use this action to commit the changes above to the repository
-      - name: Commit generated Markdown Documentation to the Talawa API repository
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: Generate GraphQL Schema and Markdown Documentation
-          repository: api
-      
-      # We will clone the Talawa Docs in the folder called docs so that we can copy the generated
-      # schema.json into the same later
-      - name: Checkout the Talawa-Docs repository
-        uses: actions/checkout@v3
-        with:
-          repository: PalisadoesFoundation/talawa-docs
-          token: ${{ secrets.TALAWA_DOCS_SYNC }}
-          path: docs
-      
-      # Copy the generated schema.json into the Talawa Docs repository 
-      - name: Sync schema.json from Talawa API to Talawa Docs
-        run: cp api/docs/schema.json docs/docs/
-
-      # Add the updated schema.json in Talawa Docs to stage
-      - name: Add the synced schema.json to stage in Talawa Docs
-        run: cd docs && git add docs/schema.json
-
-      # Commit the changes made to schema.json into Talawa Docs
-      - name: Commit the synced schema to the Talawa Docs repository
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: Update schema.json
-          repository: docs
-      
-      # Testing the application after moving into the api folder
+      # Testing the application 
       - name: Run the tests
-        run: cd api && npm run test
+        run: npm run test
     
       # Upload Coverage
       - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
