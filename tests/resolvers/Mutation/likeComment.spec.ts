@@ -23,7 +23,7 @@ import { createTestPost } from "../../helpers/posts";
 
 let testUser: TestUserType;
 let testComment: InterfaceComment & Document<any, any, InterfaceComment>;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -54,7 +54,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> likeComment", () => {

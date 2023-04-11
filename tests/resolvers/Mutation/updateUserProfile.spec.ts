@@ -22,7 +22,7 @@ import {
   afterEach,
 } from "vitest";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: InterfaceUser & Document<any, any, InterfaceUser>;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
@@ -51,7 +51,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 afterEach(() => {

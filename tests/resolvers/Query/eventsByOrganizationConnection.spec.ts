@@ -10,7 +10,7 @@ import { createEventWithRegistrant, TestEventType } from "../../helpers/events";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestTask } from "../../helpers/task";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvents: TestEventType[];
 
 beforeAll(async () => {
@@ -39,7 +39,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> organizationsMemberConnection", () => {

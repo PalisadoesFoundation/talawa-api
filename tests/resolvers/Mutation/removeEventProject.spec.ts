@@ -27,7 +27,7 @@ import {
 import { TestUserType } from "../../helpers/userAndOrg";
 import { createTestEvent, TestEventType } from "../../helpers/events";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testUserNotCreatorOfEventProject: TestUserType;
 let testEvent: TestEventType;
@@ -62,7 +62,7 @@ afterAll(async () => {
   await Organization.deleteMany({});
   await Event.deleteMany({});
   await EventProject.deleteMany({});
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 afterEach(async () => {

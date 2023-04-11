@@ -46,7 +46,7 @@ const resolvers = {
   },
 };
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -55,7 +55,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await testUser!.remove();
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 it("throws UnauthenticatedError when context is expired", async () => {

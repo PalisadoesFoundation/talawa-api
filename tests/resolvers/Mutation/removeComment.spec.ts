@@ -22,7 +22,7 @@ import {
 import { TestUserType } from "../../helpers/userAndOrg";
 import { createTestPost, TestPostType } from "../../helpers/posts";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testPost: TestPostType;
 let testComment:
@@ -59,7 +59,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> removeComment", () => {

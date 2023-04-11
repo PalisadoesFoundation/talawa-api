@@ -31,7 +31,7 @@ import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/
 import { signUp as signUpResolverImage } from "../../../src/resolvers/Mutation/signUp";
 
 const testImagePath: string = `${nanoid().toLowerCase()}test.png`;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 
@@ -55,7 +55,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> signUp", () => {

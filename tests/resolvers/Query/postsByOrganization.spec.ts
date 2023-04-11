@@ -13,7 +13,7 @@ import {
 import { createSinglePostwithComment } from "../../helpers/posts";
 import { BASE_URL } from "../../../src/constants";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;
 let testUser: TestUserType;
 
@@ -26,7 +26,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> posts", () => {

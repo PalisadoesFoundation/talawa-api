@@ -8,7 +8,7 @@ import { QueryGetlanguageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testLanguages: (InterfaceLanguage &
   Document<any, any, InterfaceLanguage>)[];
 
@@ -54,7 +54,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> getLanguage", () => {

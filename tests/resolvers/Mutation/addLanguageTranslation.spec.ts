@@ -8,7 +8,7 @@ import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 
 const randomValue = nanoid().toLowerCase();
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 const testArgs: MutationAddLanguageTranslationArgs[] = [
   {
@@ -39,7 +39,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> addLanguageTranslation", () => {

@@ -13,7 +13,7 @@ import i18n from "i18n";
 import express from "express";
 import { appConfig } from "../../src/config";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 const app = express();
 i18n.configure({
@@ -66,7 +66,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await testUser.remove();
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 it("throws NotFoundError if no user exists with _id === context.userId", async () => {

@@ -9,9 +9,10 @@ import { createTestUser, TestUserType } from "../../helpers/userAndOrg";
 import { nanoid } from "nanoid";
 import { Document } from "mongoose";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganizations: (InterfaceOrganization &
   Document<any, any, InterfaceOrganization>)[];
+
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const testUser: TestUserType = await createTestUser();
@@ -76,7 +77,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> organizationsConnection", () => {

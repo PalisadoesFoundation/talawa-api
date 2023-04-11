@@ -27,7 +27,7 @@ import {
 import { createTestUserFunc } from "../../helpers/user";
 import { TestUserType } from "../../helpers/userAndOrg";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
 let testDirectChat: InterfaceDirectChat &
   Document<any, any, InterfaceDirectChat>;
@@ -70,7 +70,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
