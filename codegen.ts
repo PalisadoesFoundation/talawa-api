@@ -25,53 +25,52 @@ const config: CodegenConfig = {
         // functionality is useful because what we retrieve from the database and what we choose to return from a graphql server
         // could be completely different fields. Address to models here is relative to the location of generated types.
         mappers: {
-          MessageChat: "../models/MessageChat#Interface_MessageChat",
+          MessageChat: "../models/MessageChat#InterfaceMessageChat",
 
-          Comment: "../models/Comment#Interface_Comment",
+          Comment: "../models/Comment#InterfaceComment",
 
-          DirectChat: "../models/DirectChat#Interface_DirectChat",
+          DirectChat: "../models/DirectChat#InterfaceDirectChat",
 
           DirectChatMessage:
-            "../models/DirectChatMessage#Interface_DirectChatMessage",
+            "../models/DirectChatMessage#InterfaceDirectChatMessage",
 
-          Donation: "../models/Donation#Interface_Donation",
+          Donation: "../models/Donation#InterfaceDonation",
 
-          Event: "../models/Event#Interface_Event",
+          Event: "../models/Event#InterfaceEvent",
 
-          // EventProject: '../models/EventProject#Interface_EventProject'
+          // EventProject: '../models/EventProject#InterfaceEventProject'
 
-          // File: '../models/File#Interface_File',
+          // File: '../models/File#InterfaceFile',
 
-          Group: "../models/Group#Interface_Group",
+          Group: "../models/Group#InterfaceGroup",
 
-          GroupChat: "../models/GroupChat#Interface_GroupChat",
+          GroupChat: "../models/GroupChat#InterfaceGroupChat",
 
           GroupChatMessage:
-            "../models/GroupChatMessage#Interface_GroupChatMessage",
+            "../models/GroupChatMessage#InterfaceGroupChatMessage",
 
-          // ImageHash: '../models/ImageHash#Interface_ImageHash',
+          // ImageHash: '../models/ImageHash#InterfaceImageHash',
 
-          Language: "../models/Language#Interface_Language",
+          Language: "../models/Language#InterfaceLanguage",
 
           MembershipRequest:
-            "../models/MembershipRequest#Interface_MembershipRequest",
+            "../models/MembershipRequest#InterfaceMembershipRequest",
 
-          Message: "../models/Message#Interface_Message",
+          Message: "../models/Message#InterfaceMessage",
 
-          Organization: "../models/Organization#Interface_Organization",
+          Organization: "../models/Organization#InterfaceOrganization",
 
-          Plugin: "../models/Plugin#Interface_Plugin",
+          Plugin: "../models/Plugin#InterfacePlugin",
 
-          PluginField: "../models/PluginField#Interface_PluginField",
+          PluginField: "../models/PluginField#InterfacePluginField",
 
-          Post: "../models/Post#Interface_Post",
+          Post: "../models/Post#InterfacePost",
 
-          Task: "../models/Task#Interface_Task",
+          Task: "../models/Task#InterfaceTask",
 
-          UserTag:
-            "../models/OrganizationTagUser#Interface_OrganizationTagUser",
+          UserTag: "../models/OrganizationTagUser#InterfaceOrganizationTagUser",
 
-          User: "../models/User#Interface_User",
+          User: "../models/User#InterfaceUser",
         },
 
         useTypeImports: true,

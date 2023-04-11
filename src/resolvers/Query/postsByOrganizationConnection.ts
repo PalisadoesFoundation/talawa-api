@@ -1,5 +1,5 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { Interface_Post, Post } from "../../models";
+import { InterfacePost, Post } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
@@ -18,7 +18,7 @@ import { getWhere } from "./helperFunctions/getWhere";
 export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationConnection"] =
   async (_parent, args, context) => {
     const sort = getSort(args.orderBy);
-    const where = getWhere<Interface_Post>(args.where);
+    const where = getWhere<InterfacePost>(args.where);
 
     // Pagination based Options
     let options = {};

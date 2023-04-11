@@ -4,7 +4,7 @@ import {
   User,
   Organization,
   Event,
-  Interface_EventProject,
+  InterfaceEventProject,
   EventProject,
 } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
@@ -30,8 +30,8 @@ let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
 let testEvent: TestEventType;
-let testEventProject: Interface_EventProject &
-  Document<any, any, Interface_EventProject>;
+let testEventProject: InterfaceEventProject &
+  Document<any, any, InterfaceEventProject>;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

@@ -9,13 +9,13 @@ import {
 } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
 import validator from "validator";
-import { Interface_Event } from "./Event";
-import { Interface_MembershipRequest } from "./MembershipRequest";
-import { Interface_Organization } from "./Organization";
+import { InterfaceEvent } from "./Event";
+import { InterfaceMembershipRequest } from "./MembershipRequest";
+import { InterfaceOrganization } from "./Organization";
 /**
  * This is an interface that represents a database(MongoDB) document for User.
  */
-export interface Interface_User {
+export interface InterfaceUser {
   _id: Types.ObjectId;
   image: string | undefined | null;
   token: string | undefined;
@@ -25,29 +25,27 @@ export interface Interface_User {
   email: string;
   password: string;
   appLanguageCode: string;
-  createdOrganizations: Array<PopulatedDoc<Interface_Organization & Document>>;
-  createdEvents: Array<PopulatedDoc<Interface_Event & Document>>;
+  createdOrganizations: Array<PopulatedDoc<InterfaceOrganization & Document>>;
+  createdEvents: Array<PopulatedDoc<InterfaceEvent & Document>>;
   userType: string;
-  joinedOrganizations: Array<PopulatedDoc<Interface_Organization & Document>>;
-  registeredEvents: Array<PopulatedDoc<Interface_Event & Document>>;
-  eventAdmin: Array<PopulatedDoc<Interface_Event & Document>>;
-  adminFor: Array<PopulatedDoc<Interface_Organization & Document>>;
+  joinedOrganizations: Array<PopulatedDoc<InterfaceOrganization & Document>>;
+  registeredEvents: Array<PopulatedDoc<InterfaceEvent & Document>>;
+  eventAdmin: Array<PopulatedDoc<InterfaceEvent & Document>>;
+  adminFor: Array<PopulatedDoc<InterfaceOrganization & Document>>;
   membershipRequests: Array<
-    PopulatedDoc<Interface_MembershipRequest & Document>
+    PopulatedDoc<InterfaceMembershipRequest & Document>
   >;
-  organizationsBlockedBy: Array<
-    PopulatedDoc<Interface_Organization & Document>
-  >;
+  organizationsBlockedBy: Array<PopulatedDoc<InterfaceOrganization & Document>>;
   status: string;
   organizationUserBelongsTo:
-    | PopulatedDoc<Interface_Organization & Document>
+    | PopulatedDoc<InterfaceOrganization & Document>
     | undefined;
   pluginCreationAllowed: boolean;
   adminApproved: boolean;
   createdAt: Date;
 }
 /**
- * This describes the schema for a `User` that corresponds to `Interface_User` document.
+ * This describes the schema for a `User` that corresponds to `InterfaceUser` document.
  * @param image - User Image URL.
  * @param tokenVersion - Token version.
  * @param firstName - User First Name.
@@ -187,7 +185,7 @@ const userSchema = new Schema({
 userSchema.plugin(mongoosePaginate);
 
 const UserModel = () =>
-  model<Interface_User, PaginateModel<Interface_User>>("User", userSchema);
+  model<InterfaceUser, PaginateModel<InterfaceUser>>("User", userSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const User = (models.User || UserModel()) as ReturnType<

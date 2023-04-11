@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from "../constants";
-import { Interface_User } from "../models";
+import { InterfaceUser } from "../models";
 
-export interface Interface_JwtTokenPayload {
+export interface InterfaceJwtTokenPayload {
   tokenVersion: number;
   userId: string;
   firstName: string;
@@ -15,7 +15,7 @@ export interface Interface_JwtTokenPayload {
  * @param user - User data
  * @returns JSON Web Token string payload
  */
-export const createAccessToken = async (user: Interface_User) => {
+export const createAccessToken = async (user: InterfaceUser) => {
   return jwt.sign(
     {
       tokenVersion: user.tokenVersion,
@@ -31,7 +31,7 @@ export const createAccessToken = async (user: Interface_User) => {
   );
 };
 
-export const createRefreshToken = async (user: Interface_User) => {
+export const createRefreshToken = async (user: InterfaceUser) => {
   return jwt.sign(
     {
       tokenVersion: user.tokenVersion,

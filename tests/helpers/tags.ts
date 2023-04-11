@@ -1,5 +1,5 @@
 import {
-  Interface_OrganizationTagUser,
+  InterfaceOrganizationTagUser,
   OrganizationTagUser,
   TagUser,
 } from "../../src/models";
@@ -11,7 +11,7 @@ import {
   createTestUser,
 } from "./userAndOrg";
 
-export type TestUserTagType = Interface_OrganizationTagUser | null;
+export type TestUserTagType = InterfaceOrganizationTagUser | null;
 
 export const createRootTagWithOrg = async (): Promise<
   [TestUserType, TestOrganizationType, TestUserTagType]
