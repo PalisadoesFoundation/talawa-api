@@ -28,6 +28,7 @@ jobs:
   Push-Workflow:
     name: Testing Application and Updating Documentation
     runs-on: ubuntu-latest
+    environment: TALAWA_ENVIRONMENT
     strategy:
       matrix:
         node-version: [14.x]
