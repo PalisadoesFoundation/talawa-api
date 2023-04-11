@@ -12,14 +12,14 @@ import { createTestUser } from "../../helpers/user";
 
 let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> users", () => {

@@ -11,7 +11,7 @@ import { TestUserType } from "../../helpers/userAndOrg";
 import { createTestEvent, TestEventType } from "../../helpers/events";
 import { createTestTask } from "../../helpers/task";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;
 let testUser: TestUserType;
 
@@ -24,7 +24,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> event", () => {

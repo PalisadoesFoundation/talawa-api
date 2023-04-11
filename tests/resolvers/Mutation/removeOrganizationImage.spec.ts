@@ -22,7 +22,7 @@ import {
 import { TestOrganizationType, TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserFunc } from "../../helpers/user";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -61,7 +61,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await User.deleteMany({});
   await Organization.deleteMany({});
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> removeOrganizationImage", () => {

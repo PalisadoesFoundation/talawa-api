@@ -6,7 +6,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTwoLevelTagsWithOrg, TestUserTagType } from "../../helpers/tags";
 import { OrganizationTagUser } from "../../../src/models";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testChildTag: TestUserTagType, testParentTag: TestUserTagType;
 
 beforeAll(async () => {
@@ -15,7 +15,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Tag -> parentTag", () => {

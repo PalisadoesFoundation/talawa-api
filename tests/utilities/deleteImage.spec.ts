@@ -19,7 +19,7 @@ const testImageToBeDeleted: string = `${nanoid()}-testNewImagePath`;
 const testOldImagePath: string = `${nanoid()}-testOldImagePath`;
 const testHashString: string = `${nanoid()}-testHash`;
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testHash: Interface_ImageHash & Document<any, any, Interface_ImageHash>;
 
 vi.mock("fs", () => ({
@@ -37,7 +37,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await ImageHash.deleteMany({});
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("utilities -> deleteImage.ts", () => {

@@ -13,7 +13,7 @@ import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { TestUserType } from "../../helpers/userAndOrg";
 import { createTestPost } from "../../helpers/posts";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testComment: Interface_Comment & Document<any, any, Interface_Comment>;
 
@@ -47,7 +47,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> unlikeComment", () => {

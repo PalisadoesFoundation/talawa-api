@@ -17,7 +17,7 @@ import {
   TestMembershipRequestType,
 } from "../../helpers/membershipRequests";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testMembershipRequest: TestMembershipRequestType;
@@ -31,7 +31,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> sendMembershipRequest", () => {

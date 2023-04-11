@@ -14,7 +14,7 @@ import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { BASE_URL } from "../../../src/constants";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
 let testOrganization: Interface_Organization &
   Document<any, any, Interface_Organization>;
@@ -95,7 +95,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> organizationsMemberConnection", () => {

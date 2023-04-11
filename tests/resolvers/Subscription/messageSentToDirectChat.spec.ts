@@ -9,7 +9,7 @@ import {
 import { TestUserType } from "../../helpers/userAndOrg";
 import { filterFunction } from "../../../src/resolvers/Subscription/messageSentToDirectChat";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testDirectChatMessage: TestDirectChatMessageType;
 let testCurrentUser: TestUserType;
 
@@ -20,7 +20,7 @@ beforeAll(async () => {
   testDirectChatMessage = resultArray[3];
 });
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {

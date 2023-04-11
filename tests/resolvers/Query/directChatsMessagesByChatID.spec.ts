@@ -17,7 +17,7 @@ import {
   TestDirectChatType,
 } from "../../helpers/directChat";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testDirectChats: TestDirectChatType[];
 
 beforeAll(async () => {
@@ -46,7 +46,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> directChatsMessagesByChatID", () => {

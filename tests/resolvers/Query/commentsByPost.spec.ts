@@ -15,7 +15,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createPostwithComment, TestPostType } from "../../helpers/posts";
 import { TestUserType, TestOrganizationType } from "../../helpers/userAndOrg";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testPost: TestPostType;
@@ -29,7 +29,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> commentsByPost", () => {

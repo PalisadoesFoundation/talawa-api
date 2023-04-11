@@ -11,7 +11,7 @@ import {
   TestUserType,
 } from "../../helpers/userAndOrg";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testPlugin: Interface_Plugin & Document<any, any, Interface_Plugin>;
 
@@ -30,7 +30,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> updatePluginStatus", () => {

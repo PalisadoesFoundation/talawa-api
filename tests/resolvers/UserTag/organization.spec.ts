@@ -7,7 +7,7 @@ import { createRootTagWithOrg, TestUserTagType } from "../../helpers/tags";
 import { TestOrganizationType } from "../../helpers/userAndOrg";
 import { Organization } from "../../../src/models";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testTag: TestUserTagType, testOrg: TestOrganizationType;
 
 beforeAll(async () => {
@@ -16,7 +16,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Tag -> organization", () => {

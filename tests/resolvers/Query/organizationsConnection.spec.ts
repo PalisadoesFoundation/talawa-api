@@ -13,7 +13,7 @@ import { createTestUser, TestUserType } from "../../helpers/userAndOrg";
 import { nanoid } from "nanoid";
 import { Document } from "mongoose";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganizations: (Interface_Organization &
   Document<any, any, Interface_Organization>)[];
 beforeAll(async () => {
@@ -80,7 +80,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> organizationsConnection", () => {

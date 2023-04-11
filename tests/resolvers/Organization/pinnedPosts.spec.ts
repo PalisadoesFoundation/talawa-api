@@ -7,7 +7,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { TestOrganizationType } from "../../helpers/userAndOrg";
 import { createTestPost } from "../../helpers/posts";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
@@ -16,7 +16,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Organization -> pinnedPosts", () => {

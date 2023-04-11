@@ -21,7 +21,7 @@ import {
 } from "vitest";
 import bcrypt from "bcryptjs";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: Interface_User & Document<any, any, Interface_User>;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
@@ -43,7 +43,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 afterEach(() => {

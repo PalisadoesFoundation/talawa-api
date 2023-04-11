@@ -13,7 +13,7 @@ import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { nanoid } from "nanoid";
 
 let testUser: TestUserType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -21,7 +21,7 @@ beforeAll(async () => {
   testUser = temp[0];
 });
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> otp", () => {

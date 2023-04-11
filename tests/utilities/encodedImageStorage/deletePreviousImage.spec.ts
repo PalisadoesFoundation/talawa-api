@@ -5,7 +5,7 @@ import { deletePreviousImage } from "../../../src/utilities/encodedImageStorage/
 import { EncodedImage } from "../../../src/models/EncodedImage";
 import { uploadEncodedImage } from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testPreviousImagePath: string;
 const img =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0" +
@@ -20,7 +20,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("src -> utilities -> encodedImageStorage -> deletePreviousImage", () => {

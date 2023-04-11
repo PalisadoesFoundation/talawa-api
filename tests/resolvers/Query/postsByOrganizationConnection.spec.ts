@@ -15,7 +15,7 @@ import { Post, Interface_Post } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { BASE_URL } from "../../../src/constants";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;
 let testUser: TestUserType;
 let testPosts: (Interface_Post & Document<any, any, Interface_Post>)[];
@@ -56,7 +56,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> postsByOrganizationConnection", () => {

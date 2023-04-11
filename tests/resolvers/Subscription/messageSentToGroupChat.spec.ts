@@ -8,7 +8,7 @@ import {
 } from "../../helpers/groupChat";
 import { filterFunction } from "../../../src/resolvers/Subscription/messageSentToGroupChat";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testGroupChat: TestGroupChatType;
 
 beforeAll(async () => {
@@ -16,7 +16,7 @@ beforeAll(async () => {
   testGroupChat = (await createTestGroupChatMessage())[2];
 });
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("src -> resolvers -> Subscription -> messageSentToGroupChat", () => {

@@ -31,7 +31,7 @@ import {
 import { createTestUserFunc } from "../../helpers/user";
 import { TestUserType } from "../../helpers/userAndOrg";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
 let testOrganization: Interface_Organization &
   Document<any, any, Interface_Organization>;
@@ -132,7 +132,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> removeOrganization", () => {

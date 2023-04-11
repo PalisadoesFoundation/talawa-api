@@ -14,7 +14,7 @@ import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { TestOrganizationType, TestUserType } from "../../helpers/userAndOrg";
 import { createTestEvent, TestEventType } from "../../helpers/events";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testEvent: TestEventType;
@@ -28,7 +28,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> removeEvent", () => {

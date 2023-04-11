@@ -26,7 +26,7 @@ import {
 import { createTestUserFunc, TestUserType } from "../../helpers/user";
 import { createTestEvent, TestEventType } from "../../helpers/events";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
 let testEvent: TestEventType;
@@ -52,7 +52,7 @@ afterAll(async () => {
   await User.deleteMany({});
   await Organization.deleteMany({});
   await Event.deleteMany({});
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 afterEach(() => {

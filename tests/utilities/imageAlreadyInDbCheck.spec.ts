@@ -18,7 +18,7 @@ const testNewImagePath: string = `${nanoid()}-testNewImagePath`;
 const testOldImagePath: string = `${nanoid()}-testOldImagePath`;
 const testHash: string = `${nanoid()}-testHash`;
 const testDifferentHash: string = `${nanoid()}-testDifferentHash`;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 const testMessage: string = "invalid.fileType";
 
 const testErrors = [
@@ -34,7 +34,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("utilities -> imageAlreadyInDbCheck", () => {
