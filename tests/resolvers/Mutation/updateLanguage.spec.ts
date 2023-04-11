@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { User } from "../../../src/models";
 import { MutationUpdateLanguageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import {
   beforeAll,

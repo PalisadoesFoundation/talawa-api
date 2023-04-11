@@ -1,8 +1,8 @@
 import "dotenv/config";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { User, Organization } from "../../../src/models";
-import { Types } from "mongoose";
+
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import {
   beforeAll,

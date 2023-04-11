@@ -1,10 +1,10 @@
 import "dotenv/config";
 import { event as eventResolver } from "../../../src/resolvers/Query/event";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { EVENT_NOT_FOUND_ERROR } from "../../../src/constants";
 import { Event } from "../../../src/models";
-import { Types } from "mongoose";
+
 import { QueryEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { TestUserType } from "../../helpers/userAndOrg";

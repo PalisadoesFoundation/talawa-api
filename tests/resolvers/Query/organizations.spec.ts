@@ -2,7 +2,7 @@ import "dotenv/config";
 import { organizations as organizationsResolver } from "../../../src/resolvers/Query/organizations";
 import { ORGANIZATION_NOT_FOUND_ERROR } from "../../../src/constants";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { Organization } from "../../../src/models";
 import { QueryOrganizationsArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -12,7 +12,6 @@ import {
   createTestUserAndOrganization,
   createTestOrganizationWithAdmin,
 } from "../../helpers/userAndOrg";
-import { Types } from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;

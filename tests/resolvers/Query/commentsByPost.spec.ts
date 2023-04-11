@@ -1,9 +1,9 @@
 import "dotenv/config";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { commentsByPost as commentsByPostResolver } from "../../../src/resolvers/Query/commentsByPost";
 import { Comment, Post, User, Organization } from "../../../src/models";
-import { Types } from "mongoose";
+
 import {
   COMMENT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,

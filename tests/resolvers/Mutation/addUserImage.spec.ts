@@ -1,7 +1,7 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { MutationAddUserImageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import {

@@ -1,8 +1,8 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { MutationLikePostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { likePost as likePostResolver } from "../../../src/resolvers/Mutation/likePost";
 import {
   POST_NOT_FOUND_ERROR,

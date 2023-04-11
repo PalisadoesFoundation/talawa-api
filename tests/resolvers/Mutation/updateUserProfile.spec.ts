@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
+import mongoose, { Document, Types } from "mongoose";
 import { InterfaceUser, User } from "../../../src/models";
 import { MutationUpdateUserProfileArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { updateUserProfile as updateUserProfileResolver } from "../../../src/resolvers/Mutation/updateUserProfile";
 import {

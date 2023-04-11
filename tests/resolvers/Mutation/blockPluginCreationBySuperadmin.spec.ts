@@ -1,9 +1,9 @@
 import "dotenv/config";
 import { User } from "../../../src/models";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { MutationBlockPluginCreationBySuperadminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { blockPluginCreationBySuperadmin as blockPluginCreationBySuperadminResolver } from "../../../src/resolvers/Mutation/blockPluginCreationBySuperadmin";
 import {
   USER_NOT_AUTHORIZED_SUPERADMIN,

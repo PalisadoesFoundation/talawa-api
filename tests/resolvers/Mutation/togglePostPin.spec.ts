@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { Organization, User, Post } from "../../../src/models";
 import { MutationTogglePostPinArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   POST_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,

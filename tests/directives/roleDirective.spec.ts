@@ -2,10 +2,10 @@ import { RoleAuthorizationDirective } from "../../src/directives/roleDirective";
 import { InterfaceUser, User } from "../../src/models";
 import { beforeAll, afterAll, it, expect } from "vitest";
 import { connect, disconnect } from "../helpers/db";
-import mongoose from "mongoose";
+import mongoose, { Document, Types } from "mongoose";
 import { ApolloServer, gql } from "apollo-server-express";
 import { errors } from "../../src/libraries";
-import { Document, Types } from "mongoose";
+
 import { nanoid } from "nanoid";
 import "dotenv/config";
 import { USER_NOT_FOUND_ERROR } from "../../src/constants";

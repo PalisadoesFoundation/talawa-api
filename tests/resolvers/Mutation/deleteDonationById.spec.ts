@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
+import mongoose, { Document, Types } from "mongoose";
 import { InterfaceDonation, Donation } from "../../../src/models";
 import { MutationDeleteDonationByIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { deleteDonationById as deleteDonationByIdResolver } from "../../../src/resolvers/Mutation/deleteDonationById";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";

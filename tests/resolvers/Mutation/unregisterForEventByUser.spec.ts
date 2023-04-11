@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { User, Event } from "../../../src/models";
 import { MutationUnregisterForEventByUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   EVENT_NOT_FOUND_ERROR,
   USER_ALREADY_UNREGISTERED_ERROR,

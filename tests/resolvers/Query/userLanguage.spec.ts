@@ -1,8 +1,8 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { nanoid } from "nanoid";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { userLanguage as userLanguageResolver } from "../../../src/resolvers/Query/userLanguage";
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { User } from "../../../src/models";

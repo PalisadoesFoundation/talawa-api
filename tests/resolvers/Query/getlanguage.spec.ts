@@ -1,9 +1,9 @@
 import "dotenv/config";
 import { getlanguage as getLanguageResolver } from "../../../src/resolvers/Query/getlanguage";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 import { InterfaceLanguage, Language } from "../../../src/models";
-import { Document } from "mongoose";
+
 import { QueryGetlanguageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";

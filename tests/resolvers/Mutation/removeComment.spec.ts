@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
+import mongoose, { Document, Types } from "mongoose";
 import { Comment, InterfaceComment, Post } from "../../../src/models";
 import { MutationRemoveCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { removeComment as removeCommentResolver } from "../../../src/resolvers/Mutation/removeComment";
 import {
   COMMENT_NOT_FOUND_ERROR,

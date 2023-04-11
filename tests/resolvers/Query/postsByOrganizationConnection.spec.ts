@@ -2,8 +2,8 @@
 import "dotenv/config";
 import { postsByOrganizationConnection as postsByOrganizationConnectionResolver } from "../../../src/resolvers/Query/postsByOrganizationConnection";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
-import { Document, Types } from "mongoose";
+import mongoose, { Document, Types } from "mongoose";
+
 import { QueryPostsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {

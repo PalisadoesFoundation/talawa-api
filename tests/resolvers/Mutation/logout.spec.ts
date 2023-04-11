@@ -1,8 +1,8 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { logout as logoutResolver } from "../../../src/resolvers/Mutation/logout";
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import {

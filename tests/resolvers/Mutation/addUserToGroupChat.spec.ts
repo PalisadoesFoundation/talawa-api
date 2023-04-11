@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { Organization, GroupChat } from "../../../src/models";
 import { MutationAddUserToGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   CHAT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,

@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { User, Organization } from "../../../src/models";
 import { MutationRemoveAdminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { removeAdmin as removeAdminResolver } from "../../../src/resolvers/Mutation/removeAdmin";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,

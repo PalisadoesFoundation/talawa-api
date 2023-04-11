@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
+import mongoose, { Document, Types } from "mongoose";
 import {
   User,
   Organization,
@@ -12,7 +12,7 @@ import {
 } from "../../../src/models";
 import { MutationRemoveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { removeOrganization as removeOrganizationResolver } from "../../../src/resolvers/Mutation/removeOrganization";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
