@@ -27,6 +27,7 @@ If you are new to contributing to open source, please read the Open Source Guide
       - [Pre-Commit hook](#pre-commit-hook)
       - [Post-Merge hook](#post-merge-hook)
     - [GraphQL Voyager](#graphql-voyager)
+    - [GraphQL Markdown](#graphql-markdown)
     - [Running Queries with talawa-api](#running-queries-with-talawa-api)
   - [Internships](#internships)
   - [Community](#community)
@@ -272,6 +273,14 @@ We use the open source project [GraphQL Voyager](https://github.com/IvanGoncharo
 Go to `http://localhost:4000/voyager` after running the development server to explore the same!
 
 ![Voyager Demo for User Model](./image/GraphQL_Voyager.png)
+
+### GraphQL Markdown
+
+We use the [GraphQL Markdown](https://github.com/exogen/graphql-markdown) project to generate the documentation to describe the schema. To generate the same manually, you first need to start the development server locally with `npm run dev`, and then run the script `npm run generate:graphql-markdown`.
+
+You can then view the [generated documentation here](./docs/Schema.md).
+
+While we use a GitHub workflow to update ths schema documentation every time a PR is merged into the repository, it is highly advisable that if you making changes to the schema, then you should also update the schema documentation by the process described above.
 
 ### Running Queries with talawa-api
 
