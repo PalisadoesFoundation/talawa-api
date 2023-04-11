@@ -6,8 +6,7 @@ import {
   validatePaginationArgs,
   CursorPaginationArgsType,
 } from "../libraries/validators/validatePaginationArgs";
-import { Model } from "mongoose";
-import { FilterQuery } from "mongoose";
+import { Model, FilterQuery, Types } from "mongoose";
 
 interface Interface_ConnectionEdge<T> {
   cursor: string;
@@ -24,13 +23,35 @@ interface Interface_ConnectionResult<T> {
   connectionErrors: PaginationError[] | null;
 }
 
+// Constant errors that are thrown by the createCOnnectionFactory function
+const ForwardPaginationIncorrectCursorError = {
+  connectionData: null,
+  connectionErrors: [
+    {
+      __typename: "IncorrectCursor",
+      message: "The provided after cursor does not exist in the database.",
+      path: "after",
+    },
+  ],
+};
+
+const BackwardPaginationIncorrectCursorError = {
+  connectionData: null,
+  connectionErrors: [
+    {
+      __typename: "IncorrectCursor",
+      message: "The provided after cursor does not exist in the database.",
+      path: "before",
+    },
+  ],
+};
+
 /*
 This is a factory function to quickly create a graphql connection object. The function accepts a generic type
 'T' which is used to reference the type of node that this connection and it's edges will reference. A node is
 a business object which can be uniquely identified in graphql. For example `User`, `Organization`, `Event`, `Post` etc.
-All of these objects are viable candiates for a node and can be paginated using graphql connections. The default object
-returned by this function represents a connection which has no data at all, i.e., the table/collection for that node(along with ther constraints like filters if any) is completely empty in database. This object will need to be 
-transformed according to different logic inside resolvers.
+All of these objects are viable candiates for a node and can be paginated using graphql connections. The default object returned by this function represents a connection which has no data at all, i.e., the table/collection for that node(along with ther constraints like filters if any) is completely empty in database. 
+This object will need to be transformed according to different logic inside resolvers.
 */
 export function graphqlConnectionFactory<T>(): Interface_Connection<T> {
   return {
@@ -44,25 +65,69 @@ export function graphqlConnectionFactory<T>(): Interface_Connection<T> {
   };
 }
 
+// Type definition for a mapping funtion
 type GetNodeFromResultFnType<T, U> = {
   (result: U): T;
 };
 
-type GetCursorFromResultFnType<U> = {
-  (result: U): string;
+// Type definition for the filter query arguments
+type PaginationFilterQueryType = {
+  [key: string]:
+    | {
+        $lte: string;
+      }
+    | {
+        $gte: string;
+      };
 };
 
-type AfterFilterQueryType = {
-  [key: string]: {
-    $gte: string;
-  };
+// A common interface that denotes all Mongoose objects (all of them must have an _id field)
+interface Interface_MongooseObject {
+  _id: Types.ObjectId;
+}
+
+// Genrates the relevant filterQuery that can be passed into the .find() method
+function getFilterQuery<U extends Interface_MongooseObject>(
+  args: CursorPaginationArgsType,
+  filterQuery: FilterQuery<U>
+): PaginationFilterQueryType {
+  const finalFilterQuery: PaginationFilterQueryType = { ...filterQuery };
+
+  if (args.after)
+    finalFilterQuery["_id"] = {
+      $gte: args.after,
+    };
+
+  if (args.before)
+    finalFilterQuery["_id"] = {
+      $lte: args.before,
+    };
+
+  return finalFilterQuery;
+}
+
+// Generates the limit that can should be passed in the .limit() method
+const getLimit = (args: CursorPaginationArgsType) => {
+  // We always fetch 1 object more than the limit (args.first/args.last) so that we can use that to get the information about hasNextPage / hasPreviousPage
+  // When args.after / args.before is supplied, we fetch 1 more object so as validate the cursor as well
+  if (args.first) return args.after ? args.first + 2 : args.first + 1;
+  if (args.last) return args.before ? args.last + 2 : args.last + 1;
 };
 
-type BeforeFilterQueryType = {
-  [key: string]: {
-    $lte: string;
-  };
-};
+// Generates the sortingObject that can be passed in the .sort() method
+function getSortingObject(
+  args: CursorPaginationArgsType,
+  sortingObject: { [key: string]: number }
+) {
+  // We assume that the resolver would always be written with respect to the sorting that needs to be implemented for forward pagination
+  if (args.first) return sortingObject;
+
+  // If we are paginating backwards, then we must reverse the order of all fields that are being sorted by.
+  for (const [key, value] of Object.entries(sortingObject)) {
+    sortingObject[key] = value * -1;
+  }
+  return sortingObject;
+}
 
 /*
 This is a function which generates a GraphQL cursor pagination resolver based on the requirements of the client.
@@ -80,33 +145,31 @@ B. DATA PARAMETERS
 
 1. args: These are the actual args that are send by the client in the request.
 2. databaseModel: Refers to the actual database model that you want to query.
-3. fieldToSortBy: Refers to the field on the Type U that you want to act as the cursor (ansd thus would be used
-  for filtering and sorting or results). Can use the . notation to access nested values
+3. sortingObject: Refers to the properties by which you want to sort the database query by. Can be left blank. Should have the keys as fields on the object U and the values as 1 or -1 (to represent asc abd desc respectively)
 4. filterQuery: Refers to the filter object that you want to pass to the .find() query which quering the databaseModel 
 For example, User, Tag, Post, Organization etc.
 5. fieldsToPopulate: A string that lists all the fields that you want to be populated in the model.
   It is an optional parameter and can be skipped.
 6. getNodeFromResult: Describes a transformation function that given an object of type U, would convert it to the desired object of type T. This would mostly include mapping to some specific field of the fetched object.
-7. getCursorFromResult: Describes a transformation function that is used to generate the cursor from a particular fetched 
-  result object of type U. This would mostly be a mapping function. It must be noted that this field should exactly match
-  the field provided in the fieldToSortBy argument to get sensible results.
 
 It is important to know that the function would would sequentially in the following manner:
 1. Fetch all the documents specified by your filter query.
 2. Sort them by the field provided.
 3. Populate the fields provided.
-4. Run the functions getNodeFromResult and getCursorFromResult on each of the fetched objects from the database.
+4. Run the functions getNodeFromResult on each of the fetched objects from the database.
 
 The function returns a promise which would resolve to the desired connection object (of the type Interface_Connection<T>).
 */
-export async function createGraphQLConnection<T, U>(
+export async function createGraphQLConnection<
+  T extends Interface_MongooseObject,
+  U extends Interface_MongooseObject
+>(
   args: CursorPaginationArgsType,
   databaseModel: Model<U>,
-  fieldToSortBy: string,
+  sortingObject: { [key: string]: number },
   filterQuery: FilterQuery<U>,
   fieldsToPopulate: string | null,
-  getNodeFromResult: GetNodeFromResultFnType<T, U>,
-  getCursorFromResult: GetCursorFromResultFnType<U>
+  getNodeFromResult: GetNodeFromResultFnType<T, U>
 ): Promise<Interface_ConnectionResult<T>> {
   // Check that the provided arguments must either be correct forward pagination
   // arguments or correct backward pagination arguments
@@ -123,85 +186,44 @@ export async function createGraphQLConnection<T, U>(
   let allFetchedObjects: U[] | null;
   const connectionObject = graphqlConnectionFactory<T>();
 
-  const afterFilterQuery: AfterFilterQueryType = {};
-  if (args.after)
-    afterFilterQuery[fieldToSortBy] = {
-      $gte: args.after,
+  const connectionFilterQuery = getFilterQuery(args, filterQuery);
+  const connectionSortingObject = getSortingObject(args, sortingObject);
+  const connectionLimit = getLimit(args);
+
+  // Fetch the objects
+  if (fieldsToPopulate) {
+    allFetchedObjects = await databaseModel
+      .find(connectionFilterQuery as FilterQuery<U>)
+      .sort(connectionSortingObject)
+      .limit(connectionLimit)
+      .populate(fieldsToPopulate)
+      .lean();
+  } else {
+    allFetchedObjects = await databaseModel
+      .find(connectionFilterQuery as FilterQuery<U>)
+      .sort(connectionSortingObject)
+      .limit(connectionLimit)
+      .lean();
+  }
+
+  // Return the default object if the recieved list is empty
+  if (!allFetchedObjects || allFetchedObjects.length === 0)
+    return {
+      connectionData: connectionObject,
+      connectionErrors: null,
     };
 
-  const beforeFilterQuery: BeforeFilterQueryType = {};
-  if (args.before)
-    beforeFilterQuery[fieldToSortBy] = {
-      $lte: args.before,
-    };
-
-  const getSortingObject = (ord: number) => {
-    const obj: { [key: string]: number } = {};
-    obj[fieldToSortBy] = ord;
-    return obj;
-  };
-
-  // Forward pagination
+  // Logic to handle the forward pagination
   if (args.first) {
-    // Fetch the users
-    if (fieldsToPopulate) {
-      allFetchedObjects = await databaseModel
-        .find({
-          ...afterFilterQuery,
-          ...filterQuery,
-        })
-        .sort(getSortingObject(1))
-        // Let n = args.first
-        // If args.after argument is provided, then n + 2 objects are fetched so that we can
-        // ensure the validity of the after cursor by comparing it with the first object, and
-        // then use the last fetched object to determine the existence of the next page.
-        // If args.after is not provided, only n + 1 objects are fetched to check for the existence of the next page.
-        .limit(args.after ? args.first + 2 : args.first + 1)
-        .populate(fieldsToPopulate)
-        .lean();
-    } else {
-      allFetchedObjects = await databaseModel
-        .find({
-          ...afterFilterQuery,
-          ...filterQuery,
-        })
-        .sort(getSortingObject(1))
-        .limit(args.after ? args.first + 2 : args.first + 1)
-        .lean();
-    }
-
+    // If args.after is provided, then the first fetched element must coincide with the provided cursor
     if (args.after) {
-      // If args.after is provided, then the first fetched element must coincide with the provided cursor
-      if (
-        !allFetchedObjects ||
-        allFetchedObjects.length === 0 ||
-        getCursorFromResult(allFetchedObjects[0]) !== args.after.toString()
-      ) {
-        return {
-          connectionData: null,
-          connectionErrors: [
-            {
-              __typename: "IncorrectCursor",
-              message:
-                "The provided after cursor does not exist in the database.",
-              path: "after",
-            },
-          ],
-        };
-      }
+      if (allFetchedObjects[0]._id.toString() !== args.after.toString())
+        return ForwardPaginationIncorrectCursorError;
 
       // Remove the object with _id = args.after and set hasPreviousPage as true
       allFetchedObjects!.shift();
       connectionObject.pageInfo.hasPreviousPage = true;
     }
-
-    if (allFetchedObjects!.length === 0)
-      // Return the default object if the recieved list is empty
-      return {
-        connectionData: connectionObject,
-        connectionErrors: null,
-      };
-
     // Populate the page pointer variables
     if (allFetchedObjects!.length === args.first + 1) {
       connectionObject.pageInfo.hasNextPage = true;
@@ -209,67 +231,19 @@ export async function createGraphQLConnection<T, U>(
     }
   }
 
-  // Backward pagination
   if (args.last) {
-    // Fetch the users
-    if (fieldsToPopulate) {
-      allFetchedObjects = await databaseModel
-        .find({
-          ...beforeFilterQuery,
-          ...filterQuery,
-        })
-        .sort(getSortingObject(-1))
-        // Let n = args.last
-        // If args.before argument is provided, then n + 2 objects are fetched so that we can
-        // ensure the validity of the before cursor by comparing it with the first object, and
-        // then use the last fetched object to determine the existence of the next page.
-        // If args.before is not provided, only n + 1 objects are fetched to check for the existence of the next page.
-        .limit(args.before ? args.last + 2 : args.last + 1)
-        .populate(fieldsToPopulate)
-        .lean();
-    } else {
-      allFetchedObjects = await databaseModel
-        .find({
-          ...beforeFilterQuery,
-          ...filterQuery,
-        })
-        .sort(getSortingObject(-1))
-        .limit(args.before ? args.last + 2 : args.last + 1)
-        .populate(fieldsToPopulate)
-        .lean();
-    }
-
+    // If args.before is provided, then the first fetched element must coincide with the provided cursor
     if (args.before) {
-      // If args.before is provided, then the first fetched element must coincide with the provided cursor
       if (
-        !allFetchedObjects ||
-        allFetchedObjects.length === 0 ||
-        getCursorFromResult(allFetchedObjects[0]) !== args.before.toString()
+        allFetchedObjects[0]._id.equals.toString() !== args.before.toString()
       ) {
-        return {
-          connectionData: null,
-          connectionErrors: [
-            {
-              __typename: "IncorrectCursor",
-              message:
-                "The provided before cursor does not exist in the database.",
-              path: "before",
-            },
-          ],
-        };
+        return BackwardPaginationIncorrectCursorError;
       }
 
       // Remove the object with _id = args.before and set hasNextPage as true
       allFetchedObjects!.shift();
       connectionObject.pageInfo.hasNextPage = true;
     }
-
-    // Return the default object if the recieved list is empty
-    if (allFetchedObjects!.length === 0)
-      return {
-        connectionData: connectionObject,
-        connectionErrors: null,
-      };
 
     // Populate the page pointer variables
     if (allFetchedObjects!.length === args.last + 1) {
@@ -285,7 +259,7 @@ export async function createGraphQLConnection<T, U>(
   // Create edges from the fetched objects
   connectionObject.edges = allFetchedObjects!.map((object: U) => ({
     node: getNodeFromResult(object),
-    cursor: getCursorFromResult(object),
+    cursor: object._id.toString(),
   }));
 
   // Set the start and end cursor
