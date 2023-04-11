@@ -98,7 +98,7 @@ describe("utilities -> imageAlreadyInDbCheck", () => {
 
     const mockedDeleteDuplicateImage = vi
       .spyOn(deleteDuplicatedImage, "deleteDuplicatedImage")
-      .mockImplementation((_imagePath: any) => {});
+      .mockImplementation(() => undefined);
 
     const { imageAlreadyInDbCheck } = await import(
       "../../src/utilities/imageAlreadyInDbCheck"
@@ -145,7 +145,7 @@ describe("utilities -> imageAlreadyInDbCheck", () => {
 
     const mockedDeleteDuplicateImage = vi
       .spyOn(deleteDuplicatedImage, "deleteDuplicatedImage")
-      .mockImplementation((_imagePath: any) => {});
+      .mockImplementation(() => undefined);
 
     const { imageAlreadyInDbCheck } = await import(
       "../../src/utilities/imageAlreadyInDbCheck"

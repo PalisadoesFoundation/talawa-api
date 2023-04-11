@@ -4,3 +4,4 @@ build
 coverage
 node_modules
 src/types
+docs/Schema.md

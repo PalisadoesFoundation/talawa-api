@@ -82,15 +82,16 @@ First you need a local copy of talawa-api. Run the following command in the dire
 $ git clone https://github.com/{{YOUR GITHUB USERNAME}}/talawa-api.git
 ```
 
-This will setup the repository and the code files locally for you. For more detailed instructios on contributing code, and managing the versions of this repository with Git, checkout [CONTRIBUTING.md here](./CONTRIBUTING.md)
+This will setup the repository and the code files locally for you. For more detailed instructions on contributing code, and managing the versions of this repository with Git, checkout [CONTRIBUTING.md here](./CONTRIBUTING.md)
 
 `NOTE: All the commands we're going to execute in the following instructions will assume you are in the root directory of the project. If you fail to do so, the commands will not work.`
 
 ## Install the Required Packages
 
 Install the packages required by `talawa-api` using this command:
-
-       npm install
+```
+npm install
+```
 
 ## Install MongoDB
 
@@ -102,15 +103,16 @@ We're listing some common approaches to set up a running instance of MongoDB dat
 
 1. `System native database approach:` (Highly Recommended) You can install MongoDB natively on your system and create/connect to the database. Follow the setup guide on official [MongoDB Docs](https://www.mongodb.com/docs/manual/administration/install-community/) for your respective operating system.
 1. `Hosted database approach:` MongoDB Atlas is the easiest way to get a running instance of mongodb database. It is a hosted(remote) mongodb database provided by mongodb itself. If you're a beginner and don't want too much of a hassle setting up the database you should use this approach but you should eventually switch to local instance. Follow the setup guide on official [MongoDB Atlas Docs](https://www.mongodb.com/docs/atlas/getting-started/). Mongodb Atlas is just one of the many hosted database solutions. Some issues that you might face while using this are slower tests, slower API requests, dependence on Internet connection etc.
-1. `Docker container approach:` If you are fluent in working with docker you should use this approach. Docker is a great way to manage and run applications without natively installing anything on your system. With this you can set up the mongodb database inside a docker container and manage it as per your will. Follow this [video tutorial](https://www.youtube.com/watch?v=uklyCSKQ1Po) to set up a mongodb docker container.
+1. `Docker container approach:` If you are fluent in working with docker you should use this approach. Docker is a great way to manage and run applications without natively installing anything on your system. With this you can set up the mongodb database inside a docker container and manage it as per your will. Follow this [video tutorial](https://www.youtube.com/watch?v=uklyCSKQ1Po) to set up a mongodb docker container. You can learn about docker from [Docker docs](https://docs.docker.com/).
 
 # Configuration
 It's important to configure Talawa-Admin. Here's how to do it.
 ## The .env Configuration File
 
 A file named `.env` is required in the root directory of talawa-api for storing environment variables used at runtime. It is not a part of the repo and you will have to create it. For a sample of `.env` file there is a file named `.env.sample` in the root directory. Create a new `.env` file by copying the contents of the `.env.sample` into `.env` file.
-
-        cp .env.sample .env
+```
+cp .env.sample .env
+```
 
 This `.env` file must be populated with the following environment variables for talawa-api to work:
 
@@ -362,7 +364,7 @@ The key generated in the previous step is in a format suitable for use in a mobi
             $env:GOOGLE_APPLICATION_CREDENTIALS="C:\PATH\TO\JSON\FILE\filename.json"
 
 1.  Install the [Firebase CLI](https://firebase.google.com/docs/cli#install_the_firebase_cli).
-1.  Save the origintal copy the `lib/firebase_options.dart` file as it will be modified.
+1.  Save the original copy the `lib/firebase_options.dart` file as it will be modified.
 1.  Run the following commands in the project directory of talawa mobile app:
 
         firebase login

@@ -2,7 +2,7 @@ import { Schema, model, Types, models } from "mongoose";
 /**
  * This is an interface that represents a database(MongoDB) document for Image Hash.
  */
-export interface Interface_ImageHash {
+export interface InterfaceImageHash {
   _id: Types.ObjectId;
   hashValue: string;
   fileName: string;
@@ -39,7 +39,7 @@ const imageHashSchema = new Schema({
 });
 
 const ImageHashModel = () =>
-  model<Interface_ImageHash>("ImageHash", imageHashSchema);
+  model<InterfaceImageHash>("ImageHash", imageHashSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const ImageHash = (models.ImageHash || ImageHashModel()) as ReturnType<

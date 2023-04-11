@@ -17,14 +17,18 @@ If you are new to contributing to open source, please read the Open Source Guide
       - [Conflict Resolution](#conflict-resolution)
     - [Contributing Code](#contributing-code)
   - [Upgrading Code](#upgrading-code)
-      - [Setting up Upstream and Origin](#setting-up-upstream-and-origin)
-      - [Creating a Pull Request - Process Overview](#creating-a-pull-request---process-overview)
+    - [Setting up Upstream and Origin](#setting-up-upstream-and-origin)
+    - [Creating a Pull Request - Process Overview](#creating-a-pull-request---process-overview)
   - [Type checking and code quality](#type-checking-and-code-quality)
-      - [Type checking code files](#type-checking-code-files)
-      - [Linting code files](#linting-code-files)
-      - [Formatting code files](#formatting-code-files)
-      - [Automation using husky](#automation-using-husky)
-      - [Running Queries with talawa-api](#running-queries-with-talawa-api)
+    - [Type checking code files](#type-checking-code-files)
+    - [Linting code files](#linting-code-files)
+    - [Formatting code files](#formatting-code-files)
+    - [Automation using husky](#automation-using-husky)
+      - [Pre-Commit hook](#pre-commit-hook)
+      - [Post-Merge hook](#post-merge-hook)
+    - [GraphQL Voyager](#graphql-voyager)
+    - [GraphQL Markdown](#graphql-markdown)
+    - [Running Queries with talawa-api](#running-queries-with-talawa-api)
   - [Internships](#internships)
   - [Community](#community)
 
@@ -77,7 +81,7 @@ When multiple developers are working on issues there is bound to be a conflict o
 - In the cases where you feel your potential issues could be an extension or in conflict with other PRs it is important to ask the author of the PR in the slack channel or in their PRs or issues themselves why he/she did not write code for something that would require minimal effort on their part.
 - Based on basic courtesy, it is good practice to let the person who created a function apply and test that function when needed.
 - Last but not the least, communication is important make sure to talk to other contributors, in these cases, in slack channel or in a issue/PR thread.
-- As a last resort the Admins would be responsible for deciding how to resolve this conflict. 
+- As a last resort the Admins would be responsible for deciding how to resolve this conflict.
 
 ### Contributing Code
 
@@ -141,11 +145,13 @@ The process of proposing a change to Talawa API can be summarized as:
 13. Review and address comments on your pull request if requested.
 
 ## Upgrading Code
-Before you start contributing to the repository, you `ALWAYS` need to make sure that your code is up to date with the source repository at `PalisadoesFoundation/talawa-api`. 
+
+Before you start contributing to the repository, you `ALWAYS` need to make sure that your code is up to date with the source repository at `PalisadoesFoundation/talawa-api`.
 
 To do we will help you setup an upstream and origin for your repository, which will help you contribute code with great ease:-
 
 #### Setting up Upstream and Origin
+
 After cloning your forked repository, your origin remote is pointing to your fork (`{{GITHUB USERNAME}}/talawa-api`). To stay up to date with the main `PalisadoesFoundation/talawa-api` repository, add it as a remote called upstream. You'll first need to move into the `talawa-api` directory that was created by the clone operation.
 
 ```
@@ -167,19 +173,22 @@ We have established a clean setup now. We can make any changes we like and push 
 ![Diagram of the fork-and-clone workflow](./image/install3.png)
 
 #### Creating a Pull Request - Process Overview
-For making any changes to original repository, we first sync our cloned repository with original repository. We merge `develop` with `upstream/develop` to do this. 
+
+For making any changes to original repository, we first sync our cloned repository with original repository. We merge `develop` with `upstream/develop` to do this.
 This make sometimes require a hard reset, and can be done with the following commands:
+
 ```
 git fetch upstream
 git reset upstream/develop --hard
 ```
-Now we make a new branch (with `git checkout -b {{ BRANCH_NAME }}` ), do the changes on the branch, add and commit them (with `git add . && git commit -m {{ COMMIT_MESSAGE }}` ), push the branch to forked repository (with `git push origin {{ BRANCH_NAME }} --force` ), and make a PR from Github interface (from our new branch to the `develop` branch of `PalisadoesFoundation/talawa-api` s). 
+
+Now we make a new branch (with `git checkout -b {{ BRANCH_NAME }}` ), do the changes on the branch, add and commit them (with `git add . && git commit -m {{ COMMIT_MESSAGE }}` ), push the branch to forked repository (with `git push origin {{ BRANCH_NAME }} --force` ), and make a PR from Github interface (from our new branch to the `develop` branch of `PalisadoesFoundation/talawa-api` s).
 
 We use a different branch to make changes so that we can work on multiple issues while still having a clean version in develop branch.
 
 ## Type checking and code quality
 
-On making a PR, we use GitHub actions to check that your code is properly formatted, doesn't have typescript type errors and is properly linted. Here are the checks:- 
+On making a PR, we use GitHub actions to check that your code is properly formatted, doesn't have typescript type errors and is properly linted. Here are the checks:-
 
 <br/>
 
@@ -204,11 +213,11 @@ We make use of `eslint` to enforce a strict linting convention in code.
 To check code for linting issues use this command:-
 
         npm run lint:check
-        
+
 To check and fix lint errors in code use this command:-
 
         npm run lint:fix
-        
+
 Eslint might throw lint errors even after running the `lint:fix` command as those lint errors require manual intervention to be fixed. You have to fix those lint errors manually.
 
 <br/>
@@ -237,9 +246,9 @@ We are using the package `Husky` to run git hooks that run according to differen
 
 <br/>
 
-#### pre-commit hook
-We run a pre-commit hook which automatically runs code quality checks each time you make a commit and also fixes some of the issues. This way you don't have to run them manually each time.
+#### Pre-Commit hook
 
+We run a pre-commit hook which automatically runs code quality checks each time you make a commit and also fixes some of the issues. This way you don't have to run them manually each time.
 
 If you don't want these pre-commit checks running on each commit, you can manually opt out of it using the `--no-verify` flag with your commit message as shown:-
 
@@ -247,25 +256,39 @@ If you don't want these pre-commit checks running on each commit, you can manual
 
 <br/>
 
-
-#### post-merge hook
+#### Post-Merge hook
 
 We are also running a post-merge(post-pull) hook which will automatically run "npm install" only if there is any change made to pakage.json file so that the developer has all the required dependencies when pulling files from remote.
 
-
 If you don't want this hook to run, you can manually opt out of this using the `no verify` flag while using the merge command(git pull):
 
-        git pull --no-verify  
+        git pull --no-verify
 
 <br/>
 
-        
+### GraphQL Voyager
+
+We use the open source project [GraphQL Voyager](https://github.com/IvanGoncharov/graphql-voyager) to help you interact and explore the complete schema in an interactive manner!
+
+Go to `http://localhost:4000/voyager` after running the development server to explore the same!
+
+![Voyager Demo for User Model](./image/GraphQL_Voyager.png)
+
+### GraphQL Markdown
+
+We use the [GraphQL Markdown](https://github.com/exogen/graphql-markdown) project to generate the documentation to describe the schema. To generate the same manually, you first need to start the development server locally with `npm run dev`, and then run the script `npm run generate:graphql-markdown`.
+
+You can then view the [generated documentation here](./docs/Schema.md).
+
+While we use a GitHub workflow to update ths schema documentation every time a PR is merged into the repository, it is highly advisable that if you making changes to the schema, then you should also update the schema documentation by the process described above.
+
 ### Running Queries with talawa-api
-   - Talawa API currently implement `GraphQL Playground` as mediator interface to run and test queries directly from the api. [Learn more](https://www.apollographql.com/docs/apollo-server/v2/testing/graphql-playground/)
-   - In development, Apollo Server enables GraphQL Playground on the same URL as the GraphQL server itself (e.g. http://localhost:4000/graphql) and automatically serves the GUI to web browsers. When NODE_ENV is set to production, GraphQL Playground (as well as introspection) is disabled as a production best-practice.
-    ![image](https://user-images.githubusercontent.com/65951872/221374309-5a6eee74-c0df-4280-a29a-0b8d2c7260b3.png)
+
+- Talawa API currently implement `GraphQL Playground` as mediator interface to run and test queries directly from the api. [Learn more](https://www.apollographql.com/docs/apollo-server/v2/testing/graphql-playground/)
+- In development, Apollo Server enables GraphQL Playground on the same URL as the GraphQL server itself (e.g. http://localhost:4000/graphql) and automatically serves the GUI to web browsers. When NODE_ENV is set to production, GraphQL Playground (as well as introspection) is disabled as a production best-practice.
+  ![image](https://user-images.githubusercontent.com/65951872/221374309-5a6eee74-c0df-4280-a29a-0b8d2c7260b3.png)
 - Note: To access the playground in talawa API append the URL with "/graphql"
-   
+
 ## Internships
 
 If you are participating in any of the various internship programs we ar members of then please read the [introduction guides on our documentation website](https://docs.talawa.io/docs/).

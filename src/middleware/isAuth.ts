@@ -4,7 +4,7 @@ import { logger } from "../libraries";
 import { ACCESS_TOKEN_SECRET } from "../constants";
 
 // This interface represents the type of data object returned by isAuth function.
-export interface Interface_AuthData {
+export interface InterfaceAuthData {
   isAuth: boolean;
   expired: boolean | undefined;
   userId: string | undefined;
@@ -20,7 +20,7 @@ export const isAuth = (request: Request) => {
   object conditionally as the authentication flow continues and return it from
   the function whereever needed.
   */
-  const authData: Interface_AuthData = {
+  const authData: InterfaceAuthData = {
     isAuth: false,
     expired: undefined,
     userId: undefined,

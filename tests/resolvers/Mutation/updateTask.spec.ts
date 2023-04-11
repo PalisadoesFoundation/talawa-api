@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { Document, Types } from "mongoose";
-import { Event, Task, Interface_Task } from "../../../src/models";
+import { Event, Task, InterfaceTask } from "../../../src/models";
 import { MutationUpdateTaskArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
@@ -16,7 +16,7 @@ import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistra
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: TestUserType;
-let testTasks: (Interface_Task & Document<any, any, Interface_Task>)[];
+let testTasks: (InterfaceTask & Document<any, any, InterfaceTask>)[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

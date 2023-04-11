@@ -1,21 +1,21 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { Interface_Event } from "./Event";
-import { Interface_User } from "./User";
+import { InterfaceEvent } from "./Event";
+import { InterfaceUser } from "./User";
 /**
  * This is an interface that represents a database(MongoDB) document for Task.
  */
-export interface Interface_Task {
+export interface InterfaceTask {
   _id: Types.ObjectId;
   title: string;
   description: string | undefined;
   status: string;
   createdAt: Date;
   deadline: Date | undefined;
-  event: PopulatedDoc<Interface_Event & Document>;
-  creator: PopulatedDoc<Interface_User & Document>;
+  event: PopulatedDoc<InterfaceEvent & Document>;
+  creator: PopulatedDoc<InterfaceUser & Document>;
 }
 /**
- * This describes the schema for a `Task` that corresponds to `Interface_Task` document.
+ * This describes the schema for a `Task` that corresponds to `InterfaceTask` document.
  * @param title - Task title.
  * @param description - Task description.
  * @param status - Status.
@@ -57,7 +57,7 @@ const taskSchema = new Schema({
   },
 });
 
-const TaskModel = () => model<Interface_Task>("Task", taskSchema);
+const TaskModel = () => model<InterfaceTask>("Task", taskSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Task = (models.Task || TaskModel()) as ReturnType<

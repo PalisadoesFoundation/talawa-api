@@ -1,10 +1,10 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { Event, Interface_User, Interface_UserAttende } from "../../models";
+import { Event, InterfaceUser, InterfaceUserAttende } from "../../models";
 import { errors } from "../../libraries";
 import { EVENT_NOT_FOUND_ERROR } from "../../constants";
 /**
  * This query will fetch all the registrants of the Event from the database.
- * @param _parent
+ * @param _parent-
  * @param args - An object that contains `id` of the event.
  * @returns An object that contains list of all the Registrants.
  * If the event is not found then it throws an `NotFoundError` error.
@@ -28,10 +28,10 @@ export const registrantsByEvent: QueryResolvers["registrantsByEvent"] = async (
     );
   }
 
-  const registrants: Array<Interface_User> = [];
+  const registrants: Array<InterfaceUser> = [];
 
   if (event.registrants.length > 0) {
-    event.registrants.map((registrant: Interface_UserAttende) => {
+    event.registrants.map((registrant: InterfaceUserAttende) => {
       if (registrant.status === "ACTIVE") {
         registrants.push(registrant.user);
       }

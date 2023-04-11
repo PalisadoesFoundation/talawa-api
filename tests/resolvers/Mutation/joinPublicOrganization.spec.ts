@@ -182,6 +182,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
       _id: testUser!._id,
     })
       .select(["-password"])
+      .populate("joinedOrganizations")
       .lean();
 
     expect(joinPublicOrganizationPayload).toEqual(updatedTestUser);

@@ -8,13 +8,13 @@ import {
 } from "../libraries/validators/validatePaginationArgs";
 import { Model, FilterQuery, Types } from "mongoose";
 
-interface Interface_ConnectionEdge<T> {
+interface InterfaceConnectionEdge<T> {
   cursor: string;
   node: T;
 }
 
-interface Interface_Connection<T> {
-  edges?: Array<Interface_ConnectionEdge<T> | null | undefined>;
+interface InterfaceConnection<T> {
+  edges?: Array<InterfaceConnectionEdge<T> | null | undefined>;
   pageInfo: ConnectionPageInfo;
 }
 
@@ -53,7 +53,7 @@ a business object which can be uniquely identified in graphql. For example `User
 All of these objects are viable candiates for a node and can be paginated using graphql connections. The default object returned by this function represents a connection which has no data at all, i.e., the table/collection for that node(along with ther constraints like filters if any) is completely empty in database. 
 This object will need to be transformed according to different logic inside resolvers.
 */
-export function graphqlConnectionFactory<T>(): Interface_Connection<T> {
+export function graphqlConnectionFactory<T>(): InterfaceConnection<T> {
   return {
     edges: [],
     pageInfo: {

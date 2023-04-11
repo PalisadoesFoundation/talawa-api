@@ -1,17 +1,15 @@
-import {
-  InputMaybe,
-  QueryResolvers,
-  UserWhereInput,
-} from "../../types/generatedGraphQLTypes";
-import { User } from "../../models";
+import { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import { InterfaceUser, User } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import { UNAUTHENTICATED_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
+import { UNAUTHENTICATED_ERROR } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
+import { getWhere } from "./helperFunctions/getWhere";
+
 /**
  * This query will fetch all the users in specified order from the database.
- * @param _parent
+ * @param _parent-
  * @param args - An object that contains relevant data to perform the query.
- * @param context
+ * @param context-
  * @returns An object that contains the list of all the users.
  * @remarks The query function uses `getSort()` function to sort the data in specified.
  */
@@ -20,14 +18,14 @@ export const users: QueryResolvers["users"] = async (
   args,
   context
 ) => {
-  const inputArg = getInputArg(args.where);
+  const where = getWhere<InterfaceUser>(args.where);
   const sort = getSort(args.orderBy);
 
-  const queryUser = await User.findOne({
+  const currentUser = await User.findOne({
     _id: context.userId,
   });
 
-  if (!queryUser) {
+  if (!currentUser) {
     throw new errors.UnauthenticatedError(
       requestContext.translate(UNAUTHENTICATED_ERROR.MESSAGE),
       UNAUTHENTICATED_ERROR.CODE,
@@ -35,7 +33,7 @@ export const users: QueryResolvers["users"] = async (
     );
   }
 
-  const users = await User.find(inputArg)
+  const users = await User.find(where)
     .sort(sort)
     .select(["-password"])
     .populate("createdOrganizations")
@@ -47,301 +45,17 @@ export const users: QueryResolvers["users"] = async (
     .populate("organizationsBlockedBy")
     .lean();
 
-  if (!users[0]) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
-  } else
-    return users.map((user) => {
-      const { userType } = queryUser;
+  return users.map((user) => {
+    const { userType } = currentUser;
 
-      return {
-        ...user,
-        image: user.image ? `${context.apiRootUrl}${user.image}` : null,
-        organizationsBlockedBy:
-          (userType === "ADMIN" || userType === "SUPERADMIN") &&
-          queryUser._id !== user._id
-            ? user.organizationsBlockedBy
-            : [],
-      };
-    });
-};
-
-const getInputArg = (where: InputMaybe<UserWhereInput> | undefined) => {
-  let inputArg = {};
-
-  if (where) {
-    if (where.id) {
-      inputArg = {
-        ...inputArg,
-        _id: where.id,
-      };
-    }
-
-    //Returns all user other than provided id
-    if (where.id_not) {
-      inputArg = {
-        ...inputArg,
-        _id: {
-          $ne: where.id_not,
-        },
-      };
-    }
-
-    //Return users with id in the provided list
-    if (where.id_in) {
-      inputArg = {
-        ...inputArg,
-        _id: {
-          $in: where.id_in,
-        },
-      };
-    }
-
-    //Returns user not included in provided id list
-    if (where.id_not_in) {
-      inputArg = {
-        ...inputArg,
-        _id: {
-          $nin: where.id_not_in,
-        },
-      };
-    }
-
-    //Returns provided firstName user
-    if (where.firstName) {
-      inputArg = {
-        ...inputArg,
-        firstName: where.firstName,
-      };
-    }
-
-    //Returns user with not that firstName
-    if (where.firstName_not) {
-      inputArg = {
-        ...inputArg,
-        firstName: {
-          $ne: where.firstName_not,
-        },
-      };
-    }
-
-    //Return users with the given list firstName
-    if (where.firstName_in) {
-      inputArg = {
-        ...inputArg,
-        firstName: {
-          $in: where.firstName_in,
-        },
-      };
-    }
-
-    //Returns users with firstName not in the provided list
-    if (where.firstName_not_in) {
-      inputArg = {
-        ...inputArg,
-        firstName: {
-          $nin: where.firstName_not_in,
-        },
-      };
-    }
-
-    //Returns users with first name containing provided string
-    if (where.firstName_contains) {
-      inputArg = {
-        ...inputArg,
-        firstName: {
-          $regex: where.firstName_contains,
-          $options: "i",
-        },
-      };
-    }
-
-    //Returns users with firstName starts with that provided string
-    if (where.firstName_starts_with) {
-      const regexp = new RegExp("^" + where.firstName_starts_with);
-      inputArg = {
-        ...inputArg,
-        firstName: regexp,
-      };
-    }
-
-    //Returns lastName user
-    if (where.lastName) {
-      inputArg = {
-        ...inputArg,
-        lastName: where.lastName,
-      };
-    }
-
-    //Returns user with not that lastName
-    if (where.lastName_not) {
-      inputArg = {
-        ...inputArg,
-        lastName: {
-          $ne: where.lastName_not,
-        },
-      };
-    }
-
-    //Return users with lastName in provided list
-    if (where.lastName_in) {
-      inputArg = {
-        ...inputArg,
-        lastName: {
-          $in: where.lastName_in,
-        },
-      };
-    }
-
-    //Return users with lastName not in provided list
-    if (where.lastName_not_in) {
-      inputArg = {
-        ...inputArg,
-        lastName: {
-          $nin: where.lastName_not_in,
-        },
-      };
-    }
-
-    //Return users with lastName should containing provided string
-    if (where.lastName_contains) {
-      inputArg = {
-        ...inputArg,
-        lastName: {
-          $regex: where.lastName_contains,
-          $options: "i",
-        },
-      };
-    }
-
-    //Returns users with LastName starting with provided string
-    if (where.lastName_starts_with) {
-      const regexp = new RegExp("^" + where.lastName_starts_with);
-      inputArg = {
-        ...inputArg,
-        lastName: regexp,
-      };
-    }
-
-    //Returns provided email user
-    if (where.email) {
-      inputArg = {
-        ...inputArg,
-        email: where.email,
-      };
-    }
-
-    //Returns user with not that provided email
-    if (where.email_not) {
-      inputArg = {
-        ...inputArg,
-        email: {
-          $ne: where.email_not,
-        },
-      };
-    }
-
-    //User email falls in provided list
-    if (where.email_in) {
-      inputArg = {
-        ...inputArg,
-        email: {
-          $in: where.email_in,
-        },
-      };
-    }
-
-    //Return User email not falls in the list
-    if (where.email_not_in) {
-      inputArg = {
-        ...inputArg,
-        email: {
-          $nin: where.email_not_in,
-        },
-      };
-    }
-
-    //Return users with email containing provided string
-    if (where.email_contains) {
-      inputArg = {
-        ...inputArg,
-        email: {
-          $regex: where.email_contains,
-          $options: "i",
-        },
-      };
-    }
-
-    //Returns user with email starts with provided string
-    if (where.email_starts_with) {
-      const regexp = new RegExp("^" + where.email_starts_with);
-      inputArg = {
-        ...inputArg,
-        email: regexp,
-      };
-    }
-
-    //Returns provided appLanguageCode user
-    if (where.appLanguageCode) {
-      inputArg = {
-        ...inputArg,
-        appLanguageCode: where.appLanguageCode,
-      };
-    }
-
-    //Returns user with not that provided appLanguageCode
-    if (where.appLanguageCode_not) {
-      inputArg = {
-        ...inputArg,
-        appLanguageCode: {
-          $ne: where.appLanguageCode_not,
-        },
-      };
-    }
-
-    //User appLanguageCode falls in provided list
-    if (where.appLanguageCode_in) {
-      inputArg = {
-        ...inputArg,
-        appLanguageCode: {
-          $in: where.appLanguageCode_in,
-        },
-      };
-    }
-
-    //Return User appLanguageCode not falls in the list
-    if (where.appLanguageCode_not_in) {
-      inputArg = {
-        ...inputArg,
-        appLanguageCode: {
-          $nin: where.appLanguageCode_not_in,
-        },
-      };
-    }
-
-    //Return users with appLanguageCode containing provided string
-    if (where.appLanguageCode_contains) {
-      inputArg = {
-        ...inputArg,
-        appLanguageCode: {
-          $regex: where.appLanguageCode_contains,
-          $options: "i",
-        },
-      };
-    }
-
-    //Returns user with appLanguageCode starts with provided string
-    if (where.appLanguageCode_starts_with) {
-      const regexp = new RegExp("^" + where.appLanguageCode_starts_with);
-      inputArg = {
-        ...inputArg,
-        appLanguageCode: regexp,
-      };
-    }
-  }
-
-  return inputArg;
+    return {
+      ...user,
+      image: user.image ? `${context.apiRootUrl}${user.image}` : null,
+      organizationsBlockedBy:
+        (userType === "ADMIN" || userType === "SUPERADMIN") &&
+        currentUser._id !== user._id
+          ? user.organizationsBlockedBy
+          : [],
+    };
+  });
 };

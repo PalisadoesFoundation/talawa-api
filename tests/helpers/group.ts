@@ -3,11 +3,11 @@ import {
   TestOrganizationType,
   TestUserType,
 } from "./userAndOrg";
-import { Interface_Group, Group } from "../../src/models";
+import { InterfaceGroup, Group } from "../../src/models";
 import { Document } from "mongoose";
 
 export type TestGroupType =
-  | (Interface_Group & Document<any, any, Interface_Group>)
+  | (InterfaceGroup & Document<any, any, InterfaceGroup>)
   | null;
 
 export const createTestGroup = async (): Promise<

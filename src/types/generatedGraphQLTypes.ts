@@ -1,23 +1,23 @@
 import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
-import type { Interface_MessageChat as Interface_MessageChatModel } from '../models/MessageChat';
-import type { Interface_Comment as Interface_CommentModel } from '../models/Comment';
-import type { Interface_DirectChat as Interface_DirectChatModel } from '../models/DirectChat';
-import type { Interface_DirectChatMessage as Interface_DirectChatMessageModel } from '../models/DirectChatMessage';
-import type { Interface_Donation as Interface_DonationModel } from '../models/Donation';
-import type { Interface_Event as Interface_EventModel } from '../models/Event';
-import type { Interface_Group as Interface_GroupModel } from '../models/Group';
-import type { Interface_GroupChat as Interface_GroupChatModel } from '../models/GroupChat';
-import type { Interface_GroupChatMessage as Interface_GroupChatMessageModel } from '../models/GroupChatMessage';
-import type { Interface_Language as Interface_LanguageModel } from '../models/Language';
-import type { Interface_MembershipRequest as Interface_MembershipRequestModel } from '../models/MembershipRequest';
-import type { Interface_Message as Interface_MessageModel } from '../models/Message';
-import type { Interface_Organization as Interface_OrganizationModel } from '../models/Organization';
-import type { Interface_Plugin as Interface_PluginModel } from '../models/Plugin';
-import type { Interface_PluginField as Interface_PluginFieldModel } from '../models/PluginField';
-import type { Interface_Post as Interface_PostModel } from '../models/Post';
-import type { Interface_Task as Interface_TaskModel } from '../models/Task';
-import type { Interface_OrganizationTagUser as Interface_OrganizationTagUserModel } from '../models/OrganizationTagUser';
-import type { Interface_User as Interface_UserModel } from '../models/User';
+import type { InterfaceMessageChat as InterfaceMessageChatModel } from '../models/MessageChat';
+import type { InterfaceComment as InterfaceCommentModel } from '../models/Comment';
+import type { InterfaceDirectChat as InterfaceDirectChatModel } from '../models/DirectChat';
+import type { InterfaceDirectChatMessage as InterfaceDirectChatMessageModel } from '../models/DirectChatMessage';
+import type { InterfaceDonation as InterfaceDonationModel } from '../models/Donation';
+import type { InterfaceEvent as InterfaceEventModel } from '../models/Event';
+import type { InterfaceGroup as InterfaceGroupModel } from '../models/Group';
+import type { InterfaceGroupChat as InterfaceGroupChatModel } from '../models/GroupChat';
+import type { InterfaceGroupChatMessage as InterfaceGroupChatMessageModel } from '../models/GroupChatMessage';
+import type { InterfaceLanguage as InterfaceLanguageModel } from '../models/Language';
+import type { InterfaceMembershipRequest as InterfaceMembershipRequestModel } from '../models/MembershipRequest';
+import type { InterfaceMessage as InterfaceMessageModel } from '../models/Message';
+import type { InterfaceOrganization as InterfaceOrganizationModel } from '../models/Organization';
+import type { InterfacePlugin as InterfacePluginModel } from '../models/Plugin';
+import type { InterfacePluginField as InterfacePluginFieldModel } from '../models/PluginField';
+import type { InterfacePost as InterfacePostModel } from '../models/Post';
+import type { InterfaceTask as InterfaceTaskModel } from '../models/Task';
+import type { InterfaceOrganizationTagUser as InterfaceOrganizationTagUserModel } from '../models/OrganizationTagUser';
+import type { InterfaceUser as InterfaceUserModel } from '../models/User';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -302,12 +302,6 @@ export type GroupChatMessage = {
   sender: User;
 };
 
-export type GroupInput = {
-  description?: InputMaybe<Scalars['String']>;
-  organizationId: Scalars['ID'];
-  title?: InputMaybe<Scalars['String']>;
-};
-
 export type IosFirebaseOptions = {
   __typename?: 'IOSFirebaseOptions';
   apiKey?: Maybe<Scalars['String']>;
@@ -416,7 +410,6 @@ export type Mutation = {
   createDirectChat: DirectChat;
   createDonation: Donation;
   createEvent: Event;
-  createGroup: Group;
   createGroupChat: GroupChat;
   createMessageChat: MessageChat;
   createOrganization: Organization;
@@ -569,11 +562,6 @@ export type MutationCreateDonationArgs = {
 
 export type MutationCreateEventArgs = {
   data?: InputMaybe<EventInput>;
-};
-
-
-export type MutationCreateGroupArgs = {
-  data: GroupInput;
 };
 
 
@@ -1133,6 +1121,7 @@ export type Query = {
   groupChats?: Maybe<Array<Maybe<GroupChat>>>;
   groups?: Maybe<Array<Maybe<Group>>>;
   isUserRegister?: Maybe<EventRegistrants>;
+  joinedOrganizations?: Maybe<Array<Maybe<Organization>>>;
   me: User;
   myLanguage?: Maybe<Scalars['String']>;
   organizations?: Maybe<Array<Maybe<Organization>>>;
@@ -1224,6 +1213,11 @@ export type QueryGetlanguageArgs = {
 
 export type QueryIsUserRegisterArgs = {
   eventId: Scalars['ID'];
+};
+
+
+export type QueryJoinedOrganizationsArgs = {
+  id?: InputMaybe<Scalars['ID']>;
 };
 
 
@@ -1707,19 +1701,19 @@ export type ResolversTypes = {
   AndroidFirebaseOptions: ResolverTypeWrapper<AndroidFirebaseOptions>;
   AuthData: ResolverTypeWrapper<Omit<AuthData, 'user'> & { user: ResolversTypes['User'] }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
-  Comment: ResolverTypeWrapper<Interface_CommentModel>;
+  Comment: ResolverTypeWrapper<InterfaceCommentModel>;
   CommentInput: CommentInput;
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
   CreateUserTagInput: CreateUserTagInput;
   Date: ResolverTypeWrapper<Scalars['Date']>;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']>;
   DeletePayload: ResolverTypeWrapper<DeletePayload>;
-  DirectChat: ResolverTypeWrapper<Interface_DirectChatModel>;
-  DirectChatMessage: ResolverTypeWrapper<Interface_DirectChatMessageModel>;
-  Donation: ResolverTypeWrapper<Interface_DonationModel>;
+  DirectChat: ResolverTypeWrapper<InterfaceDirectChatModel>;
+  DirectChatMessage: ResolverTypeWrapper<InterfaceDirectChatMessageModel>;
+  Donation: ResolverTypeWrapper<InterfaceDonationModel>;
   DonationWhereInput: DonationWhereInput;
   EmailAddress: ResolverTypeWrapper<Scalars['EmailAddress']>;
-  Event: ResolverTypeWrapper<Interface_EventModel>;
+  Event: ResolverTypeWrapper<InterfaceEventModel>;
   EventInput: EventInput;
   EventOrderByInput: EventOrderByInput;
   EventRegistrants: ResolverTypeWrapper<Omit<EventRegistrants, 'event'> & { event: ResolversTypes['Event'] }>;
@@ -1728,29 +1722,28 @@ export type ResolversTypes = {
   FetchLimitExceeded: ResolverTypeWrapper<FetchLimitExceeded>;
   Float: ResolverTypeWrapper<Scalars['Float']>;
   ForgotPasswordData: ForgotPasswordData;
-  Group: ResolverTypeWrapper<Interface_GroupModel>;
-  GroupChat: ResolverTypeWrapper<Interface_GroupChatModel>;
-  GroupChatMessage: ResolverTypeWrapper<Interface_GroupChatMessageModel>;
-  GroupInput: GroupInput;
+  Group: ResolverTypeWrapper<InterfaceGroupModel>;
+  GroupChat: ResolverTypeWrapper<InterfaceGroupChatModel>;
+  GroupChatMessage: ResolverTypeWrapper<InterfaceGroupChatMessageModel>;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   IOSFirebaseOptions: ResolverTypeWrapper<IosFirebaseOptions>;
   IncorrectCursor: ResolverTypeWrapper<IncorrectCursor>;
   IncorrectPairingOfArguments: ResolverTypeWrapper<IncorrectPairingOfArguments>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
-  Language: ResolverTypeWrapper<Interface_LanguageModel>;
+  Language: ResolverTypeWrapper<InterfaceLanguageModel>;
   LanguageInput: LanguageInput;
   LanguageModel: ResolverTypeWrapper<LanguageModel>;
   Latitude: ResolverTypeWrapper<Scalars['Latitude']>;
   LoginInput: LoginInput;
   Longitude: ResolverTypeWrapper<Scalars['Longitude']>;
-  MembershipRequest: ResolverTypeWrapper<Interface_MembershipRequestModel>;
-  Message: ResolverTypeWrapper<Interface_MessageModel>;
-  MessageChat: ResolverTypeWrapper<Interface_MessageChatModel>;
+  MembershipRequest: ResolverTypeWrapper<InterfaceMembershipRequestModel>;
+  Message: ResolverTypeWrapper<InterfaceMessageModel>;
+  MessageChat: ResolverTypeWrapper<InterfaceMessageChatModel>;
   MessageChatInput: MessageChatInput;
   MissingArguments: ResolverTypeWrapper<MissingArguments>;
   Mutation: ResolverTypeWrapper<{}>;
   OTPInput: OtpInput;
-  Organization: ResolverTypeWrapper<Interface_OrganizationModel>;
+  Organization: ResolverTypeWrapper<InterfaceOrganizationModel>;
   OrganizationInfoNode: ResolverTypeWrapper<Omit<OrganizationInfoNode, 'creator'> & { creator: ResolversTypes['User'] }>;
   OrganizationInput: OrganizationInput;
   OrganizationOrderByInput: OrganizationOrderByInput;
@@ -1760,12 +1753,12 @@ export type ResolversTypes = {
   PaginationArgsError: ResolversTypes['FetchLimitExceeded'] | ResolversTypes['IncorrectCursor'] | ResolversTypes['IncorrectPairingOfArguments'] | ResolversTypes['MissingArguments'];
   PaginationError: ResolversTypes['FetchLimitExceeded'] | ResolversTypes['IncorrectCursor'] | ResolversTypes['IncorrectPairingOfArguments'] | ResolversTypes['MissingArguments'] | ResolversTypes['PaginationArgsError'];
   PhoneNumber: ResolverTypeWrapper<Scalars['PhoneNumber']>;
-  Plugin: ResolverTypeWrapper<Interface_PluginModel>;
-  PluginField: ResolverTypeWrapper<Interface_PluginFieldModel>;
+  Plugin: ResolverTypeWrapper<InterfacePluginModel>;
+  PluginField: ResolverTypeWrapper<InterfacePluginFieldModel>;
   PluginFieldInput: PluginFieldInput;
   PluginInput: PluginInput;
   PositiveInt: ResolverTypeWrapper<Scalars['PositiveInt']>;
-  Post: ResolverTypeWrapper<Interface_PostModel>;
+  Post: ResolverTypeWrapper<InterfacePostModel>;
   PostConnection: ResolverTypeWrapper<Omit<PostConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['Post']>> }>;
   PostInput: PostInput;
   PostOrderByInput: PostOrderByInput;
@@ -1777,7 +1770,7 @@ export type ResolversTypes = {
   Status: Status;
   String: ResolverTypeWrapper<Scalars['String']>;
   Subscription: ResolverTypeWrapper<{}>;
-  Task: ResolverTypeWrapper<Interface_TaskModel>;
+  Task: ResolverTypeWrapper<InterfaceTaskModel>;
   TaskInput: TaskInput;
   TaskOrderByInput: TaskOrderByInput;
   Time: ResolverTypeWrapper<Scalars['Time']>;
@@ -1793,14 +1786,14 @@ export type ResolversTypes = {
   UpdateUserTagInput: UpdateUserTagInput;
   UpdateUserTypeInput: UpdateUserTypeInput;
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
-  User: ResolverTypeWrapper<Interface_UserModel>;
+  User: ResolverTypeWrapper<InterfaceUserModel>;
   UserAndOrganizationInput: UserAndOrganizationInput;
   UserAttende: ResolverTypeWrapper<Omit<UserAttende, 'user'> & { user: ResolversTypes['User'] }>;
   UserConnection: ResolverTypeWrapper<Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['User']>> }>;
   UserEdge: ResolverTypeWrapper<Omit<UserEdge, 'node'> & { node: ResolversTypes['User'] }>;
   UserInput: UserInput;
   UserOrderByInput: UserOrderByInput;
-  UserTag: ResolverTypeWrapper<Interface_OrganizationTagUserModel>;
+  UserTag: ResolverTypeWrapper<InterfaceOrganizationTagUserModel>;
   UserTagEdge: ResolverTypeWrapper<Omit<UserTagEdge, 'node'> & { node: ResolversTypes['UserTag'] }>;
   UserTagsConnection: ResolverTypeWrapper<Omit<UserTagsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['UserTagEdge']>>> }>;
   UserTagsConnectionResult: ResolverTypeWrapper<Omit<UserTagsConnectionResult, 'connectionData' | 'connectionErrors'> & { connectionData?: Maybe<ResolversTypes['UserTagsConnection']>, connectionErrors?: Maybe<Array<Maybe<ResolversTypes['PaginationError']>>> }>;
@@ -1819,19 +1812,19 @@ export type ResolversParentTypes = {
   AndroidFirebaseOptions: AndroidFirebaseOptions;
   AuthData: Omit<AuthData, 'user'> & { user: ResolversParentTypes['User'] };
   Boolean: Scalars['Boolean'];
-  Comment: Interface_CommentModel;
+  Comment: InterfaceCommentModel;
   CommentInput: CommentInput;
   ConnectionPageInfo: ConnectionPageInfo;
   CreateUserTagInput: CreateUserTagInput;
   Date: Scalars['Date'];
   DateTime: Scalars['DateTime'];
   DeletePayload: DeletePayload;
-  DirectChat: Interface_DirectChatModel;
-  DirectChatMessage: Interface_DirectChatMessageModel;
-  Donation: Interface_DonationModel;
+  DirectChat: InterfaceDirectChatModel;
+  DirectChatMessage: InterfaceDirectChatMessageModel;
+  Donation: InterfaceDonationModel;
   DonationWhereInput: DonationWhereInput;
   EmailAddress: Scalars['EmailAddress'];
-  Event: Interface_EventModel;
+  Event: InterfaceEventModel;
   EventInput: EventInput;
   EventRegistrants: Omit<EventRegistrants, 'event'> & { event: ResolversParentTypes['Event'] };
   EventWhereInput: EventWhereInput;
@@ -1839,29 +1832,28 @@ export type ResolversParentTypes = {
   FetchLimitExceeded: FetchLimitExceeded;
   Float: Scalars['Float'];
   ForgotPasswordData: ForgotPasswordData;
-  Group: Interface_GroupModel;
-  GroupChat: Interface_GroupChatModel;
-  GroupChatMessage: Interface_GroupChatMessageModel;
-  GroupInput: GroupInput;
+  Group: InterfaceGroupModel;
+  GroupChat: InterfaceGroupChatModel;
+  GroupChatMessage: InterfaceGroupChatMessageModel;
   ID: Scalars['ID'];
   IOSFirebaseOptions: IosFirebaseOptions;
   IncorrectCursor: IncorrectCursor;
   IncorrectPairingOfArguments: IncorrectPairingOfArguments;
   Int: Scalars['Int'];
-  Language: Interface_LanguageModel;
+  Language: InterfaceLanguageModel;
   LanguageInput: LanguageInput;
   LanguageModel: LanguageModel;
   Latitude: Scalars['Latitude'];
   LoginInput: LoginInput;
   Longitude: Scalars['Longitude'];
-  MembershipRequest: Interface_MembershipRequestModel;
-  Message: Interface_MessageModel;
-  MessageChat: Interface_MessageChatModel;
+  MembershipRequest: InterfaceMembershipRequestModel;
+  Message: InterfaceMessageModel;
+  MessageChat: InterfaceMessageChatModel;
   MessageChatInput: MessageChatInput;
   MissingArguments: MissingArguments;
   Mutation: {};
   OTPInput: OtpInput;
-  Organization: Interface_OrganizationModel;
+  Organization: InterfaceOrganizationModel;
   OrganizationInfoNode: Omit<OrganizationInfoNode, 'creator'> & { creator: ResolversParentTypes['User'] };
   OrganizationInput: OrganizationInput;
   OrganizationWhereInput: OrganizationWhereInput;
@@ -1870,12 +1862,12 @@ export type ResolversParentTypes = {
   PaginationArgsError: ResolversParentTypes['FetchLimitExceeded'] | ResolversParentTypes['IncorrectCursor'] | ResolversParentTypes['IncorrectPairingOfArguments'] | ResolversParentTypes['MissingArguments'];
   PaginationError: ResolversParentTypes['FetchLimitExceeded'] | ResolversParentTypes['IncorrectCursor'] | ResolversParentTypes['IncorrectPairingOfArguments'] | ResolversParentTypes['MissingArguments'] | ResolversParentTypes['PaginationArgsError'];
   PhoneNumber: Scalars['PhoneNumber'];
-  Plugin: Interface_PluginModel;
-  PluginField: Interface_PluginFieldModel;
+  Plugin: InterfacePluginModel;
+  PluginField: InterfacePluginFieldModel;
   PluginFieldInput: PluginFieldInput;
   PluginInput: PluginInput;
   PositiveInt: Scalars['PositiveInt'];
-  Post: Interface_PostModel;
+  Post: InterfacePostModel;
   PostConnection: Omit<PostConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['Post']>> };
   PostInput: PostInput;
   PostUpdateInput: PostUpdateInput;
@@ -1884,7 +1876,7 @@ export type ResolversParentTypes = {
   RecaptchaVerification: RecaptchaVerification;
   String: Scalars['String'];
   Subscription: {};
-  Task: Interface_TaskModel;
+  Task: InterfaceTaskModel;
   TaskInput: TaskInput;
   Time: Scalars['Time'];
   ToggleUserTagAssignInput: ToggleUserTagAssignInput;
@@ -1898,13 +1890,13 @@ export type ResolversParentTypes = {
   UpdateUserTagInput: UpdateUserTagInput;
   UpdateUserTypeInput: UpdateUserTypeInput;
   Upload: Scalars['Upload'];
-  User: Interface_UserModel;
+  User: InterfaceUserModel;
   UserAndOrganizationInput: UserAndOrganizationInput;
   UserAttende: Omit<UserAttende, 'user'> & { user: ResolversParentTypes['User'] };
   UserConnection: Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['User']>> };
   UserEdge: Omit<UserEdge, 'node'> & { node: ResolversParentTypes['User'] };
   UserInput: UserInput;
-  UserTag: Interface_OrganizationTagUserModel;
+  UserTag: InterfaceOrganizationTagUserModel;
   UserTagEdge: Omit<UserTagEdge, 'node'> & { node: ResolversParentTypes['UserTag'] };
   UserTagsConnection: Omit<UserTagsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['UserTagEdge']>>> };
   UserTagsConnectionResult: Omit<UserTagsConnectionResult, 'connectionData' | 'connectionErrors'> & { connectionData?: Maybe<ResolversParentTypes['UserTagsConnection']>, connectionErrors?: Maybe<Array<Maybe<ResolversParentTypes['PaginationError']>>> };
@@ -2190,7 +2182,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, Partial<MutationCreateDirectChatArgs>>;
   createDonation?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<MutationCreateDonationArgs, 'amount' | 'nameOfOrg' | 'nameOfUser' | 'orgId' | 'payPalId' | 'userId'>>;
   createEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, Partial<MutationCreateEventArgs>>;
-  createGroup?: Resolver<ResolversTypes['Group'], ParentType, ContextType, RequireFields<MutationCreateGroupArgs, 'data'>>;
   createGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, Partial<MutationCreateGroupChatArgs>>;
   createMessageChat?: Resolver<ResolversTypes['MessageChat'], ParentType, ContextType, RequireFields<MutationCreateMessageChatArgs, 'data'>>;
   createOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, Partial<MutationCreateOrganizationArgs>>;
@@ -2379,6 +2370,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   groupChats?: Resolver<Maybe<Array<Maybe<ResolversTypes['GroupChat']>>>, ParentType, ContextType>;
   groups?: Resolver<Maybe<Array<Maybe<ResolversTypes['Group']>>>, ParentType, ContextType>;
   isUserRegister?: Resolver<Maybe<ResolversTypes['EventRegistrants']>, ParentType, ContextType, RequireFields<QueryIsUserRegisterArgs, 'eventId'>>;
+  joinedOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType, Partial<QueryJoinedOrganizationsArgs>>;
   me?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   myLanguage?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   organizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType, Partial<QueryOrganizationsArgs>>;

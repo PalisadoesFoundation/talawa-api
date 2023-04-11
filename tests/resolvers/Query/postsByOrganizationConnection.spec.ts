@@ -11,14 +11,14 @@ import {
   TestOrganizationType,
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
-import { Post, Interface_Post } from "../../../src/models";
+import { Post, InterfacePost } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { BASE_URL } from "../../../src/constants";
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testOrganization: TestOrganizationType;
 let testUser: TestUserType;
-let testPosts: (Interface_Post & Document<any, any, Interface_Post>)[];
+let testPosts: (InterfacePost & Document<any, any, InterfacePost>)[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();

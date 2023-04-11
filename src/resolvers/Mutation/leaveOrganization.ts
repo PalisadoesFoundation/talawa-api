@@ -5,7 +5,6 @@ import {
   USER_NOT_FOUND_ERROR,
   MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 /**
  * This function enables to leave an organization.
@@ -53,9 +52,8 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   const currentUserIsOrganizationMember = organization.members.some(
     (member) => member.toString() === currentUser!._id.toString()
   );
-
   // Checks whether currentUser is not a member of organzation.
-  if (currentUserIsOrganizationMember === false) {
+  if (!currentUserIsOrganizationMember) {
     throw new errors.ConflictError(
       requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
       MEMBER_NOT_FOUND_ERROR.CODE,
@@ -69,13 +67,9 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
       _id: organization._id,
     },
     {
-      $set: {
-        admins: organization.admins.filter(
-          (admin) => admin.toString() !== currentUser!._id.toString()
-        ),
-        members: organization.members.filter(
-          (member) => member.toString() !== currentUser!._id.toString()
-        ),
+      $pull: {
+        admins: currentUser._id,
+        members: currentUser._id,
       },
     }
   );
@@ -89,15 +83,9 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
       _id: currentUser._id,
     },
     {
-      $set: {
-        joinedOrganizations: currentUser.joinedOrganizations.filter(
-          (joinedOrganization) =>
-            joinedOrganization.toString() !== organization._id.toString()
-        ),
-        adminFor: currentUser.adminFor.filter(
-          (adminAtOrganization) =>
-            adminAtOrganization.toString() !== organization._id.toString()
-        ),
+      $pull: {
+        joinedOrganizations: organization._id,
+        adminFor: organization._id,
       },
     },
     {

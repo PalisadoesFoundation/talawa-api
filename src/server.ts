@@ -24,9 +24,10 @@ import {
 } from "./directives";
 import { typeDefs } from "./typeDefs";
 import { resolvers } from "./resolvers";
-import { Interface_JwtTokenPayload } from "./utilities";
+import { InterfaceJwtTokenPayload } from "./utilities";
 import { ACCESS_TOKEN_SECRET, LAST_RESORT_SUPERADMIN_EMAIL } from "./constants";
 import { User } from "./models";
+import { express as voyagerMiddleware } from "graphql-voyager/middleware";
 
 const app = express();
 
@@ -85,6 +86,9 @@ app.use(
 app.use("/images", express.static(path.join(__dirname, "./../images")));
 app.use(requestContext.middleware());
 
+if (process.env.NODE_ENV !== "production")
+  app.use("/voyager", voyagerMiddleware({ endpointUrl: "/graphql" }));
+
 app.get("/", (req, res) =>
   res.json({
     "talawa-version": "v1",
@@ -110,7 +114,7 @@ const apolloServer = new ApolloServer({
      * Resolver functions can use this to construct absolute URLs for serving static files.
      * For example, http://testDomain.com/ is apiRootUrl for a server with testDomain.com as Domain Name
      * with no SSL certificate (http://)
-     * In local environment, apiRootUrl will be http://localhost:{port}/
+     * In local environment, apiRootUrl will be http://localhost:\{port\}/
      */
     const apiRootUrl = `${req.protocol}://${req.get("host")}/`;
     if (connection) {
@@ -157,7 +161,7 @@ const apolloServer = new ApolloServer({
         const decodedToken = jwt.verify(
           token,
           ACCESS_TOKEN_SECRET as string
-        ) as Interface_JwtTokenPayload;
+        ) as InterfaceJwtTokenPayload;
         userId = decodedToken.userId;
       }
 
@@ -211,6 +215,13 @@ const serverStart = async () => {
           apolloServer.subscriptionsPath
         }`
       );
+      if (process.env.NODE_ENV !== "production")
+        logger.info(
+          "\x1b[1m\x1b[32m%s\x1b[0m",
+          `🚀 Visualise the schema at http://localhost:${
+            process.env.PORT || 4000
+          }/voyager`
+        );
     });
   } catch (error) {
     logger.error("Error while connecting to database", error);

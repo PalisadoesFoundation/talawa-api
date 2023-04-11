@@ -1,20 +1,16 @@
 import "dotenv/config";
 import { users as usersResolver } from "../../../src/resolvers/Query/users";
-import { Event, Interface_User, Organization, User } from "../../../src/models";
+import { Event, InterfaceUser, Organization, User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 import { QueryUsersArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
-import {
-  BASE_URL,
-  UNAUTHENTICATED_ERROR,
-  USER_NOT_FOUND_ERROR,
-} from "../../../src/constants";
+import { BASE_URL, UNAUTHENTICATED_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import * as mongoose from "mongoose";
 import { createTestUser } from "../../helpers/user";
 
-let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
+let testUsers: (InterfaceUser & Document<any, any, InterfaceUser>)[];
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 
@@ -30,15 +26,6 @@ describe("resolvers -> Query -> users", () => {
   it("throws UnauthenticatedError if userId is not passed in context", async () => {
     const testObjectId = new mongoose.Types.ObjectId();
 
-    vi.doMock("../../../src/constants", async () => {
-      const actualConstants: object = await vi.importActual(
-        "../../../src/constants"
-      );
-      return {
-        ...actualConstants,
-      };
-    });
-
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
@@ -49,7 +36,7 @@ describe("resolvers -> Query -> users", () => {
       const args: QueryUsersArgs = {
         orderBy: null,
         where: {
-          id: testObjectId as unknown as string,
+          id: testObjectId.toString(),
         },
       };
 
@@ -64,52 +51,31 @@ describe("resolvers -> Query -> users", () => {
       );
     }
 
-    vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
 
-  it("throws NotFoundError if no user exists", async () => {
+  it("returns empty array if no user exists", async () => {
     const testObjectId = new mongoose.Types.ObjectId();
-
-    vi.doMock("../../../src/constants", async () => {
-      const actualConstants: object = await vi.importActual(
-        "../../../src/constants"
-      );
-      return {
-        ...actualConstants,
-      };
-    });
-
-    const { requestContext } = await import("../../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
 
     const testUser = await createTestUser();
 
-    try {
-      const args: QueryUsersArgs = {
-        orderBy: null,
-        where: {
-          id: testObjectId as unknown as string,
-        },
-      };
+    const args: QueryUsersArgs = {
+      orderBy: null,
+      where: {
+        id: testObjectId.toString(),
+      },
+    };
 
-      const { users: mockedInProductionUserResolver } = await import(
-        "../../../src/resolvers/Query/users"
-      );
-      await mockedInProductionUserResolver?.({}, args, {
-        userId: testUser?._id,
-      });
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
-      );
-    }
+    const { users: mockedInProductionUserResolver } = await import(
+      "../../../src/resolvers/Query/users"
+    );
 
-    vi.doUnmock("../../../src/constants");
+    const usersPayload = await mockedInProductionUserResolver?.({}, args, {
+      userId: testUser?._id,
+    });
+
+    expect(usersPayload).toEqual([]);
+
     vi.resetModules();
   });
 

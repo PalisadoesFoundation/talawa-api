@@ -47,10 +47,12 @@ describe("resolvers -> Mutation -> otp", () => {
     vi.mock("../../../src/utilities", () => ({
       mailer: vi.fn().mockResolvedValue({ message: "success" }),
     }));
+
     vi.doMock("../../../src/constants", async () => {
       const actualConstants: object = await vi.importActual(
         "../../../src/constants"
       );
+
       return {
         ...actualConstants,
         ACCESS_TOKEN_SECRET: "mysecret",

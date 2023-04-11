@@ -8,7 +8,7 @@ import {
   REFRESH_TOKEN_SECRET,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { Interface_JwtTokenPayload } from "../../utilities";
+import { InterfaceJwtTokenPayload } from "../../utilities";
 /**
  * This function creates a new access and refresh token.
  * @param _parent - parent of current request
@@ -35,10 +35,10 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
     );
   }
 
-  const jwtPayload: Interface_JwtTokenPayload = jwt.verify(
+  const jwtPayload: InterfaceJwtTokenPayload = jwt.verify(
     args.refreshToken,
     REFRESH_TOKEN_SECRET!
-  ) as Interface_JwtTokenPayload;
+  ) as InterfaceJwtTokenPayload;
 
   // The refresh token received is valid so we can send a new access token
   const user = await User.findOne({

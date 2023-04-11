@@ -4,21 +4,21 @@ import {
   TestUserType,
 } from "./userAndOrg";
 import {
-  Interface_Post,
+  InterfacePost,
   Post,
   Organization,
   Comment,
-  Interface_Comment,
+  InterfaceComment,
 } from "../../src/models";
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
 export type TestPostType =
-  | (Interface_Post & Document<any, any, Interface_Post>)
+  | (InterfacePost & Document<any, any, InterfacePost>)
   | null;
 
 export type TestCommentType =
-  | (Interface_Comment & Document<any, any, Interface_Comment>)
+  | (InterfaceComment & Document<any, any, InterfaceComment>)
   | null;
 
 export const createTestPost = async (

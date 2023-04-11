@@ -9,13 +9,13 @@ import { mailer } from "../../src/utilities/mailer";
 import { nanoid } from "nanoid";
 import Mail from "nodemailer/lib/mailer";
 
-interface Test_Interface_MailFields {
+interface TestInterfaceMailFields {
   emailTo: string;
   subject: string;
   body: string;
 }
 
-const testMailFields: Test_Interface_MailFields = {
+const testMailFields: TestInterfaceMailFields = {
   emailTo: `${nanoid().toLowerCase()}@gmail.com`,
   subject: `${nanoid()}`,
   body: `${nanoid()}`,
@@ -41,7 +41,7 @@ describe("utilities -> mailer", () => {
 
     const mockCreateTransport = vi
       .spyOn(nodemailer, "createTransport")
-      .mockImplementationOnce((_transport: object) => {
+      .mockImplementationOnce(() => {
         const mockSendMail = (
           _mailOptions: Mail.Options,
           callBackFn: (_err: Error | null, _info: object) => void
@@ -61,7 +61,7 @@ describe("utilities -> mailer", () => {
   it("returns rejected Promise with ERROR_IN_SENDING_MAIL", () => {
     const mockCreateTransport = vi
       .spyOn(nodemailer, "createTransport")
-      .mockImplementationOnce((_transport: object) => {
+      .mockImplementationOnce(() => {
         const mockSendMail = (
           _mailOptions: Mail.Options,
           callBackFn: (_err: Error | null, _info: object | null) => void

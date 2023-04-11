@@ -1,6 +1,7 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
+import { Types } from "mongoose";
 import { MembershipRequest, Organization, User } from "../../models";
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
@@ -24,7 +25,9 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
   async (_parent, args, context) => {
     const membershipRequest = await MembershipRequest.findOne({
       _id: args.membershipRequestId,
-    }).lean();
+    })
+      .populate(["organization", "user"])
+      .exec();
 
     // Checks whether membershipRequest exists.
     if (!membershipRequest) {
@@ -35,9 +38,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       );
     }
 
-    const organization = await Organization.findOne({
-      _id: membershipRequest.organization,
-    }).lean();
+    const organization = membershipRequest.organization;
 
     // Checks whether organization exists.
     if (!organization) {
@@ -48,9 +49,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       );
     }
 
-    const user = await User.findOne({
-      _id: membershipRequest.user,
-    }).lean();
+    const user = membershipRequest.user;
 
     // Checks whether user exists.
     if (!user) {
@@ -65,7 +64,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
     await adminCheck(context.userId, organization);
 
     const userIsOrganizationMember = organization.members.some(
-      (member) => member.toString() === user?._id.toString()
+      (member: Types.ObjectId) => member.toString() === user?._id.toString()
     );
 
     // Checks whether user is already a member of organization.
@@ -82,10 +81,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       _id: membershipRequest._id,
     });
 
-    /*
-   Add user._id to members list and remove membershipRequest._id
-   from membershipRequests list on organization's document.
-   */
+    // Update the organization
     await Organization.updateOne(
       {
         _id: organization._id,
@@ -94,19 +90,13 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
         $push: {
           members: user._id,
         },
-
-        $set: {
-          membershipRequests: organization.membershipRequests.filter(
-            (request) => request.toString() !== membershipRequest._id.toString()
-          ),
+        $pull: {
+          membershipRequests: membershipRequest._id,
         },
       }
     );
 
-    /*
-   Add organization._id to joinedOrganizations list and remove 
-   membershipRequest._id from membershipRequests list on user's document.
-   */
+    // Update the user
     await User.updateOne(
       {
         _id: user._id,
@@ -115,11 +105,8 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
         $push: {
           joinedOrganizations: organization._id,
         },
-
-        $set: {
-          membershipRequests: user.membershipRequests.filter(
-            (request) => request.toString() !== membershipRequest._id.toString()
-          ),
+        $pull: {
+          membershipRequests: membershipRequest._id,
         },
       }
     );

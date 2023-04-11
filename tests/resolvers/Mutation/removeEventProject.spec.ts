@@ -5,7 +5,7 @@ import {
   Organization,
   Event,
   EventProject,
-  Interface_EventProject,
+  InterfaceEventProject,
 } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { connect, disconnect } from "../../helpers/db";
@@ -31,8 +31,8 @@ let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: TestUserType;
 let testUserNotCreatorOfEventProject: TestUserType;
 let testEvent: TestEventType;
-let testEventProject: Interface_EventProject &
-  Document<any, any, Interface_EventProject>;
+let testEventProject: InterfaceEventProject &
+  Document<any, any, InterfaceEventProject>;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -88,15 +88,6 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
 
-    vi.doMock("../../../src/constants", async () => {
-      const actualConstants: object = await vi.importActual(
-        "../../../src/constants"
-      );
-      return {
-        ...actualConstants,
-      };
-    });
-
     const { removeEventProject } = await import(
       "../../../src/resolvers/Mutation/removeEventProject"
     );
@@ -122,15 +113,6 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
-
-    vi.doMock("../../../src/constants", async () => {
-      const actualConstants: object = await vi.importActual(
-        "../../../src/constants"
-      );
-      return {
-        ...actualConstants,
-      };
-    });
 
     const { removeEventProject } = await import(
       "../../../src/resolvers/Mutation/removeEventProject"
@@ -159,15 +141,6 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
-
-    vi.doMock("../../../src/constants", async () => {
-      const actualConstants: object = await vi.importActual(
-        "../../../src/constants"
-      );
-      return {
-        ...actualConstants,
-      };
-    });
 
     const { removeEventProject } = await import(
       "../../../src/resolvers/Mutation/removeEventProject"

@@ -137,6 +137,33 @@ email === args.data.email`, async () => {
     }
   });
 
+  it(`updates the user with email === LAST_RESORT_SUPERADMIN_EMAIL to the superadmin role`, async () => {
+    // Set the LAST_RESORT_SUPERADMIN_EMAIL to equal to the test user's email
+    vi.doMock("../../../src/constants", async () => {
+      const constants: object = await vi.importActual("../../../src/constants");
+      return {
+        ...constants,
+        LAST_RESORT_SUPERADMIN_EMAIL: testUser!.email,
+      };
+    });
+
+    const args: MutationLoginArgs = {
+      data: {
+        email: testUser!.email,
+        password: "password",
+      },
+    };
+
+    const { login: loginResolver } = await import(
+      "../../../src/resolvers/Mutation/login"
+    );
+
+    const loginPayload = await loginResolver?.({}, args, {});
+
+    // @ts-ignore
+    expect(loginPayload!.user.userType).toEqual("SUPERADMIN");
+  });
+
   it(`returns the user object with populated fields joinedOrganizations, createdOrganizations,
   createdEvents, registeredEvents, eventAdmin, adminFor, membershipRequests, 
   organizationsBlockedBy, organizationUserBelongsTo`, async () => {

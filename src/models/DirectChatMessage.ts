@@ -1,14 +1,14 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { Interface_DirectChat } from "./DirectChat";
-import { Interface_User } from "./User";
+import { InterfaceDirectChat } from "./DirectChat";
+import { InterfaceUser } from "./User";
 /**
  * This is an interface representing a document for a direct chat message in the database(MongoDB).
  */
-export interface Interface_DirectChatMessage {
+export interface InterfaceDirectChatMessage {
   _id: Types.ObjectId;
-  directChatMessageBelongsTo: PopulatedDoc<Interface_DirectChat & Document>;
-  sender: PopulatedDoc<Interface_User & Document>;
-  receiver: PopulatedDoc<Interface_User & Document>;
+  directChatMessageBelongsTo: PopulatedDoc<InterfaceDirectChat & Document>;
+  sender: PopulatedDoc<InterfaceUser & Document>;
+  receiver: PopulatedDoc<InterfaceUser & Document>;
   createdAt: Date;
   messageContent: string;
   status: string;
@@ -55,7 +55,7 @@ const directChatMessageSchema = new Schema({
 });
 
 const DirectChatMessageModel = () =>
-  model<Interface_DirectChatMessage>(
+  model<InterfaceDirectChatMessage>(
     "DirectChatMessage",
     directChatMessageSchema
   );

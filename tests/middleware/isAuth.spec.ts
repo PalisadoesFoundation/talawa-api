@@ -5,13 +5,13 @@ import jwt from "jsonwebtoken";
 import { logger } from "../../src/libraries/logger";
 import { ACCESS_TOKEN_SECRET } from "../../src/constants";
 
-interface Test_Interface_AuthData {
+interface TestInterfaceAuthData {
   isAuth: boolean;
   expired: boolean | undefined;
   userId: string | undefined;
 }
 
-let testAuthData: Test_Interface_AuthData;
+let testAuthData: TestInterfaceAuthData;
 
 describe("middleware -> isAuth", () => {
   beforeEach(() => {
@@ -31,7 +31,7 @@ describe("middleware -> isAuth", () => {
       headers: {},
     } as Request;
 
-    const authData: Test_Interface_AuthData = isAuth(mockRequest);
+    const authData: TestInterfaceAuthData = isAuth(mockRequest);
 
     expect(authData).toEqual(testAuthData);
   });
@@ -47,7 +47,7 @@ describe("middleware -> isAuth", () => {
       },
     } as Request;
 
-    const authData: Test_Interface_AuthData = isAuth(mockRequest);
+    const authData: TestInterfaceAuthData = isAuth(mockRequest);
 
     expect(authData).toEqual(testAuthData);
   });
@@ -64,7 +64,7 @@ describe("middleware -> isAuth", () => {
       },
     } as Request;
 
-    const authData: Test_Interface_AuthData = isAuth(mockRequest);
+    const authData: TestInterfaceAuthData = isAuth(mockRequest);
 
     expect(authData).toEqual(testAuthData);
   });
@@ -93,7 +93,7 @@ describe("middleware -> isAuth", () => {
       },
     } as Request;
 
-    const authData: Test_Interface_AuthData = isAuth(mockRequest);
+    const authData: TestInterfaceAuthData = isAuth(mockRequest);
 
     testAuthData.expired = true;
 
@@ -106,11 +106,9 @@ describe("middleware -> isAuth", () => {
   });
 
   it("returns authData if decoded token is not set", () => {
-    const verifyMocked = vi
-      .spyOn(jwt, "verify")
-      .mockImplementationOnce((..._args: any) => {
-        return "";
-      });
+    const verifyMocked = vi.spyOn(jwt, "verify").mockImplementationOnce(() => {
+      return "";
+    });
 
     const infoSpy = vi.spyOn(logger, "info");
 
@@ -126,7 +124,7 @@ describe("middleware -> isAuth", () => {
       },
     } as Request;
 
-    const authData: Test_Interface_AuthData = isAuth(mockRequest);
+    const authData: TestInterfaceAuthData = isAuth(mockRequest);
 
     expect(verifyMocked).toHaveBeenCalledWith(
       testToken,
@@ -138,7 +136,7 @@ describe("middleware -> isAuth", () => {
   });
 
   it("returns authData if jwt.verify throws error", () => {
-    vi.spyOn(jwt, "verify").mockImplementationOnce((..._args: any) => {
+    vi.spyOn(jwt, "verify").mockImplementationOnce(() => {
       throw new Error();
     });
 
@@ -154,7 +152,7 @@ describe("middleware -> isAuth", () => {
       },
     } as Request;
 
-    const authData: Test_Interface_AuthData = isAuth(mockRequest);
+    const authData: TestInterfaceAuthData = isAuth(mockRequest);
 
     testAuthData.expired = true;
 
@@ -185,7 +183,7 @@ describe("middleware -> isAuth", () => {
       },
     } as Request;
 
-    const authData: Test_Interface_AuthData = isAuth(mockRequest);
+    const authData: TestInterfaceAuthData = isAuth(mockRequest);
 
     testAuthData.isAuth = true;
     testAuthData.userId = "ValidUserId";

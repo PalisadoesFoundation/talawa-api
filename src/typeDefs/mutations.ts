@@ -51,8 +51,6 @@ export const mutations = gql`
 
     createEvent(data: EventInput): Event! @auth
 
-    createGroup(data: GroupInput!): Group! @auth
-
     createGroupChat(data: createGroupChatInput): GroupChat! @auth
 
     createMessageChat(data: MessageChatInput!): MessageChat! @auth

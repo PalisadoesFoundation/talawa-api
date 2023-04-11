@@ -1,6 +1,9 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
-import { USER_NOT_FOUND_ERROR } from "../../constants";
+import {
+  USER_NOT_FOUND_ERROR,
+  SUPERADMIN_CANT_CHANGE_OWN_ROLE,
+} from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { superAdminCheck } from "../../utilities";
 /**
@@ -32,6 +35,13 @@ export const updateUserType: MutationResolvers["updateUserType"] = async (
   }
 
   superAdminCheck(currentUser);
+  if (args.data.id === currentUser._id.toString()) {
+    throw new errors.InputValidationError(
+      requestContext.translate(SUPERADMIN_CANT_CHANGE_OWN_ROLE.MESSAGE),
+      SUPERADMIN_CANT_CHANGE_OWN_ROLE.CODE,
+      SUPERADMIN_CANT_CHANGE_OWN_ROLE.PARAM
+    );
+  }
 
   const userExists = await User.exists({
     _id: args.data.id!,

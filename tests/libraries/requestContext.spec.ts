@@ -20,7 +20,7 @@ describe("middleware -> requestContext", () => {
   const mockResponse = new EventEmitter();
   const nextFunction = vi.fn();
 
-  interface Interface_InitOptions<T> extends Record<any, any> {
+  interface InterfaceInitOptions<T> extends Record<any, any> {
     requestHandler?: () => T;
   }
 
@@ -60,7 +60,7 @@ describe("middleware -> requestContext", () => {
   });
 
   it("testing i18n api with translate and translatePlural", async () => {
-    const options: Interface_InitOptions<any> = {
+    const options: InterfaceInitOptions<any> = {
       defaultLocale: "fr",
       locale: "fr",
       fallbacks: true,

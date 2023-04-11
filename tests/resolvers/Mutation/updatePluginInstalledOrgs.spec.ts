@@ -4,7 +4,7 @@ import {
   User,
   Organization,
   Plugin,
-  Interface_Plugin,
+  InterfacePlugin,
 } from "../../../src/models";
 import { MutationUpdatePluginInstalledOrgsArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
@@ -19,7 +19,7 @@ import {
 
 let MONGOOSE_INSTANCE: typeof mongoose | null;
 let testUser: TestUserType;
-let testPlugin: Interface_Plugin & Document<any, any, Interface_Plugin>;
+let testPlugin: InterfacePlugin & Document<any, any, InterfacePlugin>;
 let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {

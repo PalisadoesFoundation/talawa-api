@@ -48,7 +48,7 @@
     ],
 
     // warn/1, error/2, off/0
-    "tsdoc/syntax": "off", // toggle off/ warn
+    "tsdoc/syntax": "error",
 
     // Typescript Rules
     "@typescript-eslint/ban-ts-comment": "off",
@@ -61,21 +61,17 @@
     // Typescript rule to enforce PascalCase naming convention for types and interfaces
     "@typescript-eslint/naming-convention": [
       "error",
-      // Interfaces must begin with Interface_ or Test_Interface_ followed by a PascalCase name
+      // Interfaces must begin with Interface or TestInterface followed by a PascalCase name
       {
         "selector": "interface",
         "format": ["PascalCase"],
-        "prefix": ["Interface_", "Test_Interface_"]
+        "prefix": ["Interface", "TestInterface"]
       },
       // Type Aliases must be in PascalCase
       {
         "selector": "typeAlias",
         "format": ["PascalCase"]
       }
-    ],
-
-    // Extension Rules
-    "@typescript-eslint/no-empty-function": "off",
-    "@typescript-eslint/no-unused-vars": "off"
+    ]
   }
 }

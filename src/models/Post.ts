@@ -8,13 +8,13 @@ import {
   models,
 } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
-import { Interface_Comment } from "./Comment";
-import { Interface_Organization } from "./Organization";
-import { Interface_User } from "./User";
+import { InterfaceComment } from "./Comment";
+import { InterfaceOrganization } from "./Organization";
+import { InterfaceUser } from "./User";
 /**
  * This is an interface that represents a database(MongoDB) document for Post.
  */
-export interface Interface_Post {
+export interface InterfacePost {
   _id: Types.ObjectId;
   text: string;
   title: string | undefined;
@@ -22,16 +22,16 @@ export interface Interface_Post {
   createdAt: Date;
   imageUrl: string | undefined | null;
   videoUrl: string | undefined;
-  creator: PopulatedDoc<Interface_User & Document>;
-  organization: PopulatedDoc<Interface_Organization & Document>;
-  likedBy: Array<PopulatedDoc<Interface_User & Document>>;
-  comments: Array<PopulatedDoc<Interface_Comment & Document>>;
+  creator: PopulatedDoc<InterfaceUser & Document>;
+  organization: PopulatedDoc<InterfaceOrganization & Document>;
+  likedBy: Array<PopulatedDoc<InterfaceUser & Document>>;
+  comments: Array<PopulatedDoc<InterfaceComment & Document>>;
   likeCount: number;
   commentCount: number;
   pinned: boolean;
 }
 /**
- * This describes the schema for a `Post` that corresponds to `Interface_Post` document.
+ * This describes the schema for a `Post` that corresponds to `InterfacePost` document.
  * @param text - Post description.
  * @param title - Post title.
  * @param status - Status.
@@ -111,7 +111,7 @@ postSchema.plugin(mongoosePaginate);
 postSchema.index({ organization: 1 }, { unique: false });
 
 const PostModel = () =>
-  model<Interface_Post, PaginateModel<Interface_Post>>("Post", postSchema);
+  model<InterfacePost, PaginateModel<InterfacePost>>("Post", postSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Post = (models.Post || PostModel()) as ReturnType<
