@@ -52,6 +52,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
+          token: ${{ secrets.TALAWA_DOCS_SYNC }}
           path: api
         
       - name: Generate Access Token Secret
