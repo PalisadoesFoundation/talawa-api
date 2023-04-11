@@ -137,11 +137,6 @@
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>comments</strong></td>
-<td valign="top">[<a href="#comment">Comment</a>]</td>
-<td></td>
-</tr>
-<tr>
 <td colspan="2" valign="top"><strong>commentsByPost</strong></td>
 <td valign="top">[<a href="#comment">Comment</a>]</td>
 <td></td>
