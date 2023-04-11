@@ -3,110 +3,112 @@
 <details>
   <summary><strong>Table of Contents</strong></summary>
 
-  * [Query](#query)
-  * [Mutation](#mutation)
-  * [Objects](#objects)
-    * [AggregatePost](#aggregatepost)
-    * [AggregateUser](#aggregateuser)
-    * [AndroidFirebaseOptions](#androidfirebaseoptions)
-    * [AuthData](#authdata)
-    * [Comment](#comment)
-    * [ConnectionPageInfo](#connectionpageinfo)
-    * [DeletePayload](#deletepayload)
-    * [DirectChat](#directchat)
-    * [DirectChatMessage](#directchatmessage)
-    * [Donation](#donation)
-    * [Event](#event)
-    * [EventRegistrants](#eventregistrants)
-    * [ExtendSession](#extendsession)
-    * [Group](#group)
-    * [GroupChat](#groupchat)
-    * [GroupChatMessage](#groupchatmessage)
-    * [IOSFirebaseOptions](#iosfirebaseoptions)
-    * [Language](#language)
-    * [LanguageModel](#languagemodel)
-    * [MembershipRequest](#membershiprequest)
-    * [Message](#message)
-    * [MessageChat](#messagechat)
-    * [Organization](#organization)
-    * [OrganizationInfoNode](#organizationinfonode)
-    * [OtpData](#otpdata)
-    * [PageInfo](#pageinfo)
-    * [Plugin](#plugin)
-    * [PluginField](#pluginfield)
-    * [Post](#post)
-    * [PostConnection](#postconnection)
-    * [Subscription](#subscription)
-    * [Task](#task)
-    * [Translation](#translation)
-    * [User](#user)
-    * [UserAttende](#userattende)
-    * [UserConnection](#userconnection)
-    * [UserEdge](#useredge)
-    * [UserTag](#usertag)
-    * [UserTagEdge](#usertagedge)
-    * [UserTagsConnection](#usertagsconnection)
-    * [UsersConnection](#usersconnection)
-  * [Inputs](#inputs)
-    * [CommentInput](#commentinput)
-    * [CreateUserTagInput](#createusertaginput)
-    * [DonationWhereInput](#donationwhereinput)
-    * [EventInput](#eventinput)
-    * [EventWhereInput](#eventwhereinput)
-    * [ForgotPasswordData](#forgotpassworddata)
-    * [LanguageInput](#languageinput)
-    * [LoginInput](#logininput)
-    * [MessageChatInput](#messagechatinput)
-    * [OTPInput](#otpinput)
-    * [OrganizationInput](#organizationinput)
-    * [OrganizationWhereInput](#organizationwhereinput)
-    * [PluginFieldInput](#pluginfieldinput)
-    * [PluginInput](#plugininput)
-    * [PostInput](#postinput)
-    * [PostUpdateInput](#postupdateinput)
-    * [PostWhereInput](#postwhereinput)
-    * [RecaptchaVerification](#recaptchaverification)
-    * [TaskInput](#taskinput)
-    * [ToggleUserTagAssignInput](#toggleusertagassigninput)
-    * [UpdateEventInput](#updateeventinput)
-    * [UpdateOrganizationInput](#updateorganizationinput)
-    * [UpdateTaskInput](#updatetaskinput)
-    * [UpdateUserInput](#updateuserinput)
-    * [UpdateUserPasswordInput](#updateuserpasswordinput)
-    * [UpdateUserTagInput](#updateusertaginput)
-    * [UpdateUserTypeInput](#updateusertypeinput)
-    * [UserAndOrganizationInput](#userandorganizationinput)
-    * [UserInput](#userinput)
-    * [UserWhereInput](#userwhereinput)
-    * [createChatInput](#createchatinput)
-    * [createGroupChatInput](#creategroupchatinput)
-  * [Enums](#enums)
-    * [CacheControlScope](#cachecontrolscope)
-    * [EventOrderByInput](#eventorderbyinput)
-    * [OrganizationOrderByInput](#organizationorderbyinput)
-    * [PostOrderByInput](#postorderbyinput)
-    * [Recurrance](#recurrance)
-    * [Status](#status)
-    * [TaskOrderByInput](#taskorderbyinput)
-    * [Type](#type)
-    * [UserOrderByInput](#userorderbyinput)
-    * [UserType](#usertype)
-  * [Scalars](#scalars)
-    * [Boolean](#boolean)
-    * [Date](#date)
-    * [DateTime](#datetime)
-    * [EmailAddress](#emailaddress)
-    * [Float](#float)
-    * [ID](#id)
-    * [Int](#int)
-    * [Latitude](#latitude)
-    * [Longitude](#longitude)
-    * [PhoneNumber](#phonenumber)
-    * [PositiveInt](#positiveint)
-    * [String](#string)
-    * [Time](#time)
-    * [URL](#url)
-    * [Upload](#upload)
+- [Schema Types](#schema-types)
+  - [Query](#query)
+  - [Mutation](#mutation)
+  - [Objects](#objects)
+    - [AggregatePost](#aggregatepost)
+    - [AggregateUser](#aggregateuser)
+    - [AndroidFirebaseOptions](#androidfirebaseoptions)
+    - [AuthData](#authdata)
+    - [Comment](#comment)
+    - [ConnectionPageInfo](#connectionpageinfo)
+    - [DeletePayload](#deletepayload)
+    - [DirectChat](#directchat)
+    - [DirectChatMessage](#directchatmessage)
+    - [Donation](#donation)
+    - [Event](#event)
+    - [EventRegistrants](#eventregistrants)
+    - [ExtendSession](#extendsession)
+    - [Group](#group)
+    - [GroupChat](#groupchat)
+    - [GroupChatMessage](#groupchatmessage)
+    - [IOSFirebaseOptions](#iosfirebaseoptions)
+    - [Language](#language)
+    - [LanguageModel](#languagemodel)
+    - [MembershipRequest](#membershiprequest)
+    - [Message](#message)
+    - [MessageChat](#messagechat)
+    - [Organization](#organization)
+    - [OrganizationInfoNode](#organizationinfonode)
+    - [OtpData](#otpdata)
+    - [PageInfo](#pageinfo)
+    - [Plugin](#plugin)
+    - [PluginField](#pluginfield)
+    - [Post](#post)
+    - [PostConnection](#postconnection)
+    - [Subscription](#subscription)
+    - [Task](#task)
+    - [Translation](#translation)
+    - [User](#user)
+    - [UserAttende](#userattende)
+    - [UserConnection](#userconnection)
+    - [UserEdge](#useredge)
+    - [UserTag](#usertag)
+    - [UserTagEdge](#usertagedge)
+    - [UserTagsConnection](#usertagsconnection)
+    - [UsersConnection](#usersconnection)
+  - [Inputs](#inputs)
+    - [CommentInput](#commentinput)
+    - [CreateUserTagInput](#createusertaginput)
+    - [DonationWhereInput](#donationwhereinput)
+    - [EventInput](#eventinput)
+    - [EventWhereInput](#eventwhereinput)
+    - [ForgotPasswordData](#forgotpassworddata)
+    - [GroupInput](#groupinput)
+    - [LanguageInput](#languageinput)
+    - [LoginInput](#logininput)
+    - [MessageChatInput](#messagechatinput)
+    - [OTPInput](#otpinput)
+    - [OrganizationInput](#organizationinput)
+    - [OrganizationWhereInput](#organizationwhereinput)
+    - [PluginFieldInput](#pluginfieldinput)
+    - [PluginInput](#plugininput)
+    - [PostInput](#postinput)
+    - [PostUpdateInput](#postupdateinput)
+    - [PostWhereInput](#postwhereinput)
+    - [RecaptchaVerification](#recaptchaverification)
+    - [TaskInput](#taskinput)
+    - [ToggleUserTagAssignInput](#toggleusertagassigninput)
+    - [UpdateEventInput](#updateeventinput)
+    - [UpdateOrganizationInput](#updateorganizationinput)
+    - [UpdateTaskInput](#updatetaskinput)
+    - [UpdateUserInput](#updateuserinput)
+    - [UpdateUserPasswordInput](#updateuserpasswordinput)
+    - [UpdateUserTagInput](#updateusertaginput)
+    - [UpdateUserTypeInput](#updateusertypeinput)
+    - [UserAndOrganizationInput](#userandorganizationinput)
+    - [UserInput](#userinput)
+    - [UserWhereInput](#userwhereinput)
+    - [createChatInput](#createchatinput)
+    - [createGroupChatInput](#creategroupchatinput)
+  - [Enums](#enums)
+    - [CacheControlScope](#cachecontrolscope)
+    - [EventOrderByInput](#eventorderbyinput)
+    - [OrganizationOrderByInput](#organizationorderbyinput)
+    - [PostOrderByInput](#postorderbyinput)
+    - [Recurrance](#recurrance)
+    - [Status](#status)
+    - [TaskOrderByInput](#taskorderbyinput)
+    - [Type](#type)
+    - [UserOrderByInput](#userorderbyinput)
+    - [UserType](#usertype)
+  - [Scalars](#scalars)
+    - [Boolean](#boolean)
+    - [Date](#date)
+    - [DateTime](#datetime)
+    - [EmailAddress](#emailaddress)
+    - [Float](#float)
+    - [ID](#id)
+    - [Int](#int)
+    - [Latitude](#latitude)
+    - [Longitude](#longitude)
+    - [PhoneNumber](#phonenumber)
+    - [PositiveInt](#positiveint)
+    - [String](#string)
+    - [Time](#time)
+    - [URL](#url)
+    - [Upload](#upload)
 
 </details>
 
@@ -848,6 +850,16 @@
 <tr>
 <td colspan="2" align="right" valign="top">data</td>
 <td valign="top"><a href="#eventinput">EventInput</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>createGroup</strong></td>
+<td valign="top"><a href="#group">Group</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">data</td>
+<td valign="top"><a href="#groupinput">GroupInput</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -3766,6 +3778,35 @@ A list of edges.
 </tbody>
 </table>
 
+### GroupInput
+
+<table>
+<thead>
+<tr>
+<th colspan="2" align="left">Field</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>title</strong></td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>description</strong></td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>organizationId</strong></td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
 ### LanguageInput
 
 <table>
@@ -5424,4 +5465,3 @@ A field whose value conforms to the standard URL format as specified in RFC3986:
 ### Upload
 
 The `Upload` scalar type represents a file upload.
-
