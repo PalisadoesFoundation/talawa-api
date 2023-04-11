@@ -10,12 +10,11 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
   return await createGraphQLConnection<Interface_User, Interface_TagUser>(
     args,
     TagUser,
-    "_id",
     {
       tagId: parent._id,
     },
+    {},
     "userId",
-    (result) => result.userId,
-    (result) => result._id.toString()
+    (result) => result.userId
   );
 };

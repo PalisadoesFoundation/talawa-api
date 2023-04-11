@@ -145,9 +145,9 @@ B. DATA PARAMETERS
 
 1. args: These are the actual args that are send by the client in the request.
 2. databaseModel: Refers to the actual database model that you want to query.
-3. sortingObject: Refers to the properties by which you want to sort the database query by. Can be left blank. Should have the keys as fields on the object U and the values as 1 or -1 (to represent asc abd desc respectively)
-4. filterQuery: Refers to the filter object that you want to pass to the .find() query which quering the databaseModel 
+3. filterQuery: Refers to the filter object that you want to pass to the .find() query which quering the databaseModel 
 For example, User, Tag, Post, Organization etc.
+4. sortingObject: Refers to the properties by which you want to sort the database query by. Can be left blank. Should have the keys as fields on the object U and the values as 1 or -1 (to represent asc abd desc respectively)
 5. fieldsToPopulate: A string that lists all the fields that you want to be populated in the model.
   It is an optional parameter and can be skipped.
 6. getNodeFromResult: Describes a transformation function that given an object of type U, would convert it to the desired object of type T. This would mostly include mapping to some specific field of the fetched object.
@@ -166,8 +166,8 @@ export async function createGraphQLConnection<
 >(
   args: CursorPaginationArgsType,
   databaseModel: Model<U>,
-  sortingObject: { [key: string]: number },
   filterQuery: FilterQuery<U>,
+  sortingObject: { [key: string]: number },
   fieldsToPopulate: string | null,
   getNodeFromResult: GetNodeFromResultFnType<T, U>
 ): Promise<Interface_ConnectionResult<T>> {

@@ -16,12 +16,13 @@ export const childTags: UserTagResolvers["childTags"] = async (
   >(
     args,
     OrganizationTagUser,
-    "_id",
     {
       parentTagId: parent._id,
     },
+    {
+      name: 1,
+    },
     null,
-    (result) => result,
-    (result) => result._id.toString()
+    (result) => result
   );
 };
