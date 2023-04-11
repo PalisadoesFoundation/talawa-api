@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { Document } from "mongoose";
+import mongoose, { Document } from "mongoose";
 import {
   User,
   Organization,
@@ -9,7 +9,7 @@ import {
 } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   beforeAll,
   afterAll,

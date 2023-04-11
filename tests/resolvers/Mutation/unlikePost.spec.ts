@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { Post } from "../../../src/models";
 import { MutationUnlikePostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { unlikePost as unlikePostResolver } from "../../../src/resolvers/Mutation/unlikePost";
 import {
   POST_NOT_FOUND_ERROR,

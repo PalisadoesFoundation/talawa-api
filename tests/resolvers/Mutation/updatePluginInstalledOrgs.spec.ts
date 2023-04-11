@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { Document } from "mongoose";
+import mongoose, { Document } from "mongoose";
 import {
   User,
   Organization,
@@ -8,7 +8,7 @@ import {
 } from "../../../src/models";
 import { MutationUpdatePluginInstalledOrgsArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { updatePluginInstalledOrgs as updatePluginInstalledOrgsResolver } from "../../../src/resolvers/Mutation/updatePluginInstalledOrgs";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {

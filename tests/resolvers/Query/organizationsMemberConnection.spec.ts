@@ -7,9 +7,9 @@ import {
   User,
 } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import mongoose, { Document, Types } from "mongoose";
 import { QueryOrganizationsMemberConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
-import { Document, Types } from "mongoose";
+
 import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { BASE_URL } from "../../../src/constants";

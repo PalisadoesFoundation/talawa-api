@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
+import mongoose, { Document, Types } from "mongoose";
 import {
   User,
   Organization,
@@ -9,7 +9,7 @@ import {
 } from "../../../src/models";
 import { MutationRemoveTaskArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { removeTask as removeTaskResolver } from "../../../src/resolvers/Mutation/removeTask";
 import {
   USER_NOT_AUTHORIZED_ERROR,

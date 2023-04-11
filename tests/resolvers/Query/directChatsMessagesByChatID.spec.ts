@@ -2,8 +2,8 @@ import "dotenv/config";
 import { CHAT_NOT_FOUND_ERROR } from "../../../src/constants";
 import { directChatsMessagesByChatID as directChatsMessagesByChatIDResolver } from "../../../src/resolvers/Query/directChatsMessagesByChatID";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
+
 import { DirectChatMessage } from "../../../src/models";
 import { QueryDirectChatsMessagesByChatIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";

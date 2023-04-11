@@ -1,10 +1,10 @@
 import "dotenv/config";
 import { user as userResolver } from "../../../src/resolvers/Query/user";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { BASE_URL, USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { User } from "../../../src/models";
-import { Types } from "mongoose";
+
 import { QueryUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {

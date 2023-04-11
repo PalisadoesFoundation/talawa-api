@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Document } from "mongoose";
+import mongoose, { Document } from "mongoose";
 import { Plugin, InterfacePlugin } from "../../../src/models";
 import { MutationUpdatePluginStatusArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { updatePluginStatus as updatePluginStatusResolver } from "../../../src/resolvers/Mutation/updatePluginStatus";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {

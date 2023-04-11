@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { User, Organization } from "../../../src/models";
 import { MutationCreateAdminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { createAdmin as createAdminResolver } from "../../../src/resolvers/Mutation/createAdmin";
 import {
   ORGANIZATION_MEMBER_NOT_FOUND_ERROR,

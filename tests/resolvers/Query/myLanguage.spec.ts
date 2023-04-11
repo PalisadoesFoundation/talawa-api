@@ -1,11 +1,11 @@
 import "dotenv/config";
 import { myLanguage as myLanguageResolver } from "../../../src/resolvers/Query/myLanguage";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { User } from "../../../src/models";
 import { nanoid } from "nanoid";
-import { Types } from "mongoose";
+
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
 let MONGOOSE_INSTANCE: typeof mongoose;

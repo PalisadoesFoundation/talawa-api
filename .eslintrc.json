@@ -37,7 +37,7 @@
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "plugins": ["@typescript-eslint", "eslint-plugin-tsdoc"],
+  "plugins": ["@typescript-eslint", "eslint-plugin-tsdoc", "import"],
   "root": true,
   "rules": {
     "no-restricted-imports": [
@@ -46,6 +46,9 @@
         "patterns": ["**/src/**"]
       }
     ],
+
+    // restrict the use of same package in multiple import statements
+    "import/no-duplicates": "error",
 
     // warn/1, error/2, off/0
     "tsdoc/syntax": "error",

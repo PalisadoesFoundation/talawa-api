@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { Event } from "../../../src/models";
 import { MutationCreateTaskArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { createTask as createTaskResolver } from "../../../src/resolvers/Mutation/createTask";
 import {
   EVENT_NOT_FOUND_ERROR,

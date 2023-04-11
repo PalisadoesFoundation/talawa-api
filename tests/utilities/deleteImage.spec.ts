@@ -11,8 +11,8 @@ import {
   vi,
 } from "vitest";
 import { connect, disconnect } from "../helpers/db";
-import mongoose from "mongoose";
-import { Document } from "mongoose";
+import mongoose, { Document } from "mongoose";
+
 import { ImageHash, InterfaceImageHash } from "../../src/models";
 
 const testImageToBeDeleted: string = `${nanoid()}-testNewImagePath`;

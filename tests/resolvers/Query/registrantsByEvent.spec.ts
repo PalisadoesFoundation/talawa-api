@@ -1,9 +1,9 @@
 import "dotenv/config";
 import { registrantsByEvent as registrantsByEventResolver } from "../../../src/resolvers/Query/registrantsByEvent";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { Event } from "../../../src/models";
-import { Types } from "mongoose";
+
 import { QueryRegistrantsByEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { EVENT_NOT_FOUND_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
