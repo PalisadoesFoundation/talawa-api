@@ -111,11 +111,11 @@ jobs:
       
       # Copy the generated schema.json into the Talawa Docs repository 
       - name: Sync schema.json from Talawa API to Talawa Docs
-        run: cp api/docs/schema.json docs/docs/
+        run: cp api/docs/schema.json docs/docs/github-actions/
 
       # Add the updated schema.json in Talawa Docs to stage
       - name: Add the synced schema.json to stage in Talawa Docs
-        run: cd docs && git add docs/schema.json
+        run: cd docs && git add docs/github-actions/schema.json
 
       # Commit the changes made to schema.json into Talawa Docs
       - name: Commit the synced schema to the Talawa Docs repository
