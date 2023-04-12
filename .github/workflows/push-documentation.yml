@@ -41,8 +41,8 @@ jobs:
           - 27017:27017
     env:
       MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
-      ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-      REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
+#       ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+#       REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
 
     # We checkout the content of the Talawa-API repository in a directory called `api`
     # This is done as we will use the Talawa-Docs repository later too
