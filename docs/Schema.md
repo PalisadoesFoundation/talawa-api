@@ -142,16 +142,6 @@
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>commentsByPost</strong></td>
-<td valign="top">[<a href="#comment">Comment</a>]</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">id</td>
-<td valign="top"><a href="#id">ID</a>!</td>
-<td></td>
-</tr>
-<tr>
 <td colspan="2" valign="top"><strong>directChatMessages</strong></td>
 <td valign="top">[<a href="#directchatmessage">DirectChatMessage</a>]</td>
 <td></td>
