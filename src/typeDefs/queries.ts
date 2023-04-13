@@ -9,8 +9,6 @@ export const queries = gql`
 
     checkAuth: User! @auth
 
-    commentsByPost(id: ID!): [Comment]
-
     directChatMessages: [DirectChatMessage]
 
     directChats: [DirectChat]

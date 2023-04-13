@@ -1069,7 +1069,6 @@ export type Query = {
   __typename?: 'Query';
   adminPlugin?: Maybe<Array<Maybe<Plugin>>>;
   checkAuth: User;
-  commentsByPost?: Maybe<Array<Maybe<Comment>>>;
   directChatMessages?: Maybe<Array<Maybe<DirectChatMessage>>>;
   directChats?: Maybe<Array<Maybe<DirectChat>>>;
   directChatsByUserID?: Maybe<Array<Maybe<DirectChat>>>;
@@ -1112,11 +1111,6 @@ export type Query = {
 
 export type QueryAdminPluginArgs = {
   orgId: Scalars['ID'];
-};
-
-
-export type QueryCommentsByPostArgs = {
-  id: Scalars['ID'];
 };
 
 
@@ -2254,7 +2248,6 @@ export type PostConnectionResolvers<ContextType = any, ParentType extends Resolv
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   adminPlugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryAdminPluginArgs, 'orgId'>>;
   checkAuth?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  commentsByPost?: Resolver<Maybe<Array<Maybe<ResolversTypes['Comment']>>>, ParentType, ContextType, RequireFields<QueryCommentsByPostArgs, 'id'>>;
   directChatMessages?: Resolver<Maybe<Array<Maybe<ResolversTypes['DirectChatMessage']>>>, ParentType, ContextType>;
   directChats?: Resolver<Maybe<Array<Maybe<ResolversTypes['DirectChat']>>>, ParentType, ContextType>;
   directChatsByUserID?: Resolver<Maybe<Array<Maybe<ResolversTypes['DirectChat']>>>, ParentType, ContextType, RequireFields<QueryDirectChatsByUserIdArgs, 'id'>>;
