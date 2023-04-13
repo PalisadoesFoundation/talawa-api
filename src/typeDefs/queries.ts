@@ -11,8 +11,6 @@ export const queries = gql`
 
     comments: [Comment]
 
-    commentsByPost(id: ID!): [Comment]
-
     directChatMessages: [DirectChatMessage]
 
     directChats: [DirectChat]
