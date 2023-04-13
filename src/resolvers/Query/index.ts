@@ -1,6 +1,5 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { checkAuth } from "./checkAuth";
-import { comments } from "./comments";
 import { commentsByPost } from "./commentsByPost";
 import { directChatMessages } from "./directChatMessages";
 import { directChats } from "./directChats";
@@ -40,7 +39,6 @@ import { usersConnection } from "./usersConnection";
 
 export const Query: QueryResolvers = {
   checkAuth,
-  comments,
   commentsByPost,
   directChatMessages,
   directChats,
