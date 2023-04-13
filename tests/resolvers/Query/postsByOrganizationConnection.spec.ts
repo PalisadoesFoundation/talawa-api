@@ -113,7 +113,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
 
     const posts = await Post.find(where).sort(sort).populate("creator").lean();
 
-    const edges = posts.map((post, _index) => {
+    const edges = posts.map((post) => {
       return {
         node: post,
         cursor: String(post._id),
@@ -161,7 +161,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
 
     const posts = await Post.find(where).sort(sort).populate("creator").lean();
 
-    const edges = posts.map((post, _index) => {
+    const edges = posts.map((post) => {
       const cursor = String(post._id) + "_" + post.createdAt.toISOString();
 
       return {
@@ -213,7 +213,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
 
     const posts = await Post.find(where).sort(sort).populate("creator").lean();
 
-    const edges = posts.map((post, _index) => {
+    const edges = posts.map((post) => {
       const cursor = String(post._id) + "_" + post.createdAt.toISOString();
 
       return {
@@ -265,7 +265,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
 
     const posts = await Post.find(where).sort(sort).populate("creator").lean();
 
-    const edges = posts.map((post, _index) => {
+    const edges = posts.map((post) => {
       const cursor = String(post._id) + "_" + post.createdAt.toISOString();
 
       return {
@@ -317,7 +317,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
 
     const posts = await Post.find(where).sort(sort).populate("creator").lean();
 
-    const edges = posts.map((post, _index) => {
+    const edges = posts.map((post) => {
       const cursor = String(post._id) + "_" + post.createdAt.toISOString();
 
       return {
@@ -368,7 +368,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
 
     const posts = await Post.find(where).sort(sort).populate("creator").lean();
 
-    const edges = posts.map((post, _index) => {
+    const edges = posts.map((post) => {
       const cursor = String(post._id) + "_" + post.title;
 
       return {
@@ -416,7 +416,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
 
     const posts = await Post.find(where).sort(sort).populate("creator").lean();
 
-    const edges = posts.map((post, _index) => {
+    const edges = posts.map((post) => {
       const cursor = String(post._id);
 
       return {
@@ -464,7 +464,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
 
     const posts = await Post.find(where).sort(sort).populate("creator").lean();
 
-    const edges = posts.map((post, _index) => {
+    const edges = posts.map((post) => {
       const cursor = String(post._id);
 
       return {
@@ -512,7 +512,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
 
     const posts = await Post.find(where).sort(sort).populate("creator").lean();
 
-    const edges = posts.map((post, _index) => {
+    const edges = posts.map((post) => {
       const cursor = String(post._id);
 
       return {
@@ -560,7 +560,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
 
     const posts = await Post.find(where).sort(sort).populate("creator").lean();
 
-    const edges = posts.map((post, _index) => {
+    const edges = posts.map((post) => {
       const cursor = String(post._id);
 
       return {

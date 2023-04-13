@@ -1704,7 +1704,7 @@ export type ResolversTypes = {
   PluginFieldInput: PluginFieldInput;
   PluginInput: PluginInput;
   PositiveInt: ResolverTypeWrapper<Scalars['PositiveInt']>;
-  Post: ResolverTypeWrapper<Interface_PostModel>;
+  Post: ResolverTypeWrapper<InterfacePostModel>;
   PostConnection: ResolverTypeWrapper<Omit<PostConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['PostEdge']>>> }>;
   PostEdge: ResolverTypeWrapper<Omit<PostEdge, 'node'> & { node: ResolversTypes['Post'] }>;
   PostInput: PostInput;
@@ -1806,7 +1806,7 @@ export type ResolversParentTypes = {
   PluginFieldInput: PluginFieldInput;
   PluginInput: PluginInput;
   PositiveInt: Scalars['PositiveInt'];
-  Post: Interface_PostModel;
+  Post: InterfacePostModel;
   PostConnection: Omit<PostConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['PostEdge']>>> };
   PostEdge: Omit<PostEdge, 'node'> & { node: ResolversParentTypes['Post'] };
   PostInput: PostInput;

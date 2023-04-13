@@ -19,9 +19,9 @@ import { Types } from "mongoose";
  * learn more about Connection {@link https://relay.dev/graphql/connections.htm | here}.
  */
 export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationConnection"] =
-  async (_parent, args, _context) => {
+  async (_parent, args) => {
     let sort = getSort(args.orderBy);
-    let where = getWhere<Interface_Post>(args.where);
+    let where = getWhere<InterfacePost>(args.where);
 
     where = {
       ...where,
@@ -173,7 +173,7 @@ export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationC
       .populate("creator")
       .lean();
 
-    let edges = posts.map((post, _index) => {
+    const edges = posts.map((post) => {
       let cursor: string = post._id.toString();
 
       if (orderField === "title") {
@@ -198,11 +198,11 @@ export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationC
     }
 
     // Generate the GraphQL connection
-    const result = graphqlConnectionFactory<Interface_Post>();
+    const result = graphqlConnectionFactory<InterfacePost>();
 
     result.edges = edges;
 
-    where = getWhere<Interface_Post>(args.where);
+    where = getWhere<InterfacePost>(args.where);
 
     if (edges.length) {
       // Set hasNextPage for the result

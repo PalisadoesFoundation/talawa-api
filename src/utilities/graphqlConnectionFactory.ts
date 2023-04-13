@@ -5,8 +5,8 @@ interface InterfaceConnectionEdge<T> {
   node: T;
 }
 
-interface Interface_Connection<T> {
-  edges?: Array<Interface_ConnectionEdge<T> | null>;
+interface InterfaceConnection<T> {
+  edges?: Array<InterfaceConnectionEdge<T> | null>;
   pageInfo: ConnectionPageInfo;
 }
 
