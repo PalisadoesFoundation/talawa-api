@@ -75,7 +75,6 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 // Fix added to stream
 app.use(
   requestLogger(
-    // @ts-ignore
     ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms',
     {
       stream: stream,

@@ -76,9 +76,8 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     {
       _id: args.id,
     },
-    // @ts-ignore
     {
-      ...args.data,
+      ...(args.data as any),
     },
     {
       new: true,

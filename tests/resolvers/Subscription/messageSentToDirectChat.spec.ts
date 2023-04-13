@@ -47,12 +47,6 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
       },
     };
     // @ts-ignore
-    messageSentToDirectChatPayload._parent = _parent;
-    // @ts-ignore
-    messageSentToDirectChatPayload._args = _args;
-    // @ts-ignore
-    messageSentToDirectChatPayload.context = context;
-    // @ts-ignore
     messageSentToDirectChatPayload.payload = payload;
     // @ts-ignore
     const x = messageSentToDirectChatPayload?.subscribe(
@@ -91,12 +85,6 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
         sender: "Sender",
       },
     };
-    // @ts-ignore
-    messageSentToDirectChatPayload._parent = _parent;
-    // @ts-ignore
-    messageSentToDirectChatPayload._args = _args;
-    // @ts-ignore
-    messageSentToDirectChatPayload.context = context;
     // @ts-ignore
     messageSentToDirectChatPayload.payload = payload;
     // @ts-ignore

@@ -42,12 +42,6 @@ describe("src -> resolvers -> Subscription -> messageSentToGroupChat", () => {
       },
     };
     // @ts-ignore
-    messageSentToGroupChatPayload._parent = _parent;
-    // @ts-ignore
-    messageSentToGroupChatPayload._args = _args;
-    // @ts-ignore
-    messageSentToGroupChatPayload.context = context;
-    // @ts-ignore
     messageSentToGroupChatPayload.payload = payload;
     // @ts-ignore
     const x = messageSentToGroupChatPayload?.subscribe(_parent, _args, context);

@@ -99,9 +99,8 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     {
       _id: args.id,
     },
-    // @ts-ignore
     {
-      ...args.data,
+      ...(args.data as any),
     },
     {
       new: true,
