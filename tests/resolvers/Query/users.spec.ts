@@ -1,6 +1,12 @@
 import "dotenv/config";
 import { users as usersResolver } from "../../../src/resolvers/Query/users";
-import { Event, InterfaceUser, Organization, User } from "../../../src/models";
+import {
+  Event,
+  InterfaceOrganization,
+  InterfaceUser,
+  Organization,
+  User,
+} from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 import { QueryUsersArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Document } from "mongoose";
@@ -11,6 +17,8 @@ import * as mongoose from "mongoose";
 import { createTestUser } from "../../helpers/user";
 
 let testUsers: (InterfaceUser & Document<any, any, InterfaceUser>)[];
+let testOrganization: InterfaceOrganization &
+  Document<any, any, InterfaceOrganization>;
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -121,7 +129,7 @@ describe("resolvers -> Query -> users", () => {
         },
       ]);
 
-      const testOrganization = await Organization.create({
+      testOrganization = await Organization.create({
         name: "name1",
         description: "description1",
         isPublic: true,
@@ -823,7 +831,48 @@ describe("resolvers -> Query -> users", () => {
 
       expect(usersPayload).toEqual(users);
     });
+
+    it(`returns list of all existing users filtered by
+    args.where === { member_of: [testOrganization.id] }`, async () => {
+      const where = {
+        joinedOrganizations: {
+          _id: testOrganization.id,
+        },
+      };
+
+      const sort = {};
+
+      const args: QueryUsersArgs = {
+        where: {
+          member_of: testOrganization.id,
+        },
+      };
+
+      const usersPayload = await usersResolver?.({}, args, {
+        userId: testUsers[0]._id,
+      });
+
+      let users = await User.find(where)
+        .sort(sort)
+        .select(["-password"])
+        .populate("createdOrganizations")
+        .populate("createdEvents")
+        .populate("joinedOrganizations")
+        .populate("registeredEvents")
+        .populate("eventAdmin")
+        .populate("adminFor")
+        .lean();
+
+      users = users.map((user) => ({
+        ...user,
+        organizationsBlockedBy: [],
+        image: user.image ? `${BASE_URL}${user.image}` : null,
+      }));
+
+      expect(usersPayload).toEqual(users);
+    });
   });
+
   it(`returns list of all existing users
   sorted by args.orderBy === 'email_DESC' and when images exist`, async () => {
     const where = {};
