@@ -636,6 +636,15 @@ export const getWhere = <T = unknown>(
     };
   }
 
+  if (where.member_of) {
+    wherePayload = {
+      ...wherePayload,
+      joinedOrganizations: {
+        _id: where.member_of,
+      },
+    };
+  }
+
   if (where.event_title_contains) {
     wherePayload = {
       ...wherePayload,

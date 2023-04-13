@@ -1542,6 +1542,7 @@ export type UserWhereInput = {
   lastName_not?: InputMaybe<Scalars['String']>;
   lastName_not_in?: InputMaybe<Array<Scalars['String']>>;
   lastName_starts_with?: InputMaybe<Scalars['String']>;
+  member_of?: InputMaybe<Scalars['ID']>;
 };
 
 export type UsersConnection = {

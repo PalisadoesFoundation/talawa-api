@@ -336,6 +336,7 @@ export const inputs = gql`
     appLanguageCode_starts_with: String
 
     admin_for: ID
+    member_of: ID
 
     event_title_contains: String
   }
