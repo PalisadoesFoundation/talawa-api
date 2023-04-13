@@ -1,8 +1,8 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { logout as logoutResolver } from "../../../src/resolvers/Mutation/logout";
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import {
@@ -20,7 +20,7 @@ import {
 } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -29,7 +29,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> logout", () => {

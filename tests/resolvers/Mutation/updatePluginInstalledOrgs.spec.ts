@@ -1,14 +1,14 @@
 import "dotenv/config";
-import { Document } from "mongoose";
+import mongoose, { Document } from "mongoose";
 import {
   User,
   Organization,
   Plugin,
-  Interface_Plugin,
+  InterfacePlugin,
 } from "../../../src/models";
 import { MutationUpdatePluginInstalledOrgsArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { updatePluginInstalledOrgs as updatePluginInstalledOrgsResolver } from "../../../src/resolvers/Mutation/updatePluginInstalledOrgs";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
@@ -17,9 +17,9 @@ import {
   TestUserType,
 } from "../../helpers/userAndOrg";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
-let testPlugin: Interface_Plugin & Document<any, any, Interface_Plugin>;
+let testPlugin: InterfacePlugin & Document<any, any, InterfacePlugin>;
 let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
@@ -40,7 +40,7 @@ afterAll(async () => {
   await User.deleteMany({});
   await Organization.deleteMany({});
   await Plugin.deleteMany({});
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> updatePluginInstalledOrgs", () => {

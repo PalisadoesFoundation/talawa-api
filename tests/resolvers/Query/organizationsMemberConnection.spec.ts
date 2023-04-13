@@ -1,23 +1,23 @@
 import "dotenv/config";
 import { organizationsMemberConnection as organizationsMemberConnectionResolver } from "../../../src/resolvers/Query/organizationsMemberConnection";
 import {
-  Interface_Organization,
-  Interface_User,
+  InterfaceOrganization,
+  InterfaceUser,
   Organization,
   User,
 } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import mongoose, { Document, Types } from "mongoose";
 import { QueryOrganizationsMemberConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
-import { Document, Types } from "mongoose";
+
 import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { BASE_URL } from "../../../src/constants";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUsers: (Interface_User & Document<any, any, Interface_User>)[];
-let testOrganization: Interface_Organization &
-  Document<any, any, Interface_Organization>;
+let MONGOOSE_INSTANCE: typeof mongoose;
+let testUsers: (InterfaceUser & Document<any, any, InterfaceUser>)[];
+let testOrganization: InterfaceOrganization &
+  Document<any, any, InterfaceOrganization>;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -95,7 +95,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> organizationsMemberConnection", () => {

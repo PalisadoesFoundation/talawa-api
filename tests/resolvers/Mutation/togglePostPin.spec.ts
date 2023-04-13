@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { Organization, User, Post } from "../../../src/models";
 import { MutationTogglePostPinArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   POST_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -21,7 +21,7 @@ import {
 import { createTestPost, TestPostType } from "../../helpers/posts";
 import { createTestUser, TestUserType } from "../../helpers/userAndOrg";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let randomUser: TestUserType;
 let testPost: TestPostType;
@@ -38,7 +38,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> togglePostPin", () => {

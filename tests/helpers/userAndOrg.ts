@@ -1,6 +1,6 @@
 import {
-  Interface_Organization,
-  Interface_User,
+  InterfaceOrganization,
+  InterfaceUser,
   Organization,
   User,
 } from "../../src/models";
@@ -8,11 +8,11 @@ import { nanoid } from "nanoid";
 import { Document } from "mongoose";
 
 export type TestOrganizationType =
-  | (Interface_Organization & Document<any, any, Interface_Organization>)
+  | (InterfaceOrganization & Document<any, any, InterfaceOrganization>)
   | null;
 
 export type TestUserType =
-  | (Interface_User & Document<any, any, Interface_User>)
+  | (InterfaceUser & Document<any, any, InterfaceUser>)
   | null;
 
 export const createTestUser = async (): Promise<TestUserType> => {

@@ -2,7 +2,7 @@ import "dotenv/config";
 import { isUserRegister as isUserRegisterResolver } from "../../../src/resolvers/Query/isUserRegister";
 import { connect, disconnect } from "../../helpers/db";
 import { Event } from "../../../src/models";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { QueryIsUserRegisterArgs } from "../../../src/types/generatedGraphQLTypes";
 import { EVENT_NOT_FOUND_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -13,9 +13,8 @@ import {
 } from "../../helpers/userAndOrg";
 import { TestEventType, createEventWithRegistrant } from "../../helpers/events";
 import { createTestTask } from "../../helpers/task";
-import mongoose from "mongoose";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -34,7 +33,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> isUserRegister", () => {

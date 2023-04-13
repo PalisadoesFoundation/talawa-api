@@ -1,8 +1,8 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { MutationRemoveUserTagArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -28,7 +28,7 @@ let rootTag: TestUserTagType,
   childTag1: TestUserTagType,
   childTag2: TestUserTagType;
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -55,7 +55,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> removeUserTag", () => {

@@ -1,5 +1,5 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { Interface_Post, Post } from "../../models";
+import { InterfacePost, Post } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 import { graphqlConnectionFactory } from "../../utilities";

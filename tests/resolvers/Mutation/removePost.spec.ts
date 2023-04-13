@@ -1,8 +1,8 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { MutationRemovePostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   POST_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -20,7 +20,7 @@ import {
   afterEach,
 } from "vitest";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testPost: TestPostType;
 let randomUser: TestUserType;
@@ -32,7 +32,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> removePost", () => {
@@ -136,15 +136,6 @@ describe("resolvers -> Mutation -> removePost", () => {
     const context = {
       userId: testUser!.id,
     };
-
-    vi.doMock("../../../src/constants", async () => {
-      const actualConstants: object = await vi.importActual(
-        "../../../src/constants"
-      );
-      return {
-        ...actualConstants,
-      };
-    });
 
     const { removePost: removePostResolver } = await import(
       "../../../src/resolvers/Mutation/removePost"

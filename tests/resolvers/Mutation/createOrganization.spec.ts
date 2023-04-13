@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { User } from "../../../src/models";
 import { MutationCreateOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { createOrganization as createOrganizationResolver } from "../../../src/resolvers/Mutation/createOrganization";
 import {
   LENGTH_VALIDATION_ERROR,
@@ -24,7 +24,7 @@ import { createTestUserFunc, TestUserType } from "../../helpers/user";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 
 let testUser: TestUserType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),
@@ -36,7 +36,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> createOrganization", () => {

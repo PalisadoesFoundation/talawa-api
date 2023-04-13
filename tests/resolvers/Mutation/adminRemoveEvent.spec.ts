@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { User, Organization, Event } from "../../../src/models";
 import { MutationAdminRemoveEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { adminRemoveEvent as adminRemoveEventResolver } from "../../../src/resolvers/Mutation/adminRemoveEvent";
 import {
   EVENT_NOT_FOUND_ERROR,
@@ -18,7 +18,7 @@ import { TestEventType, createTestEvent } from "../../helpers/events";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testEvent: TestEventType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -34,7 +34,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> adminRemoveEvent", () => {

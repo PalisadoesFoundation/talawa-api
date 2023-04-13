@@ -1,18 +1,18 @@
 import { Schema, Types, model, PopulatedDoc, Document, models } from "mongoose";
-import { Interface_Event } from "./Event";
-import { Interface_Task } from "./Task";
-import { Interface_User } from "./User";
+import { InterfaceEvent } from "./Event";
+import { InterfaceTask } from "./Task";
+import { InterfaceUser } from "./User";
 /**
  * This is an interface representing a document for an event project in the database(MongoDB).
  */
-export interface Interface_EventProject {
+export interface InterfaceEventProject {
   _id: Types.ObjectId;
   title: string;
   description: string;
   createdAt: Date;
-  event: PopulatedDoc<Interface_Event & Document>;
-  creator: PopulatedDoc<Interface_User & Document>;
-  tasks: Array<PopulatedDoc<Interface_Task & Document>>;
+  event: PopulatedDoc<InterfaceEvent & Document>;
+  creator: PopulatedDoc<InterfaceUser & Document>;
+  tasks: Array<PopulatedDoc<InterfaceTask & Document>>;
   status: string;
 }
 /**
@@ -63,7 +63,7 @@ const eventProjectSchema = new Schema({
 });
 
 const EventProjectModel = () =>
-  model<Interface_EventProject>("EventProject", eventProjectSchema);
+  model<InterfaceEventProject>("EventProject", eventProjectSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const EventProject = (models.EventProject ||

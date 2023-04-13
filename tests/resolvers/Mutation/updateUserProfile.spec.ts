@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import { Interface_User, User } from "../../../src/models";
+import mongoose, { Document, Types } from "mongoose";
+import { InterfaceUser, User } from "../../../src/models";
 import { MutationUpdateUserProfileArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { updateUserProfile as updateUserProfileResolver } from "../../../src/resolvers/Mutation/updateUserProfile";
 import {
@@ -22,8 +22,8 @@ import {
   afterEach,
 } from "vitest";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testUser: Interface_User & Document<any, any, Interface_User>;
+let MONGOOSE_INSTANCE: typeof mongoose;
+let testUser: InterfaceUser & Document<any, any, InterfaceUser>;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),
@@ -51,7 +51,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 afterEach(() => {

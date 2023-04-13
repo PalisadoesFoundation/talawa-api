@@ -1,13 +1,13 @@
-import { Event, Task, Interface_Event, Interface_Task } from "../../src/models";
+import { Event, Task, InterfaceEvent, InterfaceTask } from "../../src/models";
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
 export type TestEventType =
-  | (Interface_Event & Document<any, any, Interface_Event>)
+  | (InterfaceEvent & Document<any, any, InterfaceEvent>)
   | null;
 
 export type TestTaskType =
-  | (Interface_Task & Document<any, any, Interface_Task>)
+  | (InterfaceTask & Document<any, any, InterfaceTask>)
   | null;
 
 export const createTestTask = async (

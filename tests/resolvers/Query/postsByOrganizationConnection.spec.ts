@@ -2,8 +2,8 @@
 import "dotenv/config";
 import { postsByOrganizationConnection as postsByOrganizationConnectionResolver } from "../../../src/resolvers/Query/postsByOrganizationConnection";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
-import { Document, Types } from "mongoose";
+import mongoose, { Document, Types } from "mongoose";
+
 import { QueryPostsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
@@ -11,14 +11,14 @@ import {
   TestOrganizationType,
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
-import { Post, Interface_Post } from "../../../src/models";
+import { Post, InterfacePost } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { BASE_URL } from "../../../src/constants";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;
 let testUser: TestUserType;
-let testPosts: (Interface_Post & Document<any, any, Interface_Post>)[];
+let testPosts: (InterfacePost & Document<any, any, InterfacePost>)[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -56,7 +56,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> postsByOrganizationConnection", () => {

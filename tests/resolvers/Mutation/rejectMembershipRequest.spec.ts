@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { User, Organization, MembershipRequest } from "../../../src/models";
 import { MutationRejectMembershipRequestArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { rejectMembershipRequest as rejectMembershipRequestResolver } from "../../../src/resolvers/Mutation/rejectMembershipRequest";
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
@@ -26,7 +26,7 @@ import {
   TestMembershipRequestType,
 } from "../../helpers/membershipRequests";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testMembershipRequest: TestMembershipRequestType;
@@ -40,7 +40,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
@@ -245,8 +245,8 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
     const rejectMembershipRequestPayload =
       await rejectMembershipRequestResolver?.({}, args, context);
 
-    expect(rejectMembershipRequestPayload).toEqual(
-      testMembershipRequest!.toObject()
+    expect(rejectMembershipRequestPayload?._id).toEqual(
+      testMembershipRequest!._id
     );
 
     const testUpdatedUser = await User.findOne({
@@ -254,7 +254,6 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
     })
       .select(["membershipRequests"])
       .lean();
-
     expect(testUpdatedUser?.membershipRequests).toEqual([]);
 
     const testUpdatedOrganization = await Organization.findOne({

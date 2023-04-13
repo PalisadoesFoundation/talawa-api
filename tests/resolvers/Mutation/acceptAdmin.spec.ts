@@ -1,8 +1,8 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { MutationAcceptAdminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { acceptAdmin as acceptAdminResolver } from "../../../src/resolvers/Mutation/acceptAdmin";
 import {
   USER_NOT_AUTHORIZED_SUPERADMIN,
@@ -22,7 +22,7 @@ import { User } from "../../../src/models";
 
 let testUserSuperAdmin: TestUserType;
 let testUserAdmin: TestUserType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -31,7 +31,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 afterEach(() => {

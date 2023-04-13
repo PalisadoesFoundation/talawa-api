@@ -1,8 +1,8 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { MutationCreateGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { createGroupChat as createGroupChatResolver } from "../../../src/resolvers/Mutation/createGroupChat";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -16,7 +16,7 @@ import {
 } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
@@ -32,7 +32,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> createGroupChat", () => {

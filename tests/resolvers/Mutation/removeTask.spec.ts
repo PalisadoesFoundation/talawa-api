@@ -1,15 +1,15 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
+import mongoose, { Document, Types } from "mongoose";
 import {
   User,
   Organization,
   Event,
   Task,
-  Interface_Task,
+  InterfaceTask,
 } from "../../../src/models";
 import { MutationRemoveTaskArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { removeTask as removeTaskResolver } from "../../../src/resolvers/Mutation/removeTask";
 import {
   USER_NOT_AUTHORIZED_ERROR,
@@ -20,9 +20,9 @@ import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUserFunc } from "../../helpers/user";
 import { TestUserType } from "../../helpers/userAndOrg";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
-let testTask: Interface_Task & Document<any, any, Interface_Task>;
+let testTask: InterfaceTask & Document<any, any, InterfaceTask>;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -103,7 +103,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> removeTask", () => {

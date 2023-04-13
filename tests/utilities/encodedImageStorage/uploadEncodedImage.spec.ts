@@ -6,7 +6,7 @@ import { connect, disconnect } from "../../helpers/db";
 import path from "path";
 import { INVALID_FILE_TYPE } from "../../../src/constants";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testPreviousImagePath: string;
 
 beforeAll(async () => {
@@ -14,7 +14,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => {

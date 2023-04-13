@@ -54,15 +54,8 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     superAdminCheck(currentUser!);
 
     // Remove each post and comments associated to it for organization.posts list.
-    organization.posts.forEach(async (postId) => {
-      await Post.deleteOne({
-        _id: postId,
-      });
-
-      await Comment.deleteMany({
-        post: postId,
-      });
-    });
+    await Post.deleteMany({ _id: { $in: organization.posts } });
+    await Comment.deleteMany({ post: { $in: organization.posts } });
 
     // Remove organization._id from createdOrganizations list of currentUser.
     await User.updateOne(
@@ -70,108 +63,53 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
         _id: currentUser._id,
       },
       {
-        $set: {
-          createdOrganizations: currentUser.createdOrganizations.filter(
-            (createdOrganization) =>
-              createdOrganization.toString() !== organization._id.toString()
-          ),
+        $pull: {
+          createdOrganizations: organization._id,
         },
       }
     );
 
     // Remove organization._id from each member's joinedOrganizations field for organization.members list.
-    for (const memberId of organization.members) {
-      const member = await User.findOne({
-        _id: memberId,
-      }).lean();
-
-      await User.updateOne(
-        {
-          _id: memberId,
-        },
-        {
-          $set: {
-            joinedOrganizations: member?.joinedOrganizations.filter(
-              (joinedOrganization) =>
-                joinedOrganization.toString() !== organization._id.toString()
-            ),
-          },
-        }
-      );
-    }
+    await User.updateMany(
+      { _id: { $in: organization.members } },
+      { $pull: { joinedOrganizations: organization._id } }
+    );
 
     // Remove organization._id from each admin's joinedOrganizations field for organization.admins list.
-    for (const adminId of organization.admins) {
-      const admin = await User.findOne({
-        _id: adminId,
-      }).lean();
-
-      await User.updateOne(
-        {
-          _id: adminId,
-        },
-        {
-          $set: {
-            joinedOrganizations: admin?.joinedOrganizations.filter(
-              (joinedOrganization) =>
-                joinedOrganization.toString() !== organization._id.toString()
-            ),
-          },
-        }
-      );
-    }
+    await User.updateMany(
+      { _id: { $in: organization.admins } },
+      { $pull: { joinedOrganizations: organization._id } }
+    );
 
     /*
     Remove membershipRequest._id from each requester's membershipRequests
     field for membershipRequest.user for organization.membershipRequests list.
     */
-    for (const membershipRequestId of organization.membershipRequests) {
-      const membershipRequest = await MembershipRequest.findOneAndDelete({
-        _id: membershipRequestId,
-      }).lean();
+    const membershipRequests = await MembershipRequest.find({
+      _id: { $in: organization.membershipRequests },
+    });
 
-      const requester = await User.findOne({
-        _id: membershipRequest?.user,
-      }).lean();
+    await MembershipRequest.deleteMany({
+      _id: { $in: organization.membershipRequests },
+    });
 
-      await User.updateOne(
-        {
-          _id: requester?._id,
+    await User.updateMany(
+      { _id: { $in: membershipRequests.map((r) => r.user._id) } },
+      {
+        $pull: {
+          membershipRequests: { $in: organization.membershipRequests },
         },
-        {
-          $set: {
-            membershipRequests: requester?.membershipRequests.filter(
-              (request) =>
-                request.toString() !== membershipRequest?._id.toString()
-            ),
-          },
-        }
-      );
-    }
+      }
+    );
 
     /* 
     Remove organization._id from each blockedUser's organizationsBlockedBy
     field for organization.blockedUsers list.
     */
-    for (const blockedUserId of organization.blockedUsers) {
-      const blockedUser = await User.findOne({
-        _id: blockedUserId,
-      }).lean();
-
-      await User.updateOne(
-        {
-          _id: blockedUser?._id,
-        },
-        {
-          $set: {
-            organizationsBlockedBy: blockedUser?.organizationsBlockedBy.filter(
-              (organizationBlockedBy) =>
-                organizationBlockedBy.toString() !== organization._id.toString()
-            ),
-          },
-        }
-      );
-    }
+    await User.updateMany(
+      { _id: { $in: organization.blockedUsers } },
+      { $pull: { organizationsBlockedBy: organization._id } }
+    );
 
     // Deletes the organzation.
     await Organization.deleteOne({

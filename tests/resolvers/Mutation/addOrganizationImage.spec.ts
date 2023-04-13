@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { Organization } from "../../../src/models";
 import { MutationAddOrganizationImageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { addOrganizationImage as addOrganizationImageResolver } from "../../../src/resolvers/Mutation/addOrganizationImage";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import {
@@ -29,7 +29,7 @@ import {
 const testImagePath: string = `${nanoid().toLowerCase()}test.png`;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),
@@ -43,7 +43,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> addOrganizationImage", () => {
@@ -51,11 +51,13 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
+
   it("throws NotFoundError if no user exists with _id === context.userId", async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
+
     try {
       const args: MutationAddOrganizationImageArgs = {
         organizationId: "",
@@ -64,14 +66,7 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
       const context = {
         userId: Types.ObjectId().toString(),
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { addOrganizationImage } = await import(
         "../../../src/resolvers/Mutation/addOrganizationImage"
       );
@@ -94,14 +89,7 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
       const context = {
         userId: testUser!.id,
       };
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
+
       const { addOrganizationImage } = await import(
         "../../../src/resolvers/Mutation/addOrganizationImage"
       );

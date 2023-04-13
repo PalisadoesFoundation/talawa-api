@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { User, Organization } from "../../../src/models";
 import { MutationRemoveOrganizationImageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   ORGANIZATION_IMAGE_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -22,7 +22,7 @@ import {
 import { TestOrganizationType, TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserFunc } from "../../helpers/user";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -61,7 +61,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await User.deleteMany({});
   await Organization.deleteMany({});
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> removeOrganizationImage", () => {

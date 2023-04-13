@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import {
   Organization,
   DirectChat,
@@ -7,7 +7,7 @@ import {
 } from "../../../src/models";
 import { MutationRemoveDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   CHAT_NOT_FOUND_ERROR,
@@ -28,7 +28,7 @@ import {
   TestDirectChatType,
 } from "../../helpers/directChat";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testDirectChat: TestDirectChatType;
@@ -63,7 +63,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> removeDirectChat", () => {

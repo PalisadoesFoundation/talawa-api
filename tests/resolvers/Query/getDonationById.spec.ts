@@ -6,7 +6,7 @@ import { QueryGetDonationByIdArgs } from "../../../src/types/generatedGraphQLTyp
 import { TestDonationType, createTestDonation } from "../../helpers/donation";
 import mongoose from "mongoose";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testDonation: TestDonationType;
 
 beforeAll(async () => {
@@ -16,7 +16,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> getDonationById", () => {

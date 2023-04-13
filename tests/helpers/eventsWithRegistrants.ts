@@ -3,11 +3,11 @@ import {
   TestOrganizationType,
   TestUserType,
 } from "./userAndOrg";
-import { Event, User, Interface_Event } from "../../src/models";
+import { Event, User, InterfaceEvent } from "../../src/models";
 import { Document } from "mongoose";
 
 export type TestEventType =
-  | (Interface_Event & Document<any, any, Interface_Event>)
+  | (InterfaceEvent & Document<any, any, InterfaceEvent>)
   | null;
 
 export const createTestEventWithRegistrants = async (

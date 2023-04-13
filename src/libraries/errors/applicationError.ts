@@ -1,4 +1,4 @@
-export interface Interface_Error {
+export interface InterfaceError {
   message: string;
   code: string | null;
   param: string | null;
@@ -8,11 +8,11 @@ export interface Interface_Error {
  * This class is responsible for finding the application errors. It adds those errors to superclass called Error.
  */
 export class ApplicationError extends Error {
-  public errors: Interface_Error[];
+  public errors: InterfaceError[];
   public httpCode: number;
 
   constructor(
-    errors: Interface_Error[],
+    errors: InterfaceError[],
     httpCode: number = 422,
     message: string = "Error"
   ) {

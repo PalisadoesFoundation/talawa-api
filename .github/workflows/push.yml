@@ -25,7 +25,7 @@ jobs:
   # code coverage (post PR merge) is reported
   ##############################################################################
 
-  Test-Application:
+  Push-Workflow:
     name: Testing Application
     runs-on: ubuntu-latest
     strategy:
@@ -43,9 +43,11 @@ jobs:
           - 27017:27017
     env:
       MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
-      ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-      REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
+#       ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+#       REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
 
+    # We checkout the content of the Talawa-API repository in a directory called `api`
+    # This is done as we will use the Talawa-Docs repository later too
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -67,12 +69,15 @@ jobs:
         with:
           time: 10s
 
+      # Testing the application 
       - name: Run the tests
         run: npm run test
     
+      # Upload Coverage
       - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
         uses: codecov/codecov-action@v3
         with:
+          directory: api
           verbose: true
           fail_ci_if_error: false
           name: '${{env.CODECOV_UNIQUE_NAME}}'  

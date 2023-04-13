@@ -4,13 +4,13 @@ import {
   TestUserType,
 } from "./userAndOrg";
 
-import { Donation, Interface_Donation } from "../../src/models";
+import { Donation, InterfaceDonation } from "../../src/models";
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
 import { createTestUser } from "./user";
 
 export type TestDonationType =
-  | (Interface_Donation & Document<any, any, Interface_Donation>)
+  | (InterfaceDonation & Document<any, any, InterfaceDonation>)
   | null;
 
 export const createTestDonation = async (): Promise<

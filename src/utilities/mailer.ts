@@ -7,7 +7,7 @@ import {
   SMTP_OPTIONS,
 } from "../constants";
 
-export interface Interface_MailFields {
+export interface InterfaceMailFields {
   emailTo: string;
   subject: string;
   body: string;
@@ -17,10 +17,10 @@ export interface Interface_MailFields {
  * @remarks
  * This is a utility method.
  *
- * @param Interface_MailFields - `Interface` type with emailTo(`string`), subject(`string`), and body(`string`) necessary attributes.
+ * @param InterfaceMailFields - `Interface` type with emailTo(`string`), subject(`string`), and body(`string`) necessary attributes.
  * @returns Promise along with resolve and reject methods.
  */
-export const mailer = (mailFields: Interface_MailFields) => {
+export const mailer = (mailFields: InterfaceMailFields) => {
   // Nodemailer configuration
   let transporter: any;
 

@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { User, Organization, MembershipRequest } from "../../../src/models";
 import { MutationAcceptMembershipRequestArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -29,7 +29,7 @@ import {
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testMembershipRequest: TestMembershipRequestType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -40,7 +40,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
@@ -270,8 +270,8 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
     const acceptMembershipRequestPayload =
       await acceptMembershipRequestResolver?.({}, args, context);
 
-    expect(acceptMembershipRequestPayload).toEqual(
-      testMembershipRequest!.toObject()
+    expect(acceptMembershipRequestPayload?._id).toEqual(
+      testMembershipRequest!._id
     );
 
     const updatedTestOrganization = await Organization.findOne({

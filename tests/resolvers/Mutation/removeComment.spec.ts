@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import { Comment, Interface_Comment, Post } from "../../../src/models";
+import mongoose, { Document, Types } from "mongoose";
+import { Comment, InterfaceComment, Post } from "../../../src/models";
 import { MutationRemoveCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { removeComment as removeCommentResolver } from "../../../src/resolvers/Mutation/removeComment";
 import {
   COMMENT_NOT_FOUND_ERROR,
@@ -22,11 +22,11 @@ import {
 import { TestUserType } from "../../helpers/userAndOrg";
 import { createTestPost, TestPostType } from "../../helpers/posts";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testPost: TestPostType;
 let testComment:
-  | (Interface_Comment & Document<any, any, Interface_Comment>)
+  | (InterfaceComment & Document<any, any, InterfaceComment>)
   | null;
 
 beforeAll(async () => {
@@ -59,7 +59,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> removeComment", () => {

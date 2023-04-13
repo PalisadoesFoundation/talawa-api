@@ -2,7 +2,7 @@ import { Schema, model, Types, models } from "mongoose";
 /**
  * This is an interface that represents a database(MongoDB) document for Plugin Field.
  */
-export interface Interface_PluginField {
+export interface InterfacePluginField {
   _id: Types.ObjectId;
   key: string;
   value: string;
@@ -10,7 +10,7 @@ export interface Interface_PluginField {
   createdAt: Date;
 }
 /**
- * This describes the schema for a `PluginField` that corresponds to `Interface_PluginField` document.
+ * This describes the schema for a `PluginField` that corresponds to `InterfacePluginField` document.
  * @param key - Plugin key.
  * @param value - Value.
  * @param status - Status.
@@ -38,7 +38,7 @@ const pluginFieldSchema = new Schema({
 });
 
 const PluginFieldModel = () =>
-  model<Interface_PluginField>("PluginField", pluginFieldSchema);
+  model<InterfacePluginField>("PluginField", pluginFieldSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const PluginField = (models.PluginField ||

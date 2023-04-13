@@ -1,15 +1,15 @@
 import "dotenv/config";
-import { Document } from "mongoose";
+import mongoose, { Document } from "mongoose";
 import {
   User,
   Organization,
   Event,
   EventProject,
-  Interface_EventProject,
+  InterfaceEventProject,
 } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   beforeAll,
   afterAll,
@@ -27,12 +27,12 @@ import {
 import { TestUserType } from "../../helpers/userAndOrg";
 import { createTestEvent, TestEventType } from "../../helpers/events";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testUserNotCreatorOfEventProject: TestUserType;
 let testEvent: TestEventType;
-let testEventProject: Interface_EventProject &
-  Document<any, any, Interface_EventProject>;
+let testEventProject: InterfaceEventProject &
+  Document<any, any, InterfaceEventProject>;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -62,7 +62,7 @@ afterAll(async () => {
   await Organization.deleteMany({});
   await Event.deleteMany({});
   await EventProject.deleteMany({});
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 afterEach(async () => {
@@ -87,15 +87,6 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
-
-    vi.doMock("../../../src/constants", async () => {
-      const actualConstants: object = await vi.importActual(
-        "../../../src/constants"
-      );
-      return {
-        ...actualConstants,
-      };
-    });
 
     const { removeEventProject } = await import(
       "../../../src/resolvers/Mutation/removeEventProject"
@@ -122,15 +113,6 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
-
-    vi.doMock("../../../src/constants", async () => {
-      const actualConstants: object = await vi.importActual(
-        "../../../src/constants"
-      );
-      return {
-        ...actualConstants,
-      };
-    });
 
     const { removeEventProject } = await import(
       "../../../src/resolvers/Mutation/removeEventProject"
@@ -159,15 +141,6 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
-
-    vi.doMock("../../../src/constants", async () => {
-      const actualConstants: object = await vi.importActual(
-        "../../../src/constants"
-      );
-      return {
-        ...actualConstants,
-      };
-    });
 
     const { removeEventProject } = await import(
       "../../../src/resolvers/Mutation/removeEventProject"

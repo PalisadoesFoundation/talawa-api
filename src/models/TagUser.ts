@@ -1,11 +1,11 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { Interface_OrganizationTagUser } from "./OrganizationTagUser";
-import { Interface_User } from "./User";
+import { InterfaceOrganizationTagUser } from "./OrganizationTagUser";
+import { InterfaceUser } from "./User";
 
-export interface Interface_TagUser {
+export interface InterfaceTagUser {
   _id: Types.ObjectId;
-  userId: PopulatedDoc<Interface_User & Document>;
-  tagId: PopulatedDoc<Interface_OrganizationTagUser & Document>;
+  userId: PopulatedDoc<InterfaceUser & Document>;
+  tagId: PopulatedDoc<InterfaceOrganizationTagUser & Document>;
 }
 
 // Relational schema used to keep track of assigned tags to users
@@ -24,7 +24,7 @@ const TagUserSchema = new Schema({
 
 TagUserSchema.index({ userId: 1, tagId: 1 }, { unique: true });
 
-const TagUserModel = () => model<Interface_TagUser>("TagUser", TagUserSchema);
+const TagUserModel = () => model<InterfaceTagUser>("TagUser", TagUserSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const TagUser = (models.TagUser || TagUserModel()) as ReturnType<

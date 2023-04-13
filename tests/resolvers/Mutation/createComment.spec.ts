@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { Post } from "../../../src/models";
 import { MutationCreateCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { createComment as createCommentResolver } from "../../../src/resolvers/Mutation/createComment";
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
@@ -12,7 +12,7 @@ import { TestUserType } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testPost: TestPostType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -26,7 +26,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> createComment", () => {

@@ -36,12 +36,12 @@ export const middleware = () => {
   };
 };
 
-interface Interface_InitOptions<T> extends Record<any, any> {
+interface InterfaceInitOptions<T> extends Record<any, any> {
   requestHandler?: () => T;
 }
 
 // Invalid code. Currently ignored by typescript. Needs fix.
-export const init = async <T>(options: Interface_InitOptions<T> = {}) => {
+export const init = async <T>(options: InterfaceInitOptions<T> = {}) => {
   const obj: any = {};
   // @ts-ignore
   i18n.init(obj);

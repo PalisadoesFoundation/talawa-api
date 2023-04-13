@@ -5,7 +5,7 @@ import {
   createTestUserAndOrganization,
 } from "./userAndOrg";
 import {
-  Interface_MembershipRequest,
+  InterfaceMembershipRequest,
   MembershipRequest,
   Organization,
   User,
@@ -14,8 +14,8 @@ import { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
 export type TestMembershipRequestType =
-  | (Interface_MembershipRequest &
-      Document<any, any, Interface_MembershipRequest>)
+  | (InterfaceMembershipRequest &
+      Document<any, any, InterfaceMembershipRequest>)
   | null;
 
 export const createTestMembershipRequest = async (): Promise<

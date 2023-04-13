@@ -1,8 +1,8 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { MutationAssignUserTagArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -23,7 +23,7 @@ import { createTestUser, TestUserType } from "../../helpers/userAndOrg";
 import { TestUserTagType, createRootTagWithOrg } from "../../helpers/tags";
 import { TagUser } from "../../../src/models";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 let adminUser: TestUserType;
 let testTag: TestUserTagType;
@@ -36,7 +36,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> assignUserTag", () => {

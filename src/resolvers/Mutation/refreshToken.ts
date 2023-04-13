@@ -2,13 +2,17 @@ import jwt from "jsonwebtoken";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
-import { createAccessToken, createRefreshToken } from "../../utilities";
+import {
+  createAccessToken,
+  createRefreshToken,
+  InterfaceJwtTokenPayload,
+} from "../../utilities";
 import {
   INVALID_REFRESH_TOKEN_ERROR,
   REFRESH_TOKEN_SECRET,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { Interface_JwtTokenPayload } from "../../utilities";
+
 /**
  * This function creates a new access and refresh token.
  * @param _parent - parent of current request
@@ -35,10 +39,10 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
     );
   }
 
-  const jwtPayload: Interface_JwtTokenPayload = jwt.verify(
+  const jwtPayload: InterfaceJwtTokenPayload = jwt.verify(
     args.refreshToken,
     REFRESH_TOKEN_SECRET!
-  ) as Interface_JwtTokenPayload;
+  ) as InterfaceJwtTokenPayload;
 
   // The refresh token received is valid so we can send a new access token
   const user = await User.findOne({

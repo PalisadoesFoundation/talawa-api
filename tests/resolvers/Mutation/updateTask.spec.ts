@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import { Event, Task, Interface_Task } from "../../../src/models";
+import mongoose, { Document, Types } from "mongoose";
+import { Event, Task, InterfaceTask } from "../../../src/models";
 import { MutationUpdateTaskArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { updateTask as updateTaskResolver } from "../../../src/resolvers/Mutation/updateTask";
 import {
   TASK_NOT_FOUND_ERROR,
@@ -14,9 +14,9 @@ import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { TestUserType } from "../../helpers/userAndOrg";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
-let testTasks: (Interface_Task & Document<any, any, Interface_Task>)[];
+let testTasks: (InterfaceTask & Document<any, any, InterfaceTask>)[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -50,7 +50,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> updateTask", () => {

@@ -1,7 +1,7 @@
 import "dotenv/config";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { MutationAddUserImageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import {
@@ -18,7 +18,7 @@ import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/
 import { addUserImage as addUserImageResolverUserImage } from "../../../src/resolvers/Mutation/addUserImage";
 
 let testUser: TestUserType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),
@@ -30,7 +30,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> addUserImage", () => {
@@ -54,15 +54,6 @@ describe("resolvers -> Mutation -> addUserImage", () => {
       const context = {
         userId: Types.ObjectId().toString(),
       };
-
-      vi.doMock("../../../src/constants", async () => {
-        const actualConstants: object = await vi.importActual(
-          "../../../src/constants"
-        );
-        return {
-          ...actualConstants,
-        };
-      });
 
       const { addUserImage: addUserImageResolverUserError } = await import(
         "../../../src/resolvers/Mutation/addUserImage"

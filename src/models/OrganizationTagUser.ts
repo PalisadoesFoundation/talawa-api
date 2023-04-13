@@ -1,10 +1,10 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { Interface_Organization } from "./Organization";
+import { InterfaceOrganization } from "./Organization";
 
-export interface Interface_OrganizationTagUser {
+export interface InterfaceOrganizationTagUser {
   _id: Types.ObjectId;
-  organizationId: PopulatedDoc<Interface_Organization & Document>;
-  parentTagId: PopulatedDoc<Interface_OrganizationTagUser & Document>;
+  organizationId: PopulatedDoc<InterfaceOrganization & Document>;
+  parentTagId: PopulatedDoc<InterfaceOrganizationTagUser & Document>;
   name: string;
 }
 
@@ -35,7 +35,7 @@ OrganizationTagUserSchema.index(
 );
 
 const OrganizationTagUserModel = () =>
-  model<Interface_OrganizationTagUser>(
+  model<InterfaceOrganizationTagUser>(
     "OrganizationTagUser",
     OrganizationTagUserSchema
   );

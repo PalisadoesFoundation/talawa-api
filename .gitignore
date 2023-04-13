@@ -1,3 +1,7 @@
+# Add the auto-generated docs to .gitignore as the same are created by GitHub actions
+docs/Schema.md
+docs/schema.json
+
 node_modules
 .idea
 .env
