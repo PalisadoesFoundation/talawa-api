@@ -833,7 +833,7 @@ describe("resolvers -> Query -> users", () => {
     });
 
     it(`returns list of all existing users filtered by
-    args.where === { member_of: [testOrganization.id] }`, async () => {
+    args.where === { member_of: testOrganization.id }`, async () => {
       const where = {
         joinedOrganizations: {
           _id: testOrganization.id,
