@@ -237,65 +237,6 @@ export const getSort = (
       };
       break;
 
-    case "text_ASC":
-      sortPayload = {
-        text: 1,
-      };
-      break;
-
-    case "text_DESC":
-      sortPayload = {
-        text: -1,
-      };
-      break;
-
-    case "imageUrl_ASC":
-      sortPayload = {
-        imageUrl: 1,
-      };
-      break;
-
-    case "imageUrl_DESC":
-      sortPayload = {
-        imageUrl: -1,
-      };
-      break;
-
-    case "videoUrl_ASC":
-      sortPayload = {
-        videoUrl: 1,
-      };
-      break;
-
-    case "videoUrl_DESC":
-      sortPayload = {
-        videoUrl: -1,
-      };
-      break;
-
-    case "likeCount_ASC":
-      sortPayload = {
-        likeCount: 1,
-      };
-      break;
-
-    case "likeCount_DESC":
-      sortPayload = {
-        likeCount: -1,
-      };
-      break;
-
-    case "commentCount_ASC":
-      sortPayload = {
-        commentCount: 1,
-      };
-      break;
-
-    case "commentCount_DESC":
-      sortPayload = {
-        commentCount: -1,
-      };
-      break;
     default:
       break;
   }

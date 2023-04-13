@@ -30,7 +30,7 @@ beforeAll(async () => {
   testPosts = await Post.insertMany([
     {
       text: `text${nanoid().toLowerCase()}`,
-      title: `title${nanoid()}`,
+      title: `titlea`,
       imageUrl: `imageUrl${nanoid()}`,
       videoUrl: `videoUrl${nanoid()}`,
       creator: testUser?._id,
@@ -38,7 +38,7 @@ beforeAll(async () => {
     },
     {
       text: `text${nanoid().toLowerCase()}`,
-      title: `title${nanoid()}`,
+      title: `titleb`,
       imageUrl: `imageUrl${nanoid()}`,
       videoUrl: `videoUrl${nanoid()}`,
       creator: testUser?._id,
@@ -46,7 +46,7 @@ beforeAll(async () => {
     },
     {
       text: `text${nanoid().toLowerCase()}`,
-      title: `title${nanoid()}`,
+      title: `titlec`,
       imageUrl: `imageUrl${nanoid()}`,
       videoUrl: `videoUrl${nanoid()}`,
       creator: testUser?._id,
@@ -63,8 +63,6 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
   it(`when no organization exists with _id === args.id`, async () => {
     const args: QueryPostsByOrganizationConnectionArgs = {
       id: Types.ObjectId().toString(),
-      first: 1,
-      skip: 1,
       where: null,
       orderBy: null,
     };
@@ -73,16 +71,13 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       await postsByOrganizationConnectionResolver?.({}, args, {});
 
     expect(postsByOrganizationConnectionPayload).toEqual({
+      edges: [],
       pageInfo: {
         hasNextPage: false,
         hasPreviousPage: false,
-        totalPages: 1,
-        nextPageNo: null,
-        prevPageNo: null,
-        currPageNo: 1,
+        startCursor: null,
+        endCursor: null,
       },
-      edges: [],
-      aggregate: { count: 0 },
     });
   });
 
@@ -102,8 +97,6 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
 
     const args: QueryPostsByOrganizationConnectionArgs = {
       id: testOrganization?._id,
-      first: 1,
-      skip: 1,
       where: {
         id: testPosts[1]?.id,
         text: testPosts[1]?.text,
@@ -120,552 +113,469 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
 
     const posts = await Post.find(where).sort(sort).populate("creator").lean();
 
-    const postsWithId = posts.map((post) => {
+    const edges = posts.map((post, _index) => {
       return {
-        ...post,
-        id: String(post._id),
-        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+        node: post,
+        cursor: String(post._id),
       };
     });
 
-    const serialized_organization =
-      postsByOrganizationConnectionPayload?.edges.map((post) => {
-        return {
-          ...post,
-          organization: post?.organization._id,
-        };
-      });
-    postsByOrganizationConnectionPayload!.edges = serialized_organization;
-
     expect(postsByOrganizationConnectionPayload).toEqual({
+      edges: edges,
       pageInfo: {
         hasNextPage: false,
         hasPreviousPage: false,
-        totalPages: 1,
-        nextPageNo: null,
-        prevPageNo: null,
-        currPageNo: 1,
-      },
-      edges: postsWithId,
-      aggregate: {
-        count: 1,
+        startCursor: String(posts[0]._id),
+        endCursor: String(posts[0]._id),
       },
     });
   });
 
-  it(`returns paginated list of posts filtered by
-  args.where === { id_not: testPosts[2]._id, title_not: testPosts[2].title,
-  text: testPosts[2].text } and
-  sorted by args.orderBy === 'id_Desc'`, async () => {
+  it(`returns paginated list of posts sorted by
+  args.orderBy === 'createdAt_ASC' and after testPosts[0]`, async () => {
     const where = {
-      _id: {
-        $ne: testPosts[2]?._id,
-      },
-      title: {
-        $ne: testPosts[2]?.title,
-      },
-      text: {
-        $ne: testPosts[2]?.text,
-      },
+      _id: { $ne: String(testPosts[0]._id) },
+      organization: testOrganization?._id,
     };
 
     const sort = {
+      createdAt: 1,
+      _id: 1,
+    };
+
+    const testCursor =
+      String(testPosts[0]._id) + "_" + testPosts[0].createdAt.toISOString();
+
+    const args: QueryPostsByOrganizationConnectionArgs = {
+      id: testOrganization?._id,
+      after: testCursor,
+      orderBy: "createdAt_ASC",
+    };
+
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
+    const postsByOrganizationConnectionPayload =
+      await postsByOrganizationConnectionResolver?.({}, args, context);
+
+    const posts = await Post.find(where).sort(sort).populate("creator").lean();
+
+    const edges = posts.map((post, _index) => {
+      const cursor = String(post._id) + "_" + post.createdAt.toISOString();
+
+      return {
+        node: post,
+        cursor,
+      };
+    });
+
+    expect(postsByOrganizationConnectionPayload).toEqual({
+      edges,
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: true,
+        startCursor:
+          String(posts[0]._id) + "_" + posts[0].createdAt.toISOString(),
+        endCursor:
+          String(posts[1]._id) + "_" + posts[1].createdAt.toISOString(),
+      },
+    });
+  });
+
+  it(`returns paginated list of posts sorted by
+  args.orderBy === 'createdAt_DESC' and after testPosts[2]`, async () => {
+    const where = {
+      _id: { $ne: String(testPosts[2]._id) },
+      organization: testOrganization?._id,
+    };
+
+    const sort = {
+      createdAt: -1,
       _id: -1,
     };
 
+    const testCursor =
+      String(testPosts[2]._id) + "_" + testPosts[2].createdAt.toISOString();
+
     const args: QueryPostsByOrganizationConnectionArgs = {
       id: testOrganization?._id,
-      first: 2,
-      skip: 1,
-      where: {
-        id_not: testPosts[2]?._id,
-        title_not: testPosts[2]?.title,
-        text_not: testPosts[2]?.text,
-      },
-      orderBy: "id_DESC",
+      after: testCursor,
+      orderBy: "createdAt_DESC",
     };
 
     const context = {
       apiRootUrl: BASE_URL,
     };
+
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, context);
-    const posts = await Post.find(where)
-      .limit(2)
-      .sort(sort)
-      .populate("creator")
-      .lean();
 
-    const postsWithId = posts.map((post) => {
+    const posts = await Post.find(where).sort(sort).populate("creator").lean();
+
+    const edges = posts.map((post, _index) => {
+      const cursor = String(post._id) + "_" + post.createdAt.toISOString();
+
       return {
-        ...post,
-        id: String(post._id),
-        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+        node: post,
+        cursor,
       };
     });
 
-    const serialized_organization =
-      postsByOrganizationConnectionPayload?.edges.map((post) => {
-        return {
-          ...post,
-          organization: post!.organization._id,
-        };
-      });
-    postsByOrganizationConnectionPayload!.edges = serialized_organization;
-
     expect(postsByOrganizationConnectionPayload).toEqual({
+      edges,
       pageInfo: {
         hasNextPage: false,
-        hasPreviousPage: false,
-        totalPages: 1,
-        nextPageNo: null,
-        prevPageNo: null,
-        currPageNo: 1,
-      },
-      edges: postsWithId,
-      aggregate: {
-        count: 2,
+        hasPreviousPage: true,
+        startCursor:
+          String(posts[0]._id) + "_" + posts[0].createdAt.toISOString(),
+        endCursor:
+          String(posts[1]._id) + "_" + posts[1].createdAt.toISOString(),
       },
     });
   });
 
-  it(`returns paginated list of posts filtered by
-  args.where === { id_in: [testPosts[1].id], title_in: [testPosts[1].title],
-  text_in: [testPosts[1].text] } and
-  sorted by args.orderBy === 'title_ASC'`, async () => {
+  it(`returns paginated list of posts sorted by
+  args.orderBy === 'createdAt_ASC' and before testPosts[2]`, async () => {
     const where = {
-      _id: {
-        $in: [testPosts[1]._id],
-      },
-      title: {
-        $in: [testPosts[1].title],
-      },
-      text: {
-        $in: [testPosts[1].text],
-      },
+      _id: { $ne: String(testPosts[2]._id) },
+      organization: testOrganization?._id,
     };
 
     const sort = {
-      title: 1,
+      createdAt: 1,
+      _id: 1,
     };
+
+    const testCursor =
+      String(testPosts[2]._id) + "_" + testPosts[2].createdAt.toISOString();
 
     const args: QueryPostsByOrganizationConnectionArgs = {
       id: testOrganization?._id,
-      first: 2,
-      skip: 1,
-      where: {
-        id_in: [testPosts[1]._id],
-        title_in: [testPosts[1].title],
-        text_in: [testPosts[1].text],
-      },
-      orderBy: "title_ASC",
+      before: testCursor,
+      orderBy: "createdAt_ASC",
     };
 
     const context = {
       apiRootUrl: BASE_URL,
     };
+
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, context);
-    const posts = await Post.find(where)
-      .limit(2)
-      .sort(sort)
-      .populate("creator")
-      .lean();
-    const postsWithId = posts.map((post) => {
+
+    const posts = await Post.find(where).sort(sort).populate("creator").lean();
+
+    const edges = posts.map((post, _index) => {
+      const cursor = String(post._id) + "_" + post.createdAt.toISOString();
+
       return {
-        ...post,
-        id: String(post._id),
-        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+        node: post,
+        cursor,
       };
     });
 
-    const serialized_organization =
-      postsByOrganizationConnectionPayload?.edges.map((post) => {
-        return {
-          ...post,
-          organization: post!.organization._id,
-        };
-      });
-
-    postsByOrganizationConnectionPayload!.edges = serialized_organization;
-
     expect(postsByOrganizationConnectionPayload).toEqual({
+      edges,
       pageInfo: {
-        hasNextPage: false,
+        hasNextPage: true,
         hasPreviousPage: false,
-        totalPages: 1,
-        nextPageNo: null,
-        prevPageNo: null,
-        currPageNo: 1,
-      },
-      edges: postsWithId,
-      aggregate: {
-        count: 1,
+        startCursor:
+          String(posts[0]._id) + "_" + posts[0].createdAt.toISOString(),
+        endCursor:
+          String(posts[1]._id) + "_" + posts[1].createdAt.toISOString(),
       },
     });
   });
 
-  it(`returns paginated list of posts filtered by
-  args.where === { id_not_in: [testPosts[2]._id], title_not_in: [testPosts[2].title],
-  text_not_in: [testPosts[2].text] } and
-  sorted by args.orderBy === 'title_DESC'`, async () => {
+  it(`returns paginated list of posts sorted by
+  args.orderBy === 'createdAt_DESC' and before testPosts[0]`, async () => {
     const where = {
-      _id: {
-        $nin: [testPosts[2].id],
+      _id: { $ne: String(testPosts[0]._id) },
+      organization: testOrganization?._id,
+    };
+
+    const sort = {
+      createdAt: -1,
+      _id: -1,
+    };
+
+    const testCursor =
+      String(testPosts[0]._id) + "_" + testPosts[0].createdAt.toISOString();
+
+    const args: QueryPostsByOrganizationConnectionArgs = {
+      id: testOrganization?._id,
+      before: testCursor,
+      orderBy: "createdAt_DESC",
+    };
+
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
+    const postsByOrganizationConnectionPayload =
+      await postsByOrganizationConnectionResolver?.({}, args, context);
+
+    const posts = await Post.find(where).sort(sort).populate("creator").lean();
+
+    const edges = posts.map((post, _index) => {
+      const cursor = String(post._id) + "_" + post.createdAt.toISOString();
+
+      return {
+        node: post,
+        cursor,
+      };
+    });
+
+    expect(postsByOrganizationConnectionPayload).toEqual({
+      edges,
+      pageInfo: {
+        hasNextPage: true,
+        hasPreviousPage: false,
+        startCursor:
+          String(posts[0]._id) + "_" + posts[0].createdAt.toISOString(),
+        endCursor:
+          String(posts[1]._id) + "_" + posts[1].createdAt.toISOString(),
       },
-      title: {
-        $nin: [testPosts[2].title],
-      },
-      text: {
-        $nin: [testPosts[2].text],
-      },
+    });
+  });
+
+  it(`returns paginated list of posts sorted by
+  args.orderBy === 'title_DESC' and before testPosts[0]`, async () => {
+    const where = {
+      _id: { $ne: String(testPosts[0]._id) },
+      organization: testOrganization?._id,
     };
 
     const sort = {
       title: -1,
+      _id: -1,
     };
+
+    const testCursor = String(testPosts[0]._id) + "_" + testPosts[0].title;
+
     const args: QueryPostsByOrganizationConnectionArgs = {
       id: testOrganization?._id,
-      first: 2,
-      skip: 1,
-      where: {
-        id_not_in: [testPosts[2].id],
-        title_not_in: [testPosts[2].title],
-        text_not_in: [testPosts[2].text],
-      },
+      before: testCursor,
       orderBy: "title_DESC",
     };
 
     const context = {
       apiRootUrl: BASE_URL,
     };
+
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, context);
-    const posts = await Post.find(where)
-      .limit(2)
-      .skip(1)
-      .sort(sort)
-      .populate("creator")
-      .lean();
 
-    const postsWithId = posts.map((post) => {
+    const posts = await Post.find(where).sort(sort).populate("creator").lean();
+
+    const edges = posts.map((post, _index) => {
+      const cursor = String(post._id) + "_" + post.title;
+
       return {
-        ...post,
-        id: String(post._id),
-        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+        node: post,
+        cursor,
       };
     });
-
-    postsByOrganizationConnectionPayload?.edges.map((post) => {
-      return {
-        ...post,
-        organization: post!.organization._id,
-      };
-    });
-    postsByOrganizationConnectionPayload!.edges = postsWithId;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
+      edges,
       pageInfo: {
-        hasNextPage: false,
+        hasNextPage: true,
         hasPreviousPage: false,
-        totalPages: 1,
-        nextPageNo: null,
-        prevPageNo: null,
-        currPageNo: 1,
-      },
-      edges: postsWithId,
-      aggregate: {
-        count: 2,
+        startCursor: String(posts[0]._id) + "_" + posts[0].title,
+        endCursor: String(posts[1]._id) + "_" + posts[1].title,
       },
     });
   });
 
-  it(`returns paginated list of posts filtered by
-  args.where === { title_contains: testPosts[1].title,
-  text_contains: testPosts[1].text } and
-  sorted by args.orderBy === 'text_ASC'`, async () => {
+  it(`returns paginated list of posts sorted by
+  args.orderBy === 'id_DESC' and before testPosts[0]`, async () => {
     const where = {
-      title: {
-        $regex: testPosts[1]?.title,
-        $options: "i",
-      },
-      text: {
-        $regex: testPosts[1]?.text,
-        $options: "i",
-      },
+      _id: { $ne: String(testPosts[0]._id) },
+      organization: testOrganization?._id,
     };
 
     const sort = {
-      text: 1,
+      _id: -1,
     };
+
+    const testCursor = String(testPosts[0]._id);
 
     const args: QueryPostsByOrganizationConnectionArgs = {
       id: testOrganization?._id,
-      first: 2,
-      skip: 1,
-      where: {
-        title_contains: testPosts[1]?.title,
-        text_contains: testPosts[1]?.text,
-      },
-      orderBy: "text_ASC",
+      before: testCursor,
+      orderBy: "id_DESC",
     };
 
     const context = {
       apiRootUrl: BASE_URL,
     };
+
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, context);
 
-    const posts = await Post.find(where)
-      .limit(2)
-      .sort(sort)
-      .populate("creator")
-      .lean();
+    const posts = await Post.find(where).sort(sort).populate("creator").lean();
 
-    const postsWithId = posts.map((post) => {
+    const edges = posts.map((post, _index) => {
+      const cursor = String(post._id);
+
       return {
-        ...post,
-        id: String(post._id),
-        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+        node: post,
+        cursor,
       };
     });
 
-    const serialized_organization =
-      postsByOrganizationConnectionPayload?.edges.map((post) => {
-        return {
-          ...post,
-          organization: post!.organization._id,
-        };
-      });
-    postsByOrganizationConnectionPayload!.edges = serialized_organization;
-
     expect(postsByOrganizationConnectionPayload).toEqual({
+      edges,
       pageInfo: {
-        hasNextPage: false,
+        hasNextPage: true,
         hasPreviousPage: false,
-        totalPages: 1,
-        nextPageNo: null,
-        prevPageNo: null,
-        currPageNo: 1,
-      },
-      edges: postsWithId,
-      aggregate: {
-        count: 1,
+        startCursor: String(posts[0]._id),
+        endCursor: String(posts[1]._id),
       },
     });
   });
 
-  it(`returns paginated list of posts filtered by
-  args.where === { title_starts_with: testPosts[1].title,
-  text_starts_with: testPosts[1].text } and
-  sorted by args.orderBy === 'text_DESC'`, async () => {
+  it(`returns paginated list of posts sorted by
+  args.orderBy === 'id_ASC' and before testPosts[2]`, async () => {
     const where = {
-      text: new RegExp("^" + testPosts[1]?.text),
-      title: new RegExp("^" + testPosts[1]?.title),
+      _id: { $ne: String(testPosts[2]._id) },
+      organization: testOrganization?._id,
     };
 
     const sort = {
-      text: -1,
+      _id: 1,
     };
+
+    const testCursor = String(testPosts[2]._id);
 
     const args: QueryPostsByOrganizationConnectionArgs = {
       id: testOrganization?._id,
-      first: 2,
-      skip: 1,
-      where: {
-        text_starts_with: testPosts[1].text,
-        title_starts_with: testPosts[1].title,
-      },
-      orderBy: "text_DESC",
+      before: testCursor,
+      orderBy: "id_ASC",
     };
 
     const context = {
       apiRootUrl: BASE_URL,
     };
+
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, context);
 
-    const posts = await Post.find(where)
-      .limit(2)
-      .sort(sort)
-      .populate("creator")
-      .lean();
+    const posts = await Post.find(where).sort(sort).populate("creator").lean();
 
-    const postsWithId = posts.map((post) => {
+    const edges = posts.map((post, _index) => {
+      const cursor = String(post._id);
+
       return {
-        ...post,
-        id: String(post._id),
-        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+        node: post,
+        cursor,
       };
     });
 
-    const serialized_organization =
-      postsByOrganizationConnectionPayload?.edges.map((post) => {
-        return {
-          ...post,
-          organization: post!.organization._id,
-        };
-      });
-    postsByOrganizationConnectionPayload!.edges = serialized_organization;
-
     expect(postsByOrganizationConnectionPayload).toEqual({
+      edges,
       pageInfo: {
-        hasNextPage: false,
+        hasNextPage: true,
         hasPreviousPage: false,
-        totalPages: 1,
-        nextPageNo: null,
-        prevPageNo: null,
-        currPageNo: 1,
-      },
-      edges: postsWithId,
-      aggregate: {
-        count: 1,
+        startCursor: String(posts[0]._id),
+        endCursor: String(posts[1]._id),
       },
     });
   });
 
-  it(`throws Error if args.skip === null`, async () => {
-    const args: QueryPostsByOrganizationConnectionArgs = {
-      id: testOrganization?._id,
-      first: 2,
-      skip: null,
-      where: null,
-      orderBy: undefined,
-    };
-
-    try {
-      await postsByOrganizationConnectionResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error).toEqual("parameter.missing");
-    }
-  });
-
-  it(`throws Error if args.skip === undefined`, async () => {
-    const args: QueryPostsByOrganizationConnectionArgs = {
-      id: testOrganization?._id,
-      first: 2,
-      skip: undefined,
-      where: null,
-      orderBy: undefined,
-    };
-
-    try {
-      await postsByOrganizationConnectionResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual("Skip parameter is missing");
-    }
-  });
-
-  it(`returns non-paginated list of posts if args.first === undefined`, async () => {
+  it(`returns paginated list of posts sorted by
+  args.orderBy === 'id_ASC' and after testPosts[0]`, async () => {
     const where = {
-      creator: {
-        $in: testUser?._id,
-      },
+      _id: { $ne: String(testPosts[0]._id) },
+      organization: testOrganization?._id,
     };
+
+    const sort = {
+      _id: 1,
+    };
+
+    const testCursor = String(testPosts[0]._id);
 
     const args: QueryPostsByOrganizationConnectionArgs = {
       id: testOrganization?._id,
-      skip: 1,
-      where: {},
-      orderBy: null,
+      after: testCursor,
+      orderBy: "id_ASC",
+    };
+
+    const context = {
+      apiRootUrl: BASE_URL,
     };
 
     const postsByOrganizationConnectionPayload =
-      await postsByOrganizationConnectionResolver?.({}, args, {});
+      await postsByOrganizationConnectionResolver?.({}, args, context);
 
-    const postsTestModel = await Post.paginate(where, {
-      pagination: false,
-      sort: {},
-    });
+    const posts = await Post.find(where).sort(sort).populate("creator").lean();
 
-    const postsWithId = postsTestModel.docs.map((post) => {
+    const edges = posts.map((post, _index) => {
+      const cursor = String(post._id);
+
       return {
-        ...post,
-        id: String(post._id),
+        node: post,
+        cursor,
       };
     });
-    postsByOrganizationConnectionPayload?.edges.map((post) => {
-      return {
-        ...post,
-        organization: post?.organization._id,
-      };
-    });
-    postsByOrganizationConnectionPayload!.edges = postsWithId;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
+      edges,
       pageInfo: {
         hasNextPage: false,
-        hasPreviousPage: false,
-        totalPages: 1,
-        nextPageNo: null,
-        prevPageNo: null,
-        currPageNo: 1,
-      },
-      edges: postsWithId,
-      aggregate: {
-        count: 3,
+        hasPreviousPage: true,
+        startCursor: String(posts[0]._id),
+        endCursor: String(posts[1]._id),
       },
     });
   });
-  it(`returns non-paginated list of posts if args.first === undefined and post.imageUrl === undefined`, async () => {
-    await Post.findOneAndUpdate(
-      {
-        creator: testUser?.id,
-      },
-      {
-        $set: {
-          imageUrl: undefined,
-        },
-      }
-    );
 
+  it(`returns paginated list of posts sorted by
+  args.orderBy === 'id_DESC' and after testPosts[2]`, async () => {
     const where = {
-      creator: {
-        $in: testUser?._id,
-      },
+      _id: { $ne: String(testPosts[2]._id) },
+      organization: testOrganization?._id,
     };
+
+    const sort = {
+      _id: -1,
+    };
+
+    const testCursor = String(testPosts[2]._id);
 
     const args: QueryPostsByOrganizationConnectionArgs = {
       id: testOrganization?._id,
-      skip: 1,
-      where: {},
-      orderBy: null,
+      after: testCursor,
+      orderBy: "id_DESC",
+    };
+
+    const context = {
+      apiRootUrl: BASE_URL,
     };
 
     const postsByOrganizationConnectionPayload =
-      await postsByOrganizationConnectionResolver?.({}, args, {});
+      await postsByOrganizationConnectionResolver?.({}, args, context);
 
-    const postsTestModel = await Post.paginate(where, {
-      pagination: false,
-      sort: {},
-    });
+    const posts = await Post.find(where).sort(sort).populate("creator").lean();
 
-    const postsWithId = postsTestModel.docs.map((post) => {
+    const edges = posts.map((post, _index) => {
+      const cursor = String(post._id);
+
       return {
-        ...post,
-        id: String(post._id),
+        node: post,
+        cursor,
       };
     });
-    postsByOrganizationConnectionPayload?.edges.map((post) => {
-      return {
-        ...post,
-        organization: post?.organization._id,
-      };
-    });
-    postsByOrganizationConnectionPayload!.edges = postsWithId;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
+      edges,
       pageInfo: {
         hasNextPage: false,
-        hasPreviousPage: false,
-        totalPages: 1,
-        nextPageNo: null,
-        prevPageNo: null,
-        currPageNo: 1,
-      },
-      edges: postsWithId,
-      aggregate: {
-        count: 3,
+        hasPreviousPage: true,
+        startCursor: String(posts[0]._id),
+        endCursor: String(posts[1]._id),
       },
     });
   });

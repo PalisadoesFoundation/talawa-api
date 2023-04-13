@@ -1002,11 +1002,16 @@ export type Post = {
 /** A connection to a list of items. */
 export type PostConnection = {
   __typename?: 'PostConnection';
-  aggregate: AggregatePost;
   /** A list of edges. */
-  edges: Array<Maybe<Post>>;
+  edges?: Maybe<Array<Maybe<PostEdge>>>;
   /** Information to aid in pagination. */
-  pageInfo: PageInfo;
+  pageInfo: ConnectionPageInfo;
+};
+
+export type PostEdge = {
+  __typename?: 'PostEdge';
+  cursor: Scalars['String'];
+  node: Post;
 };
 
 export type PostInput = {
@@ -1020,22 +1025,12 @@ export type PostInput = {
 };
 
 export type PostOrderByInput =
-  | 'commentCount_ASC'
-  | 'commentCount_DESC'
   | 'createdAt_ASC'
   | 'createdAt_DESC'
   | 'id_ASC'
   | 'id_DESC'
-  | 'imageUrl_ASC'
-  | 'imageUrl_DESC'
-  | 'likeCount_ASC'
-  | 'likeCount_DESC'
-  | 'text_ASC'
-  | 'text_DESC'
   | 'title_ASC'
-  | 'title_DESC'
-  | 'videoUrl_ASC'
-  | 'videoUrl_DESC';
+  | 'title_DESC';
 
 export type PostUpdateInput = {
   imageUrl?: InputMaybe<Scalars['URL']>;
@@ -1234,10 +1229,11 @@ export type QueryPostsByOrganizationArgs = {
 
 
 export type QueryPostsByOrganizationConnectionArgs = {
+  after?: InputMaybe<Scalars['String']>;
+  before?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['Int']>;
   id: Scalars['ID'];
   orderBy?: InputMaybe<PostOrderByInput>;
-  skip?: InputMaybe<Scalars['Int']>;
   where?: InputMaybe<PostWhereInput>;
 };
 
@@ -1709,7 +1705,8 @@ export type ResolversTypes = {
   PluginInput: PluginInput;
   PositiveInt: ResolverTypeWrapper<Scalars['PositiveInt']>;
   Post: ResolverTypeWrapper<Interface_PostModel>;
-  PostConnection: ResolverTypeWrapper<Omit<PostConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['Post']>> }>;
+  PostConnection: ResolverTypeWrapper<Omit<PostConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['PostEdge']>>> }>;
+  PostEdge: ResolverTypeWrapper<Omit<PostEdge, 'node'> & { node: ResolversTypes['Post'] }>;
   PostInput: PostInput;
   PostOrderByInput: PostOrderByInput;
   PostUpdateInput: PostUpdateInput;
@@ -1810,7 +1807,8 @@ export type ResolversParentTypes = {
   PluginInput: PluginInput;
   PositiveInt: Scalars['PositiveInt'];
   Post: Interface_PostModel;
-  PostConnection: Omit<PostConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['Post']>> };
+  PostConnection: Omit<PostConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['PostEdge']>>> };
+  PostEdge: Omit<PostEdge, 'node'> & { node: ResolversParentTypes['Post'] };
   PostInput: PostInput;
   PostUpdateInput: PostUpdateInput;
   PostWhereInput: PostWhereInput;
@@ -2246,9 +2244,14 @@ export type PostResolvers<ContextType = any, ParentType extends ResolversParentT
 };
 
 export type PostConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PostConnection'] = ResolversParentTypes['PostConnection']> = {
-  aggregate?: Resolver<ResolversTypes['AggregatePost'], ParentType, ContextType>;
-  edges?: Resolver<Array<Maybe<ResolversTypes['Post']>>, ParentType, ContextType>;
-  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['PostEdge']>>>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['ConnectionPageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type PostEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PostEdge'] = ResolversParentTypes['PostEdge']> = {
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['Post'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2447,6 +2450,7 @@ export type Resolvers<ContextType = any> = {
   PositiveInt?: GraphQLScalarType;
   Post?: PostResolvers<ContextType>;
   PostConnection?: PostConnectionResolvers<ContextType>;
+  PostEdge?: PostEdgeResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   Task?: TaskResolvers<ContextType>;

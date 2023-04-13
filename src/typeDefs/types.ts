@@ -299,14 +299,17 @@ export const types = gql`
     """
     Information to aid in pagination.
     """
-    pageInfo: PageInfo!
+    pageInfo: ConnectionPageInfo!
 
     """
     A list of edges.
     """
-    edges: [Post]!
+    edges: [PostEdge]
+  }
 
-    aggregate: AggregatePost!
+  type PostEdge {
+    node: Post!
+    cursor: String!
   }
 
   type Task {

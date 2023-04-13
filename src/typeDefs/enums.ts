@@ -39,20 +39,10 @@ export const enums = gql`
   enum PostOrderByInput {
     id_ASC
     id_DESC
-    text_ASC
-    text_DESC
     title_ASC
     title_DESC
     createdAt_ASC
     createdAt_DESC
-    imageUrl_ASC
-    imageUrl_DESC
-    videoUrl_ASC
-    videoUrl_DESC
-    likeCount_ASC
-    likeCount_DESC
-    commentCount_ASC
-    commentCount_DESC
   }
 
   enum Recurrance {

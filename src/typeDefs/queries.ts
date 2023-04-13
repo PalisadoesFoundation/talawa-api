@@ -94,7 +94,8 @@ export const queries = gql`
       id: ID!
       where: PostWhereInput
       first: Int
-      skip: Int
+      after: String
+      before: String
       orderBy: PostOrderByInput
     ): PostConnection
 

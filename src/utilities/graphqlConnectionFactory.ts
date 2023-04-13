@@ -6,7 +6,7 @@ interface Interface_ConnectionEdge<T> {
 }
 
 interface Interface_Connection<T> {
-  edges?: Array<Interface_ConnectionEdge<T> | null | undefined>;
+  edges?: Array<Interface_ConnectionEdge<T> | null>;
   pageInfo: ConnectionPageInfo;
 }
 
