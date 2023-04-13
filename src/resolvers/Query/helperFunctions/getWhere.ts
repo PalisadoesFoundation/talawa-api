@@ -636,6 +636,7 @@ export const getWhere = <T = unknown>(
     };
   }
 
+  // Return users who are member of provider organizationId
   if (where.member_of) {
     wherePayload = {
       ...wherePayload,
