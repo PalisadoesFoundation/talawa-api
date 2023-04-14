@@ -14,7 +14,8 @@ yargs.option("i", {
 
 yargs.option("f", {
   alias: "format",
-  describe: "Whether to format the database before insertion",
+  describe:
+    "Formats all the collections present in the database before the insertion of objects. [WARNING] Use carefully.",
   type: "boolean",
 });
 
