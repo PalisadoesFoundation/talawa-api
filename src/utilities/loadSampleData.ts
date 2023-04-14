@@ -1,42 +1,17 @@
 import "dotenv/config";
 import yargs from "yargs";
-import { User, Organization, Event, Post } from "../models";
-import { connect } from "../db";
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
+import { connect } from "../db";
+import { User, Organization, Event, Post } from "../models";
 
-// Required arguments that need to be parsed
-yargs.option("i", {
-  alias: "items",
-  describe: "Comma-separated list of collections to load sample data into",
-  type: "string",
-});
-
-yargs.option("f", {
-  alias: "format",
-  describe:
-    "Formats all the collections present in the database before the insertion of objects. [WARNING] Use carefully.",
-  type: "boolean",
-});
-
-// Parse arguments in synchronization
-const argv: {
+interface InterfaceArgs {
   items?: string;
   format?: boolean;
   _: unknown;
-} = yargs.parseSync();
-
-// Default collections available to insert
-let collections = ["users", "organizations", "posts", "events"];
-const argvItems = argv.items;
-
-// Check if specific connections need to be inserted
-if (argvItems) {
-  collections = argvItems.split(",");
 }
 
-// Format database function
-async function formatDatabase() {
+async function formatDatabase(): Promise<void> {
   await Promise.all([
     User.deleteMany({}),
     Organization.deleteMany({}),
@@ -44,27 +19,42 @@ async function formatDatabase() {
     Post.deleteMany({}),
   ]);
   console.log("Cleared all collections\n");
-  //process.exit(1);
 }
 
-// Insert collections function
-async function insertCollections(collections: Array<string>) {
-  // Connect to MongoDB database
-  await connect();
+async function insertCollections(collections: string[]): Promise<void> {
+  try {
+    // Connect to MongoDB database
+    await connect();
 
-  // Check if database format is required
-  if (argv.format) {
-    await formatDatabase();
-  }
+    const { format } = yargs
+      .options({
+        items: {
+          alias: "i",
+          describe:
+            "Comma-separated list of collections to load sample data into",
+          type: "string",
+        },
+        format: {
+          alias: "f",
+          describe:
+            "Formats all the collections present in the database before the insertion of objects. [WARNING] Use carefully.",
+          type: "boolean",
+        },
+      })
+      .parseSync() as InterfaceArgs;
 
-  // Iterate over arguments and add to database
-  for (const collection of collections) {
-    const data = fs.readFileSync(
-      path.join(__dirname, `../../sample_data/${collection}.json`)
-    );
-    const docs = JSON.parse(data.toString());
+    // Check if specific collections need to be inserted
+    if (format) {
+      await formatDatabase();
+    }
 
-    try {
+    for (const collection of collections) {
+      const data = await fs.readFile(
+        path.join(__dirname, `../../sample_data/${collection}.json`),
+        "utf8"
+      );
+      const docs = JSON.parse(data) as Record<string, unknown>[];
+
       switch (collection) {
         case "users":
           await User.insertMany(docs);
@@ -82,18 +72,35 @@ async function insertCollections(collections: Array<string>) {
           console.log("\x1b[31m", `Invalid collection name: ${collection}`);
           break;
       }
-      console.log("\x1b[35m", `Added ${collection} collection`);
-    } catch (err) {
-      console.error(
-        "\x1b[31m",
-        `Error adding ${collection} collection: ${err}`
-      );
-    }
-  }
 
-  console.log("\nCollections added successfully");
-  process.exit(1);
+      console.log("\x1b[35m", `Added ${collection} collection`);
+    }
+
+    console.log("\nCollections added successfully");
+  } catch (err) {
+    console.error("\x1b[31m", `Error adding collections: ${err}`);
+  } finally {
+    process.exit(0);
+  }
 }
 
-// Calling the insert collections function
-insertCollections(collections);
+// Default collections available to insert
+const collections = ["users", "organizations", "posts", "events"];
+
+// Check if specific collections need to be inserted
+const { items: argvItems } = yargs
+  .options({
+    items: {
+      alias: "i",
+      describe: "Comma-separated list of collections to load sample data into",
+      type: "string",
+    },
+  })
+  .parseSync() as InterfaceArgs;
+
+if (argvItems) {
+  const specificCollections = argvItems.split(",");
+  insertCollections(specificCollections);
+} else {
+  insertCollections(collections);
+}
