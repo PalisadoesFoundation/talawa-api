@@ -1,33 +1,27 @@
 [
-    {
-  "_id" : "64378abd85008f171cf2990d",
-  "tokenVersion" : 0,
-  "appLanguageCode" : "en",
-  "createdOrganizations" : [ 
-      "6437904485008f171cf29924"
-  ],
-  "createdEvents" : [],
-  "userType" : "SUPERADMIN",
-  "joinedOrganizations" : [ 
-      "6437904485008f171cf29924"
-  ],
-  "registeredEvents" : [],
-  "eventAdmin" : [],
-  "adminFor" : [ 
-      "6437904485008f171cf29924"
-  ],
-  "membershipRequests": [],
-  "organizationsBlockedBy": [],
-  "status": "ACTIVE",
-  "pluginCreationAllowed": true,
-  "adminApproved": true,
-  "firstName": "Test",
-  "lastName": "User",
-  "email": "testuser@gmail.com",
-  "password": "$2a$12$rADouJRwKuIp1d4Ny4hSt.IUOWYFE.ChSBRjVgJ.JDl1m5wqR6nZ6",
-  "organizationUserBelongsTo": null,
-  "image": null,
-  "createdAt": "2023-04-13T04:53:17.742Z",
-  "__v": 0
-    }
+  {
+    "_id": "64378abd85008f171cf2990d",
+    "tokenVersion": 0,
+    "appLanguageCode": "en",
+    "createdOrganizations": ["6437904485008f171cf29924"],
+    "createdEvents": [],
+    "userType": "SUPERADMIN",
+    "joinedOrganizations": ["6437904485008f171cf29924"],
+    "registeredEvents": [],
+    "eventAdmin": [],
+    "adminFor": ["6437904485008f171cf29924"],
+    "membershipRequests": [],
+    "organizationsBlockedBy": [],
+    "status": "ACTIVE",
+    "pluginCreationAllowed": true,
+    "adminApproved": true,
+    "firstName": "Test",
+    "lastName": "User",
+    "email": "testuser@gmail.com",
+    "password": "$2a$12$rADouJRwKuIp1d4Ny4hSt.IUOWYFE.ChSBRjVgJ.JDl1m5wqR6nZ6",
+    "organizationUserBelongsTo": null,
+    "image": null,
+    "createdAt": "2023-04-13T04:53:17.742Z",
+    "__v": 0
+  }
 ]

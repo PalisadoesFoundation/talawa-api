@@ -18,7 +18,7 @@ yargs.option("f", {
   type: "boolean",
 });
 
-// Parse arguments in synchronization 
+// Parse arguments in synchronization
 const argv: {
   items?: string;
   format?: boolean;
@@ -30,7 +30,7 @@ let collections = ["users", "organizations", "posts", "events"];
 const argvItems = argv.items;
 
 // Check if specific connections need to be inserted
-if(argvItems){
+if (argvItems) {
   collections = argvItems.split(",");
 }
 
@@ -48,32 +48,33 @@ async function formatDatabase() {
 
 // Insert collections function
 async function insertCollections(collections: Array<string>) {
-
   // Connect to MongoDB database
   await connect();
 
   // Check if database format is required
-  if(argv.format){
+  if (argv.format) {
     await formatDatabase();
   }
 
   // Iterate over arguments and add to database
   for (const collection of collections) {
-    const data = fs.readFileSync(path.join(__dirname, "sample_data", `${collection}.json`));
+    const data = fs.readFileSync(
+      path.join(__dirname, "sample_data", `${collection}.json`)
+    );
     const docs = JSON.parse(data.toString());
 
     try {
       switch (collection) {
-        case 'users':
+        case "users":
           await User.insertMany(docs);
           break;
-        case 'organizations':
+        case "organizations":
           await Organization.insertMany(docs);
           break;
-        case 'events':
+        case "events":
           await Event.insertMany(docs);
           break;
-        case 'posts':
+        case "posts":
           await Post.insertMany(docs);
           break;
         default:
@@ -82,7 +83,10 @@ async function insertCollections(collections: Array<string>) {
       }
       console.log("\x1b[35m", `Added ${collection} collection`);
     } catch (err) {
-      console.error("\x1b[31m", `Error adding ${collection} collection: ${err}`);
+      console.error(
+        "\x1b[31m",
+        `Error adding ${collection} collection: ${err}`
+      );
     }
   }
 

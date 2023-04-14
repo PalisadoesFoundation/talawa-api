@@ -1,16 +1,18 @@
-[{
-  "_id": "6437905a85008f171cf29943",
-  "status": "ACTIVE",
-  "likedBy": [],
-  "comments": [],
-  "likeCount": 0,
-  "commentCount": 0,
-  "pinned": false,
-  "text": "Test Information for Test Post",
-  "title": "Test Post",
-  "creator": "64378abd85008f171cf2990d",
-  "organization": "6437904485008f171cf29924",
-  "imageUrl": null,
-  "createdAt": "2023-04-13T05:17:14.396Z",
-  "__v": 0
-}]
+[
+  {
+    "_id": "6437905a85008f171cf29943",
+    "status": "ACTIVE",
+    "likedBy": [],
+    "comments": [],
+    "likeCount": 0,
+    "commentCount": 0,
+    "pinned": false,
+    "text": "Test Information for Test Post",
+    "title": "Test Post",
+    "creator": "64378abd85008f171cf2990d",
+    "organization": "6437904485008f171cf29924",
+    "imageUrl": null,
+    "createdAt": "2023-04-13T05:17:14.396Z",
+    "__v": 0
+  }
+]
