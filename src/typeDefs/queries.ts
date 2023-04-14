@@ -9,17 +9,11 @@ export const queries = gql`
 
     checkAuth: User! @auth
 
-    directChatMessages: [DirectChatMessage]
-
-    directChats: [DirectChat]
-
     directChatsByUserID(id: ID!): [DirectChat]
 
     directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
 
     event(id: ID!): Event
-
-    events(id: ID, orderBy: EventOrderByInput): [Event]
 
     eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
 
@@ -41,17 +35,9 @@ export const queries = gql`
       skip: Int
     ): [Donation!]!
 
-    getDonations: [Donation]
-
     getlanguage(lang_code: String!): [Translation]
 
     getPlugins: [Plugin]
-
-    groupChatMessages: [GroupChatMessage]
-
-    groupChats: [GroupChat]
-
-    groups: [Group]
 
     isUserRegister(eventId: ID!): EventRegistrants
 
@@ -81,8 +67,6 @@ export const queries = gql`
     plugin(orgId: ID!): [Plugin]
 
     post(id: ID!): Post
-
-    posts(orderBy: PostOrderByInput): [Post]
 
     postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
 
