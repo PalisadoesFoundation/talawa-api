@@ -1,9 +1,13 @@
 import "dotenv/config";
 import mongoose, { Document, Types } from "mongoose";
-import { Comment, InterfaceComment, Post } from "../../../src/models";
+import {
+  Comment,
+  InterfaceComment,
+  Post,
+  CommentPost,
+} from "../../../src/models";
 import { MutationRemoveCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-
 import { removeComment as removeCommentResolver } from "../../../src/resolvers/Mutation/removeComment";
 import {
   COMMENT_NOT_FOUND_ERROR,
@@ -34,10 +38,15 @@ beforeAll(async () => {
   const temp = await createTestPost();
   testUser = temp[0];
   testPost = temp[2];
+
   testComment = await Comment.create({
     text: "text",
     creator: testUser!._id,
-    post: testPost!._id,
+  });
+
+  await CommentPost.create({
+    commentId: testComment._id,
+    postId: testPost!._id,
   });
 
   testPost = await Post.findOneAndUpdate(
@@ -45,9 +54,6 @@ beforeAll(async () => {
       _id: testPost!._id,
     },
     {
-      $push: {
-        comments: testComment._id,
-      },
       $inc: {
         commentCount: 1,
       },
@@ -118,8 +124,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
     }
   });
 
-  it(`throws UnauthorizedError if user with _id === context.userId is not the creator
-  of comment with _id === args.id`, async () => {
+  it(`throws UnauthorizedError if user with _id === context.userId is not the creator of comment with _id === args.id`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -181,15 +186,20 @@ describe("resolvers -> Mutation -> removeComment", () => {
       context
     );
 
-    expect(removeCommentPayload).toEqual(testComment!.toObject());
-
     const testUpdatedPost = await Post.findOne({
       _id: testPost!._id,
     })
-      .select(["comments", "commentCount"])
+      .select(["commentCount"])
       .lean();
 
-    expect(testUpdatedPost!.comments).toEqual([]);
+    const commentExists = await Comment.exists({ _id: testComment!._id });
+    const commentPostExists = await CommentPost.exists({
+      commentId: testComment!._id,
+    });
+
+    expect(removeCommentPayload).toEqual(testComment!.toObject());
+    expect(commentExists).toBeFalsy();
+    expect(commentPostExists).toBeFalsy();
     expect(testUpdatedPost!.commentCount).toEqual(0);
   });
 });

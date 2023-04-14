@@ -1,11 +1,12 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, Post, Comment } from "../../models";
+import { User, Post, Comment, CommentPost } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
   USER_NOT_FOUND_ERROR,
   COMMENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
+
 /**
  * This function enables to remove a comment.
  * @param _parent - parent of current request
@@ -17,17 +18,18 @@ import {
  * 3. If the user is the creator of the organization.
  * @returns Deleted comment.
  */
+
 export const removeComment: MutationResolvers["removeComment"] = async (
   _parent,
   args,
   context
 ) => {
-  const currentUserExists = await User.exists({
+  const currentUser = await User.findOne({
     _id: context.userId,
   });
 
   // Checks whether currentUser with _id === context.userId exists.
-  if (currentUserExists === false) {
+  if (!currentUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
@@ -48,8 +50,11 @@ export const removeComment: MutationResolvers["removeComment"] = async (
     );
   }
 
-  // Checks whether currentUser with _id === context.userId is not the creator of comment.
-  if (comment.creator.toString() !== context.userId.toString()) {
+  // Checks whether currentUser with _id === context.userId is not the creator of comment or the user is a SUPERADMIN
+  if (
+    comment.creator.toString() !== context.userId.toString() &&
+    currentUser.userType !== "SUPERADMIN"
+  ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
@@ -57,27 +62,26 @@ export const removeComment: MutationResolvers["removeComment"] = async (
     );
   }
 
-  /*
-  Removes comment._id from comments list and reduces commentCount
-  by 1 of post with _id === comment.post
-  */
+  // Delete the commentPost relational object associated with the comment
+  const commentPost = await CommentPost.findOneAndDelete({
+    commentId: args.id,
+  });
+
+  // Reduce the commentCount by 1 of the post with _id === commentPost.postId
   await Post.updateOne(
     {
-      _id: comment.post,
+      _id: commentPost!.postId,
     },
     {
-      $pull: {
-        comments: comment._id,
-      },
       $inc: {
         commentCount: -1,
       },
     }
   );
 
-  // Deletes the comment.
+  // Deletes the comment
   await Comment.deleteOne({
-    _id: comment._id,
+    _id: args.id,
   });
 
   // Returns the deleted comment.

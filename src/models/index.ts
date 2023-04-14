@@ -1,5 +1,6 @@
 export * from "./MessageChat";
 export * from "./Comment";
+export * from "./CommentPost";
 export * from "./DirectChat";
 export * from "./DirectChat";
 export * from "./DirectChatMessage";
