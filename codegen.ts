@@ -29,6 +29,8 @@ const config: CodegenConfig = {
 
           Comment: "../models/Comment#InterfaceComment",
 
+          CommentPost: "../models/CommentPost#InterfaceCommentPost",
+
           DirectChat: "../models/DirectChat#InterfaceDirectChat",
 
           DirectChatMessage:
