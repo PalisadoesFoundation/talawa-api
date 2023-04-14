@@ -59,9 +59,7 @@ async function insertCollections(collections: Array<string>) {
 
   // Iterate over arguments and add to database
   for (const collection of collections) {
-    const data = fs.readFileSync(
-      path.join(__dirname, "sample_data", `${collection}.json`)
-    );
+    const data = fs.readFileSync(path.join(__dirname, `../../sample_data/${collection}.json`));
     const docs = JSON.parse(data.toString());
 
     try {
