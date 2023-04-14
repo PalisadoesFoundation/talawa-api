@@ -55,7 +55,6 @@ export const isAuth = (request: Request) => {
         if (err) {
           return err;
         }
-
         return decoded;
       }
     ); // If there is an error decoded token would contain it

@@ -13,8 +13,8 @@ export class ApplicationError extends Error {
 
   constructor(
     errors: InterfaceError[],
-    httpCode: number = 422,
-    message: string = "Error"
+    httpCode = 422,
+    message = "Error"
   ) {
     super(message);
     this.errors = errors;

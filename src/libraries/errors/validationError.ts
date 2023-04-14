@@ -5,7 +5,7 @@ import { ApplicationError, InterfaceError } from "./applicationError";
 export class ValidationError extends ApplicationError {
   constructor(
     errors: InterfaceError[] = [],
-    message: string = "Validation error"
+    message = "Validation error"
   ) {
     super(errors, 422, message);
   }

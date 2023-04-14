@@ -30,7 +30,7 @@ import {
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { signUp as signUpResolverImage } from "../../../src/resolvers/Mutation/signUp";
 
-const testImagePath: string = `${nanoid().toLowerCase()}test.png`;
+const testImagePath = `${nanoid().toLowerCase()}test.png`;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;

@@ -53,7 +53,7 @@ const logger = createLogger({
 
 // The code block shifted before exporting logger
 const stream = {
-  write: (message: any) => {
+  write: (message: string | null) => {
     logger.info((message || "").trim());
   },
 };

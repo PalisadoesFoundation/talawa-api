@@ -9,7 +9,7 @@ vi.mock("fs", () => ({
   unlink: vi.fn(),
 }));
 
-const testImagePath: string = `${nanoid()}-testImagePath`;
+const testImagePath = `${nanoid()}-testImagePath`;
 
 describe("utilities -> deleteDuplicatedImage", () => {
   afterEach(() => {

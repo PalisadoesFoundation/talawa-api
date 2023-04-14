@@ -194,7 +194,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       organizationId: testOrganization!._id,
     };
 
-    const testImage: string = "testImage";
+    const testImage = "testImage";
 
     await Organization.updateOne(
       {
