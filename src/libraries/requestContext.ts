@@ -51,7 +51,10 @@ export const init = async <T>(options: InterfaceInitOptions<T> = {}) => {
       __: obj.__,
       __n: obj.__n,
     });
-    return options.requestHandler?.()!;
+    // return options.requestHandler?.()!;
+    return options.requestHandler != null
+      ? options.requestHandler()
+      : ({} as T);
   });
 };
 

@@ -141,7 +141,8 @@ try {
         const testUserBeforeObj = await User.findById({
           _id: testUser!.id,
         });
-        const oldImagePath = testUserBeforeObj?.image!;
+        const oldImagePath =
+          testUserBeforeObj?.image != null ? testUserBeforeObj?.image : null;
         console.log(oldImagePath);
         const deleteDuplicatedImage = await import(
           "../../src/utilities/deleteImage"

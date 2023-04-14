@@ -189,7 +189,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
     const args: QueryGetDonationByOrgIdConnectionArgs = {
       orgId: testOrganization?._id,
       where: {
-        name_of_user_in: [testDonations[2]?.nameOfUser!],
+        name_of_user_in: [testDonations[2]!.nameOfUser],
       },
     };
 
@@ -198,7 +198,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
 
     const donationsByOrganization = await Donation.find({
       orgId: testOrganization?._id,
-      nameOfUser: { $in: [testDonations[2]?.nameOfUser!] },
+      nameOfUser: { $in: [testDonations[2]!.nameOfUser] },
     }).lean();
 
     expect(getDonationByOrgIdConnectionPayload).toEqual(
@@ -211,7 +211,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
     const args: QueryGetDonationByOrgIdConnectionArgs = {
       orgId: testOrganization?._id,
       where: {
-        name_of_user_not_in: [testDonations[2]?.nameOfUser!],
+        name_of_user_not_in: [testDonations[2]!.nameOfUser],
       },
     };
 
@@ -220,7 +220,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
 
     const donationsByOrganization = await Donation.find({
       orgId: testOrganization?._id,
-      nameOfUser: { $nin: [testDonations[2]?.nameOfUser!] },
+      nameOfUser: { $nin: [testDonations[2]!.nameOfUser] },
     }).lean();
 
     expect(getDonationByOrgIdConnectionPayload).toEqual(
@@ -230,7 +230,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
 
   it(`returns donations filtered by
   args.where === { name_of_user_contains: shortenedNameOfUser }`, async () => {
-    const shortenedNameOfUser = testDonations[2]?.nameOfUser?.substring(2)!;
+    const shortenedNameOfUser = testDonations[2]?.nameOfUser?.substring(2);
 
     const args: QueryGetDonationByOrgIdConnectionArgs = {
       orgId: testOrganization?._id,
@@ -254,7 +254,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
 
   it(`returns donations filtered by
   args.where === { name_of_user_starts_with: shortenedNameOfUser }`, async () => {
-    const shortenedNameOfUser = testDonations[2]?.nameOfUser?.substring(0, 3)!;
+    const shortenedNameOfUser = testDonations[2]?.nameOfUser?.substring(0, 3);
 
     const args: QueryGetDonationByOrgIdConnectionArgs = {
       orgId: testOrganization?._id,
