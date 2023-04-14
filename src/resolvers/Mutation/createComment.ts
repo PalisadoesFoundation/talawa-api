@@ -1,7 +1,8 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, Post, Comment } from "../../models";
+import { User, Post, Comment, CommentPost } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import { USER_NOT_FOUND_ERROR } from "../../constants";
+import { POST_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
+
 /**
  * This function enables to create comment.
  * @param _parent - parent of current request
@@ -21,7 +22,7 @@ export const createComment: MutationResolvers["createComment"] = async (
   });
 
   // Checks whether currentUser with _id === context.userId exists.
-  if (currentUserExists === false) {
+  if (!currentUserExists) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
@@ -29,25 +30,36 @@ export const createComment: MutationResolvers["createComment"] = async (
     );
   }
 
-  // Creates new comment.
+  // Check if the provided post exists
+  const postExists = await Post.exists({
+    _id: args.postId,
+  });
+
+  if (!postExists) {
+    throw new errors.NotFoundError(
+      requestContext.translate(POST_NOT_FOUND_ERROR.MESSAGE),
+      POST_NOT_FOUND_ERROR.CODE,
+      POST_NOT_FOUND_ERROR.PARAM
+    );
+  }
+
+  // Creates the new comment
   const createdComment = await Comment.create({
     ...args.data,
     creator: context.userId,
-    post: args.postId,
   });
 
-  /*
-  Adds createdComment._id to comments list and increases commentCount by 1
-  on post's document with _id === args.postId.
-  */
+  await CommentPost.create({
+    postId: args.postId,
+    commentId: createdComment._id,
+  });
+
+  // Increase commentCount by 1 on post's document with _id === args.postId.
   await Post.updateOne(
     {
       _id: args.postId,
     },
     {
-      $push: {
-        comments: createdComment._id,
-      },
       $inc: {
         commentCount: 1,
       },

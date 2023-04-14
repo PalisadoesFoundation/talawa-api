@@ -1,11 +1,14 @@
 import "dotenv/config";
 import mongoose, { Types } from "mongoose";
-import { Post } from "../../../src/models";
+import { CommentPost, Post } from "../../../src/models";
 import { MutationCreateCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { createComment as createCommentResolver } from "../../../src/resolvers/Mutation/createComment";
-import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
+import {
+  POST_NOT_FOUND_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestPost, TestPostType } from "../../helpers/posts";
 import { TestUserType } from "../../helpers/userAndOrg";
@@ -49,6 +52,25 @@ describe("resolvers -> Mutation -> createComment", () => {
     }
   });
 
+  it(`throws NotFoundError if no post exists with _id === args.postId`, async () => {
+    try {
+      const args: MutationCreateCommentArgs = {
+        data: {
+          text: "",
+        },
+        postId: Types.ObjectId().toString(),
+      };
+
+      const context = {
+        userId: testUser!._id,
+      };
+
+      await createCommentResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(POST_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
+
   it(`creates the comment and returns it`, async () => {
     const args: MutationCreateCommentArgs = {
       data: {
@@ -70,18 +92,20 @@ describe("resolvers -> Mutation -> createComment", () => {
     expect(createCommentPayload).toEqual(
       expect.objectContaining({
         text: "text",
-        creator: testUser!._id,
-        post: testPost!._id,
       })
     );
 
     const testUpdatedPost = await Post.findOne({
       _id: testPost!._id,
     })
-      .select(["comments", "commentCount"])
+      .select(["commentCount"])
       .lean();
-
-    expect(testUpdatedPost!.comments).toEqual([createCommentPayload?._id]);
     expect(testUpdatedPost!.commentCount).toEqual(1);
+
+    const commentPostExists = await CommentPost.exists({
+      commentId: createCommentPayload!._id,
+      postId: testPost!._id,
+    });
+    expect(commentPostExists).toBeTruthy();
   });
 });
