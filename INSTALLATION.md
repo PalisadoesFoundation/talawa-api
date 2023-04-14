@@ -411,6 +411,12 @@ The key generated in the previous step is in a format suitable for use in a mobi
 
 Talawa API contains a sample database importing function which can be used to import sample database.
 
+Below are the login details for sample user with SUPERADMIN roleType:
+```
+Email: testuser@gmail.com
+Password: testuser
+```
+
 ## Syntax:
 
 ```npm run import:sample-data -- [args]```
