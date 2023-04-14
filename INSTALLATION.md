@@ -37,6 +37,7 @@ This document provides instructions on how to set up and start a running instanc
   - [Configuring Google Firebase](#configuring-google-firebase)
     - [Generate Firebase Keys for the Talawa Notification Service](#generate-firebase-keys-for-the-talawa-notification-service)
     - [(Mobile Developers Only) Applying the Firebase Keys to the Talawa Mobile App](#mobile-developers-only-applying-the-firebase-keys-to-the-talawa-mobile-app)
+- [Importing Sample Database](#importing-sample-database)
 - [Running Talawa-API](#running-talawa-api)
 - [How to Access the Talawa-API URL](#how-to-access-the-talawa-api-url)
   - [For Talawa-API Developers](#for-talawa-api-developers)
@@ -405,6 +406,31 @@ The key generated in the previous step is in a format suitable for use in a mobi
                  iosBundleId: 'com.example.talawa',
 
 1.  Undo the changes made to the `firebase_options.dart` file by overwriting it with the version you saved at the beginning of this section.
+
+# Importing Sample Database
+
+Talawa API contains a sample database importing function which can be used to import sample database.
+
+## Syntax:
+
+```npm run import:sample-data -- [args]```
+
+You can pass the following arguments while running this script.
+
+- ```--format```: Cleans the database before import. **Add this flag with caution. It will delete all of the existing data inside the talawa database.**
+- ```--items=```: Specify the items to add.
+    - Following ```items``` can be specified, separated with a comma ```,```
+        - ```users```: For users collection
+        - ```organizations```: For organizations collection
+        - ```events```: For events collection
+        - ```posts```: For posts collection
+
+## Examples:
+
+- ```npm run import:sample-data```: This command will import the complete sample database without removing the existing data.
+- ```npm run import:sample-data -- --format```: This command will import the complete sample database after removing the existing data.
+- ```npm run import:sample-data -- --format --items=users,organizations```: This command will import the sample ```users``` and ```organizations``` collections after cleaning the existing data.
+- ```npm run import:sample-data --  --items=users,organizations```: This command will import the sample ```users``` and ```organizations``` collections without cleaning the existing data.
 
 # Running Talawa-API
 
