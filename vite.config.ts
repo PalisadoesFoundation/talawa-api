@@ -31,7 +31,7 @@ export default defineConfig({
         "src/server.ts",
         "src/**/index.ts",
         "src/utilities/sample_data/*",
-        "src/utilities/loadSampleData.ts"
+        "src/utilities/loadSampleData.ts",
       ],
 
       // This is used to tell vitest which coverage provider to use. c8 is the newer and
