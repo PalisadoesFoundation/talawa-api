@@ -411,12 +411,6 @@ The key generated in the previous step is in a format suitable for use in a mobi
 
 Talawa API contains a sample database importing function which can be used to import sample database.
 
-Below are the login details for sample user with SUPERADMIN roleType:
-```
-Email: testuser@gmail.com
-Password: testuser
-```
-
 ## Syntax:
 
 ```npm run import:sample-data -- [args]```
@@ -437,6 +431,28 @@ You can pass the following arguments while running this script.
 - ```npm run import:sample-data -- --format```: This command will import the complete sample database after removing the existing data.
 - ```npm run import:sample-data -- --format --items=users,organizations```: This command will import the sample ```users``` and ```organizations``` collections after cleaning the existing data.
 - ```npm run import:sample-data --  --items=users,organizations```: This command will import the sample ```users``` and ```organizations``` collections without cleaning the existing data.
+
+## Sample Data Overview:
+
+The sample data contains organizations, users, events and posts. Here are the details for each of organizations and user account.
+
+### User Accounts and Organizations:
+
+| Email                 | Password | User Type  | Joined Organization | Admin For           |
+|-----------------------|----------|------------|---------------------|---------------------|
+| testuser1@gmail.com   | Pass@123 | USER       | Test Organization 2 | None                |
+| testuser2@gmail.com   | Pass@123 | USER       | Test Organization 2 | None                |
+| testuser3@gmail.com   | Pass@123 | USER       | Test Organization 2 | None                |
+| testadmin1@gmail.com  | Pass@123 | ADMIN      | Test Organization 2 | Test Organization 2 |
+| testadmin2@gmail.com  | Pass@123 | ADMIN      | Test Organization 3 | Test Organization 3 |
+| testadmin3@gmail.com  | Pass@123 | ADMIN      | Test Organization 4 | Test Organization 4 |
+| testsuperadmin@gmail.com  | Pass@123 | SUPERADMIN      | Test Organization 1 | ALL |
+
+### Posts
+There is one post inside the ```Test Organization 1```
+
+### Events
+There is one event inside the ```Test Organization 1
 
 # Running Talawa-API
 
