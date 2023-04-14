@@ -12,10 +12,9 @@ import {
 import { connect, disconnect } from "../helpers/db";
 import mongoose from "mongoose";
 import { nanoid } from "nanoid";
-import { TypeImagePath } from "../../src/utilities/reuploadDuplicateCheck";
 
-const testNewImagePath: TypeImagePath = `${nanoid()}-testNewImagePath`;
-const testOldImagePath: TypeImagePath = `${nanoid()}-testOldImagePath`;
+const testNewImagePath = `${nanoid()}-testNewImagePath`;
+const testOldImagePath = `${nanoid()}-testOldImagePath`;
 const testNewImageHash = `${nanoid()}-testHash`;
 
 const testErrors = [
