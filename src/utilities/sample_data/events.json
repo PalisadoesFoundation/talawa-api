@@ -1,0 +1,32 @@
+[{
+  "_id": "6437907585008f171cf2994c",
+  "recurring": true,
+  "recurrance": "ONCE",
+  "admins": [
+    "64378abd85008f171cf2990d"
+  ],
+  "tasks": [],
+  "status": "ACTIVE",
+  "title": "Test Event",
+  "description": "Test Description for Test Post",
+  "startDate": "2023-04-13T00:00:00.000Z",
+  "endDate": "2023-04-13T00:00:00.000Z",
+  "startTime": null,
+  "endTime": null,
+  "allDay": true,
+  "isPublic": true,
+  "isRegisterable": true,
+  "location": "Test Location",
+  "creator": "64378abd85008f171cf2990d",
+  "registrants": [
+    {
+      "status": "ACTIVE",
+      "_id": "6437907585008f171cf2994d",
+      "userId": "64378abd85008f171cf2990d",
+      "user": "64378abd85008f171cf2990d",
+      "createdAt": "2023-04-13T05:17:41.327Z"
+    }
+  ],
+  "organization": "6437904485008f171cf29924",
+  "__v": 0
+}]
