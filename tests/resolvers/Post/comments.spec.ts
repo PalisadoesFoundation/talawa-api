@@ -4,22 +4,17 @@ import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
 import { Comment } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import {
-  createTestPost,
-  TestCommentType,
-  TestPostType,
-} from "../../helpers/posts";
+import { createTestPost, TestPostType } from "../../helpers/posts";
 import { TestUserType } from "../../helpers/userAndOrg";
 
 let testPost: TestPostType;
-let testComment: TestCommentType;
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   [testUser, , testPost] = await createTestPost();
-  testComment = await Comment.create({
+  await Comment.create({
     text: "test comment",
     creator: testUser!._id,
     postId: testPost!._id,
@@ -36,6 +31,10 @@ describe("resolvers -> Post -> comments", () => {
 
     const commentsPayload = await commentsResolver?.(parent, {}, {});
 
-    expect(commentsPayload).toEqual([testComment!.toObject()]);
+    const comments = await Comment.find({
+      postId: testPost!._id,
+    }).lean();
+
+    expect(commentsPayload).toEqual(comments);
   });
 });

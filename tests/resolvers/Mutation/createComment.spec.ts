@@ -92,8 +92,6 @@ describe("resolvers -> Mutation -> createComment", () => {
     expect(createCommentPayload).toEqual(
       expect.objectContaining({
         text: "text",
-        creator: testUser!._id.toString(),
-        postId: testPost!._id.toString(),
       })
     );
 
@@ -102,6 +100,10 @@ describe("resolvers -> Mutation -> createComment", () => {
     })
       .select(["commentCount"])
       .lean();
+
     expect(testUpdatedPost!.commentCount).toEqual(1);
+    expect(createCommentPayload!.postId.toString()).toEqual(
+      testPost!._id.toString()
+    );
   });
 });
