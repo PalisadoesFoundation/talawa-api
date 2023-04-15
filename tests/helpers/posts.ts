@@ -9,6 +9,7 @@ import {
   Organization,
   Comment,
   InterfaceComment,
+  CommentPost,
 } from "../../src/models";
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
@@ -52,15 +53,16 @@ export const createTestPost = async (
 export const createPostwithComment = async (): Promise<
   [TestUserType, TestOrganizationType, TestPostType, TestCommentType]
 > => {
-  const resultArray = await createTestPost();
-  const testUser = resultArray[0];
-  const testOrganization = resultArray[1];
-  const testPost = resultArray[2];
+  const [testUser, testOrganization, testPost] = await createTestPost();
 
   const testComment = await Comment.create({
     text: `commentName${nanoid().toLowerCase()}`,
     creator: testUser?._id,
-    post: testPost?._id,
+  });
+
+  await CommentPost.create({
+    commentId: testComment._id,
+    postId: testPost!._id,
   });
 
   await Post.updateOne(
@@ -70,7 +72,6 @@ export const createPostwithComment = async (): Promise<
     {
       $push: {
         likedBy: testUser?._id,
-        comments: [testComment._id],
       },
       $inc: {
         likeCount: 1,
@@ -111,7 +112,11 @@ export const createSinglePostwithComment = async (
   const testComment = await Comment.create({
     text: `commentName${nanoid().toLowerCase()}`,
     creator: userId,
-    post: testPost._id,
+  });
+
+  await CommentPost.create({
+    commentId: testComment._id,
+    postId: testPost!._id,
   });
 
   await Post.updateOne(
@@ -121,7 +126,6 @@ export const createSinglePostwithComment = async (
     {
       $push: {
         likedBy: userId,
-        comments: [testComment._id],
       },
       $inc: {
         likeCount: 1,

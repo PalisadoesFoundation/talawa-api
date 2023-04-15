@@ -6,6 +6,7 @@ import { GroupChatMessage } from "./GroupChatMessage";
 import { MembershipRequest } from "./MembershipRequest";
 import { Mutation } from "./Mutation";
 import { Organization } from "./Organization";
+import { Post } from "./Post";
 import { Query } from "./Query";
 import { Subscription } from "./Subscription";
 import { User } from "./User";
@@ -30,6 +31,7 @@ export const resolvers: Resolvers = {
   MembershipRequest,
   Mutation,
   Organization,
+  Post,
   Query,
   Subscription,
   User,

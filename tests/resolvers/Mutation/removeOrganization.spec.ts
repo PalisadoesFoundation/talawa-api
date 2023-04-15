@@ -9,6 +9,7 @@ import {
   MembershipRequest,
   InterfaceComment,
   InterfacePost,
+  CommentPost,
 } from "../../../src/models";
 import { MutationRemoveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
@@ -116,7 +117,6 @@ beforeAll(async () => {
   testComment = await Comment.create({
     text: "text",
     creator: testUsers[0]!._id,
-    post: testPost._id,
   });
 
   await Post.updateOne(
@@ -124,11 +124,16 @@ beforeAll(async () => {
       _id: testPost._id,
     },
     {
-      $push: {
-        comments: testComment._id,
+      $inc: {
+        commentCount: 1,
       },
     }
   );
+
+  await CommentPost.create({
+    commentId: testComment._id,
+    postId: testPost._id,
+  });
 });
 
 afterAll(async () => {
