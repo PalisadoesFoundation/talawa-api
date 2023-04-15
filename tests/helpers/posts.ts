@@ -86,7 +86,7 @@ export const createPostwithComment = async (): Promise<
     },
     {
       $push: {
-        likedBy: testUser?._id,
+        likedBy: testUser!._id,
       },
       $inc: {
         likeCount: 1,
@@ -116,7 +116,7 @@ export const createSinglePostwithComment = async (
 
   await CommentPost.create({
     commentId: testComment._id,
-    postId: testPost!._id,
+    postId: testPost._id,
   });
 
   await Post.updateOne(
