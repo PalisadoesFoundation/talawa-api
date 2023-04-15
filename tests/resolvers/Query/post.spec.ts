@@ -42,50 +42,6 @@ describe("resolvers -> Query -> post", () => {
 
     const post = await Post.findOne({ _id: testPost?._id })
       .populate("organization")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
-      .populate("likedBy")
-      .populate("creator", "-password")
-      .lean();
-
-    expect(postPayload).toEqual(post);
-  });
-
-  it(`returns post object with post.likeCount === 0 and post.commentCount === 0`, async () => {
-    await Post.updateOne(
-      {
-        _id: testPost?._id,
-      },
-      {
-        $set: {
-          likedBy: [],
-          comments: [],
-        },
-        $inc: {
-          likeCount: -1,
-          commentCount: -1,
-        },
-      }
-    );
-
-    const args: QueryPostArgs = {
-      id: testPost?._id,
-    };
-
-    const postPayload = await postResolver?.({}, args, {});
-
-    const post = await Post.findOne({ _id: testPost?._id })
-      .populate("organization")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
       .populate("likedBy")
       .populate("creator", "-password")
       .lean();

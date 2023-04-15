@@ -1096,7 +1096,6 @@ export type Query = {
   organizationsMemberConnection: UserConnection;
   plugin?: Maybe<Array<Maybe<Plugin>>>;
   post?: Maybe<Post>;
-  posts?: Maybe<Array<Maybe<Post>>>;
   postsByOrganization?: Maybe<Array<Maybe<Post>>>;
   postsByOrganizationConnection?: Maybe<PostConnection>;
   registeredEventsByUser?: Maybe<Array<Maybe<Event>>>;
@@ -1213,11 +1212,6 @@ export type QueryPluginArgs = {
 
 export type QueryPostArgs = {
   id: Scalars['ID'];
-};
-
-
-export type QueryPostsArgs = {
-  orderBy?: InputMaybe<PostOrderByInput>;
 };
 
 
@@ -2275,7 +2269,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   organizationsMemberConnection?: Resolver<ResolversTypes['UserConnection'], ParentType, ContextType, RequireFields<QueryOrganizationsMemberConnectionArgs, 'orgId'>>;
   plugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryPluginArgs, 'orgId'>>;
   post?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryPostArgs, 'id'>>;
-  posts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType, Partial<QueryPostsArgs>>;
   postsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType, RequireFields<QueryPostsByOrganizationArgs, 'id'>>;
   postsByOrganizationConnection?: Resolver<Maybe<ResolversTypes['PostConnection']>, ParentType, ContextType, RequireFields<QueryPostsByOrganizationConnectionArgs, 'id'>>;
   registeredEventsByUser?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryRegisteredEventsByUserArgs>>;

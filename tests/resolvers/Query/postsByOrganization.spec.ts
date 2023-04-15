@@ -54,12 +54,6 @@ describe("resolvers -> Query -> posts", () => {
       .sort(sort)
       .populate("organization")
       .populate("likedBy")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
       .populate("creator", "-password")
       .lean();
 
@@ -97,12 +91,6 @@ describe("resolvers -> Query -> posts", () => {
       .sort(sort)
       .populate("organization")
       .populate("likedBy")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
       .populate("creator", "-password")
       .lean();
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
@@ -139,12 +127,6 @@ describe("resolvers -> Query -> posts", () => {
       .sort(sort)
       .populate("organization")
       .populate("likedBy")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
       .populate("creator", "-password")
       .lean();
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
@@ -181,12 +163,6 @@ describe("resolvers -> Query -> posts", () => {
       .sort(sort)
       .populate("organization")
       .populate("likedBy")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
       .populate("creator", "-password")
       .lean();
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
@@ -222,12 +198,6 @@ describe("resolvers -> Query -> posts", () => {
       .sort(sort)
       .populate("organization")
       .populate("likedBy")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
       .populate("creator", "-password")
       .lean();
 
@@ -264,12 +234,6 @@ describe("resolvers -> Query -> posts", () => {
       .sort(sort)
       .populate("organization")
       .populate("likedBy")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
       .populate("creator", "-password")
       .lean();
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
@@ -306,12 +270,6 @@ describe("resolvers -> Query -> posts", () => {
       .sort(sort)
       .populate("organization")
       .populate("likedBy")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
       .populate("creator", "-password")
       .lean();
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
@@ -348,12 +306,6 @@ describe("resolvers -> Query -> posts", () => {
       .sort(sort)
       .populate("organization")
       .populate("likedBy")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
       .populate("creator", "-password")
       .lean();
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
@@ -390,12 +342,6 @@ describe("resolvers -> Query -> posts", () => {
       .sort(sort)
       .populate("organization")
       .populate("likedBy")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
       .populate("creator", "-password")
       .lean();
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
@@ -432,12 +378,6 @@ describe("resolvers -> Query -> posts", () => {
       .sort(sort)
       .populate("organization")
       .populate("likedBy")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
       .populate("creator", "-password")
       .lean();
 
@@ -475,12 +415,6 @@ describe("resolvers -> Query -> posts", () => {
       .sort(sort)
       .populate("organization")
       .populate("likedBy")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
       .populate("creator", "-password")
       .lean();
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
@@ -517,12 +451,6 @@ describe("resolvers -> Query -> posts", () => {
       .sort(sort)
       .populate("organization")
       .populate("likedBy")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
       .populate("creator", "-password")
       .lean();
 
@@ -560,12 +488,6 @@ describe("resolvers -> Query -> posts", () => {
       .sort(sort)
       .populate("organization")
       .populate("likedBy")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
       .populate("creator", "-password")
       .lean();
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
@@ -602,12 +524,6 @@ describe("resolvers -> Query -> posts", () => {
       .sort(sort)
       .populate("organization")
       .populate("likedBy")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
       .populate("creator", "-password")
       .lean();
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
@@ -644,12 +560,6 @@ describe("resolvers -> Query -> posts", () => {
       .sort(sort)
       .populate("organization")
       .populate("likedBy")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
       .populate("creator", "-password")
       .lean();
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
@@ -685,12 +595,6 @@ describe("resolvers -> Query -> posts", () => {
       .sort(sort)
       .populate("organization")
       .populate("likedBy")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
       .populate("creator", "-password")
       .lean();
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
@@ -727,12 +631,6 @@ describe("resolvers -> Query -> posts", () => {
       .sort(sort)
       .populate("organization")
       .populate("likedBy")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
       .populate("creator", "-password")
       .lean();
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
@@ -780,12 +678,6 @@ describe("resolvers -> Query -> posts", () => {
       .sort(sort)
       .populate("organization")
       .populate("likedBy")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
       .populate("creator", "-password")
       .lean();
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({

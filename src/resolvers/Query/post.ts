@@ -11,12 +11,6 @@ import { POST_NOT_FOUND_ERROR } from "../../constants";
 export const post: QueryResolvers["post"] = async (_parent, args) => {
   const post = await Post.findOne({ _id: args.id })
     .populate("organization")
-    .populate({
-      path: "comments",
-      populate: {
-        path: "creator",
-      },
-    })
     .populate("likedBy")
     .populate("creator", "-password")
     .lean();
@@ -28,9 +22,6 @@ export const post: QueryResolvers["post"] = async (_parent, args) => {
       POST_NOT_FOUND_ERROR.PARAM
     );
   }
-
-  post.likeCount = post.likedBy.length || 0;
-  post.commentCount = post.comments.length || 0;
 
   return post;
 };

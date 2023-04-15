@@ -33,13 +33,13 @@ export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationC
         pagination: true,
         page: args.skip,
         limit: args.first,
-        populate: ["organization", "likedBy", "comments", "creator"],
+        populate: ["organization", "likedBy", "creator"],
       };
     } else {
       options = {
         sort: sort,
         pagination: false,
-        populate: ["organization", "likedBy", "comments", "creator"],
+        populate: ["organization", "likedBy", "creator"],
       };
     }
 
@@ -52,8 +52,6 @@ export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationC
     );
 
     const posts = postsmodel.docs.map((post) => {
-      post.likeCount = post.likedBy.length || 0;
-      post.commentCount = post.comments.length || 0;
       post.imageUrl = post.imageUrl
         ? `${context.apiRootUrl}${post.imageUrl}`
         : null;

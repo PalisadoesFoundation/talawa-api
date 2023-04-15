@@ -82,8 +82,6 @@ export const queries = gql`
 
     post(id: ID!): Post
 
-    posts(orderBy: PostOrderByInput): [Post]
-
     postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
 
     postsByOrganizationConnection(
