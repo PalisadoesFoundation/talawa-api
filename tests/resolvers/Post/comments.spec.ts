@@ -2,7 +2,7 @@ import "dotenv/config";
 import { comments as commentsResolver } from "../../../src/resolvers/Post/comments";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
-import { Comment, CommentPost } from "../../../src/models";
+import { Comment } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
   createTestPost,
@@ -22,9 +22,6 @@ beforeAll(async () => {
   testComment = await Comment.create({
     text: "test comment",
     creator: testUser!._id,
-  });
-  await CommentPost.create({
-    commentId: testComment!._id,
     postId: testPost!._id,
   });
 });

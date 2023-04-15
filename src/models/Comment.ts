@@ -1,5 +1,6 @@
 import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
 import { InterfaceUser } from "./User";
+import { InterfacePost } from "./Post";
 /**
  * This is an interface representing a document for a comment in the database(MongoDB).
  */
@@ -7,6 +8,7 @@ export interface InterfaceComment {
   _id: Types.ObjectId;
   text: string;
   createdAt: Date;
+  postId: PopulatedDoc<InterfacePost & Document>;
   creator: PopulatedDoc<InterfaceUser & Document>;
   likedBy: Array<PopulatedDoc<InterfaceUser & Document>>;
   likeCount: number;
@@ -17,6 +19,7 @@ export interface InterfaceComment {
  * @param text - Text
  * @param createdAt - Date when the comment was created
  * @param creator - Creator of the comment
+ * @param postId - The post on which the comment is created
  * @param likedBy - Liked by whom
  * @param likeCount - No of likes
  * @param status - whether the comment is active, blocked or deleted.
@@ -33,6 +36,11 @@ const commentSchema = new Schema({
   creator: {
     type: Schema.Types.ObjectId,
     ref: "User",
+    required: true,
+  },
+  postId: {
+    type: Schema.Types.ObjectId,
+    ref: "Post",
     required: true,
   },
   likedBy: [

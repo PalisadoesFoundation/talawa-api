@@ -1,6 +1,6 @@
 import "dotenv/config";
 import mongoose, { Types } from "mongoose";
-import { CommentPost, Post } from "../../../src/models";
+import { Post } from "../../../src/models";
 import { MutationCreateCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -92,6 +92,8 @@ describe("resolvers -> Mutation -> createComment", () => {
     expect(createCommentPayload).toEqual(
       expect.objectContaining({
         text: "text",
+        creator: testUser!._id.toString(),
+        postId: testPost!._id.toString(),
       })
     );
 
@@ -101,11 +103,5 @@ describe("resolvers -> Mutation -> createComment", () => {
       .select(["commentCount"])
       .lean();
     expect(testUpdatedPost!.commentCount).toEqual(1);
-
-    const commentPostExists = await CommentPost.exists({
-      commentId: createCommentPayload!._id,
-      postId: testPost!._id,
-    });
-    expect(commentPostExists).toBeTruthy();
   });
 });

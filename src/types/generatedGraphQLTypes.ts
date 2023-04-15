@@ -1,7 +1,6 @@
 import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
 import type { InterfaceMessageChat as InterfaceMessageChatModel } from '../models/MessageChat';
 import type { InterfaceComment as InterfaceCommentModel } from '../models/Comment';
-import type { InterfaceCommentPost as InterfaceCommentPostModel } from '../models/CommentPost';
 import type { InterfaceDirectChat as InterfaceDirectChatModel } from '../models/DirectChat';
 import type { InterfaceDirectChatMessage as InterfaceDirectChatMessageModel } from '../models/DirectChatMessage';
 import type { InterfaceDonation as InterfaceDonationModel } from '../models/Donation';

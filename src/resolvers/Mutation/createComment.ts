@@ -1,5 +1,5 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, Post, Comment, CommentPost } from "../../models";
+import { User, Post, Comment } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import { POST_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
 
@@ -47,11 +47,7 @@ export const createComment: MutationResolvers["createComment"] = async (
   const createdComment = await Comment.create({
     ...args.data,
     creator: context.userId,
-  });
-
-  await CommentPost.create({
     postId: args.postId,
-    commentId: createdComment._id,
   });
 
   // Increase commentCount by 1 on post's document with _id === args.postId.

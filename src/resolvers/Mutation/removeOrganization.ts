@@ -6,7 +6,6 @@ import {
   Post,
   Comment,
   MembershipRequest,
-  CommentPost,
 } from "../../models";
 import { superAdminCheck } from "../../utilities";
 import {
@@ -56,16 +55,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
 
     // Remove each post and comments associated to it for organization.posts list.
     await Post.deleteMany({ _id: { $in: organization.posts } });
-
-    const commentPostObjects = await CommentPost.find({
-      postId: { $in: organization.posts },
-    }).lean();
-    const commentIds = commentPostObjects.map(
-      (commentPost) => commentPost.commentId
-    );
-
-    await CommentPost.deleteMany({ commentId: { $in: commentIds } });
-    await Comment.deleteMany({ _id: { $in: commentIds } });
+    await Comment.deleteMany({ postId: { $in: organization.posts } });
 
     // Remove organization._id from createdOrganizations list of currentUser.
     await User.updateOne(

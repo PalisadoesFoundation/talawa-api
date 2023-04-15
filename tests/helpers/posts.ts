@@ -9,7 +9,6 @@ import {
   Organization,
   Comment,
   InterfaceComment,
-  CommentPost,
 } from "../../src/models";
 import { Document } from "mongoose";
 import { nanoid } from "nanoid";
@@ -57,11 +56,7 @@ export const createPostwithComment = async (): Promise<
 
   const testComment = await Comment.create({
     text: `commentName${nanoid().toLowerCase()}`,
-    creator: testUser?._id,
-  });
-
-  await CommentPost.create({
-    commentId: testComment._id,
+    creator: testUser!._id,
     postId: testPost!._id,
   });
 
@@ -112,10 +107,6 @@ export const createSinglePostwithComment = async (
   const testComment = await Comment.create({
     text: `commentName${nanoid().toLowerCase()}`,
     creator: userId,
-  });
-
-  await CommentPost.create({
-    commentId: testComment._id,
     postId: testPost._id,
   });
 

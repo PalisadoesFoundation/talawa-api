@@ -1,11 +1,6 @@
 import "dotenv/config";
 import mongoose, { Document, Types } from "mongoose";
-import {
-  Comment,
-  InterfaceComment,
-  Post,
-  CommentPost,
-} from "../../../src/models";
+import { Comment, InterfaceComment, Post } from "../../../src/models";
 import { MutationRemoveCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { removeComment as removeCommentResolver } from "../../../src/resolvers/Mutation/removeComment";
@@ -42,10 +37,6 @@ beforeAll(async () => {
   testComment = await Comment.create({
     text: "text",
     creator: testUser!._id,
-  });
-
-  await CommentPost.create({
-    commentId: testComment._id,
     postId: testPost!._id,
   });
 
@@ -193,13 +184,9 @@ describe("resolvers -> Mutation -> removeComment", () => {
       .lean();
 
     const commentExists = await Comment.exists({ _id: testComment!._id });
-    const commentPostExists = await CommentPost.exists({
-      commentId: testComment!._id,
-    });
 
     expect(removeCommentPayload).toEqual(testComment!.toObject());
     expect(commentExists).toBeFalsy();
-    expect(commentPostExists).toBeFalsy();
     expect(testUpdatedPost!.commentCount).toEqual(0);
   });
 });

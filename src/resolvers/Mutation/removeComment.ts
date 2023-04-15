@@ -1,5 +1,5 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, Post, Comment, CommentPost } from "../../models";
+import { User, Post, Comment } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
   USER_NOT_FOUND_ERROR,
@@ -62,15 +62,10 @@ export const removeComment: MutationResolvers["removeComment"] = async (
     );
   }
 
-  // Delete the commentPost relational object associated with the comment
-  const commentPost = await CommentPost.findOneAndDelete({
-    commentId: args.id,
-  });
-
   // Reduce the commentCount by 1 of the post with _id === commentPost.postId
   await Post.updateOne(
     {
-      _id: commentPost!.postId,
+      _id: comment!.postId,
     },
     {
       $inc: {
