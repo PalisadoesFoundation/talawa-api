@@ -50,7 +50,7 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
   const usersInDirectChat = [];
 
   // Loops over each item in args.data.userIds list.
-  for await (const userId of args.data!.userIds) {
+  for await (const userId of args.data?.userIds ?? []) {
     const userExists = await User.exists({
       _id: userId,
     });

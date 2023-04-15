@@ -4,7 +4,7 @@ import {
 } from "../../constants";
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User } from "../../models";
+import { User, InterfaceUser } from "../../models";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 /**
  * This function enables to update user profile.
@@ -32,7 +32,7 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
     );
   }
 
-  if (args.data!.email !== undefined) {
+  if (args.data?.email !== undefined) {
     const userWithEmailExists = await User.find({
       email: args.data?.email?.toLowerCase(),
     });
@@ -82,5 +82,5 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
     ? `${context.apiRootUrl}${updatedUser?.image}`
     : null;
 
-  return updatedUser!;
+  return updatedUser ?? ({} as InterfaceUser);
 };

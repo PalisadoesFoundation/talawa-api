@@ -24,7 +24,7 @@ export const createAccessToken = async (user: InterfaceUser) => {
       lastName: user.lastName,
       email: user.email,
     },
-    ACCESS_TOKEN_SECRET!,
+    ACCESS_TOKEN_SECRET ?? "",
     {
       expiresIn: "40m",
     }
@@ -40,7 +40,7 @@ export const createRefreshToken = async (user: InterfaceUser) => {
       lastName: user.lastName,
       email: user.email,
     },
-    REFRESH_TOKEN_SECRET!,
+    REFRESH_TOKEN_SECRET ?? "",
     {
       expiresIn: "30d",
     }

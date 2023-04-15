@@ -119,7 +119,7 @@ describe("resolvers -> Mutation -> signUp", () => {
         lastName: "lastName",
         password: "password",
         appLanguageCode: "en",
-        organizationUserBelongsToId: testOrganization!.id,
+        organizationUserBelongsToId: testOrganization?.id,
       },
     };
     const { signUp: signUpResolver } = await import(
@@ -164,7 +164,7 @@ describe("resolvers -> Mutation -> signUp", () => {
         lastName: "lastName",
         password: "password",
         appLanguageCode: "en",
-        organizationUserBelongsToId: testOrganization!.id,
+        organizationUserBelongsToId: testOrganization?.id,
       },
       file: testImagePath,
     };
@@ -242,7 +242,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     try {
       const args: MutationSignUpArgs = {
         data: {
-          email: testUser!.email,
+          email: testUser?.email,
           firstName: "firstName",
           lastName: "lastName",
           password: "password",

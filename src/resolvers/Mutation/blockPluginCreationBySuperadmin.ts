@@ -42,7 +42,7 @@ export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCrea
     }
 
     // Checks whether currentUser is a SUPERADMIN.
-    superAdminCheck(currentUser!);
+    superAdminCheck(currentUser);
 
     /*
     Sets pluginCreationAllowed field on document of user with _id === args.userId

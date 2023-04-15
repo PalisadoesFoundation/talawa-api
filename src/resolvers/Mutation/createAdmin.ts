@@ -49,7 +49,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
       USER_NOT_FOUND_ERROR.PARAM
     );
   }
-  superAdminCheck(currentUser!);
+  superAdminCheck(currentUser);
 
   const userExists = await User.exists({
     _id: args.data.userId,

@@ -1,5 +1,5 @@
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { Donation } from "../../models";
+import { Donation, InterfaceDonation } from "../../models";
 
 /**
  * This query will fetch the donation as a transaction from database.
@@ -15,5 +15,5 @@ export const getDonationById: QueryResolvers["getDonationById"] = async (
     _id: args.id,
   }).lean();
 
-  return donation!;
+  return donation ?? ({} as InterfaceDonation);
 };

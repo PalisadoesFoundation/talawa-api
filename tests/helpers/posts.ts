@@ -30,14 +30,14 @@ export const createTestPost = async (
 
   const testPost = await Post.create({
     text: `text${nanoid().toLowerCase()}`,
-    creator: testUser!._id,
-    organization: testOrganization!._id,
+    creator: testUser?._id,
+    organization: testOrganization?._id,
     pinned,
   });
 
   await Organization.updateOne(
     {
-      _id: testOrganization!._id,
+      _id: testOrganization?._id,
     },
     {
       $push: {

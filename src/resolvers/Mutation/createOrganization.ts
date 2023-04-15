@@ -34,21 +34,26 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       _id: context.userId,
     });
 
-    superAdminCheck(currentUser!);
+    if (currentUser) {
+      superAdminCheck(currentUser);
+    }
 
     //Upload file
     let uploadImageFileName = null;
     if (args.file) {
-      uploadImageFileName = await uploadEncodedImage(args.file!, null);
+      uploadImageFileName = await uploadEncodedImage(args.file ?? "", null);
     }
 
     // Checks if the recieved arguments are valid according to standard input norms
-    const validationResult_Name = isValidString(args.data!.name, 256);
+    const validationResult_Name = isValidString(args.data?.name ?? "", 256);
     const validationResult_Description = isValidString(
-      args.data!.description,
+      args.data?.description ?? "",
       500
     );
-    const validationResult_Location = isValidString(args.data!.location!, 50);
+    const validationResult_Location = isValidString(
+      args.data?.location ?? "",
+      50
+    );
 
     if (!validationResult_Name.isLessThanMaxLength) {
       throw new errors.InputValidationError(

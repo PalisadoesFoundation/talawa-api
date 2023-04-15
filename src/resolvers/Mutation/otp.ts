@@ -33,7 +33,7 @@ export const otp: MutationResolvers["otp"] = async (_parent, args) => {
       email: args.data.email,
       otp: hashedOtp,
     },
-    ACCESS_TOKEN_SECRET!,
+    ACCESS_TOKEN_SECRET ?? "",
     {
       expiresIn: "15m",
     }

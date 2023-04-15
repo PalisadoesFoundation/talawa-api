@@ -83,7 +83,7 @@ try {
         const uploadImagePayload = await uploadImage(pngImage, null);
         const testUserObj = await User.findByIdAndUpdate(
           {
-            _id: testUser!.id,
+            _id: testUser?.id,
           },
           {
             $set: {
@@ -139,7 +139,7 @@ try {
           );
         const { uploadImage } = await import("../../src/utilities/uploadImage");
         const testUserBeforeObj = await User.findById({
-          _id: testUser!.id,
+          _id: testUser?.id,
         });
         const oldImagePath =
           testUserBeforeObj?.image != null ? testUserBeforeObj?.image : null;
@@ -153,7 +153,7 @@ try {
         const uploadImagePayload = await uploadImage(pngImage, oldImagePath);
         const testUserObj = await User.findByIdAndUpdate(
           {
-            _id: testUser!.id,
+            _id: testUser?.id,
           },
           {
             $set: {

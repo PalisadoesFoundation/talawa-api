@@ -189,7 +189,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
     const args: QueryGetDonationByOrgIdConnectionArgs = {
       orgId: testOrganization?._id,
       where: {
-        name_of_user_in: [testDonations[2]!.nameOfUser],
+        name_of_user_in: [testDonations[2]?.nameOfUser ?? ""],
       },
     };
 
@@ -198,7 +198,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
 
     const donationsByOrganization = await Donation.find({
       orgId: testOrganization?._id,
-      nameOfUser: { $in: [testDonations[2]!.nameOfUser] },
+      nameOfUser: { $in: [testDonations[2]?.nameOfUser ?? ""] },
     }).lean();
 
     expect(getDonationByOrgIdConnectionPayload).toEqual(
@@ -211,7 +211,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
     const args: QueryGetDonationByOrgIdConnectionArgs = {
       orgId: testOrganization?._id,
       where: {
-        name_of_user_not_in: [testDonations[2]!.nameOfUser],
+        name_of_user_not_in: [testDonations[2]?.nameOfUser ?? ""],
       },
     };
 
@@ -220,7 +220,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
 
     const donationsByOrganization = await Donation.find({
       orgId: testOrganization?._id,
-      nameOfUser: { $nin: [testDonations[2]!.nameOfUser] },
+      nameOfUser: { $nin: [testDonations[2]?.nameOfUser ?? ""] },
     }).lean();
 
     expect(getDonationByOrgIdConnectionPayload).toEqual(

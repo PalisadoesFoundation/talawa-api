@@ -1,6 +1,6 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Organization } from "../../models";
+import { User, Organization, InterfaceOrganization } from "../../models";
 import { adminCheck } from "../../utilities";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -45,7 +45,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   });
 
   // Checks whether current user making the request is an admin of organization.
-  await adminCheck(context.userId, organization!);
+  await adminCheck(context.userId, organization);
 
   const user = await User.findOne({
     _id: args.data.userId,
@@ -144,5 +144,5 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     }
   );
 
-  return organization!;
+  return organization ?? ({} as InterfaceOrganization);
 };

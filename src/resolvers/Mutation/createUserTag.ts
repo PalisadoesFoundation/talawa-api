@@ -49,7 +49,7 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
   );
 
   if (
-    !(currentUser!.userType === "SUPERADMIN") &&
+    !((currentUser?.userType ?? "") === "SUPERADMIN") &&
     !currentUserIsOrganizationAdmin
   ) {
     throw new errors.UnauthorizedError(
@@ -62,7 +62,7 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
   // Additonal checks if the parent folder is provided
   if (args.input.parentTagId) {
     const parentTag = await OrganizationTagUser.findOne({
-      _id: args.input.parentTagId!,
+      _id: args.input.parentTagId,
     });
 
     // Throw an error if the parent tag folder does not exist

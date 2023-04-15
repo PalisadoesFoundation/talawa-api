@@ -144,7 +144,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       file: "imagePath",
     };
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const createOrganizationPayload = await createOrganizationResolver?.(
@@ -160,25 +160,25 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         visibleInSearch: true,
         apiUrl: "apiUrl",
         location: "location",
-        creator: testUser!._id,
-        admins: [testUser!._id],
-        members: [testUser!._id],
+        creator: testUser?._id,
+        admins: [testUser?._id],
+        members: [testUser?._id],
         image: "imagePath",
       })
     );
     expect(createOrganizationPayload?.image).toEqual("imagePath");
 
     const updatedTestUser = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     })
       .select(["joinedOrganizations", "createdOrganizations", "adminFor"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        joinedOrganizations: [createOrganizationPayload!._id],
-        createdOrganizations: [createOrganizationPayload!._id],
-        adminFor: [createOrganizationPayload!._id],
+        joinedOrganizations: [createOrganizationPayload?._id],
+        createdOrganizations: [createOrganizationPayload?._id],
+        adminFor: [createOrganizationPayload?._id],
       })
     );
   });
@@ -201,7 +201,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       file: null,
     };
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const createOrganizationPayload = await createOrganizationResolver?.(
@@ -217,9 +217,9 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         visibleInSearch: true,
         apiUrl: "apiUrl",
         location: "location",
-        creator: testUser!._id,
-        admins: [testUser!._id],
-        members: [testUser!._id],
+        creator: testUser?._id,
+        admins: [testUser?._id],
+        members: [testUser?._id],
       })
     );
     expect(createOrganizationPayload?.image).toBe(null);
@@ -243,7 +243,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         file: null,
       };
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       await createOrganizationResolver?.({}, args, context);
@@ -272,7 +272,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         file: null,
       };
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       await createOrganizationResolver?.({}, args, context);
@@ -301,7 +301,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         file: null,
       };
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       await createOrganizationResolver?.({}, args, context);

@@ -36,13 +36,13 @@ beforeAll(async () => {
   testPost = temp[2];
   testComment = await Comment.create({
     text: "text",
-    creator: testUser!._id,
-    post: testPost!._id,
+    creator: testUser?._id,
+    post: testPost?._id,
   });
 
   testPost = await Post.findOneAndUpdate(
     {
-      _id: testPost!._id,
+      _id: testPost?._id,
     },
     {
       $push: {
@@ -104,7 +104,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { removeComment: removeCommentResolver } = await import(
@@ -127,7 +127,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
     try {
       await Comment.updateOne(
         {
-          _id: testComment!._id,
+          _id: testComment?._id,
         },
         {
           $set: {
@@ -137,11 +137,11 @@ describe("resolvers -> Mutation -> removeComment", () => {
       );
 
       const args: MutationRemoveCommentArgs = {
-        id: testComment!.id,
+        id: testComment?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { removeComment: removeCommentResolver } = await import(
@@ -158,21 +158,21 @@ describe("resolvers -> Mutation -> removeComment", () => {
   it(`deletes the comment with _id === args.id`, async () => {
     await Comment.updateOne(
       {
-        _id: testComment!._id,
+        _id: testComment?._id,
       },
       {
         $set: {
-          creator: testUser!._id,
+          creator: testUser?._id,
         },
       }
     );
 
     const args: MutationRemoveCommentArgs = {
-      id: testComment!.id,
+      id: testComment?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const removeCommentPayload = await removeCommentResolver?.(
@@ -181,15 +181,15 @@ describe("resolvers -> Mutation -> removeComment", () => {
       context
     );
 
-    expect(removeCommentPayload).toEqual(testComment!.toObject());
+    expect(removeCommentPayload).toEqual(testComment?.toObject());
 
     const testUpdatedPost = await Post.findOne({
-      _id: testPost!._id,
+      _id: testPost?._id,
     })
       .select(["comments", "commentCount"])
       .lean();
 
-    expect(testUpdatedPost!.comments).toEqual([]);
-    expect(testUpdatedPost!.commentCount).toEqual(0);
+    expect(testUpdatedPost?.comments).toEqual([]);
+    expect(testUpdatedPost?.commentCount).toEqual(0);
   });
 });

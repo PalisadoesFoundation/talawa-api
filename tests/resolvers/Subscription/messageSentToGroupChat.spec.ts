@@ -34,11 +34,11 @@ describe("src -> resolvers -> Subscription -> messageSentToGroupChat", () => {
           return _action;
         },
       },
-      context: { currentUserId: testGroupChat!.users[0] },
+      context: { currentUserId: testGroupChat?.users[0] },
     };
     const payload = {
       messageSentToGroupChat: {
-        groupChatMessageBelongsTo: testGroupChat!._id,
+        groupChatMessageBelongsTo: testGroupChat?._id,
       },
     };
     // @ts-ignore

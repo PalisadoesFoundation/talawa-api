@@ -38,7 +38,7 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
           return _action;
         },
       },
-      context: { currentUserId: testCurrentUser!._id },
+      context: { currentUserId: testCurrentUser?._id },
     };
     const payload = {
       messageSentToDirectChat: {
@@ -76,7 +76,7 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
           return _action;
         },
       },
-      context: { currentUserId: testCurrentUser!._id },
+      context: { currentUserId: testCurrentUser?._id },
     };
 
     const payload = {

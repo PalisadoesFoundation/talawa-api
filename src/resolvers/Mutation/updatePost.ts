@@ -53,8 +53,8 @@ export const updatePost: MutationResolvers["updatePost"] = async (
   }
 
   // Checks if the recieved arguments are valid according to standard input norms
-  const validationResult_Title = isValidString(args.data!.title!, 256);
-  const validationResult_Text = isValidString(args.data!.text!, 500);
+  const validationResult_Title = isValidString(args.data?.title ?? "", 256);
+  const validationResult_Text = isValidString(args.data?.text ?? "", 500);
   if (!validationResult_Title.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(

@@ -93,5 +93,5 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
     },
   });
 
-  return tag!;
+  return tag;
 };

@@ -51,7 +51,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
       );
     }
     // Checks whether currentUser is a SUPERADMIN
-    superAdminCheck(currentUser!);
+    superAdminCheck(currentUser);
 
     // Remove each post and comments associated to it for organization.posts list.
     await Post.deleteMany({ _id: { $in: organization.posts } });

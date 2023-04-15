@@ -217,7 +217,7 @@ describe("resolvers -> Query -> organizationsConnection", () => {
         id_in: [testOrganizations[1]._id],
         name_in: [testOrganizations[1].name],
         description_in: [testOrganizations[1].description],
-        apiUrl_in: [testOrganizations[1].apiUrl!],
+        apiUrl_in: [testOrganizations[1].apiUrl ?? ""],
       },
       orderBy: "name_ASC",
     };
@@ -264,7 +264,7 @@ describe("resolvers -> Query -> organizationsConnection", () => {
         id_not_in: [testOrganizations[0]._id],
         name_not_in: [testOrganizations[0].name],
         description_not_in: [testOrganizations[0].description],
-        apiUrl_not_in: [testOrganizations[0].apiUrl!],
+        apiUrl_not_in: [testOrganizations[0].apiUrl ?? ""],
       },
       orderBy: "name_DESC",
     };

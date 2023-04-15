@@ -21,8 +21,17 @@ export const updateUserPassword: MutationResolvers["updateUserPassword"] =
       );
     }
 
+    const previousPassword =
+      args.data?.previousPassword != null ? args.data?.previousPassword : "";
+    const newPassword =
+      args.data?.newPassword != null ? args.data?.newPassword : "";
+    const confirmNewPassword =
+      args.data?.confirmNewPassword != null
+        ? args.data?.confirmNewPassword
+        : "";
+
     const isPasswordValid = await bcrypt.compare(
-      args.data!.previousPassword,
+      previousPassword,
       currentUser.password
     );
 
@@ -42,7 +51,7 @@ export const updateUserPassword: MutationResolvers["updateUserPassword"] =
       );
     }
 
-    if (args.data!.newPassword !== args.data!.confirmNewPassword) {
+    if (newPassword !== confirmNewPassword) {
       throw new errors.ValidationError(
         [
           {
@@ -57,7 +66,7 @@ export const updateUserPassword: MutationResolvers["updateUserPassword"] =
       );
     }
 
-    const hashedPassword = await bcrypt.hash(args.data!.newPassword, 12);
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
 
     return await User.findOneAndUpdate(
       {

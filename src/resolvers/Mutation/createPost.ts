@@ -54,12 +54,12 @@ export const createPost: MutationResolvers["createPost"] = async (
   let uploadImageFileName;
 
   if (args.file) {
-    uploadImageFileName = await uploadEncodedImage(args.file!, null);
+    uploadImageFileName = await uploadEncodedImage(args.file ?? "", null);
   }
 
   // Checks if the recieved arguments are valid according to standard input norms
-  const validationResult_Title = isValidString(args.data!.title!, 256);
-  const validationResult_Text = isValidString(args.data!.text, 500);
+  const validationResult_Title = isValidString(args.data?.title ?? "", 256);
+  const validationResult_Text = isValidString(args.data?.text ?? "", 500);
   if (!validationResult_Title.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
@@ -84,7 +84,7 @@ export const createPost: MutationResolvers["createPost"] = async (
     );
 
     if (
-      !(currentUser!.userType === "SUPERADMIN") &&
+      !((currentUser?.userType ?? "") === "SUPERADMIN") &&
       !currentUserIsOrganizationAdmin
     ) {
       throw new errors.UnauthorizedError(

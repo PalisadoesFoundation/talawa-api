@@ -44,7 +44,7 @@ export const updateUserType: MutationResolvers["updateUserType"] = async (
   }
 
   const userExists = await User.exists({
-    _id: args.data.id!,
+    _id: args.data.id ?? "",
   });
 
   if (userExists === false) {
@@ -57,10 +57,10 @@ export const updateUserType: MutationResolvers["updateUserType"] = async (
 
   await User.updateOne(
     {
-      _id: args.data.id!,
+      _id: args.data.id ?? "",
     },
     {
-      userType: args.data.userType!,
+      userType: args.data.userType ?? "",
       adminApproved: true,
     }
   );
