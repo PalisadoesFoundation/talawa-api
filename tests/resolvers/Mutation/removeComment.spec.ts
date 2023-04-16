@@ -142,9 +142,6 @@ describe("resolvers -> Mutation -> removeComment", () => {
           $pull: {
             adminFor: testPost!.organization,
           },
-          $push: {
-            adminFor: Types.ObjectId(),
-          },
         }
       );
 
@@ -176,6 +173,18 @@ describe("resolvers -> Mutation -> removeComment", () => {
       {
         $set: {
           creator: testUser!._id,
+        },
+      }
+    );
+
+    // Set the user as the admin of the organization of the post of the comment
+    await User.updateOne(
+      {
+        _id: testUser!._id,
+      },
+      {
+        $push: {
+          adminFor: testPost!.organization,
         },
       }
     );
