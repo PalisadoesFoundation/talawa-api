@@ -59,11 +59,9 @@ export const removeComment: MutationResolvers["removeComment"] = async (
 
   // Checks whether currentUser with _id === context.userId has the authorization to delete the comment
   if (
-    !(
-      currentUser.userType === "SUPERADMIN" ||
-      isCurrentUserAdminOfOrganization ||
-      comment.creator.toString() === context.userId.toString()
-    )
+    currentUser.userType !== "SUPERADMIN" &&
+    !isCurrentUserAdminOfOrganization &&
+    comment.creator.toString() !== context.userId.toString()
   ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
