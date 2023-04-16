@@ -32,6 +32,32 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Query -> usersConnection", () => {
+  it(`returns paginated list of all users without any filtering and sorting with first = 0 and skip = 0`, async () => {
+    const args: QueryUsersConnectionArgs = {
+      where: null,
+      orderBy: null,
+    };
+
+    const usersConnectionPayload = await usersConnectionResolver?.(
+      {},
+      args,
+      {}
+    );
+    const users = await User.find()
+      .limit(0)
+      .skip(0)
+      .select(["-password"])
+      .populate("createdOrganizations")
+      .populate("createdEvents")
+      .populate("joinedOrganizations")
+      .populate("registeredEvents")
+      .populate("eventAdmin")
+      .populate("adminFor")
+      .lean();
+
+    expect(usersConnectionPayload).toEqual(users);
+  });
+
   it(`returns paginated list of users filtered by
   args.where === { id: testUsers[1].id, firstName: testUsers[1].firstName,
   lastName: testUsers[1].lastName, email: testUsers[1].email,

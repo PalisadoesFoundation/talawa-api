@@ -302,9 +302,9 @@ export const EMAIL_ALREADY_EXISTS_ERROR = {
 
 export const BASE_URL = `http://localhost:${process.env.port || 4000}/`;
 
-export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
+export const ACCESS_TOKEN_SECRET = `${process.env.ACCESS_TOKEN_SECRET || ""}`;
 
-export const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
+export const REFRESH_TOKEN_SECRET = `${process.env.REFRESH_TOKEN_SECRET || ""}`;
 
 export const MONGO_DB_URL = process.env.MONGO_DB_URL;
 

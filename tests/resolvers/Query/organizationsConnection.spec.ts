@@ -95,6 +95,19 @@ describe("resolvers -> Query -> organizationsConnection", () => {
 
     expect(organizationsConnectionPayload).toEqual(organizations);
   });
+  it(`returns paginated list of all existing organizations without any filtering and sorting with first = 0 and skip = 0 if not provided'`, async () => {
+    const args: QueryOrganizationsConnectionArgs = {
+      where: null,
+      orderBy: null,
+    };
+
+    const organizations = await Organization.find().limit(0).skip(0).lean();
+
+    const organizationsConnectionPayload =
+      await organizationsConnectionResolver?.({}, args, {});
+
+    expect(organizationsConnectionPayload).toEqual(organizations);
+  });
 
   it(`returns paginated list of all existing organizations filtered by args.where ===
   { id: testOrganizations[1]._id, name: testOrganizations[1].name, 

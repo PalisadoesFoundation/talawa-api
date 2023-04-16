@@ -121,4 +121,24 @@ describe("utilities -> adminCheck", () => {
       )
     ).resolves.not.toThrowError();
   });
+  it("throws error if user is not found with the specific Id", async () => {
+    const { requestContext } = await import("../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const { adminCheck } = await import("../../src/utilities");
+      await adminCheck(
+        new mongoose.Types.ObjectId(),
+        testOrganization ?? ({} as InterfaceOrganization)
+      );
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
+      );
+    }
+    expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
+  });
 });
