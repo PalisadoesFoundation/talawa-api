@@ -1,4 +1,4 @@
-require("dotenv").config();
+import dotenv from "dotenv";
 import { nanoid } from "nanoid";
 import * as fs from "fs";
 import {
@@ -12,6 +12,7 @@ import {
 } from "vitest";
 import { connect, disconnect } from "../helpers/db";
 import mongoose, { Document } from "mongoose";
+dotenv.config();
 
 import { ImageHash, InterfaceImageHash } from "../../src/models";
 

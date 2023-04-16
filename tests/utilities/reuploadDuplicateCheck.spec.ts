@@ -1,4 +1,4 @@
-require("dotenv").config();
+import dotenv from "dotenv";
 import { ImageHash } from "../../src/models";
 import {
   afterAll,
@@ -12,6 +12,7 @@ import {
 import { connect, disconnect } from "../helpers/db";
 import mongoose from "mongoose";
 import { nanoid } from "nanoid";
+dotenv.config();
 
 const testNewImagePath = `${nanoid()}-testNewImagePath`;
 const testOldImagePath = `${nanoid()}-testOldImagePath`;

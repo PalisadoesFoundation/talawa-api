@@ -1,4 +1,4 @@
-require("dotenv").config();
+import dotenv from "dotenv";
 import fs from "fs";
 import {
   afterAll,
@@ -21,6 +21,7 @@ import {
   createTestUserAndOrganization,
   TestUserType,
 } from "../helpers/userAndOrg";
+dotenv.config();
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;

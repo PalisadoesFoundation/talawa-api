@@ -157,7 +157,7 @@ describe("resolvers -> Mutation -> removeTask", () => {
     }
   });
 
-  it(`throws NotAuthorizedError if for creator of task with _id === args.id, user._id ?== context.userId`, async () => {
+  it(`throws NotAuthorizedError if for creator of task with _id === args.id, user._id !== context.userId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
