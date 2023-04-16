@@ -142,6 +142,9 @@ describe("resolvers -> Mutation -> removeComment", () => {
           $pull: {
             adminFor: testPost!.organization,
           },
+          $push: {
+            adminFor: Types.ObjectId(),
+          },
         }
       );
 
