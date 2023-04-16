@@ -39,7 +39,9 @@ export const removeComment: MutationResolvers["removeComment"] = async (
 
   const comment = await Comment.findOne({
     _id: args.id,
-  }).lean();
+  })
+    .populate("postId")
+    .lean();
 
   // Checks whether comment exists.
   if (!comment) {
@@ -50,10 +52,18 @@ export const removeComment: MutationResolvers["removeComment"] = async (
     );
   }
 
-  // Checks whether currentUser with _id === context.userId is not the creator of comment or the user is a SUPERADMIN
+  const isCurrentUserAdminOfOrganization = currentUser.adminFor.some(
+    (organization) =>
+      organization.toString() === comment.postId.organization.toString()
+  );
+
+  // Checks whether currentUser with _id === context.userId has the authorization to delete the comment
   if (
-    comment.creator.toString() !== context.userId.toString() &&
-    currentUser.userType !== "SUPERADMIN"
+    !(
+      currentUser.userType === "SUPERADMIN" ||
+      isCurrentUserAdminOfOrganization ||
+      comment.creator.toString() === context.userId.toString()
+    )
   ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
@@ -79,6 +89,8 @@ export const removeComment: MutationResolvers["removeComment"] = async (
     _id: args.id,
   });
 
-  // Returns the deleted comment.
+  // Replace the populated postId in comment object with just the id
+  comment.postId = comment.postId._id;
+
   return comment;
 };

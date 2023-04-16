@@ -1,6 +1,6 @@
 import "dotenv/config";
 import mongoose, { Document, Types } from "mongoose";
-import { Comment, InterfaceComment, Post } from "../../../src/models";
+import { Comment, InterfaceComment, Post, User } from "../../../src/models";
 import { MutationRemoveCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { removeComment as removeCommentResolver } from "../../../src/resolvers/Mutation/removeComment";
@@ -121,6 +121,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
     try {
+      // Remove the user as the creator of the comment
       await Comment.updateOne(
         {
           _id: testComment!._id,
@@ -128,6 +129,18 @@ describe("resolvers -> Mutation -> removeComment", () => {
         {
           $set: {
             creator: Types.ObjectId().toString(),
+          },
+        }
+      );
+
+      // Remove the user as the admin of the organization of the post of the comment
+      await User.updateOne(
+        {
+          _id: testUser!._id,
+        },
+        {
+          $pull: {
+            adminFor: testPost!.organization,
           },
         }
       );
@@ -152,6 +165,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
   });
 
   it(`deletes the comment with _id === args.id`, async () => {
+    // Make the user creator of the comment again
     await Comment.updateOne(
       {
         _id: testComment!._id,
