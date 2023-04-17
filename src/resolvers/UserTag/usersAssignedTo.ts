@@ -1,12 +1,13 @@
 import { UserTagResolvers } from "../../types/generatedGraphQLTypes";
 import { TagUser, InterfaceTagUser, InterfaceUser } from "../../models";
 import {
-  createGraphQLConnection,
-  validatePaginationArgs,
   transformArguments,
   getLimit,
   getSortingObject,
+  getFilterQuery,
+  generateConnectionObject,
 } from "../../utilities/graphqlConnectionFactory";
+import { validatePaginationArgs } from "../../libraries/validators/validatePaginationArgs";
 
 // @ts-ignore
 export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
@@ -24,8 +25,9 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
 
   const newArgs = transformArguments(args);
 
-  const allUsers = await TagUser.find({
+  const allUserObjects = await TagUser.find({
     tagId: parent._id,
+    ...getFilterQuery(newArgs),
   })
     .sort(
       getSortingObject(newArgs, {
@@ -36,4 +38,10 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
     .limit(getLimit(newArgs))
     .populate("userId")
     .lean();
+
+  return generateConnectionObject<InterfaceUser, InterfaceTagUser>(
+    newArgs,
+    allUserObjects,
+    (userTag) => userTag.userId
+  );
 };
