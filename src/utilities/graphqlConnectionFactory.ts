@@ -7,6 +7,7 @@ import {
   CursorPaginationArgsType,
 } from "../libraries/validators/validatePaginationArgs";
 import { Model, FilterQuery, Types } from "mongoose";
+import { after } from "lodash";
 
 interface InterfaceConnectionEdge<T> {
   cursor: string;
@@ -106,28 +107,9 @@ function getFilterQuery<U extends InterfaceMongooseObject>(
   return finalFilterQuery;
 }
 
-// Generates the limit that can should be passed in the .limit() method
-const getLimit = (args: CursorPaginationArgsType) => {
-  // We always fetch 1 object more than the limit (args.first/args.last) so that we can use that to get the information about hasNextPage / hasPreviousPage
-  // When args.after / args.before is supplied, we fetch 1 more object so as validate the cursor as well
-  if (args.first) return args.after ? args.first + 2 : args.first + 1;
-  if (args.last) return args.before ? args.last + 2 : args.last + 1;
-};
 
-// Generates the sortingObject that can be passed in the .sort() method
-function getSortingObject(
-  args: CursorPaginationArgsType,
-  sortingObject: { [key: string]: number }
-) {
-  // We assume that the resolver would always be written with respect to the sorting that needs to be implemented for forward pagination
-  if (args.first) return sortingObject;
 
-  // If we are paginating backwards, then we must reverse the order of all fields that are being sorted by.
-  for (const [key, value] of Object.entries(sortingObject)) {
-    sortingObject[key] = value * -1;
-  }
-  return sortingObject;
-}
+
 
 /*
 This is a function which generates a GraphQL cursor pagination resolver based on the requirements of the client.
@@ -171,16 +153,6 @@ export async function createGraphQLConnection<
   fieldsToPopulate: string | null,
   getNodeFromResult: GetNodeFromResultFnType<T, U>
 ): Promise<InterfaceConnectionResult<T>> {
-  // Check that the provided arguments must either be correct forward pagination
-  // arguments or correct backward pagination arguments
-  const connectionErrors = validatePaginationArgs(args);
-
-  if (connectionErrors.length !== 0) {
-    return {
-      connectionData: null,
-      connectionErrors,
-    };
-  }
 
   // Initialize the object list and the connection object
   let allFetchedObjects: U[] | null;
@@ -192,12 +164,7 @@ export async function createGraphQLConnection<
 
   // Fetch the objects
   if (fieldsToPopulate) {
-    allFetchedObjects = await databaseModel
-      .find(connectionFilterQuery as FilterQuery<U>)
-      .sort(connectionSortingObject)
-      .limit(connectionLimit)
-      .populate(fieldsToPopulate)
-      .lean();
+    allFetchedObjects = 
   } else {
     allFetchedObjects = await databaseModel
       .find(connectionFilterQuery as FilterQuery<U>)
@@ -271,4 +238,51 @@ export async function createGraphQLConnection<
     connectionData: connectionObject,
     connectionErrors: null,
   };
+}
+
+// A custom type for easier implementation of the business logic of the connection factory
+export type ConnectionArguments = {
+  cursor: string | null | undefined;
+  direction: "BACKWARD" | "FORWARD";
+  limit: number;
+};
+
+// Utility to convert the recieved arguments to the ConnetionArguments type
+export const transformArguments = (
+  args: CursorPaginationArgsType
+): ConnectionArguments => {
+  const transformedArgs: ConnectionArguments = {
+    cursor: undefined,
+    direction: args.first ? "FORWARD" : "BACKWARD",
+    limit: args.first | args.last,
+  };
+
+  if (args.after) transformedArgs.cursor = args.after;
+  else if (args.before) transformedArgs.cursor = args.before;
+
+  return transformedArgs;
+};
+
+// Generates the limit that can should be passed in the .limit() method
+export const getLimit = (args: ConnectionArguments) => {
+  // We always fetch 1 object more than  args.limit 
+  // so that we can use that to get the information about hasNextPage / hasPreviousPage
+  // When args.cursor is supplied, we fetch 1 more object so as validate the cursor as well
+  return args.cursor ? args.limit + 2 : args.limit + 1;
+};
+
+// Generates the sortingObject that can be passed in the .sort() method
+export const getSortingObject = (
+  args: ConnectionArguments,
+  sortingObject: { [key: string]: number }
+) => {
+  // We assume that the resolver would always be written with respect to the sorting that needs to be implemented for forward pagination
+  if (args.direction === "FORWARD") return sortingObject;
+
+  // If we are paginating backwards, then we must reverse the order of all fields that are being sorted by.
+  for (const [key, value] of Object.entries(sortingObject)) {
+    sortingObject[key] = value * -1;
+  }
+
+  return sortingObject;
 }
