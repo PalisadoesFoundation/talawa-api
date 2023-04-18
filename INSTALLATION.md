@@ -29,15 +29,21 @@ This document provides instructions on how to set up and start a running instanc
   - [Setting up .env LAST\_RESORT\_SUPERADMIN\_EMAIL parameter](#setting-up-env-last_resort_superadmin_email-parameter)
   - [Configuring Google ReCAPTCHA](#configuring-google-recaptcha)
     - [Setting up RECAPTCHA\_SECRET\_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
-    - [Setting up .env MAIL\_USERNAME and MAIL\_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters) 
+    - [Setting up .env MAIL\_USERNAME and MAIL\_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
     - [Setting up .env SMTP Variables](#setting-up-env-smtp-variables)
-  - [Setting up Logger configurations (optional)](#setting-up-logger-configurations-optional)
-    - [Setting up COLORIZE_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
-    - [Setting up LOG_LEVEL in .env file](#setting-up-log_level-in-env-file) 
+  - [Setting up Logger configurations *(optional)*](#setting-up-logger-configurations-optional)
+    - [Setting up COLORIZE\_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
+    - [Setting up LOG\_LEVEL in .env file](#setting-up-log_level-in-env-file)
   - [Configuring Google Firebase](#configuring-google-firebase)
     - [Generate Firebase Keys for the Talawa Notification Service](#generate-firebase-keys-for-the-talawa-notification-service)
     - [(Mobile Developers Only) Applying the Firebase Keys to the Talawa Mobile App](#mobile-developers-only-applying-the-firebase-keys-to-the-talawa-mobile-app)
 - [Importing Sample Database](#importing-sample-database)
+  - [Syntax:](#syntax)
+  - [Examples:](#examples)
+  - [Sample Data Overview:](#sample-data-overview)
+    - [User Accounts and Organizations:](#user-accounts-and-organizations)
+    - [Posts](#posts)
+    - [Events](#events)
 - [Running Talawa-API](#running-talawa-api)
 - [How to Access the Talawa-API URL](#how-to-access-the-talawa-api-url)
   - [For Talawa-API Developers](#for-talawa-api-developers)
@@ -440,19 +446,19 @@ The sample data contains organizations, users, events and posts. Here are the de
 
 | Email                 | Password | User Type  | Joined Organization | Admin For           |
 |-----------------------|----------|------------|---------------------|---------------------|
-| testuser1@gmail.com   | Pass@123 | USER       | Test Organization 2 | None                |
-| testuser2@gmail.com   | Pass@123 | USER       | Test Organization 2 | None                |
-| testuser3@gmail.com   | Pass@123 | USER       | Test Organization 2 | None                |
-| testadmin1@gmail.com  | Pass@123 | ADMIN      | Test Organization 2 | Test Organization 2 |
-| testadmin2@gmail.com  | Pass@123 | ADMIN      | Test Organization 3 | Test Organization 3 |
-| testadmin3@gmail.com  | Pass@123 | ADMIN      | Test Organization 4 | Test Organization 4 |
-| testsuperadmin@gmail.com  | Pass@123 | SUPERADMIN      | Test Organization 1 | ALL |
+| testuser1@example.com   | Pass@123 | USER       | Angel Foundation | None                |
+| testuser2@example.com   | Pass@123 | USER       | Angel Foundation | None                |
+| testuser3@example.com   | Pass@123 | USER       | Angel Foundation | None                |
+| testadmin1@example.com  | Pass@123 | ADMIN      | Angel Foundation | Angel Foundation |
+| testadmin2@example.com  | Pass@123 | ADMIN      | Hope Foundation | Hope Foundation |
+| testadmin3@example.com  | Pass@123 | ADMIN      | Dignity Foundation | Dignity Foundation |
+| testsuperadmin@example.com  | Pass@123 | SUPERADMIN      | The Unity Foundation | ALL |
 
 ### Posts
-There is one post inside the ```Test Organization 1```
+There is one post inside the ```The Unity Foundation```
 
 ### Events
-There is one event inside the ```Test Organization 1
+There is one event inside the ```The Unity Foundation```
 
 # Running Talawa-API
 

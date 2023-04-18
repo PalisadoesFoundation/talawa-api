@@ -6,8 +6,8 @@
     "admins": ["64378abd85008f171cf2990d"],
     "tasks": [],
     "status": "ACTIVE",
-    "title": "Test Event",
-    "description": "Test Description for Test Post",
+    "title": "Children Day Celebration",
+    "description": "There would be a children day celebration at the town hall. The refreshments would be distributed, and several speakers are invited to deliver a impactful session.",
     "startDate": "2023-04-13T00:00:00.000Z",
     "endDate": "2023-04-13T00:00:00.000Z",
     "startTime": null,
@@ -15,7 +15,7 @@
     "allDay": true,
     "isPublic": true,
     "isRegisterable": true,
-    "location": "Test Location",
+    "location": "Port Antonio",
     "creator": "64378abd85008f171cf2990d",
     "registrants": [
       {
