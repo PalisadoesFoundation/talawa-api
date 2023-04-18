@@ -41,7 +41,7 @@ export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
 
   // Boolean to determine whether user is an admin of organization of the tag.
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) => organization.toString() === tag?.organizationId.toString()
+    (organization) => organization.equals(tag?.organizationId)
   );
 
   // Checks whether currentUser can assign the tag or not.

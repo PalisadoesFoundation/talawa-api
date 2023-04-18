@@ -44,8 +44,7 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
 
   // Check if the user has privileges to create the tag
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organizationId) =>
-      organizationId.toString() === args.input.organizationId.toString()
+    (organizationId) => organizationId.equals(args.input.organizationId)
   );
 
   if (

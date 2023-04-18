@@ -154,8 +154,8 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
       _id: testPost?.id,
     }).lean();
 
-    const currentPostIsPinned = organization?.pinnedPosts.some(
-      (p) => p.toString() === args.id.toString()
+    const currentPostIsPinned = organization?.pinnedPosts.some((p) =>
+      p.equals(args.id)
     );
 
     expect(currentPostIsPinned).toBeTruthy();
@@ -189,8 +189,8 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
       _id: testPost?.id,
     }).lean();
 
-    const currentPostIsPinned = organization?.pinnedPosts.some(
-      (p) => p.toString() === args.id.toString()
+    const currentPostIsPinned = organization?.pinnedPosts.some((p) =>
+      p.equals(args.id)
     );
 
     expect(currentPostIsPinned).toBeFalsy();

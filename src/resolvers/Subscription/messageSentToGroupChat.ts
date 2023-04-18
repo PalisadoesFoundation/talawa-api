@@ -16,8 +16,8 @@ export const filterFunction = async function (
   }).lean();
 
   if (groupChat) {
-    const currentUserIsGroupChatMember = groupChat.users.some(
-      (user) => user.toString() === currentUserId.toString()
+    const currentUserIsGroupChatMember = groupChat.users.some((user) =>
+      user.equals(currentUserId)
     );
     return currentUserIsGroupChatMember;
   } else {

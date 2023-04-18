@@ -60,13 +60,11 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   }
 
   const userCreatedOrganization = currentUser.createdOrganizations.some(
-    (createdOrganization) =>
-      createdOrganization.toString() === organization._id.toString()
+    (createdOrganization) => createdOrganization.equals(organization._id)
   );
 
   const userJoinedOrganization = currentUser.joinedOrganizations.some(
-    (joinedOrganization) =>
-      joinedOrganization.toString() === organization._id.toString()
+    (joinedOrganization) => joinedOrganization.equals(organization._id)
   );
 
   // Checks whether currentUser neither created nor joined the organization.

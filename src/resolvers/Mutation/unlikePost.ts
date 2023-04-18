@@ -41,8 +41,8 @@ export const unlikePost: MutationResolvers["unlikePost"] = async (
     );
   }
 
-  const currentUserHasLikedPost = post.likedBy.some(
-    (liker) => liker.toString() === context.userId.toString()
+  const currentUserHasLikedPost = post.likedBy.some((liker) =>
+    liker.equals(context.userId)
   );
 
   if (currentUserHasLikedPost === true) {
