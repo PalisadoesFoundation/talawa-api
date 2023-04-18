@@ -21,14 +21,9 @@ export const updateUserPassword: MutationResolvers["updateUserPassword"] =
       );
     }
 
-    const previousPassword =
-      args.data?.previousPassword != null ? args.data?.previousPassword : "";
-    const newPassword =
-      args.data?.newPassword != null ? args.data?.newPassword : "";
-    const confirmNewPassword =
-      args.data?.confirmNewPassword != null
-        ? args.data?.confirmNewPassword
-        : "";
+    const previousPassword = args.data?.previousPassword ?? "";
+    const newPassword = args.data?.newPassword ?? "";
+    const confirmNewPassword = args.data?.confirmNewPassword ?? "";
 
     const isPasswordValid = await bcrypt.compare(
       previousPassword,

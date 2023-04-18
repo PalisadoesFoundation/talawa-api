@@ -58,23 +58,25 @@ export const createPost: MutationResolvers["createPost"] = async (
   }
 
   // Checks if the recieved arguments are valid according to standard input norms
-  const validationResult_Title = isValidString(args.data?.title ?? "", 256);
-  const validationResult_Text = isValidString(args.data?.text ?? "", 500);
-  if (!validationResult_Title.isLessThanMaxLength) {
-    throw new errors.InputValidationError(
-      requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
-      ),
-      LENGTH_VALIDATION_ERROR.CODE
-    );
-  }
-  if (!validationResult_Text.isLessThanMaxLength) {
-    throw new errors.InputValidationError(
-      requestContext.translate(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
-      ),
-      LENGTH_VALIDATION_ERROR.CODE
-    );
+  if (args.data?.title && args.data?.text) {
+    const validationResult_Title = isValidString(args.data?.title, 256);
+    const validationResult_Text = isValidString(args.data?.text, 500);
+    if (!validationResult_Title.isLessThanMaxLength) {
+      throw new errors.InputValidationError(
+        requestContext.translate(
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
+        ),
+        LENGTH_VALIDATION_ERROR.CODE
+      );
+    }
+    if (!validationResult_Text.isLessThanMaxLength) {
+      throw new errors.InputValidationError(
+        requestContext.translate(
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
+        ),
+        LENGTH_VALIDATION_ERROR.CODE
+      );
+    }
   }
 
   if (args.data.pinned) {
@@ -82,16 +84,17 @@ export const createPost: MutationResolvers["createPost"] = async (
     const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
       (organizationId) => organizationId.toString() === args.data.organizationId
     );
-
-    if (
-      !((currentUser?.userType ?? "") === "SUPERADMIN") &&
-      !currentUserIsOrganizationAdmin
-    ) {
-      throw new errors.UnauthorizedError(
-        requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE),
-        USER_NOT_AUTHORIZED_TO_PIN.CODE,
-        USER_NOT_AUTHORIZED_TO_PIN.PARAM
-      );
+    if (currentUser?.userType) {
+      if (
+        !(currentUser?.userType === "SUPERADMIN") &&
+        !currentUserIsOrganizationAdmin
+      ) {
+        throw new errors.UnauthorizedError(
+          requestContext.translate(USER_NOT_AUTHORIZED_TO_PIN.MESSAGE),
+          USER_NOT_AUTHORIZED_TO_PIN.CODE,
+          USER_NOT_AUTHORIZED_TO_PIN.PARAM
+        );
+      }
     }
   }
 
