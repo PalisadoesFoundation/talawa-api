@@ -53,7 +53,7 @@ export const removeComment: MutationResolvers["removeComment"] = async (
   }
 
   const isCurrentUserAdminOfOrganization = currentUser.adminFor.some(
-    (organization) => organization.equalsTo(comment.postId.organization)
+    (organization) => organization.equals(comment.postId.organization)
   );
 
   // Checks whether currentUser with _id === context.userId has the authorization to delete the comment
