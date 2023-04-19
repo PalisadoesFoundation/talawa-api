@@ -29,14 +29,21 @@ This document provides instructions on how to set up and start a running instanc
   - [Setting up .env LAST\_RESORT\_SUPERADMIN\_EMAIL parameter](#setting-up-env-last_resort_superadmin_email-parameter)
   - [Configuring Google ReCAPTCHA](#configuring-google-recaptcha)
     - [Setting up RECAPTCHA\_SECRET\_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
-    - [Setting up .env MAIL\_USERNAME and MAIL\_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters) 
+    - [Setting up .env MAIL\_USERNAME and MAIL\_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
     - [Setting up .env SMTP Variables](#setting-up-env-smtp-variables)
-  - [Setting up Logger configurations (optional)](#setting-up-logger-configurations-optional)
-    - [Setting up COLORIZE_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
-    - [Setting up LOG_LEVEL in .env file](#setting-up-log_level-in-env-file) 
+  - [Setting up Logger configurations *(optional)*](#setting-up-logger-configurations-optional)
+    - [Setting up COLORIZE\_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
+    - [Setting up LOG\_LEVEL in .env file](#setting-up-log_level-in-env-file)
   - [Configuring Google Firebase](#configuring-google-firebase)
     - [Generate Firebase Keys for the Talawa Notification Service](#generate-firebase-keys-for-the-talawa-notification-service)
     - [(Mobile Developers Only) Applying the Firebase Keys to the Talawa Mobile App](#mobile-developers-only-applying-the-firebase-keys-to-the-talawa-mobile-app)
+- [Importing Sample Database](#importing-sample-database)
+  - [Syntax:](#syntax)
+  - [Examples:](#examples)
+  - [Sample Data Overview:](#sample-data-overview)
+    - [User Accounts and Organizations:](#user-accounts-and-organizations)
+    - [Posts](#posts)
+    - [Events](#events)
 - [Running Talawa-API](#running-talawa-api)
 - [How to Access the Talawa-API URL](#how-to-access-the-talawa-api-url)
   - [For Talawa-API Developers](#for-talawa-api-developers)
@@ -405,6 +412,53 @@ The key generated in the previous step is in a format suitable for use in a mobi
                  iosBundleId: 'com.example.talawa',
 
 1.  Undo the changes made to the `firebase_options.dart` file by overwriting it with the version you saved at the beginning of this section.
+
+# Importing Sample Database
+
+Talawa API contains a sample database importing function which can be used to import sample database.
+
+## Syntax:
+
+```npm run import:sample-data -- [args]```
+
+You can pass the following arguments while running this script.
+
+- ```--format```: Cleans the database before import. **Add this flag with caution. It will delete all of the existing data inside the talawa database.**
+- ```--items=```: Specify the items to add.
+    - Following ```items``` can be specified, separated with a comma ```,```
+        - ```users```: For users collection
+        - ```organizations```: For organizations collection
+        - ```events```: For events collection
+        - ```posts```: For posts collection
+
+## Examples:
+
+- ```npm run import:sample-data```: This command will import the complete sample database without removing the existing data.
+- ```npm run import:sample-data -- --format```: This command will import the complete sample database after removing the existing data.
+- ```npm run import:sample-data -- --format --items=users,organizations```: This command will import the sample ```users``` and ```organizations``` collections after cleaning the existing data.
+- ```npm run import:sample-data --  --items=users,organizations```: This command will import the sample ```users``` and ```organizations``` collections without cleaning the existing data.
+
+## Sample Data Overview:
+
+The sample data contains organizations, users, events and posts. Here are the details for each of organizations and user account.
+
+### User Accounts and Organizations:
+
+| Email                 | Password | User Type  | Joined Organization | Admin For           |
+|-----------------------|----------|------------|---------------------|---------------------|
+| testuser1@example.com   | Pass@123 | USER       | Angel Foundation | None                |
+| testuser2@example.com   | Pass@123 | USER       | Angel Foundation | None                |
+| testuser3@example.com   | Pass@123 | USER       | Angel Foundation | None                |
+| testadmin1@example.com  | Pass@123 | ADMIN      | Angel Foundation | Angel Foundation |
+| testadmin2@example.com  | Pass@123 | ADMIN      | Hope Foundation | Hope Foundation |
+| testadmin3@example.com  | Pass@123 | ADMIN      | Dignity Foundation | Dignity Foundation |
+| testsuperadmin@example.com  | Pass@123 | SUPERADMIN      | The Unity Foundation | ALL |
+
+### Posts
+There is one post inside the ```The Unity Foundation```
+
+### Events
+There is one event inside the ```The Unity Foundation```
 
 # Running Talawa-API
 
