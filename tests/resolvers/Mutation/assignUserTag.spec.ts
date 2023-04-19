@@ -87,7 +87,7 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
       const args: MutationAssignUserTagArgs = {
         input: {
           userId: Types.ObjectId().toString(),
-          tagId: testTag?._id.toString() || "",
+          tagId: testTag?._id.toString() ?? "",
         },
       };
 
@@ -147,7 +147,7 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
       const args: MutationAssignUserTagArgs = {
         input: {
           userId: adminUser?._id,
-          tagId: testTag?._id.toString() || "",
+          tagId: testTag?._id.toString() ?? "",
         },
       };
 
@@ -181,7 +181,7 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
       const args: MutationAssignUserTagArgs = {
         input: {
           userId: randomUser?._id,
-          tagId: testTag?._id.toString() || "",
+          tagId: testTag?._id.toString() ?? "",
         },
       };
 
@@ -208,7 +208,7 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
     const args: MutationAssignUserTagArgs = {
       input: {
         userId: adminUser?._id,
-        tagId: testTag?._id.toString() || "",
+        tagId: testTag?._id.toString() ?? "",
       },
     };
     const context = {
@@ -241,7 +241,7 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
       const args: MutationAssignUserTagArgs = {
         input: {
           userId: adminUser?._id,
-          tagId: testTag?._id.toString() || "",
+          tagId: testTag?._id.toString() ?? "",
         },
       };
       const context = {

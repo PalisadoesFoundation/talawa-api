@@ -29,8 +29,8 @@ export const post: QueryResolvers["post"] = async (_parent, args) => {
     );
   }
 
-  post.likeCount = post.likedBy.length || 0;
-  post.commentCount = post.comments.length || 0;
+  post.likeCount = post.likedBy.length ?? 0;
+  post.commentCount = post.comments.length ?? 0;
 
   return post;
 };

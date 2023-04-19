@@ -52,8 +52,8 @@ export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationC
     );
 
     const posts = postsmodel.docs.map((post) => {
-      post.likeCount = post.likedBy.length || 0;
-      post.commentCount = post.comments.length || 0;
+      post.likeCount = post.likedBy.length ?? 0;
+      post.commentCount = post.comments.length ?? 0;
       post.imageUrl = post.imageUrl
         ? `${context.apiRootUrl}${post.imageUrl}`
         : null;

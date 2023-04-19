@@ -138,9 +138,9 @@ const apolloServer = new ApolloServer({
     if (!error.originalError) {
       return error;
     }
-    const message = error.message || "Something went wrong !";
-    const data = error.originalError.errors || [];
-    const code = error.originalError.code || 422;
+    const message = error.message ?? "Something went wrong !";
+    const data = error.originalError.errors ?? [];
+    const code = error.originalError.code ?? 422;
     logger.error(message, error);
     return {
       message,
