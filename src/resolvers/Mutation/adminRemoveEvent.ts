@@ -26,7 +26,9 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
 ) => {
   const event = await Event.findOne({
     _id: args.eventId,
-  }).lean();
+  })
+    .select({ organization: true })
+    .lean();
 
   // Checks whether event exists.
   if (!event) {
@@ -75,17 +77,10 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
       _id: currentUser._id,
     },
     {
-      $set: {
-        eventAdmin: currentUser.eventAdmin.filter(
-          (adminForEvent) => adminForEvent.toString() !== event?._id.toString()
-        ),
-        createdEvents: currentUser.createdEvents.filter(
-          (createdEvent) => createdEvent.toString() !== event?._id.toString()
-        ),
-        registeredEvents: currentUser.registeredEvents.filter(
-          (registeredEvent) =>
-            registeredEvent.toString() !== event?._id.toString()
-        ),
+      $pull: {
+        eventAdmin: event._id,
+        createdEvents: event._id,
+        registeredEvents: event._id,
       },
     }
   );
