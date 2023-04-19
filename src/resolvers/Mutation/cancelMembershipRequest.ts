@@ -23,7 +23,9 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
   async (_parent, args, context) => {
     const membershipRequest = await MembershipRequest.findOne({
       _id: args.membershipRequestId,
-    }).lean();
+    })
+      .select({ organization: true, user: true })
+      .lean();
 
     // Checks whether membershipRequest exists.
     if (!membershipRequest) {
@@ -33,10 +35,10 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
         MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM
       );
     }
-
-    const organization = await Organization.findOne({
-      _id: membershipRequest.organization,
-    }).lean();
+    const [organization, currentUser] = await Promise.all([
+      Organization.findOne({ _id: membershipRequest.organization }).lean(),
+      User.findOne({ _id: context.userId }).lean(),
+    ]);
 
     // Checks whether organization exists.
     if (!organization) {
@@ -47,10 +49,6 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       );
     }
 
-    const currentUser = await User.findOne({
-      _id: context.userId,
-    }).lean();
-
     // Checks whether currentUser exists.
     if (!currentUser) {
       throw new errors.NotFoundError(
@@ -60,11 +58,8 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       );
     }
 
-    const currentUserCreatedMembershipRequest =
-      currentUser._id.toString() === membershipRequest.user.toString();
-
     // Checks whether currentUser is the creator of membershipRequest.
-    if (currentUserCreatedMembershipRequest === false) {
+    if (!(currentUser._id.toString() === membershipRequest.user.toString())) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
@@ -72,38 +67,36 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       );
     }
 
-    // Deletes the membershipRequest.
-    await MembershipRequest.deleteOne({
-      _id: membershipRequest._id,
-    });
-
-    // Removes membershipRequest._id from membershipRequests list on organization's document.
-    await Organization.updateOne(
-      {
-        _id: organization._id,
-      },
-      {
-        $set: {
-          membershipRequests: organization.membershipRequests.filter(
-            (request) => request.toString() !== membershipRequest._id.toString()
-          ),
+    const promises = [
+      // Deletes the membershipRequest.
+      await MembershipRequest.deleteOne({
+        _id: membershipRequest._id,
+      }),
+      // Removes membershipRequest._id from membershipRequests list on organization's document.
+      await Organization.updateMany(
+        {
+          _id: organization._id,
         },
-      }
-    );
-
-    // Removes membershipRequest._id from membershipRequests list on currentUser's document.
-    await User.updateOne(
-      {
-        _id: currentUser._id,
-      },
-      {
-        $set: {
-          membershipRequests: currentUser.membershipRequests.filter(
-            (request) => request.toString() !== membershipRequest._id.toString()
-          ),
+        {
+          $pull: {
+            membershipRequests: membershipRequest._id,
+          },
+        }
+      ),
+      // Removes membershipRequest._id from membershipRequests list on currentUser's document.
+      await User.updateOne(
+        {
+          _id: currentUser._id,
         },
-      }
-    );
+        {
+          $pull: {
+            membershipRequests: membershipRequest._id,
+          },
+        }
+      ),
+    ];
+
+    await Promise.allSettled(promises);
 
     // Returns the deleted membershipRequest.
     return membershipRequest;
