@@ -142,7 +142,7 @@ export function generateConnectionObject<
   // Handling the case when the cursor is provided
   if (args.cursor) {
     // Validate the cursor
-    if (allFetchedObjects[0]._id.toString() !== args.cursor.toString()) {
+    if (allFetchedObjects[0]._id.toString() !== args.cursor) {
       return {
         connectionData: null,
         connectionErrors: [
@@ -150,7 +150,7 @@ export function generateConnectionObject<
             __typename: "IncorrectCursor",
             message:
               "The provided after cursor does not exist in the database.",
-            path: args.direction === "BACKWARD" ? "after" : "before",
+            path: args.direction === "FORWARD" ? "after" : "before",
           },
         ],
       };
@@ -159,14 +159,19 @@ export function generateConnectionObject<
     // Remove the first object which was compared to the cursor in the previous step
     allFetchedObjects!.shift();
     // Populate the relevant pageInfo fields
-    connectionObject.pageInfo.hasPreviousPage = true;
+    if (args.direction === "FORWARD")
+      connectionObject.pageInfo.hasPreviousPage = true;
+    else connectionObject.pageInfo.hasNextPage = true;
   }
 
   // Populate the page pointer variable
   if (allFetchedObjects!.length === args.limit + 1) {
-    connectionObject.pageInfo.hasNextPage = true;
+    if (args.direction === "FORWARD")
+      connectionObject.pageInfo.hasNextPage = true;
+    else connectionObject.pageInfo.hasPreviousPage = true;
     allFetchedObjects!.pop();
   }
+
   // Reverse the order of the fetched objects in backward pagination,
   // as according to the Relay Specification, the order of
   // returned objects must always be ascending on the basis of the cursor used
