@@ -28,6 +28,8 @@ import { InterfaceJwtTokenPayload } from "./utilities";
 import { ACCESS_TOKEN_SECRET, LAST_RESORT_SUPERADMIN_EMAIL } from "./constants";
 import { User } from "./models";
 import { express as voyagerMiddleware } from "graphql-voyager/middleware";
+import { generateErrorMessage } from "zod-error";
+import { getEnvIssues } from "./env";
 
 const app = express();
 
@@ -96,6 +98,22 @@ app.get("/", (req, res) =>
 );
 
 const httpServer = http.createServer(app);
+
+// Validating the env variables
+const issues = getEnvIssues();
+if (issues) {
+  console.error(
+    "Invalid environment variables found in your .env file, check the errors below!"
+  );
+  console.error(
+    generateErrorMessage(issues, {
+      delimiter: { error: "\\n" },
+    })
+  );
+  process.exit(-1);
+}
+
+logger.info("The environment variables are valid!");
 
 const apolloServer = new ApolloServer({
   typeDefs,
