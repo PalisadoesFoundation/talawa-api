@@ -6,9 +6,7 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
   MEMBER_NOT_FOUND_ERROR,
-  USER_REMOVING_SELF,
   ADMIN_REMOVING_ADMIN,
-  ADMIN_REMOVING_CREATOR,
 } from "../../constants";
 /**
  * This function enables to remove a member.
@@ -39,10 +37,6 @@ export const createMember: MutationResolvers["createMember"] = async (
       ORGANIZATION_NOT_FOUND_ERROR.PARAM
     );
   }
-
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  });
 
   // Checks whether current user making the request is an admin of organization.
   await adminCheck(context.userId, organization!);
