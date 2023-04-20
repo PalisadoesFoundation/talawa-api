@@ -91,6 +91,10 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
     },
     {
       $set: {
+        joinedOrganizations: user.joinedOrganizations.filter(
+          (joinedOrganization) =>
+            joinedOrganization.toString() !== organization._id.toString()
+        ),
         adminFor: user.adminFor.filter(
           (adminForOrganization) =>
             adminForOrganization.toString() !== organization._id.toString()

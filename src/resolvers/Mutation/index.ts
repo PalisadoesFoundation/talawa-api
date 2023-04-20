@@ -11,6 +11,7 @@ import { assignUserTag } from "./assignUserTag";
 import { blockPluginCreationBySuperadmin } from "./blockPluginCreationBySuperadmin";
 import { blockUser } from "./blockUser";
 import { cancelMembershipRequest } from "./cancelMembershipRequest";
+import { createMember } from "./createMember";
 import { createAdmin } from "./createAdmin";
 import { createComment } from "./createComment";
 import { createDirectChat } from "./createDirectChat";
@@ -87,6 +88,7 @@ export const Mutation: MutationResolvers = {
   blockPluginCreationBySuperadmin,
   blockUser,
   cancelMembershipRequest,
+  createMember,
   createAdmin,
   createComment,
   createDirectChat,
