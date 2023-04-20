@@ -167,7 +167,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
       context
     );
 
-    expect(adminRemoveEventPayload?._id).toEqual(testEvent!._id);
+    expect(adminRemoveEventPayload).toEqual(testEvent!.toObject());
 
     const testUpdatedUser = await User.findOne({
       _id: testUser!._id,
