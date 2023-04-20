@@ -12,7 +12,6 @@ export const post: QueryResolvers["post"] = async (_parent, args) => {
   const post = await Post.findOne({ _id: args.id })
     .populate("organization")
     .populate("likedBy")
-    .populate("creator", "-password")
     .lean();
 
   if (!post) {

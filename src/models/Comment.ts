@@ -19,7 +19,7 @@ export interface InterfaceComment {
  * @param text - Text
  * @param createdAt - Date when the comment was created
  * @param creator - Creator of the comment
- * @param postId - The post on which the comment is created
+ * @param postId - Id of the post on which this comment is created
  * @param likedBy - Liked by whom
  * @param likeCount - No of likes
  * @param status - whether the comment is active, blocked or deleted.

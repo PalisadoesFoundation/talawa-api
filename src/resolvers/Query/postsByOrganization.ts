@@ -20,7 +20,6 @@ export const postsByOrganization: QueryResolvers["postsByOrganization"] =
       .sort(sort)
       .populate("organization")
       .populate("likedBy")
-      .populate("creator", "-password")
       .lean();
 
     const postsWithImageURLResolved = postsInOrg.map((post) => ({

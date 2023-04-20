@@ -31,9 +31,11 @@ describe("resolvers -> Post -> creator", () => {
 
     const creatorPayload = await creatorResolver?.(parent, {}, {});
 
-    const creatorObject = await User.find({
+    const creatorObject = await User.findOne({
       _id: testPost!.creator,
-    }).lean();
+    })
+      .select(["-password"])
+      .lean();
 
     expect(creatorPayload).toEqual(creatorObject);
   });

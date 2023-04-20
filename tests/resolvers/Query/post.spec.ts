@@ -43,7 +43,6 @@ describe("resolvers -> Query -> post", () => {
     const post = await Post.findOne({ _id: testPost?._id })
       .populate("organization")
       .populate("likedBy")
-      .populate("creator", "-password")
       .lean();
 
     expect(postPayload).toEqual(post);
