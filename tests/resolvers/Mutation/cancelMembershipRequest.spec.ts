@@ -163,8 +163,8 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
     const cancelMembershipRequestPayload =
       await cancelMembershipRequestResolver?.({}, args, context);
 
-    expect(cancelMembershipRequestPayload?._id).toEqual(
-      testMembershipRequest!._id
+    expect(cancelMembershipRequestPayload).toEqual(
+      testMembershipRequest!.toObject()
     );
 
     const testUpdatedUser = await User.findOne({

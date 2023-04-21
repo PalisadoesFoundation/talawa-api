@@ -23,9 +23,7 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
   async (_parent, args, context) => {
     const membershipRequest = await MembershipRequest.findOne({
       _id: args.membershipRequestId,
-    })
-      .select({ organization: true, user: true })
-      .lean();
+    }).lean();
 
     // Checks whether membershipRequest exists.
     if (!membershipRequest) {
