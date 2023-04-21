@@ -93,7 +93,7 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
         }
       ),
     ];
-
+    // Resolve the promises
     await Promise.allSettled(promises);
 
     // Returns the deleted membershipRequest.
