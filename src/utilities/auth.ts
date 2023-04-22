@@ -15,7 +15,7 @@ export interface InterfaceJwtTokenPayload {
  * @param user - User data
  * @returns JSON Web Token string payload
  */
-export const createAccessToken = async (user: InterfaceUser) => {
+export const createAccessToken = (user: InterfaceUser) => {
   return jwt.sign(
     {
       tokenVersion: user.tokenVersion,
@@ -31,7 +31,7 @@ export const createAccessToken = async (user: InterfaceUser) => {
   );
 };
 
-export const createRefreshToken = async (user: InterfaceUser) => {
+export const createRefreshToken = (user: InterfaceUser) => {
   return jwt.sign(
     {
       tokenVersion: user.tokenVersion,

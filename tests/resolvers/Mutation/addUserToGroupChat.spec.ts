@@ -44,7 +44,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> addUserToGroupChat", () => {
-  afterEach(async () => {
+  afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });

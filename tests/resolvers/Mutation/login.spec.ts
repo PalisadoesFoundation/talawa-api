@@ -78,7 +78,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> login", () => {
-  afterEach(async () => {
+  afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
