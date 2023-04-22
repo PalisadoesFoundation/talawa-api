@@ -642,7 +642,7 @@
 </tr>
 <tr>
 <td colspan="2" valign="top"><strong>adminRemoveGroup</strong></td>
-<td valign="top"><a href="#message">Message</a>!</td>
+<td valign="top"><a href="#groupchat">GroupChat</a>!</td>
 <td></td>
 </tr>
 <tr>
