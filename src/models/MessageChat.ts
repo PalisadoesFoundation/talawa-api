@@ -46,9 +46,9 @@ const messageChatSchema = new Schema({
   },
 });
 
-const MessageChatModel = () =>
+const messageChatModel = () =>
   model<InterfaceMessageChat>("MessageChat", messageChatSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const MessageChat = (models.MessageChat ||
-  MessageChatModel()) as ReturnType<typeof MessageChatModel>;
+  messageChatModel()) as ReturnType<typeof messageChatModel>;

@@ -62,9 +62,9 @@ const eventProjectSchema = new Schema({
   },
 });
 
-const EventProjectModel = () =>
+const eventProjectModel = () =>
   model<InterfaceEventProject>("EventProject", eventProjectSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const EventProject = (models.EventProject ||
-  EventProjectModel()) as ReturnType<typeof EventProjectModel>;
+  eventProjectModel()) as ReturnType<typeof eventProjectModel>;

@@ -63,12 +63,8 @@
 
     // Typescript rule to enforce PascalCase naming convention for types and interfaces
     "@typescript-eslint/naming-convention": [
-      "off",
+      "error",
       // Interfaces must begin with Interface or TestInterface followed by a PascalCase name
-      {
-        "selector": "default",
-        "format": ["camelCase"]
-      },
       {
         "selector": "interface",
         "format": ["PascalCase"],
@@ -76,21 +72,19 @@
       },
       // Type Aliases must be in PascalCase
       {
-        "selector": "typeAlias",
+        "selector": ["typeAlias", "typeLike", "enum"],
         "format": ["PascalCase"]
       },
-      { "selector": "typeLike", "format": ["PascalCase"] },
       {
         "selector": "typeParameter",
         "format": ["PascalCase"],
         "prefix": ["T"]
       },
       {
-        "selector": "enum",
-        "format": ["PascalCase"]
+        "selector": "variable",
+        "format": ["camelCase", "UPPER_CASE"],
+        "leadingUnderscore": "allow"
       },
-      { "selector": "variableLike", "format": ["camelCase"] },
-      { "selector": "variable", "format": ["camelCase", "UPPER_CASE"] },
       {
         "selector": "parameter",
         "format": ["camelCase"],
@@ -98,18 +92,15 @@
       },
       {
         "selector": "function",
-        "format": ["camelCase"],
-        "custom": {
-          "match": true,
-          "regex": "^[create|retrieve|search|delete]"
-        }
+        "format": ["camelCase"]
       },
       {
         "selector": "memberLike",
         "modifiers": ["private"],
         "format": ["camelCase"],
         "leadingUnderscore": "require"
-      }
+      },
+      { "selector": "variable", "modifiers": ["exported"], "format": null }
     ],
 
     // Typescript additional rules
@@ -125,10 +116,5 @@
         "variableDeclaration": true
       }
     ]
-    // "no-return-await": "off",
-    // "@typescript-eslint/return-await": "error",
-    // "@typescript-eslint/consistent-type-exports": "error",
-    // "@typescript-eslint/unbound-method": "error",
-    // "@typescript-eslint/no-floating-promises": "error"
   }
 }

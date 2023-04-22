@@ -53,9 +53,9 @@ const groupSchema = new Schema({
   ],
 });
 
-const GroupModel = () => model<InterfaceGroup>("Group", groupSchema);
+const groupModel = () => model<InterfaceGroup>("Group", groupSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const Group = (models.Group || GroupModel()) as ReturnType<
-  typeof GroupModel
+export const Group = (models.Group || groupModel()) as ReturnType<
+  typeof groupModel
 >;

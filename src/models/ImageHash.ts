@@ -38,10 +38,10 @@ const imageHashSchema = new Schema({
   },
 });
 
-const ImageHashModel = () =>
+const imageHashModel = () =>
   model<InterfaceImageHash>("ImageHash", imageHashSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const ImageHash = (models.ImageHash || ImageHashModel()) as ReturnType<
-  typeof ImageHashModel
+export const ImageHash = (models.ImageHash || imageHashModel()) as ReturnType<
+  typeof imageHashModel
 >;

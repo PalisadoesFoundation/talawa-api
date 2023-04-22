@@ -79,13 +79,13 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   }
 
   // Checks if the recieved arguments are valid according to standard input norms
-  const validationResult_Title = isValidString(args.data!.title, 256);
-  const validationResult_Description = isValidString(
+  const validationResultTitle = isValidString(args.data!.title, 256);
+  const validationResultDescription = isValidString(
     args.data!.description,
     500
   );
-  const validationResult_Location = isValidString(args.data!.location!, 50);
-  if (!validationResult_Title.isLessThanMaxLength) {
+  const validationResultLocation = isValidString(args.data!.location!, 50);
+  if (!validationResultTitle.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
@@ -93,7 +93,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       LENGTH_VALIDATION_ERROR.CODE
     );
   }
-  if (!validationResult_Description.isLessThanMaxLength) {
+  if (!validationResultDescription.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
@@ -101,7 +101,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       LENGTH_VALIDATION_ERROR.CODE
     );
   }
-  if (!validationResult_Location.isLessThanMaxLength) {
+  if (!validationResultLocation.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`

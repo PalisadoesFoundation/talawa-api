@@ -47,9 +47,9 @@ const groupChatMessageSchema = new Schema({
   },
 });
 
-const GroupChatMessageModel = () =>
+const groupChatMessageModel = () =>
   model<InterfaceGroupChatMessage>("GroupChatMessage", groupChatMessageSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const GroupChatMessage = (models.GroupChatMessage ||
-  GroupChatMessageModel()) as ReturnType<typeof GroupChatMessageModel>;
+  groupChatMessageModel()) as ReturnType<typeof groupChatMessageModel>;

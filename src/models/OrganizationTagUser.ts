@@ -11,7 +11,7 @@ export interface InterfaceOrganizationTagUser {
 // A User Tag is used for the categorization and the grouping of related users
 // Each tag belongs to a particular organization, and is private to the same.
 // Each tag can be nested to hold other sub-tags so as to create a heriecheal structure.
-const OrganizationTagUserSchema = new Schema({
+const organizationTagUserSchema = new Schema({
   name: {
     type: String,
     required: true,
@@ -29,17 +29,17 @@ const OrganizationTagUserSchema = new Schema({
   },
 });
 
-OrganizationTagUserSchema.index(
+organizationTagUserSchema.index(
   { organizationId: 1, parentOrganizationTagUserId: 1, name: 1 },
   { unique: true }
 );
 
-const OrganizationTagUserModel = () =>
+const organizationTagUserModel = () =>
   model<InterfaceOrganizationTagUser>(
     "OrganizationTagUser",
-    OrganizationTagUserSchema
+    organizationTagUserSchema
   );
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const OrganizationTagUser = (models.OrganizationTagUser ||
-  OrganizationTagUserModel()) as ReturnType<typeof OrganizationTagUserModel>;
+  organizationTagUserModel()) as ReturnType<typeof organizationTagUserModel>;

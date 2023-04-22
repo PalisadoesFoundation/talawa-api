@@ -133,9 +133,9 @@ const organizationSchema = new Schema({
   },
 });
 
-const OrganizationModel = () =>
+const organizationModel = () =>
   model<InterfaceOrganization>("Organization", organizationSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Organization = (models.Organization ||
-  OrganizationModel()) as ReturnType<typeof OrganizationModel>;
+  organizationModel()) as ReturnType<typeof organizationModel>;

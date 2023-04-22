@@ -61,9 +61,9 @@ const commentSchema = new Schema({
   },
 });
 
-const CommentModel = () => model<InterfaceComment>("Comment", commentSchema);
+const commentModel = () => model<InterfaceComment>("Comment", commentSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const Comment = (models.Comment || CommentModel()) as ReturnType<
-  typeof CommentModel
+export const Comment = (models.Comment || commentModel()) as ReturnType<
+  typeof commentModel
 >;

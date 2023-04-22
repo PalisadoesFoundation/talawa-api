@@ -128,14 +128,14 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       };
     });
 
-    const serialized_organization =
+    const serializedOrganization =
       postsByOrganizationConnectionPayload?.edges.map((post) => {
         return {
           ...post,
           organization: post?.organization._id,
         };
       });
-    postsByOrganizationConnectionPayload!.edges = serialized_organization;
+    postsByOrganizationConnectionPayload!.edges = serializedOrganization;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {
@@ -204,14 +204,14 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       };
     });
 
-    const serialized_organization =
+    const serializedOrganization =
       postsByOrganizationConnectionPayload?.edges.map((post) => {
         return {
           ...post,
           organization: post!.organization._id,
         };
       });
-    postsByOrganizationConnectionPayload!.edges = serialized_organization;
+    postsByOrganizationConnectionPayload!.edges = serializedOrganization;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {
@@ -279,7 +279,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       };
     });
 
-    const serialized_organization =
+    const serializedOrganization =
       postsByOrganizationConnectionPayload?.edges.map((post) => {
         return {
           ...post,
@@ -287,7 +287,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
         };
       });
 
-    postsByOrganizationConnectionPayload!.edges = serialized_organization;
+    postsByOrganizationConnectionPayload!.edges = serializedOrganization;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {
@@ -430,14 +430,14 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       };
     });
 
-    const serialized_organization =
+    const serializedOrganization =
       postsByOrganizationConnectionPayload?.edges.map((post) => {
         return {
           ...post,
           organization: post!.organization._id,
         };
       });
-    postsByOrganizationConnectionPayload!.edges = serialized_organization;
+    postsByOrganizationConnectionPayload!.edges = serializedOrganization;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {
@@ -499,14 +499,14 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       };
     });
 
-    const serialized_organization =
+    const serializedOrganization =
       postsByOrganizationConnectionPayload?.edges.map((post) => {
         return {
           ...post,
           organization: post!.organization._id,
         };
       });
-    postsByOrganizationConnectionPayload!.edges = serialized_organization;
+    postsByOrganizationConnectionPayload!.edges = serializedOrganization;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {

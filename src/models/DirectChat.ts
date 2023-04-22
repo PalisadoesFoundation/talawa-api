@@ -53,9 +53,9 @@ const directChatSchema = new Schema({
   },
 });
 
-const DirectChatModel = () =>
+const directChatModel = () =>
   model<InterfaceDirectChat>("DirectChat", directChatSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const DirectChat = (models.DirectChat ||
-  DirectChatModel()) as ReturnType<typeof DirectChatModel>;
+  directChatModel()) as ReturnType<typeof directChatModel>;

@@ -46,9 +46,9 @@ const pluginSchema = new Schema({
   ],
 });
 
-const PluginModel = () => model<InterfacePlugin>("Plugin", pluginSchema);
+const pluginModel = () => model<InterfacePlugin>("Plugin", pluginSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const Plugin = (models.Plugin || PluginModel()) as ReturnType<
-  typeof PluginModel
+export const Plugin = (models.Plugin || pluginModel()) as ReturnType<
+  typeof pluginModel
 >;

@@ -46,10 +46,10 @@ const donationSchema = new Schema({
   },
 });
 
-const DonationModel = () =>
+const donationModel = () =>
   model<InterfaceDonation>("Donation", donationSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const Donation = (models.Donation || DonationModel()) as ReturnType<
-  typeof DonationModel
+export const Donation = (models.Donation || donationModel()) as ReturnType<
+  typeof donationModel
 >;

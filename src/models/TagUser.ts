@@ -9,7 +9,7 @@ export interface InterfaceTagUser {
 }
 
 // Relational schema used to keep track of assigned tags to users
-const TagUserSchema = new Schema({
+const tagUserSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
     required: true,
@@ -22,11 +22,11 @@ const TagUserSchema = new Schema({
   },
 });
 
-TagUserSchema.index({ userId: 1, tagId: 1 }, { unique: true });
+tagUserSchema.index({ userId: 1, tagId: 1 }, { unique: true });
 
-const TagUserModel = () => model<InterfaceTagUser>("TagUser", TagUserSchema);
+const tagUserModel = () => model<InterfaceTagUser>("TagUser", tagUserSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const TagUser = (models.TagUser || TagUserModel()) as ReturnType<
-  typeof TagUserModel
+export const TagUser = (models.TagUser || tagUserModel()) as ReturnType<
+  typeof tagUserModel
 >;

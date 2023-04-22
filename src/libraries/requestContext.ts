@@ -58,6 +58,7 @@ export const init = async <T>(options: InterfaceInitOptions<T> = {}) => {
 };
 
 export const translate = (...args: any) => {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const __ = getRequestContextValue("translate");
   if (typeof __ !== "function") {
     throw new Error("i18n is not initialized, try app.use(i18n.init);");
@@ -66,6 +67,7 @@ export const translate = (...args: any) => {
 };
 
 export const translatePlural = (...args: any) => {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const __n = getRequestContextValue("translatePlural");
   if (typeof __n !== "function") {
     throw new Error("i18n is not initialized, try app.use(i18n.init);");

@@ -40,10 +40,10 @@ describe("middleware -> requestContext", () => {
   });
 
   it("testing the requestTracing Middleware", () => {
-    const ReqheaderMethod = (tracingIdHeaderName: string) => {
+    const reqHeaderMethod = (tracingIdHeaderName: string) => {
       return requestTracingNamespace.get(tracingIdHeaderName);
     };
-    const ResHeaderMethod = (
+    const resHeaderMethod = (
       tracingIdHeaderName: string,
       tracingID: string
     ) => {
@@ -52,11 +52,11 @@ describe("middleware -> requestContext", () => {
     const myHeaders = new Headers();
     myHeaders.append("X-Tracing-Id", "UserTracingId");
     // @ts-ignore
-    mockRequest.header = ReqheaderMethod;
+    mockRequest.header = reqHeaderMethod;
     // @ts-ignore
     mockRequest.headers = myHeaders;
     // @ts-ignore
-    mockResponse.header = ResHeaderMethod;
+    mockResponse.header = resHeaderMethod;
     middleware()(
       mockRequest as Request,
       mockResponse as Response,

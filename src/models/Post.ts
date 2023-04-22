@@ -110,10 +110,10 @@ const postSchema = new Schema({
 postSchema.plugin(mongoosePaginate);
 postSchema.index({ organization: 1 }, { unique: false });
 
-const PostModel = () =>
+const postModel = () =>
   model<InterfacePost, PaginateModel<InterfacePost>>("Post", postSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const Post = (models.Post || PostModel()) as ReturnType<
-  typeof PostModel
+export const Post = (models.Post || postModel()) as ReturnType<
+  typeof postModel
 >;

@@ -30,9 +30,9 @@ const encodedImageSchema = new Schema({
   },
 });
 
-const EncodedImageModel = () =>
+const encodedImageModel = () =>
   model<InterfaceEncodedImage>("EncodedImage", encodedImageSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const EncodedImage = (models.EncodedImage ||
-  EncodedImageModel()) as ReturnType<typeof EncodedImageModel>;
+  encodedImageModel()) as ReturnType<typeof encodedImageModel>;

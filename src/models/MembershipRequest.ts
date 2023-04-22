@@ -34,7 +34,7 @@ const membershipRequestSchema = new Schema({
   },
 });
 
-const MembershipRequestModel = () =>
+const membershipRequestModel = () =>
   model<InterfaceMembershipRequest>(
     "MembershipRequest",
     membershipRequestSchema
@@ -42,4 +42,4 @@ const MembershipRequestModel = () =>
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const MembershipRequest = (models.MembershipRequest ||
-  MembershipRequestModel()) as ReturnType<typeof MembershipRequestModel>;
+  membershipRequestModel()) as ReturnType<typeof membershipRequestModel>;

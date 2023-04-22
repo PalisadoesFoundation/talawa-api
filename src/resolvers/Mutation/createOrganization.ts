@@ -43,14 +43,14 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     }
 
     // Checks if the recieved arguments are valid according to standard input norms
-    const validationResult_Name = isValidString(args.data!.name, 256);
-    const validationResult_Description = isValidString(
+    const validationResultName = isValidString(args.data!.name, 256);
+    const validationResultDescription = isValidString(
       args.data!.description,
       500
     );
-    const validationResult_Location = isValidString(args.data!.location!, 50);
+    const validationResultLocation = isValidString(args.data!.location!, 50);
 
-    if (!validationResult_Name.isLessThanMaxLength) {
+    if (!validationResultName.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
           `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
@@ -58,7 +58,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
         LENGTH_VALIDATION_ERROR.CODE
       );
     }
-    if (!validationResult_Description.isLessThanMaxLength) {
+    if (!validationResultDescription.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
           `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
@@ -66,7 +66,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
         LENGTH_VALIDATION_ERROR.CODE
       );
     }
-    if (!validationResult_Location.isLessThanMaxLength) {
+    if (!validationResultLocation.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
           `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
