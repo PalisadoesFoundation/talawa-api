@@ -1,7 +1,6 @@
 export * from "./MessageChat";
 export * from "./Comment";
 export * from "./DirectChat";
-export * from "./DirectChat";
 export * from "./DirectChatMessage";
 export * from "./Donation";
 export * from "./Event";
