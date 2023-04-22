@@ -3,10 +3,7 @@ import { SubscriptionResolvers } from "../../types/generatedGraphQLTypes";
 
 const MESSAGE_SENT_TO_DIRECT_CHAT = "MESSAGE_SENT_TO_DIRECT_CHAT";
 
-export const filterFunction = async function (
-  payload: any,
-  context: any
-): Promise<boolean> {
+export const filterFunction = function (payload: any, context: any): boolean {
   const { currentUserId } = context.context;
   return (
     currentUserId === payload.messageSentToDirectChat.receiver ||

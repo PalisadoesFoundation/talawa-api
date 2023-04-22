@@ -4,7 +4,7 @@ import { INTERNAL_SERVER_ERROR } from "../../../src/constants";
 import { errors } from "../../../src/libraries";
 
 describe("libraries -> errors -> internalServerError", () => {
-  it(`throws internalServerError if there is error from the server side `, async () => {
+  it(`throws internalServerError if there is error from the server side `, () => {
     try {
       throw new errors.InternalServerError(
         INTERNAL_SERVER_ERROR.MESSAGE,
