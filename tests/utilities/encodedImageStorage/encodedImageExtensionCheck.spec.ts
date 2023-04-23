@@ -4,7 +4,7 @@ import { encodedImageExtentionCheck } from "../../../src/utilities/encodedImageS
 
 describe("src -> utilities -> encodedImageStorage -> ", () => {
   it("should return true when image extension = image/png", () => {
-    const data = "data:image/png;base64";
+    const data: string = "data:image/png;base64";
 
     const result = encodedImageExtentionCheck(data);
 
@@ -12,7 +12,7 @@ describe("src -> utilities -> encodedImageStorage -> ", () => {
   });
 
   it("should return true when image extension = image/jpg", () => {
-    const data = "data:image/jpg;base64";
+    const data: string = "data:image/jpg;base64";
 
     const result = encodedImageExtentionCheck(data);
 
@@ -20,7 +20,7 @@ describe("src -> utilities -> encodedImageStorage -> ", () => {
   });
 
   it("should return true when image extension = image/jpeg", () => {
-    const data = "data:image/jpeg;base64";
+    const data: string = "data:image/jpeg;base64";
 
     const result = encodedImageExtentionCheck(data);
 
@@ -28,7 +28,7 @@ describe("src -> utilities -> encodedImageStorage -> ", () => {
   });
 
   it("should return false when image extension = image/gif", () => {
-    const data = "data:image/gif;base64";
+    const data: string = "data:image/gif;base64";
 
     const result = encodedImageExtentionCheck(data);
 

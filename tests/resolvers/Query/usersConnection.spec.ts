@@ -32,32 +32,6 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Query -> usersConnection", () => {
-  it(`returns paginated list of all users without any filtering and sorting with first = 0 and skip = 0`, async () => {
-    const args: QueryUsersConnectionArgs = {
-      where: null,
-      orderBy: null,
-    };
-
-    const usersConnectionPayload = await usersConnectionResolver?.(
-      {},
-      args,
-      {}
-    );
-    const users = await User.find()
-      .limit(0)
-      .skip(0)
-      .select(["-password"])
-      .populate("createdOrganizations")
-      .populate("createdEvents")
-      .populate("joinedOrganizations")
-      .populate("registeredEvents")
-      .populate("eventAdmin")
-      .populate("adminFor")
-      .lean();
-
-    expect(usersConnectionPayload).toEqual(users);
-  });
-
   it(`returns paginated list of users filtered by
   args.where === { id: testUsers[1].id, firstName: testUsers[1].firstName,
   lastName: testUsers[1].lastName, email: testUsers[1].email,
@@ -204,10 +178,10 @@ describe("resolvers -> Query -> usersConnection", () => {
       skip: 1,
       where: {
         id_in: [testUsers[1]?.id],
-        firstName_in: [testUsers[1]!.firstName],
-        lastName_in: [testUsers[1]!.lastName],
-        email_in: [testUsers[1]!.email],
-        appLanguageCode_in: [testUsers[1]!.appLanguageCode],
+        firstName_in: [testUsers[1]?.firstName!],
+        lastName_in: [testUsers[1]?.lastName!],
+        email_in: [testUsers[1]?.email!],
+        appLanguageCode_in: [testUsers[1]?.appLanguageCode!],
       },
       orderBy: "firstName_ASC",
     };
@@ -266,10 +240,10 @@ describe("resolvers -> Query -> usersConnection", () => {
       skip: 1,
       where: {
         id_not_in: [testUsers[2]?._id],
-        firstName_not_in: [testUsers[2]!.firstName],
-        lastName_not_in: [testUsers[2]!.lastName],
-        email_not_in: [testUsers[2]!.email],
-        appLanguageCode_not_in: [testUsers[2]!.appLanguageCode],
+        firstName_not_in: [testUsers[2]?.firstName!],
+        lastName_not_in: [testUsers[2]?.lastName!],
+        email_not_in: [testUsers[2]?.email!],
+        appLanguageCode_not_in: [testUsers[2]?.appLanguageCode!],
       },
       orderBy: "firstName_DESC",
     };

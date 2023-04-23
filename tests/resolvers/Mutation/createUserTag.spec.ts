@@ -100,7 +100,7 @@ describe("resolvers -> Mutation -> createUserTag", () => {
       };
 
       const context = {
-        userId: testUser?.id,
+        userId: testUser!.id,
       };
 
       const { createUserTag: createUserTagResolver } = await import(
@@ -125,14 +125,14 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     try {
       const args: MutationCreateUserTagArgs = {
         input: {
-          organizationId: testOrganization?._id,
+          organizationId: testOrganization!._id,
           name: "TestUserTag",
           parentTagId: Types.ObjectId().toString(),
         },
       };
 
       const context = {
-        userId: testUser?.id,
+        userId: testUser!.id,
       };
 
       const { createUserTag: createUserTagResolver } = await import(
@@ -155,14 +155,14 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     try {
       const args: MutationCreateUserTagArgs = {
         input: {
-          organizationId: testOrganization?._id,
+          organizationId: testOrganization!._id,
           name: "TestUserTag",
-          parentTagId: randomTestTag?._id.toString(),
+          parentTagId: randomTestTag!._id.toString(),
         },
       };
 
       const context = {
-        userId: testUser?.id,
+        userId: testUser!.id,
       };
 
       const { createUserTag: createUserTagResolver } = await import(
@@ -187,14 +187,14 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     try {
       const args: MutationCreateUserTagArgs = {
         input: {
-          organizationId: testOrganization?._id,
+          organizationId: testOrganization!._id,
           name: "TestUserTag",
-          parentTagId: testTag?._id.toString(),
+          parentTagId: testTag!._id.toString(),
         },
       };
 
       const context = {
-        userId: randomUser?.id,
+        userId: randomUser!.id,
       };
 
       const { createUserTag: createUserTagResolver } = await import(
@@ -219,14 +219,14 @@ describe("resolvers -> Mutation -> createUserTag", () => {
     try {
       const args: MutationCreateUserTagArgs = {
         input: {
-          organizationId: testOrganization?._id,
-          name: testTag?.name ?? "",
-          parentTagId: testTag?.parentTagId,
+          organizationId: testOrganization!._id,
+          name: testTag!.name,
+          parentTagId: testTag!.parentTagId,
         },
       };
 
       const context = {
-        userId: testUser?.id,
+        userId: testUser!.id,
       };
 
       const { createUserTag: createUserTagResolver } = await import(
@@ -248,14 +248,14 @@ describe("resolvers -> Mutation -> createUserTag", () => {
 
     const args: MutationCreateUserTagArgs = {
       input: {
-        organizationId: testOrganization?._id,
+        organizationId: testOrganization!._id,
         name: "TestUserTag",
-        parentTagId: testTag?._id.toString(),
+        parentTagId: testTag!._id.toString(),
       },
     };
 
     const context = {
-      userId: testUser?.id,
+      userId: testUser!.id,
     };
 
     const { createUserTag: createUserTagResolver } = await import(
@@ -266,14 +266,14 @@ describe("resolvers -> Mutation -> createUserTag", () => {
 
     expect(createdTag).toEqual(
       expect.objectContaining({
-        organizationId: testOrganization?._id,
+        organizationId: testOrganization!._id,
         name: "TestUserTag",
-        parentTagId: testTag?._id,
+        parentTagId: testTag!._id,
       })
     );
 
     const createdTagExists = await OrganizationTagUser.exists({
-      _id: createdTag?._id,
+      _id: createdTag!._id,
     });
 
     expect(createdTagExists).toBeTruthy();

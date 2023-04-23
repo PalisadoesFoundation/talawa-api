@@ -20,7 +20,7 @@ import { createTestUserFunc, TestUserType } from "../../helpers/user";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
-const testImage = "testImage";
+const testImage: string = "testImage";
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -70,7 +70,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
 
     try {
       const context = {
-        userId: testUser?.id,
+        userId: testUser!.id,
       };
 
       const { removeUserImage: removeUserImageResolver } = await import(
@@ -98,7 +98,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
 
     await User.updateOne(
       {
-        _id: testUser?._id,
+        _id: testUser!._id,
       },
       {
         $set: {
@@ -108,7 +108,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
     );
 
     const context = {
-      userId: testUser?._id,
+      userId: testUser!._id,
     };
 
     const { removeUserImage: removeUserImageResolver } = await import(
@@ -122,7 +122,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
     );
 
     const updatedTestUser = await User.findOne({
-      _id: testUser?._id,
+      _id: testUser!._id,
     }).lean();
 
     expect(removeUserImagePayload).toEqual(updatedTestUser);

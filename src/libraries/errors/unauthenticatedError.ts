@@ -4,7 +4,7 @@ import { ApplicationError } from "./applicationError";
  */
 export class UnauthenticatedError extends ApplicationError {
   constructor(
-    message = "UnauthenticatedError",
+    message: string = "UnauthenticatedError",
     code: string | null = null,
     param: string | null = null,
     metadata: Record<any, any> = {}

@@ -57,7 +57,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
     }
 
     const currentUserIsOrganizationMember = organization.members.some(
-      (member) => member.equals(context.userId)
+      (member) => member.toString() === context.userId.toString()
     );
 
     // Checks whether currentUser with _id === context.userId is already a member of organzation.

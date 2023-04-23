@@ -3,7 +3,10 @@ import { ApplicationError, InterfaceError } from "./applicationError";
  * This class detects validation errors and sends those errors to the superclass ApplicationError.
  */
 export class ValidationError extends ApplicationError {
-  constructor(errors: InterfaceError[] = [], message = "Validation error") {
+  constructor(
+    errors: InterfaceError[] = [],
+    message: string = "Validation error"
+  ) {
     super(errors, 422, message);
   }
 }

@@ -26,7 +26,7 @@ import {
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
 
-const testImagePath = `${nanoid().toLowerCase()}test.png`;
+const testImagePath: string = `${nanoid().toLowerCase()}test.png`;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -87,7 +87,7 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
         file: "",
       };
       const context = {
-        userId: testUser?.id,
+        userId: testUser!.id,
       };
 
       const { addOrganizationImage } = await import(
@@ -102,7 +102,7 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
   it(`updates organization's image with the old image and returns the updated organization`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization?._id,
+        _id: testOrganization!._id,
       },
       {
         $set: {
@@ -114,11 +114,11 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
       async (encodedImageURL: string) => encodedImageURL
     );
     const args: MutationAddOrganizationImageArgs = {
-      organizationId: testOrganization?.id,
+      organizationId: testOrganization!.id,
       file: testImagePath,
     };
     const context = {
-      userId: testUser?._id,
+      userId: testUser!._id,
     };
     const addOrganizationImagePayload = await addOrganizationImageResolver?.(
       {},
@@ -126,7 +126,7 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
       context
     );
     const updatedTestOrganization = await Organization.findOne({
-      _id: testOrganization?._id,
+      _id: testOrganization!._id,
     }).lean();
     expect(addOrganizationImagePayload).toEqual(updatedTestOrganization);
     expect(addOrganizationImagePayload?.image).toEqual(testImagePath);

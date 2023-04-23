@@ -51,10 +51,10 @@ export const removePost: MutationResolvers["removePost"] = async (
   }
 
   // Checks whether currentUser is allowed to delete the post or not.
-  const isCreator = post.creator.equals(context.userId);
-  const isSuperAdmin = currentUser?.userType === "SUPERADMIN";
-  const isAdminOfPostOrganization = currentUser?.adminFor.some((orgID) =>
-    orgID.equals(post.organization)
+  const isCreator = post.creator.toString() === context.userId.toString();
+  const isSuperAdmin = currentUser!.userType === "SUPERADMIN";
+  const isAdminOfPostOrganization = currentUser!.adminFor.some(
+    (orgID) => orgID.toString() === post.organization.toString()
   );
 
   if (!isCreator && !isSuperAdmin && !isAdminOfPostOrganization) {

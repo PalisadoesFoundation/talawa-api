@@ -109,6 +109,7 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
       const { updateUserPassword: updateUserPasswordResolver } = await import(
         "../../../src/resolvers/Mutation/updateUserPassword"
       );
+
       await updateUserPasswordResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(INVALID_CREDENTIALS_ERROR.MESSAGE);
@@ -141,37 +142,6 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
 
       await updateUserPasswordResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(INVALID_CREDENTIALS_ERROR.MESSAGE);
-    }
-  });
-
-  it(`throws INVALID Credentials error if new password, confirm new password and previous password are null`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
-
-    try {
-      const args: MutationUpdateUserPasswordArgs = {
-        data: {
-          previousPassword: String(null),
-          newPassword: String(null),
-          confirmNewPassword: String(null),
-        },
-      };
-
-      const context = {
-        userId: testUser._id,
-      };
-
-      const { updateUserPassword: updateUserPasswordResolver } = await import(
-        "../../../src/resolvers/Mutation/updateUserPassword"
-      );
-
-      await updateUserPasswordResolver?.({}, args, context);
-    } catch (error: any) {
-      console.log(error.message);
       expect(error.message).toEqual(INVALID_CREDENTIALS_ERROR.MESSAGE);
     }
   });

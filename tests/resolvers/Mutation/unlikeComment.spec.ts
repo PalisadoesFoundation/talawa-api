@@ -25,15 +25,15 @@ beforeAll(async () => {
 
   testComment = await Comment.create({
     text: "text",
-    creator: testUser?._id,
-    postId: testPost?._id,
-    likedBy: [testUser?._id],
+    creator: testUser!._id,
+    postId: testPost!._id,
+    likedBy: [testUser!._id],
     likeCount: 1,
   });
 
   await Post.updateOne(
     {
-      _id: testPost?._id,
+      _id: testPost!._id,
     },
     {
       $push: {
@@ -87,7 +87,7 @@ describe("resolvers -> Mutation -> unlikeComment", () => {
       };
 
       const context = {
-        userId: testUser?._id,
+        userId: testUser!._id,
       };
 
       const { unlikeComment: unlikeCommentResolver } = await import(
@@ -108,7 +108,7 @@ describe("resolvers -> Mutation -> unlikeComment", () => {
     };
 
     const context = {
-      userId: testUser?._id,
+      userId: testUser!._id,
     };
 
     const unlikeCommentPayload = await unlikeCommentResolver?.(
@@ -131,7 +131,7 @@ describe("resolvers -> Mutation -> unlikeComment", () => {
     };
 
     const context = {
-      userId: testUser?._id,
+      userId: testUser!._id,
     };
 
     const unlikeCommentPayload = await unlikeCommentResolver?.(

@@ -73,7 +73,7 @@ describe("resolvers -> Mutation -> updateLanguage", () => {
     };
 
     const context = {
-      userId: testUser?._id,
+      userId: testUser!._id,
     };
 
     const { updateLanguage: updateLanguageResolver } = await import(
@@ -87,7 +87,7 @@ describe("resolvers -> Mutation -> updateLanguage", () => {
     );
 
     const testUpdateLanguagePayload = await User.findOne({
-      _id: testUser?._id,
+      _id: testUser!._id,
     }).lean();
 
     expect(updateLanguagePayload).toEqual(testUpdateLanguagePayload);

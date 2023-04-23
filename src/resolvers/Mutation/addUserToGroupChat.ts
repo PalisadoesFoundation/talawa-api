@@ -66,8 +66,8 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
       );
     }
 
-    const isUserGroupChatMember = groupChat.users.some((user) =>
-      user.equals(args.userId)
+    const isUserGroupChatMember = groupChat.users.some(
+      (user) => user.toString() === args.userId.toString()
     );
 
     // Checks whether user with _id === args.userId is already a member of groupChat.

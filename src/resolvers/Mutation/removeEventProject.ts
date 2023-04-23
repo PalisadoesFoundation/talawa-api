@@ -48,7 +48,7 @@ export const removeEventProject = async (
   }
 
   // Checks whether currentUser with _id === context.userId is not the creator of eventProject.
-  if (!eventProject.creator.equals(context.userId)) {
+  if (eventProject.creator.toString() !== context.userId.toString()) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,

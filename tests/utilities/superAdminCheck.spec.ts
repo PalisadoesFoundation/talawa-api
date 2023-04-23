@@ -39,9 +39,7 @@ describe("utilities -> superAdminCheck", () => {
 
     try {
       const { superAdminCheck } = await import("../../src/utilities");
-      if (testUser) {
-        superAdminCheck(testUser);
-      }
+      superAdminCheck(testUser!);
     } catch (error: any) {
       expect(error.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`

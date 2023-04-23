@@ -4,7 +4,7 @@ import { ApplicationError } from "./applicationError";
  */
 export class InternalServerError extends ApplicationError {
   constructor(
-    message = "Internal Server Error!",
+    message: string = "Internal Server Error!",
     code: string | null = null,
     param: string | null = null,
     metadata: Record<any, any> = {}

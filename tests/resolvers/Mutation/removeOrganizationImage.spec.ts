@@ -38,16 +38,15 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    admins: [testAdminUser?._id],
-    creator: testAdminUser?._id,
-
-    members: [testUser?._id],
-    blockedUsers: [testUser?._id],
+    admins: [testAdminUser!._id],
+    creator: testAdminUser!._id,
+    members: [testUser!._id],
+    blockedUsers: [testUser!._id],
   });
 
   await User.updateOne(
     {
-      _id: testUser?._id,
+      _id: testUser!._id,
     },
     {
       $set: {
@@ -107,7 +106,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       };
 
       const context = {
-        userId: testUser?.id,
+        userId: testUser!.id,
       };
 
       const { removeOrganizationImage: removeOrganizationImageResolver } =
@@ -133,11 +132,11 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
 
     try {
       const args: MutationRemoveOrganizationImageArgs = {
-        organizationId: testOrganization?.id,
+        organizationId: testOrganization!.id,
       };
 
       const context = {
-        userId: testUser?.id,
+        userId: testUser!.id,
       };
 
       const { removeOrganizationImage: removeOrganizationImageResolver } =
@@ -161,11 +160,11 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
 
     try {
       const args: MutationRemoveOrganizationImageArgs = {
-        organizationId: testOrganization?.id,
+        organizationId: testOrganization!.id,
       };
 
       const context = {
-        userId: testAdminUser?.id,
+        userId: testAdminUser!.id,
       };
 
       const { removeOrganizationImage: removeOrganizationImageResolver } =
@@ -192,14 +191,14 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       });
 
     const args: MutationRemoveOrganizationImageArgs = {
-      organizationId: testOrganization?._id,
+      organizationId: testOrganization!._id,
     };
 
-    const testImage = "testImage";
+    const testImage: string = "testImage";
 
     await Organization.updateOne(
       {
-        _id: testOrganization?._id,
+        _id: testOrganization!._id,
       },
       {
         $set: {
@@ -209,7 +208,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
     );
 
     const context = {
-      userId: testAdminUser?._id,
+      userId: testAdminUser!._id,
     };
 
     const { removeOrganizationImage: removeOrganizationImageResolver } =
@@ -219,7 +218,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       await removeOrganizationImageResolver?.({}, args, context);
 
     const updatedTestOrg = await Organization.findOne({
-      _id: testOrganization?._id,
+      _id: testOrganization!._id,
     }).lean();
 
     expect(removeOrganizationImagePayload).toEqual(updatedTestOrg);

@@ -44,8 +44,8 @@ export const likeComment: MutationResolvers["likeComment"] = async (
     );
   }
 
-  const currentUserHasLikedComment = comment.likedBy.some((likedByUser) =>
-    likedByUser.equals(context.userId)
+  const currentUserHasLikedComment = comment.likedBy.some(
+    (likedByUser) => likedByUser.toString() === context.userId.toString()
   );
 
   // Checks whether currentUser with _id === context.userId has not already liked the comment.

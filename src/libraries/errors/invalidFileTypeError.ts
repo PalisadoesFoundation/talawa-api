@@ -4,7 +4,7 @@ import { ApplicationError } from "./applicationError";
  */
 export class InvalidFileTypeError extends ApplicationError {
   constructor(
-    message = "Invalid File Type",
+    message: string = "Invalid File Type",
     code: string | null = null,
     param: string | null = null,
     metadata: Record<any, any> = {}

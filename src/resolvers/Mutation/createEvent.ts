@@ -47,7 +47,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   }
 
   const organization = await Organization.findOne({
-    _id: args.data?.organizationId,
+    _id: args.data!.organizationId,
   }).lean();
 
   // Checks whether organization exists.
@@ -60,11 +60,13 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   }
 
   const userCreatedOrganization = currentUser.createdOrganizations.some(
-    (createdOrganization) => createdOrganization.equals(organization._id)
+    (createdOrganization) =>
+      createdOrganization.toString() === organization._id.toString()
   );
 
   const userJoinedOrganization = currentUser.joinedOrganizations.some(
-    (joinedOrganization) => joinedOrganization.equals(organization._id)
+    (joinedOrganization) =>
+      joinedOrganization.toString() === organization._id.toString()
   );
 
   // Checks whether currentUser neither created nor joined the organization.
@@ -77,15 +79,12 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   }
 
   // Checks if the recieved arguments are valid according to standard input norms
-  const validationResult_Title = isValidString(args.data?.title ?? "", 256);
+  const validationResult_Title = isValidString(args.data!.title, 256);
   const validationResult_Description = isValidString(
-    args.data?.description ?? "",
+    args.data!.description,
     500
   );
-  const validationResult_Location = isValidString(
-    args.data?.location ?? "",
-    50
-  );
+  const validationResult_Location = isValidString(args.data!.location!, 50);
   if (!validationResult_Title.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
@@ -111,8 +110,8 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     );
   }
   const compareDatesResult = compareDates(
-    args.data?.startDate,
-    args.data?.endDate
+    args.data!.startDate,
+    args.data!.endDate!
   );
   if (compareDatesResult !== "") {
     throw new errors.InputValidationError(

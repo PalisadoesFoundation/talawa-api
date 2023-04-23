@@ -24,14 +24,14 @@ afterAll(async () => {
 
 describe("resolvers -> GroupChat -> organization", () => {
   it(`returns user objects for parent.organization`, async () => {
-    const parent = testGroupChat?.toObject();
-    if (parent) {
-      const organizationPayload = await organizationResolver?.(parent, {}, {});
-      const organization = await Organization.findOne({
-        _id: testGroupChat?.organization,
-      }).lean();
+    const parent = testGroupChat!.toObject();
 
-      expect(organizationPayload).toEqual(organization);
-    }
+    const organizationPayload = await organizationResolver?.(parent, {}, {});
+
+    const organization = await Organization.findOne({
+      _id: testGroupChat!.organization,
+    }).lean();
+
+    expect(organizationPayload).toEqual(organization);
   });
 });

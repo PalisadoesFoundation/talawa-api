@@ -39,9 +39,9 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    creator: testUser?._id,
-    admins: [testAdminUser?._id],
-    members: [testUser?._id, testAdminUser?._id],
+    creator: testUser!._id,
+    admins: [testAdminUser!._id],
+    members: [testUser!._id, testAdminUser!._id],
   });
 
   testEvent = await Event.create({
@@ -52,19 +52,19 @@ beforeAll(async () => {
     recurring: true,
     isPublic: true,
     isRegisterable: true,
-    creator: testUser?._id,
-    admins: [testAdminUser?._id],
+    creator: testUser!._id,
+    admins: [testAdminUser!._id],
     registrants: [],
-    organization: testOrganization?._id,
+    organization: testOrganization!._id,
   });
 
   await User.updateOne(
     {
-      _id: testUser?._id,
+      _id: testUser!._id,
     },
     {
       $push: {
-        adminFor: testOrganization?._id,
+        adminFor: testOrganization!._id,
       },
     }
   );
@@ -115,7 +115,7 @@ describe("resolvers -> Mutation -> createEventProject", () => {
     };
 
     const context = {
-      userId: testUser?._id,
+      userId: testUser!._id,
     };
 
     const { requestContext } = await import("../../../src/libraries");
@@ -141,12 +141,12 @@ describe("resolvers -> Mutation -> createEventProject", () => {
   it("Should throw an error if the user is not an admin of the event", async () => {
     const args = {
       data: {
-        eventId: testEvent?._id,
+        eventId: testEvent!._id,
       },
     };
 
     const context = {
-      userId: testUser?._id,
+      userId: testUser!._id,
     };
 
     const { requestContext } = await import("../../../src/libraries");
@@ -170,15 +170,15 @@ describe("resolvers -> Mutation -> createEventProject", () => {
   });
   it("Should create a project", async () => {
     const context = {
-      userId: testAdminUser?._id,
+      userId: testAdminUser!._id,
     };
 
     const args = {
       data: {
-        eventId: testEvent?._id,
+        eventId: testEvent!._id,
         title: "title",
         description: "description",
-        event: testEvent?._id,
+        event: testEvent!._id,
         creator: context.userId,
       },
     };
@@ -189,10 +189,10 @@ describe("resolvers -> Mutation -> createEventProject", () => {
 
     const result = await createEventProject(null, args, context);
 
-    expect(result).toHaveProperty("event", testEvent?._id);
+    expect(result).toHaveProperty("event", testEvent!._id);
     expect(result).toHaveProperty("title", args.data.title);
     expect(result).toHaveProperty("description", args.data.description);
-    expect(result).toHaveProperty("event", testEvent?._id);
+    expect(result).toHaveProperty("event", testEvent!._id);
     expect(result).toHaveProperty("creator", context.userId);
   });
 });

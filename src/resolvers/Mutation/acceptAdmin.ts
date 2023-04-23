@@ -29,7 +29,7 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
     );
   }
 
-  superAdminCheck(currentUser);
+  superAdminCheck(currentUser!);
 
   const userExists = await User.exists({
     _id: args.id,
