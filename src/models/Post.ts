@@ -24,8 +24,8 @@ export interface InterfacePost {
   videoUrl: string | undefined;
   creator: PopulatedDoc<InterfaceUser & Document>;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
-  likedBy: Array<PopulatedDoc<InterfaceUser & Document>>;
-  comments: Array<PopulatedDoc<InterfaceComment & Document>>;
+  likedBy: PopulatedDoc<InterfaceUser & Document>[];
+  comments: PopulatedDoc<InterfaceComment & Document>[];
   likeCount: number;
   commentCount: number;
   pinned: boolean;

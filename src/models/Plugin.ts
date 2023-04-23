@@ -8,7 +8,7 @@ export interface InterfacePlugin {
   pluginCreatedBy: string;
   pluginDesc: string;
   pluginInstallStatus: boolean;
-  installedOrgs: Array<Types.ObjectId>;
+  installedOrgs: Types.ObjectId[];
 }
 
 /**

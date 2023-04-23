@@ -11,7 +11,7 @@ export interface InterfaceGroup {
   createdAt: Date;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   status: string;
-  admins: Array<PopulatedDoc<InterfaceUser & Document>>;
+  admins: PopulatedDoc<InterfaceUser & Document>[];
 }
 /**
  * This is the structure of a group

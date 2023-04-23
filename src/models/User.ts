@@ -25,17 +25,15 @@ export interface InterfaceUser {
   email: string;
   password: string;
   appLanguageCode: string;
-  createdOrganizations: Array<PopulatedDoc<InterfaceOrganization & Document>>;
-  createdEvents: Array<PopulatedDoc<InterfaceEvent & Document>>;
+  createdOrganizations: PopulatedDoc<InterfaceOrganization & Document>[];
+  createdEvents: PopulatedDoc<InterfaceEvent & Document>[];
   userType: string;
-  joinedOrganizations: Array<PopulatedDoc<InterfaceOrganization & Document>>;
-  registeredEvents: Array<PopulatedDoc<InterfaceEvent & Document>>;
-  eventAdmin: Array<PopulatedDoc<InterfaceEvent & Document>>;
-  adminFor: Array<PopulatedDoc<InterfaceOrganization & Document>>;
-  membershipRequests: Array<
-    PopulatedDoc<InterfaceMembershipRequest & Document>
-  >;
-  organizationsBlockedBy: Array<PopulatedDoc<InterfaceOrganization & Document>>;
+  joinedOrganizations: PopulatedDoc<InterfaceOrganization & Document>[];
+  registeredEvents: PopulatedDoc<InterfaceEvent & Document>[];
+  eventAdmin: PopulatedDoc<InterfaceEvent & Document>[];
+  adminFor: PopulatedDoc<InterfaceOrganization & Document>[];
+  membershipRequests: PopulatedDoc<InterfaceMembershipRequest & Document>[];
+  organizationsBlockedBy: PopulatedDoc<InterfaceOrganization & Document>[];
   status: string;
   organizationUserBelongsTo:
     | PopulatedDoc<InterfaceOrganization & Document>

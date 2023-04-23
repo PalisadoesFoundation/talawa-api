@@ -15,7 +15,7 @@ import {
 } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testDonations: Array<TestDonationType>;
+let testDonations: TestDonationType[];
 let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {

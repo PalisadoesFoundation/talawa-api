@@ -45,7 +45,7 @@ const languageModelSchema = new Schema({
 export interface InterfaceLanguage {
   _id: Types.ObjectId;
   en: string;
-  translation: Array<PopulatedDoc<InterfaceLanguageModel & Document>>;
+  translation: PopulatedDoc<InterfaceLanguageModel & Document>[];
   createdAt: Date;
 }
 /**

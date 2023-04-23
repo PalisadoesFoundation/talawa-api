@@ -104,7 +104,7 @@
     ],
 
     // Typescript additional rules
-    "@typescript-eslint/array-type": "off",
+    "@typescript-eslint/array-type": "error",
     "@typescript-eslint/consistent-type-assertions": "off",
     "@typescript-eslint/consistent-type-imports": "off",
     "@typescript-eslint/explicit-function-return-type": "off",

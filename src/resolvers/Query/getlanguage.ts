@@ -14,7 +14,7 @@ export const getlanguage: QueryResolvers["getlanguage"] = async (
     "translation.lang_code": args.lang_code,
   }).lean();
 
-  const filteredLanguages: Array<Translation> = [];
+  const filteredLanguages: Translation[] = [];
 
   languages.forEach((language) => {
     language.translation.forEach((languageModel) => {

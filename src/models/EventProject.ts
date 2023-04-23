@@ -12,7 +12,7 @@ export interface InterfaceEventProject {
   createdAt: Date;
   event: PopulatedDoc<InterfaceEvent & Document>;
   creator: PopulatedDoc<InterfaceUser & Document>;
-  tasks: Array<PopulatedDoc<InterfaceTask & Document>>;
+  tasks: PopulatedDoc<InterfaceTask & Document>[];
   status: string;
 }
 /**

@@ -10,7 +10,7 @@ export interface InterfaceComment {
   createdAt: Date;
   creator: PopulatedDoc<InterfaceUser & Document>;
   post: PopulatedDoc<InterfacePost & Document>;
-  likedBy: Array<PopulatedDoc<InterfaceUser & Document>>;
+  likedBy: PopulatedDoc<InterfaceUser & Document>[];
   likeCount: number;
   status: string;
 }

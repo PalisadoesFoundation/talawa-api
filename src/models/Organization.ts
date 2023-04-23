@@ -16,15 +16,13 @@ export interface InterfaceOrganization {
   isPublic: boolean;
   creator: PopulatedDoc<InterfaceUser & Document>;
   status: string;
-  members: Array<PopulatedDoc<InterfaceUser & Document>>;
-  admins: Array<PopulatedDoc<InterfaceUser & Document>>;
-  groupChats: Array<PopulatedDoc<InterfaceMessage & Document>>;
-  posts: Array<PopulatedDoc<InterfacePost & Document>>;
-  pinnedPosts: Array<PopulatedDoc<InterfacePost & Document>>;
-  membershipRequests: Array<
-    PopulatedDoc<InterfaceMembershipRequest & Document>
-  >;
-  blockedUsers: Array<PopulatedDoc<InterfaceUser & Document>>;
+  members: PopulatedDoc<InterfaceUser & Document>[];
+  admins: PopulatedDoc<InterfaceUser & Document>[];
+  groupChats: PopulatedDoc<InterfaceMessage & Document>[];
+  posts: PopulatedDoc<InterfacePost & Document>[];
+  pinnedPosts: PopulatedDoc<InterfacePost & Document>[];
+  membershipRequests: PopulatedDoc<InterfaceMembershipRequest & Document>[];
+  blockedUsers: PopulatedDoc<InterfaceUser & Document>[];
   visibleInSearch: boolean | undefined;
   createdAt: Date;
 }

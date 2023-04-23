@@ -7,8 +7,8 @@ import { InterfaceUser } from "./User";
  */
 export interface InterfaceDirectChat {
   _id: Types.ObjectId;
-  users: Array<PopulatedDoc<InterfaceUser & Document>>;
-  messages: Array<PopulatedDoc<InterfaceDirectChatMessage & Document>>;
+  users: PopulatedDoc<InterfaceUser & Document>[];
+  messages: PopulatedDoc<InterfaceDirectChatMessage & Document>[];
   creator: PopulatedDoc<InterfaceUser & Document>;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   status: string;

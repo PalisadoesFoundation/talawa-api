@@ -8,8 +8,8 @@ import { InterfaceUser } from "./User";
 export interface InterfaceGroupChat {
   _id: Types.ObjectId;
   title: string;
-  users: Array<PopulatedDoc<InterfaceUser & Document>>;
-  messages: Array<PopulatedDoc<InterfaceGroupChatMessage & Document>>;
+  users: PopulatedDoc<InterfaceUser & Document>[];
+  messages: PopulatedDoc<InterfaceGroupChatMessage & Document>[];
   creator: PopulatedDoc<InterfaceUser & Document>;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   status: string;

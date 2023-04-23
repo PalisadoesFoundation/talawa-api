@@ -28,7 +28,7 @@ export const registrantsByEvent: QueryResolvers["registrantsByEvent"] = async (
     );
   }
 
-  const registrants: Array<InterfaceUser> = [];
+  const registrants: InterfaceUser[] = [];
 
   if (event.registrants.length > 0) {
     event.registrants.map((registrant: InterfaceUserAttende) => {
