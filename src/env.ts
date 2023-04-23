@@ -2,29 +2,29 @@ import z from "zod";
 
 export const envSchema = z
   .object({
-    ACCESS_TOKEN_SECRET: z.string(),
-    REFRESH_TOKEN_SECRET: z.string(),
+    ACCESS_TOKEN_SECRET: z.string().nonempty(),
+    REFRESH_TOKEN_SECRET: z.string().nonempty(),
     MONGO_DB_URL: z.string().url(),
 
-    RECAPTCHA_SECRET_KEY: z.string(),
-    RECAPTCHA_SITE_KEY: z.string(),
+    RECAPTCHA_SECRET_KEY: z.string().nonempty(),
+    RECAPTCHA_SITE_KEY: z.string().nonempty(),
 
-    MAIL_USERNAME: z.string().email(),
-    MAIL_PASSWORD: z.string(),
+    MAIL_USERNAME: z.string().email().nonempty(),
+    MAIL_PASSWORD: z.string().nonempty(),
 
-    apiKey: z.string(),
-    appId: z.string(),
-    messagingSenderId: z.string(),
-    projectId: z.string(),
-    storageBucket: z.string(),
+    apiKey: z.string().nonempty(),
+    appId: z.string().nonempty(),
+    messagingSenderId: z.string().nonempty(),
+    projectId: z.string().nonempty(),
+    storageBucket: z.string().nonempty(),
 
-    iOSapiKey: z.string(),
-    iOSappId: z.string(),
-    iOSmessagingSenderId: z.string(),
-    iOSprojectId: z.string(),
-    iOSstorageBucket: z.string(),
-    iosClientId: z.string(),
-    iosBundleId: z.string(),
+    iOSapiKey: z.string().nonempty(),
+    iOSappId: z.string().nonempty(),
+    iOSmessagingSenderId: z.string().nonempty(),
+    iOSprojectId: z.string().nonempty(),
+    iOSstorageBucket: z.string().nonempty(),
+    iosClientId: z.string().nonempty(),
+    iosBundleId: z.string().nonempty(),
 
     NODE_ENV: z
       .enum(["development", "test", "production"])

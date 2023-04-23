@@ -102,7 +102,7 @@ const httpServer = http.createServer(app);
 // Validating the env variables
 const issues = getEnvIssues();
 if (issues) {
-  console.error(
+  logger.error(
     "Invalid environment variables found in your .env file, check the errors below!"
   );
   console.error(
@@ -110,10 +110,9 @@ if (issues) {
       delimiter: { error: "\\n" },
     })
   );
-  process.exit(-1);
+} else {
+  logger.info("The environment variables are valid!");
 }
-
-logger.info("The environment variables are valid!");
 
 const apolloServer = new ApolloServer({
   typeDefs,
