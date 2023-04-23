@@ -1,12 +1,10 @@
 import "dotenv/config";
 import { user as userResolver } from "../../../src/resolvers/MembershipRequest/user";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { User } from "../../../src/models";
-import {
-  TestMembershipRequestType,
-  createTestMembershipRequest,
-} from "../../helpers/membershipRequests";
+import type { TestMembershipRequestType } from "../../helpers/membershipRequests";
+import { createTestMembershipRequest } from "../../helpers/membershipRequests";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
 let testMembershipRequest: TestMembershipRequestType;

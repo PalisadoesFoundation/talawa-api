@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import SMTPTransport from "nodemailer/lib/smtp-transport";
+import type SMTPTransport from "nodemailer/lib/smtp-transport";
 import {
   ERROR_IN_SENDING_MAIL,
   MAIL_PASSWORD,

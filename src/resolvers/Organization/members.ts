@@ -1,5 +1,5 @@
 import { User } from "../../models";
-import { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
+import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * This resolver function will fetch and return the list of members of the Organization from database.

@@ -1,7 +1,8 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { Event } from "../../../src/models";
-import { MutationCreateTaskArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationCreateTaskArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { createTask as createTaskResolver } from "../../../src/resolvers/Mutation/createTask";
@@ -10,9 +11,9 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { TestUserType } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
-import { TestEventType } from "../../helpers/events";
+import type { TestEventType } from "../../helpers/events";
 
 let testUser: TestUserType;
 let testEvent: TestEventType;

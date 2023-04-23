@@ -1,12 +1,8 @@
 import "dotenv/config";
-import mongoose, { Document } from "mongoose";
-import {
-  User,
-  Organization,
-  Event,
-  EventProject,
-  InterfaceEventProject,
-} from "../../../src/models";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import type { InterfaceEventProject } from "../../../src/models";
+import { User, Organization, Event, EventProject } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -24,8 +20,9 @@ import {
   USER_NOT_FOUND_ERROR,
   EVENT_PROJECT_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { TestUserType } from "../../helpers/userAndOrg";
-import { createTestEvent, TestEventType } from "../../helpers/events";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import type { TestEventType } from "../../helpers/events";
+import { createTestEvent } from "../../helpers/events";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;

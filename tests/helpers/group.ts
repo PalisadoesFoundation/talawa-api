@@ -1,10 +1,8 @@
-import {
-  createTestUserAndOrganization,
-  TestOrganizationType,
-  TestUserType,
-} from "./userAndOrg";
-import { InterfaceGroup, Group } from "../../src/models";
-import { Document } from "mongoose";
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
+import { createTestUserAndOrganization } from "./userAndOrg";
+import type { InterfaceGroup } from "../../src/models";
+import { Group } from "../../src/models";
+import type { Document } from "mongoose";
 
 export type TestGroupType =
   | (InterfaceGroup & Document<any, any, InterfaceGroup>)

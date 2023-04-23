@@ -1,6 +1,6 @@
 import axios from "axios";
 import { RECAPTCHA_SECRET_KEY } from "../../constants";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This function generates recaptcha.
  * @param _parent - parent of current request

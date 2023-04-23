@@ -1,6 +1,7 @@
-import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { InterfaceOrganization } from "./Organization";
-import { InterfaceUser } from "./User";
+import type { PopulatedDoc, Types, Document } from "mongoose";
+import { Schema, model, models } from "mongoose";
+import type { InterfaceOrganization } from "./Organization";
+import type { InterfaceUser } from "./User";
 /**
  * This is an interface representing a document for a group in the database(MongoDB).
  */

@@ -1,16 +1,20 @@
 import "dotenv/config";
-import mongoose, { Document, Types } from "mongoose";
-import {
-  User,
-  Organization,
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type {
   InterfaceOrganization,
-  Post,
-  Comment,
-  MembershipRequest,
   InterfaceComment,
   InterfacePost,
 } from "../../../src/models";
-import { MutationRemoveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
+import {
+  User,
+  Organization,
+  Post,
+  Comment,
+  MembershipRequest,
+} from "../../../src/models";
+import type { MutationRemoveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { removeOrganization as removeOrganizationResolver } from "../../../src/resolvers/Mutation/removeOrganization";
@@ -29,7 +33,7 @@ import {
   afterEach,
 } from "vitest";
 import { createTestUserFunc } from "../../helpers/user";
-import { TestUserType } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];

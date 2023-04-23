@@ -1,4 +1,4 @@
-import { MutationRecaptchaArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationRecaptchaArgs } from "../../../src/types/generatedGraphQLTypes";
 import { recaptcha as recaptchaResolver } from "../../../src/resolvers/Mutation/recaptcha";
 import { describe, it, expect } from "vitest";
 

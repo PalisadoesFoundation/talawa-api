@@ -1,4 +1,5 @@
-import { Schema, model, Types, models } from "mongoose";
+import type { Types } from "mongoose";
+import { Schema, model, models } from "mongoose";
 /**
  * This is an interface that represents a database(MongoDB) document for Encoded Image.
  */

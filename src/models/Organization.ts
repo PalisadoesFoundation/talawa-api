@@ -1,8 +1,9 @@
-import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { InterfaceMembershipRequest } from "./MembershipRequest";
-import { InterfaceMessage } from "./Message";
-import { InterfacePost } from "./Post";
-import { InterfaceUser } from "./User";
+import type { PopulatedDoc, Types, Document } from "mongoose";
+import { Schema, model, models } from "mongoose";
+import type { InterfaceMembershipRequest } from "./MembershipRequest";
+import type { InterfaceMessage } from "./Message";
+import type { InterfacePost } from "./Post";
+import type { InterfaceUser } from "./User";
 /**
  * This is an interface that represents a database(MongoDB) document for Organization.
  */

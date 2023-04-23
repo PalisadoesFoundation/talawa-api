@@ -2,7 +2,7 @@ import {
   EMAIL_ALREADY_EXISTS_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";

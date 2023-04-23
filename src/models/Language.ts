@@ -1,4 +1,5 @@
-import { Schema, model, Types, Document, PopulatedDoc, models } from "mongoose";
+import type { Types, Document, PopulatedDoc } from "mongoose";
+import { Schema, model, models } from "mongoose";
 /**
  * This is an interface that represents a database document.
  */

@@ -3,7 +3,7 @@ import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_IMAGE_NOT_FOUND_ERROR,
 } from "../../constants";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Organization } from "../../models";
 import { adminCheck, deleteImage } from "../../utilities";

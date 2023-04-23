@@ -1,16 +1,9 @@
-import {
-  Schema,
-  model,
-  PopulatedDoc,
-  Types,
-  Document,
-  PaginateModel,
-  models,
-} from "mongoose";
+import type { PopulatedDoc, Types, Document, PaginateModel } from "mongoose";
+import { Schema, model, models } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
-import { InterfaceComment } from "./Comment";
-import { InterfaceOrganization } from "./Organization";
-import { InterfaceUser } from "./User";
+import type { InterfaceComment } from "./Comment";
+import type { InterfaceOrganization } from "./Organization";
+import type { InterfaceUser } from "./User";
 /**
  * This is an interface that represents a database(MongoDB) document for Post.
  */

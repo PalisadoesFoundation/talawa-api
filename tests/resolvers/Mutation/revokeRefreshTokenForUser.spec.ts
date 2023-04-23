@@ -1,11 +1,12 @@
 import "dotenv/config";
 import { User } from "../../../src/models";
-import { MutationRevokeRefreshTokenForUserArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationRevokeRefreshTokenForUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { revokeRefreshTokenForUser as revokeRefreshTokenForUserResolver } from "../../../src/resolvers/Mutation/revokeRefreshTokenForUser";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestUserFunc, TestUserType } from "../../helpers/user";
+import type { TestUserType } from "../../helpers/user";
+import { createTestUserFunc } from "../../helpers/user";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;

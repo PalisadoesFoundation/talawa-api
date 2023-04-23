@@ -1,6 +1,7 @@
-import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { InterfaceOrganizationTagUser } from "./OrganizationTagUser";
-import { InterfaceUser } from "./User";
+import type { PopulatedDoc, Types, Document } from "mongoose";
+import { Schema, model, models } from "mongoose";
+import type { InterfaceOrganizationTagUser } from "./OrganizationTagUser";
+import type { InterfaceUser } from "./User";
 
 export interface InterfaceTagUser {
   _id: Types.ObjectId;

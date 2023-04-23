@@ -2,17 +2,13 @@ import "dotenv/config";
 import { Donation } from "../../../src/models";
 import { getDonationByOrgIdConnection as getDonationByOrgIdConnectionResolver } from "../../../src/resolvers/Query/getDonationByOrgIdConnection";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { QueryGetDonationByOrgIdConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { QueryGetDonationByOrgIdConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
-import {
-  createTestDonationsForOrganization,
-  TestDonationType,
-} from "../../helpers/donation";
-import {
-  createTestUserAndOrganization,
-  TestOrganizationType,
-} from "../../helpers/userAndOrg";
+import type mongoose from "mongoose";
+import type { TestDonationType } from "../../helpers/donation";
+import { createTestDonationsForOrganization } from "../../helpers/donation";
+import type { TestOrganizationType } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testDonations: TestDonationType[];

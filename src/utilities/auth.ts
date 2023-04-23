@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from "../constants";
-import { InterfaceUser } from "../models";
+import type { InterfaceUser } from "../models";
 
 export interface InterfaceJwtTokenPayload {
   tokenVersion: number;

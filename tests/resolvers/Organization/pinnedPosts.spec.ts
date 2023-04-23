@@ -1,10 +1,10 @@
 import "dotenv/config";
 import { pinnedPosts as pinnedPostsResolver } from "../../../src/resolvers/Organization/pinnedPosts";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { Post } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { TestOrganizationType } from "../../helpers/userAndOrg";
+import type { TestOrganizationType } from "../../helpers/userAndOrg";
 import { createTestPost } from "../../helpers/posts";
 
 let MONGOOSE_INSTANCE: typeof mongoose;

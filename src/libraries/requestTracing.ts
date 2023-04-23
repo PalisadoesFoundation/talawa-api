@@ -3,7 +3,7 @@ import cls from "cls-hooked";
 // @ts-ignore
 import clsBluebird from "cls-bluebird";
 import { customAlphabet } from "nanoid";
-import { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 
 // Alphabets used in the custom nanoid function
 const alphabets = "0123456789abcdefghijklmnopqrstuvwxyz";

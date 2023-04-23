@@ -10,7 +10,7 @@ import {
   vi,
 } from "vitest";
 import { connect, disconnect } from "../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { nanoid } from "nanoid";
 import { INVALID_FILE_TYPE } from "../../src/constants";
 

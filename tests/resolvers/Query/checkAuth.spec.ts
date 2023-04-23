@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { checkAuth as checkAuthResolver } from "../../../src/resolvers/Query/checkAuth";
 
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";

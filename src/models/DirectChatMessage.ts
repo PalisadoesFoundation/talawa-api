@@ -1,6 +1,7 @@
-import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { InterfaceDirectChat } from "./DirectChat";
-import { InterfaceUser } from "./User";
+import type { PopulatedDoc, Types, Document } from "mongoose";
+import { Schema, model, models } from "mongoose";
+import type { InterfaceDirectChat } from "./DirectChat";
+import type { InterfaceUser } from "./User";
 /**
  * This is an interface representing a document for a direct chat message in the database(MongoDB).
  */

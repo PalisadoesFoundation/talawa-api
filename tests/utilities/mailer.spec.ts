@@ -7,7 +7,7 @@ import {
 } from "../../src/constants";
 import { mailer } from "../../src/utilities/mailer";
 import { nanoid } from "nanoid";
-import Mail from "nodemailer/lib/mailer";
+import type Mail from "nodemailer/lib/mailer";
 
 interface TestInterfaceMailFields {
   emailTo: string;

@@ -1,4 +1,5 @@
-import { unlink, PathLike } from "fs";
+import type { PathLike } from "fs";
+import { unlink } from "fs";
 import { logger } from "../libraries";
 /**
  * This function deletes a duplicated image using the function fs.unlink().

@@ -2,11 +2,12 @@
 import "dotenv/config";
 import { eventsByOrganizationConnection as eventsByOrganizationConnectionResolver } from "../../../src/resolvers/Query/eventsByOrganizationConnection";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
-import { QueryEventsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
+import type mongoose from "mongoose";
+import type { QueryEventsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Event } from "../../../src/models";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import { createEventWithRegistrant, TestEventType } from "../../helpers/events";
+import type { TestEventType } from "../../helpers/events";
+import { createEventWithRegistrant } from "../../helpers/events";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestTask } from "../../helpers/task";
 

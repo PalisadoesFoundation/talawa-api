@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, OrganizationTagUser, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {

@@ -1,7 +1,8 @@
-import { Types } from "mongoose";
+import type { Types } from "mongoose";
 import { errors, requestContext } from "../libraries";
 import { USER_NOT_AUTHORIZED_ADMIN } from "../constants";
-import { InterfaceOrganization, User } from "../models";
+import type { InterfaceOrganization } from "../models";
+import { User } from "../models";
 /**
  * If the current user is an admin of the organisation, this function returns `true` otherwise it returns `false`.
  * @remarks

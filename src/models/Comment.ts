@@ -1,6 +1,7 @@
-import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { InterfacePost } from "./Post";
-import { InterfaceUser } from "./User";
+import type { PopulatedDoc, Types, Document } from "mongoose";
+import { Schema, model, models } from "mongoose";
+import type { InterfacePost } from "./Post";
+import type { InterfaceUser } from "./User";
 /**
  * This is an interface representing a document for a comment in the database(MongoDB).
  */

@@ -1,5 +1,6 @@
 import { SchemaDirectiveVisitor } from "apollo-server-express";
-import { defaultFieldResolver, GraphQLField } from "graphql";
+import type { GraphQLField } from "graphql";
+import { defaultFieldResolver } from "graphql";
 import { USER_NOT_AUTHORIZED_ERROR, USER_NOT_FOUND_ERROR } from "../constants";
 import { errors, requestContext } from "../libraries";
 import { User } from "../models";

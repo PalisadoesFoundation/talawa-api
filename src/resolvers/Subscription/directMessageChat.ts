@@ -1,5 +1,5 @@
 import { withFilter } from "apollo-server-express";
-import { SubscriptionResolvers } from "../../types/generatedGraphQLTypes";
+import type { SubscriptionResolvers } from "../../types/generatedGraphQLTypes";
 
 const CHAT_CHANNEL = "CHAT_CHANNEL";
 /**

@@ -1,21 +1,18 @@
 import "dotenv/config";
-import mongoose, { Document } from "mongoose";
-import {
-  User,
-  Organization,
-  Plugin,
-  InterfacePlugin,
-} from "../../../src/models";
-import { MutationUpdatePluginInstalledOrgsArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import type { InterfacePlugin } from "../../../src/models";
+import { User, Organization, Plugin } from "../../../src/models";
+import type { MutationUpdatePluginInstalledOrgsArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { updatePluginInstalledOrgs as updatePluginInstalledOrgsResolver } from "../../../src/resolvers/Mutation/updatePluginInstalledOrgs";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import {
-  createTestUserAndOrganization,
+import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;

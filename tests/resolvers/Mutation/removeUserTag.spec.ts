@@ -1,6 +1,7 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
-import { MutationRemoveUserTagArgs } from "../../../src/types/generatedGraphQLTypes";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { MutationRemoveUserTagArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -17,9 +18,11 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { TestUserType, createTestUser } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 import { OrganizationTagUser, TagUser } from "../../../src/models";
-import { createTwoLevelTagsWithOrg, TestUserTagType } from "../../helpers/tags";
+import type { TestUserTagType } from "../../helpers/tags";
+import { createTwoLevelTagsWithOrg } from "../../helpers/tags";
 
 let testUser: TestUserType;
 let randomUser: TestUserType;

@@ -1,5 +1,5 @@
 import { withFilter } from "apollo-server-express";
-import { SubscriptionResolvers } from "../../types/generatedGraphQLTypes";
+import type { SubscriptionResolvers } from "../../types/generatedGraphQLTypes";
 import { GroupChat } from "../../models";
 
 const MESSAGE_SENT_TO_GROUP_CHAT = "MESSAGE_SENT_TO_GROUP_CHAT";

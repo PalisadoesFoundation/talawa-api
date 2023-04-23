@@ -1,4 +1,4 @@
-import { UserTagResolvers } from "../../types/generatedGraphQLTypes";
+import type { UserTagResolvers } from "../../types/generatedGraphQLTypes";
 import { OrganizationTagUser } from "../../models";
 
 export const parentTag: UserTagResolvers["parentTag"] = async (parent) => {

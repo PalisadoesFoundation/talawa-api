@@ -1,7 +1,8 @@
 import "dotenv/config";
 import { User } from "../../../src/models";
-import mongoose, { Types } from "mongoose";
-import { MutationBlockPluginCreationBySuperadminArgs } from "../../../src/types/generatedGraphQLTypes";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { MutationBlockPluginCreationBySuperadminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { blockPluginCreationBySuperadmin as blockPluginCreationBySuperadminResolver } from "../../../src/resolvers/Mutation/blockPluginCreationBySuperadmin";
@@ -18,7 +19,8 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { TestUserType, createTestUser } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;

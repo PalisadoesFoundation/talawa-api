@@ -3,7 +3,7 @@ import cls from "cls-hooked";
 // @ts-ignore
 import clsBluebird from "cls-bluebird";
 import i18n from "i18n";
-import { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 
 export const requestContextNamespace = cls.createNamespace(
   "talawa-request-context"

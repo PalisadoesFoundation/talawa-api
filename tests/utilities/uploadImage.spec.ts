@@ -14,13 +14,11 @@ import {
   disconnect,
   dropAllCollectionsFromDatabase,
 } from "../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { User } from "../../src/models";
 import path from "path";
-import {
-  createTestUserAndOrganization,
-  TestUserType,
-} from "../helpers/userAndOrg";
+import type { TestUserType } from "../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;

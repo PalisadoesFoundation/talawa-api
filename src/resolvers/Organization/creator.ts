@@ -1,6 +1,6 @@
 import { User } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
+import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
 /**
  * This resolver function will fetch and return the creator of the Organization from database.

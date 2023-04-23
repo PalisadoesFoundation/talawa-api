@@ -1,4 +1,4 @@
-import { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Task } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 /**

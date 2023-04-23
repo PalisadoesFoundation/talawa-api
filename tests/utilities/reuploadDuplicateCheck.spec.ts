@@ -10,9 +10,9 @@ import {
   vi,
 } from "vitest";
 import { connect, disconnect } from "../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { nanoid } from "nanoid";
-import { TypeImagePath } from "../../src/utilities/reuploadDuplicateCheck";
+import type { TypeImagePath } from "../../src/utilities/reuploadDuplicateCheck";
 
 const testNewImagePath: TypeImagePath = `${nanoid()}-testNewImagePath`;
 const testOldImagePath: TypeImagePath = `${nanoid()}-testOldImagePath`;

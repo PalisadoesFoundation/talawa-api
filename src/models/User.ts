@@ -1,17 +1,10 @@
-import {
-  Schema,
-  model,
-  PopulatedDoc,
-  PaginateModel,
-  Types,
-  Document,
-  models,
-} from "mongoose";
+import type { PopulatedDoc, PaginateModel, Types, Document } from "mongoose";
+import { Schema, model, models } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
 import validator from "validator";
-import { InterfaceEvent } from "./Event";
-import { InterfaceMembershipRequest } from "./MembershipRequest";
-import { InterfaceOrganization } from "./Organization";
+import type { InterfaceEvent } from "./Event";
+import type { InterfaceMembershipRequest } from "./MembershipRequest";
+import type { InterfaceOrganization } from "./Organization";
 /**
  * This is an interface that represents a database(MongoDB) document for User.
  */

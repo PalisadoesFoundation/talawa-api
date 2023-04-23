@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { Types } from "mongoose";
 import { Post } from "../../../src/models";
-import { MutationUpdatePostArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationUpdatePostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { updatePost as updatePostResolver } from "../../../src/resolvers/Mutation/updatePost";
 import {
@@ -11,8 +11,9 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
-import { TestUserType } from "../../helpers/userAndOrg";
-import { createTestPost, TestPostType } from "../../helpers/posts";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import type { TestPostType } from "../../helpers/posts";
+import { createTestPost } from "../../helpers/posts";
 
 let testUser: TestUserType;
 let testPost: TestPostType;

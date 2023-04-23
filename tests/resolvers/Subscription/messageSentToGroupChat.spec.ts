@@ -1,11 +1,9 @@
 import "dotenv/config";
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
-import {
-  TestGroupChatType,
-  createTestGroupChatMessage,
-} from "../../helpers/groupChat";
+import type mongoose from "mongoose";
+import type { TestGroupChatType } from "../../helpers/groupChat";
+import { createTestGroupChatMessage } from "../../helpers/groupChat";
 import { filterFunction } from "../../../src/resolvers/Subscription/messageSentToGroupChat";
 
 let MONGOOSE_INSTANCE: typeof mongoose;

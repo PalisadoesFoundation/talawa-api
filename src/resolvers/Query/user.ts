@@ -1,5 +1,5 @@
 import { USER_NOT_FOUND_ERROR } from "../../constants";
-import { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { errors } from "../../libraries";
 import { User } from "../../models";
 /**

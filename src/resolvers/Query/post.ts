@@ -1,4 +1,4 @@
-import { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Post } from "../../models";
 import { errors } from "../../libraries";
 import { POST_NOT_FOUND_ERROR } from "../../constants";

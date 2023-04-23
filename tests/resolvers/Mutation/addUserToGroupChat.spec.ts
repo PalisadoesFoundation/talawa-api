@@ -1,7 +1,8 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { Organization, GroupChat } from "../../../src/models";
-import { MutationAddUserToGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationAddUserToGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -20,11 +21,12 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { TestUserType, TestOrganizationType } from "../../helpers/userAndOrg";
-import {
-  TestGroupChatType,
-  createTestGroupChat,
-} from "../../helpers/groupChat";
+import type {
+  TestUserType,
+  TestOrganizationType,
+} from "../../helpers/userAndOrg";
+import type { TestGroupChatType } from "../../helpers/groupChat";
+import { createTestGroupChat } from "../../helpers/groupChat";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;

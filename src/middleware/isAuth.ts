@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { Request } from "express";
+import type { Request } from "express";
 import { logger } from "../libraries";
 import { ACCESS_TOKEN_SECRET } from "../constants";
 

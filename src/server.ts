@@ -24,7 +24,7 @@ import {
 } from "./directives";
 import { typeDefs } from "./typeDefs";
 import { resolvers } from "./resolvers";
-import { InterfaceJwtTokenPayload } from "./utilities";
+import type { InterfaceJwtTokenPayload } from "./utilities";
 import { ACCESS_TOKEN_SECRET, LAST_RESORT_SUPERADMIN_EMAIL } from "./constants";
 import { User } from "./models";
 import { express as voyagerMiddleware } from "graphql-voyager/middleware";

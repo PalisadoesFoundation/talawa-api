@@ -1,15 +1,8 @@
-import {
-  InterfaceOrganizationTagUser,
-  OrganizationTagUser,
-  TagUser,
-} from "../../src/models";
+import type { InterfaceOrganizationTagUser } from "../../src/models";
+import { OrganizationTagUser, TagUser } from "../../src/models";
 import { nanoid } from "nanoid";
-import {
-  createTestUserAndOrganization,
-  TestUserType,
-  TestOrganizationType,
-  createTestUser,
-} from "./userAndOrg";
+import type { TestUserType, TestOrganizationType } from "./userAndOrg";
+import { createTestUserAndOrganization, createTestUser } from "./userAndOrg";
 
 export type TestUserTagType = InterfaceOrganizationTagUser | null;
 

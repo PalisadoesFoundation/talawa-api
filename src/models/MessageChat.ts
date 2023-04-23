@@ -1,5 +1,6 @@
-import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { InterfaceUser } from "./User";
+import type { PopulatedDoc, Types, Document } from "mongoose";
+import { Schema, model, models } from "mongoose";
+import type { InterfaceUser } from "./User";
 /**
  * This is an interface representing a document for a chat in the database(MongoDB).
  */

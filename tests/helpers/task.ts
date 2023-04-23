@@ -1,5 +1,6 @@
-import { Event, Task, InterfaceEvent, InterfaceTask } from "../../src/models";
-import { Document } from "mongoose";
+import type { InterfaceEvent, InterfaceTask } from "../../src/models";
+import { Event, Task } from "../../src/models";
+import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
 export type TestEventType =

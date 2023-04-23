@@ -3,7 +3,7 @@ import {
   CHAT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
 } from "../../constants";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { GroupChat, GroupChatMessage, Organization } from "../../models";
 /**

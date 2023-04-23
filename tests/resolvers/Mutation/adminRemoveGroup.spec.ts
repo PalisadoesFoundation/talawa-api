@@ -1,7 +1,8 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { Organization, GroupChat } from "../../../src/models";
-import { MutationAdminRemoveGroupArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationAdminRemoveGroupArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { adminRemoveGroup as adminRemoveGroupResolver } from "../../../src/resolvers/Mutation/adminRemoveGroup";
@@ -12,11 +13,12 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { TestUserType, TestOrganizationType } from "../../helpers/userAndOrg";
-import {
-  TestGroupChatType,
-  createTestGroupChat,
-} from "../../helpers/groupChat";
+import type {
+  TestUserType,
+  TestOrganizationType,
+} from "../../helpers/userAndOrg";
+import type { TestGroupChatType } from "../../helpers/groupChat";
+import { createTestGroupChat } from "../../helpers/groupChat";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;

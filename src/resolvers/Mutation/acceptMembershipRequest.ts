@@ -1,7 +1,7 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
-import { Types } from "mongoose";
+import type { Types } from "mongoose";
 import { MembershipRequest, Organization, User } from "../../models";
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,

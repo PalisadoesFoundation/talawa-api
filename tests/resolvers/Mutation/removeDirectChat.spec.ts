@@ -1,11 +1,12 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import {
   Organization,
   DirectChat,
   DirectChatMessage,
 } from "../../../src/models";
-import { MutationRemoveDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationRemoveDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -22,11 +23,12 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { TestOrganizationType, TestUserType } from "../../helpers/userAndOrg";
-import {
-  createTestDirectChat,
-  TestDirectChatType,
-} from "../../helpers/directChat";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
+import type { TestDirectChatType } from "../../helpers/directChat";
+import { createTestDirectChat } from "../../helpers/directChat";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;

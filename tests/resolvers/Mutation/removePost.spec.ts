@@ -1,6 +1,7 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
-import { MutationRemovePostArgs } from "../../../src/types/generatedGraphQLTypes";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { MutationRemovePostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -8,8 +9,10 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { createTestUser, TestUserType } from "../../helpers/userAndOrg";
-import { TestPostType, createTestPost } from "../../helpers/posts";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
+import type { TestPostType } from "../../helpers/posts";
+import { createTestPost } from "../../helpers/posts";
 import {
   beforeAll,
   afterAll,

@@ -1,7 +1,10 @@
 import "dotenv/config";
-import mongoose, { Document, Types } from "mongoose";
-import { Event, Task, InterfaceTask } from "../../../src/models";
-import { MutationUpdateTaskArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { InterfaceTask } from "../../../src/models";
+import { Event, Task } from "../../../src/models";
+import type { MutationUpdateTaskArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { updateTask as updateTaskResolver } from "../../../src/resolvers/Mutation/updateTask";
@@ -11,7 +14,7 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { TestUserType } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 
 let MONGOOSE_INSTANCE: typeof mongoose;

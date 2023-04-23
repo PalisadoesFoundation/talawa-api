@@ -1,7 +1,8 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { User, Organization } from "../../../src/models";
-import { MutationRemoveAdminArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationRemoveAdminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { removeAdmin as removeAdminResolver } from "../../../src/resolvers/Mutation/removeAdmin";
@@ -20,11 +21,13 @@ import {
   afterEach,
   vi,
 } from "vitest";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
 import {
   createTestUser,
   createTestUserAndOrganization,
-  TestOrganizationType,
-  TestUserType,
 } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;

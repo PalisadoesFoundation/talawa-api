@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { Event, Organization, User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import {
   afterAll,
   afterEach,
@@ -16,12 +16,12 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { TestEventType } from "../../helpers/events";
-import {
-  createTestUser,
+import type { TestEventType } from "../../helpers/events";
+import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testAdminUser: TestUserType;

@@ -1,7 +1,8 @@
-import { Schema, Types, model, PopulatedDoc, Document, models } from "mongoose";
-import { InterfaceGroupChatMessage } from "./GroupChatMessage";
-import { InterfaceOrganization } from "./Organization";
-import { InterfaceUser } from "./User";
+import type { Types, PopulatedDoc, Document } from "mongoose";
+import { Schema, model, models } from "mongoose";
+import type { InterfaceGroupChatMessage } from "./GroupChatMessage";
+import type { InterfaceOrganization } from "./Organization";
+import type { InterfaceUser } from "./User";
 /**
  * This is an interface representing a document for a group chat in the database(MongoDB).
  */

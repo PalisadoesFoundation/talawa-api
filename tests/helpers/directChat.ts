@@ -1,16 +1,12 @@
 import { nanoid } from "nanoid";
-import {
-  DirectChat,
-  DirectChatMessage,
+import type {
   InterfaceDirectChat,
   InterfaceDirectChatMessage,
 } from "../../src/models";
-import {
-  createTestUserAndOrganization,
-  TestOrganizationType,
-  TestUserType,
-} from "./userAndOrg";
-import { Document } from "mongoose";
+import { DirectChat, DirectChatMessage } from "../../src/models";
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
+import { createTestUserAndOrganization } from "./userAndOrg";
+import type { Document } from "mongoose";
 
 export type TestDirectChatType =
   | (InterfaceDirectChat & Document<any, any, InterfaceDirectChat>)

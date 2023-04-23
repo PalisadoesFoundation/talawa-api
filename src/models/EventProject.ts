@@ -1,7 +1,8 @@
-import { Schema, Types, model, PopulatedDoc, Document, models } from "mongoose";
-import { InterfaceEvent } from "./Event";
-import { InterfaceTask } from "./Task";
-import { InterfaceUser } from "./User";
+import type { Types, PopulatedDoc, Document } from "mongoose";
+import { Schema, model, models } from "mongoose";
+import type { InterfaceEvent } from "./Event";
+import type { InterfaceTask } from "./Task";
+import type { InterfaceUser } from "./User";
 /**
  * This is an interface representing a document for an event project in the database(MongoDB).
  */

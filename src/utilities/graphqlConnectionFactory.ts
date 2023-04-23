@@ -1,4 +1,4 @@
-import { ConnectionPageInfo } from "../types/generatedGraphQLTypes";
+import type { ConnectionPageInfo } from "../types/generatedGraphQLTypes";
 
 interface InterfaceConnectionEdge<T> {
   cursor: string;

@@ -1,4 +1,4 @@
-import { MembershipRequestResolvers } from "../../types/generatedGraphQLTypes";
+import type { MembershipRequestResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 /**
  * This resolver function will retrieve and return the user who sent the membership request from the database.

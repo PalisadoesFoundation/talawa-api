@@ -1,5 +1,6 @@
-import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { InterfaceUser, User } from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceUser } from "../../models";
+import { User } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import { UNAUTHENTICATED_ERROR } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
