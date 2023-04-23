@@ -21,8 +21,8 @@ export const organizationsConnection: QueryResolvers["organizationsConnection"] 
 
     const organizations = await Organization.find(where)
       .sort(sort)
-      .limit(args.first!)
-      .skip(args.skip!)
+      .limit(args.first ?? 0)
+      .skip(args.skip ?? 0)
       .lean();
 
     return organizations;

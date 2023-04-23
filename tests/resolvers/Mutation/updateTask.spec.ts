@@ -27,19 +27,19 @@ beforeAll(async () => {
   testTasks = await Task.insertMany([
     {
       title: "title",
-      event: testEvent!._id,
-      creator: testUser!._id,
+      event: testEvent?._id,
+      creator: testUser?._id,
     },
     {
       title: "title",
-      event: testEvent!._id,
+      event: testEvent?._id,
       creator: Types.ObjectId().toString(),
     },
   ]);
 
   await Event.updateOne(
     {
-      _id: testEvent!._id,
+      _id: testEvent?._id,
     },
     {
       $push: {
@@ -126,7 +126,7 @@ describe("resolvers -> Mutation -> updateTask", () => {
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { updateTask: updateTaskResolverNotFoundError } = await import(

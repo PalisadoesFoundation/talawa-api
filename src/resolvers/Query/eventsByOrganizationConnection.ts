@@ -16,8 +16,8 @@ export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizatio
 
     const events = await Event.find(where)
       .sort(sort)
-      .limit(args.first!)
-      .skip(args.skip!)
+      .limit(args.first ?? 0)
+      .skip(args.skip ?? 0)
       .populate("creator", "-password")
       .populate("tasks")
       .populate("admins", "-password")

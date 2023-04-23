@@ -50,8 +50,8 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     );
   }
 
-  const currentUserIsEventAdmin = event.admins.some(
-    (admin) => admin.toString() === context.userId.toString()
+  const currentUserIsEventAdmin = event.admins.some((admin) =>
+    admin.equals(context.userId)
   );
 
   // checks if current user is an admin of the event with _id === args.id
@@ -64,12 +64,15 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
   }
 
   // Checks if the recieved arguments are valid according to standard input norms
-  const validationResult_Title = isValidString(args.data!.title!, 256);
+  const validationResult_Title = isValidString(args.data?.title ?? "", 256);
   const validationResult_Description = isValidString(
-    args.data!.description!,
+    args.data?.description ?? "",
     500
   );
-  const validationResult_Location = isValidString(args.data!.location!, 50);
+  const validationResult_Location = isValidString(
+    args.data?.location ?? "",
+    50
+  );
   if (!validationResult_Title.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
@@ -99,9 +102,8 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     {
       _id: args.id,
     },
-    // @ts-ignore
     {
-      ...args.data,
+      ...(args.data as any),
     },
     {
       new: true,

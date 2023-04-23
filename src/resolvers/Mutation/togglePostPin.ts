@@ -41,12 +41,11 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
 
   // Check if the current user is authorized to perform the operation
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organizationId) =>
-      organizationId.toString() === post!.organization.toString()
+    (organizationId) => organizationId.equals(post?.organization)
   );
 
   if (
-    !(currentUser!.userType === "SUPERADMIN") &&
+    !((currentUser?.userType ?? "") === "SUPERADMIN") &&
     !currentUserIsOrganizationAdmin
   ) {
     throw new errors.UnauthorizedError(
@@ -61,8 +60,8 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     _id: post.organization,
   }).lean();
 
-  const currentPostIsPinned = organization!.pinnedPosts.some(
-    (postID) => postID.toString() === args.id.toString()
+  const currentPostIsPinned = organization?.pinnedPosts.some((postID) =>
+    postID.equals(args.id)
   );
 
   if (currentPostIsPinned) {

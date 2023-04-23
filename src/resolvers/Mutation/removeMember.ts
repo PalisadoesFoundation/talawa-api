@@ -1,6 +1,6 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Organization } from "../../models";
+import { User, Organization, InterfaceOrganization } from "../../models";
 import { adminCheck } from "../../utilities";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -45,7 +45,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   });
 
   // Checks whether current user making the request is an admin of organization.
-  await adminCheck(context.userId, organization!);
+  await adminCheck(context.userId, organization);
 
   const user = await User.findOne({
     _id: args.data.userId,
@@ -60,8 +60,8 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     );
   }
 
-  const userIsOrganizationMember = organization?.members.some(
-    (member) => member.toString() === user._id.toString()
+  const userIsOrganizationMember = organization?.members.some((member) =>
+    member.equals(user._id)
   );
 
   if (!userIsOrganizationMember) {
@@ -73,7 +73,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   }
 
   // Check if the current user is removing self
-  if (user._id.toString() === currentUser?._id.toString()) {
+  if (user._id.equals(currentUser?._id)) {
     throw new errors.ConflictError(
       requestContext.translate(USER_REMOVING_SELF.MESSAGE),
       USER_REMOVING_SELF.CODE,
@@ -81,8 +81,8 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     );
   }
 
-  const userIsOrganizationAdmin = organization?.admins.some(
-    (admin) => admin.toString() === user._id.toString()
+  const userIsOrganizationAdmin = organization?.admins.some((admin) =>
+    admin.equals(user._id)
   );
 
   /*
@@ -104,7 +104,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     of organization. If match is true assigns error message to errors list
     and breaks out of loop.
     */
-  if (organization?.creator.toString() === user._id.toString()) {
+  if (organization?.creator.equals(user._id)) {
     throw new errors.UnauthorizedError(
       requestContext.translate(ADMIN_REMOVING_CREATOR.MESSAGE),
       ADMIN_REMOVING_CREATOR.CODE,
@@ -144,5 +144,5 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     }
   );
 
-  return organization!;
+  return organization ?? ({} as InterfaceOrganization);
 };

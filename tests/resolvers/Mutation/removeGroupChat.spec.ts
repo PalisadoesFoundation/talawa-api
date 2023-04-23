@@ -38,11 +38,11 @@ beforeAll(async () => {
   const testGroupChatMessage = temp[3];
   testGroupChat = await GroupChat.findOneAndUpdate(
     {
-      _id: testGroupChat!._id,
+      _id: testGroupChat?._id,
     },
     {
       $push: {
-        messages: testGroupChatMessage!._id,
+        messages: testGroupChatMessage?._id,
       },
     },
     {
@@ -74,7 +74,7 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
       const { removeGroupChat: removeGroupChatResolver } = await import(
         "../../../src/resolvers/Mutation/removeGroupChat"
@@ -99,7 +99,7 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
     try {
       await GroupChat.updateOne(
         {
-          _id: testGroupChat!._id,
+          _id: testGroupChat?._id,
         },
         {
           $set: {
@@ -109,11 +109,11 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
       );
 
       const args: MutationRemoveGroupChatArgs = {
-        chatId: testGroupChat!.id,
+        chatId: testGroupChat?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { removeGroupChat: removeGroupChatResolver } = await import(
@@ -140,18 +140,18 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
     try {
       await GroupChat.updateOne(
         {
-          _id: testGroupChat!._id,
+          _id: testGroupChat?._id,
         },
         {
           $set: {
-            organization: testOrganization!._id,
+            organization: testOrganization?._id,
           },
         }
       );
 
       await Organization.updateOne(
         {
-          _id: testOrganization!._id,
+          _id: testOrganization?._id,
         },
         {
           $set: {
@@ -161,11 +161,11 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
       );
 
       const args: MutationRemoveGroupChatArgs = {
-        chatId: testGroupChat!.id,
+        chatId: testGroupChat?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { removeGroupChat: removeGroupChatResolver } = await import(
@@ -185,21 +185,21 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
   associated to it and returns it`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization!._id,
+        _id: testOrganization?._id,
       },
       {
         $push: {
-          admins: testUser!._id,
+          admins: testUser?._id,
         },
       }
     );
 
     const args: MutationRemoveGroupChatArgs = {
-      chatId: testGroupChat!.id,
+      chatId: testGroupChat?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const { removeGroupChat: removeGroupChatResolver } = await import(
@@ -212,10 +212,10 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
       context
     );
 
-    expect(removeGroupChatPayload).toEqual(testGroupChat!.toObject());
+    expect(removeGroupChatPayload).toEqual(testGroupChat?.toObject());
 
     const testDeletedGroupChatMessages = await GroupChatMessage.find({
-      groupChatMessageBelongsTo: testGroupChat!._id,
+      groupChatMessageBelongsTo: testGroupChat?._id,
     }).lean();
 
     expect(testDeletedGroupChatMessages).toEqual([]);

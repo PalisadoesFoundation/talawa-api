@@ -52,7 +52,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       };
 
       const context = {
-        userId: testUser1!.id,
+        userId: testUser1?.id,
       };
       await User.findByIdAndUpdate(
         {
@@ -105,7 +105,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
     try {
       await User.updateOne(
         {
-          _id: testUser1!._id,
+          _id: testUser1?._id,
         },
         {
           $set: {
@@ -119,7 +119,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       };
 
       const context = {
-        userId: testUser1!.id,
+        userId: testUser1?.id,
       };
 
       const { rejectAdmin: rejectAdminResolver } = await import(
@@ -134,11 +134,11 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
 
   it("should  not delete the user with _id === args.id but set its adminApproved property to false", async () => {
     const args: MutationRejectAdminArgs = {
-      id: testUser2!.id,
+      id: testUser2?.id,
     };
 
     const context = {
-      userId: testUser1!.id,
+      userId: testUser1?.id,
     };
 
     const { rejectAdmin: rejectAdminResolver } = await import(

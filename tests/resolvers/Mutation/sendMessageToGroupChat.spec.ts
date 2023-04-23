@@ -33,8 +33,8 @@ beforeAll(async () => {
 
   testGroupChat = await GroupChat.create({
     title: "title",
-    creator: testUser!._id,
-    organization: testOrganization!._id,
+    creator: testUser?._id,
+    organization: testOrganization?._id,
   });
 });
 
@@ -54,7 +54,7 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
         messageContent: "",
       };
 
-      const context = { userId: testUser!.id };
+      const context = { userId: testUser?.id };
 
       const { sendMessageToGroupChat: sendMessageToGroupChatResolver } =
         await import("../../../src/resolvers/Mutation/sendMessageToGroupChat");
@@ -104,7 +104,7 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { sendMessageToGroupChat: sendMessageToGroupChatResolver } =
@@ -124,7 +124,7 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
       },
       {
         $push: {
-          users: testUser!._id,
+          users: testUser?._id,
         },
       }
     );
@@ -146,7 +146,7 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
       pubsub,
     };
 
@@ -156,7 +156,7 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
     expect(sendMessageToGroupChatPayload).toEqual(
       expect.objectContaining({
         groupChatMessageBelongsTo: testGroupChat._id,
-        sender: testUser!._id,
+        sender: testUser?._id,
         messageContent: "messageContent",
       })
     );

@@ -44,8 +44,8 @@ export const likePost: MutationResolvers["likePost"] = async (
     );
   }
 
-  const currentUserHasLikedPost = post.likedBy.some(
-    (likedByUser) => likedByUser.toString() === context.userId.toString()
+  const currentUserHasLikedPost = post.likedBy.some((likedByUser) =>
+    likedByUser.equals(context.userId)
   );
 
   // Checks whether currentUser with _id === context.userId has not already liked the post.

@@ -30,7 +30,7 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
       await directChatMessageBelongsToResolver?.(parent, {}, {});
 
     const directChatMessageBelongsTo = await DirectChat.findOne({
-      _id: testDirectChatMessage!.directChatMessageBelongsTo,
+      _id: testDirectChatMessage?.directChatMessageBelongsTo,
     }).lean();
 
     expect(directChatMessageBelongsToPayload).toEqual(

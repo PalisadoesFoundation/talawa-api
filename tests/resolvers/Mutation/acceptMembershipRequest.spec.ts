@@ -60,7 +60,7 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { acceptMembershipRequest: acceptMembershipRequestResolver } =
@@ -86,7 +86,7 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
     try {
       await MembershipRequest.updateOne(
         {
-          _id: testMembershipRequest!._id,
+          _id: testMembershipRequest?._id,
         },
         {
           $set: {
@@ -96,11 +96,11 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
       );
 
       const args: MutationAcceptMembershipRequestArgs = {
-        membershipRequestId: testMembershipRequest!.id,
+        membershipRequestId: testMembershipRequest?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { acceptMembershipRequest: acceptMembershipRequestResolver } =
@@ -124,22 +124,22 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
     try {
       await MembershipRequest.updateOne(
         {
-          _id: testMembershipRequest!._id,
+          _id: testMembershipRequest?._id,
         },
         {
           $set: {
-            organization: testOrganization!._id,
+            organization: testOrganization?._id,
             user: Types.ObjectId().toString(),
           },
         }
       );
 
       const args: MutationAcceptMembershipRequestArgs = {
-        membershipRequestId: testMembershipRequest!.id,
+        membershipRequestId: testMembershipRequest?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { acceptMembershipRequest: acceptMembershipRequestResolver } =
@@ -166,18 +166,18 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
     try {
       await MembershipRequest.updateOne(
         {
-          _id: testMembershipRequest!._id,
+          _id: testMembershipRequest?._id,
         },
         {
           $set: {
-            user: testUser!.id,
+            user: testUser?.id,
           },
         }
       );
 
       await Organization.updateOne(
         {
-          _id: testOrganization!._id,
+          _id: testOrganization?._id,
         },
         {
           $set: {
@@ -187,11 +187,11 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
       );
 
       const args: MutationAcceptMembershipRequestArgs = {
-        membershipRequestId: testMembershipRequest!.id,
+        membershipRequestId: testMembershipRequest?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { acceptMembershipRequest: acceptMembershipRequestResolver } =
@@ -216,22 +216,22 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization!._id,
+          _id: testOrganization?._id,
         },
         {
           $push: {
-            admins: testUser!._id,
-            members: testUser!._id,
+            admins: testUser?._id,
+            members: testUser?._id,
           },
         }
       );
 
       const args: MutationAcceptMembershipRequestArgs = {
-        membershipRequestId: testMembershipRequest!.id,
+        membershipRequestId: testMembershipRequest?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { acceptMembershipRequest: acceptMembershipRequestResolver } =
@@ -249,7 +249,7 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
   it(`accepts the membershipRequest and returns it`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization!._id,
+        _id: testOrganization?._id,
       },
       {
         $set: {
@@ -259,11 +259,11 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
     );
 
     const args: MutationAcceptMembershipRequestArgs = {
-      membershipRequestId: testMembershipRequest!.id,
+      membershipRequestId: testMembershipRequest?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
     const { acceptMembershipRequest: acceptMembershipRequestResolver } =
       await import("../../../src/resolvers/Mutation/acceptMembershipRequest");
@@ -271,31 +271,31 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
       await acceptMembershipRequestResolver?.({}, args, context);
 
     expect(acceptMembershipRequestPayload?._id).toEqual(
-      testMembershipRequest!._id
+      testMembershipRequest?._id
     );
 
     const updatedTestOrganization = await Organization.findOne({
-      _id: testOrganization!._id,
+      _id: testOrganization?._id,
     })
       .select(["members", "membershipRequests"])
       .lean();
 
     expect(updatedTestOrganization).toEqual(
       expect.objectContaining({
-        members: expect.arrayContaining([testUser!._id]),
+        members: expect.arrayContaining([testUser?._id]),
         membershipRequests: expect.arrayContaining([]),
       })
     );
 
     const updatedTestUser = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     })
       .select(["joinedOrganizations", "membershipRequests"])
       .lean();
 
     expect(updatedTestUser).toEqual(
       expect.objectContaining({
-        joinedOrganizations: expect.arrayContaining([testOrganization!._id]),
+        joinedOrganizations: expect.arrayContaining([testOrganization?._id]),
         membershipRequests: expect.arrayContaining([]),
       })
     );

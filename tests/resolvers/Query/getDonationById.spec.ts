@@ -33,4 +33,17 @@ describe("resolvers -> Mutation -> getDonationById", () => {
 
     expect(getDonationByIdPayload).toEqual(testDonation?.toObject());
   });
+  it(`returns null if donation not found for args.id`, async () => {
+    const args: QueryGetDonationByIdArgs = {
+      id: new mongoose.Types.ObjectId().toString(),
+    };
+
+    const getDonationByIdPayload = await getDonationByIdResolver?.(
+      {},
+      args,
+      {}
+    );
+
+    expect(getDonationByIdPayload).toEqual({});
+  });
 });

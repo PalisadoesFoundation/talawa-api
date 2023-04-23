@@ -29,7 +29,7 @@ describe("resolvers -> GroupChatMessage -> sender", () => {
     const senderPayload = await senderResolver?.(parent, {}, {});
 
     const sender = await User.findOne({
-      _id: testGroupChatMessage!.sender,
+      _id: testGroupChatMessage?.sender,
     }).lean();
 
     expect(senderPayload).toEqual(sender);

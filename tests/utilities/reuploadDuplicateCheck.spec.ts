@@ -1,4 +1,4 @@
-require("dotenv").config();
+import dotenv from "dotenv";
 import { ImageHash } from "../../src/models";
 import {
   afterAll,
@@ -12,11 +12,11 @@ import {
 import { connect, disconnect } from "../helpers/db";
 import mongoose from "mongoose";
 import { nanoid } from "nanoid";
-import { TypeImagePath } from "../../src/utilities/reuploadDuplicateCheck";
+dotenv.config();
 
-const testNewImagePath: TypeImagePath = `${nanoid()}-testNewImagePath`;
-const testOldImagePath: TypeImagePath = `${nanoid()}-testOldImagePath`;
-const testNewImageHash: string = `${nanoid()}-testHash`;
+const testNewImagePath = `${nanoid()}-testNewImagePath`;
+const testOldImagePath = `${nanoid()}-testOldImagePath`;
+const testNewImageHash = `${nanoid()}-testHash`;
 
 const testErrors = [
   {
@@ -37,7 +37,7 @@ afterAll(async () => {
 });
 
 describe("utilities -> reuploadDuplicateCheck", () => {
-  afterEach(async () => {
+  afterEach(() => {
     vi.doUnmock("image-hash");
     vi.resetModules();
     vi.restoreAllMocks();

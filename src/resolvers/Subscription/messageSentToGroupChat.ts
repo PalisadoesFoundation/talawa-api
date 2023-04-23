@@ -15,10 +15,14 @@ export const filterFunction = async function (
     _id: groupChatId,
   }).lean();
 
-  const currentUserIsGroupChatMember = groupChat!.users.some(
-    (user) => user.toString() === currentUserId.toString()
-  );
-  return currentUserIsGroupChatMember;
+  if (groupChat) {
+    const currentUserIsGroupChatMember = groupChat.users.some((user) =>
+      user.equals(currentUserId)
+    );
+    return currentUserIsGroupChatMember;
+  } else {
+    return false;
+  }
 };
 /**
  * This property included a `subscribe` method, which is used to
@@ -35,6 +39,6 @@ export const messageSentToGroupChat: SubscriptionResolvers["messageSentToGroupCh
       (_parent, _args, context) =>
         context.pubsub.asyncIterator([MESSAGE_SENT_TO_GROUP_CHAT]),
 
-      async (payload, _variables, context) => filterFunction(payload, context)
+      (payload, _variables, context) => filterFunction(payload, context)
     ),
   };

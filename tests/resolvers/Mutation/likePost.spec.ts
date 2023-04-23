@@ -76,7 +76,7 @@ describe("resolvers -> Mutation -> likePost", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { likePost: likePostResolver } = await import(
@@ -93,32 +93,32 @@ describe("resolvers -> Mutation -> likePost", () => {
   it(`updates likedBy and likeCount fields on post object with _id === args.id and
   returns it `, async () => {
     const args: MutationLikePostArgs = {
-      id: testPost!.id,
+      id: testPost?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const likePostPayload = await likePostResolver?.({}, args, context);
 
-    expect(likePostPayload?.likedBy).toEqual([testUser!._id]);
+    expect(likePostPayload?.likedBy).toEqual([testUser?._id]);
     expect(likePostPayload?.likeCount).toEqual(1);
   });
 
   it(`returns post object with _id === args.id without liking the post if user with
   _id === context.userId has already liked it.`, async () => {
     const args: MutationLikePostArgs = {
-      id: testPost!.id,
+      id: testPost?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const likePostPayload = await likePostResolver?.({}, args, context);
 
-    expect(likePostPayload?.likedBy).toEqual([testUser!._id]);
+    expect(likePostPayload?.likedBy).toEqual([testUser?._id]);
     expect(likePostPayload?.likeCount).toEqual(1);
   });
 });

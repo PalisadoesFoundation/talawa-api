@@ -57,7 +57,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { joinPublicOrganization: joinPublicOrganizationResolver } =
@@ -77,11 +77,11 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationJoinPublicOrganizationArgs = {
-        organizationId: testOrganization!.id,
+        organizationId: testOrganization?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { joinPublicOrganization: joinPublicOrganizationResolver } =
@@ -102,7 +102,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization!._id,
+          _id: testOrganization?._id,
         },
         {
           $set: {
@@ -112,7 +112,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
       );
 
       const args: MutationJoinPublicOrganizationArgs = {
-        organizationId: testOrganization!.id,
+        organizationId: testOrganization?.id,
       };
 
       const context = {
@@ -136,11 +136,11 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationJoinPublicOrganizationArgs = {
-        organizationId: testOrganization!.id,
+        organizationId: testOrganization?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { joinPublicOrganization: joinPublicOrganizationResolver } =
@@ -156,7 +156,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
   it(`returns user object with _id === context.userId after joining the organization    `, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization!._id,
+        _id: testOrganization?._id,
       },
       {
         $set: {
@@ -166,11 +166,11 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     );
 
     const args: MutationJoinPublicOrganizationArgs = {
-      organizationId: testOrganization!.id,
+      organizationId: testOrganization?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
     const { joinPublicOrganization: joinPublicOrganizationResolver } =
       await import("../../../src/resolvers/Mutation/joinPublicOrganization");
@@ -179,7 +179,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
       await joinPublicOrganizationResolver?.({}, args, context);
 
     const updatedTestUser = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     })
       .select(["-password"])
       .populate("joinedOrganizations")
@@ -188,11 +188,11 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     expect(joinPublicOrganizationPayload).toEqual(updatedTestUser);
 
     const updatedTestOrganization = await Organization.findOne({
-      _id: testOrganization!._id,
+      _id: testOrganization?._id,
     })
       .select(["members"])
       .lean();
 
-    expect(updatedTestOrganization!.members).toEqual([testUser!._id]);
+    expect(updatedTestOrganization?.members).toEqual([testUser?._id]);
   });
 });
