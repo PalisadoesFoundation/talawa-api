@@ -732,7 +732,7 @@
 </tr>
 <tr>
 <td colspan="2" align="right" valign="top">data</td>
-<td valign="top"><a href="#createchatinput">createChatInput</a></td>
+<td valign="top"><a href="#createchatinput">createChatInput</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -787,7 +787,7 @@
 </tr>
 <tr>
 <td colspan="2" align="right" valign="top">data</td>
-<td valign="top"><a href="#creategroupchatinput">createGroupChatInput</a></td>
+<td valign="top"><a href="#creategroupchatinput">createGroupChatInput</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -1432,7 +1432,7 @@
 </tr>
 <tr>
 <td colspan="2" align="right" valign="top">data</td>
-<td valign="top"><a href="#updateuserpasswordinput">UpdateUserPasswordInput</a></td>
+<td valign="top"><a href="#updateuserpasswordinput">UpdateUserPasswordInput</a>!</td>
 <td></td>
 </tr>
 <tr>
