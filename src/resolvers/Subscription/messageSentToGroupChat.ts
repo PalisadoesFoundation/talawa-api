@@ -15,10 +15,14 @@ export const filterFunction = async function (
     _id: groupChatId,
   }).lean();
 
-  const currentUserIsGroupChatMember = groupChat!.users.some(
-    (user) => user.toString() === currentUserId.toString()
-  );
-  return currentUserIsGroupChatMember;
+  if (groupChat) {
+    const currentUserIsGroupChatMember = groupChat.users.some((user) =>
+      user.equals(currentUserId)
+    );
+    return currentUserIsGroupChatMember;
+  } else {
+    return false;
+  }
 };
 /**
  * This property included a `subscribe` method, which is used to

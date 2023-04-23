@@ -35,14 +35,14 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    creator: testUsers[0]!._id,
-    admins: [testUsers[0]!._id],
-    members: [testUsers[0]!._id],
+    creator: testUsers[0]?._id,
+    admins: [testUsers[0]?._id],
+    members: [testUsers[0]?._id],
   });
 
   await User.updateOne(
     {
-      _id: testUsers[0]!._id,
+      _id: testUsers[0]?._id,
     },
     {
       $set: {
@@ -54,14 +54,14 @@ beforeAll(async () => {
   );
 
   const testEvent = await Event.create({
-    creator: testUsers[0]!._id,
+    creator: testUsers[0]?._id,
     registrants: [
       {
-        userId: testUsers[0]!._id,
-        user: testUsers[0]!._id,
+        userId: testUsers[0]?._id,
+        user: testUsers[0]?._id,
       },
     ],
-    admins: [testUsers[0]!._id],
+    admins: [testUsers[0]?._id],
     organization: testOrganization._id,
     isRegisterable: true,
     isPublic: true,
@@ -73,7 +73,7 @@ beforeAll(async () => {
 
   await User.updateOne(
     {
-      _id: testUsers[0]!._id,
+      _id: testUsers[0]?._id,
     },
     {
       $set: {
@@ -87,7 +87,7 @@ beforeAll(async () => {
   testTask = await Task.create({
     title: "title",
     event: testEvent._id,
-    creator: testUsers[0]!._id,
+    creator: testUsers[0]?._id,
   });
 
   await Event.updateOne(
@@ -143,7 +143,7 @@ describe("resolvers -> Mutation -> removeTask", () => {
       };
 
       const context = {
-        userId: testUsers[0]!._id,
+        userId: testUsers[0]?._id,
       };
 
       const { removeTask: removeTaskResolver } = await import(
@@ -168,7 +168,7 @@ describe("resolvers -> Mutation -> removeTask", () => {
       };
 
       const context = {
-        userId: testUsers[1]!._id,
+        userId: testUsers[1]?._id,
       };
 
       const { removeTask: removeTaskResolver } = await import(
@@ -188,7 +188,7 @@ describe("resolvers -> Mutation -> removeTask", () => {
     };
 
     const context = {
-      userId: testUsers[0]!._id,
+      userId: testUsers[0]?._id,
     };
 
     const removeTaskPayload = await removeTaskResolver?.({}, args, context);

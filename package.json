@@ -76,6 +76,8 @@
     "validator": "^13.7.0",
     "winston": "^3.8.0",
     "xss-clean": "^0.1.1",
+    "zod": "^3.21.4",
+    "zod-error": "^1.5.0",
     "yargs": "^17.7.1"
   },
   "devDependencies": {

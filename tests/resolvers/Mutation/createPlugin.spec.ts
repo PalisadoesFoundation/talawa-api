@@ -29,7 +29,7 @@ describe("resolvers -> Mutation -> createPlugin", () => {
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const createPluginPayload = await createPluginResolver?.({}, args, context);

@@ -1,3 +1,11 @@
+import { getEnvIssues, envSchema } from "./env";
+
+const issues = getEnvIssues();
+let ENV = process.env;
+if (!issues) {
+  ENV = envSchema.parse(process.env);
+}
+
 export const CHAT_NOT_FOUND_ERROR = {
   DESC: "Chat not found",
   CODE: "chat.notFound",
@@ -302,41 +310,41 @@ export const EMAIL_ALREADY_EXISTS_ERROR = {
 
 export const BASE_URL = `http://localhost:${process.env.port || 4000}/`;
 
-export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
+export const ACCESS_TOKEN_SECRET = ENV.ACCESS_TOKEN_SECRET;
 
-export const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
+export const REFRESH_TOKEN_SECRET = ENV.REFRESH_TOKEN_SECRET;
 
-export const MONGO_DB_URL = process.env.MONGO_DB_URL;
+export const MONGO_DB_URL = ENV.MONGO_DB_URL;
 
-export const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
+export const RECAPTCHA_SECRET_KEY = ENV.RECAPTCHA_SECRET_KEY;
 
-export const MAIL_USERNAME = process.env.MAIL_USERNAME;
+export const MAIL_USERNAME = ENV.MAIL_USERNAME;
 
-export const MAIL_PASSWORD = process.env.MAIL_PASSWORD;
+export const MAIL_PASSWORD = ENV.MAIL_PASSWORD;
 
-export const apiKey = process.env.apiKey;
+export const apiKey = ENV.apiKey;
 
-export const appId = process.env.appId;
+export const appId = ENV.appId;
 
-export const messagingSenderId = process.env.messagingSenderId;
+export const messagingSenderId = ENV.messagingSenderId;
 
-export const projectId = process.env.projectId;
+export const projectId = ENV.projectId;
 
-export const storageBucket = process.env.storageBucket;
+export const storageBucket = ENV.storageBucket;
 
-export const iOSapiKey = process.env.iOSapiKey;
+export const iOSapiKey = ENV.iOSapiKey;
 
-export const iOSappId = process.env.iOSappId;
+export const iOSappId = ENV.iOSappId;
 
-export const iOSmessagingSenderId = process.env.iOSmessagingSenderId;
+export const iOSmessagingSenderId = ENV.iOSmessagingSenderId;
 
-export const iOSprojectId = process.env.iOSprojectId;
+export const iOSprojectId = ENV.iOSprojectId;
 
-export const iOSstorageBucket = process.env.iOSstorageBucket;
+export const iOSstorageBucket = ENV.iOSstorageBucket;
 
-export const iosClientId = process.env.iosClientId;
+export const iosClientId = ENV.iosClientId;
 
-export const iosBundleId = process.env.iosBundleId;
+export const iosBundleId = ENV.iosBundleId;
 
 export const LAST_RESORT_SUPERADMIN_EMAIL =
   process.env.LAST_RESORT_SUPERADMIN_EMAIL;

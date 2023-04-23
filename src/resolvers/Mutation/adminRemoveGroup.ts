@@ -19,6 +19,7 @@ import {
  * 4. If the user is an admin of organization
  * @returns Deleted group chat
  */
+
 export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
   _parent,
   args,

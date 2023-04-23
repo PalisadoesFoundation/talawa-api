@@ -66,7 +66,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationUnblockUserArgs = {
-        organizationId: testOrganization!.id,
+        organizationId: testOrganization?.id,
         userId: Types.ObjectId().toString(),
       };
 
@@ -93,12 +93,12 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationUnblockUserArgs = {
-        organizationId: testOrganization!.id,
-        userId: testUser!.id,
+        organizationId: testOrganization?.id,
+        userId: testUser?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { unblockUser: unblockUserResolver } = await import(
@@ -121,33 +121,33 @@ describe("resolvers -> Mutation -> unblockUser", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization!._id,
+          _id: testOrganization?._id,
         },
         {
           $push: {
-            admins: testUser!._id,
+            admins: testUser?._id,
           },
         }
       );
 
       await User.updateOne(
         {
-          _id: testUser!.id,
+          _id: testUser?.id,
         },
         {
           $push: {
-            adminFor: testOrganization!._id,
+            adminFor: testOrganization?._id,
           },
         }
       );
 
       const args: MutationUnblockUserArgs = {
-        organizationId: testOrganization!.id,
-        userId: testUser!.id,
+        organizationId: testOrganization?.id,
+        userId: testUser?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { unblockUser: unblockUserResolver } = await import(
@@ -165,39 +165,39 @@ describe("resolvers -> Mutation -> unblockUser", () => {
   organization with _id === args.organizationId and returns the updated user`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization!._id,
+        _id: testOrganization?._id,
       },
       {
         $push: {
-          blockedUsers: testUser!._id,
+          blockedUsers: testUser?._id,
         },
       }
     );
 
     await User.updateOne(
       {
-        _id: testUser!.id,
+        _id: testUser?.id,
       },
       {
         $push: {
-          organizationsBlockedBy: testOrganization!._id,
+          organizationsBlockedBy: testOrganization?._id,
         },
       }
     );
 
     const args: MutationUnblockUserArgs = {
-      organizationId: testOrganization!.id,
-      userId: testUser!.id,
+      organizationId: testOrganization?.id,
+      userId: testUser?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const unblockUserPayload = await unblockUserResolver?.({}, args, context);
 
     const testUnblockUserPayload = await User.findOne({
-      _id: testUser!.id,
+      _id: testUser?.id,
     })
       .select(["-password"])
       .lean();
