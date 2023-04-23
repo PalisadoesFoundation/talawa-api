@@ -28,6 +28,8 @@ import { InterfaceJwtTokenPayload } from "./utilities";
 import { ACCESS_TOKEN_SECRET, LAST_RESORT_SUPERADMIN_EMAIL } from "./constants";
 import { User } from "./models";
 import { express as voyagerMiddleware } from "graphql-voyager/middleware";
+import { generateErrorMessage } from "zod-error";
+import { getEnvIssues } from "./env";
 
 const app = express();
 
@@ -75,7 +77,6 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 // Fix added to stream
 app.use(
   requestLogger(
-    // @ts-ignore
     ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms',
     {
       stream: stream,
@@ -97,6 +98,22 @@ app.get("/", (req, res) =>
 );
 
 const httpServer = http.createServer(app);
+
+// Validating the env variables
+const issues = getEnvIssues();
+if (issues) {
+  console.error(
+    "Invalid environment variables found in your .env file, check the errors below!"
+  );
+  console.error(
+    generateErrorMessage(issues, {
+      delimiter: { error: "\\n" },
+    })
+  );
+  process.exit(-1);
+}
+
+logger.info("The environment variables are valid!");
 
 const apolloServer = new ApolloServer({
   typeDefs,
@@ -139,9 +156,9 @@ const apolloServer = new ApolloServer({
     if (!error.originalError) {
       return error;
     }
-    const message = error.message || "Something went wrong !";
-    const data = error.originalError.errors || [];
-    const code = error.originalError.code || 422;
+    const message = error.message ?? "Something went wrong !";
+    const data = error.originalError.errors ?? [];
+    const code = error.originalError.code ?? 422;
     logger.error(message, error);
     return {
       message,

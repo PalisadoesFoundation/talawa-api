@@ -53,13 +53,12 @@ export const updateTask: MutationResolvers["updateTask"] = async (
     );
   }
 
-  // @ts-ignore
   const updatedTask = await Task.findOneAndUpdate(
     {
       _id: task._id,
     },
     {
-      ...args,
+      ...(args as any),
     },
     {
       new: true,

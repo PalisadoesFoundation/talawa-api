@@ -70,7 +70,7 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { sendMembershipRequest: sendMembershipRequestResolver } =
@@ -91,11 +91,11 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationSendMembershipRequestArgs = {
-        organizationId: testOrganization!.id,
+        organizationId: testOrganization?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { sendMembershipRequest: sendMembershipRequestResolver } =
@@ -110,12 +110,12 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
 
   it(`creates new membershipRequest and returns it`, async () => {
     await MembershipRequest.deleteOne({
-      _id: testMembershipRequest!._id,
+      _id: testMembershipRequest?._id,
     });
 
     await Organization.updateOne(
       {
-        _id: testOrganization!._id,
+        _id: testOrganization?._id,
       },
       {
         $set: {
@@ -126,7 +126,7 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
 
     await User.updateOne(
       {
-        _id: testUser!._id,
+        _id: testUser?._id,
       },
       {
         $set: {
@@ -136,11 +136,11 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
     );
 
     const args: MutationSendMembershipRequestArgs = {
-      organizationId: testOrganization!.id,
+      organizationId: testOrganization?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const sendMembershipRequestPayload = await sendMembershipRequestResolver?.(
@@ -151,8 +151,8 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
 
     expect(sendMembershipRequestPayload).toEqual(
       expect.objectContaining({
-        user: testUser!._id,
-        organization: testOrganization!._id,
+        user: testUser?._id,
+        organization: testOrganization?._id,
       })
     );
   });

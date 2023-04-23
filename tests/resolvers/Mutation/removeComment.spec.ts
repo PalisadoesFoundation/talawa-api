@@ -36,13 +36,13 @@ beforeAll(async () => {
 
   testComment = await Comment.create({
     text: "text",
-    creator: testUser!._id,
-    postId: testPost!._id,
+    creator: testUser?._id,
+    postId: testPost?._id,
   });
 
   testPost = await Post.findOneAndUpdate(
     {
-      _id: testPost!._id,
+      _id: testPost?._id,
     },
     {
       $inc: {
@@ -101,7 +101,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { removeComment: removeCommentResolver } = await import(
@@ -124,7 +124,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
       // Remove the user as the creator of the comment
       await Comment.updateOne(
         {
-          _id: testComment!._id,
+          _id: testComment?._id,
         },
         {
           $set: {
@@ -136,21 +136,21 @@ describe("resolvers -> Mutation -> removeComment", () => {
       // Remove the user as the admin of the organization of the post of the comment
       await User.updateOne(
         {
-          _id: testUser!._id,
+          _id: testUser?._id,
         },
         {
           $pull: {
-            adminFor: testPost!.organization,
+            adminFor: testPost?.organization,
           },
         }
       );
 
       const args: MutationRemoveCommentArgs = {
-        id: testComment!.id,
+        id: testComment?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { removeComment: removeCommentResolver } = await import(
@@ -168,11 +168,11 @@ describe("resolvers -> Mutation -> removeComment", () => {
     // Make the user creator of the comment again
     await Comment.updateOne(
       {
-        _id: testComment!._id,
+        _id: testComment?._id,
       },
       {
         $set: {
-          creator: testUser!._id,
+          creator: testUser?._id,
         },
       }
     );
@@ -180,21 +180,21 @@ describe("resolvers -> Mutation -> removeComment", () => {
     // Set the user as the admin of the organization of the post of the comment
     await User.updateOne(
       {
-        _id: testUser!._id,
+        _id: testUser?._id,
       },
       {
         $push: {
-          adminFor: testPost!.organization,
+          adminFor: testPost?.organization,
         },
       }
     );
 
     const args: MutationRemoveCommentArgs = {
-      id: testComment!.id,
+      id: testComment?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const removeCommentPayload = await removeCommentResolver?.(
@@ -204,15 +204,15 @@ describe("resolvers -> Mutation -> removeComment", () => {
     );
 
     const testUpdatedPost = await Post.findOne({
-      _id: testPost!._id,
+      _id: testPost?._id,
     })
       .select(["commentCount"])
       .lean();
 
-    const commentExists = await Comment.exists({ _id: testComment!._id });
+    const commentExists = await Comment.exists({ _id: testComment?._id });
 
-    expect(removeCommentPayload).toEqual(testComment!.toObject());
+    expect(removeCommentPayload).toEqual(testComment?.toObject());
     expect(commentExists).toBeFalsy();
-    expect(testUpdatedPost!.commentCount).toEqual(0);
+    expect(testUpdatedPost?.commentCount).toEqual(0);
   });
 });

@@ -15,17 +15,6 @@ describe("src -> resolvers -> Subscription -> directMessageChat", () => {
         },
       },
     };
-    const payload = {
-      directMessageChat: true,
-    };
-    // @ts-ignore
-    directMessageChatPayload._parent = _parent;
-    // @ts-ignore
-    directMessageChatPayload._args = _args;
-    // @ts-ignore
-    directMessageChatPayload.payload = payload;
-    // @ts-ignore
-    directMessageChatPayload.context = context;
     // @ts-ignore
     const x = directMessageChatPayload?.subscribe(_parent, _args, context);
     expect(x).not.toBe(null);
