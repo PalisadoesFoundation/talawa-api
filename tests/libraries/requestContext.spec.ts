@@ -59,7 +59,7 @@ describe("middleware -> requestContext", () => {
     expect(nextFunction).toBeCalledTimes(1);
   });
 
-  it("testing i18n api with translate and translatePlural", async () => {
+  it("testing i18n api with translate and translatePlural", () => {
     const options: InterfaceInitOptions<any> = {
       defaultLocale: "fr",
       locale: "fr",
@@ -86,7 +86,7 @@ describe("middleware -> requestContext", () => {
     init(incorrectOptions);
   });
 
-  it("testing error thrown for translate i18n not initialized", async () => {
+  it("testing error thrown for translate i18n not initialized", () => {
     try {
       translate({});
     } catch (error: any) {
@@ -96,7 +96,7 @@ describe("middleware -> requestContext", () => {
     }
   });
 
-  it("testing error thrown for translatePlural i18n not initialized", async () => {
+  it("testing error thrown for translatePlural i18n not initialized", () => {
     try {
       translatePlural({});
     } catch (error: any) {

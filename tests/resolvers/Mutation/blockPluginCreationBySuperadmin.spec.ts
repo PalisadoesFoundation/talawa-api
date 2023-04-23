@@ -37,7 +37,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
-  afterEach(async () => {
+  afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });

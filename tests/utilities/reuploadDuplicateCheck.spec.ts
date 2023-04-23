@@ -37,7 +37,7 @@ afterAll(async () => {
 });
 
 describe("utilities -> reuploadDuplicateCheck", () => {
-  afterEach(async () => {
+  afterEach(() => {
     vi.doUnmock("image-hash");
     vi.resetModules();
     vi.restoreAllMocks();

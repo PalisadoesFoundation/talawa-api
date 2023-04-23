@@ -77,7 +77,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-afterEach(async () => {
+afterEach(() => {
   vi.doUnmock("../../../src/constants");
   vi.resetModules();
 });

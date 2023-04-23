@@ -20,8 +20,6 @@ import {
  * @returns Deleted group chat
  */
 
-// this issue can be fixed by changing the return type of MutationResolvers["adminRemoveGroup"] to GroupChat inplace of Message
-// @ts-ignore
 export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
   _parent,
   args,

@@ -47,7 +47,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> addOrganizationImage", () => {
-  afterEach(async () => {
+  afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });

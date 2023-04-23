@@ -40,7 +40,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> createOrganization", () => {
-  afterEach(async () => {
+  afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });

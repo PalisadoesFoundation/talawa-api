@@ -51,7 +51,7 @@ try {
   });
 
   describe("utilities -> uploadImage", () => {
-    afterEach(async () => {
+    afterEach(() => {
       vi.resetModules();
       vi.restoreAllMocks();
     });

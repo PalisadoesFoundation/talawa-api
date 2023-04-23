@@ -4,7 +4,7 @@ import { UNAUTHENTICATED_ERROR } from "../../../src/constants";
 import { errors } from "../../../src/libraries";
 
 describe("libraries -> errors -> unauthenticatedError", () => {
-  it(`throws unauthenticatedError if user not authenticated`, async () => {
+  it(`throws unauthenticatedError if user not authenticated`, () => {
     try {
       throw new errors.UnauthenticatedError(
         UNAUTHENTICATED_ERROR.MESSAGE,

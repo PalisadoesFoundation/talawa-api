@@ -20,7 +20,7 @@ export const mutations = gql`
 
     adminRemoveEvent(eventId: ID!): Event! @auth
 
-    adminRemoveGroup(groupId: ID!): Message! @auth
+    adminRemoveGroup(groupId: ID!): GroupChat! @auth
 
     assignUserTag(input: ToggleUserTagAssignInput!): User @auth
 
