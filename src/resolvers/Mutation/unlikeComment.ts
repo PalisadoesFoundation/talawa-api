@@ -41,8 +41,8 @@ export const unlikeComment: MutationResolvers["unlikeComment"] = async (
     );
   }
 
-  const currentUserHasLikedComment = comment.likedBy.some((liker) =>
-    liker.equals(context.userId)
+  const currentUserHasLikedComment = comment.likedBy.some(
+    (liker) => liker.toString() === context.userId.toString()
   );
 
   if (currentUserHasLikedComment === true) {

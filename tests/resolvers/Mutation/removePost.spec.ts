@@ -81,7 +81,7 @@ describe("resolvers -> Mutation -> removePost", () => {
       };
 
       const context = {
-        userId: testUser?.id,
+        userId: testUser!.id,
       };
 
       const { removePost: removePostResolver } = await import(
@@ -104,11 +104,11 @@ describe("resolvers -> Mutation -> removePost", () => {
 
     try {
       const args: MutationRemovePostArgs = {
-        id: testPost?.id,
+        id: testPost!.id,
       };
 
       const context = {
-        userId: randomUser?.id,
+        userId: randomUser!.id,
       };
 
       const { removePost: removePostResolver } = await import(
@@ -130,11 +130,11 @@ describe("resolvers -> Mutation -> removePost", () => {
     );
 
     const args: MutationRemovePostArgs = {
-      id: testPost?.id,
+      id: testPost!.id,
     };
 
     const context = {
-      userId: testUser?.id,
+      userId: testUser!.id,
     };
 
     const { removePost: removePostResolver } = await import(
@@ -142,6 +142,6 @@ describe("resolvers -> Mutation -> removePost", () => {
     );
 
     const removePostPayload = await removePostResolver?.({}, args, context);
-    expect(removePostPayload).toEqual(testPost?.toObject());
+    expect(removePostPayload).toEqual(testPost!.toObject());
   });
 });

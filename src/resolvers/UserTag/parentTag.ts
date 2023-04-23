@@ -7,6 +7,6 @@ export const parentTag: UserTagResolvers["parentTag"] = async (parent) => {
 
   // If the parentTag is not null, make a database request to fetch the same
   return await OrganizationTagUser.findOne({
-    _id: parent.parentTagId,
+    _id: parent!.parentTagId,
   }).lean();
 };

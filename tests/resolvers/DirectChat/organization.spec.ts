@@ -29,7 +29,7 @@ describe("resolvers -> DirectChat -> organization", () => {
     const organizationPayload = await organizationResolver?.(parent, {}, {});
 
     const organization = await Organization.findOne({
-      _id: testDirectChat?.organization,
+      _id: testDirectChat!.organization,
     }).lean();
 
     expect(organizationPayload).toEqual(organization);

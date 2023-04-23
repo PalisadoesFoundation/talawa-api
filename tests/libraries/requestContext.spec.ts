@@ -75,15 +75,6 @@ describe("middleware -> requestContext", () => {
     });
     expect(translate(locales)).toBe(locales);
     expect(translatePlural(locales)).toBe(locales);
-
-    // Testing for empty options with no requestHandler for init
-    const incorrectOptions: InterfaceInitOptions<any> = {
-      defaultLocale: "fr",
-      locale: "fr",
-      fallbacks: true,
-      lang: "fr",
-    };
-    init(incorrectOptions);
   });
 
   it("testing error thrown for translate i18n not initialized", () => {

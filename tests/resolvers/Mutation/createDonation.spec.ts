@@ -30,11 +30,11 @@ describe("resolvers -> Mutation -> createDonation", () => {
   it(`creates the donation and returns it`, async () => {
     const args: MutationCreateDonationArgs = {
       amount: 1,
-      nameOfOrg: testOrganization?.name ?? "",
-      nameOfUser: `${testUser?.firstName} ${testUser?.lastName}`,
-      orgId: testOrganization?._id,
+      nameOfOrg: testOrganization!.name,
+      nameOfUser: `${testUser!.firstName} ${testUser!.lastName}`,
+      orgId: testOrganization!._id,
       payPalId: "payPalId",
-      userId: testUser?._id,
+      userId: testUser!._id,
     };
 
     const createDonationPayload = await createDonationResolver?.({}, args, {});
@@ -42,11 +42,11 @@ describe("resolvers -> Mutation -> createDonation", () => {
     expect(createDonationPayload).toEqual(
       expect.objectContaining({
         amount: 1,
-        nameOfOrg: testOrganization?.name,
-        nameOfUser: `${testUser?.firstName} ${testUser?.lastName}`,
-        orgId: testOrganization?._id,
+        nameOfOrg: testOrganization!.name,
+        nameOfUser: `${testUser!.firstName} ${testUser!.lastName}`,
+        orgId: testOrganization!._id,
         payPalId: "payPalId",
-        userId: testUser?._id,
+        userId: testUser!._id,
       })
     );
   });

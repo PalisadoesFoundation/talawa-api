@@ -76,7 +76,7 @@ describe("resolvers -> Mutation -> addUserImage", () => {
       async (encodedImageURL: string) => encodedImageURL
     );
     const context = {
-      userId: testUser?._id,
+      userId: testUser!._id,
     };
 
     const addUserImagePayload = await addUserImageResolverUserImage?.(
@@ -86,7 +86,7 @@ describe("resolvers -> Mutation -> addUserImage", () => {
     );
 
     expect(addUserImagePayload).toEqual({
-      ...testUser?.toObject(),
+      ...testUser!.toObject(),
 
       image: "newImageFile.png",
     });

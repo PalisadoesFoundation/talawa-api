@@ -62,7 +62,7 @@ describe("resolvers -> Mutation -> createComment", () => {
       };
 
       const context = {
-        userId: testUser?._id,
+        userId: testUser!._id,
       };
 
       await createCommentResolver?.({}, args, context);
@@ -76,11 +76,11 @@ describe("resolvers -> Mutation -> createComment", () => {
       data: {
         text: "text",
       },
-      postId: testPost?.id,
+      postId: testPost!.id,
     };
 
     const context = {
-      userId: testUser?.id,
+      userId: testUser!.id,
     };
 
     const createCommentPayload = await createCommentResolver?.(
@@ -96,14 +96,14 @@ describe("resolvers -> Mutation -> createComment", () => {
     );
 
     const testUpdatedPost = await Post.findOne({
-      _id: testPost?._id,
+      _id: testPost!._id,
     })
       .select(["commentCount"])
       .lean();
 
-    expect(testUpdatedPost?.commentCount).toEqual(1);
-    expect(createCommentPayload?.postId.toString()).toEqual(
-      testPost?._id.toString()
+    expect(testUpdatedPost!.commentCount).toEqual(1);
+    expect(createCommentPayload!.postId.toString()).toEqual(
+      testPost!._id.toString()
     );
   });
 });

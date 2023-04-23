@@ -30,7 +30,7 @@ describe("resolvers -> GroupChatMessage -> groupChatMessageBelongsTo", () => {
       await groupChatMessageBelongsToResolver?.(parent, {}, {});
 
     const groupChatMessageBelongsTo = await GroupChat.findOne({
-      _id: testGroupChatMessage?.groupChatMessageBelongsTo,
+      _id: testGroupChatMessage!.groupChatMessageBelongsTo,
     }).lean();
 
     expect(groupChatMessageBelongsToPayload).toEqual(groupChatMessageBelongsTo);

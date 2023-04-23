@@ -83,7 +83,7 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
       };
 
       const context = {
-        userId: testUser?._id,
+        userId: testUser!._id,
       };
 
       const { unregisterForEventByUser: unregisterForEventByUserResolver } =
@@ -109,11 +109,11 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
 
     try {
       const args: MutationUnregisterForEventByUserArgs = {
-        id: testEvent?._id,
+        id: testEvent!._id,
       };
 
       const context = {
-        userId: testUser?._id,
+        userId: testUser!._id,
       };
 
       const { unregisterForEventByUser: unregisterForEventByUserResolver } =
@@ -134,13 +134,13 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
   _id === args.id`, async () => {
     await Event.updateOne(
       {
-        _id: testEvent?._id,
+        _id: testEvent!._id,
       },
       {
         $push: {
           registrants: {
-            userId: testUser?._id,
-            user: testUser?._id,
+            userId: testUser!._id,
+            user: testUser!._id,
             status: "ACTIVE",
           },
         },
@@ -149,21 +149,21 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
 
     await User.updateOne(
       {
-        _id: testUser?._id,
+        _id: testUser!._id,
       },
       {
         $push: {
-          registeredEvents: testEvent?._id,
+          registeredEvents: testEvent!._id,
         },
       }
     );
 
     const args: MutationUnregisterForEventByUserArgs = {
-      id: testEvent?._id,
+      id: testEvent!._id,
     };
 
     const context = {
-      userId: testUser?._id,
+      userId: testUser!._id,
     };
 
     const { unregisterForEventByUser: unregisterForEventByUserResolver } =
@@ -173,7 +173,7 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
       await unregisterForEventByUserResolver?.({}, args, context);
 
     const testUnregisterForEventByUserPayload = await Event.findOne({
-      _id: testEvent?._id,
+      _id: testEvent!._id,
     }).lean();
 
     expect(unregisterForEventByUserPayload).toEqual(
@@ -190,11 +190,11 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
 
     try {
       const args: MutationUnregisterForEventByUserArgs = {
-        id: testEvent?._id,
+        id: testEvent!._id,
       };
 
       const context = {
-        userId: testUser?._id,
+        userId: testUser!._id,
       };
 
       const { unregisterForEventByUser: unregisterForEventByUserResolver } =

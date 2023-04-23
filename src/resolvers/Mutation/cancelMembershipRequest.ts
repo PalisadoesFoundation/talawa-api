@@ -60,9 +60,8 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       );
     }
 
-    const currentUserCreatedMembershipRequest = currentUser._id.equals(
-      membershipRequest.user
-    );
+    const currentUserCreatedMembershipRequest =
+      currentUser._id.toString() === membershipRequest.user.toString();
 
     // Checks whether currentUser is the creator of membershipRequest.
     if (currentUserCreatedMembershipRequest === false) {

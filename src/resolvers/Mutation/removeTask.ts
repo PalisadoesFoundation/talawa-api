@@ -49,7 +49,7 @@ export const removeTask: MutationResolvers["removeTask"] = async (
   }
 
   // Checks whether currentUser with _id === context.userId is not the creator of task.
-  if (!task.creator.equals(context.userId)) {
+  if (task.creator.toString() !== context.userId.toString()) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,

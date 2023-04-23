@@ -13,7 +13,7 @@ export const deleteImage = async (
   imageToBeDeleted: string,
   imageBelongingToItem?: string
 ) => {
-  let imageIsDuplicate = false;
+  let imageIsDuplicate: boolean = false;
 
   if (imageBelongingToItem) {
     imageIsDuplicate = await reuploadDuplicateCheck(

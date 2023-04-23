@@ -30,7 +30,7 @@ describe("resolvers -> DirectChat -> users", () => {
 
     const users = await User.find({
       _id: {
-        $in: testDirectChat?.users,
+        $in: testDirectChat!.users,
       },
     }).lean();
 

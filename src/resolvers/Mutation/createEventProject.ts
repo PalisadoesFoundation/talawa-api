@@ -47,8 +47,8 @@ export const createEventProject = async (
     );
   }
 
-  const currentUserIsEventAdmin = event.admins.some((admin) =>
-    admin.equals(context.userId)
+  const currentUserIsEventAdmin = event.admins.some(
+    (admin) => admin.toString() === context.userId.toString()
   );
 
   // Checks whether currentUser with _id === context.userId is an admin of event.

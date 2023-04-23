@@ -22,10 +22,10 @@ beforeAll(async () => {
   const testOrganization = temp[1];
   testPlugin = await Plugin.create({
     pluginName: "pluginName",
-    pluginCreatedBy: `${testUser?.firstName} ${testUser?.lastName}`,
+    pluginCreatedBy: `${testUser!.firstName} ${testUser!.lastName}`,
     pluginDesc: "pluginDesc",
     pluginInstallStatus: false,
-    installedOrgs: [testOrganization?._id],
+    installedOrgs: [testOrganization!._id],
   });
 });
 
@@ -42,7 +42,7 @@ describe("resolvers -> Mutation -> updatePluginStatus", () => {
     };
 
     const context = {
-      userId: testUser?._id,
+      userId: testUser!._id,
     };
 
     const updatePluginStatusPayload = await updatePluginStatusResolver?.(

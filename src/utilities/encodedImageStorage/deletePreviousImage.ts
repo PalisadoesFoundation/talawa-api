@@ -16,7 +16,7 @@ export const deletePreviousImage = async (imageToBeDeletedPath: string) => {
 
   await EncodedImage.findOneAndUpdate(
     {
-      fileName: imageToBeDeletedPath,
+      fileName: imageToBeDeletedPath!,
     },
     {
       $inc: {

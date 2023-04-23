@@ -42,15 +42,15 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    creator: testUsers[0]?._id,
-    admins: [testUsers[0]?._id],
-    members: [testUsers[0]?._id],
+    creator: testUsers[0]!._id,
+    admins: [testUsers[0]!._id],
+    members: [testUsers[0]!._id],
     visibleInSearch: true,
   });
 
   await User.updateOne(
     {
-      _id: testUsers[0]?._id,
+      _id: testUsers[0]!._id,
     },
     {
       $set: {
@@ -63,9 +63,9 @@ beforeAll(async () => {
 
   testDirectChat = await DirectChat.create({
     title: "title",
-    creator: testUsers[0]?._id,
+    creator: testUsers[0]!._id,
     organization: testOrganization._id,
-    users: [testUsers[0]?._id, testUsers[1]?._id],
+    users: [testUsers[0]!._id, testUsers[1]!._id],
   });
 });
 
@@ -90,7 +90,7 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         messageContent: "",
       };
 
-      const context = { userId: testUsers[0]?.id };
+      const context = { userId: testUsers[0]!.id };
 
       const { sendMessageToDirectChat: sendMessageToDirectChatResolver } =
         await import("../../../src/resolvers/Mutation/sendMessageToDirectChat");
@@ -134,7 +134,7 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
       },
       {
         $push: {
-          users: testUsers[0]?._id,
+          users: testUsers[0]!._id,
         },
       }
     );
@@ -156,7 +156,7 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
     };
 
     const context = {
-      userId: testUsers[0]?.id,
+      userId: testUsers[0]!.id,
       pubsub,
     };
 
@@ -166,8 +166,8 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
     expect(sendMessageToDirectChatPayload).toEqual(
       expect.objectContaining({
         directChatMessageBelongsTo: testDirectChat._id,
-        sender: testUsers[0]?._id,
-        receiver: testUsers[1]?._id,
+        sender: testUsers[0]!._id,
+        receiver: testUsers[1]!._id,
         messageContent: "messageContent",
       })
     );

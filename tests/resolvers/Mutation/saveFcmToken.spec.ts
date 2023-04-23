@@ -53,7 +53,7 @@ describe("resolvers -> Mutation -> saveFcmToken", () => {
     };
 
     const context = {
-      userId: testUser?.id,
+      userId: testUser!.id,
     };
 
     const saveFcmTokenPayload = await saveFcmTokenResolver?.({}, args, context);
@@ -61,7 +61,7 @@ describe("resolvers -> Mutation -> saveFcmToken", () => {
     expect(saveFcmTokenPayload).toEqual(true);
 
     const testSaveFcmTokenPayload = await User.findOne({
-      _id: testUser?._id,
+      _id: testUser!._id,
     })
       .select("token")
       .lean();

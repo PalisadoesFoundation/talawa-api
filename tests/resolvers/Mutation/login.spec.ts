@@ -46,13 +46,13 @@ beforeAll(async () => {
   );
   const testOrganization = temp[1];
   const testMembershipRequest = await MembershipRequest.create({
-    organization: testOrganization?._id,
-    user: testUser?._id,
+    organization: testOrganization!._id,
+    user: testUser!._id,
   });
 
   await User.updateOne(
     {
-      _id: testUser?._id,
+      _id: testUser!._id,
     },
     {
       $push: {
@@ -63,7 +63,7 @@ beforeAll(async () => {
 
   await Organization.updateOne(
     {
-      _id: testOrganization?._id,
+      _id: testOrganization!._id,
     },
     {
       $push: {
@@ -122,7 +122,7 @@ email === args.data.email`, async () => {
     try {
       const args: MutationLoginArgs = {
         data: {
-          email: testUser?.email,
+          email: testUser!.email,
           password: "incorrectPassword",
         },
       };
@@ -143,13 +143,13 @@ email === args.data.email`, async () => {
       const constants: object = await vi.importActual("../../../src/constants");
       return {
         ...constants,
-        LAST_RESORT_SUPERADMIN_EMAIL: testUser?.email,
+        LAST_RESORT_SUPERADMIN_EMAIL: testUser!.email,
       };
     });
 
     const args: MutationLoginArgs = {
       data: {
-        email: testUser?.email,
+        email: testUser!.email,
         password: "password",
       },
     };
@@ -161,7 +161,7 @@ email === args.data.email`, async () => {
     const loginPayload = await loginResolver?.({}, args, {});
 
     // @ts-ignore
-    expect(loginPayload?.user.userType).toEqual("SUPERADMIN");
+    expect(loginPayload!.user.userType).toEqual("SUPERADMIN");
   });
 
   it(`returns the user object with populated fields joinedOrganizations, createdOrganizations,
@@ -169,7 +169,7 @@ email === args.data.email`, async () => {
   organizationsBlockedBy, organizationUserBelongsTo`, async () => {
     const args: MutationLoginArgs = {
       data: {
-        email: testUser?.email,
+        email: testUser!.email,
         password: "password",
       },
     };
@@ -177,7 +177,7 @@ email === args.data.email`, async () => {
     const loginPayload = await loginResolver?.({}, args, {});
 
     testUser = await User.findOne({
-      _id: testUser?._id,
+      _id: testUser!._id,
     })
       .select(["-password"])
       .populate("joinedOrganizations")

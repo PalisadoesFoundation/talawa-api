@@ -20,8 +20,8 @@ export const usersConnection: QueryResolvers["usersConnection"] = async (
 
   const users = await User.find(where)
     .sort(sort)
-    .limit(args.first ?? 0)
-    .skip(args.skip ?? 0)
+    .limit(args.first!)
+    .skip(args.skip!)
     .select(["-password"])
     .populate("createdOrganizations")
     .populate("createdEvents")

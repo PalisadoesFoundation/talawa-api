@@ -6,8 +6,8 @@ export const image: OrganizationResolvers["image"] = (
   _args,
   context
 ) => {
-  if (parent.image) {
-    return `${context.apiRootUrl}${parent.image}`;
+  if (parent!.image) {
+    return `${context.apiRootUrl}${parent!.image}`;
   }
   return null;
 };
