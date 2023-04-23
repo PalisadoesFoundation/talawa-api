@@ -116,7 +116,7 @@ beforeAll(async () => {
   testComment = await Comment.create({
     text: "text",
     creator: testUsers[0]?._id,
-    post: testPost._id,
+    postId: testPost._id,
   });
 
   await Post.updateOne(
@@ -124,8 +124,8 @@ beforeAll(async () => {
       _id: testPost._id,
     },
     {
-      $push: {
-        comments: testComment._id,
+      $inc: {
+        commentCount: 1,
       },
     }
   );

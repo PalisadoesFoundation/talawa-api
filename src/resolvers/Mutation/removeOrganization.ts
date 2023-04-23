@@ -55,7 +55,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
 
     // Remove each post and comments associated to it for organization.posts list.
     await Post.deleteMany({ _id: { $in: organization.posts } });
-    await Comment.deleteMany({ post: { $in: organization.posts } });
+    await Comment.deleteMany({ postId: { $in: organization.posts } });
 
     // Remove organization._id from createdOrganizations list of currentUser.
     await User.updateOne(

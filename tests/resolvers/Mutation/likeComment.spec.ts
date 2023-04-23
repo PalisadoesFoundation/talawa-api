@@ -35,7 +35,7 @@ beforeAll(async () => {
   testComment = await Comment.create({
     text: "text",
     creator: testUser?._id,
-    post: testPost?._id,
+    postId: testPost?._id,
   });
 
   await Post.updateOne(

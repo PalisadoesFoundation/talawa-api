@@ -8,7 +8,6 @@ import {
   models,
 } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
-import { InterfaceComment } from "./Comment";
 import { InterfaceOrganization } from "./Organization";
 import { InterfaceUser } from "./User";
 /**
@@ -25,7 +24,6 @@ export interface InterfacePost {
   creator: PopulatedDoc<InterfaceUser & Document>;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   likedBy: Array<PopulatedDoc<InterfaceUser & Document>>;
-  comments: Array<PopulatedDoc<InterfaceComment & Document>>;
   likeCount: number;
   commentCount: number;
   pinned: boolean;
@@ -41,7 +39,6 @@ export interface InterfacePost {
  * @param creator - Post creator, refer to `User` model.
  * @param organization - Organization data where the post is uploaded, refer to `Organization` model.
  * @param likedBy - Collection of user liked the post, each object refer to `User` model.
- * @param comments - Collection of user commented on the post, each object refer to `Comment` model.
  * @param likeCount - Post likes count.
  * @param commentCount - Post comments count.
  */
@@ -85,12 +82,6 @@ const postSchema = new Schema({
     {
       type: Schema.Types.ObjectId,
       ref: "User",
-    },
-  ],
-  comments: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Comment",
     },
   ],
   likeCount: {
