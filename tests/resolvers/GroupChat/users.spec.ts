@@ -28,7 +28,7 @@ describe("resolvers -> GroupChat -> users", () => {
 
     const users = await User.find({
       _id: {
-        $in: testGroupChat!.users,
+        $in: testGroupChat?.users,
       },
     }).lean();
 

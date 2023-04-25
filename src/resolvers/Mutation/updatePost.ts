@@ -40,8 +40,7 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     );
   }
 
-  const currentUserIsPostCreator =
-    post.creator.toString() === context.userId.toString();
+  const currentUserIsPostCreator = post.creator.equals(context.userId);
 
   // checks if current user is an creator of the post with _id === args.id
   if (currentUserIsPostCreator === false) {
@@ -53,8 +52,8 @@ export const updatePost: MutationResolvers["updatePost"] = async (
   }
 
   // Checks if the recieved arguments are valid according to standard input norms
-  const validationResultTitle = isValidString(args.data!.title!, 256);
-  const validationResultText = isValidString(args.data!.text!, 500);
+  const validationResultTitle = isValidString(args.data?.title ?? "", 256);
+  const validationResultText = isValidString(args.data?.text ?? "", 500);
   if (!validationResultTitle.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
@@ -76,9 +75,8 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     {
       _id: args.id,
     },
-    // @ts-ignore
     {
-      ...args.data,
+      ...(args.data as any),
     },
     {
       new: true,

@@ -98,6 +98,19 @@ describe("resolvers -> Query -> organizationsConnection", () => {
 
     expect(organizationsConnectionPayload).toEqual(organizations);
   });
+  it(`returns paginated list of all existing organizations without any filtering and sorting with first = 0 and skip = 0 if not provided'`, async () => {
+    const args: QueryOrganizationsConnectionArgs = {
+      where: null,
+      orderBy: null,
+    };
+
+    const organizations = await Organization.find().limit(0).skip(0).lean();
+
+    const organizationsConnectionPayload =
+      await organizationsConnectionResolver?.({}, args, {});
+
+    expect(organizationsConnectionPayload).toEqual(organizations);
+  });
 
   it(`returns paginated list of all existing organizations filtered by args.where ===
   { id: testOrganizations[1]._id, name: testOrganizations[1].name, 
@@ -220,7 +233,7 @@ describe("resolvers -> Query -> organizationsConnection", () => {
         id_in: [testOrganizations[1]._id],
         name_in: [testOrganizations[1].name],
         description_in: [testOrganizations[1].description],
-        apiUrl_in: [testOrganizations[1].apiUrl!],
+        apiUrl_in: [testOrganizations[1].apiUrl ?? ""],
       },
       orderBy: "name_ASC",
     };
@@ -267,7 +280,7 @@ describe("resolvers -> Query -> organizationsConnection", () => {
         id_not_in: [testOrganizations[0]._id],
         name_not_in: [testOrganizations[0].name],
         description_not_in: [testOrganizations[0].description],
-        apiUrl_not_in: [testOrganizations[0].apiUrl!],
+        apiUrl_not_in: [testOrganizations[0].apiUrl ?? ""],
       },
       orderBy: "name_DESC",
     };

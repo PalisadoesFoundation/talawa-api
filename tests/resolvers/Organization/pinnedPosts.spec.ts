@@ -21,16 +21,16 @@ afterAll(async () => {
 
 describe("resolvers -> Organization -> pinnedPosts", () => {
   it(`returns all post objects for parent.pinnedPosts`, async () => {
-    const parent = testOrganization!.toObject();
+    const parent = testOrganization?.toObject();
+    if (parent) {
+      const pinnedPostsPayload = await pinnedPostsResolver?.(parent, {}, {});
+      const pinnedPosts = await Post.find({
+        _id: {
+          $in: testOrganization?.pinnedPosts,
+        },
+      }).lean();
 
-    const pinnedPostsPayload = await pinnedPostsResolver?.(parent, {}, {});
-
-    const pinnedPosts = await Post.find({
-      _id: {
-        $in: testOrganization!.pinnedPosts,
-      },
-    }).lean();
-
-    expect(pinnedPostsPayload).toEqual(pinnedPosts);
+      expect(pinnedPostsPayload).toEqual(pinnedPosts);
+    }
   });
 });

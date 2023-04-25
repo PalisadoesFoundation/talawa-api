@@ -42,8 +42,8 @@ beforeAll(async () => {
   testEventProject = await EventProject.create({
     title: "Event Project title",
     description: "Event Project Description",
-    event: testEvent!._id,
-    creator: testAdminUser!._id,
+    event: testEvent?._id,
+    creator: testAdminUser?._id,
   });
 });
 
@@ -104,7 +104,7 @@ describe("resolvers -> Mutation -> createEventProject", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { updateEventProject: updateEventProjectResolver } = await import(
@@ -135,7 +135,7 @@ describe("resolvers -> Mutation -> createEventProject", () => {
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { updateEventProject: updateEventProjectResolver } = await import(
@@ -161,7 +161,7 @@ describe("resolvers -> Mutation -> createEventProject", () => {
     };
 
     const context = {
-      userId: testAdminUser!._id,
+      userId: testAdminUser?._id,
     };
 
     const { updateEventProject: updateEventProjectResolver } = await import(

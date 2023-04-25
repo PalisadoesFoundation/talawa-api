@@ -16,34 +16,38 @@ export const createTestEvent = async (): Promise<
   const testUser = resultsArray[0];
   const testOrganization = resultsArray[1];
 
-  const testEvent = await Event.create({
-    title: `title${nanoid().toLowerCase()}`,
-    description: `description${nanoid().toLowerCase()}`,
-    allDay: true,
-    startDate: new Date(),
-    recurring: true,
-    isPublic: true,
-    isRegisterable: true,
-    creator: testUser!._id,
-    admins: [testUser!._id],
-    registrants: [],
-    organization: testOrganization!._id,
-  });
+  if (testUser && testOrganization) {
+    const testEvent = await Event.create({
+      title: `title${nanoid().toLowerCase()}`,
+      description: `description${nanoid().toLowerCase()}`,
+      allDay: true,
+      startDate: new Date(),
+      recurring: true,
+      isPublic: true,
+      isRegisterable: true,
+      creator: testUser._id,
+      admins: [testUser._id],
+      registrants: [],
+      organization: testOrganization._id,
+    });
 
-  await User.updateOne(
-    {
-      _id: testUser!._id,
-    },
-    {
-      $push: {
-        eventAdmin: testEvent._id,
-        createdEvents: testEvent._id,
-        registeredEvents: testEvent._id,
+    await User.updateOne(
+      {
+        _id: testUser._id,
       },
-    }
-  );
+      {
+        $push: {
+          eventAdmin: testEvent._id,
+          createdEvents: testEvent._id,
+          registeredEvents: testEvent._id,
+        },
+      }
+    );
 
-  return [testUser, testOrganization, testEvent];
+    return [testUser, testOrganization, testEvent];
+  } else {
+    return [testUser, testOrganization, null];
+  }
 };
 
 export const createEventWithRegistrant = async (

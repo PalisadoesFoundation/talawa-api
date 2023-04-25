@@ -111,11 +111,11 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     );
 
     const args: MutationAcceptAdminArgs = {
-      id: testUserAdmin!.id,
+      id: testUserAdmin?.id,
     };
 
     const context = {
-      userId: testUserSuperAdmin!.id,
+      userId: testUserSuperAdmin?.id,
     };
 
     const acceptAdminPayload = await acceptAdminResolver?.({}, args, context);
@@ -123,7 +123,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     expect(acceptAdminPayload).toEqual(true);
 
     const updatedTestUser = await User.findOne({
-      _id: testUserAdmin!._id,
+      _id: testUserAdmin?._id,
     })
       .select(["adminApproved"])
       .lean();

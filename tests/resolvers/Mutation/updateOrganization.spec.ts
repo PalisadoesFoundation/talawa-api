@@ -69,7 +69,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { updateOrganization: updateOrganizationResolver } = await import(
@@ -95,11 +95,11 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
 
     try {
       const args: MutationUpdateOrganizationArgs = {
-        id: testOrganization!._id,
+        id: testOrganization?._id,
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { updateOrganization: updateOrganizationResolver } = await import(
@@ -118,28 +118,28 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
   it(`updates the organization with _id === args.id and returns the updated organization`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization!._id,
+        _id: testOrganization?._id,
       },
       {
         $set: {
-          admins: [testUser!._id],
+          admins: [testUser?._id],
         },
       }
     );
 
     await User.updateOne(
       {
-        _id: testUser!._id,
+        _id: testUser?._id,
       },
       {
         $set: {
-          adminFor: [testOrganization!._id],
+          adminFor: [testOrganization?._id],
         },
       }
     );
 
     const args: MutationUpdateOrganizationArgs = {
-      id: testOrganization!._id,
+      id: testOrganization?._id,
       data: {
         description: "newDescription",
         isPublic: false,
@@ -149,7 +149,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const { updateOrganization: updateOrganizationResolver } = await import(
@@ -163,7 +163,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
     );
 
     const testUpdateOrganizationPayload = await Organization.findOne({
-      _id: testOrganization!._id,
+      _id: testOrganization?._id,
     }).lean();
 
     expect(updateOrganizationPayload).toEqual(testUpdateOrganizationPayload);
@@ -172,28 +172,28 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
   it(`updates the organization with _id === args.id and returns the updated organization when image is given`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization!._id,
+        _id: testOrganization?._id,
       },
       {
         $set: {
-          admins: [testUser!._id],
+          admins: [testUser?._id],
         },
       }
     );
 
     await User.updateOne(
       {
-        _id: testUser!._id,
+        _id: testUser?._id,
       },
       {
         $set: {
-          adminFor: [testOrganization!._id],
+          adminFor: [testOrganization?._id],
         },
       }
     );
 
     const args: MutationUpdateOrganizationArgs = {
-      id: testOrganization!._id,
+      id: testOrganization?._id,
       data: {
         description: "newDescription",
         isPublic: false,
@@ -208,7 +208,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
     );
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const updateOrganizationPayload = await updateOrganizationResolver?.(
@@ -218,7 +218,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
     );
 
     const testUpdateOrganizationPayload = await Organization.findOne({
-      _id: testOrganization!._id,
+      _id: testOrganization?._id,
     }).lean();
 
     expect(updateOrganizationPayload).toEqual(testUpdateOrganizationPayload);

@@ -50,7 +50,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await adminRemoveGroupResolver?.({}, args, context);
@@ -64,7 +64,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
     try {
       await GroupChat.updateOne(
         {
-          _id: testGroupChat!._id,
+          _id: testGroupChat?._id,
         },
         {
           $set: {
@@ -74,11 +74,11 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
       );
 
       const args: MutationAdminRemoveGroupArgs = {
-        groupId: testGroupChat!.id,
+        groupId: testGroupChat?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await adminRemoveGroupResolver?.({}, args, context);
@@ -91,17 +91,17 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
     try {
       await GroupChat.updateOne(
         {
-          _id: testGroupChat!._id,
+          _id: testGroupChat?._id,
         },
         {
           $set: {
-            organization: testOrganization!._id,
+            organization: testOrganization?._id,
           },
         }
       );
 
       const args: MutationAdminRemoveGroupArgs = {
-        groupId: testGroupChat!.id,
+        groupId: testGroupChat?.id,
       };
 
       const context = {
@@ -119,18 +119,18 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
     try {
       await GroupChat.updateOne(
         {
-          _id: testGroupChat!._id,
+          _id: testGroupChat?._id,
         },
         {
           $set: {
-            organization: testOrganization!._id,
+            organization: testOrganization?._id,
           },
         }
       );
 
       await Organization.updateOne(
         {
-          _id: testOrganization!._id,
+          _id: testOrganization?._id,
         },
         {
           $set: {
@@ -140,11 +140,11 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
       );
 
       const args: MutationAdminRemoveGroupArgs = {
-        groupId: testGroupChat!.id,
+        groupId: testGroupChat?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await adminRemoveGroupResolver?.({}, args, context);
@@ -156,21 +156,21 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
   it(`deletes the post and returns it`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization!._id,
+        _id: testOrganization?._id,
       },
       {
         $push: {
-          admins: testUser!._id,
+          admins: testUser?._id,
         },
       }
     );
 
     const args: MutationAdminRemoveGroupArgs = {
-      groupId: testGroupChat!.id,
+      groupId: testGroupChat?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const adminRemoveGroupPayload = await adminRemoveGroupResolver?.(
@@ -179,6 +179,6 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
       context
     );
 
-    expect(adminRemoveGroupPayload).toEqual(testGroupChat!.toObject());
+    expect(adminRemoveGroupPayload).toEqual(testGroupChat?.toObject());
   });
 });

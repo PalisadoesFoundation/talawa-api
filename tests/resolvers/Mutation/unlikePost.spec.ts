@@ -27,9 +27,9 @@ beforeAll(async () => {
 
   testPost = await Post.create({
     text: "text",
-    creator: testUser!._id,
-    organization: testOrganization!._id,
-    likedBy: [testUser!._id],
+    creator: testUser?._id,
+    organization: testOrganization?._id,
+    likedBy: [testUser?._id],
     likeCount: 1,
   });
 });
@@ -75,7 +75,7 @@ describe("resolvers -> Mutation -> unlikePost", () => {
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { unlikePost: unlikePostResolver } = await import(
@@ -92,17 +92,17 @@ describe("resolvers -> Mutation -> unlikePost", () => {
   it(`removes current user with _id === context.userId from likedBy list
   on post with _id === args.id`, async () => {
     const args: MutationUnlikePostArgs = {
-      id: testPost!._id,
+      id: testPost?._id,
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const unlikePostPayload = await unlikePostResolver?.({}, args, context);
 
     const testUnlikePostPayload = await Post.findOne({
-      _id: testPost!._id,
+      _id: testPost?._id,
     }).lean();
 
     expect(unlikePostPayload).toEqual(testUnlikePostPayload);
@@ -111,17 +111,17 @@ describe("resolvers -> Mutation -> unlikePost", () => {
   it(`returns the post with _id === args.id without any mutation if current user
   with _id === context.userId does not exist in likedBy list of the post`, async () => {
     const args: MutationUnlikePostArgs = {
-      id: testPost!._id,
+      id: testPost?._id,
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const unlikePostPayload = await unlikePostResolver?.({}, args, context);
 
     const testUnlikePostPayload = await Post.findOne({
-      _id: testPost!._id,
+      _id: testPost?._id,
     }).lean();
 
     expect(unlikePostPayload).toEqual(testUnlikePostPayload);

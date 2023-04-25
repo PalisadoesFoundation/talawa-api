@@ -38,7 +38,7 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
 
   const jwtPayload: InterfaceJwtTokenPayload = jwt.verify(
     args.refreshToken,
-    REFRESH_TOKEN_SECRET!
+    REFRESH_TOKEN_SECRET as string
   ) as InterfaceJwtTokenPayload;
 
   // The refresh token received is valid so we can send a new access token

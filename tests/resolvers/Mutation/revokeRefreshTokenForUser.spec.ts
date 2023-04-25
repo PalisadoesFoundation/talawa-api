@@ -23,11 +23,11 @@ afterAll(async () => {
 describe("resolvers -> Mutation -> revokeRefreshTokenForUser", () => {
   it(`revokes refresh token for the user and returns true`, async () => {
     const args: MutationRevokeRefreshTokenForUserArgs = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const revokeRefreshTokenForUserPayload =
@@ -36,13 +36,13 @@ describe("resolvers -> Mutation -> revokeRefreshTokenForUser", () => {
     expect(revokeRefreshTokenForUserPayload).toEqual(true);
 
     const testSaveFcmTokenPayload = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     })
       .select("tokenVersion")
       .lean();
 
     expect(testSaveFcmTokenPayload?.tokenVersion).toEqual(
-      testUser!.tokenVersion + 1
+      (testUser?.tokenVersion ?? 0) + 1
     );
   });
 });

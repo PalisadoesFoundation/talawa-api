@@ -1,4 +1,5 @@
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceDonation } from "../../models";
 import { Donation } from "../../models";
 
 /**
@@ -15,5 +16,5 @@ export const getDonationById: QueryResolvers["getDonationById"] = async (
     _id: args.id,
   }).lean();
 
-  return donation!;
+  return donation ?? ({} as InterfaceDonation);
 };

@@ -37,13 +37,13 @@ beforeAll(async () => {
 
   testComment = await Comment.create({
     text: "text",
-    creator: testUser!._id,
-    post: testPost!._id,
+    creator: testUser?._id,
+    postId: testPost?._id,
   });
 
   await Post.updateOne(
     {
-      _id: testPost!._id,
+      _id: testPost?._id,
     },
     {
       $push: {
@@ -102,7 +102,7 @@ describe("resolvers -> Mutation -> likeComment", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { likeComment: likeCommentResolver } = await import(
@@ -123,12 +123,12 @@ describe("resolvers -> Mutation -> likeComment", () => {
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const likeCommentPayload = await likeCommentResolver?.({}, args, context);
 
-    expect(likeCommentPayload?.likedBy).toEqual([testUser!._id]);
+    expect(likeCommentPayload?.likedBy).toEqual([testUser?._id]);
     expect(likeCommentPayload?.likeCount).toEqual(1);
   });
 
@@ -139,12 +139,12 @@ describe("resolvers -> Mutation -> likeComment", () => {
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const likeCommentPayload = await likeCommentResolver?.({}, args, context);
 
-    expect(likeCommentPayload?.likedBy).toEqual([testUser!._id]);
+    expect(likeCommentPayload?.likedBy).toEqual([testUser?._id]);
     expect(likeCommentPayload?.likeCount).toEqual(1);
   });
 });

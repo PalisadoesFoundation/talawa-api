@@ -50,7 +50,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await cancelMembershipRequestResolver?.({}, args, context);
@@ -64,7 +64,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
     try {
       await MembershipRequest.updateOne(
         {
-          _id: testMembershipRequest!._id,
+          _id: testMembershipRequest?._id,
         },
         {
           $set: {
@@ -74,11 +74,11 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
       );
 
       const args: MutationCancelMembershipRequestArgs = {
-        membershipRequestId: testMembershipRequest!.id,
+        membershipRequestId: testMembershipRequest?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await cancelMembershipRequestResolver?.({}, args, context);
@@ -91,17 +91,17 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
     try {
       await MembershipRequest.updateOne(
         {
-          _id: testMembershipRequest!._id,
+          _id: testMembershipRequest?._id,
         },
         {
           $set: {
-            organization: testOrganization!._id,
+            organization: testOrganization?._id,
           },
         }
       );
 
       const args: MutationCancelMembershipRequestArgs = {
-        membershipRequestId: testMembershipRequest!.id,
+        membershipRequestId: testMembershipRequest?.id,
       };
 
       const context = {
@@ -119,7 +119,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
     try {
       await MembershipRequest.updateOne(
         {
-          _id: testMembershipRequest!._id,
+          _id: testMembershipRequest?._id,
         },
         {
           $set: {
@@ -129,11 +129,11 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
       );
 
       const args: MutationCancelMembershipRequestArgs = {
-        membershipRequestId: testMembershipRequest!.id,
+        membershipRequestId: testMembershipRequest?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await cancelMembershipRequestResolver?.({}, args, context);
@@ -145,32 +145,32 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
   it(`deletes membershipRequest and returns it`, async () => {
     await MembershipRequest.updateOne(
       {
-        _id: testMembershipRequest!._id,
+        _id: testMembershipRequest?._id,
       },
       {
         $set: {
-          user: testUser!._id,
+          user: testUser?._id,
         },
       }
     );
 
     const args: MutationCancelMembershipRequestArgs = {
-      membershipRequestId: testMembershipRequest!.id,
+      membershipRequestId: testMembershipRequest?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const cancelMembershipRequestPayload =
       await cancelMembershipRequestResolver?.({}, args, context);
 
     expect(cancelMembershipRequestPayload).toEqual(
-      testMembershipRequest!.toObject()
+      testMembershipRequest?.toObject()
     );
 
     const testUpdatedUser = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     })
       .select(["membershipRequests"])
       .lean();
@@ -178,7 +178,7 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
     expect(testUpdatedUser?.membershipRequests).toEqual([]);
 
     const testUpdatedOrganization = await Organization.findOne({
-      _id: testOrganization!._id,
+      _id: testOrganization?._id,
     })
       .select(["membershipRequests"])
       .lean();

@@ -51,12 +51,12 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
 
   // Boolean to determine whether user is an admin of organization.
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) => organization.toString() === event.organization.toString()
+    (organization) => organization.equals(event.organization)
   );
 
   // Boolean to determine whether user is an admin of event.
-  const currentUserIsEventAdmin = event.admins.some(
-    (admin) => admin.toString() === currentUser._id.toString()
+  const currentUserIsEventAdmin = event.admins.some((admin) =>
+    admin.equals(currentUser._id)
   );
 
   // Checks whether currentUser cannot delete event.

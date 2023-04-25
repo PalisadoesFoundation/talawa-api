@@ -68,7 +68,7 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await createGroupChatResolver?.({}, args, context);
@@ -81,14 +81,14 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
     try {
       const args: MutationCreateGroupChatArgs = {
         data: {
-          organizationId: testOrganization!.id,
+          organizationId: testOrganization?.id,
           title: "",
           userIds: [Types.ObjectId().toString()],
         },
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await createGroupChatResolver?.({}, args, context);
@@ -100,14 +100,14 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
   it(`creates the groupChat and returns it`, async () => {
     const args: MutationCreateGroupChatArgs = {
       data: {
-        organizationId: testOrganization!.id,
+        organizationId: testOrganization?.id,
         title: "title",
-        userIds: [testUser!.id],
+        userIds: [testUser?.id],
       },
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const createGroupChatPayload = await createGroupChatResolver?.(
@@ -119,9 +119,9 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
     expect(createGroupChatPayload).toEqual(
       expect.objectContaining({
         title: "title",
-        creator: testUser!._id,
-        users: [testUser!._id],
-        organization: testOrganization!._id,
+        creator: testUser?._id,
+        users: [testUser?._id],
+        organization: testOrganization?._id,
       })
     );
   });

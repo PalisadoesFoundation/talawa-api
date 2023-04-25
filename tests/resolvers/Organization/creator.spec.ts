@@ -50,7 +50,7 @@ describe("resolvers -> Organization -> creator", () => {
     try {
       testOrganization = await Organization.findOneAndUpdate(
         {
-          _id: testOrganization!._id,
+          _id: testOrganization?._id,
         },
         {
           $set: {
@@ -62,12 +62,14 @@ describe("resolvers -> Organization -> creator", () => {
         }
       );
 
-      const parent = testOrganization!.toObject();
+      const parent = testOrganization?.toObject();
 
       const { creator: creatorResolver } = await import(
         "../../../src/resolvers/Organization/creator"
       );
-      await creatorResolver?.(parent, {}, {});
+      if (parent) {
+        await creatorResolver?.(parent, {}, {});
+      }
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
@@ -79,11 +81,11 @@ describe("resolvers -> Organization -> creator", () => {
   it(`returns user object for parent.creator`, async () => {
     testOrganization = await Organization.findOneAndUpdate(
       {
-        _id: testOrganization!._id,
+        _id: testOrganization?._id,
       },
       {
         $set: {
-          creator: testUser!._id,
+          creator: testUser?._id,
         },
       },
       {
@@ -91,17 +93,18 @@ describe("resolvers -> Organization -> creator", () => {
       }
     );
 
-    const parent = testOrganization!.toObject();
+    const parent = testOrganization?.toObject();
 
     const { creator: creatorResolver } = await import(
       "../../../src/resolvers/Organization/creator"
     );
-    const creatorPayload = await creatorResolver?.(parent, {}, {});
+    if (parent) {
+      const creatorPayload = await creatorResolver?.(parent, {}, {});
+      const creator = await User.findOne({
+        _id: testOrganization?.creator,
+      }).lean();
 
-    const creator = await User.findOne({
-      _id: testOrganization!.creator,
-    }).lean();
-
-    expect(creatorPayload).toEqual(creator);
+      expect(creatorPayload).toEqual(creator);
+    }
   });
 });

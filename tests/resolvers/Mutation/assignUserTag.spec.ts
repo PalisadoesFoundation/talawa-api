@@ -59,8 +59,8 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
     try {
       const args: MutationAssignUserTagArgs = {
         input: {
-          userId: adminUser!._id,
-          tagId: testTag!._id.toString(),
+          userId: adminUser?._id,
+          tagId: testTag?._id.toString() ?? "",
         },
       };
 
@@ -90,11 +90,11 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
       const args: MutationAssignUserTagArgs = {
         input: {
           userId: Types.ObjectId().toString(),
-          tagId: testTag!._id.toString(),
+          tagId: testTag?._id.toString() ?? "",
         },
       };
 
-      const context = { userId: adminUser!._id };
+      const context = { userId: adminUser?._id };
 
       const { assignUserTag: assignUserTagResolver } = await import(
         "../../../src/resolvers/Mutation/assignUserTag"
@@ -119,13 +119,13 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
     try {
       const args: MutationAssignUserTagArgs = {
         input: {
-          userId: adminUser!._id,
+          userId: adminUser?._id,
           tagId: Types.ObjectId().toString(),
         },
       };
 
       const context = {
-        userId: adminUser!._id,
+        userId: adminUser?._id,
       };
 
       const { assignUserTag: assignUserTagResolver } = await import(
@@ -149,13 +149,13 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
     try {
       const args: MutationAssignUserTagArgs = {
         input: {
-          userId: adminUser!._id,
-          tagId: testTag!._id.toString(),
+          userId: adminUser?._id,
+          tagId: testTag?._id.toString() ?? "",
         },
       };
 
       const context = {
-        userId: randomUser!._id,
+        userId: randomUser?._id,
       };
 
       const { assignUserTag: assignUserTagResolver } = await import(
@@ -183,13 +183,13 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
     try {
       const args: MutationAssignUserTagArgs = {
         input: {
-          userId: randomUser!._id,
-          tagId: testTag!._id.toString(),
+          userId: randomUser?._id,
+          tagId: testTag?._id.toString() ?? "",
         },
       };
 
       const context = {
-        userId: adminUser!._id,
+        userId: adminUser?._id,
       };
 
       const { assignUserTag: assignUserTagResolver } = await import(
@@ -210,12 +210,12 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
   it(`Tag assign should be successful and the user who has been assigned the tag is returned`, async () => {
     const args: MutationAssignUserTagArgs = {
       input: {
-        userId: adminUser!._id,
-        tagId: testTag!._id.toString(),
+        userId: adminUser?._id,
+        tagId: testTag?._id.toString() ?? "",
       },
     };
     const context = {
-      userId: adminUser!._id,
+      userId: adminUser?._id,
     };
 
     const { assignUserTag: assignUserTagResolver } = await import(
@@ -224,7 +224,7 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
 
     const payload = await assignUserTagResolver?.({}, args, context);
 
-    expect(payload!._id.toString()).toEqual(adminUser!._id.toString());
+    expect(payload?._id.toString()).toEqual(adminUser?._id.toString());
 
     const tagAssigned = await TagUser.exists({
       ...args.input,
@@ -243,12 +243,12 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
     try {
       const args: MutationAssignUserTagArgs = {
         input: {
-          userId: adminUser!._id,
-          tagId: testTag!._id.toString(),
+          userId: adminUser?._id,
+          tagId: testTag?._id.toString() ?? "",
         },
       };
       const context = {
-        userId: adminUser!._id,
+        userId: adminUser?._id,
       };
 
       const { assignUserTag: assignUserTagResolver } = await import(

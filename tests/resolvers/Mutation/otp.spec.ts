@@ -39,7 +39,7 @@ describe("resolvers -> Mutation -> otp", () => {
   it("should generate and send OTP to the user", async () => {
     const args: MutationOtpArgs = {
       data: {
-        email: testUser!.email,
+        email: testUser?.email,
       },
     };
     vi.mock("../../../src/utilities", () => ({

@@ -41,19 +41,20 @@ interface InterfaceInitOptions<T> extends Record<any, any> {
 }
 
 // Invalid code. Currently ignored by typescript. Needs fix.
-export const init = async <T>(options: InterfaceInitOptions<T> = {}) => {
+export const init = <T>(options: InterfaceInitOptions<T> = {}) => {
   const obj: any = {};
   // @ts-ignore
   i18n.init(obj);
-  // @ts-ignore
   obj.setLocale(options.lang);
   return requestContextNamespace.runAndReturn<T>(() => {
     setRequestContext({
       __: obj.__,
       __n: obj.__n,
     });
-    // @ts-ignore
-    return options.requestHandler();
+    // return options.requestHandler?.()!;
+    return options.requestHandler != null
+      ? options.requestHandler()
+      : ({} as T);
   });
 };
 

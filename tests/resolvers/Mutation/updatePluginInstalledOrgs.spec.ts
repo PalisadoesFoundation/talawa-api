@@ -26,7 +26,7 @@ beforeAll(async () => {
   testOrganization = temp[1];
   testPlugin = await Plugin.create({
     pluginName: "pluginName",
-    pluginCreatedBy: `${testUser!.firstName} ${testUser!.lastName}`,
+    pluginCreatedBy: `${testUser?.firstName} ${testUser?.lastName}`,
     pluginDesc: "pluginDesc",
     pluginInstallStatus: false,
     installedOrgs: [],
@@ -45,11 +45,11 @@ describe("resolvers -> Mutation -> updatePluginInstalledOrgs", () => {
   for plugin with _id === args.id, adds it to plugin.installedOrgs`, async () => {
     const args: MutationUpdatePluginInstalledOrgsArgs = {
       id: testPlugin._id,
-      orgId: testOrganization!._id,
+      orgId: testOrganization?._id,
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const updatePluginInstalledOrgsPayload =
@@ -68,11 +68,11 @@ describe("resolvers -> Mutation -> updatePluginInstalledOrgs", () => {
     for plugin with _id === args.id, removes it from plugin.installedOrgs`, async () => {
     const args: MutationUpdatePluginInstalledOrgsArgs = {
       id: testPlugin._id,
-      orgId: testOrganization!._id,
+      orgId: testOrganization?._id,
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const updatePluginInstalledOrgsPayload =

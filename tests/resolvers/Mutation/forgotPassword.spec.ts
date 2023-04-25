@@ -28,7 +28,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
     try {
       const otpToken = jwt.sign(
         {
-          email: testUser!.email,
+          email: testUser?.email ?? "",
           otp: "otp",
         },
         process.env.NODE_ENV!,
@@ -58,10 +58,10 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
 
     const otpToken = jwt.sign(
       {
-        email: testUser!.email,
+        email: testUser?.email ?? "",
         otp: hashedOtp,
       },
-      process.env.NODE_ENV!,
+      process.env.NODE_ENV ?? "",
       {
         expiresIn: 99999999,
       }
@@ -81,7 +81,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
 
     const updatedTestUser = await User!
       .findOne({
-        _id: testUser!._id,
+        _id: testUser?._id ?? "",
       })
       .select(["password"])
       .lean();

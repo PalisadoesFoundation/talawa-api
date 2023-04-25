@@ -121,7 +121,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, context);
 
-    const posts = await Post.find(where).sort(sort).populate("creator").lean();
+    const posts = await Post.find(where).sort(sort).lean();
 
     const postsWithId = posts.map((post) => {
       return {
@@ -193,11 +193,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     };
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, context);
-    const posts = await Post.find(where)
-      .limit(2)
-      .sort(sort)
-      .populate("creator")
-      .lean();
+    const posts = await Post.find(where).limit(2).sort(sort).lean();
 
     const postsWithId = posts.map((post) => {
       return {
@@ -269,11 +265,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     };
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, context);
-    const posts = await Post.find(where)
-      .limit(2)
-      .sort(sort)
-      .populate("creator")
-      .lean();
+    const posts = await Post.find(where).limit(2).sort(sort).lean();
     const postsWithId = posts.map((post) => {
       return {
         ...post,
@@ -344,12 +336,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     };
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, context);
-    const posts = await Post.find(where)
-      .limit(2)
-      .skip(1)
-      .sort(sort)
-      .populate("creator")
-      .lean();
+    const posts = await Post.find(where).limit(2).skip(1).sort(sort).lean();
 
     const postsWithId = posts.map((post) => {
       return {
@@ -419,11 +406,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, context);
 
-    const posts = await Post.find(where)
-      .limit(2)
-      .sort(sort)
-      .populate("creator")
-      .lean();
+    const posts = await Post.find(where).limit(2).sort(sort).lean();
 
     const postsWithId = posts.map((post) => {
       return {
@@ -488,11 +471,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, context);
 
-    const posts = await Post.find(where)
-      .limit(2)
-      .sort(sort)
-      .populate("creator")
-      .lean();
+    const posts = await Post.find(where).limit(2).sort(sort).lean();
 
     const postsWithId = posts.map((post) => {
       return {

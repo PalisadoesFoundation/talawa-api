@@ -28,7 +28,7 @@ describe("resolvers -> GroupChat -> messages", () => {
 
     const messages = await GroupChatMessage.find({
       _id: {
-        $in: testGroupChat!.messages,
+        $in: testGroupChat?.messages,
       },
     }).lean();
 

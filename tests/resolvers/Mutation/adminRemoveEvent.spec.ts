@@ -54,7 +54,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await adminRemoveEventResolver?.({}, args, context);
@@ -68,7 +68,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
     try {
       await Event.updateOne(
         {
-          _id: testEvent!._id,
+          _id: testEvent?._id,
         },
         {
           $set: {
@@ -78,7 +78,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
       );
 
       const args: MutationAdminRemoveEventArgs = {
-        eventId: testEvent!.id,
+        eventId: testEvent?.id,
       };
 
       const context = {
@@ -95,17 +95,17 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
     try {
       await Event.updateOne(
         {
-          _id: testEvent!._id,
+          _id: testEvent?._id,
         },
         {
           $set: {
-            organization: testOrganization!._id,
+            organization: testOrganization?._id,
           },
         }
       );
 
       const args: MutationAdminRemoveEventArgs = {
-        eventId: testEvent!.id,
+        eventId: testEvent?.id,
       };
 
       const context = {
@@ -123,7 +123,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization!._id,
+          _id: testOrganization?._id,
         },
         {
           $set: {
@@ -133,11 +133,11 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
       );
 
       const args: MutationAdminRemoveEventArgs = {
-        eventId: testEvent!.id,
+        eventId: testEvent?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await adminRemoveEventResolver?.({}, args, context);
@@ -149,21 +149,21 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
   it(`removes event with _id === args.eventId and returns it`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization!._id,
+        _id: testOrganization?._id,
       },
       {
         $push: {
-          admins: testUser!._id,
+          admins: testUser?._id,
         },
       }
     );
 
     const args: MutationAdminRemoveEventArgs = {
-      eventId: testEvent!.id,
+      eventId: testEvent?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const adminRemoveEventPayload = await adminRemoveEventResolver?.(
@@ -172,10 +172,10 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
       context
     );
 
-    expect(adminRemoveEventPayload).toEqual(testEvent!.toObject());
+    expect(adminRemoveEventPayload).toEqual(testEvent?.toObject());
 
     const testUpdatedUser = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     })
       .select(["createdEvents", "eventAdmin", "registeredEvents"])
       .lean();

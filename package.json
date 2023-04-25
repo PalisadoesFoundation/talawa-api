@@ -17,7 +17,9 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,json,scss,css}\"",
     "prepare": "husky install",
     "generate:graphql-markdown": "graphql-markdown http://localhost:4000/graphql > docs/Schema.md",
-    "generate:graphql-schema": "get-graphql-schema http://localhost:4000/graphql --json > docs/schema.json"
+    "generate:graphql-schema": "get-graphql-schema http://localhost:4000/graphql --json > docs/schema.json",
+    "import:sample-data": "ts-node ./src/utilities/loadSampleData.ts",
+    "import:sample-data:prod": "node ./build/utilities/loadSampleData.js"
   },
   "repository": {
     "type": "git",
@@ -37,6 +39,7 @@
   "homepage": "https://github.com/PalisadoesFoundation/talawa-api#readme",
   "dependencies": {
     "@graphql-tools/schema": "^8.4.0",
+    "@types/yargs": "^17.0.24",
     "apollo-server-core": "^3.11.1",
     "apollo-server-express": "^2.25.4",
     "axios": "^0.21.4",
@@ -72,7 +75,10 @@
     "uuid": "^3.4.0",
     "validator": "^13.7.0",
     "winston": "^3.8.0",
-    "xss-clean": "^0.1.1"
+    "xss-clean": "^0.1.1",
+    "zod": "^3.21.4",
+    "zod-error": "^1.5.0",
+    "yargs": "^17.7.1"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^2.6.2",

@@ -3,7 +3,7 @@ import { USER_NOT_AUTHORIZED_SUPERADMIN } from "../constants";
 import type { InterfaceUser } from "../models";
 
 export const superAdminCheck = (user: InterfaceUser) => {
-  const userIsSuperAdmin: boolean = user!.userType === "SUPERADMIN";
+  const userIsSuperAdmin: boolean = user.userType === "SUPERADMIN";
 
   if (!userIsSuperAdmin) {
     throw new errors.UnauthorizedError(

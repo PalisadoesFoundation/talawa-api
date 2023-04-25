@@ -58,7 +58,7 @@ describe("resolvers -> Mutation -> createTask", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await createTaskResolver?.({}, args, context);
@@ -69,7 +69,7 @@ describe("resolvers -> Mutation -> createTask", () => {
 
   it(`creates the task and returns it`, async () => {
     const args: MutationCreateTaskArgs = {
-      eventId: testEvent!.id,
+      eventId: testEvent?.id,
       data: {
         title: "title",
         deadline: new Date().toString(),
@@ -78,7 +78,7 @@ describe("resolvers -> Mutation -> createTask", () => {
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const createTaskPayload = await createTaskResolver?.({}, args, context);
@@ -92,11 +92,11 @@ describe("resolvers -> Mutation -> createTask", () => {
     expect(createTaskPayload?.deadline).toBeInstanceOf(Date);
 
     const testUpdatedEvent = await Event.findOne({
-      _id: testEvent!._id,
+      _id: testEvent?._id,
     })
       .select(["tasks"])
       .lean();
 
-    expect(testUpdatedEvent!.tasks).toEqual([createTaskPayload?._id]);
+    expect(testUpdatedEvent?.tasks).toEqual([createTaskPayload?._id]);
   });
 });

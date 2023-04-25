@@ -39,13 +39,13 @@ describe("resolvers -> Query -> me", () => {
     , createdEvents, joinedOrganizations, registeredEvents, eventAdmin,
     adminFor`, async () => {
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const mePayload = await meResolver?.({}, {}, context);
 
     const user = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     })
       .select(["-password"])
       .populate("createdOrganizations")

@@ -35,8 +35,8 @@ beforeAll(async () => {
   const testOrganization = temp[1];
 
   testEvent = await Event.create({
-    creator: testUser!._id,
-    organization: testOrganization!._id,
+    creator: testUser?._id,
+    organization: testOrganization?._id,
     isRegisterable: true,
     isPublic: true,
     title: "title",
@@ -45,8 +45,8 @@ beforeAll(async () => {
     startDate: new Date().toString(),
     registrants: [
       {
-        userId: testUser!.id,
-        user: testUser!._id,
+        userId: testUser?.id,
+        user: testUser?._id,
         status: "ACTIVE",
       },
     ],
@@ -54,7 +54,7 @@ beforeAll(async () => {
 
   await User.updateOne(
     {
-      _id: testUser!._id,
+      _id: testUser?._id,
     },
     {
       $set: {
@@ -110,7 +110,7 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { registerForEvent: registerForEventResolver } = await import(
@@ -134,11 +134,11 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationRegisterForEventArgs = {
-        id: testEvent!._id,
+        id: testEvent?._id,
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { registerForEvent: registerForEventResolver } = await import(
@@ -157,14 +157,14 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
   _id === context.userId`, async () => {
     await Event.updateOne(
       {
-        _id: testEvent!._id,
+        _id: testEvent?._id,
       },
       {
         $set: {
           registrants: [
             {
-              userId: testUser!.id,
-              user: testUser!._id,
+              userId: testUser?.id,
+              user: testUser?._id,
               status: "BLOCKED",
             },
           ],
@@ -173,11 +173,11 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
     );
 
     const args: MutationRegisterForEventArgs = {
-      id: testEvent!._id,
+      id: testEvent?._id,
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const registerForEventPayload = await registerForEventResolver?.(
@@ -187,7 +187,7 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
     );
 
     const testRegisterForEventPayload = await Event.findOne({
-      _id: testEvent!._id,
+      _id: testEvent?._id,
     }).lean();
 
     expect(registerForEventPayload).toEqual(testRegisterForEventPayload);
@@ -197,7 +197,7 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
   _id === args.id`, async () => {
     await Event.updateOne(
       {
-        _id: testEvent!._id,
+        _id: testEvent?._id,
       },
       {
         $set: {
@@ -208,7 +208,7 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
 
     await User.updateOne(
       {
-        _id: testUser!._id,
+        _id: testUser?._id,
       },
       {
         $set: {
@@ -218,11 +218,11 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
     );
 
     const args: MutationRegisterForEventArgs = {
-      id: testEvent!._id,
+      id: testEvent?._id,
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const registerForEventPayload = await registerForEventResolver?.(
@@ -232,17 +232,17 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
     );
 
     const testRegisterForEventPayload = await Event.findOne({
-      _id: testEvent!._id,
+      _id: testEvent?._id,
     }).lean();
 
     expect(registerForEventPayload).toEqual(testRegisterForEventPayload);
 
     const updatedTestUser = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     })
       .select(["registeredEvents"])
       .lean();
 
-    expect(updatedTestUser?.registeredEvents).toEqual([testEvent!._id]);
+    expect(updatedTestUser?.registeredEvents).toEqual([testEvent?._id]);
   });
 });

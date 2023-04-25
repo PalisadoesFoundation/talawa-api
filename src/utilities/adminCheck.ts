@@ -22,8 +22,9 @@ export const adminCheck = async (
   const user = await User.findOne({
     _id: userId,
   });
-
-  const isUserSuperAdmin: boolean = user!.userType === "SUPERADMIN";
+  const isUserSuperAdmin: boolean = user
+    ? user.userType === "SUPERADMIN"
+    : false;
 
   if (!userIsOrganizationAdmin && !isUserSuperAdmin) {
     throw new errors.UnauthorizedError(

@@ -85,7 +85,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
         },
       };
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { createDirectChat: createDirectChatResolver } = await import(
@@ -106,13 +106,13 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
     try {
       const args: MutationCreateDirectChatArgs = {
         data: {
-          organizationId: testOrganization!.id,
+          organizationId: testOrganization?.id,
           userIds: [Types.ObjectId().toString()],
         },
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { createDirectChat: createDirectChatResolver } = await import(
@@ -127,13 +127,13 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
   it(`creates the directChat and returns it`, async () => {
     const args: MutationCreateDirectChatArgs = {
       data: {
-        organizationId: testOrganization!.id,
-        userIds: [testUser!.id],
+        organizationId: testOrganization?.id,
+        userIds: [testUser?.id],
       },
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
     const { createDirectChat: createDirectChatResolver } = await import(
       "../../../src/resolvers/Mutation/createDirectChat"
@@ -147,9 +147,9 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
 
     expect(createDirectChatPayload).toEqual(
       expect.objectContaining({
-        creator: testUser!._id,
-        users: [testUser!._id],
-        organization: testOrganization!._id,
+        creator: testUser?._id,
+        users: [testUser?._id],
+        organization: testOrganization?._id,
       })
     );
   });

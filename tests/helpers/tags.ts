@@ -14,10 +14,10 @@ export const createRootTagWithOrg = async (): Promise<
   const testTag = await OrganizationTagUser.create({
     name: `TagTitle${nanoid()}`,
     parentTagId: null,
-    organizationId: testOrganization!._id,
+    organizationId: testOrganization?._id,
   });
 
-  return [testUser, testOrganization, testTag!.toObject()];
+  return [testUser, testOrganization, testTag?.toObject()];
 };
 
 export const createRootTagsWithOrg = async (
@@ -30,7 +30,7 @@ export const createRootTagsWithOrg = async (
     const testTag = await OrganizationTagUser.create({
       name: `TagTitle${nanoid()}`,
       parentTagId: null,
-      organizationId: testOrganization!._id,
+      organizationId: testOrganization?._id,
     });
     tags.push(testTag.toObject());
   }
@@ -48,13 +48,13 @@ export const createTwoLevelTagsWithOrg = async (): Promise<
   const [testUser, testOrg, testRootTag] = await createRootTagWithOrg();
   const testTag1 = await OrganizationTagUser.create({
     name: `TagTitle${nanoid()}`,
-    parentTagId: testRootTag!._id,
-    organizationId: testOrg!._id,
+    parentTagId: testRootTag?._id,
+    organizationId: testOrg?._id,
   });
   const testTag2 = await OrganizationTagUser.create({
     name: `TagTitle${nanoid()}`,
-    parentTagId: testRootTag!._id,
-    organizationId: testOrg!._id,
+    parentTagId: testRootTag?._id,
+    organizationId: testOrg?._id,
   });
 
   return [
@@ -73,8 +73,8 @@ export const createAndAssignUsersToTag = async (
   for (let i = 0; i < numberOfUsers; i++) {
     const user = await createTestUser();
     await TagUser.create({
-      userId: user!._id,
-      tagId: tag!._id,
+      userId: user?._id,
+      tagId: tag?._id,
     });
     testUsers.push(user);
   }
@@ -87,22 +87,22 @@ export const createTagsAndAssignToUser = async (
 ): Promise<[TestUserType, TestOrganizationType, TestUserTagType[]]> => {
   const [testUser, testOrg, testTag] = await createRootTagWithOrg();
   await TagUser.create({
-    userId: testUser!._id,
-    tagId: testTag!._id,
+    userId: testUser?._id,
+    tagId: testTag?._id,
   });
 
   const tags: TestUserTagType[] = [testTag];
 
   for (let i = 1; i < numberOfTags; i++) {
     const newTag = await OrganizationTagUser.create({
-      organizationId: testOrg!._id,
+      organizationId: testOrg?._id,
       name: `TagTitle${nanoid()}`,
     });
     tags.push(newTag.toObject());
 
     await TagUser.create({
-      tagId: newTag!._id,
-      userId: testUser!._id,
+      tagId: newTag?._id,
+      userId: testUser?._id,
     });
   }
 

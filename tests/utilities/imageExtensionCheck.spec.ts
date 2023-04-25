@@ -4,7 +4,7 @@ import * as deleteImage from "../../src/utilities/deleteImage";
 import { requestContext } from "../../src/libraries";
 import { INVALID_FILE_TYPE } from "../../src/constants";
 
-const testFilename: string = "test.anyOtherExtension";
+const testFilename = "test.anyOtherExtension";
 
 const testErrors = [
   {
@@ -14,7 +14,7 @@ const testErrors = [
   },
 ];
 
-const testMessage: string = "invalid.fileType";
+const testMessage = "invalid.fileType";
 
 describe("utilities -> imageExtensionCheck", () => {
   afterEach(() => {

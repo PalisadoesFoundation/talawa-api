@@ -11,7 +11,7 @@ export const getDonationByOrgIdConnection: QueryResolvers["getDonationByOrgIdCon
       orgId: args.orgId,
       ...where,
     })
-      .limit(args.first!)
-      .skip(args.skip!)
+      .limit(args.first ?? 0)
+      .skip(args.skip ?? 0)
       .lean();
   };

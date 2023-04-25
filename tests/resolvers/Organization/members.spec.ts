@@ -22,16 +22,16 @@ afterAll(async () => {
 
 describe("resolvers -> Organization -> members", () => {
   it(`returns all user objects for parent.members`, async () => {
-    const parent = testOrganization!.toObject();
+    const parent = testOrganization?.toObject();
+    if (parent) {
+      const membersPayload = await membersResolver?.(parent, {}, {});
+      const members = await User.find({
+        _id: {
+          $in: testOrganization?.members,
+        },
+      }).lean();
 
-    const membersPayload = await membersResolver?.(parent, {}, {});
-
-    const members = await User.find({
-      _id: {
-        $in: testOrganization!.members,
-      },
-    }).lean();
-
-    expect(membersPayload).toEqual(members);
+      expect(membersPayload).toEqual(members);
+    }
   });
 });

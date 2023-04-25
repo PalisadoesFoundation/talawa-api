@@ -42,7 +42,7 @@ const typeDefs = gql`
 
 const resolvers = {
   Query: {
-    hello: async () => "hi",
+    hello: () => "hi",
   },
 };
 

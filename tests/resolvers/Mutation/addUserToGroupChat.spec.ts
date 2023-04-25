@@ -46,7 +46,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> addUserToGroupChat", () => {
-  afterEach(async () => {
+  afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
@@ -59,11 +59,11 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
     try {
       const args: MutationAddUserToGroupChatArgs = {
         chatId: Types.ObjectId().toString(),
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { addUserToGroupChat } = await import(
@@ -85,7 +85,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
     try {
       await GroupChat.updateOne(
         {
-          _id: testGroupChat!._id,
+          _id: testGroupChat?._id,
         },
         {
           $set: {
@@ -95,12 +95,12 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       );
 
       const args: MutationAddUserToGroupChatArgs = {
-        chatId: testGroupChat!.id,
-        userId: testUser!.id,
+        chatId: testGroupChat?.id,
+        userId: testUser?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { addUserToGroupChat } = await import(
@@ -125,18 +125,18 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
     try {
       await GroupChat.updateOne(
         {
-          _id: testGroupChat!._id,
+          _id: testGroupChat?._id,
         },
         {
           $set: {
-            organization: testOrganization!._id,
+            organization: testOrganization?._id,
           },
         }
       );
 
       await Organization.updateOne(
         {
-          _id: testOrganization!._id,
+          _id: testOrganization?._id,
         },
         {
           $set: {
@@ -146,12 +146,12 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       );
 
       const args: MutationAddUserToGroupChatArgs = {
-        chatId: testGroupChat!.id,
-        userId: testUser!.id,
+        chatId: testGroupChat?.id,
+        userId: testUser?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
       const { addUserToGroupChat } = await import(
         "../../../src/resolvers/Mutation/addUserToGroupChat"
@@ -174,22 +174,22 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization!._id,
+          _id: testOrganization?._id,
         },
         {
           $push: {
-            admins: testUser!._id,
+            admins: testUser?._id,
           },
         }
       );
 
       const args: MutationAddUserToGroupChatArgs = {
-        chatId: testGroupChat!.id,
+        chatId: testGroupChat?.id,
         userId: Types.ObjectId().toString(),
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { addUserToGroupChat } = await import(
@@ -210,12 +210,12 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationAddUserToGroupChatArgs = {
-        chatId: testGroupChat!.id,
-        userId: testUser!.id,
+        chatId: testGroupChat?.id,
+        userId: testUser?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { addUserToGroupChat } = await import(
@@ -231,7 +231,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
   it(`add the groupChat with _id === args.chatId and returns it`, async () => {
     await GroupChat.updateOne(
       {
-        _id: testGroupChat!._id,
+        _id: testGroupChat?._id,
       },
       {
         $set: {
@@ -241,12 +241,12 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
     );
 
     const args: MutationAddUserToGroupChatArgs = {
-      chatId: testGroupChat!.id,
-      userId: testUser!.id,
+      chatId: testGroupChat?.id,
+      userId: testUser?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
     const { addUserToGroupChat } = await import(
       "../../../src/resolvers/Mutation/addUserToGroupChat"
@@ -256,7 +256,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       args,
       context
     );
-    expect(addUserToGroupChatPayload?._id).toEqual(testGroupChat!._id);
-    expect(addUserToGroupChatPayload?.users).toEqual([testUser!._id]);
+    expect(addUserToGroupChatPayload?._id).toEqual(testGroupChat?._id);
+    expect(addUserToGroupChatPayload?.users).toEqual([testUser?._id]);
   });
 });

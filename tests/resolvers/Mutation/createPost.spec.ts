@@ -33,7 +33,7 @@ import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/
 import { nanoid } from "nanoid";
 import { createPost as createPostResolverImage } from "../../../src/resolvers/Mutation/createPost";
 
-const testImagePath: string = `${nanoid().toLowerCase()}test.png`;
+const testImagePath = `${nanoid().toLowerCase()}test.png`;
 let testUser: TestUserType;
 let randomUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -111,7 +111,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { createPost: createPostResolver } = await import(
@@ -135,7 +135,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     try {
       const args: MutationCreatePostArgs = {
         data: {
-          organizationId: testOrganization!._id,
+          organizationId: testOrganization?._id,
           text: "New Post Text",
           videoUrl: "http://dummyURL.com/",
           title: "New Post Title",
@@ -145,7 +145,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       };
 
       const context = {
-        userId: randomUser!.id,
+        userId: randomUser?.id,
       };
 
       const { createPost: createPostResolver } = await import(
@@ -169,7 +169,7 @@ describe("resolvers -> Mutation -> createPost", () => {
 
     const args: MutationCreatePostArgs = {
       data: {
-        organizationId: testOrganization!.id,
+        organizationId: testOrganization?.id,
         text: "New Post Text",
         videoUrl: "http://dummyURL.com/",
         title: "New Post Title",
@@ -178,7 +178,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       },
     };
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const { createPost: createPostResolver } = await import(
@@ -195,20 +195,20 @@ describe("resolvers -> Mutation -> createPost", () => {
     );
 
     const updatedTestOrg = await Organization.findOne({
-      _id: testOrganization!.id,
+      _id: testOrganization?.id,
     }).lean();
 
     expect(
-      updatedTestOrg!.pinnedPosts
+      updatedTestOrg?.pinnedPosts
         .map((id) => id.toString())
-        .includes(createdPost!._id.toString())
+        .includes(createdPost?._id.toString())
     ).toBeTruthy();
   });
 
   it(`creates the post and returns it when image is not provided`, async () => {
     const args: MutationCreatePostArgs = {
       data: {
-        organizationId: testOrganization!.id,
+        organizationId: testOrganization?.id,
         text: "text",
         videoUrl: "videoUrl",
         title: "title",
@@ -216,7 +216,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const { createPost: createPostResolver } = await import(
@@ -229,8 +229,8 @@ describe("resolvers -> Mutation -> createPost", () => {
       expect.objectContaining({
         title: "title",
         videoUrl: "videoUrl",
-        creator: testUser!._id,
-        organization: testOrganization!._id,
+        creator: testUser?._id,
+        organization: testOrganization?._id,
         imageUrl: null,
       })
     );
@@ -239,7 +239,7 @@ describe("resolvers -> Mutation -> createPost", () => {
   it(`creates the post and returns it when image is provided`, async () => {
     const args: MutationCreatePostArgs = {
       data: {
-        organizationId: testOrganization!.id,
+        organizationId: testOrganization?.id,
         text: "text",
         videoUrl: "videoUrl",
         title: "title",
@@ -248,7 +248,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
       apiRootUrl: BASE_URL,
     };
 
@@ -266,8 +266,8 @@ describe("resolvers -> Mutation -> createPost", () => {
       expect.objectContaining({
         title: "title",
         videoUrl: "videoUrl",
-        creator: testUser!._id,
-        organization: testOrganization!._id,
+        creator: testUser?._id,
+        organization: testOrganization?._id,
         imageUrl: `${context.apiRootUrl}${testImagePath}`,
       })
     );
@@ -280,7 +280,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     try {
       const args: MutationCreatePostArgs = {
         data: {
-          organizationId: testOrganization!._id,
+          organizationId: testOrganization?._id,
           text: "random",
           videoUrl: "",
           title:
@@ -290,7 +290,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { createPost: createPostResolver } = await import(
@@ -312,7 +312,7 @@ describe("resolvers -> Mutation -> createPost", () => {
     try {
       const args: MutationCreatePostArgs = {
         data: {
-          organizationId: testOrganization!._id,
+          organizationId: testOrganization?._id,
           text: "JWQPfpdkGGGKyryb86K4YN85nDj4m4F7gEAMBbMXLax73pn2okV6kpWY0EYO0XSlUc0fAlp45UCgg3s6mqsRYF9FOlzNIDFLZ1rd03Z17cdJRuvBcAmbC0imyqGdXHGDUQmVyOjDkaOLAvjhB5uDeuEqajcAPTcKpZ6LMpigXuqRAd0xGdPNXyITC03FEeKZAjjJL35cSIUeMv5eWmiFlmmm70FU1Bp6575zzBtEdyWPLflcA2GpGmmf4zvT7nfgN3NIkwQIhk9OwP8dn75YYczcYuUzLpxBu1Lyog77YlAj5DNdTIveXu9zHeC6V4EEUcPQtf1622mhdU3jZNMIAyxcAG4ErtztYYRqFs0ApUxXiQI38rmiaLcicYQgcOxpmFvqRGiSduiCprCYm90CHWbQFq4w2uhr8HhR3r9HYMIYtrRyO6C3rPXaQ7otpjuNgE0AKI57AZ4nGG1lvNwptFCY60JEndSLX9Za6XP1zkVRLaMZArQNl",
           videoUrl: "",
           title: "random",
@@ -321,7 +321,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { createPost: createPostResolver } = await import(

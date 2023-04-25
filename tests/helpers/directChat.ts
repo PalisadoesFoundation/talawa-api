@@ -21,13 +21,17 @@ export const createTestDirectChat = async (): Promise<
   [TestUserType, TestOrganizationType, TestDirectChatType]
 > => {
   const [testUser, testOrganization] = await createTestUserAndOrganization();
-  const testDirectChat = await DirectChat.create({
-    creator: testUser!._id,
-    users: [testUser!._id],
-    organization: testOrganization!._id,
-  });
+  if (testUser && testOrganization) {
+    const testDirectChat = await DirectChat.create({
+      creator: testUser._id,
+      users: [testUser._id],
+      organization: testOrganization._id,
+    });
 
-  return [testUser, testOrganization, testDirectChat];
+    return [testUser, testOrganization, testDirectChat];
+  } else {
+    return [testUser, testOrganization, null];
+  }
 };
 
 export const createTestDirectChatMessage = async (): Promise<
@@ -41,15 +45,18 @@ export const createTestDirectChatMessage = async (): Promise<
   const [testUser, testOrganization, testDirectChat] =
     await createTestDirectChat();
 
-  const testDirectChatMessage = await DirectChatMessage.create({
-    directChatMessageBelongsTo: testDirectChat!._id,
-    sender: testUser!._id,
-    receiver: testUser!._id,
-    createdAt: new Date(),
-    messageContent: `msgContent${nanoid().toLowerCase()}`,
-  });
-
-  return [testUser, testOrganization, testDirectChat, testDirectChatMessage];
+  if (testDirectChat && testUser) {
+    const testDirectChatMessage = await DirectChatMessage.create({
+      directChatMessageBelongsTo: testDirectChat._id,
+      sender: testUser._id,
+      receiver: testUser._id,
+      createdAt: new Date(),
+      messageContent: `msgContent${nanoid().toLowerCase()}`,
+    });
+    return [testUser, testOrganization, testDirectChat, testDirectChatMessage];
+  } else {
+    return [testUser, testOrganization, testDirectChat, null];
+  }
 };
 
 export const createTestDirectMessageForMultipleUser = async (

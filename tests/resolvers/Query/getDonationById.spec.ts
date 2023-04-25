@@ -5,7 +5,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { QueryGetDonationByIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import type { TestDonationType } from "../../helpers/donation";
 import { createTestDonation } from "../../helpers/donation";
-import type mongoose from "mongoose";
+import mongoose from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testDonation: TestDonationType;
@@ -33,5 +33,18 @@ describe("resolvers -> Mutation -> getDonationById", () => {
     );
 
     expect(getDonationByIdPayload).toEqual(testDonation?.toObject());
+  });
+  it(`returns null if donation not found for args.id`, async () => {
+    const args: QueryGetDonationByIdArgs = {
+      id: new mongoose.Types.ObjectId().toString(),
+    };
+
+    const getDonationByIdPayload = await getDonationByIdResolver?.(
+      {},
+      args,
+      {}
+    );
+
+    expect(getDonationByIdPayload).toEqual({});
   });
 });

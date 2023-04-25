@@ -2,8 +2,8 @@ import "dotenv/config";
 import { creator as creatorResolver } from "../../../src/resolvers/GroupChat/creator";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
+import type { InterfaceGroupChat } from "../../../src/models";
 import { User } from "../../../src/models";
-
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestGroupChatType } from "../../helpers/groupChat";
 import { createTestGroupChat } from "../../helpers/groupChat";
@@ -23,12 +23,16 @@ afterAll(async () => {
 
 describe("resolvers -> GroupChat -> creator", () => {
   it(`returns user object for parent.creator`, async () => {
-    const parent = testGroupChat!.toObject();
+    const parent = testGroupChat?.toObject();
 
-    const creatorPayload = await creatorResolver?.(parent, {}, {});
+    const creatorPayload = await creatorResolver?.(
+      parent ?? ({} as InterfaceGroupChat),
+      {},
+      {}
+    );
 
     const creator = await User.findOne({
-      _id: testGroupChat!.creator,
+      _id: testGroupChat?.creator,
     }).lean();
 
     expect(creatorPayload).toEqual(creator);

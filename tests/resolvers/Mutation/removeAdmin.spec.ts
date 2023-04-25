@@ -67,7 +67,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       };
 
       const context = {
-        userId: testUserRemover!.id,
+        userId: testUserRemover?.id,
       };
 
       const { removeAdmin: removeAdminResolver } = await import(
@@ -89,13 +89,13 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
     try {
       const args: MutationRemoveAdminArgs = {
         data: {
-          organizationId: testOrganization!.id,
+          organizationId: testOrganization?.id,
           userId: Types.ObjectId().toString(),
         },
       };
 
       const context = {
-        userId: testUserRemover!.id,
+        userId: testUserRemover?.id,
       };
 
       const { removeAdmin: removeAdminResolver } = await import(
@@ -119,7 +119,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization!._id,
+          _id: testOrganization?._id,
         },
         {
           $set: {
@@ -130,13 +130,13 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
 
       const args: MutationRemoveAdminArgs = {
         data: {
-          organizationId: testOrganization!.id,
-          userId: testUserRemoved!.id,
+          organizationId: testOrganization?.id,
+          userId: testUserRemoved?.id,
         },
       };
 
       const context = {
-        userId: testUserRemover!.id,
+        userId: testUserRemover?.id,
       };
 
       const { removeAdmin: removeAdminAdminError } = await import(
@@ -161,11 +161,11 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization!._id,
+          _id: testOrganization?._id,
         },
         {
           $push: {
-            admins: testUserRemoved!._id,
+            admins: testUserRemoved?._id,
           },
           $set: {
             creator: Types.ObjectId().toString(),
@@ -175,13 +175,13 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
 
       const args: MutationRemoveAdminArgs = {
         data: {
-          organizationId: testOrganization!.id,
-          userId: testUserRemoved!.id,
+          organizationId: testOrganization?.id,
+          userId: testUserRemoved?.id,
         },
       };
 
       const context = {
-        userId: testUserRemover!.id,
+        userId: testUserRemover?.id,
       };
 
       const { removeAdmin: removeAdminAdminError } = await import(
@@ -203,18 +203,18 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
   with _id === args.data.organizationId`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization!._id,
+        _id: testOrganization?._id,
       },
       {
         $set: {
-          creator: testUserRemover!._id,
+          creator: testUserRemover?._id,
         },
       }
     );
 
     await User.updateOne(
       {
-        _id: testUserRemover!.id,
+        _id: testUserRemover?.id,
       },
       {
         $set: {
@@ -226,19 +226,19 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
 
     const args: MutationRemoveAdminArgs = {
       data: {
-        organizationId: testOrganization!.id,
-        userId: testUserRemoved!.id,
+        organizationId: testOrganization?.id,
+        userId: testUserRemoved?.id,
       },
     };
 
     const context = {
-      userId: testUserRemover!.id,
+      userId: testUserRemover?.id,
     };
 
     const removeAdminPayload = await removeAdminResolver?.({}, args, context);
 
     const updatedTestUser = await User.findOne({
-      _id: testUserRemoved!._id,
+      _id: testUserRemoved?._id,
     })
       .select(["-password"])
       .lean();

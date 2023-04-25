@@ -63,7 +63,7 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { rejectMembershipRequest: rejectMembershipRequestResolver } =
@@ -85,7 +85,7 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
     try {
       await MembershipRequest.updateOne(
         {
-          _id: testMembershipRequest!._id,
+          _id: testMembershipRequest?._id,
         },
         {
           $set: {
@@ -95,11 +95,11 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
       );
 
       const args: MutationRejectMembershipRequestArgs = {
-        membershipRequestId: testMembershipRequest!.id,
+        membershipRequestId: testMembershipRequest?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { rejectMembershipRequest: rejectMembershipRequestResolver } =
@@ -121,18 +121,18 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
     try {
       await MembershipRequest.updateOne(
         {
-          _id: testMembershipRequest!._id,
+          _id: testMembershipRequest?._id,
         },
         {
           $set: {
-            organization: testOrganization!._id,
+            organization: testOrganization?._id,
           },
         }
       );
 
       await MembershipRequest.updateOne(
         {
-          _id: testMembershipRequest!._id,
+          _id: testMembershipRequest?._id,
         },
         {
           $set: {
@@ -142,11 +142,11 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
       );
 
       const args: MutationRejectMembershipRequestArgs = {
-        membershipRequestId: testMembershipRequest!.id,
+        membershipRequestId: testMembershipRequest?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { rejectMembershipRequest: rejectMembershipRequestResolver } =
@@ -170,18 +170,18 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
     try {
       await MembershipRequest.findByIdAndUpdate(
         {
-          _id: testMembershipRequest!._id,
+          _id: testMembershipRequest?._id,
         },
         {
           $set: {
-            user: testUser!._id,
+            user: testUser?._id,
           },
         }
       );
 
       await Organization.findByIdAndUpdate(
         {
-          _id: testOrganization!._id,
+          _id: testOrganization?._id,
         },
         {
           $set: {
@@ -192,7 +192,7 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
 
       await User.findByIdAndUpdate(
         {
-          _id: testUser!._id,
+          _id: testUser?._id,
         },
         {
           $set: {
@@ -227,39 +227,39 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
   it(`deletes membershipRequest with _id === args.membershipRequestId`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization!._id,
+        _id: testOrganization?._id,
       },
       {
         $push: {
-          admins: testUser!._id,
+          admins: testUser?._id,
         },
       }
     );
 
     const args: MutationRejectMembershipRequestArgs = {
-      membershipRequestId: testMembershipRequest!.id,
+      membershipRequestId: testMembershipRequest?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const rejectMembershipRequestPayload =
       await rejectMembershipRequestResolver?.({}, args, context);
 
     expect(rejectMembershipRequestPayload?._id).toEqual(
-      testMembershipRequest!._id
+      testMembershipRequest?._id
     );
 
     const testUpdatedUser = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     })
       .select(["membershipRequests"])
       .lean();
     expect(testUpdatedUser?.membershipRequests).toEqual([]);
 
     const testUpdatedOrganization = await Organization.findOne({
-      _id: testOrganization!._id,
+      _id: testOrganization?._id,
     })
       .select(["membershipRequests"])
       .lean();

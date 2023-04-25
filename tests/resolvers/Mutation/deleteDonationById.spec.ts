@@ -23,11 +23,11 @@ beforeAll(async () => {
 
   testDonation = await Donation.create({
     amount: 1,
-    nameOfOrg: testOrganization!.name,
-    nameOfUser: `${testUser!.firstName} ${testUser!.lastName}`,
-    orgId: testOrganization!._id,
+    nameOfOrg: testOrganization?.name,
+    nameOfUser: `${testUser?.firstName} ${testUser?.lastName}`,
+    orgId: testOrganization?._id,
     payPalId: "payPalId",
-    userId: testUser!._id,
+    userId: testUser?._id,
   });
 });
 

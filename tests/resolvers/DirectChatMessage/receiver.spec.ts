@@ -27,7 +27,7 @@ describe("resolvers -> DirectChatMessage -> receiver", () => {
     const receiverPayload = await receiverResolver?.(parent, {}, {});
 
     const receiver = await User.findOne({
-      _id: testDirectChatMessage!.receiver,
+      _id: testDirectChatMessage?.receiver,
     }).lean();
 
     expect(receiverPayload).toEqual(receiver);

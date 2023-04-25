@@ -50,7 +50,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await createAdminResolver?.({}, args, context);
@@ -63,7 +63,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization!._id,
+          _id: testOrganization?._id,
         },
         {
           $set: {
@@ -74,8 +74,8 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
       const args: MutationCreateAdminArgs = {
         data: {
-          organizationId: testOrganization!.id,
-          userId: testUser!.id,
+          organizationId: testOrganization?.id,
+          userId: testUser?.id,
         },
       };
 
@@ -93,18 +93,18 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization!._id,
+          _id: testOrganization?._id,
         },
         {
           $set: {
-            creator: testUser!._id,
+            creator: testUser?._id,
           },
         }
       );
 
       await User.updateOne(
         {
-          _id: testUser!._id,
+          _id: testUser?._id,
         },
         {
           $set: {
@@ -115,13 +115,13 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
       const args: MutationCreateAdminArgs = {
         data: {
-          organizationId: testOrganization!.id,
+          organizationId: testOrganization?.id,
           userId: Types.ObjectId().toString(),
         },
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await createAdminResolver?.({}, args, context);
@@ -135,13 +135,13 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     try {
       const args: MutationCreateAdminArgs = {
         data: {
-          organizationId: testOrganization!.id,
-          userId: testUser!.id,
+          organizationId: testOrganization?.id,
+          userId: testUser?.id,
         },
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await createAdminResolver?.({}, args, context);
@@ -157,24 +157,24 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization!._id,
+          _id: testOrganization?._id,
         },
         {
           $push: {
-            members: testUser!._id,
+            members: testUser?._id,
           },
         }
       );
 
       const args: MutationCreateAdminArgs = {
         data: {
-          organizationId: testOrganization!.id,
-          userId: testUser!.id,
+          organizationId: testOrganization?.id,
+          userId: testUser?.id,
         },
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await createAdminResolver?.({}, args, context);
@@ -186,7 +186,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
   it(`creates the admin and returns admin's user object`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization!._id,
+        _id: testOrganization?._id,
       },
       {
         $set: {
@@ -197,19 +197,19 @@ describe("resolvers -> Mutation -> createAdmin", () => {
 
     const args: MutationCreateAdminArgs = {
       data: {
-        organizationId: testOrganization!.id,
-        userId: testUser!.id,
+        organizationId: testOrganization?.id,
+        userId: testUser?.id,
       },
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const createAdminPayload = await createAdminResolver?.({}, args, context);
 
     const updatedTestUser = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     })
       .select(["-password"])
       .lean();
@@ -217,11 +217,11 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     expect(createAdminPayload).toEqual(updatedTestUser);
 
     const updatedTestOrganization = await Organization.findOne({
-      _id: testOrganization!._id,
+      _id: testOrganization?._id,
     })
       .select(["admins"])
       .lean();
 
-    expect(updatedTestOrganization!.admins).toEqual([testUser!._id]);
+    expect(updatedTestOrganization?.admins).toEqual([testUser?._id]);
   });
 });

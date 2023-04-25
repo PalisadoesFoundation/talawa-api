@@ -36,7 +36,7 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
           return _action;
         },
       },
-      context: { currentUserId: testCurrentUser!._id },
+      context: { currentUserId: testCurrentUser?._id },
     };
     const payload = {
       messageSentToDirectChat: {
@@ -44,12 +44,6 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
         sender: testDirectChatMessage?.sender,
       },
     };
-    // @ts-ignore
-    messageSentToDirectChatPayload._parent = _parent;
-    // @ts-ignore
-    messageSentToDirectChatPayload._args = _args;
-    // @ts-ignore
-    messageSentToDirectChatPayload.context = context;
     // @ts-ignore
     messageSentToDirectChatPayload.payload = payload;
     // @ts-ignore
@@ -80,7 +74,7 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
           return _action;
         },
       },
-      context: { currentUserId: testCurrentUser!._id },
+      context: { currentUserId: testCurrentUser?._id },
     };
 
     const payload = {
@@ -89,12 +83,6 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
         sender: "Sender",
       },
     };
-    // @ts-ignore
-    messageSentToDirectChatPayload._parent = _parent;
-    // @ts-ignore
-    messageSentToDirectChatPayload._args = _args;
-    // @ts-ignore
-    messageSentToDirectChatPayload.context = context;
     // @ts-ignore
     messageSentToDirectChatPayload.payload = payload;
     // @ts-ignore

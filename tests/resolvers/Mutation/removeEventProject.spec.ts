@@ -47,10 +47,10 @@ beforeAll(async () => {
   testEventProject = await EventProject.create({
     title: "title",
     description: "description",
-    creator: testUser!._id,
-    admins: [testUser!._id],
-    members: [testUser!._id],
-    event: testEvent!._id,
+    creator: testUser?._id,
+    admins: [testUser?._id],
+    members: [testUser?._id],
+    event: testEvent?._id,
   });
 });
 
@@ -62,7 +62,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-afterEach(async () => {
+afterEach(() => {
   vi.doUnmock("../../../src/constants");
   vi.resetModules();
 });
@@ -102,7 +102,7 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const { requestContext } = await import("../../../src/libraries");
@@ -130,7 +130,7 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     };
 
     const context = {
-      userId: testUserNotCreatorOfEventProject!._id,
+      userId: testUserNotCreatorOfEventProject?._id,
     };
 
     const { requestContext } = await import("../../../src/libraries");
@@ -158,7 +158,7 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const { removeEventProject } = await import(

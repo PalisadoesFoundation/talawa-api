@@ -12,7 +12,8 @@ import { connect, disconnect } from "../helpers/db";
 import { USER_NOT_AUTHORIZED_ADMIN } from "../../src/constants";
 import type { TestOrganizationType, TestUserType } from "../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../helpers/userAndOrg";
-import type mongoose from "mongoose";
+import mongoose from "mongoose";
+import type { InterfaceOrganization } from "../../src/models";
 import { Organization, User } from "../../src/models";
 
 let testUser: TestUserType;
@@ -44,7 +45,10 @@ describe("utilities -> adminCheck", () => {
 
     try {
       const { adminCheck } = await import("../../src/utilities");
-      await adminCheck(testUser!._id, testOrganization!);
+      await adminCheck(
+        testUser?._id,
+        testOrganization ?? ({} as InterfaceOrganization)
+      );
     } catch (error: any) {
       expect(error.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
@@ -70,7 +74,10 @@ describe("utilities -> adminCheck", () => {
     const { adminCheck } = await import("../../src/utilities");
 
     await expect(
-      adminCheck(updatedUser!._id, testOrganization!)
+      adminCheck(
+        updatedUser?._id,
+        testOrganization ?? ({} as InterfaceOrganization)
+      )
     ).resolves.not.toThrowError();
   });
 
@@ -106,7 +113,30 @@ describe("utilities -> adminCheck", () => {
     const { adminCheck } = await import("../../src/utilities");
 
     await expect(
-      adminCheck(updatedUser!._id, updatedOrganization!)
+      adminCheck(
+        updatedUser?._id,
+        updatedOrganization ?? ({} as InterfaceOrganization)
+      )
     ).resolves.not.toThrowError();
+  });
+  it("throws error if user is not found with the specific Id", async () => {
+    const { requestContext } = await import("../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const { adminCheck } = await import("../../src/utilities");
+      await adminCheck(
+        new mongoose.Types.ObjectId(),
+        testOrganization ?? ({} as InterfaceOrganization)
+      );
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
+      );
+    }
+    expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
   });
 });

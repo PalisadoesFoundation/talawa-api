@@ -43,16 +43,16 @@ beforeAll(async () => {
   // Assign the created tags to the testUser
   await TagUser.insertMany([
     {
-      userId: testUser!._id,
-      tagId: rootTag!._id,
+      userId: testUser?._id,
+      tagId: rootTag?._id,
     },
     {
-      userId: testUser!._id,
-      tagId: childTag1!._id,
+      userId: testUser?._id,
+      tagId: childTag1?._id,
     },
     {
-      userId: testUser!._id,
-      tagId: childTag2!._id,
+      userId: testUser?._id,
+      tagId: childTag2?._id,
     },
   ]);
 });
@@ -76,7 +76,7 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
 
     try {
       const args: MutationRemoveUserTagArgs = {
-        id: rootTag!._id.toString(),
+        id: rootTag ? rootTag._id.toString() : "",
       };
 
       const context = {
@@ -108,7 +108,7 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { removeUserTag: removeUserTagResolver } = await import(
@@ -130,11 +130,11 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
 
     try {
       const args: MutationRemoveUserTagArgs = {
-        id: rootTag!._id.toString(),
+        id: rootTag ? rootTag._id.toString() : "",
       };
 
       const context = {
-        userId: randomUser!.id,
+        userId: randomUser?.id,
       };
 
       const { removeUserTag: removeUserTagResolver } = await import(
@@ -157,11 +157,11 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
     );
 
     const args: MutationRemoveUserTagArgs = {
-      id: rootTag!._id.toString(),
+      id: rootTag ? rootTag._id.toString() : "",
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const { removeUserTag: removeUserTagResolver } = await import(
@@ -173,9 +173,9 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
     // Check that the tag and its children must be deleted from the OrganizationTagUser model
     const tagExists = await OrganizationTagUser.exists({
       $or: [
-        { _id: rootTag!._id },
-        { _id: childTag1!._id },
-        { _id: childTag2!._id },
+        { _id: rootTag?._id },
+        { _id: childTag1?._id },
+        { _id: childTag2?._id },
       ],
     });
 
@@ -184,9 +184,9 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
     // Check that all the entries related to the tag and its children must be deleted in the TagUser model
     const userTagExists = await TagUser.exists({
       $or: [
-        { tagId: rootTag!._id },
-        { tagId: childTag1!._id },
-        { tagId: childTag2!._id },
+        { tagId: rootTag?._id },
+        { tagId: childTag1?._id },
+        { tagId: childTag2?._id },
       ],
     });
 
