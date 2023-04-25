@@ -6,7 +6,6 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
   MEMBER_NOT_FOUND_ERROR,
-  ADMIN_REMOVING_ADMIN,
 } from "../../constants";
 /**
  * This function enables to remove a member.
@@ -64,22 +63,6 @@ export const createMember: MutationResolvers["createMember"] = async (
       requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
       MEMBER_NOT_FOUND_ERROR.CODE,
       MEMBER_NOT_FOUND_ERROR.PARAM
-    );
-  }
-
-  const userIsOrganizationAdmin = organization?.admins.some(
-    (admin) => admin.toString() === user._id.toString()
-  );
-
-  /*
-    userIsOrganizationAdmin being true implies that the current user is an admin of organization.
-    If userIsOrganizationAdmin is true pushes error message to errors list and breaks out of loop.
-    */
-  if (userIsOrganizationAdmin === true) {
-    throw new errors.ConflictError(
-      requestContext.translate(ADMIN_REMOVING_ADMIN.MESSAGE),
-      ADMIN_REMOVING_ADMIN.CODE,
-      ADMIN_REMOVING_ADMIN.PARAM
     );
   }
 
