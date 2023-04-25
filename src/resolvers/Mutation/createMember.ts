@@ -1,7 +1,7 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Organization } from "../../models";
-import { adminCheck } from "../../utilities";
+import { superAdminCheck } from "../../utilities";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -37,8 +37,19 @@ export const createMember: MutationResolvers["createMember"] = async (
     );
   }
 
-  // Checks whether current user making the request is an admin of organization.
-  await adminCheck(context.userId, organization!);
+  // Checks whether the current user is a superAdmin
+  const currentUser = await User.findById({
+    _id: context.userId,
+  });
+
+  if (!currentUser) {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
+    );
+  }
+  superAdminCheck(currentUser);
 
   const user = await User.findOne({
     _id: args.data.userId,
