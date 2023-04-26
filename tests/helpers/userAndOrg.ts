@@ -65,7 +65,7 @@ export const createTestUserAndOrganization = async (
 ): Promise<[TestUserType, TestOrganizationType]> => {
   const testUser = await createTestUser();
   const testOrganization = await createTestOrganizationWithAdmin(
-    testUser!._id,
+    testUser?._id,
     isMember,
     isAdmin,
     isPublic

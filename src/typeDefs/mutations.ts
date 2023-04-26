@@ -20,7 +20,7 @@ export const mutations = gql`
 
     adminRemoveEvent(eventId: ID!): Event! @auth
 
-    adminRemoveGroup(groupId: ID!): Message! @auth
+    adminRemoveGroup(groupId: ID!): GroupChat! @auth
 
     assignUserTag(input: ToggleUserTagAssignInput!): User @auth
 
@@ -38,7 +38,7 @@ export const mutations = gql`
 
     createComment(postId: ID!, data: CommentInput!): Comment @auth
 
-    createDirectChat(data: createChatInput): DirectChat! @auth
+    createDirectChat(data: createChatInput!): DirectChat! @auth
 
     createDonation(
       userId: ID!
@@ -51,7 +51,7 @@ export const mutations = gql`
 
     createEvent(data: EventInput): Event! @auth
 
-    createGroupChat(data: createGroupChatInput): GroupChat! @auth
+    createGroupChat(data: createGroupChatInput!): GroupChat! @auth
 
     createMessageChat(data: MessageChatInput!): MessageChat! @auth
 
@@ -181,7 +181,7 @@ export const mutations = gql`
 
     updateUserProfile(data: UpdateUserInput, file: String): User! @auth
 
-    updateUserPassword(data: UpdateUserPasswordInput): User! @auth
+    updateUserPassword(data: UpdateUserPasswordInput!): User! @auth
 
     updateUserType(data: UpdateUserTypeInput!): Boolean!
       @auth

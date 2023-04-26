@@ -21,7 +21,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  disconnect();
+  await disconnect();
 });
 
 describe("utilities -> superAdminCheck", () => {
@@ -39,7 +39,9 @@ describe("utilities -> superAdminCheck", () => {
 
     try {
       const { superAdminCheck } = await import("../../src/utilities");
-      superAdminCheck(testUser!);
+      if (testUser) {
+        superAdminCheck(testUser);
+      }
     } catch (error: any) {
       expect(error.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`

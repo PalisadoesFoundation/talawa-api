@@ -2,7 +2,7 @@ import "dotenv/config";
 import mongoose from "mongoose";
 
 // Returns a mongoose instance to the testing database
-export async function connect(dbName: string = "TALAWA_API_TEST_DATABASE") {
+export async function connect(dbName = "TALAWA_API_TEST_DATABASE") {
   return await mongoose.connect(process.env.MONGO_DB_URL as string, {
     dbName,
     useCreateIndex: true,

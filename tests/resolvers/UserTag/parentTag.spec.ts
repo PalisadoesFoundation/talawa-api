@@ -25,7 +25,7 @@ describe("resolvers -> Tag -> parentTag", () => {
     const payload = await parentTagResolver?.(parent, {}, {});
 
     const parentTag = await OrganizationTagUser.findOne({
-      _id: testParentTag!._id,
+      _id: testParentTag?._id,
     }).lean();
 
     expect(payload).toEqual(parentTag);

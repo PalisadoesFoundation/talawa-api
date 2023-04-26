@@ -16,7 +16,7 @@ import {
   TestUserType,
 } from "../helpers/userAndOrg";
 import mongoose from "mongoose";
-import { Organization, User } from "../../src/models";
+import { Organization, User, InterfaceOrganization } from "../../src/models";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -47,7 +47,10 @@ describe("utilities -> adminCheck", () => {
 
     try {
       const { adminCheck } = await import("../../src/utilities");
-      await adminCheck(testUser!._id, testOrganization!);
+      await adminCheck(
+        testUser?._id,
+        testOrganization ?? ({} as InterfaceOrganization)
+      );
     } catch (error: any) {
       expect(error.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
@@ -73,7 +76,10 @@ describe("utilities -> adminCheck", () => {
     const { adminCheck } = await import("../../src/utilities");
 
     await expect(
-      adminCheck(updatedUser!._id, testOrganization!)
+      adminCheck(
+        updatedUser?._id,
+        testOrganization ?? ({} as InterfaceOrganization)
+      )
     ).resolves.not.toThrowError();
   });
 
@@ -109,7 +115,30 @@ describe("utilities -> adminCheck", () => {
     const { adminCheck } = await import("../../src/utilities");
 
     await expect(
-      adminCheck(updatedUser!._id, updatedOrganization!)
+      adminCheck(
+        updatedUser?._id,
+        updatedOrganization ?? ({} as InterfaceOrganization)
+      )
     ).resolves.not.toThrowError();
+  });
+  it("throws error if user is not found with the specific Id", async () => {
+    const { requestContext } = await import("../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const { adminCheck } = await import("../../src/utilities");
+      await adminCheck(
+        new mongoose.Types.ObjectId(),
+        testOrganization ?? ({} as InterfaceOrganization)
+      );
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
+      );
+    }
+    expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
   });
 });
