@@ -34,10 +34,9 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       );
     }
 
-    const [organization, currentUser] = await Promise.all([
-      Organization.findOne({ _id: membershipRequest.organization }).lean(),
-      User.findOne({ _id: context.userId }).lean(),
-    ]);
+    const organization = await Organization.findOne({
+      _id: membershipRequest.organization,
+    }).lean();
 
     // Checks whether organization exists.
     if (!organization) {
@@ -47,6 +46,10 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
         ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
     }
+
+    const currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
 
     // Checks whether currentUser exists.
     if (!currentUser) {
