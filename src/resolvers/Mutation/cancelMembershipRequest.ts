@@ -60,8 +60,12 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       );
     }
 
+    const currentUserCreatedMembershipRequest = currentUser._id.equals(
+      membershipRequest.user
+    );
+
     // Checks whether currentUser is the creator of membershipRequest.
-    if (!currentUser._id.equals(membershipRequest.user)) {
+    if (currentUserCreatedMembershipRequest === false) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
