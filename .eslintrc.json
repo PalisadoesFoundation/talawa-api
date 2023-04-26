@@ -60,6 +60,8 @@
     "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/no-var-requires": "off",
+    "@typescript-eslint/ban-types": "error",
+    "@typescript-eslint/no-duplicate-enum-values": "error",
 
     // Typescript rule to enforce PascalCase naming convention for types and interfaces
     "@typescript-eslint/naming-convention": [
@@ -107,14 +109,6 @@
     "@typescript-eslint/array-type": "error",
     "@typescript-eslint/consistent-type-assertions": "error",
     "@typescript-eslint/consistent-type-imports": "error",
-    "@typescript-eslint/explicit-function-return-type": "error",
-
-    "@typescript-eslint/typedef": [
-      "off",
-      {
-        "arrowParameter": true,
-        "variableDeclaration": true
-      }
-    ]
+    "@typescript-eslint/explicit-function-return-type": "error"
   }
 }
