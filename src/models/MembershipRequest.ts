@@ -1,4 +1,4 @@
-import type { PopulatedDoc, Types, Document } from "mongoose";
+import type { PopulatedDoc, Types, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
@@ -35,7 +35,7 @@ const membershipRequestSchema = new Schema({
   },
 });
 
-const membershipRequestModel = () =>
+const membershipRequestModel = (): Model<InterfaceMembershipRequest> =>
   model<InterfaceMembershipRequest>(
     "MembershipRequest",
     membershipRequestSchema

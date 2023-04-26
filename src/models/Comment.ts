@@ -1,4 +1,4 @@
-import type { PopulatedDoc, Types, Document } from "mongoose";
+import type { PopulatedDoc, Types, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
 import type { InterfacePost } from "./Post";
@@ -62,7 +62,8 @@ const commentSchema = new Schema({
   },
 });
 
-const commentModel = () => model<InterfaceComment>("Comment", commentSchema);
+const commentModel = (): Model<InterfaceComment> =>
+  model<InterfaceComment>("Comment", commentSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Comment = (models.Comment || commentModel()) as ReturnType<

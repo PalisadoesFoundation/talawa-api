@@ -1,4 +1,4 @@
-import type { Types, PopulatedDoc, Document } from "mongoose";
+import type { Types, PopulatedDoc, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceGroupChat } from "./GroupChat";
 import type { InterfaceUser } from "./User";
@@ -48,7 +48,7 @@ const groupChatMessageSchema = new Schema({
   },
 });
 
-const groupChatMessageModel = () =>
+const groupChatMessageModel = (): Model<InterfaceGroupChatMessage> =>
   model<InterfaceGroupChatMessage>("GroupChatMessage", groupChatMessageSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.

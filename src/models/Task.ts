@@ -1,4 +1,4 @@
-import type { PopulatedDoc, Types, Document } from "mongoose";
+import type { PopulatedDoc, Types, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceUser } from "./User";
@@ -58,7 +58,8 @@ const taskSchema = new Schema({
   },
 });
 
-const taskModel = () => model<InterfaceTask>("Task", taskSchema);
+const taskModel = (): Model<InterfaceTask> =>
+  model<InterfaceTask>("Task", taskSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Task = (models.Task || taskModel()) as ReturnType<

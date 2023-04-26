@@ -1,4 +1,4 @@
-import type { PopulatedDoc, Types, Document } from "mongoose";
+import type { PopulatedDoc, Types, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
@@ -54,7 +54,8 @@ const groupSchema = new Schema({
   ],
 });
 
-const groupModel = () => model<InterfaceGroup>("Group", groupSchema);
+const groupModel = (): Model<InterfaceGroup> =>
+  model<InterfaceGroup>("Group", groupSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Group = (models.Group || groupModel()) as ReturnType<

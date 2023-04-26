@@ -1,4 +1,4 @@
-import type { Types, PopulatedDoc, Document } from "mongoose";
+import type { Types, PopulatedDoc, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceTask } from "./Task";
@@ -63,7 +63,7 @@ const eventProjectSchema = new Schema({
   },
 });
 
-const eventProjectModel = () =>
+const eventProjectModel = (): Model<InterfaceEventProject> =>
   model<InterfaceEventProject>("EventProject", eventProjectSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.

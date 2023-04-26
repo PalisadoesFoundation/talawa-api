@@ -1,4 +1,4 @@
-import type { PopulatedDoc, Types, Document } from "mongoose";
+import type { PopulatedDoc, Types, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceMessage } from "./Message";
@@ -132,7 +132,7 @@ const organizationSchema = new Schema({
   },
 });
 
-const organizationModel = () =>
+const organizationModel = (): Model<InterfaceOrganization> =>
   model<InterfaceOrganization>("Organization", organizationSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.

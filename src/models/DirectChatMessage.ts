@@ -1,4 +1,4 @@
-import type { PopulatedDoc, Types, Document } from "mongoose";
+import type { PopulatedDoc, Types, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceDirectChat } from "./DirectChat";
 import type { InterfaceUser } from "./User";
@@ -55,7 +55,7 @@ const directChatMessageSchema = new Schema({
   },
 });
 
-const directChatMessageModel = () =>
+const directChatMessageModel = (): Model<InterfaceDirectChatMessage> =>
   model<InterfaceDirectChatMessage>(
     "DirectChatMessage",
     directChatMessageSchema

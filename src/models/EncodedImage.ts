@@ -1,4 +1,4 @@
-import type { Types } from "mongoose";
+import type { Types, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 /**
  * This is an interface that represents a database(MongoDB) document for Encoded Image.
@@ -31,7 +31,7 @@ const encodedImageSchema = new Schema({
   },
 });
 
-const encodedImageModel = () =>
+const encodedImageModel = (): Model<InterfaceEncodedImage> =>
   model<InterfaceEncodedImage>("EncodedImage", encodedImageSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.

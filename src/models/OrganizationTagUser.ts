@@ -1,4 +1,4 @@
-import type { PopulatedDoc, Types, Document } from "mongoose";
+import type { PopulatedDoc, Types, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceOrganization } from "./Organization";
 
@@ -35,7 +35,7 @@ organizationTagUserSchema.index(
   { unique: true }
 );
 
-const organizationTagUserModel = () =>
+const organizationTagUserModel = (): Model<InterfaceOrganizationTagUser> =>
   model<InterfaceOrganizationTagUser>(
     "OrganizationTagUser",
     organizationTagUserSchema

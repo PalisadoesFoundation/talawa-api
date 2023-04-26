@@ -1,4 +1,4 @@
-import type { PopulatedDoc, Types, Document } from "mongoose";
+import type { PopulatedDoc, Types, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceOrganizationTagUser } from "./OrganizationTagUser";
 import type { InterfaceUser } from "./User";
@@ -25,7 +25,8 @@ const tagUserSchema = new Schema({
 
 tagUserSchema.index({ userId: 1, tagId: 1 }, { unique: true });
 
-const tagUserModel = () => model<InterfaceTagUser>("TagUser", tagUserSchema);
+const tagUserModel = (): Model<InterfaceTagUser> =>
+  model<InterfaceTagUser>("TagUser", tagUserSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const TagUser = (models.TagUser || tagUserModel()) as ReturnType<

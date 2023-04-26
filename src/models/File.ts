@@ -1,4 +1,4 @@
-import type { Types } from "mongoose";
+import type { Types, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 /**
@@ -56,7 +56,8 @@ const fileSchema = new Schema({
   },
 });
 
-const fileModel = () => model<InterfaceFile>("File", fileSchema);
+const fileModel = (): Model<InterfaceFile> =>
+  model<InterfaceFile>("File", fileSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const File = (models.File || fileModel()) as ReturnType<
