@@ -33,6 +33,7 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
         MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM
       );
     }
+
     const [organization, currentUser] = await Promise.all([
       Organization.findOne({ _id: membershipRequest.organization }).lean(),
       User.findOne({ _id: context.userId }).lean(),
