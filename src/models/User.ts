@@ -175,7 +175,7 @@ const userSchema = new Schema({
 
 userSchema.plugin(mongoosePaginate);
 
-const userModel = () =>
+const userModel = (): PaginateModel<InterfaceUser> =>
   model<InterfaceUser, PaginateModel<InterfaceUser>>("User", userSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
