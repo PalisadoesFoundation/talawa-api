@@ -51,7 +51,7 @@ describe("utilities -> imageAlreadyInDbCheck", () => {
   it("creates ImageHash instance and returns fileName as undefined if existingImageHash === null", async () => {
     vi.doMock("image-hash", () => {
       return {
-        imageHash: (...args: any) => {
+        imageHash: (...args: any): any => {
           const callBack = args[3];
 
           return callBack(null, testHash);
@@ -78,7 +78,7 @@ describe("utilities -> imageAlreadyInDbCheck", () => {
   it("calls deleteDuplicatedImage and returns fileName as existingImageHash.fileName if existingImageHash !== null and imageHash(oldImagePath) === imageHash(newImagePath)", async () => {
     vi.doMock("image-hash", () => {
       return {
-        imageHash: (...args: any) => {
+        imageHash: (...args: any): any => {
           const callBack = args[3];
 
           return callBack(null, testHash);
@@ -116,7 +116,7 @@ describe("utilities -> imageAlreadyInDbCheck", () => {
   it("calls deleteDuplicatedImage and returns fileName as existingImageHash.fileName if existingImageHash !== null and imageHash(oldImagePath) !== imageHash(newImagePath)", async () => {
     vi.doMock("image-hash", () => {
       return {
-        imageHash: (...args: any) => {
+        imageHash: (...args: any): any => {
           const callBack = args[3];
           let imagePath: string = args[0];
 
@@ -168,7 +168,7 @@ describe("utilities -> imageAlreadyInDbCheck", () => {
   it("throws ValidationError if imageHash callbacks with error !== null", async () => {
     vi.doMock("image-hash", () => {
       return {
-        imageHash: (...args: any) => {
+        imageHash: (...args: any): any => {
           const callBack = args[3];
 
           return callBack("testError", null);

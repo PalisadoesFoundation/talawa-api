@@ -24,14 +24,13 @@ export class AuthenticationDirective extends SchemaDirectiveVisitor {
   ): GraphQLField<any, any> | void | null {
     const resolver = field.resolve || defaultFieldResolver;
 
-    field.resolve = (root, args, context, info) => {
+    field.resolve = (root, args, context, info): string => {
       if (context.expired || !context.isAuth)
         throw new errors.UnauthenticatedError(
           requestContext.translate("user.notAuthenticated"),
           "user.notAuthenticated",
           "userAuthentication"
         );
-
       return resolver(root, args, context, info);
     };
   }

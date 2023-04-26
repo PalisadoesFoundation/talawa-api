@@ -10,7 +10,7 @@ describe("src -> resolvers -> Subscription -> directMessageChat", () => {
     const _parent = {};
     const context = {
       pubsub: {
-        asyncIterator: (chatChannel: string) => {
+        asyncIterator: (chatChannel: string): string => {
           return chatChannel;
         },
       },

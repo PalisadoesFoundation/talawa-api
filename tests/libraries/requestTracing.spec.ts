@@ -40,13 +40,13 @@ describe("middleware -> requestContext", () => {
   });
 
   it("testing the requestTracing Middleware", () => {
-    const reqHeaderMethod = (tracingIdHeaderName: string) => {
+    const reqHeaderMethod = (tracingIdHeaderName: string): string => {
       return requestTracingNamespace.get(tracingIdHeaderName);
     };
     const resHeaderMethod = (
       tracingIdHeaderName: string,
       tracingID: string
-    ) => {
+    ): string => {
       return requestTracingNamespace.set(tracingIdHeaderName, tracingID);
     };
     const myHeaders = new Headers();
@@ -67,7 +67,7 @@ describe("middleware -> requestContext", () => {
   });
 
   it("test trace function with tracingID provided", async () => {
-    const method = () => {
+    const method = (): string => {
       return "method";
     };
     const tracingID = uuidv4();
@@ -75,7 +75,7 @@ describe("middleware -> requestContext", () => {
     expect(setTracingId(tracingID)).toBe(tracingID);
   });
   it("test trace function with tracingID as empty string", async () => {
-    const method = () => {
+    const method = (): string => {
       return "method";
     };
     const tracingID = "";

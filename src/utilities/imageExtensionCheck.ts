@@ -7,7 +7,7 @@ import { INVALID_FILE_TYPE } from "../constants";
  * then the file is deleted and a validation error is thrown.
  * @param filename - Name of file
  */
-export const imageExtensionCheck = async (filename: string) => {
+export const imageExtensionCheck = async (filename: string): Promise<void> => {
   const fileExtension = filename.split(".").pop();
 
   if (

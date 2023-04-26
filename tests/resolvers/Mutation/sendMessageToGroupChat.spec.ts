@@ -140,7 +140,10 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
         _payload: {
           messageSentToGroupChat: InterfaceGroupChatMessage;
         }
-      ) => {
+      ): {
+        _action: string;
+        _payload: { messageSentToGroupChat: InterfaceGroupChatMessage };
+      } => {
         return { _action, _payload };
       },
     };

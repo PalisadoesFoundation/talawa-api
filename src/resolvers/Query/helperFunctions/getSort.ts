@@ -17,7 +17,7 @@ export const getSort = (
         | UserOrderByInput
       >
     | undefined
-) => {
+): any => {
   let sortPayload = {};
 
   switch (orderBy) {

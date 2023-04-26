@@ -28,7 +28,7 @@ describe("src -> resolvers -> Subscription -> messageSentToGroupChat", () => {
     const _parent = {};
     const context = {
       pubsub: {
-        asyncIterator: (_action: "MESSAGE_SENT_TO_GROUP_CHAT") => {
+        asyncIterator: (_action: "MESSAGE_SENT_TO_GROUP_CHAT"): string => {
           return _action;
         },
       },
@@ -56,7 +56,7 @@ describe("src -> resolvers -> Subscription -> messageSentToGroupChat", () => {
     const _parent = {};
     const context = {
       pubsub: {
-        asyncIterator: (_action: "MESSAGE_SENT_TO_GROUP_CHAT") => {
+        asyncIterator: (_action: "MESSAGE_SENT_TO_GROUP_CHAT"): string => {
           return _action;
         },
       },

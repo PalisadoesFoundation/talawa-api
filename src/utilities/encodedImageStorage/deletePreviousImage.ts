@@ -2,7 +2,9 @@ import { unlink } from "fs/promises";
 import path from "path";
 import { EncodedImage } from "../../models/EncodedImage";
 
-export const deletePreviousImage = async (imageToBeDeletedPath: string) => {
+export const deletePreviousImage = async (
+  imageToBeDeletedPath: string
+): Promise<void> => {
   const imageToBeDeleted = await EncodedImage.findOne({
     fileName: imageToBeDeletedPath!,
   });

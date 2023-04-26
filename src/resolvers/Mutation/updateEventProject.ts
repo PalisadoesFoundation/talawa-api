@@ -1,3 +1,4 @@
+import type { InterfaceEventProject } from "../../models";
 import { User, EventProject } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
@@ -20,7 +21,7 @@ export const updateEventProject = async (
   _parent: any,
   args: any,
   context: any
-) => {
+): Promise<InterfaceEventProject> => {
   const currentUserExists = await User.exists({
     _id: context.userId,
   });

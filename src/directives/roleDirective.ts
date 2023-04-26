@@ -28,7 +28,7 @@ export class RoleAuthorizationDirective extends SchemaDirectiveVisitor {
 
     const { requires } = this.args;
 
-    field.resolve = async (root, args, context, info) => {
+    field.resolve = async (root, args, context, info): Promise<string> => {
       const currentUser = await User.findOne({
         _id: context.userId,
       }).lean();

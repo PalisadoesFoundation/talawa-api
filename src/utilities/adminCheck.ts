@@ -14,7 +14,7 @@ import { User } from "../models";
 export const adminCheck = async (
   userId: string | Types.ObjectId,
   organization: InterfaceOrganization
-) => {
+): Promise<void> => {
   const userIsOrganizationAdmin = organization.admins.some((admin) =>
     admin.equals(userId)
   );

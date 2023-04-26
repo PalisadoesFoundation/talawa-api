@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { MONGO_DB_URL } from "./constants";
 import { logger } from "./libraries";
 
-export const connect = async () => {
+export const connect = async (): Promise<void> => {
   try {
     await mongoose.connect(MONGO_DB_URL as string, {
       useCreateIndex: true,
@@ -44,6 +44,6 @@ export const connect = async () => {
   }
 };
 
-export const disconnect = async () => {
+export const disconnect = async (): Promise<void> => {
   await mongoose.connection.close();
 };

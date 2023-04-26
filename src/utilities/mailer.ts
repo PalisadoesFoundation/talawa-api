@@ -20,7 +20,7 @@ export interface InterfaceMailFields {
  * @param InterfaceMailFields - `Interface` type with emailTo(`string`), subject(`string`), and body(`string`) necessary attributes.
  * @returns Promise along with resolve and reject methods.
  */
-export const mailer = (mailFields: InterfaceMailFields) => {
+export const mailer = (mailFields: InterfaceMailFields): Promise<any> => {
   // Nodemailer configuration
   let transporter: any;
 
@@ -57,7 +57,6 @@ export const mailer = (mailFields: InterfaceMailFields) => {
     subject: mailFields.subject,
     html: mailFields.body,
   };
-
   return new Promise((resolve, reject) => {
     transporter.sendMail(mailOptions, function (error: any, info: unknown) {
       if (error) {

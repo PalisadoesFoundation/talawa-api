@@ -150,7 +150,10 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         _payload: {
           messageSentToDirectChat: InterfaceDirectChatMessage;
         }
-      ) => {
+      ): {
+        _action: string;
+        _payload: { messageSentToDirectChat: InterfaceDirectChatMessage };
+      } => {
         return { _action, _payload };
       },
     };

@@ -46,7 +46,7 @@ describe("utilities -> reuploadDuplicateCheck", () => {
   it("should return true when uploaded image hash = old image hash", async () => {
     vi.doMock("image-hash", () => {
       return {
-        imageHash: (...args: any) => {
+        imageHash: (...args: any): any => {
           const callBack = args[3];
 
           return callBack(null, testNewImageHash);
@@ -102,7 +102,7 @@ describe("utilities -> reuploadDuplicateCheck", () => {
   it("should throw invalid file type error", async () => {
     vi.doMock("image-hash", () => {
       return {
-        imageHash: (...args: any) => {
+        imageHash: (...args: any): any => {
           const callBack = args[3];
 
           return callBack("testError", null);

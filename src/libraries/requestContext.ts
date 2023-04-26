@@ -11,21 +11,21 @@ export const requestContextNamespace = cls.createNamespace(
 
 clsBluebird(requestContextNamespace);
 
-export const setRequestContextValue = <T>(key: string, value: T) => {
+export const setRequestContextValue = <T>(key: string, value: T): T => {
   return requestContextNamespace.set<T>(key, value);
 };
 
-export const getRequestContextValue = (key: string) => {
+export const getRequestContextValue = <T>(key: string): T => {
   return requestContextNamespace.get(key);
 };
 
-export const setRequestContext = (obj: any) => {
+export const setRequestContext = (obj: any): void => {
   setRequestContextValue("translate", obj.__);
   setRequestContextValue("translatePlural", obj.__n);
 };
 
 export const middleware = () => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     requestContextNamespace.bindEmitter(req);
     requestContextNamespace.bindEmitter(res);
 
@@ -41,7 +41,7 @@ interface InterfaceInitOptions<T> extends Record<any, any> {
 }
 
 // Invalid code. Currently ignored by typescript. Needs fix.
-export const init = <T>(options: InterfaceInitOptions<T> = {}) => {
+export const init = <T>(options: InterfaceInitOptions<T> = {}): T => {
   const obj: any = {};
   // @ts-ignore
   i18n.init(obj);
@@ -58,7 +58,7 @@ export const init = <T>(options: InterfaceInitOptions<T> = {}) => {
   });
 };
 
-export const translate = (...args: any) => {
+export const translate = (...args: any): any => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const __ = getRequestContextValue("translate");
   if (typeof __ !== "function") {
@@ -67,7 +67,7 @@ export const translate = (...args: any) => {
   return __(...args);
 };
 
-export const translatePlural = (...args: any) => {
+export const translatePlural = (...args: any): any => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const __n = getRequestContextValue("translatePlural");
   if (typeof __n !== "function") {

@@ -32,7 +32,7 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
     const _parent = {};
     const context = {
       pubsub: {
-        asyncIterator: (_action: "MESSAGE_SENT_TO_DIRECT_CHAT") => {
+        asyncIterator: (_action: "MESSAGE_SENT_TO_DIRECT_CHAT"): string => {
           return _action;
         },
       },
@@ -70,7 +70,7 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
     const _parent = {};
     const context = {
       pubsub: {
-        asyncIterator: (_action: "MESSAGE_SENT_TO_DIRECT_CHAT") => {
+        asyncIterator: (_action: "MESSAGE_SENT_TO_DIRECT_CHAT"): string => {
           return _action;
         },
       },
