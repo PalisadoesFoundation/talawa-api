@@ -57,7 +57,7 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
     }
 
     // Checks whether currentUser is the creator of membershipRequest.
-    if (!(currentUser._id.toString() === membershipRequest.user.toString())) {
+    if (!currentUser._id.equals(membershipRequest.user)) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
@@ -65,36 +65,34 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       );
     }
 
-    const promises = [
-      // Deletes the membershipRequest.
-      await MembershipRequest.deleteOne({
-        _id: membershipRequest._id,
-      }),
-      // Removes membershipRequest._id from membershipRequests list on organization's document.
-      await Organization.updateMany(
-        {
-          _id: organization._id,
+    // Deletes the membershipRequest.
+    await MembershipRequest.deleteOne({
+      _id: membershipRequest._id,
+    });
+
+    // Removes membershipRequest._id from membershipRequests list on organization's document.
+    await Organization.updateMany(
+      {
+        _id: organization._id,
+      },
+      {
+        $pull: {
+          membershipRequests: membershipRequest._id,
         },
-        {
-          $pull: {
-            membershipRequests: membershipRequest._id,
-          },
-        }
-      ),
-      // Removes membershipRequest._id from membershipRequests list on currentUser's document.
-      await User.updateOne(
-        {
-          _id: currentUser._id,
+      }
+    );
+
+    // Removes membershipRequest._id from membershipRequests list on currentUser's document.
+    await User.updateOne(
+      {
+        _id: currentUser._id,
+      },
+      {
+        $pull: {
+          membershipRequests: membershipRequest._id,
         },
-        {
-          $pull: {
-            membershipRequests: membershipRequest._id,
-          },
-        }
-      ),
-    ];
-    // Resolve the promises
-    await Promise.allSettled(promises);
+      }
+    );
 
     // Returns the deleted membershipRequest.
     return membershipRequest;
