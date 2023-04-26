@@ -71,7 +71,7 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
     });
 
     // Removes membershipRequest._id from membershipRequests list on organization's document.
-    await Organization.updateMany(
+    await Organization.updateOne(
       {
         _id: organization._id,
       },
