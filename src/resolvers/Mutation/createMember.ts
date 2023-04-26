@@ -8,13 +8,13 @@ import {
   MEMBER_NOT_FOUND_ERROR,
 } from "../../constants";
 /**
- * This function enables to remove a member.
+ * This function enables to add a member.
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @param context - context of entire application
  * @remarks The following checks are done:
- * 1. If the organization exists
- * 2. Checks whether current user making the request is an admin of organization
+ * 1. Checks whether current user making the request is an superAdmin
+ * 2. If the organization exists
  * 3. Checks whether curent user exists.
  * 4. Checks whether user with _id === args.data.userId is already an member of organization..
  * @returns Organization.
@@ -24,19 +24,6 @@ export const createMember: MutationResolvers["createMember"] = async (
   args,
   context
 ) => {
-  let organization = await Organization.findOne({
-    _id: args.data.organizationId,
-  }).lean();
-
-  // Checks if organization exists.
-  if (!organization) {
-    throw new errors.NotFoundError(
-      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
-      ORGANIZATION_NOT_FOUND_ERROR.CODE,
-      ORGANIZATION_NOT_FOUND_ERROR.PARAM
-    );
-  }
-
   // Checks whether the current user is a superAdmin
   const currentUser = await User.findById({
     _id: context.userId,
@@ -50,6 +37,19 @@ export const createMember: MutationResolvers["createMember"] = async (
     );
   }
   superAdminCheck(currentUser);
+
+  // Checks if organization exists.
+  let organization = await Organization.findOne({
+    _id: args.data.organizationId,
+  }).lean();
+
+  if (!organization) {
+    throw new errors.NotFoundError(
+      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+      ORGANIZATION_NOT_FOUND_ERROR.CODE,
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+    );
+  }
 
   const user = await User.findOne({
     _id: args.data.userId,

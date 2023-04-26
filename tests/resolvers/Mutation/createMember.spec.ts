@@ -38,25 +38,6 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> createAdmin", () => {
-  it(`throws NotFoundError if no organization exists with _id === args.data.organizationId`, async () => {
-    try {
-      const args: MutationCreateMemberArgs = {
-        data: {
-          organizationId: Types.ObjectId().toString(),
-          userId: "",
-        },
-      };
-
-      const context = {
-        userId: testUser?.id,
-      };
-
-      await createMemberResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-    }
-  });
-
   it(`throws NotFoundError if no user exists with _id === args.data.userId`, async () => {
     try {
       await Organization.updateOne(
@@ -98,6 +79,25 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     }
   });
 
+  it(`throws NotFoundError if no organization exists with _id === args.data.organizationId`, async () => {
+    try {
+      const args: MutationCreateMemberArgs = {
+        data: {
+          organizationId: Types.ObjectId().toString(),
+          userId: "",
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      await createMemberResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
+
   it(`throws UnauthorizedError if user with _id === args.data.userId is already an member
   of organzation with _id === args.data.organizationId`, async () => {
     try {
@@ -129,7 +129,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     }
   });
 
-  it(`creates the member and returns member's user object`, async () => {
+  it(`Verify that the organization's members list now contains the user's ID`, async () => {
     await Organization.updateOne(
       {
         _id: testOrganization?._id,
