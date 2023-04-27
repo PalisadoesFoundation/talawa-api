@@ -701,6 +701,16 @@
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>createMember</strong></td>
+<td valign="top"><a href="#organization">Organization</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">input</td>
+<td valign="top"><a href="#userandorganizationinput">UserAndOrganizationInput</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>createAdmin</strong></td>
 <td valign="top"><a href="#user">User</a>!</td>
 <td></td>
