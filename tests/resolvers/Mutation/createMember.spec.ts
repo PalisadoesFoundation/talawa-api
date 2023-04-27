@@ -52,7 +52,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       );
 
       const args: MutationCreateMemberArgs = {
-        data: {
+        input: {
           organizationId: testOrganization?.id,
           userId: testUser?.id,
         },
@@ -68,7 +68,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     }
   });
 
-  it(`throws NotFoundError if no user exists with _id === args.data.userId`, async () => {
+  it(`throws NotFoundError if no user exists with _id === args.input.userId`, async () => {
     try {
       await Organization.updateOne(
         {
@@ -93,7 +93,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       );
 
       const args: MutationCreateMemberArgs = {
-        data: {
+        input: {
           organizationId: testOrganization?.id,
           userId: Types.ObjectId().toString(),
         },
@@ -109,10 +109,10 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     }
   });
 
-  it(`throws NotFoundError if no organization exists with _id === args.data.organizationId`, async () => {
+  it(`throws NotFoundError if no organization exists with _id === args.input.organizationId`, async () => {
     try {
       const args: MutationCreateMemberArgs = {
-        data: {
+        input: {
           organizationId: Types.ObjectId().toString(),
           userId: "",
         },
@@ -128,8 +128,8 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     }
   });
 
-  it(`throws UnauthorizedError if user with _id === args.data.userId is already an member
-  of organzation with _id === args.data.organizationId`, async () => {
+  it(`throws UnauthorizedError if user with _id === args.input.userId is already an member
+  of organzation with _id === args.input.organizationId`, async () => {
     try {
       await Organization.updateOne(
         {
@@ -143,7 +143,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       );
 
       const args: MutationCreateMemberArgs = {
-        data: {
+        input: {
           organizationId: testOrganization?.id,
           userId: testUser?.id,
         },

@@ -32,7 +32,7 @@ export const mutations = gql`
 
     cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
-    createMember(data: UserAndOrganizationInput!): Organization! @auth
+    createMember(input: UserAndOrganizationInput!): Organization! @auth
 
     createAdmin(data: UserAndOrganizationInput!): User!
       @auth

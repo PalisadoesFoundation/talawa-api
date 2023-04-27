@@ -16,7 +16,7 @@ import {
  * 1. Checks whether current user making the request is an superAdmin
  * 2. If the organization exists
  * 3. Checks whether curent user exists.
- * 4. Checks whether user with _id === args.data.userId is already an member of organization..
+ * 4. Checks whether user with _id === args.input.userId is already an member of organization..
  * @returns Organization.
  */
 export const createMember: MutationResolvers["createMember"] = async (
@@ -40,7 +40,7 @@ export const createMember: MutationResolvers["createMember"] = async (
 
   // Checks if organization exists.
   const organization = await Organization.findOne({
-    _id: args.data.organizationId,
+    _id: args.input.organizationId,
   }).lean();
 
   if (!organization) {
@@ -52,7 +52,7 @@ export const createMember: MutationResolvers["createMember"] = async (
   }
 
   const user = await User.findOne({
-    _id: args.data.userId,
+    _id: args.input.userId,
   }).lean();
 
   // Checks whether curent user exists
@@ -68,7 +68,7 @@ export const createMember: MutationResolvers["createMember"] = async (
     member.equals(user._id)
   );
 
-  // Checks whether user with _id === args.data.userId is already an member of organization.
+  // Checks whether user with _id === args.input.userId is already an member of organization.
   if (userIsOrganizationMember) {
     throw new errors.NotFoundError(
       requestContext.translate(MEMBER_NOT_FOUND_ERROR.MESSAGE),
@@ -80,7 +80,7 @@ export const createMember: MutationResolvers["createMember"] = async (
   // add organization's id from joinedOrganizations list on user.
   await User.updateOne(
     {
-      _id: args.data.userId,
+      _id: args.input.userId,
     },
     {
       $push: {
@@ -99,7 +99,7 @@ export const createMember: MutationResolvers["createMember"] = async (
     },
     {
       $push: {
-        members: args.data.userId,
+        members: args.input.userId,
       },
     },
     {
