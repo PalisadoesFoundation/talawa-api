@@ -25,7 +25,7 @@ export const createMember: MutationResolvers["createMember"] = async (
   context
 ) => {
   // Checks whether the current user is a superAdmin
-  const currentUser = await User.findById({
+  const currentUser = await User.findOne({
     _id: context.userId,
   });
 
@@ -39,7 +39,7 @@ export const createMember: MutationResolvers["createMember"] = async (
   superAdminCheck(currentUser);
 
   // Checks if organization exists.
-  let organization = await Organization.findOne({
+  const organization = await Organization.findOne({
     _id: args.data.organizationId,
   }).lean();
 
@@ -64,8 +64,8 @@ export const createMember: MutationResolvers["createMember"] = async (
     );
   }
 
-  const userIsOrganizationMember = organization?.members.some(
-    (member) => member.toString() === user._id.toString()
+  const userIsOrganizationMember = organization?.members.some((member) =>
+    member.equals(user._id)
   );
 
   // Checks whether user with _id === args.data.userId is already an member of organization.
@@ -77,23 +77,8 @@ export const createMember: MutationResolvers["createMember"] = async (
     );
   }
 
-  // add user's id from members list on organization.
-  organization = await Organization.findOneAndUpdate(
-    {
-      _id: organization?._id,
-    },
-    {
-      $push: {
-        members: args.data.userId,
-      },
-    },
-    {
-      new: true,
-    }
-  ).lean();
-
   // add organization's id from joinedOrganizations list on user.
-  await User.findOneAndUpdate(
+  await User.updateOne(
     {
       _id: args.data.userId,
     },
@@ -106,9 +91,20 @@ export const createMember: MutationResolvers["createMember"] = async (
     {
       new: true,
     }
-  )
-    .select(["-password"])
-    .lean();
+  );
 
-  return organization!;
+  // add user's id to members list on organization and return it.
+  return await Organization.findOneAndUpdate(
+    {
+      _id: organization?._id,
+    },
+    {
+      $push: {
+        members: args.data.userId,
+      },
+    },
+    {
+      new: true,
+    }
+  ).lean();
 };

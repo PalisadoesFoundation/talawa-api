@@ -38,6 +38,36 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> createAdmin", () => {
+  it(`throws User not found error if user with _id === context.userId does not exist`, async () => {
+    try {
+      await Organization.updateOne(
+        {
+          _id: testOrganization?._id,
+        },
+        {
+          $set: {
+            creator: Types.ObjectId().toString(),
+          },
+        }
+      );
+
+      const args: MutationCreateMemberArgs = {
+        data: {
+          organizationId: testOrganization?.id,
+          userId: testUser?.id,
+        },
+      };
+
+      const context = {
+        userId: Types.ObjectId().toString(),
+      };
+
+      await createMemberResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
+
   it(`throws NotFoundError if no user exists with _id === args.data.userId`, async () => {
     try {
       await Organization.updateOne(
