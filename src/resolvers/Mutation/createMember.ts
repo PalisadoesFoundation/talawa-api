@@ -85,7 +85,6 @@ export const createMember: MutationResolvers["createMember"] = async (
     {
       $push: {
         joinedOrganizations: organization?._id,
-        members: organization?._id,
       },
     },
     {

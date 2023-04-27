@@ -160,23 +160,16 @@ describe("resolvers -> Mutation -> createAdmin", () => {
   });
 
   it(`Verify that the organization's members list now contains the user's ID`, async () => {
-    await Organization.updateOne(
-      {
-        _id: testOrganization?._id,
-      },
-      {
-        $set: {
-          members: [],
-        },
-      }
-    );
-
     const updatedTestOrganization = await Organization.findOne({
       _id: testOrganization?._id,
     })
       .select(["members"])
       .lean();
 
-    expect(updatedTestOrganization?.members).toEqual([testUser?._id]);
+    const updatedOrganizationCheck = updatedTestOrganization?.members.some(
+      (member) => member.equals(testUser?._id)
+    );
+
+    expect(updatedOrganizationCheck).toBe(true);
   });
 });
