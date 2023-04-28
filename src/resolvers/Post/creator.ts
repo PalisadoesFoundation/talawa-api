@@ -1,4 +1,4 @@
-import { PostResolvers } from "../../types/generatedGraphQLTypes";
+import type { PostResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 
 export const creator: PostResolvers["creator"] = async (parent) => {

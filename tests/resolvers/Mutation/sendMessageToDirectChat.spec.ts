@@ -1,13 +1,13 @@
 import "dotenv/config";
-import mongoose, { Document, Types } from "mongoose";
-import {
-  User,
-  Organization,
-  DirectChat,
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type {
   InterfaceDirectChat,
   InterfaceDirectChatMessage,
 } from "../../../src/models";
-import { MutationSendMessageToDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
+import { User, Organization, DirectChat } from "../../../src/models";
+import type { MutationSendMessageToDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { sendMessageToDirectChat as sendMessageToDirectChatResolver } from "../../../src/resolvers/Mutation/sendMessageToDirectChat";
@@ -25,7 +25,7 @@ import {
   vi,
 } from "vitest";
 import { createTestUserFunc } from "../../helpers/user";
-import { TestUserType } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -150,7 +150,10 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         _payload: {
           messageSentToDirectChat: InterfaceDirectChatMessage;
         }
-      ) => {
+      ): {
+        _action: string;
+        _payload: { messageSentToDirectChat: InterfaceDirectChatMessage };
+      } => {
         return { _action, _payload };
       },
     };

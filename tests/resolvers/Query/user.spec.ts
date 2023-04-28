@@ -1,16 +1,15 @@
 import "dotenv/config";
 import { user as userResolver } from "../../../src/resolvers/Query/user";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { BASE_URL, USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { User } from "../../../src/models";
 
-import { QueryUserArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { QueryUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import {
-  TestUserType,
-  createTestUserAndOrganization,
-} from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;

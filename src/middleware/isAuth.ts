@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { Request } from "express";
+import type { Request } from "express";
 import { logger } from "../libraries";
 import { ACCESS_TOKEN_SECRET } from "../constants";
 
@@ -14,7 +14,7 @@ export interface InterfaceAuthData {
  * @param Request - User Request
  * @returns Returns `authData` object with `isAuth`, `expired` and `userId` properties.
  */
-export const isAuth = (request: Request) => {
+export const isAuth = (request: Request): InterfaceAuthData => {
   /*
   This object is the return value of this function. Mutate the fields of this
   object conditionally as the authentication flow continues and return it from

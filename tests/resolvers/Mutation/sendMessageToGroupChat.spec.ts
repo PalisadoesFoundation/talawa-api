@@ -1,11 +1,13 @@
 import "dotenv/config";
-import mongoose, { Document, Types } from "mongoose";
-import {
-  GroupChat,
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type {
   InterfaceGroupChat,
   InterfaceGroupChatMessage,
 } from "../../../src/models";
-import { MutationSendMessageToGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
+import { GroupChat } from "../../../src/models";
+import type { MutationSendMessageToGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { sendMessageToGroupChat as sendMessageToGroupChatResolver } from "../../../src/resolvers/Mutation/sendMessageToGroupChat";
@@ -15,10 +17,8 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import {
-  createTestUserAndOrganization,
-  TestUserType,
-} from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -140,7 +140,10 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
         _payload: {
           messageSentToGroupChat: InterfaceGroupChatMessage;
         }
-      ) => {
+      ): {
+        _action: string;
+        _payload: { messageSentToGroupChat: InterfaceGroupChatMessage };
+      } => {
         return { _action, _payload };
       },
     };

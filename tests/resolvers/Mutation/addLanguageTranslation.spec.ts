@@ -1,8 +1,8 @@
 import "dotenv/config";
 import { addLanguageTranslation as addLanguageTranslationResolver } from "../../../src/resolvers/Mutation/addLanguageTranslation";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
-import { MutationAddLanguageTranslationArgs } from "../../../src/types/generatedGraphQLTypes";
+import type mongoose from "mongoose";
+import type { MutationAddLanguageTranslationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Language } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";

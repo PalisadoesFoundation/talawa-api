@@ -1,4 +1,5 @@
-import { Schema, model, Types, models } from "mongoose";
+import type { Types, Model } from "mongoose";
+import { Schema, model, models } from "mongoose";
 /**
  * This is an interface representing a document for a donation in the database(MongoDB).
  */
@@ -46,10 +47,10 @@ const donationSchema = new Schema({
   },
 });
 
-const DonationModel = () =>
+const donationModel = (): Model<InterfaceDonation> =>
   model<InterfaceDonation>("Donation", donationSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const Donation = (models.Donation || DonationModel()) as ReturnType<
-  typeof DonationModel
+export const Donation = (models.Donation || donationModel()) as ReturnType<
+  typeof donationModel
 >;

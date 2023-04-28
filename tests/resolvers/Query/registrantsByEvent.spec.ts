@@ -1,18 +1,20 @@
 import "dotenv/config";
 import { registrantsByEvent as registrantsByEventResolver } from "../../../src/resolvers/Query/registrantsByEvent";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { Event } from "../../../src/models";
 
-import { QueryRegistrantsByEventArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { QueryRegistrantsByEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { EVENT_NOT_FOUND_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import {
+import type {
   TestUserType,
   TestOrganizationType,
-  createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
-import { TestEventType, createEventWithRegistrant } from "../../helpers/events";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import type { TestEventType } from "../../helpers/events";
+import { createEventWithRegistrant } from "../../helpers/events";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;

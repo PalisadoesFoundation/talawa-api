@@ -1,7 +1,9 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
-import { User, InterfaceUser } from "../../../src/models";
-import { MutationRefreshTokenArgs } from "../../../src/types/generatedGraphQLTypes";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { InterfaceUser } from "../../../src/models";
+import { User } from "../../../src/models";
+import type { MutationRefreshTokenArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -18,7 +20,8 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { createTestUserFunc, TestUserType } from "../../helpers/user";
+import type { TestUserType } from "../../helpers/user";
+import { createTestUserFunc } from "../../helpers/user";
 
 let testUser: TestUserType;
 let refreshToken: string;

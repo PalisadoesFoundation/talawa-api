@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Post, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
@@ -59,9 +59,9 @@ export const createPost: MutationResolvers["createPost"] = async (
 
   // Checks if the recieved arguments are valid according to standard input norms
   if (args.data?.title && args.data?.text) {
-    const validationResult_Title = isValidString(args.data?.title, 256);
-    const validationResult_Text = isValidString(args.data?.text, 500);
-    if (!validationResult_Title.isLessThanMaxLength) {
+    const validationResultTitle = isValidString(args.data?.title, 256);
+    const validationResultText = isValidString(args.data?.text, 500);
+    if (!validationResultTitle.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
           `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
@@ -69,7 +69,7 @@ export const createPost: MutationResolvers["createPost"] = async (
         LENGTH_VALIDATION_ERROR.CODE
       );
     }
-    if (!validationResult_Text.isLessThanMaxLength) {
+    if (!validationResultText.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
           `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`

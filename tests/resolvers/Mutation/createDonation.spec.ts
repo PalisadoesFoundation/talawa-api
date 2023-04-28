@@ -1,14 +1,14 @@
 import "dotenv/config";
-import { MutationCreateDonationArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationCreateDonationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { createDonation as createDonationResolver } from "../../../src/resolvers/Mutation/createDonation";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import {
+import type {
   TestOrganizationType,
   TestUserType,
-  createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;

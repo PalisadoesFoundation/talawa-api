@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import { LENGTH_VALIDATION_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
@@ -45,23 +45,23 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     }
 
     // Checks if the recieved arguments are valid according to standard input norms
-    let validationResult_Name = {
+    let validationResultName = {
       isLessThanMaxLength: false,
     };
-    let validationResult_Description = {
+    let validationResultDescription = {
       isLessThanMaxLength: false,
     };
-    let validationResult_Location = {
+    let validationResultLocation = {
       isLessThanMaxLength: false,
     };
 
     if (args.data?.name && args.data?.description && args.data?.location) {
-      validationResult_Name = isValidString(args.data?.name, 256);
-      validationResult_Description = isValidString(args.data?.description, 500);
-      validationResult_Location = isValidString(args.data?.location, 50);
+      validationResultName = isValidString(args.data?.name, 256);
+      validationResultDescription = isValidString(args.data?.description, 500);
+      validationResultLocation = isValidString(args.data?.location, 50);
     }
 
-    if (!validationResult_Name.isLessThanMaxLength) {
+    if (!validationResultName.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
           `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in name`
@@ -69,7 +69,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
         LENGTH_VALIDATION_ERROR.CODE
       );
     }
-    if (!validationResult_Description.isLessThanMaxLength) {
+    if (!validationResultDescription.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
           `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
@@ -77,7 +77,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
         LENGTH_VALIDATION_ERROR.CODE
       );
     }
-    if (!validationResult_Location.isLessThanMaxLength) {
+    if (!validationResultLocation.isLessThanMaxLength) {
       throw new errors.InputValidationError(
         requestContext.translate(
           `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`

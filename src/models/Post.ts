@@ -1,15 +1,8 @@
-import {
-  Schema,
-  model,
-  PopulatedDoc,
-  Types,
-  Document,
-  PaginateModel,
-  models,
-} from "mongoose";
+import type { PopulatedDoc, Types, Document, PaginateModel } from "mongoose";
+import { Schema, model, models } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
-import { InterfaceOrganization } from "./Organization";
-import { InterfaceUser } from "./User";
+import type { InterfaceOrganization } from "./Organization";
+import type { InterfaceUser } from "./User";
 /**
  * This is an interface that represents a database(MongoDB) document for Post.
  */
@@ -23,7 +16,7 @@ export interface InterfacePost {
   videoUrl: string | undefined;
   creator: PopulatedDoc<InterfaceUser & Document>;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
-  likedBy: Array<PopulatedDoc<InterfaceUser & Document>>;
+  likedBy: PopulatedDoc<InterfaceUser & Document>[];
   likeCount: number;
   commentCount: number;
   pinned: boolean;
@@ -101,10 +94,10 @@ const postSchema = new Schema({
 postSchema.plugin(mongoosePaginate);
 postSchema.index({ organization: 1 }, { unique: false });
 
-const PostModel = () =>
+const postModel = (): PaginateModel<InterfacePost> =>
   model<InterfacePost, PaginateModel<InterfacePost>>("Post", postSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const Post = (models.Post || PostModel()) as ReturnType<
-  typeof PostModel
+export const Post = (models.Post || postModel()) as ReturnType<
+  typeof postModel
 >;

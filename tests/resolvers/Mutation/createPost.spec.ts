@@ -1,6 +1,7 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
-import { MutationCreatePostArgs } from "../../../src/types/generatedGraphQLTypes";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { MutationCreatePostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -19,10 +20,12 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import {
-  createTestUserAndOrganization,
+import type {
   TestOrganizationType,
   TestUserType,
+} from "../../helpers/userAndOrg";
+import {
+  createTestUserAndOrganization,
   createTestUser,
 } from "../../helpers/userAndOrg";
 import { Organization } from "../../../src/models";

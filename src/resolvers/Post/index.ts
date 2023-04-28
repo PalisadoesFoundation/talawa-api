@@ -1,4 +1,4 @@
-import { PostResolvers } from "../../types/generatedGraphQLTypes";
+import type { PostResolvers } from "../../types/generatedGraphQLTypes";
 import { comments } from "./comments";
 import { creator } from "./creator";
 

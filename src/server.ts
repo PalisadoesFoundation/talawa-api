@@ -24,7 +24,7 @@ import {
 } from "./directives";
 import { typeDefs } from "./typeDefs";
 import { resolvers } from "./resolvers";
-import { InterfaceJwtTokenPayload } from "./utilities";
+import type { InterfaceJwtTokenPayload } from "./utilities";
 import { ACCESS_TOKEN_SECRET, LAST_RESORT_SUPERADMIN_EMAIL } from "./constants";
 import { User } from "./models";
 import { express as voyagerMiddleware } from "graphql-voyager/middleware";
@@ -122,7 +122,7 @@ const apolloServer = new ApolloServer({
     auth: AuthenticationDirective,
     role: RoleAuthorizationDirective,
   },
-  context: ({ req, res, connection }) => {
+  context: ({ req, res, connection }): any => {
     /**
      * The apiRootUrl for serving static files.
      * This is constructed by extracting the protocol and host information from the `req` object.
@@ -151,7 +151,9 @@ const apolloServer = new ApolloServer({
       };
     }
   },
-  formatError: (error: any) => {
+  formatError: (
+    error: any
+  ): { message: string; status: number; data: string[] } => {
     if (!error.originalError) {
       return error;
     }
@@ -166,7 +168,9 @@ const apolloServer = new ApolloServer({
     };
   },
   subscriptions: {
-    onConnect: (connection: any) => {
+    onConnect: (
+      connection: any
+    ): { currentUserToken: any; currentUserId: string | null } => {
       if (!connection.authorization) {
         throw new Error("userAuthentication");
       }
@@ -194,7 +198,7 @@ apolloServer.applyMiddleware({
 });
 apolloServer.installSubscriptionHandlers(httpServer);
 
-const logWarningForSuperAdminEnvVariable = async () => {
+const logWarningForSuperAdminEnvVariable = async (): Promise<void> => {
   const superAdminExist = await User.exists({ userType: "SUPERADMIN" });
   const isVariablePresentInEnvFile = !!LAST_RESORT_SUPERADMIN_EMAIL;
   if (superAdminExist) {
@@ -214,7 +218,7 @@ const logWarningForSuperAdminEnvVariable = async () => {
   }
 };
 
-const serverStart = async () => {
+const serverStart = async (): Promise<void> => {
   try {
     await database.connect();
     httpServer.listen(process.env.PORT || 4000, async () => {

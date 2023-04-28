@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import * as fs from "fs";
 import { uploadEncodedImage } from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { connect, disconnect } from "../../helpers/db";

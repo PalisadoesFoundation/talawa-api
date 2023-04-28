@@ -1,7 +1,8 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { User, Organization, MembershipRequest } from "../../../src/models";
-import { MutationCancelMembershipRequestArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationCancelMembershipRequestArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { cancelMembershipRequest as cancelMembershipRequestResolver } from "../../../src/resolvers/Mutation/cancelMembershipRequest";
@@ -12,11 +13,12 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import {
-  createTestMembershipRequestAsNew,
-  TestMembershipRequestType,
-} from "../../helpers/membershipRequests";
-import { TestOrganizationType, TestUserType } from "../../helpers/userAndOrg";
+import type { TestMembershipRequestType } from "../../helpers/membershipRequests";
+import { createTestMembershipRequestAsNew } from "../../helpers/membershipRequests";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;

@@ -1,8 +1,8 @@
 import "dotenv/config";
 import { User, Organization, MembershipRequest } from "../../../src/models";
-import { MutationLoginArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationLoginArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { login as loginResolver } from "../../../src/resolvers/Mutation/login";
 import {
   androidFirebaseOptions,
@@ -23,7 +23,7 @@ import {
   expect,
   vi,
 } from "vitest";
-import { TestUserType } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 
 let testUser: TestUserType;

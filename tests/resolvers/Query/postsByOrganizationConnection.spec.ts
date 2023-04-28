@@ -2,16 +2,19 @@
 import "dotenv/config";
 import { postsByOrganizationConnection as postsByOrganizationConnectionResolver } from "../../../src/resolvers/Query/postsByOrganizationConnection";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose, { Document, Types } from "mongoose";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 
-import { QueryPostsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { QueryPostsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import {
+import type {
   TestUserType,
   TestOrganizationType,
-  createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
-import { Post, InterfacePost } from "../../../src/models";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import type { InterfacePost } from "../../../src/models";
+import { Post } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { BASE_URL } from "../../../src/constants";
 
@@ -128,14 +131,14 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       };
     });
 
-    const serialized_organization =
+    const serializedOrganization =
       postsByOrganizationConnectionPayload?.edges.map((post) => {
         return {
           ...post,
           organization: post?.organization._id,
         };
       });
-    postsByOrganizationConnectionPayload!.edges = serialized_organization;
+    postsByOrganizationConnectionPayload!.edges = serializedOrganization;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {
@@ -200,14 +203,14 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       };
     });
 
-    const serialized_organization =
+    const serializedOrganization =
       postsByOrganizationConnectionPayload?.edges.map((post) => {
         return {
           ...post,
           organization: post!.organization._id,
         };
       });
-    postsByOrganizationConnectionPayload!.edges = serialized_organization;
+    postsByOrganizationConnectionPayload!.edges = serializedOrganization;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {
@@ -271,7 +274,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       };
     });
 
-    const serialized_organization =
+    const serializedOrganization =
       postsByOrganizationConnectionPayload?.edges.map((post) => {
         return {
           ...post,
@@ -279,7 +282,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
         };
       });
 
-    postsByOrganizationConnectionPayload!.edges = serialized_organization;
+    postsByOrganizationConnectionPayload!.edges = serializedOrganization;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {
@@ -413,14 +416,14 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       };
     });
 
-    const serialized_organization =
+    const serializedOrganization =
       postsByOrganizationConnectionPayload?.edges.map((post) => {
         return {
           ...post,
           organization: post!.organization._id,
         };
       });
-    postsByOrganizationConnectionPayload!.edges = serialized_organization;
+    postsByOrganizationConnectionPayload!.edges = serializedOrganization;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {
@@ -478,14 +481,14 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       };
     });
 
-    const serialized_organization =
+    const serializedOrganization =
       postsByOrganizationConnectionPayload?.edges.map((post) => {
         return {
           ...post,
           organization: post!.organization._id,
         };
       });
-    postsByOrganizationConnectionPayload!.edges = serialized_organization;
+    postsByOrganizationConnectionPayload!.edges = serializedOrganization;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {

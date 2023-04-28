@@ -1,14 +1,15 @@
-import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { InterfaceDirectChatMessage } from "./DirectChatMessage";
-import { InterfaceOrganization } from "./Organization";
-import { InterfaceUser } from "./User";
+import type { PopulatedDoc, Types, Document, Model } from "mongoose";
+import { Schema, model, models } from "mongoose";
+import type { InterfaceDirectChatMessage } from "./DirectChatMessage";
+import type { InterfaceOrganization } from "./Organization";
+import type { InterfaceUser } from "./User";
 /**
  * This is an interface representing a document for direct chat in the database(MongoDB).
  */
 export interface InterfaceDirectChat {
   _id: Types.ObjectId;
-  users: Array<PopulatedDoc<InterfaceUser & Document>>;
-  messages: Array<PopulatedDoc<InterfaceDirectChatMessage & Document>>;
+  users: PopulatedDoc<InterfaceUser & Document>[];
+  messages: PopulatedDoc<InterfaceDirectChatMessage & Document>[];
   creator: PopulatedDoc<InterfaceUser & Document>;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   status: string;
@@ -53,9 +54,9 @@ const directChatSchema = new Schema({
   },
 });
 
-const DirectChatModel = () =>
+const directChatModel = (): Model<InterfaceDirectChat> =>
   model<InterfaceDirectChat>("DirectChat", directChatSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const DirectChat = (models.DirectChat ||
-  DirectChatModel()) as ReturnType<typeof DirectChatModel>;
+  directChatModel()) as ReturnType<typeof directChatModel>;

@@ -1,16 +1,12 @@
 import { nanoid } from "nanoid";
-import {
-  GroupChat,
-  GroupChatMessage,
+import type {
   InterfaceGroupChat,
   InterfaceGroupChatMessage,
 } from "../../src/models";
-import {
-  createTestUserAndOrganization,
-  TestOrganizationType,
-  TestUserType,
-} from "./userAndOrg";
-import { Document } from "mongoose";
+import { GroupChat, GroupChatMessage } from "../../src/models";
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
+import { createTestUserAndOrganization } from "./userAndOrg";
+import type { Document } from "mongoose";
 
 export type TestGroupChatType =
   | (InterfaceGroupChat & Document<any, any, InterfaceGroupChat>)

@@ -1,10 +1,8 @@
-import {
-  createTestUserAndOrganization,
-  TestOrganizationType,
-  TestUserType,
-} from "./userAndOrg";
-import { Event, User, InterfaceEvent } from "../../src/models";
-import { Document } from "mongoose";
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
+import { createTestUserAndOrganization } from "./userAndOrg";
+import type { InterfaceEvent } from "../../src/models";
+import { Event, User } from "../../src/models";
+import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
 export type TestEventType =
@@ -53,21 +51,21 @@ export const createTestEvent = async (): Promise<
 };
 
 export const createEventWithRegistrant = async (
-  user_id: string,
-  organization_id: string,
+  userId: string,
+  organizationId: string,
   allDay: boolean,
   recurrance: string
 ): Promise<TestEventType> => {
   const testEvent = await Event.create({
-    creator: user_id,
+    creator: userId,
     registrants: [
       {
-        userId: user_id,
-        user: user_id,
+        userId: userId,
+        user: userId,
       },
     ],
-    admins: [user_id],
-    organization: organization_id,
+    admins: [userId],
+    organization: organizationId,
     isRegisterable: true,
     isPublic: true,
     title: `title${nanoid()}`,
@@ -83,7 +81,7 @@ export const createEventWithRegistrant = async (
 
   await User.updateOne(
     {
-      _id: user_id,
+      _id: userId,
     },
     {
       $push: {

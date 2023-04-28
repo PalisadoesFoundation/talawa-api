@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { DirectChat, DirectChatMessage, Organization } from "../../models";
 import { adminCheck } from "../../utilities";
 import { errors, requestContext } from "../../libraries";

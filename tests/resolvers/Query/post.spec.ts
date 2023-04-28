@@ -2,11 +2,13 @@ import "dotenv/config";
 import { post as postResolver } from "../../../src/resolvers/Query/post";
 import { connect, disconnect } from "../../helpers/db";
 import { Post } from "../../../src/models";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { POST_NOT_FOUND_ERROR } from "../../../src/constants";
-import { QueryPostArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { QueryPostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { TestPostType, createPostwithComment } from "../../helpers/posts";
+import type { TestPostType } from "../../helpers/posts";
+import { createPostwithComment } from "../../helpers/posts";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testPost: TestPostType;

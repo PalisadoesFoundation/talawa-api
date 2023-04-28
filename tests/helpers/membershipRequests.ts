@@ -1,16 +1,8 @@
-import {
-  createTestUser,
-  TestUserType,
-  TestOrganizationType,
-  createTestUserAndOrganization,
-} from "./userAndOrg";
-import {
-  InterfaceMembershipRequest,
-  MembershipRequest,
-  Organization,
-  User,
-} from "../../src/models";
-import { Document } from "mongoose";
+import type { TestUserType, TestOrganizationType } from "./userAndOrg";
+import { createTestUser, createTestUserAndOrganization } from "./userAndOrg";
+import type { InterfaceMembershipRequest } from "../../src/models";
+import { MembershipRequest, Organization, User } from "../../src/models";
+import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
 export type TestMembershipRequestType =

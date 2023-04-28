@@ -1,16 +1,8 @@
-import {
-  createTestUserAndOrganization,
-  TestOrganizationType,
-  TestUserType,
-} from "./userAndOrg";
-import {
-  InterfacePost,
-  Post,
-  Organization,
-  Comment,
-  InterfaceComment,
-} from "../../src/models";
-import { Document } from "mongoose";
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
+import { createTestUserAndOrganization } from "./userAndOrg";
+import type { InterfacePost, InterfaceComment } from "../../src/models";
+import { Post, Organization, Comment } from "../../src/models";
+import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
 export type TestPostType =

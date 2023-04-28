@@ -1,9 +1,10 @@
 import "dotenv/config";
 import { users as usersResolver } from "../../../src/resolvers/Query/users";
-import { Event, InterfaceUser, Organization, User } from "../../../src/models";
+import type { InterfaceUser } from "../../../src/models";
+import { Event, Organization, User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
-import { QueryUsersArgs } from "../../../src/types/generatedGraphQLTypes";
-import { Document } from "mongoose";
+import type { QueryUsersArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
 import { BASE_URL, UNAUTHENTICATED_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";

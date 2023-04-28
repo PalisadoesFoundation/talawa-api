@@ -1,4 +1,4 @@
-import { DirectChatMessageResolvers } from "../../types/generatedGraphQLTypes";
+import type { DirectChatMessageResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 /**
  * This resolver function will fetch and return the sender(user) of the Direct chat from the database.

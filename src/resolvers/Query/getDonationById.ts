@@ -1,5 +1,6 @@
-import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { Donation, InterfaceDonation } from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceDonation } from "../../models";
+import { Donation } from "../../models";
 
 /**
  * This query will fetch the donation as a transaction from database.

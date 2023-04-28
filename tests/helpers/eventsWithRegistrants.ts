@@ -1,10 +1,8 @@
-import {
-  createTestUserAndOrganization,
-  TestOrganizationType,
-  TestUserType,
-} from "./userAndOrg";
-import { Event, User, InterfaceEvent } from "../../src/models";
-import { Document } from "mongoose";
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
+import { createTestUserAndOrganization } from "./userAndOrg";
+import type { InterfaceEvent } from "../../src/models";
+import { Event, User } from "../../src/models";
+import type { Document } from "mongoose";
 
 export type TestEventType =
   | (InterfaceEvent & Document<any, any, InterfaceEvent>)

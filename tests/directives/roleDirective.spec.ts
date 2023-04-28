@@ -1,8 +1,11 @@
 import { RoleAuthorizationDirective } from "../../src/directives/roleDirective";
-import { InterfaceUser, User } from "../../src/models";
+import type { InterfaceUser } from "../../src/models";
+import { User } from "../../src/models";
 import { beforeAll, afterAll, it, expect } from "vitest";
 import { connect, disconnect } from "../helpers/db";
-import mongoose, { Document, Types } from "mongoose";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { ApolloServer, gql } from "apollo-server-express";
 import { errors } from "../../src/libraries";
 
@@ -46,7 +49,7 @@ const typeDefs = gql`
 
 const resolvers = {
   Query: {
-    hello: () => "hi",
+    hello: (): string => "hi",
   },
 };
 

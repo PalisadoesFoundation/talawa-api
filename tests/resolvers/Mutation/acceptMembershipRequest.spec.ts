@@ -1,7 +1,8 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { User, Organization, MembershipRequest } from "../../../src/models";
-import { MutationAcceptMembershipRequestArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationAcceptMembershipRequestArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -20,11 +21,12 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { TestUserType, TestOrganizationType } from "../../helpers/userAndOrg";
-import {
-  TestMembershipRequestType,
-  createTestMembershipRequest,
-} from "../../helpers/membershipRequests";
+import type {
+  TestUserType,
+  TestOrganizationType,
+} from "../../helpers/userAndOrg";
+import type { TestMembershipRequestType } from "../../helpers/membershipRequests";
+import { createTestMembershipRequest } from "../../helpers/membershipRequests";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;

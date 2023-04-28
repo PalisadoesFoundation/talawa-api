@@ -11,10 +11,12 @@ import {
   vi,
 } from "vitest";
 import { connect, disconnect } from "../helpers/db";
-import mongoose, { Document } from "mongoose";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
 dotenv.config();
 
-import { ImageHash, InterfaceImageHash } from "../../src/models";
+import type { InterfaceImageHash } from "../../src/models";
+import { ImageHash } from "../../src/models";
 
 const testImageToBeDeleted = `${nanoid()}-testNewImagePath`;
 const testOldImagePath = `${nanoid()}-testOldImagePath`;

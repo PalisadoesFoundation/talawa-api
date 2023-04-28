@@ -1,5 +1,5 @@
 import { withFilter } from "apollo-server-express";
-import { SubscriptionResolvers } from "../../types/generatedGraphQLTypes";
+import type { SubscriptionResolvers } from "../../types/generatedGraphQLTypes";
 
 const MESSAGE_SENT_TO_DIRECT_CHAT = "MESSAGE_SENT_TO_DIRECT_CHAT";
 

@@ -10,13 +10,11 @@ import {
 } from "vitest";
 import { connect, disconnect } from "../helpers/db";
 import { USER_NOT_AUTHORIZED_ADMIN } from "../../src/constants";
-import {
-  createTestUserAndOrganization,
-  TestOrganizationType,
-  TestUserType,
-} from "../helpers/userAndOrg";
+import type { TestOrganizationType, TestUserType } from "../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../helpers/userAndOrg";
 import mongoose from "mongoose";
-import { Organization, User, InterfaceOrganization } from "../../src/models";
+import type { InterfaceOrganization } from "../../src/models";
+import { Organization, User } from "../../src/models";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;

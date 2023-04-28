@@ -1,7 +1,8 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { User, Organization } from "../../../src/models";
-import { MutationBlockUserArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationBlockUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { blockUser as blockUserResolver } from "../../../src/resolvers/Mutation/blockUser";
@@ -23,11 +24,11 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import {
+import type {
   TestUserType,
   TestOrganizationType,
-  createTestUser,
 } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testUser2: TestUserType;

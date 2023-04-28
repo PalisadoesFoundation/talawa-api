@@ -1,6 +1,7 @@
-import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { InterfaceUser } from "./User";
-import { InterfacePost } from "./Post";
+import type { PopulatedDoc, Types, Document, Model } from "mongoose";
+import { Schema, model, models } from "mongoose";
+import type { InterfaceUser } from "./User";
+import type { InterfacePost } from "./Post";
 /**
  * This is an interface representing a document for a comment in the database(MongoDB).
  */
@@ -10,7 +11,7 @@ export interface InterfaceComment {
   createdAt: Date;
   postId: PopulatedDoc<InterfacePost & Document>;
   creator: PopulatedDoc<InterfaceUser & Document>;
-  likedBy: Array<PopulatedDoc<InterfaceUser & Document>>;
+  likedBy: PopulatedDoc<InterfaceUser & Document>[];
   likeCount: number;
   status: string;
 }
@@ -61,9 +62,10 @@ const commentSchema = new Schema({
   },
 });
 
-const CommentModel = () => model<InterfaceComment>("Comment", commentSchema);
+const commentModel = (): Model<InterfaceComment> =>
+  model<InterfaceComment>("Comment", commentSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const Comment = (models.Comment || CommentModel()) as ReturnType<
-  typeof CommentModel
+export const Comment = (models.Comment || commentModel()) as ReturnType<
+  typeof commentModel
 >;

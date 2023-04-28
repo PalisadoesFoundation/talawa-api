@@ -2,10 +2,8 @@ import "dotenv/config";
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { connect, disconnect } from "../../helpers/db";
 import mongoose from "mongoose";
-import {
-  TestGroupChatType,
-  createTestGroupChatMessage,
-} from "../../helpers/groupChat";
+import type { TestGroupChatType } from "../../helpers/groupChat";
+import { createTestGroupChatMessage } from "../../helpers/groupChat";
 import { filterFunction } from "../../../src/resolvers/Subscription/messageSentToGroupChat";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -30,7 +28,7 @@ describe("src -> resolvers -> Subscription -> messageSentToGroupChat", () => {
     const _parent = {};
     const context = {
       pubsub: {
-        asyncIterator: (_action: "MESSAGE_SENT_TO_GROUP_CHAT") => {
+        asyncIterator: (_action: "MESSAGE_SENT_TO_GROUP_CHAT"): string => {
           return _action;
         },
       },
@@ -58,7 +56,7 @@ describe("src -> resolvers -> Subscription -> messageSentToGroupChat", () => {
     const _parent = {};
     const context = {
       pubsub: {
-        asyncIterator: (_action: "MESSAGE_SENT_TO_GROUP_CHAT") => {
+        asyncIterator: (_action: "MESSAGE_SENT_TO_GROUP_CHAT"): string => {
           return _action;
         },
       },

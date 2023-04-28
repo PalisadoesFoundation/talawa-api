@@ -1,7 +1,10 @@
 import "dotenv/config";
-import mongoose, { Document, Types } from "mongoose";
-import { Comment, InterfaceComment, Post, User } from "../../../src/models";
-import { MutationRemoveCommentArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { InterfaceComment } from "../../../src/models";
+import { Comment, Post, User } from "../../../src/models";
+import type { MutationRemoveCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { removeComment as removeCommentResolver } from "../../../src/resolvers/Mutation/removeComment";
 import {
@@ -18,8 +21,9 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { TestUserType } from "../../helpers/userAndOrg";
-import { createTestPost, TestPostType } from "../../helpers/posts";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import type { TestPostType } from "../../helpers/posts";
+import { createTestPost } from "../../helpers/posts";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;

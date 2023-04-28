@@ -1,7 +1,8 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { User, Organization, GroupChat } from "../../../src/models";
-import { MutationRemoveUserFromGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationRemoveUserFromGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { removeUserFromGroupChat as removeUserFromGroupChatResolver } from "../../../src/resolvers/Mutation/removeUserFromGroupChat";
@@ -11,11 +12,12 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { TestOrganizationType, TestUserType } from "../../helpers/userAndOrg";
-import {
-  createTestGroupChatMessage,
-  TestGroupChatType,
-} from "../../helpers/groupChat";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
+import type { TestGroupChatType } from "../../helpers/groupChat";
+import { createTestGroupChatMessage } from "../../helpers/groupChat";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;

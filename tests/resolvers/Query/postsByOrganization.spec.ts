@@ -1,15 +1,15 @@
 import "dotenv/config";
 import { postsByOrganization as postsByOrganizationResolver } from "../../../src/resolvers/Query/postsByOrganization";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { Post } from "../../../src/models";
-import { QueryPostsByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { QueryPostsByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import {
+import type {
   TestUserType,
   TestOrganizationType,
-  createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { createSinglePostwithComment } from "../../helpers/posts";
 import { BASE_URL } from "../../../src/constants";
 

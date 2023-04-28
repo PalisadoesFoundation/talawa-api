@@ -1,7 +1,8 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { User, Event } from "../../../src/models";
-import { MutationRegisterForEventArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationRegisterForEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { registerForEvent as registerForEventResolver } from "../../../src/resolvers/Mutation/registerForEvent";
@@ -19,8 +20,8 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { TestUserType } from "../../helpers/userAndOrg";
-import { TestEventType } from "../../helpers/events";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import type { TestEventType } from "../../helpers/events";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 
 let testUser: TestUserType;

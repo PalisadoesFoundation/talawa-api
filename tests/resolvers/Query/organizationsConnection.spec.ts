@@ -1,11 +1,14 @@
 import "dotenv/config";
 import { organizationsConnection as organizationsConnectionResolver } from "../../../src/resolvers/Query/organizationsConnection";
-import { Organization, User, InterfaceOrganization } from "../../../src/models";
+import type { InterfaceOrganization } from "../../../src/models";
+import { Organization, User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose, { Document } from "mongoose";
-import { QueryOrganizationsConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import type { QueryOrganizationsConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestUser, TestUserType } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 import { nanoid } from "nanoid";
 
 let MONGOOSE_INSTANCE: typeof mongoose;

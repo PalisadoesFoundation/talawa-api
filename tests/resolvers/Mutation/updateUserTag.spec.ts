@@ -1,6 +1,7 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
-import { MutationUpdateUserTagArgs } from "../../../src/types/generatedGraphQLTypes";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { MutationUpdateUserTagArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -19,8 +20,10 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { createTestUser, TestUserType } from "../../helpers/userAndOrg";
-import { TestUserTagType, createRootTagsWithOrg } from "../../helpers/tags";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
+import type { TestUserTagType } from "../../helpers/tags";
+import { createRootTagsWithOrg } from "../../helpers/tags";
 import { OrganizationTagUser } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose;

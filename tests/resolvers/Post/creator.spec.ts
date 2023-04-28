@@ -1,11 +1,12 @@
 import "dotenv/config";
 import { creator as creatorResolver } from "../../../src/resolvers/Post/creator";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { Comment, User } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestPost, TestPostType } from "../../helpers/posts";
-import { TestUserType } from "../../helpers/userAndOrg";
+import type { TestPostType } from "../../helpers/posts";
+import { createTestPost } from "../../helpers/posts";
+import type { TestUserType } from "../../helpers/userAndOrg";
 
 let testPost: TestPostType;
 let testUser: TestUserType;

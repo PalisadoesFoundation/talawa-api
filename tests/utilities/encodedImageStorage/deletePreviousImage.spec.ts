@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { connect, disconnect } from "../../helpers/db";
 import { deletePreviousImage } from "../../../src/utilities/encodedImageStorage/deletePreviousImage";
 import { EncodedImage } from "../../../src/models/EncodedImage";

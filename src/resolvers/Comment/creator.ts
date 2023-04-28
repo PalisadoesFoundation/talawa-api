@@ -1,4 +1,4 @@
-import { CommentResolvers } from "../../types/generatedGraphQLTypes";
+import type { CommentResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 
 export const creator: CommentResolvers["creator"] = async (parent) => {

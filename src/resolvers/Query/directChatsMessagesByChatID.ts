@@ -1,4 +1,4 @@
-import { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { errors } from "../../libraries";
 import { DirectChatMessage } from "../../models";
 import { CHAT_NOT_FOUND_ERROR } from "../../constants";

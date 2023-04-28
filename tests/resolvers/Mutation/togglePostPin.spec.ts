@@ -1,7 +1,8 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { Organization, User, Post } from "../../../src/models";
-import { MutationTogglePostPinArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationTogglePostPinArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -18,8 +19,10 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { createTestPost, TestPostType } from "../../helpers/posts";
-import { createTestUser, TestUserType } from "../../helpers/userAndOrg";
+import type { TestPostType } from "../../helpers/posts";
+import { createTestPost } from "../../helpers/posts";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;

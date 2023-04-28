@@ -3,7 +3,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   TASK_NOT_FOUND_ERROR,
 } from "../../constants";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Task, Event } from "../../models";
 /**

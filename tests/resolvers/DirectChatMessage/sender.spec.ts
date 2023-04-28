@@ -1,13 +1,11 @@
 import "dotenv/config";
 import { sender as senderResolver } from "../../../src/resolvers/DirectChatMessage/sender";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { User } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import {
-  createTestDirectChatMessage,
-  TestDirectChatMessageType,
-} from "../../helpers/directChat";
+import type { TestDirectChatMessageType } from "../../helpers/directChat";
+import { createTestDirectChatMessage } from "../../helpers/directChat";
 
 let testDirectChatMessage: TestDirectChatMessageType;
 let MONGOOSE_INSTANCE: typeof mongoose;

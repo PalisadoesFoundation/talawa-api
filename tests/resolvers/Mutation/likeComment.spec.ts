@@ -1,7 +1,10 @@
 import "dotenv/config";
-import mongoose, { Document, Types } from "mongoose";
-import { Post, Comment, InterfaceComment } from "../../../src/models";
-import { MutationLikeCommentArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { InterfaceComment } from "../../../src/models";
+import { Post, Comment } from "../../../src/models";
+import type { MutationLikeCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { likeComment as likeCommentResolver } from "../../../src/resolvers/Mutation/likeComment";
@@ -18,7 +21,7 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { TestUserType } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestPost } from "../../helpers/posts";
 
 let testUser: TestUserType;

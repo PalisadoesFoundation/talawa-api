@@ -1,4 +1,4 @@
-import { DirectChatResolvers } from "../../types/generatedGraphQLTypes";
+import type { DirectChatResolvers } from "../../types/generatedGraphQLTypes";
 import { creator } from "./creator";
 import { messages } from "./messages";
 import { organization } from "./organization";

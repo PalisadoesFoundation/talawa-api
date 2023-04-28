@@ -6,7 +6,7 @@ import {
   EMAIL_ALREADY_EXISTS_ERROR,
   //REGEX_VALIDATION_ERROR,
 } from "../../constants";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Organization } from "../../models";
 import {

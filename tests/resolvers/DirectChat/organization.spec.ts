@@ -1,13 +1,11 @@
 import "dotenv/config";
 import { organization as organizationResolver } from "../../../src/resolvers/DirectChat/organization";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { Organization } from "../../../src/models";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import {
-  createTestDirectChat,
-  TestDirectChatType,
-} from "../../helpers/directChat";
+import type { TestDirectChatType } from "../../helpers/directChat";
+import { createTestDirectChat } from "../../helpers/directChat";
 
 let testDirectChat: TestDirectChatType;
 let MONGOOSE_INSTANCE: typeof mongoose;

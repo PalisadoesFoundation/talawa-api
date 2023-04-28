@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, InterfaceUser } from "../../models";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceUser } from "../../models";
+import { User } from "../../models";
 import {
   createAccessToken,
   createRefreshToken,

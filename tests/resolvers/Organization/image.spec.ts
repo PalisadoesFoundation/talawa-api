@@ -1,5 +1,5 @@
 import "dotenv/config";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import {
   afterAll,
   afterEach,
@@ -11,11 +11,11 @@ import {
 } from "vitest";
 import { Organization } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
-import {
-  createTestUserAndOrganization,
+import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;

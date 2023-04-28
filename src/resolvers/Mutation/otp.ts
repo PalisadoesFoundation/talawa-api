@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 import { mailer } from "../../utilities";
 import { ACCESS_TOKEN_SECRET, USER_NOT_FOUND_ERROR } from "../../constants";

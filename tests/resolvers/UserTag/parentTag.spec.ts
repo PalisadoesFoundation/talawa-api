@@ -1,9 +1,10 @@
 import "dotenv/config";
 import { parentTag as parentTagResolver } from "../../../src/resolvers/UserTag/parentTag";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTwoLevelTagsWithOrg, TestUserTagType } from "../../helpers/tags";
+import type { TestUserTagType } from "../../helpers/tags";
+import { createTwoLevelTagsWithOrg } from "../../helpers/tags";
 import { OrganizationTagUser } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
