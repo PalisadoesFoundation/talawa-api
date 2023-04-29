@@ -265,7 +265,7 @@ export type FetchLimitExceeded = PaginationArgsError & {
   __typename?: 'FetchLimitExceeded';
   limit: Scalars['Int'];
   message: Scalars['String'];
-  path: Scalars['String'];
+  path: Array<Scalars['String']>;
 };
 
 export type ForgotPasswordData = {
@@ -316,13 +316,13 @@ export type IosFirebaseOptions = {
 export type IncorrectCursor = PaginationArgsError & {
   __typename?: 'IncorrectCursor';
   message: Scalars['String'];
-  path?: Maybe<Scalars['String']>;
+  path: Array<Scalars['String']>;
 };
 
 export type IncorrectPairingOfArguments = PaginationArgsError & {
   __typename?: 'IncorrectPairingOfArguments';
   message: Scalars['String'];
-  path: Scalars['String'];
+  path: Array<Scalars['String']>;
 };
 
 export type Language = {
@@ -388,7 +388,7 @@ export type MessageChatInput = {
 export type MissingArguments = PaginationArgsError & {
   __typename?: 'MissingArguments';
   message: Scalars['String'];
-  path: Scalars['String'];
+  path: Array<Scalars['String']>;
 };
 
 export type Mutation = {
@@ -979,10 +979,10 @@ export type PageInfo = {
 
 export type PaginationArgsError = {
   message: Scalars['String'];
-  path: Scalars['String'];
+  path: Array<Scalars['String']>;
 };
 
-export type PaginationError = FetchLimitExceeded | IncorrectCursor | IncorrectPairingOfArguments | MissingArguments | PaginationArgsError;
+export type PaginationError = FetchLimitExceeded | IncorrectCursor | IncorrectPairingOfArguments | MissingArguments;
 
 export type Plugin = {
   __typename?: 'Plugin';
@@ -1751,7 +1751,7 @@ export type ResolversTypes = {
   OtpData: ResolverTypeWrapper<OtpData>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
   PaginationArgsError: ResolversTypes['FetchLimitExceeded'] | ResolversTypes['IncorrectCursor'] | ResolversTypes['IncorrectPairingOfArguments'] | ResolversTypes['MissingArguments'];
-  PaginationError: ResolversTypes['FetchLimitExceeded'] | ResolversTypes['IncorrectCursor'] | ResolversTypes['IncorrectPairingOfArguments'] | ResolversTypes['MissingArguments'] | ResolversTypes['PaginationArgsError'];
+  PaginationError: ResolversTypes['FetchLimitExceeded'] | ResolversTypes['IncorrectCursor'] | ResolversTypes['IncorrectPairingOfArguments'] | ResolversTypes['MissingArguments'];
   PhoneNumber: ResolverTypeWrapper<Scalars['PhoneNumber']>;
   Plugin: ResolverTypeWrapper<InterfacePluginModel>;
   PluginField: ResolverTypeWrapper<InterfacePluginFieldModel>;
@@ -1860,7 +1860,7 @@ export type ResolversParentTypes = {
   OtpData: OtpData;
   PageInfo: PageInfo;
   PaginationArgsError: ResolversParentTypes['FetchLimitExceeded'] | ResolversParentTypes['IncorrectCursor'] | ResolversParentTypes['IncorrectPairingOfArguments'] | ResolversParentTypes['MissingArguments'];
-  PaginationError: ResolversParentTypes['FetchLimitExceeded'] | ResolversParentTypes['IncorrectCursor'] | ResolversParentTypes['IncorrectPairingOfArguments'] | ResolversParentTypes['MissingArguments'] | ResolversParentTypes['PaginationArgsError'];
+  PaginationError: ResolversParentTypes['FetchLimitExceeded'] | ResolversParentTypes['IncorrectCursor'] | ResolversParentTypes['IncorrectPairingOfArguments'] | ResolversParentTypes['MissingArguments'];
   PhoneNumber: Scalars['PhoneNumber'];
   Plugin: InterfacePluginModel;
   PluginField: InterfacePluginFieldModel;
@@ -2051,7 +2051,7 @@ export type ExtendSessionResolvers<ContextType = any, ParentType extends Resolve
 export type FetchLimitExceededResolvers<ContextType = any, ParentType extends ResolversParentTypes['FetchLimitExceeded'] = ResolversParentTypes['FetchLimitExceeded']> = {
   limit?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2096,13 +2096,13 @@ export type IosFirebaseOptionsResolvers<ContextType = any, ParentType extends Re
 
 export type IncorrectCursorResolvers<ContextType = any, ParentType extends ResolversParentTypes['IncorrectCursor'] = ResolversParentTypes['IncorrectCursor']> = {
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  path?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type IncorrectPairingOfArgumentsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IncorrectPairingOfArguments'] = ResolversParentTypes['IncorrectPairingOfArguments']> = {
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2160,7 +2160,7 @@ export type MessageChatResolvers<ContextType = any, ParentType extends Resolvers
 
 export type MissingArgumentsResolvers<ContextType = any, ParentType extends ResolversParentTypes['MissingArguments'] = ResolversParentTypes['MissingArguments']> = {
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2291,11 +2291,11 @@ export type PageInfoResolvers<ContextType = any, ParentType extends ResolversPar
 export type PaginationArgsErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['PaginationArgsError'] = ResolversParentTypes['PaginationArgsError']> = {
   __resolveType: TypeResolveFn<'FetchLimitExceeded' | 'IncorrectCursor' | 'IncorrectPairingOfArguments' | 'MissingArguments', ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
 };
 
 export type PaginationErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['PaginationError'] = ResolversParentTypes['PaginationError']> = {
-  __resolveType: TypeResolveFn<'FetchLimitExceeded' | 'IncorrectCursor' | 'IncorrectPairingOfArguments' | 'MissingArguments' | 'PaginationArgsError', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'FetchLimitExceeded' | 'IncorrectCursor' | 'IncorrectPairingOfArguments' | 'MissingArguments', ParentType, ContextType>;
 };
 
 export interface PhoneNumberScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['PhoneNumber'], any> {

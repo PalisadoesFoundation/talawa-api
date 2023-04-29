@@ -21,7 +21,7 @@ export const validatePaginationArgs = (args: CursorPaginationArgsType) => {
       __typename: "MissingArguments",
       message:
         "Either first or last argument must be provided in the pagination arguments.",
-      path: "first,last",
+      path: ["first", "last"],
     });
   }
 
@@ -31,7 +31,7 @@ export const validatePaginationArgs = (args: CursorPaginationArgsType) => {
       __typename: "IncorrectPairingOfArguments",
       message:
         "Both first and last argument can not be provided in the pagination arguments. Only one must be provided in a single query.",
-      path: "first,last",
+      path: ["first", "last"],
     });
   }
 
@@ -46,7 +46,7 @@ export const validatePaginationArgs = (args: CursorPaginationArgsType) => {
       message:
         "More items than the allowed number of items were requested to be fetched.",
       limit: MAXIMUM_FETCH_LIMIT,
-      path: "first,last",
+      path: ["first", "last"],
     });
   }
 
@@ -56,7 +56,7 @@ export const validatePaginationArgs = (args: CursorPaginationArgsType) => {
       __typename: "IncorrectPairingOfArguments",
       message:
         "The pagination arguments must not contain before argument if the first argument is provided.",
-      path: "before",
+      path: ["before"],
     });
   }
 
@@ -66,7 +66,7 @@ export const validatePaginationArgs = (args: CursorPaginationArgsType) => {
       __typename: "IncorrectPairingOfArguments",
       message:
         "The pagination arguments must not contain after argument if the last argument is provided.",
-      path: "after",
+      path: ["after"],
     });
   }
 

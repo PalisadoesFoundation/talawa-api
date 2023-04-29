@@ -1,3 +1,3 @@
-import { paginationErrors } from "./validatePaginationArgs";
+import { paginationError } from "./paginationError";
 
-export const errors = [paginationErrors];
+export const errors = [paginationError];

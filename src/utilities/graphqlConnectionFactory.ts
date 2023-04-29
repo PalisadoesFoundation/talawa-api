@@ -77,11 +77,11 @@ export const getLimit = (args: ConnectionArguments) => {
 
 // Generates the sortingObject that can be passed in the .sort() method
 export const getSortingObject = (
-  args: ConnectionArguments,
+  direction: "FORWARD" | "BACKWARD",
   sortingObject: { [key: string]: number }
 ) => {
   // We assume that the resolver would always be written with respect to the sorting that needs to be implemented for forward pagination
-  if (args.direction === "FORWARD") return sortingObject;
+  if (direction === "FORWARD") return sortingObject;
 
   // If we are paginating backwards, then we must reverse the order of all fields that are being sorted by.
   for (const [key, value] of Object.entries(sortingObject)) {
@@ -92,7 +92,7 @@ export const getSortingObject = (
 };
 
 // Generates the sorting arguments for filterQuery that can be passed into the .find() method
-export function getFilterQuery(args: ConnectionArguments) {
+export function getFilterObject(args: ConnectionArguments) {
   if (args.cursor) {
     if (args.direction === "FORWARD") return { _id: { $gte: args.cursor } };
     else return { _id: { $lte: args.cursor } };
@@ -150,7 +150,7 @@ export function generateConnectionObject<
             __typename: "IncorrectCursor",
             message:
               "The provided after cursor does not exist in the database.",
-            path: args.direction === "FORWARD" ? "after" : "before",
+            path: [args.direction === "FORWARD" ? "after" : "before"],
           },
         ],
       };

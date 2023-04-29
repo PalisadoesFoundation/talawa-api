@@ -7,7 +7,7 @@ import {
   transformArguments,
   getLimit,
   getSortingObject,
-  getFilterQuery,
+  getFilterObject,
   generateConnectionObject,
 } from "../../utilities/graphqlConnectionFactory";
 import { validatePaginationArgs } from "../../libraries/validators/validatePaginationArgs";
@@ -30,10 +30,10 @@ export const childTags: UserTagResolvers["childTags"] = async (
 
   const allUserObjects = await OrganizationTagUser.find({
     parentTagId: parent._id,
-    ...getFilterQuery(newArgs),
+    ...getFilterObject(newArgs),
   })
     .sort(
-      getSortingObject(newArgs, {
+      getSortingObject(newArgs.direction, {
         // The default sorting logic of ascending order by MongoID should always be provided
         _id: 1,
         name: 1,
