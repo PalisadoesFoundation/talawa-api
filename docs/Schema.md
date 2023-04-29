@@ -19,15 +19,19 @@
     * [Event](#event)
     * [EventRegistrants](#eventregistrants)
     * [ExtendSession](#extendsession)
+    * [FetchLimitExceeded](#fetchlimitexceeded)
     * [Group](#group)
     * [GroupChat](#groupchat)
     * [GroupChatMessage](#groupchatmessage)
     * [IOSFirebaseOptions](#iosfirebaseoptions)
+    * [IncorrectCursor](#incorrectcursor)
+    * [IncorrectPairingOfArguments](#incorrectpairingofarguments)
     * [Language](#language)
     * [LanguageModel](#languagemodel)
     * [MembershipRequest](#membershiprequest)
     * [Message](#message)
     * [MessageChat](#messagechat)
+    * [MissingArguments](#missingarguments)
     * [Organization](#organization)
     * [OrganizationInfoNode](#organizationinfonode)
     * [OtpData](#otpdata)
@@ -46,7 +50,9 @@
     * [UserTag](#usertag)
     * [UserTagEdge](#usertagedge)
     * [UserTagsConnection](#usertagsconnection)
+    * [UserTagsConnectionResult](#usertagsconnectionresult)
     * [UsersConnection](#usersconnection)
+    * [UsersConnectionResult](#usersconnectionresult)
   * [Inputs](#inputs)
     * [CommentInput](#commentinput)
     * [CreateUserTagInput](#createusertaginput)
@@ -107,6 +113,10 @@
     * [Time](#time)
     * [URL](#url)
     * [Upload](#upload)
+  * [Interfaces](#interfaces)
+    * [PaginationArgsError](#paginationargserror)
+  * [Unions](#unions)
+    * [PaginationError](#paginationerror)
 
 </details>
 
@@ -2055,6 +2065,36 @@
 </tbody>
 </table>
 
+### FetchLimitExceeded
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>message</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>path</strong></td>
+<td valign="top">[<a href="#string">String</a>!]!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>limit</strong></td>
+<td valign="top"><a href="#int">Int</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
 ### Group
 
 <table>
@@ -2225,6 +2265,56 @@
 <tr>
 <td colspan="2" valign="top"><strong>iosBundleId</strong></td>
 <td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### IncorrectCursor
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>message</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>path</strong></td>
+<td valign="top">[<a href="#string">String</a>!]!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### IncorrectPairingOfArguments
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>message</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>path</strong></td>
+<td valign="top">[<a href="#string">String</a>!]!</td>
 <td></td>
 </tr>
 </tbody>
@@ -2420,6 +2510,31 @@
 <tr>
 <td colspan="2" valign="top"><strong>createdAt</strong></td>
 <td valign="top"><a href="#datetime">DateTime</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### MissingArguments
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>message</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>path</strong></td>
+<td valign="top">[<a href="#string">String</a>!]!</td>
 <td></td>
 </tr>
 </tbody>
@@ -3259,7 +3374,7 @@ A list of edges.
 </tr>
 <tr>
 <td colspan="2" valign="top"><strong>childTags</strong></td>
-<td valign="top"><a href="#usertagsconnection">UserTagsConnection</a></td>
+<td valign="top"><a href="#usertagsconnectionresult">UserTagsConnectionResult</a></td>
 <td></td>
 </tr>
 <tr>
@@ -3284,7 +3399,7 @@ A list of edges.
 </tr>
 <tr>
 <td colspan="2" valign="top"><strong>usersAssignedTo</strong></td>
-<td valign="top"><a href="#usersconnection">UsersConnection</a></td>
+<td valign="top"><a href="#usersconnectionresult">UsersConnectionResult</a></td>
 <td></td>
 </tr>
 <tr>
@@ -3360,6 +3475,31 @@ A list of edges.
 </tbody>
 </table>
 
+### UserTagsConnectionResult
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>connectionData</strong></td>
+<td valign="top"><a href="#usertagsconnection">UserTagsConnection</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>connectionErrors</strong></td>
+<td valign="top">[<a href="#paginationerror">PaginationError</a>]</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
 ### UsersConnection
 
 <table>
@@ -3380,6 +3520,31 @@ A list of edges.
 <tr>
 <td colspan="2" valign="top"><strong>pageInfo</strong></td>
 <td valign="top"><a href="#connectionpageinfo">ConnectionPageInfo</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### UsersConnectionResult
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>connectionData</strong></td>
+<td valign="top"><a href="#usersconnection">UsersConnection</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>connectionErrors</strong></td>
+<td valign="top">[<a href="#paginationerror">PaginationError</a>]</td>
 <td></td>
 </tr>
 </tbody>
@@ -5425,3 +5590,60 @@ A field whose value conforms to the standard URL format as specified in RFC3986:
 
 The `Upload` scalar type represents a file upload.
 
+
+## Interfaces
+
+
+### PaginationArgsError
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>message</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>path</strong></td>
+<td valign="top">[<a href="#string">String</a>!]!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+## Unions
+
+### PaginationError
+
+<table>
+<thead>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</thead>
+<tbody>
+<tr>
+<td valign="top"><strong><a href="#missingarguments">MissingArguments</a></strong></td>
+<td></td>
+</tr>
+<tr>
+<td valign="top"><strong><a href="#incorrectpairingofarguments">IncorrectPairingOfArguments</a></strong></td>
+<td></td>
+</tr>
+<tr>
+<td valign="top"><strong><a href="#fetchlimitexceeded">FetchLimitExceeded</a></strong></td>
+<td></td>
+</tr>
+<tr>
+<td valign="top"><strong><a href="#incorrectcursor">IncorrectCursor</a></strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
