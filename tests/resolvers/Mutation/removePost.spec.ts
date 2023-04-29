@@ -1,15 +1,18 @@
 import "dotenv/config";
+import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { MutationRemovePostArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationRemovePostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   POST_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { createTestUser, TestUserType } from "../../helpers/userAndOrg";
-import { TestPostType, createTestPost } from "../../helpers/posts";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
+import type { TestPostType } from "../../helpers/posts";
+import { createTestPost } from "../../helpers/posts";
 import {
   beforeAll,
   afterAll,
@@ -20,7 +23,7 @@ import {
   afterEach,
 } from "vitest";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testPost: TestPostType;
 let randomUser: TestUserType;
@@ -32,7 +35,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> removePost", () => {
@@ -81,7 +84,7 @@ describe("resolvers -> Mutation -> removePost", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { removePost: removePostResolver } = await import(
@@ -104,11 +107,11 @@ describe("resolvers -> Mutation -> removePost", () => {
 
     try {
       const args: MutationRemovePostArgs = {
-        id: testPost!.id,
+        id: testPost?.id,
       };
 
       const context = {
-        userId: randomUser!.id,
+        userId: randomUser?.id,
       };
 
       const { removePost: removePostResolver } = await import(
@@ -130,11 +133,11 @@ describe("resolvers -> Mutation -> removePost", () => {
     );
 
     const args: MutationRemovePostArgs = {
-      id: testPost!.id,
+      id: testPost?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const { removePost: removePostResolver } = await import(
@@ -142,6 +145,6 @@ describe("resolvers -> Mutation -> removePost", () => {
     );
 
     const removePostPayload = await removePostResolver?.({}, args, context);
-    expect(removePostPayload).toEqual(testPost!.toObject());
+    expect(removePostPayload).toEqual(testPost?.toObject());
   });
 });

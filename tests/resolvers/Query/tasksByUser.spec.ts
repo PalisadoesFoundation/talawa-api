@@ -1,19 +1,19 @@
 import "dotenv/config";
 import { tasksByUser as tasksByUserResolver } from "../../../src/resolvers/Query/tasksByUser";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { Task } from "../../../src/models";
-import { QueryTasksByUserArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { QueryTasksByUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import {
+import type {
   TestUserType,
   TestOrganizationType,
-  createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { createEventWithRegistrant } from "../../helpers/events";
 import { createTestTask } from "../../helpers/task";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 
@@ -32,7 +32,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> tasksByUser", () => {

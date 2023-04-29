@@ -1,15 +1,18 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import { InterfaceDonation, Donation } from "../../../src/models";
-import { MutationDeleteDonationByIdArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { InterfaceDonation } from "../../../src/models";
+import { Donation } from "../../../src/models";
+import type { MutationDeleteDonationByIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { deleteDonationById as deleteDonationByIdResolver } from "../../../src/resolvers/Mutation/deleteDonationById";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let testDonation: InterfaceDonation & Document<any, any, InterfaceDonation>;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -20,16 +23,16 @@ beforeAll(async () => {
 
   testDonation = await Donation.create({
     amount: 1,
-    nameOfOrg: testOrganization!.name,
-    nameOfUser: `${testUser!.firstName} ${testUser!.lastName}`,
-    orgId: testOrganization!._id,
+    nameOfOrg: testOrganization?.name,
+    nameOfUser: `${testUser?.firstName} ${testUser?.lastName}`,
+    orgId: testOrganization?._id,
     payPalId: "payPalId",
-    userId: testUser!._id,
+    userId: testUser?._id,
   });
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> deleteDonationById", () => {

@@ -1,17 +1,20 @@
 import "dotenv/config";
 import { organizationsConnection as organizationsConnectionResolver } from "../../../src/resolvers/Query/organizationsConnection";
-import { Organization, User, InterfaceOrganization } from "../../../src/models";
+import type { InterfaceOrganization } from "../../../src/models";
+import { Organization, User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
-import { QueryOrganizationsConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import type { QueryOrganizationsConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestUser, TestUserType } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 import { nanoid } from "nanoid";
-import { Document } from "mongoose";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganizations: (InterfaceOrganization &
   Document<any, any, InterfaceOrganization>)[];
+
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const testUser: TestUserType = await createTestUser();
@@ -76,7 +79,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> organizationsConnection", () => {
@@ -89,6 +92,19 @@ describe("resolvers -> Query -> organizationsConnection", () => {
     };
 
     const organizations = await Organization.find().limit(2).skip(1).lean();
+
+    const organizationsConnectionPayload =
+      await organizationsConnectionResolver?.({}, args, {});
+
+    expect(organizationsConnectionPayload).toEqual(organizations);
+  });
+  it(`returns paginated list of all existing organizations without any filtering and sorting with first = 0 and skip = 0 if not provided'`, async () => {
+    const args: QueryOrganizationsConnectionArgs = {
+      where: null,
+      orderBy: null,
+    };
+
+    const organizations = await Organization.find().limit(0).skip(0).lean();
 
     const organizationsConnectionPayload =
       await organizationsConnectionResolver?.({}, args, {});
@@ -217,7 +233,7 @@ describe("resolvers -> Query -> organizationsConnection", () => {
         id_in: [testOrganizations[1]._id],
         name_in: [testOrganizations[1].name],
         description_in: [testOrganizations[1].description],
-        apiUrl_in: [testOrganizations[1].apiUrl!],
+        apiUrl_in: [testOrganizations[1].apiUrl ?? ""],
       },
       orderBy: "name_ASC",
     };
@@ -264,7 +280,7 @@ describe("resolvers -> Query -> organizationsConnection", () => {
         id_not_in: [testOrganizations[0]._id],
         name_not_in: [testOrganizations[0].name],
         description_not_in: [testOrganizations[0].description],
-        apiUrl_not_in: [testOrganizations[0].apiUrl!],
+        apiUrl_not_in: [testOrganizations[0].apiUrl ?? ""],
       },
       orderBy: "name_DESC",
     };

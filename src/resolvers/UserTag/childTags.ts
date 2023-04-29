@@ -1,8 +1,6 @@
-import { UserTagResolvers } from "../../types/generatedGraphQLTypes";
-import {
-  OrganizationTagUser,
-  InterfaceOrganizationTagUser,
-} from "../../models";
+import type { UserTagResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceOrganizationTagUser } from "../../models";
+import { OrganizationTagUser } from "../../models";
 import {
   transformArguments,
   getLimit,

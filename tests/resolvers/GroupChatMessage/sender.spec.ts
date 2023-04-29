@@ -1,16 +1,14 @@
 import "dotenv/config";
 import { sender as senderResolver } from "../../../src/resolvers/GroupChatMessage/sender";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { User } from "../../../src/models";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import {
-  createTestGroupChatMessage,
-  TestGroupChatMessageType,
-} from "../../helpers/groupChat";
+import type { TestGroupChatMessageType } from "../../helpers/groupChat";
+import { createTestGroupChatMessage } from "../../helpers/groupChat";
 
 let testGroupChatMessage: TestGroupChatMessageType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -19,7 +17,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> GroupChatMessage -> sender", () => {
@@ -29,7 +27,7 @@ describe("resolvers -> GroupChatMessage -> sender", () => {
     const senderPayload = await senderResolver?.(parent, {}, {});
 
     const sender = await User.findOne({
-      _id: testGroupChatMessage!.sender,
+      _id: testGroupChatMessage?.sender,
     }).lean();
 
     expect(senderPayload).toEqual(sender);

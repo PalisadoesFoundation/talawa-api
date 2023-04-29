@@ -2,22 +2,23 @@ import "dotenv/config";
 import { CHAT_NOT_FOUND_ERROR } from "../../../src/constants";
 import { directChatsMessagesByChatID as directChatsMessagesByChatIDResolver } from "../../../src/resolvers/Query/directChatsMessagesByChatID";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { Types } from "mongoose";
+
 import { DirectChatMessage } from "../../../src/models";
-import { QueryDirectChatsMessagesByChatIdArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { QueryDirectChatsMessagesByChatIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import {
   createTestUser,
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
+import type { TestDirectChatType } from "../../helpers/directChat";
 import {
   createTestDirectChatwithUsers,
   createDirectChatMessage,
-  TestDirectChatType,
 } from "../../helpers/directChat";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testDirectChats: TestDirectChatType[];
 
 beforeAll(async () => {
@@ -46,7 +47,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> directChatsMessagesByChatID", () => {

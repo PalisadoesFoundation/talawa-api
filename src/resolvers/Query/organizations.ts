@@ -1,4 +1,4 @@
-import { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Organization } from "../../models";
 import { errors } from "../../libraries";
 import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";

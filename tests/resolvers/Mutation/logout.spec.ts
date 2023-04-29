@@ -1,8 +1,9 @@
 import "dotenv/config";
+import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { logout as logoutResolver } from "../../../src/resolvers/Mutation/logout";
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import {
@@ -14,13 +15,11 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import {
-  createTestUserAndOrganization,
-  TestUserType,
-} from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -29,7 +28,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> logout", () => {
@@ -60,7 +59,7 @@ describe("resolvers -> Mutation -> logout", () => {
 
   it(`sets token === null for user with _id === context.userId and returns true`, async () => {
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const logoutPayload = await logoutResolver?.({}, {}, context);
@@ -68,11 +67,11 @@ describe("resolvers -> Mutation -> logout", () => {
     expect(logoutPayload).toEqual(true);
 
     const updatedTestUser = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     })
       .select(["token"])
       .lean();
 
-    expect(updatedTestUser!.token).toEqual(null);
+    expect(updatedTestUser?.token).toEqual(null);
   });
 });

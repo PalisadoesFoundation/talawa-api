@@ -1,15 +1,17 @@
 import "dotenv/config";
+import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { User } from "../../../src/models";
-import { MutationSaveFcmTokenArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationSaveFcmTokenArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { saveFcmToken as saveFcmTokenResolver } from "../../../src/resolvers/Mutation/saveFcmToken";
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { createTestUserFunc, TestUserType } from "../../helpers/user";
+import type { TestUserType } from "../../helpers/user";
+import { createTestUserFunc } from "../../helpers/user";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 
 beforeAll(async () => {
@@ -18,7 +20,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> saveFcmToken", () => {
@@ -53,7 +55,7 @@ describe("resolvers -> Mutation -> saveFcmToken", () => {
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const saveFcmTokenPayload = await saveFcmTokenResolver?.({}, args, context);
@@ -61,7 +63,7 @@ describe("resolvers -> Mutation -> saveFcmToken", () => {
     expect(saveFcmTokenPayload).toEqual(true);
 
     const testSaveFcmTokenPayload = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     })
       .select("token")
       .lean();

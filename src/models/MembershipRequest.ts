@@ -1,6 +1,7 @@
-import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { InterfaceOrganization } from "./Organization";
-import { InterfaceUser } from "./User";
+import type { PopulatedDoc, Types, Document, Model } from "mongoose";
+import { Schema, model, models } from "mongoose";
+import type { InterfaceOrganization } from "./Organization";
+import type { InterfaceUser } from "./User";
 /**
  * This is an interface that represents a database(MongoDB) document for Membership Request.
  */
@@ -34,7 +35,7 @@ const membershipRequestSchema = new Schema({
   },
 });
 
-const MembershipRequestModel = () =>
+const membershipRequestModel = (): Model<InterfaceMembershipRequest> =>
   model<InterfaceMembershipRequest>(
     "MembershipRequest",
     membershipRequestSchema
@@ -42,4 +43,4 @@ const MembershipRequestModel = () =>
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const MembershipRequest = (models.MembershipRequest ||
-  MembershipRequestModel()) as ReturnType<typeof MembershipRequestModel>;
+  membershipRequestModel()) as ReturnType<typeof membershipRequestModel>;

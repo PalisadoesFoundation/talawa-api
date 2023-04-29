@@ -1,16 +1,14 @@
 import "dotenv/config";
 import { users as usersResolver } from "../../../src/resolvers/GroupChat/users";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { User } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import {
-  createTestGroupChat,
-  TestGroupChatType,
-} from "../../helpers/groupChat";
+import type { TestGroupChatType } from "../../helpers/groupChat";
+import { createTestGroupChat } from "../../helpers/groupChat";
 
 let testGroupChat: TestGroupChatType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -19,7 +17,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> GroupChat -> users", () => {
@@ -30,7 +28,7 @@ describe("resolvers -> GroupChat -> users", () => {
 
     const users = await User.find({
       _id: {
-        $in: testGroupChat!.users,
+        $in: testGroupChat?.users,
       },
     }).lean();
 

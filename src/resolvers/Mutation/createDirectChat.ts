@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization, DirectChat } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
@@ -34,7 +34,7 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
   }
 
   const organizationExists = await Organization.exists({
-    _id: args.data?.organizationId,
+    _id: args.data.organizationId,
   });
 
   // Checks whether organization with _id === args.data.organizationId exists.
@@ -50,7 +50,7 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
   const usersInDirectChat = [];
 
   // Loops over each item in args.data.userIds list.
-  for await (const userId of args.data!.userIds) {
+  for await (const userId of args.data.userIds) {
     const userExists = await User.exists({
       _id: userId,
     });
@@ -71,7 +71,7 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
   const createdDirectChat = await DirectChat.create({
     creator: context.userId,
     users: usersInDirectChat,
-    organization: args.data?.organizationId,
+    organization: args.data.organizationId,
   });
 
   // Returns createdDirectChat.

@@ -1,17 +1,19 @@
 import "dotenv/config";
 import { event as eventResolver } from "../../../src/resolvers/Query/event";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { EVENT_NOT_FOUND_ERROR } from "../../../src/constants";
 import { Event } from "../../../src/models";
-import { Types } from "mongoose";
-import { QueryEventArgs } from "../../../src/types/generatedGraphQLTypes";
+
+import type { QueryEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { TestUserType } from "../../helpers/userAndOrg";
-import { createTestEvent, TestEventType } from "../../helpers/events";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import type { TestEventType } from "../../helpers/events";
+import { createTestEvent } from "../../helpers/events";
 import { createTestTask } from "../../helpers/task";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;
 let testUser: TestUserType;
 
@@ -24,7 +26,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> event", () => {

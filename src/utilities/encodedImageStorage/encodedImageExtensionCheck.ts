@@ -1,4 +1,4 @@
-export const encodedImageExtentionCheck = (encodedUrl: string) => {
+export const encodedImageExtentionCheck = (encodedUrl: string): boolean => {
   const extension = encodedUrl.substring(
     "data:".length,
     encodedUrl.indexOf(";base64")

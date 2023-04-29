@@ -2,19 +2,21 @@ import "dotenv/config";
 import { organizations as organizationsResolver } from "../../../src/resolvers/Query/organizations";
 import { ORGANIZATION_NOT_FOUND_ERROR } from "../../../src/constants";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { Organization } from "../../../src/models";
-import { QueryOrganizationsArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { QueryOrganizationsArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import {
+import type {
   TestUserType,
   TestOrganizationType,
+} from "../../helpers/userAndOrg";
+import {
   createTestUserAndOrganization,
   createTestOrganizationWithAdmin,
 } from "../../helpers/userAndOrg";
-import { Types } from "mongoose";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testOrganization1: TestOrganizationType;
 
@@ -25,7 +27,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> organizations", () => {

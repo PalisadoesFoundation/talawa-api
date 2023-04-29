@@ -1,4 +1,7 @@
-import { QueryResolvers, Translation } from "../../types/generatedGraphQLTypes";
+import type {
+  QueryResolvers,
+  Translation,
+} from "../../types/generatedGraphQLTypes";
 import { Language } from "../../models";
 /**
  * This query fetch a language for specified `lang_code` from the database.
@@ -14,7 +17,7 @@ export const getlanguage: QueryResolvers["getlanguage"] = async (
     "translation.lang_code": args.lang_code,
   }).lean();
 
-  const filteredLanguages: Array<Translation> = [];
+  const filteredLanguages: Translation[] = [];
 
   languages.forEach((language) => {
     language.translation.forEach((languageModel) => {

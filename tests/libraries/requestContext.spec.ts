@@ -9,7 +9,7 @@ import {
   translate,
   translatePlural,
 } from "../../src/libraries/requestContext";
-import { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import { EventEmitter } from "stream";
 
@@ -59,7 +59,7 @@ describe("middleware -> requestContext", () => {
     expect(nextFunction).toBeCalledTimes(1);
   });
 
-  it("testing i18n api with translate and translatePlural", async () => {
+  it("testing i18n api with translate and translatePlural", () => {
     const options: InterfaceInitOptions<any> = {
       defaultLocale: "fr",
       locale: "fr",
@@ -75,9 +75,18 @@ describe("middleware -> requestContext", () => {
     });
     expect(translate(locales)).toBe(locales);
     expect(translatePlural(locales)).toBe(locales);
+
+    // Testing for empty options with no requestHandler for init
+    const incorrectOptions: InterfaceInitOptions<any> = {
+      defaultLocale: "fr",
+      locale: "fr",
+      fallbacks: true,
+      lang: "fr",
+    };
+    init(incorrectOptions);
   });
 
-  it("testing error thrown for translate i18n not initialized", async () => {
+  it("testing error thrown for translate i18n not initialized", () => {
     try {
       translate({});
     } catch (error: any) {
@@ -87,7 +96,7 @@ describe("middleware -> requestContext", () => {
     }
   });
 
-  it("testing error thrown for translatePlural i18n not initialized", async () => {
+  it("testing error thrown for translatePlural i18n not initialized", () => {
     try {
       translatePlural({});
     } catch (error: any) {

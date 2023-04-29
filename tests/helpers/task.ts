@@ -1,5 +1,6 @@
-import { Event, Task, InterfaceEvent, InterfaceTask } from "../../src/models";
-import { Document } from "mongoose";
+import type { InterfaceEvent, InterfaceTask } from "../../src/models";
+import { Event, Task } from "../../src/models";
+import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
 export type TestEventType =
@@ -11,18 +12,18 @@ export type TestTaskType =
   | null;
 
 export const createTestTask = async (
-  event_id: string,
-  creator_id: string
+  eventId: string,
+  creatorId: string
 ): Promise<TestTaskType> => {
   const testTask = await Task.create({
     title: `title${nanoid().toLowerCase()}`,
-    event: event_id,
-    creator: creator_id,
+    event: eventId,
+    creator: creatorId,
   });
 
   await Event.updateOne(
     {
-      _id: event_id,
+      _id: eventId,
     },
     {
       $push: {

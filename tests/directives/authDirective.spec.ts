@@ -1,14 +1,14 @@
 import { AuthenticationDirective } from "../../src/directives/authDirective";
 import { beforeAll, afterAll, it, expect } from "vitest";
 import { connect, disconnect } from "../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { ApolloServer, gql } from "apollo-server-express";
 import { errors } from "../../src/libraries";
 import "dotenv/config";
 import i18n from "i18n";
 import express from "express";
 import { appConfig } from "../../src/config";
-import { TestUserType } from "../helpers/userAndOrg";
+import type { TestUserType } from "../helpers/userAndOrg";
 import { createTestUserFunc } from "../helpers/user";
 
 const app = express();
@@ -42,11 +42,11 @@ const typeDefs = gql`
 
 const resolvers = {
   Query: {
-    hello: async () => "hi",
+    hello: (): string => "hi",
   },
 };
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -55,7 +55,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await testUser!.remove();
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 it("throws UnauthenticatedError when context is expired", async () => {

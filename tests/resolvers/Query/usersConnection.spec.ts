@@ -1,18 +1,18 @@
 import "dotenv/config";
 import { usersConnection as usersConnectionResolver } from "../../../src/resolvers/Query/usersConnection";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { User } from "../../../src/models";
-import { QueryUsersConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { QueryUsersConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import type { TestUserType } from "../../helpers/userAndOrg";
 import {
-  TestUserType,
   createTestUserAndOrganization,
   createTestUser,
 } from "../../helpers/userAndOrg";
 import { createEventWithRegistrant } from "../../helpers/events";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
 
 beforeAll(async () => {
@@ -28,10 +28,36 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> usersConnection", () => {
+  it(`returns paginated list of all users without any filtering and sorting with first = 0 and skip = 0`, async () => {
+    const args: QueryUsersConnectionArgs = {
+      where: null,
+      orderBy: null,
+    };
+
+    const usersConnectionPayload = await usersConnectionResolver?.(
+      {},
+      args,
+      {}
+    );
+    const users = await User.find()
+      .limit(0)
+      .skip(0)
+      .select(["-password"])
+      .populate("createdOrganizations")
+      .populate("createdEvents")
+      .populate("joinedOrganizations")
+      .populate("registeredEvents")
+      .populate("eventAdmin")
+      .populate("adminFor")
+      .lean();
+
+    expect(usersConnectionPayload).toEqual(users);
+  });
+
   it(`returns paginated list of users filtered by
   args.where === { id: testUsers[1].id, firstName: testUsers[1].firstName,
   lastName: testUsers[1].lastName, email: testUsers[1].email,
@@ -178,10 +204,10 @@ describe("resolvers -> Query -> usersConnection", () => {
       skip: 1,
       where: {
         id_in: [testUsers[1]?.id],
-        firstName_in: [testUsers[1]?.firstName!],
-        lastName_in: [testUsers[1]?.lastName!],
-        email_in: [testUsers[1]?.email!],
-        appLanguageCode_in: [testUsers[1]?.appLanguageCode!],
+        firstName_in: [testUsers[1]!.firstName],
+        lastName_in: [testUsers[1]!.lastName],
+        email_in: [testUsers[1]!.email],
+        appLanguageCode_in: [testUsers[1]!.appLanguageCode],
       },
       orderBy: "firstName_ASC",
     };
@@ -240,10 +266,10 @@ describe("resolvers -> Query -> usersConnection", () => {
       skip: 1,
       where: {
         id_not_in: [testUsers[2]?._id],
-        firstName_not_in: [testUsers[2]?.firstName!],
-        lastName_not_in: [testUsers[2]?.lastName!],
-        email_not_in: [testUsers[2]?.email!],
-        appLanguageCode_not_in: [testUsers[2]?.appLanguageCode!],
+        firstName_not_in: [testUsers[2]!.firstName],
+        lastName_not_in: [testUsers[2]!.lastName],
+        email_not_in: [testUsers[2]!.email],
+        appLanguageCode_not_in: [testUsers[2]!.appLanguageCode],
       },
       orderBy: "firstName_DESC",
     };

@@ -1,4 +1,4 @@
-import { UserTagResolvers } from "../../types/generatedGraphQLTypes";
+import type { UserTagResolvers } from "../../types/generatedGraphQLTypes";
 import { childTags } from "./childTags";
 import { organization } from "./organization";
 import { parentTag } from "./parentTag";

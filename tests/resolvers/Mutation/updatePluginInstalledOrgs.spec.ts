@@ -1,23 +1,20 @@
 import "dotenv/config";
-import { Document } from "mongoose";
-import {
-  User,
-  Organization,
-  Plugin,
-  InterfacePlugin,
-} from "../../../src/models";
-import { MutationUpdatePluginInstalledOrgsArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import type { InterfacePlugin } from "../../../src/models";
+import { User, Organization, Plugin } from "../../../src/models";
+import type { MutationUpdatePluginInstalledOrgsArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { updatePluginInstalledOrgs as updatePluginInstalledOrgsResolver } from "../../../src/resolvers/Mutation/updatePluginInstalledOrgs";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import {
-  createTestUserAndOrganization,
+import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testPlugin: InterfacePlugin & Document<any, any, InterfacePlugin>;
 let testOrganization: TestOrganizationType;
@@ -29,7 +26,7 @@ beforeAll(async () => {
   testOrganization = temp[1];
   testPlugin = await Plugin.create({
     pluginName: "pluginName",
-    pluginCreatedBy: `${testUser!.firstName} ${testUser!.lastName}`,
+    pluginCreatedBy: `${testUser?.firstName} ${testUser?.lastName}`,
     pluginDesc: "pluginDesc",
     pluginInstallStatus: false,
     installedOrgs: [],
@@ -40,7 +37,7 @@ afterAll(async () => {
   await User.deleteMany({});
   await Organization.deleteMany({});
   await Plugin.deleteMany({});
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> updatePluginInstalledOrgs", () => {
@@ -48,11 +45,11 @@ describe("resolvers -> Mutation -> updatePluginInstalledOrgs", () => {
   for plugin with _id === args.id, adds it to plugin.installedOrgs`, async () => {
     const args: MutationUpdatePluginInstalledOrgsArgs = {
       id: testPlugin._id,
-      orgId: testOrganization!._id,
+      orgId: testOrganization?._id,
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const updatePluginInstalledOrgsPayload =
@@ -71,11 +68,11 @@ describe("resolvers -> Mutation -> updatePluginInstalledOrgs", () => {
     for plugin with _id === args.id, removes it from plugin.installedOrgs`, async () => {
     const args: MutationUpdatePluginInstalledOrgsArgs = {
       id: testPlugin._id,
-      orgId: testOrganization!._id,
+      orgId: testOrganization?._id,
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const updatePluginInstalledOrgsPayload =

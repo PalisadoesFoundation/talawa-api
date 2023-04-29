@@ -1,5 +1,5 @@
 import { COMMENT_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Comment } from "../../models";
 /**
@@ -41,8 +41,8 @@ export const unlikeComment: MutationResolvers["unlikeComment"] = async (
     );
   }
 
-  const currentUserHasLikedComment = comment.likedBy.some(
-    (liker) => liker.toString() === context.userId.toString()
+  const currentUserHasLikedComment = comment.likedBy.some((liker) =>
+    liker.equals(context.userId)
   );
 
   if (currentUserHasLikedComment === true) {

@@ -1,4 +1,5 @@
-import { Schema, model, Types, models } from "mongoose";
+import type { Types, Model } from "mongoose";
+import { Schema, model, models } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 /**
  * This is an interface representing a document for a file in the database(MongoDB).
@@ -55,9 +56,10 @@ const fileSchema = new Schema({
   },
 });
 
-const FileModel = () => model<InterfaceFile>("File", fileSchema);
+const fileModel = (): Model<InterfaceFile> =>
+  model<InterfaceFile>("File", fileSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const File = (models.File || FileModel()) as ReturnType<
-  typeof FileModel
+export const File = (models.File || fileModel()) as ReturnType<
+  typeof fileModel
 >;

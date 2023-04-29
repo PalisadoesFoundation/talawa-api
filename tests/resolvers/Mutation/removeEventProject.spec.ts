@@ -1,15 +1,11 @@
 import "dotenv/config";
-import { Document } from "mongoose";
-import {
-  User,
-  Organization,
-  Event,
-  EventProject,
-  InterfaceEventProject,
-} from "../../../src/models";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import type { InterfaceEventProject } from "../../../src/models";
+import { User, Organization, Event, EventProject } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   beforeAll,
   afterAll,
@@ -24,10 +20,11 @@ import {
   USER_NOT_FOUND_ERROR,
   EVENT_PROJECT_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { TestUserType } from "../../helpers/userAndOrg";
-import { createTestEvent, TestEventType } from "../../helpers/events";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import type { TestEventType } from "../../helpers/events";
+import { createTestEvent } from "../../helpers/events";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testUserNotCreatorOfEventProject: TestUserType;
 let testEvent: TestEventType;
@@ -50,10 +47,10 @@ beforeAll(async () => {
   testEventProject = await EventProject.create({
     title: "title",
     description: "description",
-    creator: testUser!._id,
-    admins: [testUser!._id],
-    members: [testUser!._id],
-    event: testEvent!._id,
+    creator: testUser?._id,
+    admins: [testUser?._id],
+    members: [testUser?._id],
+    event: testEvent?._id,
   });
 });
 
@@ -62,10 +59,10 @@ afterAll(async () => {
   await Organization.deleteMany({});
   await Event.deleteMany({});
   await EventProject.deleteMany({});
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
-afterEach(async () => {
+afterEach(() => {
   vi.doUnmock("../../../src/constants");
   vi.resetModules();
 });
@@ -105,7 +102,7 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const { requestContext } = await import("../../../src/libraries");
@@ -133,7 +130,7 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     };
 
     const context = {
-      userId: testUserNotCreatorOfEventProject!._id,
+      userId: testUserNotCreatorOfEventProject?._id,
     };
 
     const { requestContext } = await import("../../../src/libraries");
@@ -161,7 +158,7 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const { removeEventProject } = await import(

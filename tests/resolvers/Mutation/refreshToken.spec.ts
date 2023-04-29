@@ -1,9 +1,11 @@
 import "dotenv/config";
+import type mongoose from "mongoose";
 import { Types } from "mongoose";
+import type { InterfaceUser } from "../../../src/models";
 import { User } from "../../../src/models";
-import { MutationRefreshTokenArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationRefreshTokenArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   INVALID_REFRESH_TOKEN_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -18,11 +20,12 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { createTestUserFunc, TestUserType } from "../../helpers/user";
+import type { TestUserType } from "../../helpers/user";
+import { createTestUserFunc } from "../../helpers/user";
 
 let testUser: TestUserType;
 let refreshToken: string;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -30,7 +33,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> refreshToken", () => {
@@ -102,7 +105,7 @@ describe("resolvers -> Mutation -> refreshToken", () => {
     try {
       await User.updateOne(
         {
-          _id: testUser!._id,
+          _id: testUser?._id,
         },
         {
           $inc: {
@@ -111,7 +114,9 @@ describe("resolvers -> Mutation -> refreshToken", () => {
         }
       );
 
-      refreshToken = await createRefreshToken(testUser!.toObject());
+      refreshToken = await createRefreshToken(
+        testUser ? testUser.toObject() : ({} as InterfaceUser)
+      );
 
       const args: MutationRefreshTokenArgs = {
         refreshToken,
@@ -136,7 +141,7 @@ describe("resolvers -> Mutation -> refreshToken", () => {
     try {
       await User.updateOne(
         {
-          _id: testUser!._id,
+          _id: testUser?._id,
         },
         {
           $inc: {
@@ -145,7 +150,9 @@ describe("resolvers -> Mutation -> refreshToken", () => {
         }
       );
 
-      refreshToken = await createRefreshToken(testUser!.toObject());
+      refreshToken = await createRefreshToken(
+        testUser ? testUser.toObject() : ({} as InterfaceUser)
+      );
 
       const args: MutationRefreshTokenArgs = {
         refreshToken,
@@ -167,7 +174,7 @@ describe("resolvers -> Mutation -> refreshToken", () => {
   it(`generates new accessToken and refreshToken and returns them`, async () => {
     await User.updateOne(
       {
-        _id: testUser!._id,
+        _id: testUser?._id,
       },
       {
         $inc: {
@@ -176,7 +183,9 @@ describe("resolvers -> Mutation -> refreshToken", () => {
       }
     );
 
-    refreshToken = await createRefreshToken(testUser!.toObject());
+    refreshToken = await createRefreshToken(
+      testUser ? testUser.toObject() : ({} as InterfaceUser)
+    );
 
     const args: MutationRefreshTokenArgs = {
       refreshToken,

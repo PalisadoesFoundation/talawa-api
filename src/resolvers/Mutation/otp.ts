@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 import { mailer } from "../../utilities";
 import { ACCESS_TOKEN_SECRET, USER_NOT_FOUND_ERROR } from "../../constants";
@@ -33,7 +33,7 @@ export const otp: MutationResolvers["otp"] = async (_parent, args) => {
       email: args.data.email,
       otp: hashedOtp,
     },
-    ACCESS_TOKEN_SECRET!,
+    ACCESS_TOKEN_SECRET as string,
     {
       expiresIn: "15m",
     }

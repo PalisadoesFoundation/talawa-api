@@ -3,7 +3,7 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { GroupChat, Organization } from "../../models";
 import { adminCheck } from "../../utilities";
@@ -50,8 +50,8 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
     // Checks whether currentUser with _id == context.userId is an admin of organzation.
     await adminCheck(context.userId, organization);
 
-    const userIsMemberOfGroupChat = groupChat.users.some(
-      (user) => user.toString() === args.userId.toString()
+    const userIsMemberOfGroupChat = groupChat.users.some((user) =>
+      user.equals(args.userId)
     );
 
     // Checks if user with _id === args.userId is not a member of groupChat.

@@ -1,15 +1,16 @@
 import "dotenv/config";
 import { me as meResolver } from "../../../src/resolvers/Query/me";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { User } from "../../../src/models";
-import { Types } from "mongoose";
+
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { TestUserType } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestEvent } from "../../helpers/events";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 
 beforeAll(async () => {
@@ -18,7 +19,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> me", () => {
@@ -38,13 +39,13 @@ describe("resolvers -> Query -> me", () => {
     , createdEvents, joinedOrganizations, registeredEvents, eventAdmin,
     adminFor`, async () => {
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const mePayload = await meResolver?.({}, {}, context);
 
     const user = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     })
       .select(["-password"])
       .populate("createdOrganizations")

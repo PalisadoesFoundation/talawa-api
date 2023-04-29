@@ -3,7 +3,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   TASK_NOT_FOUND_ERROR,
 } from "../../constants";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Task, Event } from "../../models";
 /**
@@ -49,7 +49,7 @@ export const removeTask: MutationResolvers["removeTask"] = async (
   }
 
   // Checks whether currentUser with _id === context.userId is not the creator of task.
-  if (task.creator.toString() !== context.userId.toString()) {
+  if (!task.creator.equals(context.userId)) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,

@@ -1,4 +1,4 @@
-require("dotenv").config();
+import dotenv from "dotenv";
 import { nanoid } from "nanoid";
 import * as fs from "fs";
 import {
@@ -11,15 +11,18 @@ import {
   vi,
 } from "vitest";
 import { connect, disconnect } from "../helpers/db";
-import mongoose from "mongoose";
-import { Document } from "mongoose";
-import { ImageHash, InterfaceImageHash } from "../../src/models";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+dotenv.config();
 
-const testImageToBeDeleted: string = `${nanoid()}-testNewImagePath`;
-const testOldImagePath: string = `${nanoid()}-testOldImagePath`;
-const testHashString: string = `${nanoid()}-testHash`;
+import type { InterfaceImageHash } from "../../src/models";
+import { ImageHash } from "../../src/models";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+const testImageToBeDeleted = `${nanoid()}-testNewImagePath`;
+const testOldImagePath = `${nanoid()}-testOldImagePath`;
+const testHashString = `${nanoid()}-testHash`;
+
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testHash: InterfaceImageHash & Document<any, any, InterfaceImageHash>;
 
 vi.mock("fs", () => ({
@@ -37,7 +40,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await ImageHash.deleteMany({});
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("utilities -> deleteImage.ts", () => {

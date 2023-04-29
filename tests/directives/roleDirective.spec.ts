@@ -1,11 +1,14 @@
 import { RoleAuthorizationDirective } from "../../src/directives/roleDirective";
-import { InterfaceUser, User } from "../../src/models";
+import type { InterfaceUser } from "../../src/models";
+import { User } from "../../src/models";
 import { beforeAll, afterAll, it, expect } from "vitest";
 import { connect, disconnect } from "../helpers/db";
-import mongoose from "mongoose";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { ApolloServer, gql } from "apollo-server-express";
 import { errors } from "../../src/libraries";
-import { Document, Types } from "mongoose";
+
 import { nanoid } from "nanoid";
 import "dotenv/config";
 import { USER_NOT_FOUND_ERROR } from "../../src/constants";
@@ -13,7 +16,7 @@ import i18n from "i18n";
 import express from "express";
 import { appConfig } from "../../src/config";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 const app = express();
 i18n.configure({
@@ -46,7 +49,7 @@ const typeDefs = gql`
 
 const resolvers = {
   Query: {
-    hello: async () => "hi",
+    hello: (): string => "hi",
   },
 };
 
@@ -66,7 +69,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await testUser.remove();
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 it("throws NotFoundError if no user exists with _id === context.userId", async () => {

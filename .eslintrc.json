@@ -37,7 +37,7 @@
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "plugins": ["@typescript-eslint", "eslint-plugin-tsdoc"],
+  "plugins": ["@typescript-eslint", "eslint-plugin-tsdoc", "import"],
   "root": true,
   "rules": {
     "no-restricted-imports": [
@@ -46,6 +46,9 @@
         "patterns": ["**/src/**"]
       }
     ],
+
+    // restrict the use of same package in multiple import statements
+    "import/no-duplicates": "error",
 
     // warn/1, error/2, off/0
     "tsdoc/syntax": "error",
@@ -57,6 +60,8 @@
     "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/no-var-requires": "off",
+    "@typescript-eslint/ban-types": "error",
+    "@typescript-eslint/no-duplicate-enum-values": "error",
 
     // Typescript rule to enforce PascalCase naming convention for types and interfaces
     "@typescript-eslint/naming-convention": [
@@ -69,9 +74,41 @@
       },
       // Type Aliases must be in PascalCase
       {
-        "selector": "typeAlias",
+        "selector": ["typeAlias", "typeLike", "enum"],
         "format": ["PascalCase"]
-      }
-    ]
+      },
+      {
+        "selector": "typeParameter",
+        "format": ["PascalCase"],
+        "prefix": ["T"]
+      },
+      {
+        "selector": "variable",
+        "format": ["camelCase", "UPPER_CASE"],
+        "leadingUnderscore": "allow"
+      },
+      {
+        "selector": "parameter",
+        "format": ["camelCase"],
+        "leadingUnderscore": "allow"
+      },
+      {
+        "selector": "function",
+        "format": ["camelCase"]
+      },
+      {
+        "selector": "memberLike",
+        "modifiers": ["private"],
+        "format": ["camelCase"],
+        "leadingUnderscore": "require"
+      },
+      { "selector": "variable", "modifiers": ["exported"], "format": null }
+    ],
+
+    // Typescript additional rules
+    "@typescript-eslint/array-type": "error",
+    "@typescript-eslint/consistent-type-assertions": "error",
+    "@typescript-eslint/consistent-type-imports": "error",
+    "@typescript-eslint/explicit-function-return-type": "error"
   }
 }

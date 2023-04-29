@@ -1,9 +1,10 @@
 import "dotenv/config";
+import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { User, Organization } from "../../../src/models";
-import { MutationRemoveOrganizationImageArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationRemoveOrganizationImageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   ORGANIZATION_IMAGE_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -19,10 +20,13 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { TestOrganizationType, TestUserType } from "../../helpers/userAndOrg";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
 import { createTestUserFunc } from "../../helpers/user";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -38,15 +42,16 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    admins: [testAdminUser!._id],
-    creator: testAdminUser!._id,
-    members: [testUser!._id],
-    blockedUsers: [testUser!._id],
+    admins: [testAdminUser?._id],
+    creator: testAdminUser?._id,
+
+    members: [testUser?._id],
+    blockedUsers: [testUser?._id],
   });
 
   await User.updateOne(
     {
-      _id: testUser!._id,
+      _id: testUser?._id,
     },
     {
       $set: {
@@ -61,7 +66,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await User.deleteMany({});
   await Organization.deleteMany({});
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> removeOrganizationImage", () => {
@@ -106,7 +111,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { removeOrganizationImage: removeOrganizationImageResolver } =
@@ -132,11 +137,11 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
 
     try {
       const args: MutationRemoveOrganizationImageArgs = {
-        organizationId: testOrganization!.id,
+        organizationId: testOrganization?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { removeOrganizationImage: removeOrganizationImageResolver } =
@@ -160,11 +165,11 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
 
     try {
       const args: MutationRemoveOrganizationImageArgs = {
-        organizationId: testOrganization!.id,
+        organizationId: testOrganization?.id,
       };
 
       const context = {
-        userId: testAdminUser!.id,
+        userId: testAdminUser?.id,
       };
 
       const { removeOrganizationImage: removeOrganizationImageResolver } =
@@ -191,14 +196,14 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       });
 
     const args: MutationRemoveOrganizationImageArgs = {
-      organizationId: testOrganization!._id,
+      organizationId: testOrganization?._id,
     };
 
-    const testImage: string = "testImage";
+    const testImage = "testImage";
 
     await Organization.updateOne(
       {
-        _id: testOrganization!._id,
+        _id: testOrganization?._id,
       },
       {
         $set: {
@@ -208,7 +213,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
     );
 
     const context = {
-      userId: testAdminUser!._id,
+      userId: testAdminUser?._id,
     };
 
     const { removeOrganizationImage: removeOrganizationImageResolver } =
@@ -218,7 +223,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       await removeOrganizationImageResolver?.({}, args, context);
 
     const updatedTestOrg = await Organization.findOne({
-      _id: testOrganization!._id,
+      _id: testOrganization?._id,
     }).lean();
 
     expect(removeOrganizationImagePayload).toEqual(updatedTestOrg);

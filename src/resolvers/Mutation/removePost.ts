@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Post, Organization } from "../../models";
 import {
@@ -51,10 +51,10 @@ export const removePost: MutationResolvers["removePost"] = async (
   }
 
   // Checks whether currentUser is allowed to delete the post or not.
-  const isCreator = post.creator.toString() === context.userId.toString();
-  const isSuperAdmin = currentUser!.userType === "SUPERADMIN";
-  const isAdminOfPostOrganization = currentUser!.adminFor.some(
-    (orgID) => orgID.toString() === post.organization.toString()
+  const isCreator = post.creator.equals(context.userId);
+  const isSuperAdmin = currentUser?.userType === "SUPERADMIN";
+  const isAdminOfPostOrganization = currentUser?.adminFor.some((orgID) =>
+    orgID.equals(post.organization)
   );
 
   if (!isCreator && !isSuperAdmin && !isAdminOfPostOrganization) {

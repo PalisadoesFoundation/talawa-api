@@ -1,13 +1,14 @@
 import "dotenv/config";
+import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import {
   Organization,
   DirectChat,
   DirectChatMessage,
 } from "../../../src/models";
-import { MutationRemoveDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationRemoveDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   CHAT_NOT_FOUND_ERROR,
@@ -22,13 +23,14 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { TestOrganizationType, TestUserType } from "../../helpers/userAndOrg";
-import {
-  createTestDirectChat,
-  TestDirectChatType,
-} from "../../helpers/directChat";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
+import type { TestDirectChatType } from "../../helpers/directChat";
+import { createTestDirectChat } from "../../helpers/directChat";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testDirectChat: TestDirectChatType;
@@ -40,9 +42,9 @@ beforeAll(async () => {
   testOrganization = temp[1];
 
   testDirectChat = await DirectChat.create({
-    users: [testUser!._id],
-    creator: testUser!._id,
-    organization: testOrganization!._id,
+    users: [testUser?._id],
+    creator: testUser?._id,
+    organization: testOrganization?._id,
   });
 
   const testDirectChatMessage = temp[2];
@@ -53,7 +55,7 @@ beforeAll(async () => {
     },
     {
       $push: {
-        messages: testDirectChatMessage!._id,
+        messages: testDirectChatMessage?._id,
       },
     },
     {
@@ -63,7 +65,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> removeDirectChat", () => {
@@ -85,7 +87,7 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { removeDirectChat: removeDirectChatResolver } = await import(
@@ -109,11 +111,11 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
     try {
       const args: MutationRemoveDirectChatArgs = {
         chatId: Types.ObjectId().toString(),
-        organizationId: testOrganization!.id,
+        organizationId: testOrganization?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { removeDirectChat: removeDirectChatResolver } = await import(
@@ -139,7 +141,7 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization!._id,
+          _id: testOrganization?._id,
         },
         {
           $set: {
@@ -149,12 +151,12 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
       );
 
       const args: MutationRemoveDirectChatArgs = {
-        chatId: testDirectChat!.id,
-        organizationId: testOrganization!.id,
+        chatId: testDirectChat?.id,
+        organizationId: testOrganization?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { removeDirectChat: removeDirectChatResolver } = await import(
@@ -173,22 +175,22 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
   it(`deletes the directChat with _id === args.chatId`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization!._id,
+        _id: testOrganization?._id,
       },
       {
         $push: {
-          admins: testUser!._id,
+          admins: testUser?._id,
         },
       }
     );
 
     const args: MutationRemoveDirectChatArgs = {
-      chatId: testDirectChat!.id,
-      organizationId: testOrganization!.id,
+      chatId: testDirectChat?.id,
+      organizationId: testOrganization?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const { removeDirectChat: removeDirectChatResolver } = await import(
@@ -203,7 +205,7 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
     expect(removeDirectChatPayload).toEqual(testDirectChat?.toObject());
 
     const testDeletedDirectChatMessages = await DirectChatMessage.find({
-      directChatMessageBelongsTo: testDirectChat!._id,
+      directChatMessageBelongsTo: testDirectChat?._id,
     }).lean();
 
     expect(testDeletedDirectChatMessages).toEqual([]);

@@ -1,11 +1,7 @@
-import {
-  InterfaceOrganization,
-  InterfaceUser,
-  Organization,
-  User,
-} from "../../src/models";
+import type { InterfaceOrganization, InterfaceUser } from "../../src/models";
+import { Organization, User } from "../../src/models";
 import { nanoid } from "nanoid";
-import { Document } from "mongoose";
+import type { Document } from "mongoose";
 
 export type TestOrganizationType =
   | (InterfaceOrganization & Document<any, any, InterfaceOrganization>)
@@ -65,7 +61,7 @@ export const createTestUserAndOrganization = async (
 ): Promise<[TestUserType, TestOrganizationType]> => {
   const testUser = await createTestUser();
   const testOrganization = await createTestOrganizationWithAdmin(
-    testUser!._id,
+    testUser?._id,
     isMember,
     isAdmin,
     isPublic

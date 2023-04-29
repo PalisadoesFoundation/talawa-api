@@ -3,7 +3,7 @@ import cls from "cls-hooked";
 // @ts-ignore
 import clsBluebird from "cls-bluebird";
 import { customAlphabet } from "nanoid";
-import { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 
 // Alphabets used in the custom nanoid function
 const alphabets = "0123456789abcdefghijklmnopqrstuvwxyz";
@@ -22,16 +22,16 @@ export const tracingIdHeaderName = "X-Tracing-Id";
 
 const tracingIdContextKeyName = "tracingId";
 
-export const setTracingId = (tracingId: string) => {
+export const setTracingId = (tracingId: string): string => {
   return requestTracingNamespace.set(tracingIdContextKeyName, tracingId);
 };
 
-export const getTracingId = () => {
+export const getTracingId = (): string => {
   return requestTracingNamespace.get(tracingIdContextKeyName) as string;
 };
 
 export const middleware = () => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     requestTracingNamespace.bindEmitter(req);
     requestTracingNamespace.bindEmitter(res);
 
@@ -47,7 +47,10 @@ export const middleware = () => {
   };
 };
 
-export const trace = async <T>(tracingId: string, method: () => T) => {
+export const trace = async <T>(
+  tracingId: string,
+  method: () => T
+): Promise<void> => {
   await requestTracingNamespace.runAndReturn<T>(() => {
     setTracingId(tracingId || nanoid());
     return method();

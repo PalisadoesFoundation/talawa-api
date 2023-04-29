@@ -1,18 +1,22 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import {
-  User,
-  Organization,
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type {
   InterfaceOrganization,
-  Post,
-  Comment,
-  MembershipRequest,
   InterfaceComment,
   InterfacePost,
 } from "../../../src/models";
-import { MutationRemoveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
+import {
+  User,
+  Organization,
+  Post,
+  Comment,
+  MembershipRequest,
+} from "../../../src/models";
+import type { MutationRemoveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { removeOrganization as removeOrganizationResolver } from "../../../src/resolvers/Mutation/removeOrganization";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -29,9 +33,9 @@ import {
   afterEach,
 } from "vitest";
 import { createTestUserFunc } from "../../helpers/user";
-import { TestUserType } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
 let testOrganization: InterfaceOrganization &
   Document<any, any, InterfaceOrganization>;
@@ -48,15 +52,15 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    creator: testUsers[0]!._id,
-    admins: [testUsers[0]!._id],
-    members: [testUsers[1]!._id],
-    blockedUsers: [testUsers[0]!._id],
+    creator: testUsers[0]?._id,
+    admins: [testUsers[0]?._id],
+    members: [testUsers[1]?._id],
+    blockedUsers: [testUsers[0]?._id],
   });
 
   await User.updateOne(
     {
-      _id: testUsers[0]!._id,
+      _id: testUsers[0]?._id,
     },
     {
       $set: {
@@ -70,7 +74,7 @@ beforeAll(async () => {
 
   await User.updateOne(
     {
-      _id: testUsers[1]!._id,
+      _id: testUsers[1]?._id,
     },
     {
       $set: {
@@ -81,12 +85,12 @@ beforeAll(async () => {
 
   const testMembershipRequest = await MembershipRequest.create({
     organization: testOrganization._id,
-    user: testUsers[0]!._id,
+    user: testUsers[0]?._id,
   });
 
   await User.updateOne(
     {
-      _id: testUsers[0]!._id,
+      _id: testUsers[0]?._id,
     },
     {
       $push: {
@@ -97,7 +101,7 @@ beforeAll(async () => {
 
   testPost = await Post.create({
     text: "text",
-    creator: testUsers[0]!._id,
+    creator: testUsers[0]?._id,
     organization: testOrganization._id,
   });
 
@@ -115,8 +119,8 @@ beforeAll(async () => {
 
   testComment = await Comment.create({
     text: "text",
-    creator: testUsers[0]!._id,
-    post: testPost._id,
+    creator: testUsers[0]?._id,
+    postId: testPost._id,
   });
 
   await Post.updateOne(
@@ -124,15 +128,15 @@ beforeAll(async () => {
       _id: testPost._id,
     },
     {
-      $push: {
-        comments: testComment._id,
+      $inc: {
+        commentCount: 1,
       },
     }
   );
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> removeOrganization", () => {
@@ -181,7 +185,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       };
 
       const context = {
-        userId: testUsers[0]!.id,
+        userId: testUsers[0]?.id,
       };
 
       const { removeOrganization: removeOrganizationResolver } = await import(
@@ -221,7 +225,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       };
 
       const context = {
-        userId: testUsers[0]!.id,
+        userId: testUsers[0]?.id,
       };
 
       const { removeOrganization: removeOrganizationResolverAdminError } =
@@ -243,14 +247,14 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       },
       {
         $set: {
-          creator: testUsers[0]!._id,
+          creator: testUsers[0]?._id,
         },
       }
     );
 
     await User.updateOne(
       {
-        _id: testUsers[0]!.id,
+        _id: testUsers[0]?.id,
       },
       {
         $set: {
@@ -265,7 +269,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     };
 
     const context = {
-      userId: testUsers[0]!._id,
+      userId: testUsers[0]?._id,
     };
 
     const removeOrganizationPayload = await removeOrganizationResolver?.(
@@ -275,7 +279,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     );
 
     const updatedTestUser = await User.findOne({
-      _id: testUsers[0]!._id,
+      _id: testUsers[0]?._id,
     })
       .select(["-password"])
       .lean();
@@ -283,7 +287,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     expect(removeOrganizationPayload).toEqual(updatedTestUser);
 
     const updatedTestUser1 = await User.findOne({
-      _id: testUsers[1]!._id,
+      _id: testUsers[1]?._id,
     })
       .select(["joinedOrganizations"])
       .lean();

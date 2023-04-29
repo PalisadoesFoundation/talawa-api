@@ -1,9 +1,10 @@
 import "dotenv/config";
 import { User } from "../../../src/models";
+import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { MutationBlockPluginCreationBySuperadminArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationBlockPluginCreationBySuperadminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { blockPluginCreationBySuperadmin as blockPluginCreationBySuperadminResolver } from "../../../src/resolvers/Mutation/blockPluginCreationBySuperadmin";
 import {
   USER_NOT_AUTHORIZED_SUPERADMIN,
@@ -18,10 +19,11 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { TestUserType, createTestUser } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -33,11 +35,11 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
-  afterEach(async () => {
+  afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
@@ -50,7 +52,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await blockPluginCreationBySuperadminResolver?.({}, args, context);
@@ -63,7 +65,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
     try {
       const args: MutationBlockPluginCreationBySuperadminArgs = {
         blockUser: false,
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const context = {
@@ -86,11 +88,11 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
     try {
       const args: MutationBlockPluginCreationBySuperadminArgs = {
         blockUser: false,
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const {
@@ -112,7 +114,7 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
   with _id === args.userId and returns the user`, async () => {
     await User.updateOne(
       {
-        _id: testUser!._id,
+        _id: testUser?._id,
       },
       {
         userType: "SUPERADMIN",
@@ -121,18 +123,18 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
 
     const args: MutationBlockPluginCreationBySuperadminArgs = {
       blockUser: true,
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const blockPluginCreationBySuperadminPayload =
       await blockPluginCreationBySuperadminResolver?.({}, args, context);
 
     const testUpdatedTestUser = await User.findOne({
-      _id: testUser!.id,
+      _id: testUser?.id,
     }).lean();
 
     expect(blockPluginCreationBySuperadminPayload).toEqual(testUpdatedTestUser);

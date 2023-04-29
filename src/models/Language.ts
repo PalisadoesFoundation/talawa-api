@@ -1,4 +1,5 @@
-import { Schema, model, Types, Document, PopulatedDoc, models } from "mongoose";
+import type { Types, Document, PopulatedDoc, Model } from "mongoose";
+import { Schema, model, models } from "mongoose";
 /**
  * This is an interface that represents a database document.
  */
@@ -45,7 +46,7 @@ const languageModelSchema = new Schema({
 export interface InterfaceLanguage {
   _id: Types.ObjectId;
   en: string;
-  translation: Array<PopulatedDoc<InterfaceLanguageModel & Document>>;
+  translation: PopulatedDoc<InterfaceLanguageModel & Document>[];
   createdAt: Date;
 }
 /**
@@ -69,10 +70,10 @@ const languageSchema = new Schema({
   },
 });
 
-const LanguageModel = () =>
+const languageModel = (): Model<InterfaceLanguage> =>
   model<InterfaceLanguage>("Language", languageSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const Language = (models.Language || LanguageModel()) as ReturnType<
-  typeof LanguageModel
+export const Language = (models.Language || languageModel()) as ReturnType<
+  typeof languageModel
 >;

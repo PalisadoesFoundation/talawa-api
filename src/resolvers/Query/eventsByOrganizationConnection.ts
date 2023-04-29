@@ -1,5 +1,6 @@
-import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { Event, InterfaceEvent, InterfaceUserAttende } from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceEvent, InterfaceUserAttende } from "../../models";
+import { Event } from "../../models";
 import { STATUS_ACTIVE } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
@@ -16,8 +17,8 @@ export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizatio
 
     const events = await Event.find(where)
       .sort(sort)
-      .limit(args.first!)
-      .skip(args.skip!)
+      .limit(args.first ?? 0)
+      .skip(args.skip ?? 0)
       .populate("creator", "-password")
       .populate("tasks")
       .populate("admins", "-password")

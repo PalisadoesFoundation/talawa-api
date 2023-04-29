@@ -1,4 +1,4 @@
-import { Request } from "express";
+import type { Request } from "express";
 import { isAuth } from "../../src/middleware/isAuth";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import jwt from "jsonwebtoken";
@@ -52,7 +52,7 @@ describe("middleware -> isAuth", () => {
     expect(authData).toEqual(testAuthData);
   });
 
-  it("returns authData if token === ''", async () => {
+  it("returns authData if token === ''", () => {
     const testAuthorizationHeader = (Math.random() + 1)
       .toString(36)
       .substring(2, 5)

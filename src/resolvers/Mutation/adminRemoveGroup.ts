@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
 import { User, Organization, GroupChat } from "../../models";
@@ -19,7 +19,7 @@ import {
  * 4. If the user is an admin of organization
  * @returns Deleted group chat
  */
-// @ts-ignore
+
 export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
   _parent,
   args,

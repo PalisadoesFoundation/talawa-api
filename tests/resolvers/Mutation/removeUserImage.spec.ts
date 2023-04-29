@@ -1,8 +1,9 @@
 import "dotenv/config";
+import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   USER_NOT_FOUND_ERROR,
   USER_PROFILE_IMAGE_NOT_FOUND_ERROR,
@@ -16,11 +17,12 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { createTestUserFunc, TestUserType } from "../../helpers/user";
+import type { TestUserType } from "../../helpers/user";
+import { createTestUserFunc } from "../../helpers/user";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
-const testImage: string = "testImage";
+const testImage = "testImage";
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -28,7 +30,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> removeUserImage", () => {
@@ -70,7 +72,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
 
     try {
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { removeUserImage: removeUserImageResolver } = await import(
@@ -98,7 +100,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
 
     await User.updateOne(
       {
-        _id: testUser!._id,
+        _id: testUser?._id,
       },
       {
         $set: {
@@ -108,7 +110,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
     );
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const { removeUserImage: removeUserImageResolver } = await import(
@@ -122,7 +124,7 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
     );
 
     const updatedTestUser = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     }).lean();
 
     expect(removeUserImagePayload).toEqual(updatedTestUser);

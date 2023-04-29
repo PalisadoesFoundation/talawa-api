@@ -1,9 +1,9 @@
 import "dotenv/config";
+import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { User, Organization } from "../../../src/models";
-import { MutationRemoveMemberArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationRemoveMemberArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
 
 import {
   ADMIN_REMOVING_ADMIN,
@@ -23,10 +23,13 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { TestOrganizationType, TestUserType } from "../../helpers/userAndOrg";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
 import { createTestUserFunc } from "../../helpers/user";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
 let testOrganization: TestOrganizationType;
 
@@ -42,12 +45,12 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    creator: testUsers[0]!._id,
-    admins: [testUsers[4]!._id, testUsers[1]?._id],
+    creator: testUsers[0]?._id,
+    admins: [testUsers[4]?._id, testUsers[1]?._id],
     members: [
-      testUsers[0]!._id,
-      testUsers[1]!._id,
-      testUsers[2]!._id,
+      testUsers[0]?._id,
+      testUsers[1]?._id,
+      testUsers[2]?._id,
       testUsers[4],
     ],
   });
@@ -55,7 +58,7 @@ beforeAll(async () => {
   // testUser[3] is not a member of the testOrganization
   await User.updateOne(
     {
-      _id: testUsers[0]!._id,
+      _id: testUsers[0]?._id,
     },
     {
       $push: {
@@ -68,7 +71,7 @@ beforeAll(async () => {
 
   await User.updateOne(
     {
-      _id: testUsers[1]!._id,
+      _id: testUsers[1]?._id,
     },
     {
       $push: {
@@ -80,7 +83,7 @@ beforeAll(async () => {
 
   await User.updateOne(
     {
-      _id: testUsers[2]!._id,
+      _id: testUsers[2]?._id,
     },
     {
       $push: {
@@ -91,7 +94,7 @@ beforeAll(async () => {
 
   await User.updateOne(
     {
-      _id: testUsers[4]!._id,
+      _id: testUsers[4]?._id,
     },
     {
       $push: {
@@ -105,7 +108,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> removeMember", () => {
@@ -129,7 +132,7 @@ describe("resolvers -> Mutation -> removeMember", () => {
       };
 
       const context = {
-        userId: testUsers[0]!.id,
+        userId: testUsers[0]?.id,
       };
 
       const { removeMember: removeMemberResolverOrgNotFoundError } =
@@ -151,13 +154,13 @@ describe("resolvers -> Mutation -> removeMember", () => {
     try {
       const args: MutationRemoveMemberArgs = {
         data: {
-          organizationId: testOrganization!.id,
+          organizationId: testOrganization?.id,
           userId: Types.ObjectId().toString(),
         },
       };
 
       const context = {
-        userId: testUsers[2]!.id,
+        userId: testUsers[2]?.id,
       };
 
       const { removeMember: removeMemberResolverAdminError } = await import(
@@ -181,13 +184,13 @@ describe("resolvers -> Mutation -> removeMember", () => {
     try {
       const args: MutationRemoveMemberArgs = {
         data: {
-          organizationId: testOrganization!.id,
+          organizationId: testOrganization?.id,
           userId: Types.ObjectId().toString(),
         },
       };
 
       const context = {
-        userId: testUsers[1]!.id,
+        userId: testUsers[1]?.id,
       };
 
       const { removeMember: removeMemberResolverNotFoundError } = await import(
@@ -211,13 +214,13 @@ describe("resolvers -> Mutation -> removeMember", () => {
     try {
       const args: MutationRemoveMemberArgs = {
         data: {
-          organizationId: testOrganization!.id,
+          organizationId: testOrganization?.id,
           userId: testUsers[3]?._id,
         },
       };
 
       const context = {
-        userId: testUsers[1]!.id,
+        userId: testUsers[1]?.id,
       };
 
       const { removeMember: removeMemberResolverMemberNotFoundError } =
@@ -240,13 +243,13 @@ describe("resolvers -> Mutation -> removeMember", () => {
     try {
       const args: MutationRemoveMemberArgs = {
         data: {
-          organizationId: testOrganization!.id,
+          organizationId: testOrganization?.id,
           userId: testUsers[1]?._id,
         },
       };
 
       const context = {
-        userId: testUsers[1]!.id,
+        userId: testUsers[1]?.id,
       };
 
       const { removeMember: removeMemberResolverRemoveSelfError } =
@@ -267,13 +270,13 @@ describe("resolvers -> Mutation -> removeMember", () => {
     try {
       const args: MutationRemoveMemberArgs = {
         data: {
-          organizationId: testOrganization!.id,
+          organizationId: testOrganization?.id,
           userId: testUsers[4]?._id,
         },
       };
 
       const context = {
-        userId: testUsers[1]!.id,
+        userId: testUsers[1]?.id,
       };
 
       const { removeMember: removeMemberResolverRemoveAdminError } =
@@ -296,13 +299,13 @@ describe("resolvers -> Mutation -> removeMember", () => {
     try {
       const args: MutationRemoveMemberArgs = {
         data: {
-          organizationId: testOrganization!.id,
+          organizationId: testOrganization?.id,
           userId: testUsers[0]?._id,
         },
       };
 
       const context = {
-        userId: testUsers[1]!.id,
+        userId: testUsers[1]?.id,
       };
 
       const { removeMember: removeMemberResolverRemoveAdminError } =
@@ -320,13 +323,13 @@ describe("resolvers -> Mutation -> removeMember", () => {
   it("remove that user with _id === args.data.userId from that organization", async () => {
     const args: MutationRemoveMemberArgs = {
       data: {
-        organizationId: testOrganization!.id,
+        organizationId: testOrganization?.id,
         userId: testUsers[2]?._id,
       },
     };
 
     const context = {
-      userId: testUsers[1]!.id,
+      userId: testUsers[1]?.id,
     };
 
     const { removeMember: removeMemberResolverRemoveAdminError } = await import(

@@ -1,12 +1,13 @@
 import "dotenv/config";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
-import { checkAuth as checkAuthResolver } from "../../../src/resolvers/Query/checkAuth";
+import type mongoose from "mongoose";
 import { Types } from "mongoose";
+import { checkAuth as checkAuthResolver } from "../../../src/resolvers/Query/checkAuth";
+
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 import { createTestUser } from "../../helpers/userAndOrg";
 beforeAll(async () => {
@@ -14,7 +15,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> checkAuth", () => {

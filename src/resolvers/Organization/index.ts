@@ -1,4 +1,4 @@
-import { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
+import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 import { admins } from "./admins";
 import { blockedUsers } from "./blockedUsers";
 import { creator } from "./creator";

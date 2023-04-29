@@ -1,5 +1,5 @@
-import { FilterQuery } from "mongoose";
-import {
+import type { FilterQuery } from "mongoose";
+import type {
   DonationWhereInput,
   EventWhereInput,
   InputMaybe,

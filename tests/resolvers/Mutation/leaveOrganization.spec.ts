@@ -1,9 +1,10 @@
 import "dotenv/config";
+import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { User, Organization } from "../../../src/models";
-import { MutationLeaveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationLeaveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { leaveOrganization as leaveOrganizationResolver } from "../../../src/resolvers/Mutation/leaveOrganization";
 import {
   MEMBER_NOT_FOUND_ERROR,
@@ -19,15 +20,15 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import {
-  createTestUserAndOrganization,
+import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -37,7 +38,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> leaveOrganization", () => {
@@ -56,7 +57,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { leaveOrganization: leaveOrganizationResolver } = await import(
@@ -77,7 +78,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationLeaveOrganizationArgs = {
-        organizationId: testOrganization!.id,
+        organizationId: testOrganization?.id,
       };
 
       const context = {
@@ -104,7 +105,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization!._id,
+          _id: testOrganization?._id,
         },
         {
           $set: {
@@ -115,11 +116,11 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       );
 
       const args: MutationLeaveOrganizationArgs = {
-        organizationId: testOrganization!.id,
+        organizationId: testOrganization?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { leaveOrganization: leaveOrganizationResolver } = await import(
@@ -136,21 +137,21 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
   it(`returns user object with _id === context.userId after leaving the organization`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization!._id,
+        _id: testOrganization?._id,
       },
       {
         $push: {
-          members: testUser!._id,
+          members: testUser?._id,
         },
       }
     );
 
     const args: MutationLeaveOrganizationArgs = {
-      organizationId: testOrganization!.id,
+      organizationId: testOrganization?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const leaveOrganizationPayload = await leaveOrganizationResolver?.(
@@ -160,7 +161,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
     );
 
     const updatedTestUser = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     })
       .select(["-password"])
       .lean();
@@ -168,12 +169,12 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
     expect(leaveOrganizationPayload).toEqual(updatedTestUser);
 
     const updatedTestOrganization = await Organization.findOne({
-      _id: testOrganization!._id,
+      _id: testOrganization?._id,
     })
       .select(["admins", "members"])
       .lean();
 
-    expect(updatedTestOrganization!.admins).toEqual([]);
-    expect(updatedTestOrganization!.members).toEqual([]);
+    expect(updatedTestOrganization?.admins).toEqual([]);
+    expect(updatedTestOrganization?.members).toEqual([]);
   });
 });

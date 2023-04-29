@@ -1,14 +1,14 @@
 import "dotenv/config";
 import { addLanguageTranslation as addLanguageTranslationResolver } from "../../../src/resolvers/Mutation/addLanguageTranslation";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
-import { MutationAddLanguageTranslationArgs } from "../../../src/types/generatedGraphQLTypes";
+import type mongoose from "mongoose";
+import type { MutationAddLanguageTranslationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Language } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 
 const randomValue = nanoid().toLowerCase();
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 const testArgs: MutationAddLanguageTranslationArgs[] = [
   {
@@ -39,7 +39,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> addLanguageTranslation", () => {

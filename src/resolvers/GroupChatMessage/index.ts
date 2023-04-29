@@ -1,4 +1,4 @@
-import { GroupChatMessageResolvers } from "../../types/generatedGraphQLTypes";
+import type { GroupChatMessageResolvers } from "../../types/generatedGraphQLTypes";
 import { groupChatMessageBelongsTo } from "./groupChatMessageBelongsTo";
 import { sender } from "./sender";
 

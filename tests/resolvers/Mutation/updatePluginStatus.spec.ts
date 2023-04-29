@@ -1,17 +1,17 @@
 import "dotenv/config";
-import { Document } from "mongoose";
-import { Plugin, InterfacePlugin } from "../../../src/models";
-import { MutationUpdatePluginStatusArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import type { InterfacePlugin } from "../../../src/models";
+import { Plugin } from "../../../src/models";
+import type { MutationUpdatePluginStatusArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { updatePluginStatus as updatePluginStatusResolver } from "../../../src/resolvers/Mutation/updatePluginStatus";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import {
-  createTestUserAndOrganization,
-  TestUserType,
-} from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testPlugin: InterfacePlugin & Document<any, any, InterfacePlugin>;
 
@@ -22,15 +22,15 @@ beforeAll(async () => {
   const testOrganization = temp[1];
   testPlugin = await Plugin.create({
     pluginName: "pluginName",
-    pluginCreatedBy: `${testUser!.firstName} ${testUser!.lastName}`,
+    pluginCreatedBy: `${testUser?.firstName} ${testUser?.lastName}`,
     pluginDesc: "pluginDesc",
     pluginInstallStatus: false,
-    installedOrgs: [testOrganization!._id],
+    installedOrgs: [testOrganization?._id],
   });
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> updatePluginStatus", () => {
@@ -42,7 +42,7 @@ describe("resolvers -> Mutation -> updatePluginStatus", () => {
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const updatePluginStatusPayload = await updatePluginStatusResolver?.(

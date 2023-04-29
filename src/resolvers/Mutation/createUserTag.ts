@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, OrganizationTagUser, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
@@ -44,12 +44,11 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
 
   // Check if the user has privileges to create the tag
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organizationId) =>
-      organizationId.toString() === args.input.organizationId.toString()
+    (organizationId) => organizationId.equals(args.input.organizationId)
   );
 
   if (
-    !(currentUser!.userType === "SUPERADMIN") &&
+    !((currentUser?.userType ?? "") === "SUPERADMIN") &&
     !currentUserIsOrganizationAdmin
   ) {
     throw new errors.UnauthorizedError(
@@ -62,7 +61,7 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
   // Additonal checks if the parent folder is provided
   if (args.input.parentTagId) {
     const parentTag = await OrganizationTagUser.findOne({
-      _id: args.input.parentTagId!,
+      _id: args.input.parentTagId,
     });
 
     // Throw an error if the parent tag folder does not exist

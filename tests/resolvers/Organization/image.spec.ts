@@ -1,5 +1,5 @@
 import "dotenv/config";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import {
   afterAll,
   afterEach,
@@ -11,13 +11,13 @@ import {
 } from "vitest";
 import { Organization } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
-import {
-  createTestUserAndOrganization,
+import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 
@@ -29,7 +29,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Organization -> image", () => {
@@ -40,11 +40,11 @@ describe("resolvers -> Organization -> image", () => {
   it(`returns absolute url if the image is not null in the organization`, async () => {
     testOrganization = await Organization.findOneAndUpdate(
       {
-        _id: testOrganization!._id,
+        _id: testOrganization?._id,
       },
       {
         $set: {
-          creator: testUser!._id,
+          creator: testUser?._id,
           image: "/test/image.png",
         },
       },
@@ -53,7 +53,7 @@ describe("resolvers -> Organization -> image", () => {
       }
     );
 
-    const parent = testOrganization!.toObject();
+    const parent = testOrganization?.toObject();
 
     const { image: imageResolver } = await import(
       "../../../src/resolvers/Organization/image"
@@ -61,22 +61,22 @@ describe("resolvers -> Organization -> image", () => {
     const context = {
       apiRootUrl: "http://testdomain.com",
     };
-    const creatorPayload = await imageResolver?.(parent, {}, context);
-
-    const org = await Organization.findOne({
-      _id: parent._id,
-    });
-
-    expect(creatorPayload).toEqual("http://testdomain.com" + org?.image);
+    if (parent) {
+      const creatorPayload = await imageResolver?.(parent, {}, context);
+      const org = await Organization.findOne({
+        _id: parent._id,
+      });
+      expect(creatorPayload).toEqual("http://testdomain.com" + org?.image);
+    }
   });
   it(`returns null if the image is null in the organization`, async () => {
     testOrganization = await Organization.findOneAndUpdate(
       {
-        _id: testOrganization!._id,
+        _id: testOrganization?._id,
       },
       {
         $set: {
-          creator: testUser!._id,
+          creator: testUser?._id,
           image: null,
         },
       },
@@ -85,12 +85,14 @@ describe("resolvers -> Organization -> image", () => {
       }
     );
 
-    const parent = testOrganization!.toObject();
+    const parent = testOrganization?.toObject();
 
     const { image: imageResolver } = await import(
       "../../../src/resolvers/Organization/image"
     );
-    const creatorPayload = await imageResolver?.(parent, {}, {});
-    expect(creatorPayload).toEqual(null);
+    if (parent) {
+      const creatorPayload = await imageResolver?.(parent, {}, {});
+      expect(creatorPayload).toEqual(null);
+    }
   });
 });

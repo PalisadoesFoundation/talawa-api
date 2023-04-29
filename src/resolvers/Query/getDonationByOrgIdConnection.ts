@@ -1,5 +1,6 @@
-import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { Donation, InterfaceDonation } from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceDonation } from "../../models";
+import { Donation } from "../../models";
 import { getWhere } from "./helperFunctions/getWhere";
 
 export const getDonationByOrgIdConnection: QueryResolvers["getDonationByOrgIdConnection"] =
@@ -10,7 +11,7 @@ export const getDonationByOrgIdConnection: QueryResolvers["getDonationByOrgIdCon
       orgId: args.orgId,
       ...where,
     })
-      .limit(args.first!)
-      .skip(args.skip!)
+      .limit(args.first ?? 0)
+      .skip(args.skip ?? 0)
       .lean();
   };

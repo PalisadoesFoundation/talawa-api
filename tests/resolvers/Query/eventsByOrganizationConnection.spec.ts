@@ -2,44 +2,45 @@
 import "dotenv/config";
 import { eventsByOrganizationConnection as eventsByOrganizationConnectionResolver } from "../../../src/resolvers/Query/eventsByOrganizationConnection";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
-import { QueryEventsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
+import type mongoose from "mongoose";
+import type { QueryEventsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { Event } from "../../../src/models";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import { createEventWithRegistrant, TestEventType } from "../../helpers/events";
+import type { TestEventType } from "../../helpers/events";
+import { createEventWithRegistrant } from "../../helpers/events";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { createTestTask } from "../../helpers/task";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvents: TestEventType[];
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const [testUser, testOrganization] = await createTestUserAndOrganization();
   const testEvent1 = await createEventWithRegistrant(
-    testUser!._id,
-    testOrganization!._id,
+    testUser?._id,
+    testOrganization?._id,
     true,
     "ONCE"
   );
   const testEvent2 = await createEventWithRegistrant(
-    testUser!._id,
-    testOrganization!._id,
+    testUser?._id,
+    testOrganization?._id,
     false,
     "DAILY"
   );
   const testEvent3 = await createEventWithRegistrant(
-    testUser!._id,
-    testOrganization!._id,
+    testUser?._id,
+    testOrganization?._id,
     false,
     "DAILY"
   );
   testEvents = [testEvent1, testEvent2, testEvent3];
-  createTestTask(testEvent1!._id, testUser!._id);
+  createTestTask(testEvent1?._id, testUser?._id);
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> organizationsMemberConnection", () => {
@@ -71,22 +72,22 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       _id: 1,
     };
     const where = {
-      _id: testEvents[1]!._id,
-      title: testEvents[1]!.title,
-      description: testEvents[1]!.description,
-      organization: testEvents[1]!.organization._id,
-      location: testEvents[1]!.location,
+      _id: testEvents[1]?._id,
+      title: testEvents[1]?.title,
+      description: testEvents[1]?.description,
+      organization: testEvents[1]?.organization._id,
+      location: testEvents[1]?.location,
     };
 
     const args: QueryEventsByOrganizationConnectionArgs = {
       first: 1,
       skip: 0,
       where: {
-        id: testEvents[1]!._id,
-        title: testEvents[1]!.title,
-        description: testEvents[1]!.description,
-        organization_id: testEvents[1]!.organization._id,
-        location: testEvents[1]!.location,
+        id: testEvents[1]?._id,
+        title: testEvents[1]?.title,
+        description: testEvents[1]?.description,
+        organization_id: testEvents[1]?.organization._id,
+        location: testEvents[1]?.location,
       },
       orderBy: "id_ASC",
     };
@@ -97,20 +98,20 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       await eventsByOrganizationConnectionResolver?.({}, args, {});
 
     eventsByOrganizationConnectionPayload =
-      eventsByOrganizationConnectionPayload!.map((event) => {
-        const admin_ids = [];
+      eventsByOrganizationConnectionPayload?.map((event) => {
+        const adminIds = [];
         for (let i = 0; i < event.admins.length; i++) {
-          admin_ids.push(event.admins[i]._id);
+          adminIds.push(event.admins[i]._id);
         }
-        const tasks_ids = [];
+        const tasksIds = [];
         for (let i = 0; i < event.tasks.length; i++) {
-          tasks_ids.push(event.tasks[i]._id);
+          tasksIds.push(event.tasks[i]._id);
         }
         return {
           ...event,
-          creator: event!.creator._id,
-          admins: admin_ids,
-          tasks: tasks_ids,
+          creator: event?.creator._id,
+          admins: adminIds,
+          tasks: tasksIds,
         };
       });
     expect(eventsByOrganizationConnectionPayload).toEqual(events);
@@ -123,16 +124,16 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     };
     const where = {
       _id: {
-        $ne: testEvents[0]!._id,
+        $ne: testEvents[0]?._id,
       },
       title: {
-        $ne: testEvents[0]!.title,
+        $ne: testEvents[0]?.title,
       },
       description: {
-        $ne: testEvents[0]!.description,
+        $ne: testEvents[0]?.description,
       },
       location: {
-        $ne: testEvents[0]!.location,
+        $ne: testEvents[0]?.location,
       },
     };
 
@@ -140,10 +141,10 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       first: 2,
       skip: 1,
       where: {
-        id_not: testEvents[0]!._id,
-        title_not: testEvents[0]!.title,
-        description_not: testEvents[0]!.description,
-        location_not: testEvents[0]!.location,
+        id_not: testEvents[0]?._id,
+        title_not: testEvents[0]?.title,
+        description_not: testEvents[0]?.description,
+        location_not: testEvents[0]?.location,
       },
       orderBy: "id_DESC",
     };
@@ -154,20 +155,20 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       await eventsByOrganizationConnectionResolver?.({}, args, {});
 
     eventsByOrganizationConnectionPayload =
-      eventsByOrganizationConnectionPayload!.map((event) => {
-        const admin_ids = [];
+      eventsByOrganizationConnectionPayload?.map((event) => {
+        const adminIds = [];
         for (let i = 0; i < event.admins.length; i++) {
-          admin_ids.push(event.admins[i]._id);
+          adminIds.push(event.admins[i]._id);
         }
-        const tasks_ids = [];
+        const tasksIds = [];
         for (let i = 0; i < event.tasks.length; i++) {
-          tasks_ids.push(event.tasks[i]._id);
+          tasksIds.push(event.tasks[i]._id);
         }
         return {
           ...event,
-          creator: event!.creator._id,
-          admins: admin_ids,
-          tasks: tasks_ids,
+          creator: event?.creator._id,
+          admins: adminIds,
+          tasks: tasksIds,
         };
       });
     expect(eventsByOrganizationConnectionPayload).toEqual(events);
@@ -180,25 +181,25 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     };
     const where = {
       _id: {
-        $nin: [testEvents[0]!._id],
+        $nin: [testEvents[0]?._id],
       },
       title: {
-        $nin: [testEvents[0]!.title],
+        $nin: [testEvents[0]?.title],
       },
       description: {
-        $nin: [testEvents[0]!.description],
+        $nin: [testEvents[0]?.description],
       },
       location: {
-        $nin: [testEvents[0]!.location],
+        $nin: [testEvents[0]?.location],
       },
     };
 
     const args: QueryEventsByOrganizationConnectionArgs = {
       where: {
-        id_not_in: [testEvents[0]!._id],
-        title_not_in: [testEvents[0]!.title],
-        description_not_in: [testEvents[0]!.description],
-        location_not_in: [testEvents[0]!.location],
+        id_not_in: [testEvents[0]?._id],
+        title_not_in: [testEvents[0]?.title],
+        description_not_in: [testEvents[0]?.description],
+        location_not_in: [testEvents[0]?.location],
       },
       orderBy: "title_DESC",
     };
@@ -209,20 +210,20 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       await eventsByOrganizationConnectionResolver?.({}, args, {});
 
     eventsByOrganizationConnectionPayload =
-      eventsByOrganizationConnectionPayload!.map((event) => {
-        const admin_ids = [];
+      eventsByOrganizationConnectionPayload?.map((event) => {
+        const adminIds = [];
         for (let i = 0; i < event.admins.length; i++) {
-          admin_ids.push(event.admins[i]._id);
+          adminIds.push(event.admins[i]._id);
         }
-        const tasks_ids = [];
+        const tasksIds = [];
         for (let i = 0; i < event.tasks.length; i++) {
-          tasks_ids.push(event.tasks[i]._id);
+          tasksIds.push(event.tasks[i]._id);
         }
         return {
           ...event,
-          creator: event!.creator._id,
-          admins: admin_ids,
-          tasks: tasks_ids,
+          creator: event?.creator._id,
+          admins: adminIds,
+          tasks: tasksIds,
         };
       });
     expect(eventsByOrganizationConnectionPayload).toEqual(events);
@@ -235,16 +236,16 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     };
     const where = {
       _id: {
-        $in: [testEvents[0]!._id],
+        $in: [testEvents[0]?._id],
       },
       title: {
-        $in: [testEvents[0]!.title],
+        $in: [testEvents[0]?.title],
       },
       description: {
-        $in: [testEvents[0]!.description],
+        $in: [testEvents[0]?.description],
       },
       location: {
-        $in: [testEvents[0]!.location],
+        $in: [testEvents[0]?.location],
       },
     };
 
@@ -252,10 +253,10 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       first: 2,
       skip: 1,
       where: {
-        id_in: [testEvents[0]!._id],
-        title_in: [testEvents[0]!.title],
-        description_in: [testEvents[0]!.description],
-        location_in: [testEvents[0]!.location],
+        id_in: [testEvents[0]?._id],
+        title_in: [testEvents[0]?.title],
+        description_in: [testEvents[0]?.description],
+        location_in: [testEvents[0]?.location],
       },
       orderBy: "title_ASC",
     };
@@ -266,20 +267,20 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       await eventsByOrganizationConnectionResolver?.({}, args, {});
 
     eventsByOrganizationConnectionPayload =
-      eventsByOrganizationConnectionPayload!.map((event) => {
-        const admin_ids = [];
+      eventsByOrganizationConnectionPayload?.map((event) => {
+        const adminIds = [];
         for (let i = 0; i < event.admins.length; i++) {
-          admin_ids.push(event.admins[i]._id);
+          adminIds.push(event.admins[i]._id);
         }
-        const tasks_ids = [];
+        const tasksIds = [];
         for (let i = 0; i < event.tasks.length; i++) {
-          tasks_ids.push(event.tasks[i]._id);
+          tasksIds.push(event.tasks[i]._id);
         }
         return {
           ...event,
-          creator: event!.creator._id,
-          admins: admin_ids,
-          tasks: tasks_ids,
+          creator: event?.creator._id,
+          admins: adminIds,
+          tasks: tasksIds,
         };
       });
     expect(eventsByOrganizationConnectionPayload).toEqual(events);
@@ -292,15 +293,15 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     };
     const where = {
       title: {
-        $regex: testEvents[1]!.title,
+        $regex: testEvents[1]?.title,
         $options: "i",
       },
       description: {
-        $regex: testEvents[1]!.description,
+        $regex: testEvents[1]?.description,
         $options: "i",
       },
       location: {
-        $regex: testEvents[1]!.location,
+        $regex: testEvents[1]?.location,
         $options: "i",
       },
     };
@@ -309,9 +310,9 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       first: 2,
       skip: 1,
       where: {
-        title_contains: testEvents[1]!.title,
-        description_contains: testEvents[1]!.description,
-        location_contains: testEvents[1]!.location,
+        title_contains: testEvents[1]?.title,
+        description_contains: testEvents[1]?.description,
+        location_contains: testEvents[1]?.location,
       },
       orderBy: "title_ASC",
     };
@@ -322,20 +323,20 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       await eventsByOrganizationConnectionResolver?.({}, args, {});
 
     eventsByOrganizationConnectionPayload =
-      eventsByOrganizationConnectionPayload!.map((event) => {
-        const admin_ids = [];
+      eventsByOrganizationConnectionPayload?.map((event) => {
+        const adminIds = [];
         for (let i = 0; i < event.admins.length; i++) {
-          admin_ids.push(event.admins[i]._id);
+          adminIds.push(event.admins[i]._id);
         }
-        const tasks_ids = [];
+        const tasksIds = [];
         for (let i = 0; i < event.tasks.length; i++) {
-          tasks_ids.push(event.tasks[i]._id);
+          tasksIds.push(event.tasks[i]._id);
         }
         return {
           ...event,
-          creator: event!.creator._id,
-          admins: admin_ids,
-          tasks: tasks_ids,
+          creator: event?.creator._id,
+          admins: adminIds,
+          tasks: tasksIds,
         };
       });
     expect(eventsByOrganizationConnectionPayload).toEqual(events);
@@ -347,16 +348,16 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       description: -1,
     };
     const where = {
-      title: new RegExp("^" + testEvents[1]!.title),
-      description: new RegExp("^" + testEvents[1]!.description),
+      title: new RegExp("^" + testEvents[1]?.title),
+      description: new RegExp("^" + testEvents[1]?.description),
     };
 
     const args: QueryEventsByOrganizationConnectionArgs = {
       first: 2,
       skip: 1,
       where: {
-        title_starts_with: testEvents[1]!.title,
-        description_starts_with: testEvents[1]!.description,
+        title_starts_with: testEvents[1]?.title,
+        description_starts_with: testEvents[1]?.description,
       },
       orderBy: "title_DESC",
     };
@@ -367,20 +368,20 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       await eventsByOrganizationConnectionResolver?.({}, args, {});
 
     eventsByOrganizationConnectionPayload =
-      eventsByOrganizationConnectionPayload!.map((event) => {
-        const admin_ids = [];
+      eventsByOrganizationConnectionPayload?.map((event) => {
+        const adminIds = [];
         for (let i = 0; i < event.admins.length; i++) {
-          admin_ids.push(event.admins[i]._id);
+          adminIds.push(event.admins[i]._id);
         }
-        const tasks_ids = [];
+        const tasksIds = [];
         for (let i = 0; i < event.tasks.length; i++) {
-          tasks_ids.push(event.tasks[i]._id);
+          tasksIds.push(event.tasks[i]._id);
         }
         return {
           ...event,
-          creator: event!.creator._id,
-          admins: admin_ids,
-          tasks: tasks_ids,
+          creator: event?.creator._id,
+          admins: adminIds,
+          tasks: tasksIds,
         };
       });
     expect(eventsByOrganizationConnectionPayload).toEqual(events);

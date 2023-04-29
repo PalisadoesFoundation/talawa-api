@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import { USER_NOT_FOUND_ERROR } from "../../constants";

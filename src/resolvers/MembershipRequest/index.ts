@@ -1,4 +1,4 @@
-import { MembershipRequestResolvers } from "../../types/generatedGraphQLTypes";
+import type { MembershipRequestResolvers } from "../../types/generatedGraphQLTypes";
 import { organization } from "./organization";
 import { user } from "./user";
 

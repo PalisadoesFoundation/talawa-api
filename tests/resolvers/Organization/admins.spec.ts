@@ -1,15 +1,13 @@
 import "dotenv/config";
 import { admins as adminsResolver } from "../../../src/resolvers/Organization/admins";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { User } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import {
-  createTestUserAndOrganization,
-  TestOrganizationType,
-} from "../../helpers/userAndOrg";
+import type { TestOrganizationType } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
@@ -19,21 +17,22 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Organization -> admins", () => {
   it(`returns all user objects for parent.admins`, async () => {
-    const parent = testOrganization!.toObject();
+    const parent = testOrganization?.toObject();
+    if (parent) {
+      const adminsPayload = await adminsResolver?.(parent, {}, {});
 
-    const adminsPayload = await adminsResolver?.(parent, {}, {});
+      const admins = await User.find({
+        _id: {
+          $in: testOrganization?.admins,
+        },
+      }).lean();
 
-    const admins = await User.find({
-      _id: {
-        $in: testOrganization!.admins,
-      },
-    }).lean();
-
-    expect(adminsPayload).toEqual(admins);
+      expect(adminsPayload).toEqual(admins);
+    }
   });
 });

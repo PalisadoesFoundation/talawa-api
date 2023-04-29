@@ -1,4 +1,4 @@
-require("dotenv").config();
+import dotenv from "dotenv";
 import { ImageHash } from "../../src/models";
 import {
   afterAll,
@@ -10,13 +10,13 @@ import {
   vi,
 } from "vitest";
 import { connect, disconnect } from "../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { nanoid } from "nanoid";
-import { TypeImagePath } from "../../src/utilities/reuploadDuplicateCheck";
+dotenv.config();
 
-const testNewImagePath: TypeImagePath = `${nanoid()}-testNewImagePath`;
-const testOldImagePath: TypeImagePath = `${nanoid()}-testOldImagePath`;
-const testNewImageHash: string = `${nanoid()}-testHash`;
+const testNewImagePath = `${nanoid()}-testNewImagePath`;
+const testOldImagePath = `${nanoid()}-testOldImagePath`;
+const testNewImageHash = `${nanoid()}-testHash`;
 
 const testErrors = [
   {
@@ -26,18 +26,18 @@ const testErrors = [
   },
 ];
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("utilities -> reuploadDuplicateCheck", () => {
-  afterEach(async () => {
+  afterEach(() => {
     vi.doUnmock("image-hash");
     vi.resetModules();
     vi.restoreAllMocks();
@@ -46,7 +46,7 @@ describe("utilities -> reuploadDuplicateCheck", () => {
   it("should return true when uploaded image hash = old image hash", async () => {
     vi.doMock("image-hash", () => {
       return {
-        imageHash: (...args: any) => {
+        imageHash: (...args: any): any => {
           const callBack = args[3];
 
           return callBack(null, testNewImageHash);
@@ -102,7 +102,7 @@ describe("utilities -> reuploadDuplicateCheck", () => {
   it("should throw invalid file type error", async () => {
     vi.doMock("image-hash", () => {
       return {
-        imageHash: (...args: any) => {
+        imageHash: (...args: any): any => {
           const callBack = args[3];
 
           return callBack("testError", null);

@@ -1,10 +1,11 @@
-import { unlink, PathLike } from "fs";
+import type { PathLike } from "fs";
+import { unlink } from "fs";
 import { logger } from "../libraries";
 /**
  * This function deletes a duplicated image using the function fs.unlink().
  * @param imagePath - Path of the image
  */
-export const deleteDuplicatedImage = (imagePath: PathLike) => {
+export const deleteDuplicatedImage = (imagePath: PathLike): void => {
   unlink(imagePath, function (error) {
     if (error) {
       throw error;

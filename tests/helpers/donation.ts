@@ -1,11 +1,9 @@
-import {
-  createTestUserAndOrganization,
-  TestOrganizationType,
-  TestUserType,
-} from "./userAndOrg";
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
+import { createTestUserAndOrganization } from "./userAndOrg";
 
-import { Donation, InterfaceDonation } from "../../src/models";
-import { Document } from "mongoose";
+import type { InterfaceDonation } from "../../src/models";
+import { Donation } from "../../src/models";
+import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
 import { createTestUser } from "./user";
 
@@ -34,7 +32,7 @@ export const createTestDonation = async (): Promise<
 
 export const createTestDonationsForOrganization = async (
   organization: TestOrganizationType
-): Promise<Array<TestDonationType>> => {
+): Promise<TestDonationType[]> => {
   const testUser1 = await createTestUser();
   const testDonation1 = await Donation.create({
     amount: 1,

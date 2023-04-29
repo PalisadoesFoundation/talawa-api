@@ -1,16 +1,14 @@
 import "dotenv/config";
 import { groupChatMessageBelongsTo as groupChatMessageBelongsToResolver } from "../../../src/resolvers/GroupChatMessage/groupChatMessageBelongsTo";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { GroupChat } from "../../../src/models";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import {
-  createTestGroupChatMessage,
-  TestGroupChatMessageType,
-} from "../../helpers/groupChat";
+import type { TestGroupChatMessageType } from "../../helpers/groupChat";
+import { createTestGroupChatMessage } from "../../helpers/groupChat";
 
 let testGroupChatMessage: TestGroupChatMessageType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -19,7 +17,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> GroupChatMessage -> groupChatMessageBelongsTo", () => {
@@ -30,7 +28,7 @@ describe("resolvers -> GroupChatMessage -> groupChatMessageBelongsTo", () => {
       await groupChatMessageBelongsToResolver?.(parent, {}, {});
 
     const groupChatMessageBelongsTo = await GroupChat.findOne({
-      _id: testGroupChatMessage!.groupChatMessageBelongsTo,
+      _id: testGroupChatMessage?.groupChatMessageBelongsTo,
     }).lean();
 
     expect(groupChatMessageBelongsToPayload).toEqual(groupChatMessageBelongsTo);

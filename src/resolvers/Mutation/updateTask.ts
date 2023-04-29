@@ -3,7 +3,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Task } from "../../models";
 /**
@@ -53,13 +53,12 @@ export const updateTask: MutationResolvers["updateTask"] = async (
     );
   }
 
-  // @ts-ignore
   const updatedTask = await Task.findOneAndUpdate(
     {
       _id: task._id,
     },
     {
-      ...args,
+      ...(args as any),
     },
     {
       new: true,

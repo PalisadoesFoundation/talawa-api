@@ -1,18 +1,18 @@
 import "dotenv/config";
-import { MutationForgotPasswordArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationForgotPasswordArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { forgotPassword as forgotPasswordResolver } from "../../../src/resolvers/Mutation/forgotPassword";
 import { INVALID_OTP } from "../../../src/constants";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { TestUserType } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserFunc } from "../../helpers/user";
 import { User } from "../../../src/models";
 
 let testUser: TestUserType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -20,7 +20,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> forgotPassword", () => {
@@ -28,7 +28,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
     try {
       const otpToken = jwt.sign(
         {
-          email: testUser!.email,
+          email: testUser?.email ?? "",
           otp: "otp",
         },
         process.env.NODE_ENV!,
@@ -58,10 +58,10 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
 
     const otpToken = jwt.sign(
       {
-        email: testUser!.email,
+        email: testUser?.email ?? "",
         otp: hashedOtp,
       },
-      process.env.NODE_ENV!,
+      process.env.NODE_ENV ?? "",
       {
         expiresIn: 99999999,
       }
@@ -81,7 +81,7 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
 
     const updatedTestUser = await User!
       .findOne({
-        _id: testUser!._id,
+        _id: testUser?._id ?? "",
       })
       .select(["password"])
       .lean();

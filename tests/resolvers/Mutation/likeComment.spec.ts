@@ -1,9 +1,12 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import { Post, Comment, InterfaceComment } from "../../../src/models";
-import { MutationLikeCommentArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { InterfaceComment } from "../../../src/models";
+import { Post, Comment } from "../../../src/models";
+import type { MutationLikeCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { likeComment as likeCommentResolver } from "../../../src/resolvers/Mutation/likeComment";
 import {
   COMMENT_NOT_FOUND_ERROR,
@@ -18,12 +21,12 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { TestUserType } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestPost } from "../../helpers/posts";
 
 let testUser: TestUserType;
 let testComment: InterfaceComment & Document<any, any, InterfaceComment>;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -34,13 +37,13 @@ beforeAll(async () => {
 
   testComment = await Comment.create({
     text: "text",
-    creator: testUser!._id,
-    post: testPost!._id,
+    creator: testUser?._id,
+    postId: testPost?._id,
   });
 
   await Post.updateOne(
     {
-      _id: testPost!._id,
+      _id: testPost?._id,
     },
     {
       $push: {
@@ -54,7 +57,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> likeComment", () => {
@@ -99,7 +102,7 @@ describe("resolvers -> Mutation -> likeComment", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { likeComment: likeCommentResolver } = await import(
@@ -120,12 +123,12 @@ describe("resolvers -> Mutation -> likeComment", () => {
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const likeCommentPayload = await likeCommentResolver?.({}, args, context);
 
-    expect(likeCommentPayload?.likedBy).toEqual([testUser!._id]);
+    expect(likeCommentPayload?.likedBy).toEqual([testUser?._id]);
     expect(likeCommentPayload?.likeCount).toEqual(1);
   });
 
@@ -136,12 +139,12 @@ describe("resolvers -> Mutation -> likeComment", () => {
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const likeCommentPayload = await likeCommentResolver?.({}, args, context);
 
-    expect(likeCommentPayload?.likedBy).toEqual([testUser!._id]);
+    expect(likeCommentPayload?.likedBy).toEqual([testUser?._id]);
     expect(likeCommentPayload?.likeCount).toEqual(1);
   });
 });

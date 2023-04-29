@@ -1,5 +1,5 @@
 import { MAXIMUM_FETCH_LIMIT } from "../../constants";
-import {
+import type {
   InputMaybe,
   PaginationError,
   Scalars,
@@ -12,7 +12,9 @@ export type CursorPaginationArgsType = {
   last?: InputMaybe<Scalars["PositiveInt"]>;
 };
 
-export const validatePaginationArgs = (args: CursorPaginationArgsType) => {
+export const validatePaginationArgs = (
+  args: CursorPaginationArgsType
+): PaginationError[] => {
   const paginationErrors: PaginationError[] = [];
 
   // Check that one of first or last must be provided

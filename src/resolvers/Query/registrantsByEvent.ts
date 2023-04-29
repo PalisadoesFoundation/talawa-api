@@ -1,5 +1,6 @@
-import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { Event, InterfaceUser, InterfaceUserAttende } from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceUser, InterfaceUserAttende } from "../../models";
+import { Event } from "../../models";
 import { errors } from "../../libraries";
 import { EVENT_NOT_FOUND_ERROR } from "../../constants";
 /**
@@ -28,7 +29,7 @@ export const registrantsByEvent: QueryResolvers["registrantsByEvent"] = async (
     );
   }
 
-  const registrants: Array<InterfaceUser> = [];
+  const registrants: InterfaceUser[] = [];
 
   if (event.registrants.length > 0) {
     event.registrants.map((registrant: InterfaceUserAttende) => {

@@ -1,9 +1,10 @@
 import "dotenv/config";
+import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { User, Event } from "../../../src/models";
-import { MutationUpdateEventArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationUpdateEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   EVENT_NOT_FOUND_ERROR,
   LENGTH_VALIDATION_ERROR,
@@ -19,13 +20,11 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import {
-  createTestUserAndOrganization,
-  TestUserType,
-} from "../../helpers/userAndOrg";
-import { TestEventType } from "../../helpers/events";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import type { TestEventType } from "../../helpers/events";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testEvent: TestEventType;
 
@@ -35,9 +34,9 @@ beforeAll(async () => {
   testUser = temp[0];
   const testOrganization = temp[1];
   testEvent = await Event.create({
-    creator: testUser!._id,
-    registrants: [{ userId: testUser!._id, user: testUser!._id }],
-    organization: testOrganization!._id,
+    creator: testUser?._id,
+    registrants: [{ userId: testUser?._id, user: testUser?._id }],
+    organization: testOrganization?._id,
     isRegisterable: true,
     isPublic: true,
     title: "title",
@@ -48,7 +47,7 @@ beforeAll(async () => {
 
   await User.updateOne(
     {
-      _id: testUser!._id,
+      _id: testUser?._id,
     },
     {
       $set: {
@@ -60,7 +59,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 afterEach(() => {
@@ -109,7 +108,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { updateEvent: updateEventResolver } = await import(
@@ -134,11 +133,11 @@ describe("resolvers -> Mutation -> updateEvent", () => {
 
     try {
       const args: MutationUpdateEventArgs = {
-        id: testEvent!._id,
+        id: testEvent?._id,
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { updateEvent: updateEventResolver } = await import(
@@ -157,28 +156,28 @@ describe("resolvers -> Mutation -> updateEvent", () => {
   it(`updates the event with _id === args.id and returns the updated event`, async () => {
     await Event.updateOne(
       {
-        _id: testEvent!._id,
+        _id: testEvent?._id,
       },
       {
         $push: {
-          admins: testUser!._id,
+          admins: testUser?._id,
         },
       }
     );
 
     await User.updateOne(
       {
-        _id: testUser!._id,
+        _id: testUser?._id,
       },
       {
         $push: {
-          eventAdmin: testEvent!._id,
+          eventAdmin: testEvent?._id,
         },
       }
     );
 
     const args: MutationUpdateEventArgs = {
-      id: testEvent!._id,
+      id: testEvent?._id,
       data: {
         allDay: false,
         description: "newDescription",
@@ -198,7 +197,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const { updateEvent: updateEventResolver } = await import(
@@ -208,7 +207,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     const updateEventPayload = await updateEventResolver?.({}, args, context);
 
     const testUpdateEventPayload = await Event.findOne({
-      _id: testEvent!._id,
+      _id: testEvent?._id,
     }).lean();
 
     expect(updateEventPayload).toEqual(testUpdateEventPayload);
@@ -223,7 +222,7 @@ describe("Check for validation conditions", () => {
     );
     try {
       const args: MutationUpdateEventArgs = {
-        id: testEvent!._id,
+        id: testEvent?._id,
         data: {
           allDay: false,
           description: "Random",
@@ -244,7 +243,7 @@ describe("Check for validation conditions", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { updateEvent: updateEventResolverError } = await import(
@@ -265,7 +264,7 @@ describe("Check for validation conditions", () => {
     );
     try {
       const args: MutationUpdateEventArgs = {
-        id: testEvent!._id,
+        id: testEvent?._id,
         data: {
           allDay: false,
           description:
@@ -286,7 +285,7 @@ describe("Check for validation conditions", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { updateEvent: updateEventResolverError } = await import(
@@ -307,7 +306,7 @@ describe("Check for validation conditions", () => {
     );
     try {
       const args: MutationUpdateEventArgs = {
-        id: testEvent!._id,
+        id: testEvent?._id,
         data: {
           allDay: false,
           description: "Random",
@@ -327,7 +326,7 @@ describe("Check for validation conditions", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { updateEvent: updateEventResolverError } = await import(
@@ -348,7 +347,7 @@ describe("Check for validation conditions", () => {
     );
     try {
       const args: MutationUpdateEventArgs = {
-        id: testEvent!._id,
+        id: testEvent?._id,
         data: {
           allDay: false,
           description: "Random",
@@ -368,7 +367,7 @@ describe("Check for validation conditions", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { updateEvent: updateEventResolverError } = await import(

@@ -1,15 +1,13 @@
 import "dotenv/config";
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
-import {
-  TestDirectChatMessageType,
-  createTestDirectChatMessage,
-} from "../../helpers/directChat";
-import { TestUserType } from "../../helpers/userAndOrg";
+import type mongoose from "mongoose";
+import type { TestDirectChatMessageType } from "../../helpers/directChat";
+import { createTestDirectChatMessage } from "../../helpers/directChat";
+import type { TestUserType } from "../../helpers/userAndOrg";
 import { filterFunction } from "../../../src/resolvers/Subscription/messageSentToDirectChat";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testDirectChatMessage: TestDirectChatMessageType;
 let testCurrentUser: TestUserType;
 
@@ -20,7 +18,7 @@ beforeAll(async () => {
   testDirectChatMessage = resultArray[3];
 });
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
@@ -34,11 +32,11 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
     const _parent = {};
     const context = {
       pubsub: {
-        asyncIterator: (_action: "MESSAGE_SENT_TO_DIRECT_CHAT") => {
+        asyncIterator: (_action: "MESSAGE_SENT_TO_DIRECT_CHAT"): string => {
           return _action;
         },
       },
-      context: { currentUserId: testCurrentUser!._id },
+      context: { currentUserId: testCurrentUser?._id },
     };
     const payload = {
       messageSentToDirectChat: {
@@ -46,12 +44,6 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
         sender: testDirectChatMessage?.sender,
       },
     };
-    // @ts-ignore
-    messageSentToDirectChatPayload._parent = _parent;
-    // @ts-ignore
-    messageSentToDirectChatPayload._args = _args;
-    // @ts-ignore
-    messageSentToDirectChatPayload.context = context;
     // @ts-ignore
     messageSentToDirectChatPayload.payload = payload;
     // @ts-ignore
@@ -78,11 +70,11 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
     const _parent = {};
     const context = {
       pubsub: {
-        asyncIterator: (_action: "MESSAGE_SENT_TO_DIRECT_CHAT") => {
+        asyncIterator: (_action: "MESSAGE_SENT_TO_DIRECT_CHAT"): string => {
           return _action;
         },
       },
-      context: { currentUserId: testCurrentUser!._id },
+      context: { currentUserId: testCurrentUser?._id },
     };
 
     const payload = {
@@ -91,12 +83,6 @@ describe("src -> resolvers -> Subscription -> messageSentToDirectChat", () => {
         sender: "Sender",
       },
     };
-    // @ts-ignore
-    messageSentToDirectChatPayload._parent = _parent;
-    // @ts-ignore
-    messageSentToDirectChatPayload._args = _args;
-    // @ts-ignore
-    messageSentToDirectChatPayload.context = context;
     // @ts-ignore
     messageSentToDirectChatPayload.payload = payload;
     // @ts-ignore

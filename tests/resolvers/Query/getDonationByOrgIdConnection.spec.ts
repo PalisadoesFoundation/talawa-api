@@ -2,20 +2,16 @@ import "dotenv/config";
 import { Donation } from "../../../src/models";
 import { getDonationByOrgIdConnection as getDonationByOrgIdConnectionResolver } from "../../../src/resolvers/Query/getDonationByOrgIdConnection";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { QueryGetDonationByOrgIdConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { QueryGetDonationByOrgIdConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
-import {
-  createTestDonationsForOrganization,
-  TestDonationType,
-} from "../../helpers/donation";
-import {
-  createTestUserAndOrganization,
-  TestOrganizationType,
-} from "../../helpers/userAndOrg";
+import type mongoose from "mongoose";
+import type { TestDonationType } from "../../helpers/donation";
+import { createTestDonationsForOrganization } from "../../helpers/donation";
+import type { TestOrganizationType } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
-let testDonations: Array<TestDonationType>;
+let MONGOOSE_INSTANCE: typeof mongoose;
+let testDonations: TestDonationType[];
 let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
@@ -26,7 +22,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> getDonationByOrgIdConnection", () => {
@@ -189,7 +185,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
     const args: QueryGetDonationByOrgIdConnectionArgs = {
       orgId: testOrganization?._id,
       where: {
-        name_of_user_in: [testDonations[2]?.nameOfUser!],
+        name_of_user_in: [testDonations[2]?.nameOfUser ?? ""],
       },
     };
 
@@ -198,7 +194,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
 
     const donationsByOrganization = await Donation.find({
       orgId: testOrganization?._id,
-      nameOfUser: { $in: [testDonations[2]?.nameOfUser!] },
+      nameOfUser: { $in: [testDonations[2]?.nameOfUser ?? ""] },
     }).lean();
 
     expect(getDonationByOrgIdConnectionPayload).toEqual(
@@ -211,7 +207,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
     const args: QueryGetDonationByOrgIdConnectionArgs = {
       orgId: testOrganization?._id,
       where: {
-        name_of_user_not_in: [testDonations[2]?.nameOfUser!],
+        name_of_user_not_in: [testDonations[2]?.nameOfUser ?? ""],
       },
     };
 
@@ -220,7 +216,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
 
     const donationsByOrganization = await Donation.find({
       orgId: testOrganization?._id,
-      nameOfUser: { $nin: [testDonations[2]?.nameOfUser!] },
+      nameOfUser: { $nin: [testDonations[2]?.nameOfUser ?? ""] },
     }).lean();
 
     expect(getDonationByOrgIdConnectionPayload).toEqual(
@@ -230,7 +226,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
 
   it(`returns donations filtered by
   args.where === { name_of_user_contains: shortenedNameOfUser }`, async () => {
-    const shortenedNameOfUser = testDonations[2]?.nameOfUser?.substring(2)!;
+    const shortenedNameOfUser = testDonations[2]?.nameOfUser?.substring(2);
 
     const args: QueryGetDonationByOrgIdConnectionArgs = {
       orgId: testOrganization?._id,
@@ -254,7 +250,7 @@ args.where === { id_not_in: testDonations[2]._id }`, async () => {
 
   it(`returns donations filtered by
   args.where === { name_of_user_starts_with: shortenedNameOfUser }`, async () => {
-    const shortenedNameOfUser = testDonations[2]?.nameOfUser?.substring(0, 3)!;
+    const shortenedNameOfUser = testDonations[2]?.nameOfUser?.substring(0, 3);
 
     const args: QueryGetDonationByOrgIdConnectionArgs = {
       orgId: testOrganization?._id,

@@ -1,4 +1,4 @@
-import { MembershipRequestResolvers } from "../../types/generatedGraphQLTypes";
+import type { MembershipRequestResolvers } from "../../types/generatedGraphQLTypes";
 import { Organization } from "../../models";
 /**
  * This resolver function will get and return the organisation from the database for which a membership request was sent.

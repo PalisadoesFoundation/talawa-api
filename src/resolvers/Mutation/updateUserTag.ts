@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, OrganizationTagUser } from "../../models";
 import {
@@ -42,8 +42,7 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
 
   // Boolean to determine whether user is an admin of organization of the tag folder.
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) =>
-      organization.toString() === existingTag!.organizationId.toString()
+    (organization) => organization.equals(existingTag?.organizationId)
   );
 
   // Checks whether currentUser can update the tag

@@ -1,9 +1,9 @@
-import {
+import type {
   ConnectionPageInfo,
   PaginationError,
 } from "../types/generatedGraphQLTypes";
-import { CursorPaginationArgsType } from "../libraries/validators/validatePaginationArgs";
-import { Types } from "mongoose";
+import type { CursorPaginationArgsType } from "../libraries/validators/validatePaginationArgs";
+import type { Types } from "mongoose";
 
 interface InterfaceConnectionEdge<T> {
   cursor: string;
@@ -11,7 +11,7 @@ interface InterfaceConnectionEdge<T> {
 }
 
 interface InterfaceConnection<T> {
-  edges?: Array<InterfaceConnectionEdge<T> | null | undefined>;
+  edges?: InterfaceConnectionEdge<T>[] | null | undefined[];
   pageInfo: ConnectionPageInfo;
 }
 
@@ -40,8 +40,8 @@ export function graphqlConnectionFactory<T>(): InterfaceConnection<T> {
 }
 
 // Type definition for a mapping funtion
-type GetNodeFromResultFnType<T, U> = {
-  (result: U): T;
+type GetNodeFromResultFnType<T1, T2> = {
+  (result: T2): T1;
 };
 
 // A custom type for easier implementation of the business logic of the connection factory
@@ -68,7 +68,7 @@ export const transformArguments = (
 };
 
 // Generates the limit that can should be passed in the .limit() method
-export const getLimit = (args: ConnectionArguments) => {
+export const getLimit = (args: ConnectionArguments): number => {
   // We always fetch 1 object more than  args.limit
   // so that we can use that to get the information about hasNextPage / hasPreviousPage
   // When args.cursor is supplied, we fetch 1 more object so as validate the cursor as well
@@ -79,7 +79,7 @@ export const getLimit = (args: ConnectionArguments) => {
 export const getSortingObject = (
   direction: "FORWARD" | "BACKWARD",
   sortingObject: { [key: string]: number }
-) => {
+): { [key: string]: number } => {
   // We assume that the resolver would always be written with respect to the sorting that needs to be implemented for forward pagination
   if (direction === "FORWARD") return sortingObject;
 
@@ -91,8 +91,16 @@ export const getSortingObject = (
   return sortingObject;
 };
 
+type FilterObjectType = {
+  _id: {
+    [key: string]: string;
+  };
+};
+
 // Generates the sorting arguments for filterQuery that can be passed into the .find() method
-export function getFilterObject(args: ConnectionArguments) {
+export function getFilterObject(
+  args: ConnectionArguments
+): FilterObjectType | null {
   if (args.cursor) {
     if (args.direction === "FORWARD") return { _id: { $gte: args.cursor } };
     else return { _id: { $lte: args.cursor } };
@@ -108,29 +116,29 @@ The function takes the following arguments:
 
 A. TYPE PARAMETERS
 
-1. T: Refers the type of the node that the connection and it's edges would refer. 
+1. T1: Refers the type of the node that the connection and it's edges would refer. 
 Example values include `Interface_User`, `Interface_Organization`, `Interface_Event`, `Interface_Post`.
-2. U: Regers to the type of interface that is implemented by the model that you want to query. 
+2. T2: Regers to the type of interface that is implemented by the model that you want to query. 
 For example, if you want to query the TagUser Model, then you would send Interface_UserTag for this type parameter
 
 B. DATA PARAMETERS
 
 1. args: These are the tranformed arguments that were orginally passed in the request.
 2. allFetchedObjects: Refers to objects that were fetched from the database thorugh a query.
-3. getNodeFromResult: Describes a transformation function that given an object of type U, would convert it to the desired object of type T. This would mostly include mapping to some specific field of the fetched object.
+3. getNodeFromResult: Describes a transformation function that given an object of type T2, would convert it to the desired object of type T1. This would mostly include mapping to some specific field of the fetched object.
 
-The function returns a promise which would resolve to the desired connection object (of the type InterfaceConnection<T>).
+The function returns a promise which would resolve to the desired connection object (of the type InterfaceConnection<T1>).
 */
 export function generateConnectionObject<
-  T extends { _id: Types.ObjectId },
-  U extends { _id: Types.ObjectId }
+  T1 extends { _id: Types.ObjectId },
+  T2 extends { _id: Types.ObjectId }
 >(
   args: ConnectionArguments,
-  allFetchedObjects: U[] | null,
-  getNodeFromResult: GetNodeFromResultFnType<T, U>
-): InterfaceConnectionResult<T> {
+  allFetchedObjects: T2[] | null,
+  getNodeFromResult: GetNodeFromResultFnType<T1, T2>
+): InterfaceConnectionResult<T1> {
   // Initialize the connection object
-  const connectionObject = graphqlConnectionFactory<T>();
+  const connectionObject = graphqlConnectionFactory<T1>();
 
   // Return the default object if the recieved list is empty
   if (!allFetchedObjects || allFetchedObjects.length === 0)
@@ -179,7 +187,7 @@ export function generateConnectionObject<
     allFetchedObjects = allFetchedObjects!.reverse();
 
   // Create edges from the fetched objects
-  connectionObject.edges = allFetchedObjects!.map((object: U) => ({
+  connectionObject.edges = allFetchedObjects!.map((object: T2) => ({
     node: getNodeFromResult(object),
     cursor: object._id.toString(),
   }));

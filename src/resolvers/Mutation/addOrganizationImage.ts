@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
 import { User, Organization } from "../../models";
@@ -52,7 +52,7 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
 
     // Upload Image
     const uploadImageFileName = await uploadEncodedImage(
-      args.file!,
+      args.file,
       organization.image
     );
     // Updates the organization with new image and returns the updated organization.

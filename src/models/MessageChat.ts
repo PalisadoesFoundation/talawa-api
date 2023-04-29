@@ -1,5 +1,6 @@
-import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { InterfaceUser } from "./User";
+import type { PopulatedDoc, Types, Document, Model } from "mongoose";
+import { Schema, model, models } from "mongoose";
+import type { InterfaceUser } from "./User";
 /**
  * This is an interface representing a document for a chat in the database(MongoDB).
  */
@@ -46,9 +47,9 @@ const messageChatSchema = new Schema({
   },
 });
 
-const MessageChatModel = () =>
+const messageChatModel = (): Model<InterfaceMessageChat> =>
   model<InterfaceMessageChat>("MessageChat", messageChatSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const MessageChat = (models.MessageChat ||
-  MessageChatModel()) as ReturnType<typeof MessageChatModel>;
+  messageChatModel()) as ReturnType<typeof messageChatModel>;

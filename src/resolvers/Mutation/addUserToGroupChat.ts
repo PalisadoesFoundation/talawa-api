@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
 import { User, GroupChat, Organization } from "../../models";
@@ -66,8 +66,8 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
       );
     }
 
-    const isUserGroupChatMember = groupChat.users.some(
-      (user) => user.toString() === args.userId.toString()
+    const isUserGroupChatMember = groupChat.users.some((user) =>
+      user.equals(args.userId)
     );
 
     // Checks whether user with _id === args.userId is already a member of groupChat.

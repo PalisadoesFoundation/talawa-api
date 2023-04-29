@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Post } from "../../models";
 import {
@@ -40,8 +40,7 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     );
   }
 
-  const currentUserIsPostCreator =
-    post.creator.toString() === context.userId.toString();
+  const currentUserIsPostCreator = post.creator.equals(context.userId);
 
   // checks if current user is an creator of the post with _id === args.id
   if (currentUserIsPostCreator === false) {
@@ -53,9 +52,9 @@ export const updatePost: MutationResolvers["updatePost"] = async (
   }
 
   // Checks if the recieved arguments are valid according to standard input norms
-  const validationResult_Title = isValidString(args.data!.title!, 256);
-  const validationResult_Text = isValidString(args.data!.text!, 500);
-  if (!validationResult_Title.isLessThanMaxLength) {
+  const validationResultTitle = isValidString(args.data?.title ?? "", 256);
+  const validationResultText = isValidString(args.data?.text ?? "", 500);
+  if (!validationResultTitle.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
@@ -63,7 +62,7 @@ export const updatePost: MutationResolvers["updatePost"] = async (
       LENGTH_VALIDATION_ERROR.CODE
     );
   }
-  if (!validationResult_Text.isLessThanMaxLength) {
+  if (!validationResultText.isLessThanMaxLength) {
     throw new errors.InputValidationError(
       requestContext.translate(
         `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in information`
@@ -76,9 +75,8 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     {
       _id: args.id,
     },
-    // @ts-ignore
     {
-      ...args.data,
+      ...(args.data as any),
     },
     {
       new: true,

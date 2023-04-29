@@ -1,4 +1,4 @@
-import { DirectChatMessageResolvers } from "../../types/generatedGraphQLTypes";
+import type { DirectChatMessageResolvers } from "../../types/generatedGraphQLTypes";
 import { directChatMessageBelongsTo } from "./directChatMessageBelongsTo";
 import { receiver } from "./receiver";
 import { sender } from "./sender";

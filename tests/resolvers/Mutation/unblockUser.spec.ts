@@ -1,9 +1,10 @@
 import "dotenv/config";
+import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { User, Organization } from "../../../src/models";
-import { MutationUnblockUserArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationUnblockUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { unblockUser as unblockUserResolver } from "../../../src/resolvers/Mutation/unblockUser";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -11,13 +12,13 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import {
-  createTestUserAndOrganization,
+import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 
@@ -29,7 +30,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> unblockUser", () => {
@@ -66,7 +67,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationUnblockUserArgs = {
-        organizationId: testOrganization!.id,
+        organizationId: testOrganization?.id,
         userId: Types.ObjectId().toString(),
       };
 
@@ -93,12 +94,12 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationUnblockUserArgs = {
-        organizationId: testOrganization!.id,
-        userId: testUser!.id,
+        organizationId: testOrganization?.id,
+        userId: testUser?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { unblockUser: unblockUserResolver } = await import(
@@ -121,33 +122,33 @@ describe("resolvers -> Mutation -> unblockUser", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization!._id,
+          _id: testOrganization?._id,
         },
         {
           $push: {
-            admins: testUser!._id,
+            admins: testUser?._id,
           },
         }
       );
 
       await User.updateOne(
         {
-          _id: testUser!.id,
+          _id: testUser?.id,
         },
         {
           $push: {
-            adminFor: testOrganization!._id,
+            adminFor: testOrganization?._id,
           },
         }
       );
 
       const args: MutationUnblockUserArgs = {
-        organizationId: testOrganization!.id,
-        userId: testUser!.id,
+        organizationId: testOrganization?.id,
+        userId: testUser?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { unblockUser: unblockUserResolver } = await import(
@@ -165,39 +166,39 @@ describe("resolvers -> Mutation -> unblockUser", () => {
   organization with _id === args.organizationId and returns the updated user`, async () => {
     await Organization.updateOne(
       {
-        _id: testOrganization!._id,
+        _id: testOrganization?._id,
       },
       {
         $push: {
-          blockedUsers: testUser!._id,
+          blockedUsers: testUser?._id,
         },
       }
     );
 
     await User.updateOne(
       {
-        _id: testUser!.id,
+        _id: testUser?.id,
       },
       {
         $push: {
-          organizationsBlockedBy: testOrganization!._id,
+          organizationsBlockedBy: testOrganization?._id,
         },
       }
     );
 
     const args: MutationUnblockUserArgs = {
-      organizationId: testOrganization!.id,
-      userId: testUser!.id,
+      organizationId: testOrganization?.id,
+      userId: testUser?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const unblockUserPayload = await unblockUserResolver?.({}, args, context);
 
     const testUnblockUserPayload = await User.findOne({
-      _id: testUser!.id,
+      _id: testUser?.id,
     })
       .select(["-password"])
       .lean();

@@ -1,8 +1,9 @@
 import "dotenv/config";
+import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { MutationRemoveUserTagArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationRemoveUserTagArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -17,9 +18,11 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { TestUserType, createTestUser } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 import { OrganizationTagUser, TagUser } from "../../../src/models";
-import { createTwoLevelTagsWithOrg, TestUserTagType } from "../../helpers/tags";
+import type { TestUserTagType } from "../../helpers/tags";
+import { createTwoLevelTagsWithOrg } from "../../helpers/tags";
 
 let testUser: TestUserType;
 let randomUser: TestUserType;
@@ -28,7 +31,7 @@ let rootTag: TestUserTagType,
   childTag1: TestUserTagType,
   childTag2: TestUserTagType;
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -40,22 +43,22 @@ beforeAll(async () => {
   // Assign the created tags to the testUser
   await TagUser.insertMany([
     {
-      userId: testUser!._id,
-      tagId: rootTag!._id,
+      userId: testUser?._id,
+      tagId: rootTag?._id,
     },
     {
-      userId: testUser!._id,
-      tagId: childTag1!._id,
+      userId: testUser?._id,
+      tagId: childTag1?._id,
     },
     {
-      userId: testUser!._id,
-      tagId: childTag2!._id,
+      userId: testUser?._id,
+      tagId: childTag2?._id,
     },
   ]);
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> removeUserTag", () => {
@@ -73,7 +76,7 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
 
     try {
       const args: MutationRemoveUserTagArgs = {
-        id: rootTag!._id.toString(),
+        id: rootTag ? rootTag._id.toString() : "",
       };
 
       const context = {
@@ -105,7 +108,7 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { removeUserTag: removeUserTagResolver } = await import(
@@ -127,11 +130,11 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
 
     try {
       const args: MutationRemoveUserTagArgs = {
-        id: rootTag!._id.toString(),
+        id: rootTag ? rootTag._id.toString() : "",
       };
 
       const context = {
-        userId: randomUser!.id,
+        userId: randomUser?.id,
       };
 
       const { removeUserTag: removeUserTagResolver } = await import(
@@ -154,11 +157,11 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
     );
 
     const args: MutationRemoveUserTagArgs = {
-      id: rootTag!._id.toString(),
+      id: rootTag ? rootTag._id.toString() : "",
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const { removeUserTag: removeUserTagResolver } = await import(
@@ -170,9 +173,9 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
     // Check that the tag and its children must be deleted from the OrganizationTagUser model
     const tagExists = await OrganizationTagUser.exists({
       $or: [
-        { _id: rootTag!._id },
-        { _id: childTag1!._id },
-        { _id: childTag2!._id },
+        { _id: rootTag?._id },
+        { _id: childTag1?._id },
+        { _id: childTag2?._id },
       ],
     });
 
@@ -181,9 +184,9 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
     // Check that all the entries related to the tag and its children must be deleted in the TagUser model
     const userTagExists = await TagUser.exists({
       $or: [
-        { tagId: rootTag!._id },
-        { tagId: childTag1!._id },
-        { tagId: childTag2!._id },
+        { tagId: rootTag?._id },
+        { tagId: childTag1?._id },
+        { tagId: childTag2?._id },
       ],
     });
 

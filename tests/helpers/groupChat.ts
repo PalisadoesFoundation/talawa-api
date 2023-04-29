@@ -1,16 +1,12 @@
 import { nanoid } from "nanoid";
-import {
-  GroupChat,
-  GroupChatMessage,
+import type {
   InterfaceGroupChat,
   InterfaceGroupChatMessage,
 } from "../../src/models";
-import {
-  createTestUserAndOrganization,
-  TestOrganizationType,
-  TestUserType,
-} from "./userAndOrg";
-import { Document } from "mongoose";
+import { GroupChat, GroupChatMessage } from "../../src/models";
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
+import { createTestUserAndOrganization } from "./userAndOrg";
+import type { Document } from "mongoose";
 
 export type TestGroupChatType =
   | (InterfaceGroupChat & Document<any, any, InterfaceGroupChat>)
@@ -24,14 +20,18 @@ export const createTestGroupChat = async (): Promise<
   [TestUserType, TestOrganizationType, TestGroupChatType]
 > => {
   const [testUser, testOrganization] = await createTestUserAndOrganization();
-  const testGroupChat = await GroupChat.create({
-    creator: testUser!._id,
-    users: [testUser!._id],
-    organization: testOrganization!._id,
-    title: `title${nanoid().toLowerCase()}`,
-  });
+  if (testUser && testOrganization) {
+    const testGroupChat = await GroupChat.create({
+      creator: testUser._id,
+      users: [testUser._id],
+      organization: testOrganization._id,
+      title: `title${nanoid().toLowerCase()}`,
+    });
 
-  return [testUser, testOrganization, testGroupChat];
+    return [testUser, testOrganization, testGroupChat];
+  } else {
+    return [testUser, testOrganization, null];
+  }
 };
 
 export const createTestGroupChatMessage = async (): Promise<
@@ -44,12 +44,17 @@ export const createTestGroupChatMessage = async (): Promise<
 > => {
   const [testUser, testOrganization, testGroupChat] =
     await createTestGroupChat();
-  const testGroupChatMessage = await GroupChatMessage.create({
-    groupChatMessageBelongsTo: testGroupChat!._id,
-    sender: testUser!._id,
-    createdAt: new Date(),
-    messageContent: `messageContent${nanoid().toLowerCase()}`,
-  });
 
-  return [testUser, testOrganization, testGroupChat, testGroupChatMessage];
+  if (testGroupChat && testUser) {
+    const testGroupChatMessage = await GroupChatMessage.create({
+      groupChatMessageBelongsTo: testGroupChat._id,
+      sender: testUser._id,
+      createdAt: new Date(),
+      messageContent: `messageContent${nanoid().toLowerCase()}`,
+    });
+
+    return [testUser, testOrganization, testGroupChat, testGroupChatMessage];
+  } else {
+    return [testUser, testOrganization, testGroupChat, null];
+  }
 };

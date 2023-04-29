@@ -1,6 +1,7 @@
-import { InterfaceUser, User } from "../../src/models";
+import type { InterfaceUser } from "../../src/models";
+import { User } from "../../src/models";
 import { nanoid } from "nanoid";
-import { Document } from "mongoose";
+import type { Document } from "mongoose";
 
 export type TestUserType =
   | (InterfaceUser & Document<any, any, InterfaceUser>)

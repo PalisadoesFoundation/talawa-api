@@ -1,8 +1,8 @@
 import "dotenv/config";
 import { User, Organization, MembershipRequest } from "../../../src/models";
-import { MutationLoginArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationLoginArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { login as loginResolver } from "../../../src/resolvers/Mutation/login";
 import {
   androidFirebaseOptions,
@@ -23,11 +23,11 @@ import {
   expect,
   vi,
 } from "vitest";
-import { TestUserType } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 
 let testUser: TestUserType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -46,13 +46,13 @@ beforeAll(async () => {
   );
   const testOrganization = temp[1];
   const testMembershipRequest = await MembershipRequest.create({
-    organization: testOrganization!._id,
-    user: testUser!._id,
+    organization: testOrganization?._id,
+    user: testUser?._id,
   });
 
   await User.updateOne(
     {
-      _id: testUser!._id,
+      _id: testUser?._id,
     },
     {
       $push: {
@@ -63,7 +63,7 @@ beforeAll(async () => {
 
   await Organization.updateOne(
     {
-      _id: testOrganization!._id,
+      _id: testOrganization?._id,
     },
     {
       $push: {
@@ -74,11 +74,11 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> login", () => {
-  afterEach(async () => {
+  afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
@@ -122,7 +122,7 @@ email === args.data.email`, async () => {
     try {
       const args: MutationLoginArgs = {
         data: {
-          email: testUser!.email,
+          email: testUser?.email,
           password: "incorrectPassword",
         },
       };
@@ -143,13 +143,13 @@ email === args.data.email`, async () => {
       const constants: object = await vi.importActual("../../../src/constants");
       return {
         ...constants,
-        LAST_RESORT_SUPERADMIN_EMAIL: testUser!.email,
+        LAST_RESORT_SUPERADMIN_EMAIL: testUser?.email,
       };
     });
 
     const args: MutationLoginArgs = {
       data: {
-        email: testUser!.email,
+        email: testUser?.email,
         password: "password",
       },
     };
@@ -161,7 +161,7 @@ email === args.data.email`, async () => {
     const loginPayload = await loginResolver?.({}, args, {});
 
     // @ts-ignore
-    expect(loginPayload!.user.userType).toEqual("SUPERADMIN");
+    expect(loginPayload?.user.userType).toEqual("SUPERADMIN");
   });
 
   it(`returns the user object with populated fields joinedOrganizations, createdOrganizations,
@@ -169,7 +169,7 @@ email === args.data.email`, async () => {
   organizationsBlockedBy, organizationUserBelongsTo`, async () => {
     const args: MutationLoginArgs = {
       data: {
-        email: testUser!.email,
+        email: testUser?.email,
         password: "password",
       },
     };
@@ -177,7 +177,7 @@ email === args.data.email`, async () => {
     const loginPayload = await loginResolver?.({}, args, {});
 
     testUser = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     })
       .select(["-password"])
       .populate("joinedOrganizations")

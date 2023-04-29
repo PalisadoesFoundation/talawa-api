@@ -1,4 +1,4 @@
-import { GroupChatResolvers } from "../../types/generatedGraphQLTypes";
+import type { GroupChatResolvers } from "../../types/generatedGraphQLTypes";
 import { Organization } from "../../models";
 /**
  * This resolver function will fetch and return the organization for group chat from database.

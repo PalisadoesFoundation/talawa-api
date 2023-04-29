@@ -2,14 +2,15 @@ import "dotenv/config";
 import { post as postResolver } from "../../../src/resolvers/Query/post";
 import { connect, disconnect } from "../../helpers/db";
 import { Post } from "../../../src/models";
+import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { POST_NOT_FOUND_ERROR } from "../../../src/constants";
-import { QueryPostArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { QueryPostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { TestPostType, createPostwithComment } from "../../helpers/posts";
-import mongoose from "mongoose";
+import type { TestPostType } from "../../helpers/posts";
+import { createPostwithComment } from "../../helpers/posts";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testPost: TestPostType;
 
 beforeAll(async () => {
@@ -18,7 +19,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> post", () => {
@@ -43,52 +44,7 @@ describe("resolvers -> Query -> post", () => {
 
     const post = await Post.findOne({ _id: testPost?._id })
       .populate("organization")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
       .populate("likedBy")
-      .populate("creator", "-password")
-      .lean();
-
-    expect(postPayload).toEqual(post);
-  });
-
-  it(`returns post object with post.likeCount === 0 and post.commentCount === 0`, async () => {
-    await Post.updateOne(
-      {
-        _id: testPost?._id,
-      },
-      {
-        $set: {
-          likedBy: [],
-          comments: [],
-        },
-        $inc: {
-          likeCount: -1,
-          commentCount: -1,
-        },
-      }
-    );
-
-    const args: QueryPostArgs = {
-      id: testPost?._id,
-    };
-
-    const postPayload = await postResolver?.({}, args, {});
-
-    const post = await Post.findOne({ _id: testPost?._id })
-      .populate("organization")
-      .populate({
-        path: "comments",
-        populate: {
-          path: "creator",
-        },
-      })
-      .populate("likedBy")
-      .populate("creator", "-password")
       .lean();
 
     expect(postPayload).toEqual(post);

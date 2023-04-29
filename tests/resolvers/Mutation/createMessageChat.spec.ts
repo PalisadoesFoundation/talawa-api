@@ -1,9 +1,12 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import { InterfaceUser, User, InterfaceMessageChat } from "../../../src/models";
-import { MutationCreateMessageChatArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { InterfaceUser, InterfaceMessageChat } from "../../../src/models";
+import { User } from "../../../src/models";
+import type { MutationCreateMessageChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { nanoid } from "nanoid";
 import {
@@ -17,7 +20,7 @@ import {
 } from "vitest";
 
 let testUsers: (InterfaceUser & Document<any, any, InterfaceUser>)[];
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -41,7 +44,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> createMessageChat", () => {
@@ -94,7 +97,10 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
         _payload: {
           directMessageChat: InterfaceMessageChat;
         }
-      ) => {
+      ): {
+        _action: string;
+        _payload: { directMessageChat: InterfaceMessageChat };
+      } => {
         return { _action, _payload };
       },
     };

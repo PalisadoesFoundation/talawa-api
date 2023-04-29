@@ -2,20 +2,23 @@
 import "dotenv/config";
 import { postsByOrganizationConnection as postsByOrganizationConnectionResolver } from "../../../src/resolvers/Query/postsByOrganizationConnection";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
-import { Document, Types } from "mongoose";
-import { QueryPostsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+
+import type { QueryPostsByOrganizationConnectionArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import {
+import type {
   TestUserType,
   TestOrganizationType,
-  createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
-import { Post, InterfacePost } from "../../../src/models";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import type { InterfacePost } from "../../../src/models";
+import { Post } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { BASE_URL } from "../../../src/constants";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;
 let testUser: TestUserType;
 let testPosts: (InterfacePost & Document<any, any, InterfacePost>)[];
@@ -56,7 +59,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Query -> postsByOrganizationConnection", () => {
@@ -118,7 +121,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, context);
 
-    const posts = await Post.find(where).sort(sort).populate("creator").lean();
+    const posts = await Post.find(where).sort(sort).lean();
 
     const postsWithId = posts.map((post) => {
       return {
@@ -128,14 +131,14 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       };
     });
 
-    const serialized_organization =
+    const serializedOrganization =
       postsByOrganizationConnectionPayload?.edges.map((post) => {
         return {
           ...post,
           organization: post?.organization._id,
         };
       });
-    postsByOrganizationConnectionPayload!.edges = serialized_organization;
+    postsByOrganizationConnectionPayload!.edges = serializedOrganization;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {
@@ -190,11 +193,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     };
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, context);
-    const posts = await Post.find(where)
-      .limit(2)
-      .sort(sort)
-      .populate("creator")
-      .lean();
+    const posts = await Post.find(where).limit(2).sort(sort).lean();
 
     const postsWithId = posts.map((post) => {
       return {
@@ -204,14 +203,14 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       };
     });
 
-    const serialized_organization =
+    const serializedOrganization =
       postsByOrganizationConnectionPayload?.edges.map((post) => {
         return {
           ...post,
           organization: post!.organization._id,
         };
       });
-    postsByOrganizationConnectionPayload!.edges = serialized_organization;
+    postsByOrganizationConnectionPayload!.edges = serializedOrganization;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {
@@ -266,11 +265,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     };
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, context);
-    const posts = await Post.find(where)
-      .limit(2)
-      .sort(sort)
-      .populate("creator")
-      .lean();
+    const posts = await Post.find(where).limit(2).sort(sort).lean();
     const postsWithId = posts.map((post) => {
       return {
         ...post,
@@ -279,7 +274,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       };
     });
 
-    const serialized_organization =
+    const serializedOrganization =
       postsByOrganizationConnectionPayload?.edges.map((post) => {
         return {
           ...post,
@@ -287,7 +282,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
         };
       });
 
-    postsByOrganizationConnectionPayload!.edges = serialized_organization;
+    postsByOrganizationConnectionPayload!.edges = serializedOrganization;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {
@@ -341,12 +336,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     };
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, context);
-    const posts = await Post.find(where)
-      .limit(2)
-      .skip(1)
-      .sort(sort)
-      .populate("creator")
-      .lean();
+    const posts = await Post.find(where).limit(2).skip(1).sort(sort).lean();
 
     const postsWithId = posts.map((post) => {
       return {
@@ -416,11 +406,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, context);
 
-    const posts = await Post.find(where)
-      .limit(2)
-      .sort(sort)
-      .populate("creator")
-      .lean();
+    const posts = await Post.find(where).limit(2).sort(sort).lean();
 
     const postsWithId = posts.map((post) => {
       return {
@@ -430,14 +416,14 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       };
     });
 
-    const serialized_organization =
+    const serializedOrganization =
       postsByOrganizationConnectionPayload?.edges.map((post) => {
         return {
           ...post,
           organization: post!.organization._id,
         };
       });
-    postsByOrganizationConnectionPayload!.edges = serialized_organization;
+    postsByOrganizationConnectionPayload!.edges = serializedOrganization;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {
@@ -485,11 +471,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     const postsByOrganizationConnectionPayload =
       await postsByOrganizationConnectionResolver?.({}, args, context);
 
-    const posts = await Post.find(where)
-      .limit(2)
-      .sort(sort)
-      .populate("creator")
-      .lean();
+    const posts = await Post.find(where).limit(2).sort(sort).lean();
 
     const postsWithId = posts.map((post) => {
       return {
@@ -499,14 +481,14 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       };
     });
 
-    const serialized_organization =
+    const serializedOrganization =
       postsByOrganizationConnectionPayload?.edges.map((post) => {
         return {
           ...post,
           organization: post!.organization._id,
         };
       });
-    postsByOrganizationConnectionPayload!.edges = serialized_organization;
+    postsByOrganizationConnectionPayload!.edges = serializedOrganization;
 
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {

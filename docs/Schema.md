@@ -137,31 +137,6 @@
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>comments</strong></td>
-<td valign="top">[<a href="#comment">Comment</a>]</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>commentsByPost</strong></td>
-<td valign="top">[<a href="#comment">Comment</a>]</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">id</td>
-<td valign="top"><a href="#id">ID</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>directChatMessages</strong></td>
-<td valign="top">[<a href="#directchatmessage">DirectChatMessage</a>]</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>directChats</strong></td>
-<td valign="top">[<a href="#directchat">DirectChat</a>]</td>
-<td></td>
-</tr>
-<tr>
 <td colspan="2" valign="top"><strong>directChatsByUserID</strong></td>
 <td valign="top">[<a href="#directchat">DirectChat</a>]</td>
 <td></td>
@@ -189,21 +164,6 @@
 <tr>
 <td colspan="2" align="right" valign="top">id</td>
 <td valign="top"><a href="#id">ID</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>events</strong></td>
-<td valign="top">[<a href="#event">Event</a>]</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">id</td>
-<td valign="top"><a href="#id">ID</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">orderBy</td>
-<td valign="top"><a href="#eventorderbyinput">EventOrderByInput</a></td>
 <td></td>
 </tr>
 <tr>
@@ -292,11 +252,6 @@
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>getDonations</strong></td>
-<td valign="top">[<a href="#donation">Donation</a>]</td>
-<td></td>
-</tr>
-<tr>
 <td colspan="2" valign="top"><strong>getlanguage</strong></td>
 <td valign="top">[<a href="#translation">Translation</a>]</td>
 <td></td>
@@ -309,21 +264,6 @@
 <tr>
 <td colspan="2" valign="top"><strong>getPlugins</strong></td>
 <td valign="top">[<a href="#plugin">Plugin</a>]</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>groupChatMessages</strong></td>
-<td valign="top">[<a href="#groupchatmessage">GroupChatMessage</a>]</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>groupChats</strong></td>
-<td valign="top">[<a href="#groupchat">GroupChat</a>]</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>groups</strong></td>
-<td valign="top">[<a href="#group">Group</a>]</td>
 <td></td>
 </tr>
 <tr>
@@ -444,16 +384,6 @@
 <tr>
 <td colspan="2" align="right" valign="top">id</td>
 <td valign="top"><a href="#id">ID</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>posts</strong></td>
-<td valign="top">[<a href="#post">Post</a>]</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">orderBy</td>
-<td valign="top"><a href="#postorderbyinput">PostOrderByInput</a></td>
 <td></td>
 </tr>
 <tr>
@@ -712,7 +642,7 @@
 </tr>
 <tr>
 <td colspan="2" valign="top"><strong>adminRemoveGroup</strong></td>
-<td valign="top"><a href="#message">Message</a>!</td>
+<td valign="top"><a href="#groupchat">GroupChat</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -771,6 +701,16 @@
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>createMember</strong></td>
+<td valign="top"><a href="#organization">Organization</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">input</td>
+<td valign="top"><a href="#userandorganizationinput">UserAndOrganizationInput</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>createAdmin</strong></td>
 <td valign="top"><a href="#user">User</a>!</td>
 <td></td>
@@ -802,7 +742,7 @@
 </tr>
 <tr>
 <td colspan="2" align="right" valign="top">data</td>
-<td valign="top"><a href="#createchatinput">createChatInput</a></td>
+<td valign="top"><a href="#createchatinput">createChatInput</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -857,7 +797,7 @@
 </tr>
 <tr>
 <td colspan="2" align="right" valign="top">data</td>
-<td valign="top"><a href="#creategroupchatinput">createGroupChatInput</a></td>
+<td valign="top"><a href="#creategroupchatinput">createGroupChatInput</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -1502,7 +1442,7 @@
 </tr>
 <tr>
 <td colspan="2" align="right" valign="top">data</td>
-<td valign="top"><a href="#updateuserpasswordinput">UpdateUserPasswordInput</a></td>
+<td valign="top"><a href="#updateuserpasswordinput">UpdateUserPasswordInput</a>!</td>
 <td></td>
 </tr>
 <tr>

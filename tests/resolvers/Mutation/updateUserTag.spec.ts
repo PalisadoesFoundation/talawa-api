@@ -1,8 +1,9 @@
 import "dotenv/config";
+import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { MutationUpdateUserTagArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationUpdateUserTagArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
@@ -19,11 +20,13 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { createTestUser, TestUserType } from "../../helpers/userAndOrg";
-import { TestUserTagType, createRootTagsWithOrg } from "../../helpers/tags";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
+import type { TestUserTagType } from "../../helpers/tags";
+import { createRootTagsWithOrg } from "../../helpers/tags";
 import { OrganizationTagUser } from "../../../src/models";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 let testUser: TestUserType;
 let testTag: TestUserTagType, testTag2: TestUserTagType;
@@ -36,7 +39,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> updateUserTag", () => {

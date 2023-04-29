@@ -1,9 +1,10 @@
 import "dotenv/config";
+import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { User, Organization } from "../../../src/models";
-import { MutationBlockUserArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationBlockUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { blockUser as blockUserResolver } from "../../../src/resolvers/Mutation/blockUser";
 import {
   MEMBER_NOT_FOUND_ERROR,
@@ -23,16 +24,16 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import {
+import type {
   TestUserType,
   TestOrganizationType,
-  createTestUser,
 } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testUser2: TestUserType;
 let testOrganization: TestOrganizationType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -45,14 +46,14 @@ beforeAll(async () => {
     name: `name${nanoid().toLowerCase()}`,
     description: `desc${nanoid().toLowerCase()}`,
     isPublic: true,
-    creator: testUser!._id,
-    members: [testUser!._id],
+    creator: testUser?._id,
+    members: [testUser?._id],
     visibleInSearch: true,
   });
 
   await User.updateOne(
     {
-      _id: testUser!._id,
+      _id: testUser?._id,
     },
     {
       $set: {
@@ -68,7 +69,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> blockUser", () => {
@@ -84,7 +85,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await blockUserResolver?.({}, args, context);
@@ -96,12 +97,12 @@ describe("resolvers -> Mutation -> blockUser", () => {
   it(`throws NotFoundError if no user exists with _id === args.userId`, async () => {
     try {
       const args: MutationBlockUserArgs = {
-        organizationId: testOrganization!.id,
+        organizationId: testOrganization?.id,
         userId: Types.ObjectId().toString(),
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await blockUserResolver?.({}, args, context);
@@ -118,12 +119,12 @@ describe("resolvers -> Mutation -> blockUser", () => {
 
     try {
       const args: MutationBlockUserArgs = {
-        organizationId: testOrganization!.id,
-        userId: testUser2!.id,
+        organizationId: testOrganization?.id,
+        userId: testUser2?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
       const { blockUser: blockUserResolverError } = await import(
         "../../../src/resolvers/Mutation/blockUser"
@@ -143,12 +144,12 @@ describe("resolvers -> Mutation -> blockUser", () => {
 
     try {
       const args: MutationBlockUserArgs = {
-        organizationId: testOrganization!.id,
-        userId: testUser!.id,
+        organizationId: testOrganization?.id,
+        userId: testUser?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
       const { blockUser: blockUserResolverError } = await import(
         "../../../src/resolvers/Mutation/blockUser"
@@ -175,12 +176,12 @@ describe("resolvers -> Mutation -> blockUser", () => {
       );
 
       const args: MutationBlockUserArgs = {
-        organizationId: testOrganization!.id,
-        userId: testUser2!.id,
+        organizationId: testOrganization?.id,
+        userId: testUser2?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await blockUserResolver?.({}, args, context);
@@ -194,34 +195,34 @@ describe("resolvers -> Mutation -> blockUser", () => {
     try {
       await Organization.updateOne(
         {
-          _id: testOrganization!._id,
+          _id: testOrganization?._id,
         },
         {
           $push: {
-            admins: testUser!._id,
-            blockedUsers: testUser2!._id,
+            admins: testUser?._id,
+            blockedUsers: testUser2?._id,
           },
         }
       );
 
       await User.updateOne(
         {
-          _id: testUser!.id,
+          _id: testUser?.id,
         },
         {
           $push: {
-            adminFor: testOrganization!._id,
+            adminFor: testOrganization?._id,
           },
         }
       );
 
       const args: MutationBlockUserArgs = {
-        organizationId: testOrganization!.id,
-        userId: testUser2!.id,
+        organizationId: testOrganization?.id,
+        userId: testUser2?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await blockUserResolver?.({}, args, context);
@@ -234,7 +235,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
   _id === args.organizationId and returns the blocked user`, async () => {
     await Organization.findOneAndUpdate(
       {
-        _id: testOrganization!._id,
+        _id: testOrganization?._id,
       },
       {
         $set: {
@@ -247,18 +248,18 @@ describe("resolvers -> Mutation -> blockUser", () => {
     );
 
     const args: MutationBlockUserArgs = {
-      organizationId: testOrganization!.id,
-      userId: testUser2!.id,
+      organizationId: testOrganization?.id,
+      userId: testUser2?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const blockUserPayload = await blockUserResolver?.({}, args, context);
 
     const testUpdatedTestUser = await User.findOne({
-      _id: testUser2!.id,
+      _id: testUser2?.id,
     })
       .select(["-password"])
       .lean();
@@ -266,11 +267,11 @@ describe("resolvers -> Mutation -> blockUser", () => {
     expect(blockUserPayload).toEqual(testUpdatedTestUser);
 
     const testUpdatedOrganization = await Organization.findOne({
-      _id: testOrganization!._id,
+      _id: testOrganization?._id,
     })
       .select(["blockedUsers"])
       .lean();
 
-    expect(testUpdatedOrganization?.blockedUsers).toEqual([testUser2!._id]);
+    expect(testUpdatedOrganization?.blockedUsers).toEqual([testUser2?._id]);
   });
 });

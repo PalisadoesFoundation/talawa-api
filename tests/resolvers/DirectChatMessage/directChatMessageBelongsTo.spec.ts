@@ -1,16 +1,14 @@
 import "dotenv/config";
 import { directChatMessageBelongsTo as directChatMessageBelongsToResolver } from "../../../src/resolvers/DirectChatMessage/directChatMessageBelongsTo";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { DirectChat } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import {
-  createTestDirectChatMessage,
-  TestDirectChatMessageType,
-} from "../../helpers/directChat";
+import type { TestDirectChatMessageType } from "../../helpers/directChat";
+import { createTestDirectChatMessage } from "../../helpers/directChat";
 
 let testDirectChatMessage: TestDirectChatMessageType;
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -19,7 +17,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
@@ -30,7 +28,7 @@ describe("resolvers -> DirectChatMessage -> directChatMessageBelongsTo", () => {
       await directChatMessageBelongsToResolver?.(parent, {}, {});
 
     const directChatMessageBelongsTo = await DirectChat.findOne({
-      _id: testDirectChatMessage!.directChatMessageBelongsTo,
+      _id: testDirectChatMessage?.directChatMessageBelongsTo,
     }).lean();
 
     expect(directChatMessageBelongsToPayload).toEqual(

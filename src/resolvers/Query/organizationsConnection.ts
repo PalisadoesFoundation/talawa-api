@@ -1,5 +1,6 @@
-import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { InterfaceOrganization, Organization } from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceOrganization } from "../../models";
+import { Organization } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
@@ -21,8 +22,8 @@ export const organizationsConnection: QueryResolvers["organizationsConnection"] 
 
     const organizations = await Organization.find(where)
       .sort(sort)
-      .limit(args.first!)
-      .skip(args.skip!)
+      .limit(args.first ?? 0)
+      .skip(args.skip ?? 0)
       .lean();
 
     return organizations;

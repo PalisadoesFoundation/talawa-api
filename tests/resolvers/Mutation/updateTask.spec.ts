@@ -1,9 +1,12 @@
 import "dotenv/config";
-import { Document, Types } from "mongoose";
-import { Event, Task, InterfaceTask } from "../../../src/models";
-import { MutationUpdateTaskArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { InterfaceTask } from "../../../src/models";
+import { Event, Task } from "../../../src/models";
+import type { MutationUpdateTaskArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+
 import { updateTask as updateTaskResolver } from "../../../src/resolvers/Mutation/updateTask";
 import {
   TASK_NOT_FOUND_ERROR,
@@ -11,10 +14,10 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { TestUserType } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 
-let MONGOOSE_INSTANCE: typeof mongoose | null;
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testTasks: (InterfaceTask & Document<any, any, InterfaceTask>)[];
 
@@ -27,19 +30,19 @@ beforeAll(async () => {
   testTasks = await Task.insertMany([
     {
       title: "title",
-      event: testEvent!._id,
-      creator: testUser!._id,
+      event: testEvent?._id,
+      creator: testUser?._id,
     },
     {
       title: "title",
-      event: testEvent!._id,
+      event: testEvent?._id,
       creator: Types.ObjectId().toString(),
     },
   ]);
 
   await Event.updateOne(
     {
-      _id: testEvent!._id,
+      _id: testEvent?._id,
     },
     {
       $push: {
@@ -50,7 +53,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await disconnect(MONGOOSE_INSTANCE!);
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> updateTask", () => {
@@ -126,7 +129,7 @@ describe("resolvers -> Mutation -> updateTask", () => {
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { updateTask: updateTaskResolverNotFoundError } = await import(

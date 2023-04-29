@@ -24,10 +24,12 @@ import {
 } from "./directives";
 import { typeDefs } from "./typeDefs";
 import { resolvers } from "./resolvers";
-import { InterfaceJwtTokenPayload } from "./utilities";
+import type { InterfaceJwtTokenPayload } from "./utilities";
 import { ACCESS_TOKEN_SECRET, LAST_RESORT_SUPERADMIN_EMAIL } from "./constants";
 import { User } from "./models";
 import { express as voyagerMiddleware } from "graphql-voyager/middleware";
+import { generateErrorMessage } from "zod-error";
+import { getEnvIssues } from "./env";
 
 const app = express();
 
@@ -75,7 +77,6 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 // Fix added to stream
 app.use(
   requestLogger(
-    // @ts-ignore
     ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms',
     {
       stream: stream,
@@ -98,6 +99,21 @@ app.get("/", (req, res) =>
 
 const httpServer = http.createServer(app);
 
+// Validating the env variables
+const issues = getEnvIssues();
+if (issues) {
+  logger.error(
+    "Invalid environment variables found in your .env file, check the errors below!"
+  );
+  console.error(
+    generateErrorMessage(issues, {
+      delimiter: { error: "\\n" },
+    })
+  );
+} else {
+  logger.info("The environment variables are valid!");
+}
+
 const apolloServer = new ApolloServer({
   typeDefs,
   resolvers,
@@ -106,7 +122,7 @@ const apolloServer = new ApolloServer({
     auth: AuthenticationDirective,
     role: RoleAuthorizationDirective,
   },
-  context: ({ req, res, connection }) => {
+  context: ({ req, res, connection }): any => {
     /**
      * The apiRootUrl for serving static files.
      * This is constructed by extracting the protocol and host information from the `req` object.
@@ -135,13 +151,15 @@ const apolloServer = new ApolloServer({
       };
     }
   },
-  formatError: (error: any) => {
+  formatError: (
+    error: any
+  ): { message: string; status: number; data: string[] } => {
     if (!error.originalError) {
       return error;
     }
-    const message = error.message || "Something went wrong !";
-    const data = error.originalError.errors || [];
-    const code = error.originalError.code || 422;
+    const message = error.message ?? "Something went wrong !";
+    const data = error.originalError.errors ?? [];
+    const code = error.originalError.code ?? 422;
     logger.error(message, error);
     return {
       message,
@@ -150,7 +168,9 @@ const apolloServer = new ApolloServer({
     };
   },
   subscriptions: {
-    onConnect: (connection: any) => {
+    onConnect: (
+      connection: any
+    ): { currentUserToken: any; currentUserId: string | null } => {
       if (!connection.authorization) {
         throw new Error("userAuthentication");
       }
@@ -178,7 +198,7 @@ apolloServer.applyMiddleware({
 });
 apolloServer.installSubscriptionHandlers(httpServer);
 
-const logWarningForSuperAdminEnvVariable = async () => {
+const logWarningForSuperAdminEnvVariable = async (): Promise<void> => {
   const superAdminExist = await User.exists({ userType: "SUPERADMIN" });
   const isVariablePresentInEnvFile = !!LAST_RESORT_SUPERADMIN_EMAIL;
   if (superAdminExist) {
@@ -198,7 +218,7 @@ const logWarningForSuperAdminEnvVariable = async () => {
   }
 };
 
-const serverStart = async () => {
+const serverStart = async (): Promise<void> => {
   try {
     await database.connect();
     httpServer.listen(process.env.PORT || 4000, async () => {

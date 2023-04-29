@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
@@ -49,8 +49,8 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     );
   }
 
-  const currentUserIsOrganizationMember = organization.members.some(
-    (member) => member.toString() === currentUser!._id.toString()
+  const currentUserIsOrganizationMember = organization.members.some((member) =>
+    member.equals(currentUser?._id)
   );
   // Checks whether currentUser is not a member of organzation.
   if (!currentUserIsOrganizationMember) {
