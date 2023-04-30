@@ -1,7 +1,8 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { User, Organization } from "../../../src/models";
-import { MutationCreateMemberArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationCreateMemberArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { createMember as createMemberResolver } from "../../../src/resolvers/Mutation/createMember";
@@ -11,10 +12,11 @@ import {
   MEMBER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import {
-  createTestUserAndOrganization,
+import type {
   TestOrganizationType,
-  TestUserType,
+  TestUserType} from "../../helpers/userAndOrg";
+import {
+  createTestUserAndOrganization
 } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;

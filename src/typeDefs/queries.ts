@@ -7,16 +7,31 @@ export const queries = gql`
   type Query {
     adminPlugin(orgId: ID!): [Plugin]
 
+    """
+    Used in clients: Admin
+    """
     checkAuth: User! @auth
 
+    """
+    Used in clients: Mobile
+    """
     directChatsByUserID(id: ID!): [DirectChat]
 
+    """
+    Used in clients: Mobile
+    """
     directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
 
     event(id: ID!): Event
 
+    """
+    Used in clients: Admin, Mobile
+    """
     eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
 
+    """
+    Used in clients: Admin
+    """
     eventsByOrganizationConnection(
       where: EventWhereInput
       first: Int
@@ -28,6 +43,9 @@ export const queries = gql`
 
     getDonationByOrgId(orgId: ID!): [Donation]
 
+    """
+    Used in clients: Admin
+    """
     getDonationByOrgIdConnection(
       orgId: ID!
       where: DonationWhereInput
@@ -37,6 +55,9 @@ export const queries = gql`
 
     getlanguage(lang_code: String!): [Translation]
 
+    """
+    Used in clients: Admin, Mobile
+    """
     getPlugins: [Plugin]
 
     isUserRegister(eventId: ID!): EventRegistrants
@@ -45,10 +66,19 @@ export const queries = gql`
 
     me: User! @auth
 
+    """
+    Used in clients: Mobile
+    """
     myLanguage: String @auth
 
+    """
+    Used in clients: Admin, Mobile
+    """
     organizations(id: ID, orderBy: OrganizationOrderByInput): [Organization]
 
+    """
+    Used in clients: Admin, Mobile
+    """
     organizationsConnection(
       where: OrganizationWhereInput
       first: Int
@@ -56,6 +86,9 @@ export const queries = gql`
       orderBy: OrganizationOrderByInput
     ): [Organization]!
 
+    """
+    Used in clients: Admin
+    """
     organizationsMemberConnection(
       orgId: ID!
       where: UserWhereInput
@@ -68,8 +101,14 @@ export const queries = gql`
 
     post(id: ID!): Post
 
+    """
+    Used in clients: Admin, Mobile
+    """
     postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
 
+    """
+    Used in clients: Admin
+    """
     postsByOrganizationConnection(
       id: ID!
       where: PostWhereInput
@@ -80,6 +119,9 @@ export const queries = gql`
 
     registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
 
+    """
+    Used in clients: Mobile
+    """
     registrantsByEvent(id: ID!): [User]
 
     tasksByEvent(id: ID!, orderBy: TaskOrderByInput): [Task]
@@ -88,8 +130,14 @@ export const queries = gql`
 
     user(id: ID!): User! @auth
 
+    """
+    Used in clients: Mobile
+    """
     userLanguage(userId: ID!): String @auth
 
+    """
+    Used in clients: Admin, Mobile
+    """
     users(where: UserWhereInput, orderBy: UserOrderByInput): [User] @auth
 
     usersConnection(

@@ -4,7 +4,12 @@ import { gql } from "apollo-server-core";
 export const subscriptions = gql`
   type Subscription {
     directMessageChat: MessageChat
+
+    """
+    Used in clients: Mobile
+    """
     messageSentToDirectChat: DirectChatMessage
+
     messageSentToGroupChat: GroupChatMessage
   }
 `;

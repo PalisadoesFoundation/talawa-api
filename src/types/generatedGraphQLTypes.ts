@@ -368,7 +368,9 @@ export type MessageChatInput = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  /** Used in clients: Admin */
   acceptAdmin: Scalars['Boolean'];
+  /** Used in clients: Admin */
   acceptMembershipRequest: MembershipRequest;
   addLanguageTranslation: Language;
   addOrganizationImage: Organization;
@@ -378,70 +380,106 @@ export type Mutation = {
   adminRemoveGroup: GroupChat;
   assignUserTag?: Maybe<User>;
   blockPluginCreationBySuperadmin: User;
+  /** Used in clients: Admin */
   blockUser: User;
   cancelMembershipRequest: MembershipRequest;
+  /** Used in clients: Admin */
   createAdmin: User;
+  /** Used in clients: Mobile */
   createComment?: Maybe<Comment>;
   createDirectChat: DirectChat;
+  /** Used in clients: Mobile */
   createDonation: Donation;
+  /** Used in clients: Admin, Mobile */
   createEvent: Event;
   createGroupChat: GroupChat;
   createMember: Organization;
   createMessageChat: MessageChat;
+  /** Used in clients: Admin */
   createOrganization: Organization;
   createPlugin: Plugin;
+  /** Used in clients: Admin, Mobile */
   createPost?: Maybe<Post>;
   createTask: Task;
   createUserTag?: Maybe<UserTag>;
   deleteDonationById: DeletePayload;
+  /** Used in clients: Admin */
   forgotPassword: Scalars['Boolean'];
+  /** Used in clients: Mobile */
   joinPublicOrganization: User;
   leaveOrganization: User;
   likeComment?: Maybe<Comment>;
+  /** Used in clients: Mobile */
   likePost?: Maybe<Post>;
+  /** Used in clients: Admin, Mobile */
   login: AuthData;
+  /** Used in clients: Mobile */
   logout: Scalars['Boolean'];
+  /** Used in clients: Admin */
   otp: OtpData;
+  /** Used in clients: Admin */
   recaptcha: Scalars['Boolean'];
+  /** Used in clients: Mobile */
   refreshToken: ExtendSession;
+  /** Used in clients: Mobile */
   registerForEvent: Event;
+  /** Used in clients: Admin */
   rejectAdmin: Scalars['Boolean'];
+  /** Used in clients: Admin */
   rejectMembershipRequest: MembershipRequest;
+  /** Used in clients: Admin */
   removeAdmin: User;
   removeComment?: Maybe<Comment>;
   removeDirectChat: DirectChat;
+  /** Used in clients: Admin, Mobile */
   removeEvent: Event;
   removeGroupChat: GroupChat;
+  /** Used in clients: Admin */
   removeMember: Organization;
+  /** Used in clients: Admin */
   removeOrganization: User;
   removeOrganizationImage: Organization;
+  /** Used in clients: Admin */
   removePost?: Maybe<Post>;
   removeTask?: Maybe<Task>;
   removeUserFromGroupChat: GroupChat;
   removeUserImage: User;
   removeUserTag?: Maybe<UserTag>;
   revokeRefreshTokenForUser: Scalars['Boolean'];
+  /** Used in clients: Mobile */
   saveFcmToken: Scalars['Boolean'];
+  /** Used in clients: Mobile */
   sendMembershipRequest: MembershipRequest;
+  /** Used in clients: Mobile */
   sendMessageToDirectChat: DirectChatMessage;
   sendMessageToGroupChat: GroupChatMessage;
+  /** Used in clients: Admin, Mobile */
   signUp: AuthData;
   togglePostPin: Post;
   unassignUserTag?: Maybe<User>;
+  /** Used in clients: Admin */
   unblockUser: User;
   unlikeComment?: Maybe<Comment>;
+  /** Used in clients: Mobile */
   unlikePost?: Maybe<Post>;
   unregisterForEventByUser: Event;
+  /** Used in clients: Admin, Mobile */
   updateEvent: Event;
+  /** Used in clients: Mobile */
   updateLanguage: User;
+  /** Used in clients: Admin */
   updateOrganization: Organization;
   updatePluginInstalledOrgs: Plugin;
   updatePluginStatus: Plugin;
+  /** Used in clients: Admin */
   updatePost: Post;
   updateTask?: Maybe<Task>;
+  /** Used in clients: Admin */
   updateUserPassword: User;
+  /** Used in clients: Admin */
   updateUserProfile: User;
   updateUserTag?: Maybe<UserTag>;
+  /** Used in clients: Admin */
   updateUserType: Scalars['Boolean'];
 };
 
@@ -1074,34 +1112,50 @@ export type PostWhereInput = {
 export type Query = {
   __typename?: 'Query';
   adminPlugin?: Maybe<Array<Maybe<Plugin>>>;
+  /** Used in clients: Admin */
   checkAuth: User;
+  /** Used in clients: Mobile */
   directChatsByUserID?: Maybe<Array<Maybe<DirectChat>>>;
+  /** Used in clients: Mobile */
   directChatsMessagesByChatID?: Maybe<Array<Maybe<DirectChatMessage>>>;
   event?: Maybe<Event>;
+  /** Used in clients: Admin, Mobile */
   eventsByOrganization?: Maybe<Array<Maybe<Event>>>;
+  /** Used in clients: Admin */
   eventsByOrganizationConnection: Array<Event>;
   getDonationById: Donation;
   getDonationByOrgId?: Maybe<Array<Maybe<Donation>>>;
+  /** Used in clients: Admin */
   getDonationByOrgIdConnection: Array<Donation>;
+  /** Used in clients: Admin, Mobile */
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
   isUserRegister?: Maybe<EventRegistrants>;
   joinedOrganizations?: Maybe<Array<Maybe<Organization>>>;
   me: User;
+  /** Used in clients: Mobile */
   myLanguage?: Maybe<Scalars['String']>;
+  /** Used in clients: Admin, Mobile */
   organizations?: Maybe<Array<Maybe<Organization>>>;
+  /** Used in clients: Admin, Mobile */
   organizationsConnection: Array<Maybe<Organization>>;
+  /** Used in clients: Admin */
   organizationsMemberConnection: UserConnection;
   plugin?: Maybe<Array<Maybe<Plugin>>>;
   post?: Maybe<Post>;
+  /** Used in clients: Admin, Mobile */
   postsByOrganization?: Maybe<Array<Maybe<Post>>>;
+  /** Used in clients: Admin */
   postsByOrganizationConnection?: Maybe<PostConnection>;
   registeredEventsByUser?: Maybe<Array<Maybe<Event>>>;
+  /** Used in clients: Mobile */
   registrantsByEvent?: Maybe<Array<Maybe<User>>>;
   tasksByEvent?: Maybe<Array<Maybe<Task>>>;
   tasksByUser?: Maybe<Array<Maybe<Task>>>;
   user: User;
+  /** Used in clients: Mobile */
   userLanguage?: Maybe<Scalars['String']>;
+  /** Used in clients: Admin, Mobile */
   users?: Maybe<Array<Maybe<User>>>;
   usersConnection: Array<Maybe<User>>;
 };
@@ -1287,6 +1341,7 @@ export type Status =
 export type Subscription = {
   __typename?: 'Subscription';
   directMessageChat?: Maybe<MessageChat>;
+  /** Used in clients: Mobile */
   messageSentToDirectChat?: Maybe<DirectChatMessage>;
   messageSentToGroupChat?: Maybe<GroupChatMessage>;
 };
