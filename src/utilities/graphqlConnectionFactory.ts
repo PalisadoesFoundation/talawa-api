@@ -11,7 +11,7 @@ interface InterfaceConnectionEdge<T> {
 }
 
 interface InterfaceConnection<T> {
-  edges?: InterfaceConnectionEdge<T>[] | null | undefined[];
+  edges: InterfaceConnectionEdge<T>[];
   pageInfo: ConnectionPageInfo;
 }
 

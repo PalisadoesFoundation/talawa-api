@@ -10,7 +10,6 @@ import {
 } from "../../utilities/graphqlConnectionFactory";
 import { validatePaginationArgs } from "../../libraries/validators/validatePaginationArgs";
 
-// @ts-ignore
 export const childTags: UserTagResolvers["childTags"] = async (
   parent,
   args
