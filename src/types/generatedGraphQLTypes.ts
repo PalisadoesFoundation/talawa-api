@@ -433,6 +433,7 @@ export type Mutation = {
   unregisterForEventByUser: Event;
   updateEvent: Event;
   updateLanguage: User;
+  updateOrgUserType: Scalars['Boolean'];
   updateOrganization: Organization;
   updatePluginInstalledOrgs: Plugin;
   updatePluginStatus: Plugin;
@@ -781,6 +782,11 @@ export type MutationUpdateEventArgs = {
 
 export type MutationUpdateLanguageArgs = {
   languageCode: Scalars['String'];
+};
+
+
+export type MutationUpdateOrgUserTypeArgs = {
+  data: UpdateOrgUserTypeInput;
 };
 
 
@@ -1348,6 +1354,12 @@ export type UpdateEventInput = {
   title?: InputMaybe<Scalars['String']>;
 };
 
+export type UpdateOrgUserTypeInput = {
+  id?: InputMaybe<Scalars['ID']>;
+  organizationId?: InputMaybe<Scalars['ID']>;
+  userType?: InputMaybe<Scalars['String']>;
+};
+
 export type UpdateOrganizationInput = {
   description?: InputMaybe<Scalars['String']>;
   isPublic?: InputMaybe<Scalars['Boolean']>;
@@ -1703,6 +1715,7 @@ export type ResolversTypes = {
   Type: Type;
   URL: ResolverTypeWrapper<Scalars['URL']>;
   UpdateEventInput: UpdateEventInput;
+  UpdateOrgUserTypeInput: UpdateOrgUserTypeInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
   UpdateTaskInput: UpdateTaskInput;
   UpdateUserInput: UpdateUserInput;
@@ -1799,6 +1812,7 @@ export type ResolversParentTypes = {
   Translation: Translation;
   URL: Scalars['URL'];
   UpdateEventInput: UpdateEventInput;
+  UpdateOrgUserTypeInput: UpdateOrgUserTypeInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
   UpdateTaskInput: UpdateTaskInput;
   UpdateUserInput: UpdateUserInput;
@@ -2119,6 +2133,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   unregisterForEventByUser?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUnregisterForEventByUserArgs, 'id'>>;
   updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'id'>>;
   updateLanguage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateLanguageArgs, 'languageCode'>>;
+  updateOrgUserType?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateOrgUserTypeArgs, 'data'>>;
   updateOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateOrganizationArgs, 'id'>>;
   updatePluginInstalledOrgs?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginInstalledOrgsArgs, 'id' | 'orgId'>>;
   updatePluginStatus?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginStatusArgs, 'id' | 'status'>>;

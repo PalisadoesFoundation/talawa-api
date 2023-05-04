@@ -32,9 +32,7 @@ export const mutations = gql`
 
     cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
-    createAdmin(data: UserAndOrganizationInput!): User!
-      @auth
-      @role(requires: SUPERADMIN)
+    createAdmin(data: UserAndOrganizationInput!): User! @auth
 
     createComment(postId: ID!, data: CommentInput!): Comment @auth
 
@@ -186,5 +184,9 @@ export const mutations = gql`
     updateUserType(data: UpdateUserTypeInput!): Boolean!
       @auth
       @role(requires: SUPERADMIN)
+
+    updateOrgUserType(data: UpdateOrgUserTypeInput!): Boolean!
+      @auth
+      @role(requires: ADMIN)
   }
 `;

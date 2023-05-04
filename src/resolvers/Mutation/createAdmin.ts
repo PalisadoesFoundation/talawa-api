@@ -1,12 +1,13 @@
 import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import { superAdminCheck } from "../../utilities";
+import { adminCheck } from "../../utilities";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_MEMBER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_AUTHORIZED_ADMIN,
 } from "../../constants";
 /**
  * This function enables to create an admin for an organization.
@@ -49,7 +50,17 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
       USER_NOT_FOUND_ERROR.PARAM
     );
   }
-  superAdminCheck(currentUser!);
+
+  // Adding superAdmin or Admin Check
+  const userIsSuperAdmin: boolean = currentUser!.userType === "SUPERADMIN";
+
+  if (!adminCheck(context.userId, organization) && !userIsSuperAdmin) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ADMIN.MESSAGE),
+      USER_NOT_AUTHORIZED_ADMIN.CODE,
+      USER_NOT_AUTHORIZED_ADMIN.PARAM
+    );
+  }
 
   const userExists = await User.exists({
     _id: args.data.userId,
