@@ -1,12 +1,9 @@
 import "dotenv/config";
-import mongoose, { Document, Types } from "mongoose";
-import {
-  User,
-  Organization,
-  Event,
-  InterfaceEventProject,
-  EventProject,
-} from "../../../src/models";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { InterfaceEventProject } from "../../../src/models";
+import { User, Organization, Event, EventProject } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -23,8 +20,10 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
-import { createTestUserFunc, TestUserType } from "../../helpers/user";
-import { createTestEvent, TestEventType } from "../../helpers/events";
+import type { TestUserType } from "../../helpers/user";
+import { createTestUserFunc } from "../../helpers/user";
+import type { TestEventType } from "../../helpers/events";
+import { createTestEvent } from "../../helpers/events";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -43,8 +42,8 @@ beforeAll(async () => {
   testEventProject = await EventProject.create({
     title: "Event Project title",
     description: "Event Project Description",
-    event: testEvent!._id,
-    creator: testAdminUser!._id,
+    event: testEvent?._id,
+    creator: testAdminUser?._id,
   });
 });
 
@@ -105,7 +104,7 @@ describe("resolvers -> Mutation -> createEventProject", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { updateEventProject: updateEventProjectResolver } = await import(
@@ -136,7 +135,7 @@ describe("resolvers -> Mutation -> createEventProject", () => {
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { updateEventProject: updateEventProjectResolver } = await import(
@@ -162,7 +161,7 @@ describe("resolvers -> Mutation -> createEventProject", () => {
     };
 
     const context = {
-      userId: testAdminUser!._id,
+      userId: testAdminUser?._id,
     };
 
     const { updateEventProject: updateEventProjectResolver } = await import(

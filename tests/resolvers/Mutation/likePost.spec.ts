@@ -1,6 +1,7 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
-import { MutationLikePostArgs } from "../../../src/types/generatedGraphQLTypes";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { MutationLikePostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { likePost as likePostResolver } from "../../../src/resolvers/Mutation/likePost";
@@ -17,8 +18,9 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { TestUserType } from "../../helpers/userAndOrg";
-import { createTestPost, TestPostType } from "../../helpers/posts";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import type { TestPostType } from "../../helpers/posts";
+import { createTestPost } from "../../helpers/posts";
 
 let testUser: TestUserType;
 let testPost: TestPostType;
@@ -76,7 +78,7 @@ describe("resolvers -> Mutation -> likePost", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { likePost: likePostResolver } = await import(
@@ -93,32 +95,32 @@ describe("resolvers -> Mutation -> likePost", () => {
   it(`updates likedBy and likeCount fields on post object with _id === args.id and
   returns it `, async () => {
     const args: MutationLikePostArgs = {
-      id: testPost!.id,
+      id: testPost?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const likePostPayload = await likePostResolver?.({}, args, context);
 
-    expect(likePostPayload?.likedBy).toEqual([testUser!._id]);
+    expect(likePostPayload?.likedBy).toEqual([testUser?._id]);
     expect(likePostPayload?.likeCount).toEqual(1);
   });
 
   it(`returns post object with _id === args.id without liking the post if user with
   _id === context.userId has already liked it.`, async () => {
     const args: MutationLikePostArgs = {
-      id: testPost!.id,
+      id: testPost?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const likePostPayload = await likePostResolver?.({}, args, context);
 
-    expect(likePostPayload?.likedBy).toEqual([testUser!._id]);
+    expect(likePostPayload?.likedBy).toEqual([testUser?._id]);
     expect(likePostPayload?.likeCount).toEqual(1);
   });
 });

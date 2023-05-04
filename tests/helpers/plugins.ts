@@ -1,10 +1,8 @@
-import {
-  createTestUserAndOrganization,
-  TestOrganizationType,
-  TestUserType,
-} from "./userAndOrg";
-import { Plugin, InterfacePlugin } from "../../src/models";
-import { Document } from "mongoose";
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
+import { createTestUserAndOrganization } from "./userAndOrg";
+import type { InterfacePlugin } from "../../src/models";
+import { Plugin } from "../../src/models";
+import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
 export type TestPluginType =

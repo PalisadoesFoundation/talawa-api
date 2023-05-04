@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
 import {
   createAccessToken,
@@ -60,12 +61,12 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
 
   // Updates the user to SUPERADMIN if the email of the user matches the LAST_RESORT_SUPERADMIN_EMAIL
   if (
-    user!.email.toLowerCase() === LAST_RESORT_SUPERADMIN_EMAIL?.toLowerCase() &&
-    user!.userType !== "SUPERADMIN"
+    user?.email.toLowerCase() === LAST_RESORT_SUPERADMIN_EMAIL?.toLowerCase() &&
+    user?.userType !== "SUPERADMIN"
   ) {
     await User.updateOne(
       {
-        _id: user!._id,
+        _id: user?._id,
       },
       {
         userType: "SUPERADMIN",
@@ -90,7 +91,7 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     .lean();
 
   return {
-    user: user!,
+    user: user ?? ({} as InterfaceUser),
     accessToken,
     refreshToken,
     androidFirebaseOptions,

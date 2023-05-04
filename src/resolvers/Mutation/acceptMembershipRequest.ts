@@ -1,7 +1,7 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
-import { Types } from "mongoose";
+import type { Types } from "mongoose";
 import { MembershipRequest, Organization, User } from "../../models";
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
@@ -64,7 +64,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
     await adminCheck(context.userId, organization);
 
     const userIsOrganizationMember = organization.members.some(
-      (member: Types.ObjectId) => member.toString() === user?._id.toString()
+      (member: Types.ObjectId) => member.equals(user?._id)
     );
 
     // Checks whether user is already a member of organization.

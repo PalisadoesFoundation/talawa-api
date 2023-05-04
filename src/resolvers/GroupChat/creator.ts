@@ -1,4 +1,4 @@
-import { GroupChatResolvers } from "../../types/generatedGraphQLTypes";
+import type { GroupChatResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 /**
  * This resolver function will fetch and return the Group Chat creator(User) from the database.

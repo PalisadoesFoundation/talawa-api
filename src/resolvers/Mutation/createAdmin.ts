@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
@@ -75,8 +75,8 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
     );
   }
 
-  const userIsOrganizationMember = organization.members.some(
-    (member) => member.toString() === args.data.userId.toString()
+  const userIsOrganizationMember = organization.members.some((member) =>
+    member.equals(args.data.userId)
   );
 
   // Checks whether user with _id === args.data.userId is not a member of organization.
@@ -88,8 +88,8 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
     );
   }
 
-  const userIsOrganizationAdmin = organization.admins.some(
-    (admin) => admin.toString() === args.data.userId.toString()
+  const userIsOrganizationAdmin = organization.admins.some((admin) =>
+    admin.equals(args.data.userId)
   );
 
   // Checks whether user with _id === args.data.userId is already an admin of organization.

@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
 import {
@@ -53,8 +53,8 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   }
 
   // Check whether the user - args.userId is a member of the organization before blocking
-  const userIsOrganizationMember = organization?.members.some(
-    (member) => member.toString() === args.userId.toString()
+  const userIsOrganizationMember = organization?.members.some((member) =>
+    member.equals(args.userId)
   );
 
   if (!userIsOrganizationMember) {
@@ -76,8 +76,8 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   // Checks whether currentUser with _id === context.userId is an admin of organization.
   await adminCheck(context.userId, organization);
 
-  const userIsBlocked = organization.blockedUsers.some(
-    (blockedUser) => blockedUser.toString() === args.userId.toString()
+  const userIsBlocked = organization.blockedUsers.some((blockedUser) =>
+    blockedUser.equals(args.userId)
   );
 
   // Checks whether user with _id === args.userId is already blocked from organization.

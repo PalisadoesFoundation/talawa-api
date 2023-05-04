@@ -11,7 +11,7 @@ import { deletePreviousImage } from "./deletePreviousImage";
 export const uploadEncodedImage = async (
   encodedImageURL: string,
   previousImagePath?: string | null
-) => {
+): Promise<string> => {
   const isURLValidImage = encodedImageExtentionCheck(encodedImageURL);
 
   if (!isURLValidImage) {

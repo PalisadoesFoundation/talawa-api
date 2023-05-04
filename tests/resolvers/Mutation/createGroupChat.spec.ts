@@ -1,6 +1,7 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
-import { MutationCreateGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { MutationCreateGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { createGroupChat as createGroupChatResolver } from "../../../src/resolvers/Mutation/createGroupChat";
@@ -9,11 +10,11 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import {
+import type {
   TestOrganizationType,
   TestUserType,
-  createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -67,7 +68,7 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await createGroupChatResolver?.({}, args, context);
@@ -80,14 +81,14 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
     try {
       const args: MutationCreateGroupChatArgs = {
         data: {
-          organizationId: testOrganization!.id,
+          organizationId: testOrganization?.id,
           title: "",
           userIds: [Types.ObjectId().toString()],
         },
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       await createGroupChatResolver?.({}, args, context);
@@ -99,14 +100,14 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
   it(`creates the groupChat and returns it`, async () => {
     const args: MutationCreateGroupChatArgs = {
       data: {
-        organizationId: testOrganization!.id,
+        organizationId: testOrganization?.id,
         title: "title",
-        userIds: [testUser!.id],
+        userIds: [testUser?.id],
       },
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const createGroupChatPayload = await createGroupChatResolver?.(
@@ -118,9 +119,9 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
     expect(createGroupChatPayload).toEqual(
       expect.objectContaining({
         title: "title",
-        creator: testUser!._id,
-        users: [testUser!._id],
-        organization: testOrganization!._id,
+        creator: testUser?._id,
+        users: [testUser?._id],
+        organization: testOrganization?._id,
       })
     );
   });

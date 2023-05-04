@@ -1,8 +1,9 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { connect, disconnect } from "../../helpers/db";
 
-import { MutationAddUserImageArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationAddUserImageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import {
   beforeAll,
@@ -13,7 +14,8 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { TestUserType, createTestUser } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { addUserImage as addUserImageResolverUserImage } from "../../../src/resolvers/Mutation/addUserImage";
 
@@ -76,7 +78,7 @@ describe("resolvers -> Mutation -> addUserImage", () => {
       async (encodedImageURL: string) => encodedImageURL
     );
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const addUserImagePayload = await addUserImageResolverUserImage?.(
@@ -86,7 +88,7 @@ describe("resolvers -> Mutation -> addUserImage", () => {
     );
 
     expect(addUserImagePayload).toEqual({
-      ...testUser!.toObject(),
+      ...testUser?.toObject(),
 
       image: "newImageFile.png",
     });

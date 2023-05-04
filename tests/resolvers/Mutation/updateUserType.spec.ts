@@ -1,7 +1,8 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { User } from "../../../src/models";
-import { MutationUpdateUserTypeArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationUpdateUserTypeArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -18,7 +19,8 @@ import {
   vi,
   expect,
 } from "vitest";
-import { createTestUserFunc, TestUserType } from "../../helpers/user";
+import type { TestUserType } from "../../helpers/user";
+import { createTestUserFunc } from "../../helpers/user";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -109,7 +111,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
     try {
       await User.updateOne(
         {
-          _id: testUsers[0]!._id,
+          _id: testUsers[0]?._id,
         },
         {
           userType: "SUPERADMIN",
@@ -126,7 +128,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
       };
 
       const context = {
-        userId: testUsers[0]!._id,
+        userId: testUsers[0]?._id,
       };
 
       const { updateUserType: updateUserTypeResolver } = await import(
@@ -151,12 +153,12 @@ describe("resolvers -> Mutation -> updateUserType", () => {
     try {
       const args: MutationUpdateUserTypeArgs = {
         data: {
-          id: testUsers[0]!._id.toString(),
+          id: testUsers[0]?._id.toString(),
         },
       };
 
       const context = {
-        userId: testUsers[0]!._id,
+        userId: testUsers[0]?._id,
       };
 
       const { updateUserType: updateUserTypeResolver } = await import(
@@ -179,7 +181,7 @@ describe("resolvers -> Mutation -> updateUserType", () => {
 
     await User.updateOne(
       {
-        _id: testUsers[0]!._id,
+        _id: testUsers[0]?._id,
       },
       {
         userType: "SUPERADMIN",
@@ -191,12 +193,12 @@ describe("resolvers -> Mutation -> updateUserType", () => {
 
     const args: MutationUpdateUserTypeArgs = {
       data: {
-        id: testUsers[1]!._id.toString(),
+        id: testUsers[1]?._id.toString(),
         userType: "BLOCKED",
       },
     };
     const context = {
-      userId: testUsers[0]!._id,
+      userId: testUsers[0]?._id,
     };
 
     const { updateUserType: updateUserTypeResolver } = await import(
@@ -212,11 +214,11 @@ describe("resolvers -> Mutation -> updateUserType", () => {
     expect(updateUserTypePayload).toEqual(true);
 
     const updatedTestUser = await User.findOne({
-      _id: testUsers[1]!._id,
+      _id: testUsers[1]?._id,
     })
       .select("userType")
       .lean();
 
-    expect(updatedTestUser!.userType).toEqual("BLOCKED");
+    expect(updatedTestUser?.userType).toEqual("BLOCKED");
   });
 });

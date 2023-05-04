@@ -1,16 +1,8 @@
-import {
-  Schema,
-  model,
-  PopulatedDoc,
-  Types,
-  Document,
-  PaginateModel,
-  models,
-} from "mongoose";
+import type { PopulatedDoc, Types, Document, PaginateModel } from "mongoose";
+import { Schema, model, models } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
-import { InterfaceComment } from "./Comment";
-import { InterfaceOrganization } from "./Organization";
-import { InterfaceUser } from "./User";
+import type { InterfaceOrganization } from "./Organization";
+import type { InterfaceUser } from "./User";
 /**
  * This is an interface that represents a database(MongoDB) document for Post.
  */
@@ -24,8 +16,7 @@ export interface InterfacePost {
   videoUrl: string | undefined;
   creator: PopulatedDoc<InterfaceUser & Document>;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
-  likedBy: Array<PopulatedDoc<InterfaceUser & Document>>;
-  comments: Array<PopulatedDoc<InterfaceComment & Document>>;
+  likedBy: PopulatedDoc<InterfaceUser & Document>[];
   likeCount: number;
   commentCount: number;
   pinned: boolean;
@@ -41,7 +32,6 @@ export interface InterfacePost {
  * @param creator - Post creator, refer to `User` model.
  * @param organization - Organization data where the post is uploaded, refer to `Organization` model.
  * @param likedBy - Collection of user liked the post, each object refer to `User` model.
- * @param comments - Collection of user commented on the post, each object refer to `Comment` model.
  * @param likeCount - Post likes count.
  * @param commentCount - Post comments count.
  */
@@ -87,12 +77,6 @@ const postSchema = new Schema({
       ref: "User",
     },
   ],
-  comments: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Comment",
-    },
-  ],
   likeCount: {
     type: Number,
     default: 0,
@@ -110,10 +94,10 @@ const postSchema = new Schema({
 postSchema.plugin(mongoosePaginate);
 postSchema.index({ organization: 1 }, { unique: false });
 
-const PostModel = () =>
+const postModel = (): PaginateModel<InterfacePost> =>
   model<InterfacePost, PaginateModel<InterfacePost>>("Post", postSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const Post = (models.Post || PostModel()) as ReturnType<
-  typeof PostModel
+export const Post = (models.Post || postModel()) as ReturnType<
+  typeof postModel
 >;

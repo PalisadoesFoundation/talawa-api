@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
 import {
@@ -53,7 +53,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
   await adminCheck(context.userId, organization);
 
   const userIsBlockedFromOrganization = organization.blockedUsers.some(
-    (blockedUser) => blockedUser.toString() === user._id.toString()
+    (blockedUser) => blockedUser.equals(user._id)
   );
 
   // checks if user with _id === args.userId is blocked by organzation with _id == args.organizationId

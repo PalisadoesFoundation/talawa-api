@@ -1,15 +1,16 @@
-require("dotenv").config();
+import dotenv from "dotenv";
 import { nanoid } from "nanoid";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { deleteDuplicatedImage } from "../../src/utilities/deleteDuplicatedImage";
 import * as fs from "fs";
 import { logger } from "../../src/libraries";
+dotenv.config();
 
 vi.mock("fs", () => ({
   unlink: vi.fn(),
 }));
 
-const testImagePath: string = `${nanoid()}-testImagePath`;
+const testImagePath = `${nanoid()}-testImagePath`;
 
 describe("utilities -> deleteDuplicatedImage", () => {
   afterEach(() => {

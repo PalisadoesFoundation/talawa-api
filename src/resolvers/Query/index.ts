@@ -1,4 +1,4 @@
-import { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { checkAuth } from "./checkAuth";
 import { directChatsByUserID } from "./directChatsByUserID";
 import { directChatsMessagesByChatID } from "./directChatsMessagesByChatID";

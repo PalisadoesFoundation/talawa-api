@@ -16,7 +16,7 @@ import { imageExtensionCheck } from "./imageExtensionCheck";
 export const uploadImage = async (
   newImageFile: any,
   oldImagePath: string | null
-) => {
+): Promise<{ newImagePath: string; imageAlreadyInDbPath: string }> => {
   const id = shortid.generate();
 
   const { createReadStream, filename } = await newImageFile;

@@ -12,8 +12,8 @@ import { reuploadDuplicateCheck } from "./reuploadDuplicateCheck";
 export const deleteImage = async (
   imageToBeDeleted: string,
   imageBelongingToItem?: string
-) => {
-  let imageIsDuplicate: boolean = false;
+): Promise<void> => {
+  let imageIsDuplicate = false;
 
   if (imageBelongingToItem) {
     imageIsDuplicate = await reuploadDuplicateCheck(

@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
@@ -77,8 +77,8 @@ export const updateOrgUserType: MutationResolvers["updateOrgUserType"] = async (
     );
   }
 
-  const userIsOrganizationMember = organization.members.some(
-    (member) => member.toString() === args.data.id!.toString()
+  const userIsOrganizationMember = organization.members.some((member) =>
+    member.equals(args.data.id!)
   );
 
   // Checks whether user with _id === args.data.id is not a member of organization.

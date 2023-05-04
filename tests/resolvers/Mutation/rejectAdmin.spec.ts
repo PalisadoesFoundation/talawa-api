@@ -1,7 +1,8 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { User } from "../../../src/models";
-import { MutationRejectAdminArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationRejectAdminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { rejectAdmin as rejectAdminResolver } from "../../../src/resolvers/Mutation/rejectAdmin";
@@ -18,7 +19,8 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { createTestUserFunc, TestUserType } from "../../helpers/user";
+import type { TestUserType } from "../../helpers/user";
+import { createTestUserFunc } from "../../helpers/user";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser1: TestUserType;
@@ -52,7 +54,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       };
 
       const context = {
-        userId: testUser1!.id,
+        userId: testUser1?.id,
       };
       await User.findByIdAndUpdate(
         {
@@ -105,7 +107,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
     try {
       await User.updateOne(
         {
-          _id: testUser1!._id,
+          _id: testUser1?._id,
         },
         {
           $set: {
@@ -119,7 +121,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
       };
 
       const context = {
-        userId: testUser1!.id,
+        userId: testUser1?.id,
       };
 
       const { rejectAdmin: rejectAdminResolver } = await import(
@@ -134,11 +136,11 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
 
   it("should  not delete the user with _id === args.id but set its adminApproved property to false", async () => {
     const args: MutationRejectAdminArgs = {
-      id: testUser2!.id,
+      id: testUser2?.id,
     };
 
     const context = {
-      userId: testUser1!.id,
+      userId: testUser1?.id,
     };
 
     const { rejectAdmin: rejectAdminResolver } = await import(

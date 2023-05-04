@@ -1,4 +1,4 @@
-import { GroupChatMessageResolvers } from "../../types/generatedGraphQLTypes";
+import type { GroupChatMessageResolvers } from "../../types/generatedGraphQLTypes";
 import { GroupChat } from "../../models";
 /**
  * This resolver method will retrieve and return from the database the Group chat to which the specified message belongs.

@@ -1,12 +1,9 @@
 import jwt from "jsonwebtoken";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
-import {
-  createAccessToken,
-  createRefreshToken,
-  InterfaceJwtTokenPayload,
-} from "../../utilities";
+import type { InterfaceJwtTokenPayload } from "../../utilities";
+import { createAccessToken, createRefreshToken } from "../../utilities";
 import {
   INVALID_REFRESH_TOKEN_ERROR,
   REFRESH_TOKEN_SECRET,
@@ -41,7 +38,7 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
 
   const jwtPayload: InterfaceJwtTokenPayload = jwt.verify(
     args.refreshToken,
-    REFRESH_TOKEN_SECRET!
+    REFRESH_TOKEN_SECRET as string
   ) as InterfaceJwtTokenPayload;
 
   // The refresh token received is valid so we can send a new access token

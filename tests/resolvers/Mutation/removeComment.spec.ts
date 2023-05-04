@@ -1,9 +1,11 @@
 import "dotenv/config";
-import mongoose, { Document, Types } from "mongoose";
-import { Comment, InterfaceComment, Post } from "../../../src/models";
-import { MutationRemoveCommentArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { InterfaceComment } from "../../../src/models";
+import { Comment, Post, User } from "../../../src/models";
+import type { MutationRemoveCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-
 import { removeComment as removeCommentResolver } from "../../../src/resolvers/Mutation/removeComment";
 import {
   COMMENT_NOT_FOUND_ERROR,
@@ -19,8 +21,9 @@ import {
   afterEach,
   vi,
 } from "vitest";
-import { TestUserType } from "../../helpers/userAndOrg";
-import { createTestPost, TestPostType } from "../../helpers/posts";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import type { TestPostType } from "../../helpers/posts";
+import { createTestPost } from "../../helpers/posts";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -34,20 +37,18 @@ beforeAll(async () => {
   const temp = await createTestPost();
   testUser = temp[0];
   testPost = temp[2];
+
   testComment = await Comment.create({
     text: "text",
-    creator: testUser!._id,
-    post: testPost!._id,
+    creator: testUser?._id,
+    postId: testPost?._id,
   });
 
   testPost = await Post.findOneAndUpdate(
     {
-      _id: testPost!._id,
+      _id: testPost?._id,
     },
     {
-      $push: {
-        comments: testComment._id,
-      },
       $inc: {
         commentCount: 1,
       },
@@ -104,7 +105,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { removeComment: removeCommentResolver } = await import(
@@ -118,16 +119,16 @@ describe("resolvers -> Mutation -> removeComment", () => {
     }
   });
 
-  it(`throws UnauthorizedError if user with _id === context.userId is not the creator
-  of comment with _id === args.id`, async () => {
+  it(`throws UnauthorizedError if user with _id === context.userId is not the creator of comment with _id === args.id`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
     try {
+      // Remove the user as the creator of the comment
       await Comment.updateOne(
         {
-          _id: testComment!._id,
+          _id: testComment?._id,
         },
         {
           $set: {
@@ -136,12 +137,24 @@ describe("resolvers -> Mutation -> removeComment", () => {
         }
       );
 
+      // Remove the user as the admin of the organization of the post of the comment
+      await User.updateOne(
+        {
+          _id: testUser?._id,
+        },
+        {
+          $pull: {
+            adminFor: testPost?.organization,
+          },
+        }
+      );
+
       const args: MutationRemoveCommentArgs = {
-        id: testComment!.id,
+        id: testComment?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { removeComment: removeCommentResolver } = await import(
@@ -156,23 +169,36 @@ describe("resolvers -> Mutation -> removeComment", () => {
   });
 
   it(`deletes the comment with _id === args.id`, async () => {
+    // Make the user creator of the comment again
     await Comment.updateOne(
       {
-        _id: testComment!._id,
+        _id: testComment?._id,
       },
       {
         $set: {
-          creator: testUser!._id,
+          creator: testUser?._id,
+        },
+      }
+    );
+
+    // Set the user as the admin of the organization of the post of the comment
+    await User.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          adminFor: testPost?.organization,
         },
       }
     );
 
     const args: MutationRemoveCommentArgs = {
-      id: testComment!.id,
+      id: testComment?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const removeCommentPayload = await removeCommentResolver?.(
@@ -181,15 +207,16 @@ describe("resolvers -> Mutation -> removeComment", () => {
       context
     );
 
-    expect(removeCommentPayload).toEqual(testComment!.toObject());
-
     const testUpdatedPost = await Post.findOne({
-      _id: testPost!._id,
+      _id: testPost?._id,
     })
-      .select(["comments", "commentCount"])
+      .select(["commentCount"])
       .lean();
 
-    expect(testUpdatedPost!.comments).toEqual([]);
-    expect(testUpdatedPost!.commentCount).toEqual(0);
+    const commentExists = await Comment.exists({ _id: testComment?._id });
+
+    expect(removeCommentPayload).toEqual(testComment?.toObject());
+    expect(commentExists).toBeFalsy();
+    expect(testUpdatedPost?.commentCount).toEqual(0);
   });
 });

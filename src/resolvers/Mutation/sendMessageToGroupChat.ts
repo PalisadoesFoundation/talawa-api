@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { GroupChat, GroupChatMessage, User } from "../../models";
 import {
@@ -43,8 +43,8 @@ export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"]
       );
     }
 
-    const currentUserIsAMemberOfGroupChat = groupChat.users.some(
-      (user) => user.toString() === context.userId.toString()
+    const currentUserIsAMemberOfGroupChat = groupChat.users.some((user) =>
+      user.equals(context.userId)
     );
 
     /* 

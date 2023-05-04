@@ -1,10 +1,11 @@
 import "dotenv/config";
-import { MutationCreatePluginArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationCreatePluginArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { createPlugin as createPluginResolver } from "../../../src/resolvers/Mutation/createPlugin";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestUserFunc, TestUserType } from "../../helpers/user";
+import type { TestUserType } from "../../helpers/user";
+import { createTestUserFunc } from "../../helpers/user";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -29,7 +30,7 @@ describe("resolvers -> Mutation -> createPlugin", () => {
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const createPluginPayload = await createPluginResolver?.({}, args, context);

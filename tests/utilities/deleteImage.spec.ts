@@ -1,4 +1,4 @@
-require("dotenv").config();
+import dotenv from "dotenv";
 import { nanoid } from "nanoid";
 import * as fs from "fs";
 import {
@@ -11,13 +11,16 @@ import {
   vi,
 } from "vitest";
 import { connect, disconnect } from "../helpers/db";
-import mongoose, { Document } from "mongoose";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+dotenv.config();
 
-import { ImageHash, InterfaceImageHash } from "../../src/models";
+import type { InterfaceImageHash } from "../../src/models";
+import { ImageHash } from "../../src/models";
 
-const testImageToBeDeleted: string = `${nanoid()}-testNewImagePath`;
-const testOldImagePath: string = `${nanoid()}-testOldImagePath`;
-const testHashString: string = `${nanoid()}-testHash`;
+const testImageToBeDeleted = `${nanoid()}-testNewImagePath`;
+const testOldImagePath = `${nanoid()}-testOldImagePath`;
+const testHashString = `${nanoid()}-testHash`;
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testHash: InterfaceImageHash & Document<any, any, InterfaceImageHash>;

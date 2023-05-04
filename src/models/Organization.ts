@@ -1,8 +1,9 @@
-import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { InterfaceMembershipRequest } from "./MembershipRequest";
-import { InterfaceMessage } from "./Message";
-import { InterfacePost } from "./Post";
-import { InterfaceUser } from "./User";
+import type { PopulatedDoc, Types, Document, Model } from "mongoose";
+import { Schema, model, models } from "mongoose";
+import type { InterfaceMembershipRequest } from "./MembershipRequest";
+import type { InterfaceMessage } from "./Message";
+import type { InterfacePost } from "./Post";
+import type { InterfaceUser } from "./User";
 /**
  * This is an interface that represents a database(MongoDB) document for Organization.
  */
@@ -16,15 +17,13 @@ export interface InterfaceOrganization {
   isPublic: boolean;
   creator: PopulatedDoc<InterfaceUser & Document>;
   status: string;
-  members: Array<PopulatedDoc<InterfaceUser & Document>>;
-  admins: Array<PopulatedDoc<InterfaceUser & Document>>;
-  groupChats: Array<PopulatedDoc<InterfaceMessage & Document>>;
-  posts: Array<PopulatedDoc<InterfacePost & Document>>;
-  pinnedPosts: Array<PopulatedDoc<InterfacePost & Document>>;
-  membershipRequests: Array<
-    PopulatedDoc<InterfaceMembershipRequest & Document>
-  >;
-  blockedUsers: Array<PopulatedDoc<InterfaceUser & Document>>;
+  members: PopulatedDoc<InterfaceUser & Document>[];
+  admins: PopulatedDoc<InterfaceUser & Document>[];
+  groupChats: PopulatedDoc<InterfaceMessage & Document>[];
+  posts: PopulatedDoc<InterfacePost & Document>[];
+  pinnedPosts: PopulatedDoc<InterfacePost & Document>[];
+  membershipRequests: PopulatedDoc<InterfaceMembershipRequest & Document>[];
+  blockedUsers: PopulatedDoc<InterfaceUser & Document>[];
   visibleInSearch: boolean | undefined;
   createdAt: Date;
 }
@@ -133,9 +132,9 @@ const organizationSchema = new Schema({
   },
 });
 
-const OrganizationModel = () =>
+const organizationModel = (): Model<InterfaceOrganization> =>
   model<InterfaceOrganization>("Organization", organizationSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Organization = (models.Organization ||
-  OrganizationModel()) as ReturnType<typeof OrganizationModel>;
+  organizationModel()) as ReturnType<typeof organizationModel>;

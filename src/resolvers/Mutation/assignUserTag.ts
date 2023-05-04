@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, OrganizationTagUser, TagUser } from "../../models";
 import {
@@ -42,7 +42,7 @@ export const assignUserTag: MutationResolvers["assignUserTag"] = async (
 
   // Boolean to determine whether user is an admin of organization of the tag.
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) => organization.toString() === tag!.organizationId.toString()
+    (organization) => organization.equals(tag.organizationId)
   );
 
   // Checks whether currentUser can assign the tag or not.
@@ -72,9 +72,8 @@ export const assignUserTag: MutationResolvers["assignUserTag"] = async (
 
   // Check that the user to which the tag is to be assigned is a member of the tag's organization
   const requestUserBelongsToTagOrganization =
-    requestUser.joinedOrganizations.some(
-      (organization) =>
-        organization.toString() === tag!.organizationId.toString()
+    requestUser.joinedOrganizations.some((organization) =>
+      organization.equals(tag.organizationId)
     );
 
   if (!requestUserBelongsToTagOrganization) {

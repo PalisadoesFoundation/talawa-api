@@ -1,6 +1,7 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
-import { MutationAcceptAdminArgs } from "../../../src/types/generatedGraphQLTypes";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { MutationAcceptAdminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { acceptAdmin as acceptAdminResolver } from "../../../src/resolvers/Mutation/acceptAdmin";
@@ -17,7 +18,8 @@ import {
   it,
   vi,
 } from "vitest";
-import { createTestUser, TestUserType } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 import { User } from "../../../src/models";
 
 let testUserSuperAdmin: TestUserType;
@@ -109,11 +111,11 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     );
 
     const args: MutationAcceptAdminArgs = {
-      id: testUserAdmin!.id,
+      id: testUserAdmin?.id,
     };
 
     const context = {
-      userId: testUserSuperAdmin!.id,
+      userId: testUserSuperAdmin?.id,
     };
 
     const acceptAdminPayload = await acceptAdminResolver?.({}, args, context);
@@ -121,7 +123,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     expect(acceptAdminPayload).toEqual(true);
 
     const updatedTestUser = await User.findOne({
-      _id: testUserAdmin!._id,
+      _id: testUserAdmin?._id,
     })
       .select(["adminApproved"])
       .lean();

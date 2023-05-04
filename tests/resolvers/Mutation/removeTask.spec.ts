@@ -1,13 +1,10 @@
 import "dotenv/config";
-import mongoose, { Document, Types } from "mongoose";
-import {
-  User,
-  Organization,
-  Event,
-  Task,
-  InterfaceTask,
-} from "../../../src/models";
-import { MutationRemoveTaskArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { InterfaceTask } from "../../../src/models";
+import { User, Organization, Event, Task } from "../../../src/models";
+import type { MutationRemoveTaskArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { removeTask as removeTaskResolver } from "../../../src/resolvers/Mutation/removeTask";
@@ -18,7 +15,7 @@ import {
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUserFunc } from "../../helpers/user";
-import { TestUserType } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -35,14 +32,14 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    creator: testUsers[0]!._id,
-    admins: [testUsers[0]!._id],
-    members: [testUsers[0]!._id],
+    creator: testUsers[0]?._id,
+    admins: [testUsers[0]?._id],
+    members: [testUsers[0]?._id],
   });
 
   await User.updateOne(
     {
-      _id: testUsers[0]!._id,
+      _id: testUsers[0]?._id,
     },
     {
       $set: {
@@ -54,14 +51,14 @@ beforeAll(async () => {
   );
 
   const testEvent = await Event.create({
-    creator: testUsers[0]!._id,
+    creator: testUsers[0]?._id,
     registrants: [
       {
-        userId: testUsers[0]!._id,
-        user: testUsers[0]!._id,
+        userId: testUsers[0]?._id,
+        user: testUsers[0]?._id,
       },
     ],
-    admins: [testUsers[0]!._id],
+    admins: [testUsers[0]?._id],
     organization: testOrganization._id,
     isRegisterable: true,
     isPublic: true,
@@ -73,7 +70,7 @@ beforeAll(async () => {
 
   await User.updateOne(
     {
-      _id: testUsers[0]!._id,
+      _id: testUsers[0]?._id,
     },
     {
       $set: {
@@ -87,7 +84,7 @@ beforeAll(async () => {
   testTask = await Task.create({
     title: "title",
     event: testEvent._id,
-    creator: testUsers[0]!._id,
+    creator: testUsers[0]?._id,
   });
 
   await Event.updateOne(
@@ -143,7 +140,7 @@ describe("resolvers -> Mutation -> removeTask", () => {
       };
 
       const context = {
-        userId: testUsers[0]!._id,
+        userId: testUsers[0]?._id,
       };
 
       const { removeTask: removeTaskResolver } = await import(
@@ -168,7 +165,7 @@ describe("resolvers -> Mutation -> removeTask", () => {
       };
 
       const context = {
-        userId: testUsers[1]!._id,
+        userId: testUsers[1]?._id,
       };
 
       const { removeTask: removeTaskResolver } = await import(
@@ -188,7 +185,7 @@ describe("resolvers -> Mutation -> removeTask", () => {
     };
 
     const context = {
-      userId: testUsers[0]!._id,
+      userId: testUsers[0]?._id,
     };
 
     const removeTaskPayload = await removeTaskResolver?.({}, args, context);

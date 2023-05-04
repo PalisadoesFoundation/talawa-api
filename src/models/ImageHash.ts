@@ -1,4 +1,5 @@
-import { Schema, model, Types, models } from "mongoose";
+import type { Types, Model } from "mongoose";
+import { Schema, model, models } from "mongoose";
 /**
  * This is an interface that represents a database(MongoDB) document for Image Hash.
  */
@@ -38,10 +39,10 @@ const imageHashSchema = new Schema({
   },
 });
 
-const ImageHashModel = () =>
+const imageHashModel = (): Model<InterfaceImageHash> =>
   model<InterfaceImageHash>("ImageHash", imageHashSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const ImageHash = (models.ImageHash || ImageHashModel()) as ReturnType<
-  typeof ImageHashModel
+export const ImageHash = (models.ImageHash || imageHashModel()) as ReturnType<
+  typeof imageHashModel
 >;

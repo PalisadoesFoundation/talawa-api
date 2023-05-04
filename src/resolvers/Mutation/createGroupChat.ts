@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, GroupChat, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
@@ -50,7 +50,7 @@ export const createGroupChat: MutationResolvers["createGroupChat"] = async (
   const usersInGroupChat = [];
 
   // Loops over each item in args.data.userIds list.
-  for await (const userId of args.data!.userIds) {
+  for await (const userId of args.data.userIds) {
     const userExists = await User.exists({
       _id: userId,
     });

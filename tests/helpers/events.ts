@@ -1,10 +1,8 @@
-import {
-  createTestUserAndOrganization,
-  TestOrganizationType,
-  TestUserType,
-} from "./userAndOrg";
-import { Event, User, InterfaceEvent } from "../../src/models";
-import { Document } from "mongoose";
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
+import { createTestUserAndOrganization } from "./userAndOrg";
+import type { InterfaceEvent } from "../../src/models";
+import { Event, User } from "../../src/models";
+import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
 export type TestEventType =
@@ -18,52 +16,56 @@ export const createTestEvent = async (): Promise<
   const testUser = resultsArray[0];
   const testOrganization = resultsArray[1];
 
-  const testEvent = await Event.create({
-    title: `title${nanoid().toLowerCase()}`,
-    description: `description${nanoid().toLowerCase()}`,
-    allDay: true,
-    startDate: new Date(),
-    recurring: true,
-    isPublic: true,
-    isRegisterable: true,
-    creator: testUser!._id,
-    admins: [testUser!._id],
-    registrants: [],
-    organization: testOrganization!._id,
-  });
+  if (testUser && testOrganization) {
+    const testEvent = await Event.create({
+      title: `title${nanoid().toLowerCase()}`,
+      description: `description${nanoid().toLowerCase()}`,
+      allDay: true,
+      startDate: new Date(),
+      recurring: true,
+      isPublic: true,
+      isRegisterable: true,
+      creator: testUser._id,
+      admins: [testUser._id],
+      registrants: [],
+      organization: testOrganization._id,
+    });
 
-  await User.updateOne(
-    {
-      _id: testUser!._id,
-    },
-    {
-      $push: {
-        eventAdmin: testEvent._id,
-        createdEvents: testEvent._id,
-        registeredEvents: testEvent._id,
+    await User.updateOne(
+      {
+        _id: testUser._id,
       },
-    }
-  );
+      {
+        $push: {
+          eventAdmin: testEvent._id,
+          createdEvents: testEvent._id,
+          registeredEvents: testEvent._id,
+        },
+      }
+    );
 
-  return [testUser, testOrganization, testEvent];
+    return [testUser, testOrganization, testEvent];
+  } else {
+    return [testUser, testOrganization, null];
+  }
 };
 
 export const createEventWithRegistrant = async (
-  user_id: string,
-  organization_id: string,
+  userId: string,
+  organizationId: string,
   allDay: boolean,
   recurrance: string
 ): Promise<TestEventType> => {
   const testEvent = await Event.create({
-    creator: user_id,
+    creator: userId,
     registrants: [
       {
-        userId: user_id,
-        user: user_id,
+        userId: userId,
+        user: userId,
       },
     ],
-    admins: [user_id],
-    organization: organization_id,
+    admins: [userId],
+    organization: organizationId,
     isRegisterable: true,
     isPublic: true,
     title: `title${nanoid()}`,
@@ -79,7 +81,7 @@ export const createEventWithRegistrant = async (
 
   await User.updateOne(
     {
-      _id: user_id,
+      _id: userId,
     },
     {
       $push: {

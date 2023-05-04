@@ -1,5 +1,6 @@
-import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { Event, InterfaceUserAttende } from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceUserAttende } from "../../models";
+import { Event } from "../../models";
 import { STATUS_ACTIVE } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
 /**

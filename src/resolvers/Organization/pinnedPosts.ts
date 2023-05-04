@@ -1,5 +1,5 @@
 import { Post } from "../../models";
-import { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
+import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const pinnedPosts: OrganizationResolvers["pinnedPosts"] = async (
   parent

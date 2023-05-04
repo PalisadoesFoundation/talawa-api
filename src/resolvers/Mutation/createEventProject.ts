@@ -1,3 +1,4 @@
+import type { InterfaceEventProject } from "../../models";
 import { User, EventProject, Event } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
@@ -20,7 +21,7 @@ export const createEventProject = async (
   _parent: any,
   args: any,
   context: any
-) => {
+): Promise<InterfaceEventProject> => {
   const currentUserExists = await User.exists({
     _id: context.userId,
   });
@@ -47,8 +48,8 @@ export const createEventProject = async (
     );
   }
 
-  const currentUserIsEventAdmin = event.admins.some(
-    (admin) => admin.toString() === context.userId.toString()
+  const currentUserIsEventAdmin = event.admins.some((admin) =>
+    admin.equals(context.userId)
   );
 
   // Checks whether currentUser with _id === context.userId is an admin of event.

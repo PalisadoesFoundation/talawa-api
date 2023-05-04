@@ -8,7 +8,7 @@ import {
   middleware,
   tracingIdHeaderName,
 } from "../../src/libraries/requestTracing";
-import { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import { customAlphabet } from "nanoid";
 
@@ -40,23 +40,23 @@ describe("middleware -> requestContext", () => {
   });
 
   it("testing the requestTracing Middleware", () => {
-    const ReqheaderMethod = (tracingIdHeaderName: string) => {
+    const reqHeaderMethod = (tracingIdHeaderName: string): string => {
       return requestTracingNamespace.get(tracingIdHeaderName);
     };
-    const ResHeaderMethod = (
+    const resHeaderMethod = (
       tracingIdHeaderName: string,
       tracingID: string
-    ) => {
+    ): string => {
       return requestTracingNamespace.set(tracingIdHeaderName, tracingID);
     };
     const myHeaders = new Headers();
     myHeaders.append("X-Tracing-Id", "UserTracingId");
     // @ts-ignore
-    mockRequest.header = ReqheaderMethod;
+    mockRequest.header = reqHeaderMethod;
     // @ts-ignore
     mockRequest.headers = myHeaders;
     // @ts-ignore
-    mockResponse.header = ResHeaderMethod;
+    mockResponse.header = resHeaderMethod;
     middleware()(
       mockRequest as Request,
       mockResponse as Response,
@@ -67,7 +67,7 @@ describe("middleware -> requestContext", () => {
   });
 
   it("test trace function with tracingID provided", async () => {
-    const method = () => {
+    const method = (): string => {
       return "method";
     };
     const tracingID = uuidv4();
@@ -75,7 +75,7 @@ describe("middleware -> requestContext", () => {
     expect(setTracingId(tracingID)).toBe(tracingID);
   });
   it("test trace function with tracingID as empty string", async () => {
-    const method = () => {
+    const method = (): string => {
       return "method";
     };
     const tracingID = "";

@@ -1,5 +1,5 @@
 import { User } from "../../models";
-import { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
+import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This resolver function will fetch and return the blocked users for the Organization from database.
  * @param parent - An object that is the return value of the resolver for this field's parent.

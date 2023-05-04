@@ -3,7 +3,7 @@ import cls from "cls-hooked";
 // @ts-ignore
 import clsBluebird from "cls-bluebird";
 import i18n from "i18n";
-import { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 
 export const requestContextNamespace = cls.createNamespace(
   "talawa-request-context"
@@ -11,21 +11,21 @@ export const requestContextNamespace = cls.createNamespace(
 
 clsBluebird(requestContextNamespace);
 
-export const setRequestContextValue = <T>(key: string, value: T) => {
+export const setRequestContextValue = <T>(key: string, value: T): T => {
   return requestContextNamespace.set<T>(key, value);
 };
 
-export const getRequestContextValue = (key: string) => {
+export const getRequestContextValue = <T>(key: string): T => {
   return requestContextNamespace.get(key);
 };
 
-export const setRequestContext = (obj: any) => {
+export const setRequestContext = (obj: any): void => {
   setRequestContextValue("translate", obj.__);
   setRequestContextValue("translatePlural", obj.__n);
 };
 
 export const middleware = () => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     requestContextNamespace.bindEmitter(req);
     requestContextNamespace.bindEmitter(res);
 
@@ -41,23 +41,25 @@ interface InterfaceInitOptions<T> extends Record<any, any> {
 }
 
 // Invalid code. Currently ignored by typescript. Needs fix.
-export const init = async <T>(options: InterfaceInitOptions<T> = {}) => {
+export const init = <T>(options: InterfaceInitOptions<T> = {}): T => {
   const obj: any = {};
   // @ts-ignore
   i18n.init(obj);
-  // @ts-ignore
   obj.setLocale(options.lang);
   return requestContextNamespace.runAndReturn<T>(() => {
     setRequestContext({
       __: obj.__,
       __n: obj.__n,
     });
-    // @ts-ignore
-    return options.requestHandler();
+    // return options.requestHandler?.()!;
+    return options.requestHandler != null
+      ? options.requestHandler()
+      : ({} as T);
   });
 };
 
-export const translate = (...args: any) => {
+export const translate = (...args: any): any => {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const __ = getRequestContextValue("translate");
   if (typeof __ !== "function") {
     throw new Error("i18n is not initialized, try app.use(i18n.init);");
@@ -65,7 +67,8 @@ export const translate = (...args: any) => {
   return __(...args);
 };
 
-export const translatePlural = (...args: any) => {
+export const translatePlural = (...args: any): any => {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const __n = getRequestContextValue("translatePlural");
   if (typeof __n !== "function") {
     throw new Error("i18n is not initialized, try app.use(i18n.init);");

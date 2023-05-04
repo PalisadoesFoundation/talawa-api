@@ -1,7 +1,8 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { User } from "../../../src/models";
-import { MutationSignUpArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationSignUpArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -22,15 +23,15 @@ import {
   expect,
   afterEach,
 } from "vitest";
-import {
-  createTestUserAndOrganization,
+import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { signUp as signUpResolverImage } from "../../../src/resolvers/Mutation/signUp";
 
-const testImagePath: string = `${nanoid().toLowerCase()}test.png`;
+const testImagePath = `${nanoid().toLowerCase()}test.png`;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -119,7 +120,7 @@ describe("resolvers -> Mutation -> signUp", () => {
         lastName: "lastName",
         password: "password",
         appLanguageCode: "en",
-        organizationUserBelongsToId: testOrganization!.id,
+        organizationUserBelongsToId: testOrganization?.id,
       },
     };
     const { signUp: signUpResolver } = await import(
@@ -164,7 +165,7 @@ describe("resolvers -> Mutation -> signUp", () => {
         lastName: "lastName",
         password: "password",
         appLanguageCode: "en",
-        organizationUserBelongsToId: testOrganization!.id,
+        organizationUserBelongsToId: testOrganization?.id,
       },
       file: testImagePath,
     };
@@ -242,7 +243,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     try {
       const args: MutationSignUpArgs = {
         data: {
-          email: testUser!.email,
+          email: testUser?.email,
           firstName: "firstName",
           lastName: "lastName",
           password: "password",

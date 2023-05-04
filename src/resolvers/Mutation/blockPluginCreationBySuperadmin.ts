@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
@@ -42,7 +42,7 @@ export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCrea
     }
 
     // Checks whether currentUser is a SUPERADMIN.
-    superAdminCheck(currentUser!);
+    superAdminCheck(currentUser);
 
     /*
     Sets pluginCreationAllowed field on document of user with _id === args.userId

@@ -1,6 +1,7 @@
-import { Schema, model, PopulatedDoc, Types, Document, models } from "mongoose";
-import { InterfacePost } from "./Post";
-import { InterfaceUser } from "./User";
+import type { PopulatedDoc, Types, Document, Model } from "mongoose";
+import { Schema, model, models } from "mongoose";
+import type { InterfaceUser } from "./User";
+import type { InterfacePost } from "./Post";
 /**
  * This is an interface representing a document for a comment in the database(MongoDB).
  */
@@ -8,9 +9,9 @@ export interface InterfaceComment {
   _id: Types.ObjectId;
   text: string;
   createdAt: Date;
+  postId: PopulatedDoc<InterfacePost & Document>;
   creator: PopulatedDoc<InterfaceUser & Document>;
-  post: PopulatedDoc<InterfacePost & Document>;
-  likedBy: Array<PopulatedDoc<InterfaceUser & Document>>;
+  likedBy: PopulatedDoc<InterfaceUser & Document>[];
   likeCount: number;
   status: string;
 }
@@ -19,7 +20,7 @@ export interface InterfaceComment {
  * @param text - Text
  * @param createdAt - Date when the comment was created
  * @param creator - Creator of the comment
- * @param post - Post to which the comment has been made
+ * @param postId - Id of the post on which this comment is created
  * @param likedBy - Liked by whom
  * @param likeCount - No of likes
  * @param status - whether the comment is active, blocked or deleted.
@@ -38,7 +39,7 @@ const commentSchema = new Schema({
     ref: "User",
     required: true,
   },
-  post: {
+  postId: {
     type: Schema.Types.ObjectId,
     ref: "Post",
     required: true,
@@ -61,9 +62,10 @@ const commentSchema = new Schema({
   },
 });
 
-const CommentModel = () => model<InterfaceComment>("Comment", commentSchema);
+const commentModel = (): Model<InterfaceComment> =>
+  model<InterfaceComment>("Comment", commentSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const Comment = (models.Comment || CommentModel()) as ReturnType<
-  typeof CommentModel
+export const Comment = (models.Comment || commentModel()) as ReturnType<
+  typeof commentModel
 >;

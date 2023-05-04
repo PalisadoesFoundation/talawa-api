@@ -1,4 +1,4 @@
-import { ConnectionPageInfo } from "../types/generatedGraphQLTypes";
+import type { ConnectionPageInfo } from "../types/generatedGraphQLTypes";
 
 interface InterfaceConnectionEdge<T> {
   cursor: string;
@@ -6,7 +6,7 @@ interface InterfaceConnectionEdge<T> {
 }
 
 interface InterfaceConnection<T> {
-  edges?: Array<InterfaceConnectionEdge<T> | null | undefined>;
+  edges?: InterfaceConnectionEdge<T> | null | undefined[];
   pageInfo: ConnectionPageInfo;
 }
 

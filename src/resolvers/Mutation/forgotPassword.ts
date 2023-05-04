@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwtDecode from "jwt-decode";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 import { INVALID_OTP } from "../../constants";
 /**

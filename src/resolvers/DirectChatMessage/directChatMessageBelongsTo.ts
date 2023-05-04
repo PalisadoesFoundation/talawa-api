@@ -1,4 +1,4 @@
-import { DirectChatMessageResolvers } from "../../types/generatedGraphQLTypes";
+import type { DirectChatMessageResolvers } from "../../types/generatedGraphQLTypes";
 import { DirectChat } from "../../models";
 /**
  * This resolver method will retrieve and return from the database the Direct chat to which the specified message belongs.

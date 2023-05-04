@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
 import { User, Organization, Event } from "../../models";
@@ -75,17 +75,10 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
       _id: currentUser._id,
     },
     {
-      $set: {
-        eventAdmin: currentUser.eventAdmin.filter(
-          (adminForEvent) => adminForEvent.toString() !== event?._id.toString()
-        ),
-        createdEvents: currentUser.createdEvents.filter(
-          (createdEvent) => createdEvent.toString() !== event?._id.toString()
-        ),
-        registeredEvents: currentUser.registeredEvents.filter(
-          (registeredEvent) =>
-            registeredEvent.toString() !== event?._id.toString()
-        ),
+      $pull: {
+        eventAdmin: event._id,
+        createdEvents: event._id,
+        registeredEvents: event._id,
       },
     }
   );

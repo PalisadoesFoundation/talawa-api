@@ -1,7 +1,8 @@
-import { Schema, Types, model, PopulatedDoc, Document, models } from "mongoose";
-import { InterfaceOrganization } from "./Organization";
-import { InterfaceTask } from "./Task";
-import { InterfaceUser } from "./User";
+import type { Types, PopulatedDoc, Document, Model } from "mongoose";
+import { Schema, model, models } from "mongoose";
+import type { InterfaceOrganization } from "./Organization";
+import type { InterfaceTask } from "./Task";
+import type { InterfaceUser } from "./User";
 /**
  * This is an interface representing a document for a user attendee in the database(MongoDB).
  */
@@ -60,10 +61,10 @@ export interface InterfaceEvent {
   isPublic: boolean;
   isRegisterable: boolean;
   creator: PopulatedDoc<InterfaceUser & Document>;
-  registrants: Array<PopulatedDoc<InterfaceUserAttende & Document>>;
-  admins: Array<PopulatedDoc<InterfaceUser & Document>>;
+  registrants: PopulatedDoc<InterfaceUserAttende & Document>[];
+  admins: PopulatedDoc<InterfaceUser & Document>[];
   organization: PopulatedDoc<InterfaceOrganization & Document>;
-  tasks: Array<PopulatedDoc<InterfaceTask & Document>>;
+  tasks: PopulatedDoc<InterfaceTask & Document>[];
   status: string;
 }
 /**
@@ -196,9 +197,10 @@ const eventSchema = new Schema({
   },
 });
 
-const EventModel = () => model<InterfaceEvent>("Event", eventSchema);
+const eventModel = (): Model<InterfaceEvent> =>
+  model<InterfaceEvent>("Event", eventSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const Event = (models.Event || EventModel()) as ReturnType<
-  typeof EventModel
+export const Event = (models.Event || eventModel()) as ReturnType<
+  typeof eventModel
 >;

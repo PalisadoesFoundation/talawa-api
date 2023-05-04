@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { User } from "../../models";
 import { errors, requestContext } from "../../libraries";
@@ -29,7 +29,7 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
     );
   }
 
-  superAdminCheck(currentUser!);
+  superAdminCheck(currentUser);
 
   const userExists = await User.exists({
     _id: args.id,

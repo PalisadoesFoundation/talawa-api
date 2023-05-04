@@ -1,13 +1,11 @@
 import "dotenv/config";
-import { MutationOtpArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationOtpArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { otp as otpResolver } from "../../../src/resolvers/Mutation/otp";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import {
-  createTestUserAndOrganization,
-  TestUserType,
-} from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { mailer } from "../../../src/utilities";
 import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import { nanoid } from "nanoid";
@@ -41,7 +39,7 @@ describe("resolvers -> Mutation -> otp", () => {
   it("should generate and send OTP to the user", async () => {
     const args: MutationOtpArgs = {
       data: {
-        email: testUser!.email,
+        email: testUser?.email,
       },
     };
     vi.mock("../../../src/utilities", () => ({

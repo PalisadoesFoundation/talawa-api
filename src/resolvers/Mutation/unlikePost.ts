@@ -1,5 +1,5 @@
 import { POST_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Post } from "../../models";
 /**
@@ -41,8 +41,8 @@ export const unlikePost: MutationResolvers["unlikePost"] = async (
     );
   }
 
-  const currentUserHasLikedPost = post.likedBy.some(
-    (liker) => liker.toString() === context.userId.toString()
+  const currentUserHasLikedPost = post.likedBy.some((liker) =>
+    liker.equals(context.userId)
   );
 
   if (currentUserHasLikedPost === true) {

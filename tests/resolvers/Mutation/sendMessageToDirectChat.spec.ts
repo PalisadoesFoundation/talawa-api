@@ -1,13 +1,13 @@
 import "dotenv/config";
-import mongoose, { Document, Types } from "mongoose";
-import {
-  User,
-  Organization,
-  DirectChat,
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type {
   InterfaceDirectChat,
   InterfaceDirectChatMessage,
 } from "../../../src/models";
-import { MutationSendMessageToDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
+import { User, Organization, DirectChat } from "../../../src/models";
+import type { MutationSendMessageToDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { sendMessageToDirectChat as sendMessageToDirectChatResolver } from "../../../src/resolvers/Mutation/sendMessageToDirectChat";
@@ -25,7 +25,7 @@ import {
   vi,
 } from "vitest";
 import { createTestUserFunc } from "../../helpers/user";
-import { TestUserType } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -42,15 +42,15 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    creator: testUsers[0]!._id,
-    admins: [testUsers[0]!._id],
-    members: [testUsers[0]!._id],
+    creator: testUsers[0]?._id,
+    admins: [testUsers[0]?._id],
+    members: [testUsers[0]?._id],
     visibleInSearch: true,
   });
 
   await User.updateOne(
     {
-      _id: testUsers[0]!._id,
+      _id: testUsers[0]?._id,
     },
     {
       $set: {
@@ -63,9 +63,9 @@ beforeAll(async () => {
 
   testDirectChat = await DirectChat.create({
     title: "title",
-    creator: testUsers[0]!._id,
+    creator: testUsers[0]?._id,
     organization: testOrganization._id,
-    users: [testUsers[0]!._id, testUsers[1]!._id],
+    users: [testUsers[0]?._id, testUsers[1]?._id],
   });
 });
 
@@ -90,7 +90,7 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         messageContent: "",
       };
 
-      const context = { userId: testUsers[0]!.id };
+      const context = { userId: testUsers[0]?.id };
 
       const { sendMessageToDirectChat: sendMessageToDirectChatResolver } =
         await import("../../../src/resolvers/Mutation/sendMessageToDirectChat");
@@ -134,7 +134,7 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
       },
       {
         $push: {
-          users: testUsers[0]!._id,
+          users: testUsers[0]?._id,
         },
       }
     );
@@ -150,13 +150,16 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         _payload: {
           messageSentToDirectChat: InterfaceDirectChatMessage;
         }
-      ) => {
+      ): {
+        _action: string;
+        _payload: { messageSentToDirectChat: InterfaceDirectChatMessage };
+      } => {
         return { _action, _payload };
       },
     };
 
     const context = {
-      userId: testUsers[0]!.id,
+      userId: testUsers[0]?.id,
       pubsub,
     };
 
@@ -166,8 +169,8 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
     expect(sendMessageToDirectChatPayload).toEqual(
       expect.objectContaining({
         directChatMessageBelongsTo: testDirectChat._id,
-        sender: testUsers[0]!._id,
-        receiver: testUsers[1]!._id,
+        sender: testUsers[0]?._id,
+        receiver: testUsers[1]?._id,
         messageContent: "messageContent",
       })
     );

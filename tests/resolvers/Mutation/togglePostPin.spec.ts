@@ -1,7 +1,8 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { Organization, User, Post } from "../../../src/models";
-import { MutationTogglePostPinArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationTogglePostPinArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -18,8 +19,10 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { createTestPost, TestPostType } from "../../helpers/posts";
-import { createTestUser, TestUserType } from "../../helpers/userAndOrg";
+import type { TestPostType } from "../../helpers/posts";
+import { createTestPost } from "../../helpers/posts";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -33,7 +36,7 @@ beforeAll(async () => {
 
   // Done so as to fetch the latest changes in the adminFor field of the user
   testUser = await User.findOne({
-    _id: testUser!._id,
+    _id: testUser?._id,
   }).lean();
 });
 
@@ -56,7 +59,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
 
     try {
       const args: MutationTogglePostPinArgs = {
-        id: testPost!._id,
+        id: testPost?._id,
       };
 
       const context = {
@@ -87,7 +90,7 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { togglePostPin: togglePostPinResolver } = await import(
@@ -109,11 +112,11 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
     try {
       const args: MutationTogglePostPinArgs = {
-        id: testPost!.id,
+        id: testPost?.id,
       };
 
       const context = {
-        userId: randomUser!._id,
+        userId: randomUser?._id,
       };
 
       const { togglePostPin: togglePostPinResolver } = await import(
@@ -135,11 +138,11 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
       (message) => `Translated ${message}`
     );
     const args: MutationTogglePostPinArgs = {
-      id: testPost!._id,
+      id: testPost?._id,
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const { togglePostPin: togglePostPinResolver } = await import(
@@ -148,18 +151,18 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
 
     await togglePostPinResolver?.({}, args, context);
     const organization = await Organization.findOne({
-      _id: testPost!.organization,
+      _id: testPost?.organization,
     }).lean();
     const updatedPost = await Post.findOne({
-      _id: testPost!.id,
+      _id: testPost?.id,
     }).lean();
 
-    const currentPostIsPinned = organization!.pinnedPosts.some(
-      (p) => p.toString() === args.id.toString()
+    const currentPostIsPinned = organization?.pinnedPosts.some((p) =>
+      p.equals(args.id)
     );
 
     expect(currentPostIsPinned).toBeTruthy();
-    expect(updatedPost!.pinned).toBeTruthy();
+    expect(updatedPost?.pinned).toBeTruthy();
   });
 
   it(`removes a post from the pinnedPosts for an org`, async () => {
@@ -169,11 +172,11 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
     );
 
     const args: MutationTogglePostPinArgs = {
-      id: testPost!._id,
+      id: testPost?._id,
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const { togglePostPin: togglePostPinResolver } = await import(
@@ -183,17 +186,17 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
     await togglePostPinResolver?.({}, args, context);
 
     const organization = await Organization.findOne({
-      _id: testPost!.organization,
+      _id: testPost?.organization,
     }).lean();
     const updatedPost = await Post.findOne({
-      _id: testPost!.id,
+      _id: testPost?.id,
     }).lean();
 
-    const currentPostIsPinned = organization!.pinnedPosts.some(
-      (p) => p.toString() === args.id.toString()
+    const currentPostIsPinned = organization?.pinnedPosts.some((p) =>
+      p.equals(args.id)
     );
 
     expect(currentPostIsPinned).toBeFalsy();
-    expect(updatedPost!.pinned).toBeFalsy();
+    expect(updatedPost?.pinned).toBeFalsy();
   });
 });

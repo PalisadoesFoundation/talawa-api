@@ -1,6 +1,7 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
-import { MutationUnassignUserTagArgs } from "../../../src/types/generatedGraphQLTypes";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { MutationUnassignUserTagArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -18,8 +19,10 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { createTestUser, TestUserType } from "../../helpers/userAndOrg";
-import { TestUserTagType, createRootTagWithOrg } from "../../helpers/tags";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUser } from "../../helpers/userAndOrg";
+import type { TestUserTagType } from "../../helpers/tags";
+import { createRootTagWithOrg } from "../../helpers/tags";
 import { TagUser } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -55,8 +58,8 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
     try {
       const args: MutationUnassignUserTagArgs = {
         input: {
-          userId: adminUser!._id,
-          tagId: testTag!._id.toString(),
+          userId: adminUser?._id,
+          tagId: testTag ? testTag._id.toString() : "",
         },
       };
 
@@ -86,11 +89,11 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
       const args: MutationUnassignUserTagArgs = {
         input: {
           userId: Types.ObjectId().toString(),
-          tagId: testTag!._id.toString(),
+          tagId: testTag ? testTag._id.toString() : "",
         },
       };
 
-      const context = { userId: adminUser!._id };
+      const context = { userId: adminUser?._id };
 
       const { unassignUserTag: unassignUserTagResolver } = await import(
         "../../../src/resolvers/Mutation/unassignUserTag"
@@ -115,13 +118,13 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
     try {
       const args: MutationUnassignUserTagArgs = {
         input: {
-          userId: adminUser!._id,
+          userId: adminUser?._id,
           tagId: Types.ObjectId().toString(),
         },
       };
 
       const context = {
-        userId: adminUser!._id,
+        userId: adminUser?._id,
       };
 
       const { unassignUserTag: unassignUserTagResolver } = await import(
@@ -145,13 +148,13 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
     try {
       const args: MutationUnassignUserTagArgs = {
         input: {
-          userId: adminUser!._id,
-          tagId: testTag!._id.toString(),
+          userId: adminUser?._id,
+          tagId: testTag ? testTag._id.toString() : "",
         },
       };
 
       const context = {
-        userId: randomUser!._id,
+        userId: randomUser?._id,
       };
 
       const { unassignUserTag: unassignUserTagResolver } = await import(
@@ -179,12 +182,12 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
     try {
       const args: MutationUnassignUserTagArgs = {
         input: {
-          userId: adminUser!._id,
-          tagId: testTag!._id.toString(),
+          userId: adminUser?._id,
+          tagId: testTag ? testTag._id.toString() : "",
         },
       };
       const context = {
-        userId: adminUser!._id,
+        userId: adminUser?._id,
       };
 
       const { unassignUserTag: unassignUserTagResolver } = await import(
@@ -211,12 +214,12 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
 
     const args: MutationUnassignUserTagArgs = {
       input: {
-        userId: adminUser!._id,
-        tagId: testTag!._id.toString(),
+        userId: adminUser?._id,
+        tagId: testTag ? testTag._id.toString() : "",
       },
     };
     const context = {
-      userId: adminUser!._id,
+      userId: adminUser?._id,
     };
 
     // Assign the tag to the user
@@ -231,7 +234,7 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
 
     const payload = await unassignUserTagResolver?.({}, args, context);
 
-    expect(payload!._id.toString()).toEqual(adminUser!._id.toString());
+    expect(payload?._id.toString()).toEqual(adminUser?._id.toString());
 
     const tagAssigned = await TagUser.exists({
       ...args.input,

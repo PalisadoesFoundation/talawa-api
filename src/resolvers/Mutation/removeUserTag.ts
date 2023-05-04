@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, OrganizationTagUser, TagUser } from "../../models";
 import {
@@ -40,7 +40,7 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
 
   // Boolean to determine whether user is an admin of organization of the tag
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) => organization.toString() === tag.organizationId.toString()
+    (organization) => organization.equals(tag.organizationId)
   );
 
   // Checks whether currentUser cannot delete the tag folder.
@@ -63,7 +63,6 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
 
   while (currentParents.length) {
     allTagIds = allTagIds.concat(currentParents);
-    // @ts-ignore
     currentParents = await OrganizationTagUser.find(
       {
         organizationId: tag.organizationId,
@@ -94,5 +93,5 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
     },
   });
 
-  return tag!;
+  return tag;
 };

@@ -1,4 +1,4 @@
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization, MembershipRequest } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
@@ -60,8 +60,9 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       );
     }
 
-    const currentUserCreatedMembershipRequest =
-      currentUser._id.toString() === membershipRequest.user.toString();
+    const currentUserCreatedMembershipRequest = currentUser._id.equals(
+      membershipRequest.user
+    );
 
     // Checks whether currentUser is the creator of membershipRequest.
     if (currentUserCreatedMembershipRequest === false) {
@@ -83,10 +84,8 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
         _id: organization._id,
       },
       {
-        $set: {
-          membershipRequests: organization.membershipRequests.filter(
-            (request) => request.toString() !== membershipRequest._id.toString()
-          ),
+        $pull: {
+          membershipRequests: membershipRequest._id,
         },
       }
     );
@@ -97,10 +96,8 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
         _id: currentUser._id,
       },
       {
-        $set: {
-          membershipRequests: currentUser.membershipRequests.filter(
-            (request) => request.toString() !== membershipRequest._id.toString()
-          ),
+        $pull: {
+          membershipRequests: membershipRequest._id,
         },
       }
     );

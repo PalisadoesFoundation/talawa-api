@@ -1,7 +1,8 @@
 import "dotenv/config";
-import mongoose, { Types } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
 import { User, Event } from "../../../src/models";
-import { MutationRemoveEventArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationRemoveEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { removeEvent as removeEventResolver } from "../../../src/resolvers/Mutation/removeEvent";
@@ -11,8 +12,12 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { TestOrganizationType, TestUserType } from "../../helpers/userAndOrg";
-import { createTestEvent, TestEventType } from "../../helpers/events";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
+import type { TestEventType } from "../../helpers/events";
+import { createTestEvent } from "../../helpers/events";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -68,7 +73,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { removeEvent: removeEventResolver } = await import(
@@ -92,7 +97,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
     try {
       await User.updateOne(
         {
-          _id: testUser!._id,
+          _id: testUser?._id,
         },
         {
           $set: {
@@ -103,7 +108,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
 
       await Event.updateOne(
         {
-          _id: testEvent!._id,
+          _id: testEvent?._id,
         },
         {
           $set: {
@@ -113,11 +118,11 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       );
 
       const args: MutationRemoveEventArgs = {
-        id: testEvent!.id,
+        id: testEvent?.id,
       };
 
       const context = {
-        userId: testUser!.id,
+        userId: testUser?.id,
       };
 
       const { removeEvent: removeEventResolver } = await import(
@@ -134,53 +139,53 @@ describe("resolvers -> Mutation -> removeEvent", () => {
   it(`removes event with _id === args.id and returns it`, async () => {
     await User.updateOne(
       {
-        _id: testUser!._id,
+        _id: testUser?._id,
       },
       {
         $push: {
-          adminFor: testOrganization!._id,
+          adminFor: testOrganization?._id,
         },
       }
     );
 
     await Event.updateOne(
       {
-        _id: testEvent!._id,
+        _id: testEvent?._id,
       },
       {
         $push: {
-          admins: testUser!._id,
+          admins: testUser?._id,
         },
       }
     );
 
     const args: MutationRemoveEventArgs = {
-      id: testEvent!.id,
+      id: testEvent?.id,
     };
 
     const context = {
-      userId: testUser!.id,
+      userId: testUser?.id,
     };
 
     const removeEventPayload = await removeEventResolver?.({}, args, context);
 
-    expect(removeEventPayload).toEqual(testEvent!.toObject());
+    expect(removeEventPayload).toEqual(testEvent?.toObject());
 
     const updatedTestUser = await User.findOne({
-      _id: testUser!._id,
+      _id: testUser?._id,
     })
       .select(["createdEvents", "eventAdmin"])
       .lean();
 
-    expect(updatedTestUser!.createdEvents).toEqual([]);
-    expect(updatedTestUser!.eventAdmin).toEqual([]);
+    expect(updatedTestUser?.createdEvents).toEqual([]);
+    expect(updatedTestUser?.eventAdmin).toEqual([]);
 
     const updatedTestEvent = await Event.findOne({
-      _id: testEvent!._id,
+      _id: testEvent?._id,
     })
       .select(["status"])
       .lean();
 
-    expect(updatedTestEvent!.status).toEqual("DELETED");
+    expect(updatedTestEvent?.status).toEqual("DELETED");
   });
 });

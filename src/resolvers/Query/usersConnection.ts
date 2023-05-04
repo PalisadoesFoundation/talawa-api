@@ -1,5 +1,6 @@
-import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { InterfaceUser, User } from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceUser } from "../../models";
+import { User } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
@@ -20,8 +21,8 @@ export const usersConnection: QueryResolvers["usersConnection"] = async (
 
   const users = await User.find(where)
     .sort(sort)
-    .limit(args.first!)
-    .skip(args.skip!)
+    .limit(args.first ?? 0)
+    .skip(args.skip ?? 0)
     .select(["-password"])
     .populate("createdOrganizations")
     .populate("createdEvents")

@@ -1,5 +1,6 @@
-import { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { InterfaceUser, User } from "../../models";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceUser } from "../../models";
+import { User } from "../../models";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 

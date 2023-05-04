@@ -1,7 +1,10 @@
 import "dotenv/config";
-import mongoose, { Document, Types } from "mongoose";
-import { InterfaceUser, User } from "../../../src/models";
-import { MutationUpdateUserPasswordArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { InterfaceUser } from "../../../src/models";
+import { User } from "../../../src/models";
+import type { MutationUpdateUserPasswordArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { updateUserPassword as updateUserPasswordResolver } from "../../../src/resolvers/Mutation/updateUserPassword";
@@ -109,7 +112,6 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
       const { updateUserPassword: updateUserPasswordResolver } = await import(
         "../../../src/resolvers/Mutation/updateUserPassword"
       );
-
       await updateUserPasswordResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(INVALID_CREDENTIALS_ERROR.MESSAGE);
@@ -142,6 +144,37 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
 
       await updateUserPasswordResolver?.({}, args, context);
     } catch (error: any) {
+      expect(error.message).toEqual(INVALID_CREDENTIALS_ERROR.MESSAGE);
+    }
+  });
+
+  it(`throws INVALID Credentials error if new password, confirm new password and previous password are null`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message
+    );
+
+    try {
+      const args: MutationUpdateUserPasswordArgs = {
+        data: {
+          previousPassword: String(null),
+          newPassword: String(null),
+          confirmNewPassword: String(null),
+        },
+      };
+
+      const context = {
+        userId: testUser._id,
+      };
+
+      const { updateUserPassword: updateUserPasswordResolver } = await import(
+        "../../../src/resolvers/Mutation/updateUserPassword"
+      );
+
+      await updateUserPasswordResolver?.({}, args, context);
+    } catch (error: any) {
+      console.log(error.message);
       expect(error.message).toEqual(INVALID_CREDENTIALS_ERROR.MESSAGE);
     }
   });

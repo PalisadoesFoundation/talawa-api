@@ -17,7 +17,7 @@ export type TypeImagePath =
   | InterfaceUrlRequestObject
   | InterfaceBufferObject;
 
-const getImageHash = (oldSrc: TypeImagePath) => {
+const getImageHash = (oldSrc: TypeImagePath): object => {
   return new Promise((resolve, reject) => {
     imageHash(oldSrc, 16, true, (error: Error, data: any) => {
       if (error) {
@@ -42,7 +42,7 @@ const getImageHash = (oldSrc: TypeImagePath) => {
 export const reuploadDuplicateCheck = async (
   oldImagePath: TypeImagePath | null,
   newImagePath: TypeImagePath
-) => {
+): Promise<boolean> => {
   /*
   This function checks whether a user is trying to re-upload the same profile picture
   or an organization is trying to re-upload the same organization image 

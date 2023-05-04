@@ -1,4 +1,4 @@
-require("dotenv").config();
+import dotenv from "dotenv";
 import fs from "fs";
 import {
   afterAll,
@@ -14,13 +14,12 @@ import {
   disconnect,
   dropAllCollectionsFromDatabase,
 } from "../helpers/db";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
 import { User } from "../../src/models";
 import path from "path";
-import {
-  createTestUserAndOrganization,
-  TestUserType,
-} from "../helpers/userAndOrg";
+import type { TestUserType } from "../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../helpers/userAndOrg";
+dotenv.config();
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -50,7 +49,7 @@ try {
   });
 
   describe("utilities -> uploadImage", () => {
-    afterEach(async () => {
+    afterEach(() => {
       vi.resetModules();
       vi.restoreAllMocks();
     });
@@ -83,7 +82,7 @@ try {
         const uploadImagePayload = await uploadImage(pngImage, null);
         const testUserObj = await User.findByIdAndUpdate(
           {
-            _id: testUser!.id,
+            _id: testUser?.id,
           },
           {
             $set: {
@@ -139,9 +138,10 @@ try {
           );
         const { uploadImage } = await import("../../src/utilities/uploadImage");
         const testUserBeforeObj = await User.findById({
-          _id: testUser!.id,
+          _id: testUser?.id,
         });
-        const oldImagePath = testUserBeforeObj?.image!;
+        const oldImagePath =
+          testUserBeforeObj?.image != null ? testUserBeforeObj?.image : null;
         console.log(oldImagePath);
         const deleteDuplicatedImage = await import(
           "../../src/utilities/deleteImage"
@@ -152,7 +152,7 @@ try {
         const uploadImagePayload = await uploadImage(pngImage, oldImagePath);
         const testUserObj = await User.findByIdAndUpdate(
           {
-            _id: testUser!.id,
+            _id: testUser?.id,
           },
           {
             $set: {

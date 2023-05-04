@@ -1,7 +1,10 @@
 import "dotenv/config";
-import mongoose, { Document, Types } from "mongoose";
-import { Post, Comment, InterfaceComment } from "../../../src/models";
-import { MutationUnlikeCommentArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { Document } from "mongoose";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import type { InterfaceComment } from "../../../src/models";
+import { Post, Comment } from "../../../src/models";
+import type { MutationUnlikeCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { unlikeComment as unlikeCommentResolver } from "../../../src/resolvers/Mutation/unlikeComment";
@@ -10,7 +13,7 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { TestUserType } from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestPost } from "../../helpers/posts";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -25,15 +28,15 @@ beforeAll(async () => {
 
   testComment = await Comment.create({
     text: "text",
-    creator: testUser!._id,
-    post: testPost!._id,
-    likedBy: [testUser!._id],
+    creator: testUser?._id,
+    postId: testPost?._id,
+    likedBy: [testUser?._id],
     likeCount: 1,
   });
 
   await Post.updateOne(
     {
-      _id: testPost!._id,
+      _id: testPost?._id,
     },
     {
       $push: {
@@ -87,7 +90,7 @@ describe("resolvers -> Mutation -> unlikeComment", () => {
       };
 
       const context = {
-        userId: testUser!._id,
+        userId: testUser?._id,
       };
 
       const { unlikeComment: unlikeCommentResolver } = await import(
@@ -108,7 +111,7 @@ describe("resolvers -> Mutation -> unlikeComment", () => {
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const unlikeCommentPayload = await unlikeCommentResolver?.(
@@ -131,7 +134,7 @@ describe("resolvers -> Mutation -> unlikeComment", () => {
     };
 
     const context = {
-      userId: testUser!._id,
+      userId: testUser?._id,
     };
 
     const unlikeCommentPayload = await unlikeCommentResolver?.(
