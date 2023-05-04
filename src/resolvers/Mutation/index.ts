@@ -74,6 +74,7 @@ import { updateUserProfile } from "./updateUserProfile";
 import { updateUserPassword } from "./updateUserPassword";
 import { updateUserTag } from "./updateUserTag";
 import { updateUserType } from "./updateUserType";
+import { updateOrgUserType } from "./updateOrgUserType";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,
@@ -143,6 +144,7 @@ export const Mutation: MutationResolvers = {
   updateEvent,
   updateLanguage,
   updateOrganization,
+  updateOrgUserType,
   updatePluginInstalledOrgs,
   updatePluginStatus,
   updateTask,

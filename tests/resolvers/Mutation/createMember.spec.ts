@@ -14,10 +14,9 @@ import {
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import type {
   TestOrganizationType,
-  TestUserType} from "../../helpers/userAndOrg";
-import {
-  createTestUserAndOrganization
+  TestUserType,
 } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
