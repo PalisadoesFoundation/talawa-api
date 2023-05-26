@@ -20,7 +20,7 @@
     "generate:graphql-schema": "get-graphql-schema http://localhost:4000/graphql --json > docs/schema.json",
     "import:sample-data": "ts-node ./src/utilities/loadSampleData.ts",
     "import:sample-data:prod": "node ./build/utilities/loadSampleData.js",
-    "check:schema": "graphql-inspector introspect ./src/typeDefs/**/*.ts --write ./schema.graphql ;graphql-inspector diff git:origin/inspector:./schema.graphql schema.graphql"
+    "check:schema": "graphql-inspector introspect ./src/typeDefs/**/*.ts --write ./schema.graphql ;graphql-inspector diff git:origin/versioning:./schema.graphql schema.graphql"
   },
   "repository": {
     "type": "git",
