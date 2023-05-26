@@ -14,4 +14,4 @@ jobs:
       - uses: kamilkisiela/graphql-inspector@master
         with:
           schema: schema.graphql
-          branch: versioning
+          endpoint: 'versioning:schema.graphql'
