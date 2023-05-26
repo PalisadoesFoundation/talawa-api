@@ -111,6 +111,7 @@ jobs:
       - name: 'Run JSDocs'
         if: env.RUN_JSDOCS == 'True'
         run: echo "Run JSdocs :${{ env.RUN_JSDOCS }}"
+        
   Check-Schema:
     name: 'Check Schema'
     runs-on: unbuntu-latest
