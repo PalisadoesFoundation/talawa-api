@@ -15,7 +15,7 @@ jobs:
         run: npm ci
 
       - name: Generate schema.graphql
-        run: npm run check:schema 
+        run: npm run gen:schema 
  
       - uses: kamilkisiela/graphql-inspector@master
         with:
