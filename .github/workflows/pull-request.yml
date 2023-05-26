@@ -37,6 +37,9 @@ jobs:
 
       - name: Run Typescript Type-Checker
         run: npm run typecheck 
+      
+      - name: Check Schema
+        run: npm run check:schema
   
   Test-Application:
     name: Testing Application
