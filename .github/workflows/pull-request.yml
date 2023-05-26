@@ -111,17 +111,17 @@ jobs:
       - name: 'Run JSDocs'
         if: env.RUN_JSDOCS == 'True'
         run: echo "Run JSdocs :${{ env.RUN_JSDOCS }}"
-        
+
   Check-Schema:
-    name: 'Check Schema'
-    runs-on: unbuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      
-      - name: Install Depenecies
-        run: npm ci
-
-      - name: Checks schema
-        run: npm run check:schema
+        name: 'Check Schema'
+        runs-on: ubuntu-latest
+    
+        steps:
+          - name: Checkout repository
+            uses: actions/checkout@v3
+          
+          - name: Install Depenecies
+            run: npm ci
+    
+          - name: Checks schema
+            run: npm run check:schema
