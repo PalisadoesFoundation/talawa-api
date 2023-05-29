@@ -4,7 +4,8 @@ import type { InterfaceComment as InterfaceCommentModel } from '../models/Commen
 import type { InterfaceDirectChat as InterfaceDirectChatModel } from '../models/DirectChat';
 import type { InterfaceDirectChatMessage as InterfaceDirectChatMessageModel } from '../models/DirectChatMessage';
 import type { InterfaceDonation as InterfaceDonationModel } from '../models/Donation';
-import type { InterfaceEvent as InterfaceEventModel, InterfaceEventAttendee as InterfaceEventAttendeeModel } from '../models/Event';
+import type { InterfaceEvent as InterfaceEventModel } from '../models/Event';
+import type { InterfaceEventAttendee as InterfaceEventAttendeeModel } from '../models/EventAttendee';
 import type { InterfaceGroup as InterfaceGroupModel } from '../models/Group';
 import type { InterfaceGroupChat as InterfaceGroupChatModel } from '../models/GroupChat';
 import type { InterfaceGroupChatMessage as InterfaceGroupChatMessageModel } from '../models/GroupChatMessage';
@@ -156,6 +157,7 @@ export type Event = {
   _id: Scalars['ID'];
   admins?: Maybe<Array<Maybe<User>>>;
   allDay: Scalars['Boolean'];
+  attendees?: Maybe<Array<Maybe<User>>>;
   creator: User;
   description: Scalars['String'];
   endDate: Scalars['Date'];
@@ -168,7 +170,6 @@ export type Event = {
   organization?: Maybe<Organization>;
   recurrance?: Maybe<Recurrance>;
   recurring: Scalars['Boolean'];
-  registrants?: Maybe<Array<Maybe<UserAttende>>>;
   startDate: Scalars['Date'];
   startTime?: Maybe<Scalars['Time']>;
   status: Status;
@@ -220,12 +221,6 @@ export type EventOrderByInput =
   | 'startTime_DESC'
   | 'title_ASC'
   | 'title_DESC';
-
-export type EventRegistrants = {
-  __typename?: 'EventRegistrants';
-  event: Event;
-  isRegistered: Scalars['Boolean'];
-};
 
 export type EventWhereInput = {
   description?: InputMaybe<Scalars['String']>;
@@ -1085,7 +1080,6 @@ export type Query = {
   getDonationByOrgIdConnection: Array<Donation>;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
-  isUserRegister?: Maybe<EventRegistrants>;
   joinedOrganizations?: Maybe<Array<Maybe<Organization>>>;
   me: User;
   myLanguage?: Maybe<Scalars['String']>;
@@ -1161,11 +1155,6 @@ export type QueryGetDonationByOrgIdConnectionArgs = {
 
 export type QueryGetlanguageArgs = {
   lang_code: Scalars['String'];
-};
-
-
-export type QueryIsUserRegisterArgs = {
-  eventId: Scalars['ID'];
 };
 
 
@@ -1429,15 +1418,6 @@ export type UserAndOrganizationInput = {
   userId: Scalars['ID'];
 };
 
-export type UserAttende = {
-  __typename?: 'UserAttende';
-  _id: Scalars['ID'];
-  createdAt?: Maybe<Scalars['DateTime']>;
-  status: Status;
-  user: User;
-  userId: Scalars['String'];
-};
-
 export type UserConnection = {
   __typename?: 'UserConnection';
   aggregate: AggregateUser;
@@ -1652,7 +1632,6 @@ export type ResolversTypes = {
   Event: ResolverTypeWrapper<InterfaceEventModel>;
   EventInput: EventInput;
   EventOrderByInput: EventOrderByInput;
-  EventRegistrants: ResolverTypeWrapper<Omit<EventRegistrants, 'event'> & { event: ResolversTypes['Event'] }>;
   EventWhereInput: EventWhereInput;
   ExtendSession: ResolverTypeWrapper<ExtendSession>;
   Float: ResolverTypeWrapper<Scalars['Float']>;
@@ -1718,7 +1697,6 @@ export type ResolversTypes = {
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
   User: ResolverTypeWrapper<InterfaceUserModel>;
   UserAndOrganizationInput: UserAndOrganizationInput;
-  UserAttende: ResolverTypeWrapper<Omit<UserAttende, 'user'> & { user: ResolversTypes['User'] }>;
   UserConnection: ResolverTypeWrapper<Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['User']>> }>;
   UserEdge: ResolverTypeWrapper<Omit<UserEdge, 'node'> & { node: ResolversTypes['User'] }>;
   UserInput: UserInput;
@@ -1754,7 +1732,6 @@ export type ResolversParentTypes = {
   EmailAddress: Scalars['EmailAddress'];
   Event: InterfaceEventModel;
   EventInput: EventInput;
-  EventRegistrants: Omit<EventRegistrants, 'event'> & { event: ResolversParentTypes['Event'] };
   EventWhereInput: EventWhereInput;
   ExtendSession: ExtendSession;
   Float: Scalars['Float'];
@@ -1814,7 +1791,6 @@ export type ResolversParentTypes = {
   Upload: Scalars['Upload'];
   User: InterfaceUserModel;
   UserAndOrganizationInput: UserAndOrganizationInput;
-  UserAttende: Omit<UserAttende, 'user'> & { user: ResolversParentTypes['User'] };
   UserConnection: Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['User']>> };
   UserEdge: Omit<UserEdge, 'node'> & { node: ResolversParentTypes['User'] };
   UserInput: UserInput;
@@ -1935,6 +1911,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   admins?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<EventAdminsArgs>>;
   allDay?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  attendees?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
@@ -1947,18 +1924,11 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   recurrance?: Resolver<Maybe<ResolversTypes['Recurrance']>, ParentType, ContextType>;
   recurring?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  registrants?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserAttende']>>>, ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   startTime?: Resolver<Maybe<ResolversTypes['Time']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
   tasks?: Resolver<Maybe<Array<Maybe<ResolversTypes['Task']>>>, ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type EventRegistrantsResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventRegistrants'] = ResolversParentTypes['EventRegistrants']> = {
-  event?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
-  isRegistered?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2246,7 +2216,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getDonationByOrgIdConnection?: Resolver<Array<ResolversTypes['Donation']>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdConnectionArgs, 'orgId'>>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
-  isUserRegister?: Resolver<Maybe<ResolversTypes['EventRegistrants']>, ParentType, ContextType, RequireFields<QueryIsUserRegisterArgs, 'eventId'>>;
   joinedOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType, Partial<QueryJoinedOrganizationsArgs>>;
   me?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   myLanguage?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -2329,15 +2298,6 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type UserAttendeResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserAttende'] = ResolversParentTypes['UserAttende']> = {
-  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
-  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  userId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export type UserConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserConnection'] = ResolversParentTypes['UserConnection']> = {
   aggregate?: Resolver<ResolversTypes['AggregateUser'], ParentType, ContextType>;
   edges?: Resolver<Array<Maybe<ResolversTypes['User']>>, ParentType, ContextType>;
@@ -2394,7 +2354,6 @@ export type Resolvers<ContextType = any> = {
   Donation?: DonationResolvers<ContextType>;
   EmailAddress?: GraphQLScalarType;
   Event?: EventResolvers<ContextType>;
-  EventRegistrants?: EventRegistrantsResolvers<ContextType>;
   ExtendSession?: ExtendSessionResolvers<ContextType>;
   Group?: GroupResolvers<ContextType>;
   GroupChat?: GroupChatResolvers<ContextType>;
@@ -2426,7 +2385,6 @@ export type Resolvers<ContextType = any> = {
   URL?: GraphQLScalarType;
   Upload?: GraphQLScalarType;
   User?: UserResolvers<ContextType>;
-  UserAttende?: UserAttendeResolvers<ContextType>;
   UserConnection?: UserConnectionResolvers<ContextType>;
   UserEdge?: UserEdgeResolvers<ContextType>;
   UserTag?: UserTagResolvers<ContextType>;

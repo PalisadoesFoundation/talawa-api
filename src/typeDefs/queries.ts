@@ -39,8 +39,6 @@ export const queries = gql`
 
     getPlugins: [Plugin]
 
-    isUserRegister(eventId: ID!): EventRegistrants
-
     joinedOrganizations(id: ID): [Organization]
 
     me: User! @auth

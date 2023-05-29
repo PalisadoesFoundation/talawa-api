@@ -38,7 +38,7 @@ const config: CodegenConfig = {
 
           Event: "../models/Event#InterfaceEvent",
 
-          EventAttendee: "../models/Event#InterfaceEventAttendee",
+          EventAttendee: "../models/EventAttendee#InterfaceEventAttendee",
 
           // EventProject: '../models/EventProject#InterfaceEventProject'
 

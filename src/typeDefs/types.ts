@@ -98,7 +98,7 @@ export const types = gql`
     longitude: Longitude
     organization: Organization
     creator: User!
-    registrants: [UserAttende]
+    attendees: [User]
     admins(adminId: ID): [User]
     tasks: [Task]
     status: Status!
@@ -111,11 +111,6 @@ export const types = gql`
   #     event: Event!
   #     tasks: [Task]
   # }
-
-  type EventRegistrants {
-    event: Event!
-    isRegistered: Boolean!
-  }
 
   type Group {
     _id: ID
@@ -354,14 +349,6 @@ export const types = gql`
       last: PositiveInt
       organizationId: ID
     ): UserTagsConnection
-  }
-
-  type UserAttende {
-    _id: ID!
-    userId: String!
-    user: User!
-    status: Status!
-    createdAt: DateTime
   }
 
   type UserConnection {
