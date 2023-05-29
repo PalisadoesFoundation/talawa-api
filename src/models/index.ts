@@ -4,6 +4,7 @@ export * from "./DirectChat";
 export * from "./DirectChatMessage";
 export * from "./Donation";
 export * from "./Event";
+export * from "./EventAttendee";
 export * from "./EventProject";
 export * from "./File";
 export * from "./Group";

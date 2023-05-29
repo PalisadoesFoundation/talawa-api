@@ -4,6 +4,7 @@ import type { InterfaceUser } from "./User";
 import type { InterfaceEvent } from "./Event";
 
 export interface InterfaceEventAttendee {
+  _id: Schema.Types.ObjectId;
   userId: PopulatedDoc<InterfaceUser & Document>;
   eventId: PopulatedDoc<InterfaceEvent & Document>;
 }
@@ -24,7 +25,7 @@ const eventAttendeeSchema = new Schema({
 eventAttendeeSchema.index({ userId: 1, eventId: 1 }, { unique: true });
 
 const eventAttendeeModel = (): Model<InterfaceEventAttendee> =>
-  model<InterfaceEventAttendee>("TagUser", eventAttendeeSchema);
+  model<InterfaceEventAttendee>("EventAttendee", eventAttendeeSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const EventAttendee = (models.EventAttendee ||

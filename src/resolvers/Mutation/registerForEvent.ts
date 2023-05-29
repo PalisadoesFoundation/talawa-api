@@ -1,11 +1,12 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Event } from "../../models";
+import { User, Event, EventAttendee } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
   REGISTRANT_ALREADY_EXIST_ERROR,
 } from "../../constants";
+
 /**
  * This function enables to register for event.
  * @param _parent - parent of current request
@@ -17,6 +18,7 @@ import {
  * 2. If the user has already registered for the event
  * @returns Updated event.
  */
+
 export const registerForEvent: MutationResolvers["registerForEvent"] = async (
   _parent,
   args,
@@ -48,86 +50,35 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
     );
   }
 
-  const index = event.registrants.findIndex((registrant) => {
-    return registrant.userId.toString() === context.userId.toString();
+  const currentUserIsEventRegistrant = await EventAttendee.exists({
+    userId: context.userId,
+    eventId: args.id,
   });
 
-  let currentUserIsEventRegistrant = false;
-
-  // Checks whether currentUser with _id === context.userId is already a registrant for event.
-  if (index !== -1) {
-    if (event.registrants[index].status === "ACTIVE") {
-      throw new errors.NotFoundError(
-        requestContext.translate(REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE),
-        REGISTRANT_ALREADY_EXIST_ERROR.CODE,
-        REGISTRANT_ALREADY_EXIST_ERROR.PARAM
-      );
-    } else {
-      currentUserIsEventRegistrant = true;
-    }
-  }
-
-  // Checks whether currentUser with _id === context.userId is not registrant of event.
-  if (currentUserIsEventRegistrant === false) {
-    // Adds event._id to registeredEvents list of currentUser with _id === context.userId.
-    await User.updateOne(
-      {
-        _id: context.userId,
-      },
-      {
-        $push: {
-          registeredEvents: event._id,
-        },
-      }
+  if (currentUserIsEventRegistrant) {
+    throw new errors.InputValidationError(
+      REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE,
+      REGISTRANT_ALREADY_EXIST_ERROR.CODE,
+      REGISTRANT_ALREADY_EXIST_ERROR.PARAM
     );
-
-    /*
-    Adds currentUser with _id === context.userId new registrant to registrants
-    list of event and returns the updated event.
-    */
-    return await Event.findOneAndUpdate(
-      {
-        _id: event._id,
-        status: "ACTIVE",
-      },
-      {
-        $push: {
-          registrants: {
-            userId: context.userId,
-            user: context.userId,
-          },
-        },
-      },
-      {
-        new: true,
-      }
-    ).lean();
-  } else {
-    const updatedRegistrants = event.registrants;
-
-    // Sets registrant.status for user with _id === context.userId of event to ACTIVE.
-    updatedRegistrants[index] = {
-      id: updatedRegistrants[index].id,
-      userId: updatedRegistrants[index].userId,
-      user: updatedRegistrants[index].user,
-      status: "ACTIVE",
-      createdAt: updatedRegistrants[index].createdAt,
-    };
-
-    // Sets updatedRegistrants as registrants list of event and returns the updated event.
-    return await Event.findOneAndUpdate(
-      {
-        _id: event._id,
-        status: "ACTIVE",
-      },
-      {
-        $set: {
-          registrants: updatedRegistrants,
-        },
-      },
-      {
-        new: true,
-      }
-    ).lean();
   }
+
+  // Adds event._id to registeredEvents list of currentUser with _id === context.userId.
+  await User.updateOne(
+    {
+      _id: context.userId,
+    },
+    {
+      $push: {
+        registeredEvents: event._id,
+      },
+    }
+  );
+
+  await EventAttendee.create({
+    userId: context.userId,
+    eventId: args.id,
+  });
+
+  return event;
 };

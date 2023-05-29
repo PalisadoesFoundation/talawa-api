@@ -1,7 +1,6 @@
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import type { InterfaceEvent, InterfaceUserAttende } from "../../models";
+import type { InterfaceEvent } from "../../models";
 import { Event } from "../../models";
-import { STATUS_ACTIVE } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
 import { getWhere } from "./helperFunctions/getWhere";
 
@@ -23,13 +22,6 @@ export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizatio
       .populate("tasks")
       .populate("admins", "-password")
       .lean();
-
-    events.forEach((event) => {
-      event.registrants = event.registrants.filter(
-        (registrant: InterfaceUserAttende) =>
-          registrant.status === STATUS_ACTIVE
-      );
-    });
 
     return events;
   };

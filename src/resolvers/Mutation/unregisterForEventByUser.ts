@@ -1,11 +1,12 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Event } from "../../models";
+import { User, Event, EventAttendee } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
   USER_ALREADY_UNREGISTERED_ERROR,
 } from "../../constants";
+
 /**
  * This function enables a user to unregister from an event.
  * @param _parent - parent of current request
@@ -17,6 +18,7 @@ import {
  * 3. If the user is a registrant of the event.
  * @returns Updated event.
  */
+
 export const unregisterForEventByUser: MutationResolvers["unregisterForEventByUser"] =
   async (_parent, args, context) => {
     const currentUserExists = await User.exists({
@@ -45,49 +47,23 @@ export const unregisterForEventByUser: MutationResolvers["unregisterForEventByUs
       );
     }
 
-    // gets position(index) of current user's _id in the registrants list of event
-    const index = event.registrants.findIndex((element) => {
-      return String(element.userId) === String(context.userId);
+    const userRegisteredForEvent = await EventAttendee.exists({
+      userId: context.userId,
+      eventId: args.id,
     });
 
-    // checks if current user is a registrant of event
-    if (index === -1) {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
-      );
-    }
-
-    if (event.registrants[index].status === "ACTIVE") {
-      const updatedRegistrants = event.registrants;
-      updatedRegistrants[index] = {
-        id: updatedRegistrants[index].id,
-        userId: updatedRegistrants[index].userId,
-        user: updatedRegistrants[index].user,
-        status: "DELETED",
-        createdAt: updatedRegistrants[index].createdAt,
-      };
-
-      return await Event.findOneAndUpdate(
-        {
-          _id: args.id,
-          status: "ACTIVE",
-        },
-        {
-          $set: {
-            registrants: updatedRegistrants,
-          },
-        },
-        {
-          new: true,
-        }
-      ).lean();
-    } else {
+    if (!userRegisteredForEvent) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_ALREADY_UNREGISTERED_ERROR.MESSAGE),
         USER_ALREADY_UNREGISTERED_ERROR.CODE,
         USER_ALREADY_UNREGISTERED_ERROR.PARAM
       );
     }
+
+    await EventAttendee.deleteOne({
+      userId: context.userId,
+      eventId: args.id,
+    });
+
+    return event;
   };

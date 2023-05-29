@@ -43,13 +43,6 @@ beforeAll(async () => {
     description: "description",
     allDay: true,
     startDate: new Date().toString(),
-    registrants: [
-      {
-        userId: testUser?.id,
-        user: testUser?._id,
-        status: "ACTIVE",
-      },
-    ],
   });
 
   await User.updateOne(
@@ -124,75 +117,6 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
     }
   });
 
-  it(`throws NotFoundError if user with _id === context.userId is already a
-  registrant of event with _id === args.id and event.registrant.status === "ACTIVE"
-  for the registrant with registrant.userId === context.userId
-  `, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
-    try {
-      const args: MutationRegisterForEventArgs = {
-        id: testEvent?._id,
-      };
-
-      const context = {
-        userId: testUser?._id,
-      };
-
-      const { registerForEvent: registerForEventResolver } = await import(
-        "../../../src/resolvers/Mutation/registerForEvent"
-      );
-
-      await registerForEventResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE);
-      expect(error.message).toEqual(REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE);
-    }
-  });
-
-  it(`if user with _id === context.userId is already a registrant for event with _id === args.id
-  sets event.registrant.status field to "ACTIVE" for registrant with
-  _id === context.userId`, async () => {
-    await Event.updateOne(
-      {
-        _id: testEvent?._id,
-      },
-      {
-        $set: {
-          registrants: [
-            {
-              userId: testUser?.id,
-              user: testUser?._id,
-              status: "BLOCKED",
-            },
-          ],
-        },
-      }
-    );
-
-    const args: MutationRegisterForEventArgs = {
-      id: testEvent?._id,
-    };
-
-    const context = {
-      userId: testUser?._id,
-    };
-
-    const registerForEventPayload = await registerForEventResolver?.(
-      {},
-      args,
-      context
-    );
-
-    const testRegisterForEventPayload = await Event.findOne({
-      _id: testEvent?._id,
-    }).lean();
-
-    expect(registerForEventPayload).toEqual(testRegisterForEventPayload);
-  });
-
   it(`registers user with _id === context.userId as a registrant for event with
   _id === args.id`, async () => {
     await Event.updateOne(
@@ -244,5 +168,31 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
       .lean();
 
     expect(updatedTestUser?.registeredEvents).toEqual([testEvent?._id]);
+  });
+
+  it(`throws error if user with _id === context.userId is already a
+  registrant of event with _id === args.id`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+    try {
+      const args: MutationRegisterForEventArgs = {
+        id: testEvent?._id,
+      };
+
+      const context = {
+        userId: testUser?._id,
+      };
+
+      const { registerForEvent: registerForEventResolver } = await import(
+        "../../../src/resolvers/Mutation/registerForEvent"
+      );
+
+      await registerForEventResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toBeCalledWith(REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE);
+      expect(error.message).toEqual(REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE);
+    }
   });
 });
