@@ -2,6 +2,7 @@ import type { Resolvers } from "../types/generatedGraphQLTypes";
 import { Comment } from "./Comment";
 import { DirectChat } from "./DirectChat";
 import { DirectChatMessage } from "./DirectChatMessage";
+import { Event } from "./Event";
 import { GroupChat } from "./GroupChat";
 import { GroupChatMessage } from "./GroupChatMessage";
 import { MembershipRequest } from "./MembershipRequest";
@@ -28,6 +29,7 @@ export const resolvers: Resolvers = {
   Comment,
   DirectChat,
   DirectChatMessage,
+  Event,
   GroupChat,
   GroupChatMessage,
   MembershipRequest,

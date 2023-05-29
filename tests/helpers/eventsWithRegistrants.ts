@@ -1,7 +1,7 @@
 import type { TestOrganizationType, TestUserType } from "./userAndOrg";
 import { createTestUserAndOrganization } from "./userAndOrg";
 import type { InterfaceEvent } from "../../src/models";
-import { Event, User } from "../../src/models";
+import { Event, EventAttendee, User } from "../../src/models";
 import type { Document } from "mongoose";
 
 export type TestEventType =
@@ -18,13 +18,6 @@ export const createTestEventWithRegistrants = async (
   if (testUser && testOrganization) {
     const testEvent = await Event.create({
       creator: testUser._id,
-      registrants: [
-        {
-          userId: testUser._id,
-          user: testUser._id,
-          status: "ACTIVE",
-        },
-      ],
       admins: [testUser._id],
       organization: testOrganization._id,
       isRegisterable: true,
@@ -33,6 +26,11 @@ export const createTestEventWithRegistrants = async (
       description: "description",
       allDay: true,
       startDate: new Date().toString(),
+    });
+
+    await EventAttendee.create({
+      userId: testUser!._id,
+      eventId: testEvent!._id,
     });
 
     await User.updateOne(
