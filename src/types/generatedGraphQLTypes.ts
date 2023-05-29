@@ -4,7 +4,7 @@ import type { InterfaceComment as InterfaceCommentModel } from '../models/Commen
 import type { InterfaceDirectChat as InterfaceDirectChatModel } from '../models/DirectChat';
 import type { InterfaceDirectChatMessage as InterfaceDirectChatMessageModel } from '../models/DirectChatMessage';
 import type { InterfaceDonation as InterfaceDonationModel } from '../models/Donation';
-import type { InterfaceEvent as InterfaceEventModel } from '../models/Event';
+import type { InterfaceEvent as InterfaceEventModel, InterfaceEventAttendee as InterfaceEventAttendeeModel } from '../models/Event';
 import type { InterfaceGroup as InterfaceGroupModel } from '../models/Group';
 import type { InterfaceGroupChat as InterfaceGroupChatModel } from '../models/GroupChat';
 import type { InterfaceGroupChatMessage as InterfaceGroupChatMessageModel } from '../models/GroupChatMessage';
