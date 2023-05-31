@@ -7,8 +7,8 @@ const { exec } = require("child_process");
 
 dotenv.config();
 
+// Check if all the fields in .env.sample are present in .env
 function checkEnvFile(): void {
-  // Check if all the fields in .env.sample are present in .env
   const env = dotenv.parse(fs.readFileSync(".env"));
   const envSample = dotenv.parse(fs.readFileSync(".env.sample"));
   const misplaced = Object.keys(envSample).filter((key) => !(key in env));
@@ -18,11 +18,11 @@ function checkEnvFile(): void {
   }
 }
 
+// Generate and update the access and refresh token secrets in .env
 async function accessAndRefreshTokens(
   accessTokenSecret: string | null,
   refreshTokenSecret: string | null
 ): Promise<void> {
-  // Generate and update the access and refresh token secrets in .env
   const config = dotenv.parse(fs.readFileSync(".env"));
 
   if (accessTokenSecret == null) {
@@ -44,11 +44,13 @@ async function accessAndRefreshTokens(
   }
 }
 
+// Check the connection to MongoDB with the specified URL.
 async function checkConnection(url: string): Promise<boolean> {
-  // Check the connection to MongoDB with the specified URL.
+  let response  = false;
   const client = new mongodb.MongoClient(url, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 1000,
   });
 
   console.log("\nChecking MongoDB connection....");
@@ -56,82 +58,45 @@ async function checkConnection(url: string): Promise<boolean> {
   try {
     await client.connect();
     console.log("\nConnection to MongoDB successful! 🎉");
-    return true;
+    response = true;
   } catch (error) {
-    console.log(`\nConnection to MongoDB failed. Please try again.\n${error}`);
-    console.log("\nTry starting up MongoDB on your local machine");
-    abort();
-    return false;
-  } finally {
-    await client.close();
-  }
+    console.log(`\nConnection to MongoDB failed. Please try again.\n`);
+  } 
+  client.close();
+  return response
 }
 
+//Mongodb url prompt
+const askForMongoDBUrl = async () => {
+  const {url} = await inquirer.prompt([
+    {
+      type: "input",
+      name: "url",
+      message: "Enter your MongoDB URL:",
+    },
+  ]);
+
+  return url;
+};
+
+// Get the mongodb url
 async function mongoDB(): Promise<void> {
-  // Get the mongodb url
   let DB_URL = process.env.MONGO_DB_URL;
 
   try {
-    const answers = await inquirer.prompt([
-      {
-        type: "list",
-        name: "choice",
-        message:
-          "Would you like to use a local instance or a cloud instance of MongoDB?",
-        choices: [
-          { name: "Local", value: 0 },
-          { name: "Cloud", value: 1 },
-        ],
-      },
-      {
-        type: "input",
-        name: "cloudInstance",
-        message: "Enter your MongoDB cloud instance URL:",
-        when: function (answers: { choice: number }): boolean {
-          return answers.choice === 1;
-        },
-      },
-    ]);
-
-    if (answers.choice === 0) {
-      const url =
-        "mongodb://localhost:27017/talawa-api?retryWrites=true&w=majority";
-      const success = await checkConnection(url);
-
-      if (success) {
-        DB_URL = url;
-        const config = dotenv.parse(fs.readFileSync(".env"));
-        config.MONGO_DB_URL = DB_URL;
-        fs.writeFileSync(".env", "");
-        for (const key in config) {
-          fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-        }
-      } else {
-        console.log("\nConnection to MongoDB failed. Please try again.");
-        console.log("\nTry starting up MongoDB on your local machine");
-        abort();
-      }
-    } else if (answers.choice === 1) {
-      const success = await checkConnection(answers.cloudInstance);
-
-      if (success) {
-        DB_URL = answers.cloudInstance;
-        const config = dotenv.parse(fs.readFileSync(".env"));
-        config.MONGO_DB_URL = DB_URL;
-        fs.writeFileSync(".env", "");
-        for (const key in config) {
-          fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-        }
-      } else {
-        console.log("\nConnection to MongoDB failed. Please try again.");
-        console.log(
-          "\nMake sure your MongoDB cloud instance URL is correct and try again."
-        );
-        abort();
-      }
-    } else {
-      console.log("\nInvalid choice. Please try again.\n");
-      abort();
+    let isConnected = false, url="";
+    while (!isConnected) {
+      url = await askForMongoDBUrl();
+      isConnected = await checkConnection(url);
+    }
+    
+    DB_URL = url
+    const config = dotenv.parse(fs.readFileSync(".env"));
+    config.MONGO_DB_URL = DB_URL;
+    process.env.MONGO_DB_URL = DB_URL
+    fs.writeFileSync(".env", "");
+    for (const key in config) {
+      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
     }
   } catch (err) {
     console.error(err);
@@ -139,8 +104,8 @@ async function mongoDB(): Promise<void> {
   }
 }
 
+//Get recaptcha details
 async function recaptcha(): Promise<void> {
-  //Get recaptcha details
   console.log(
     "\nPlease visit this URL to set up reCAPTCHA:\n\nhttps://www.google.com/recaptcha/admin/create"
   );
@@ -188,8 +153,8 @@ function abort(): void {
   process.exit(1);
 }
 
+//Get mail username and password
 async function twoFactorAuth(): Promise<void> {
-  //Get mail username and password
   console.log("\nIMPORTANT");
   console.log(
     "\nEnsure that you have Two-Factor Authentication set up on your Google Account."
@@ -224,6 +189,80 @@ async function twoFactorAuth(): Promise<void> {
   fs.writeFileSync(".env", "");
   for (const key in config) {
     fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+  }
+}
+
+//Checks if the data exists and ask for deletion
+async function checkDataExists(url: string) {
+  let response = false;
+  const client = new mongodb.MongoClient(url, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  try {
+    await client.connect();
+    const db = client.db();
+    const collections = await db.listCollections().toArray();
+
+    if (collections.length > 0) {
+      const { confirmDelete } = await inquirer.prompt(
+        {
+          type: 'confirm',
+          name: 'confirmDelete',
+          message: 'We found data in the database. Do you want to delete the existing data before importing?',
+        },
+      );
+
+      if (confirmDelete) {
+        for (const collection of collections) {
+          await db.collection(collection.name).deleteMany({});
+        }
+        console.log('All existing data has been deleted.');
+        response =  true;
+      } else {
+        console.log('Deletion & import operation cancelled.');
+      } 
+    }else{
+      response = true;
+    }
+  } catch (error) {
+    console.error('Could not connect to database to check for data');
+  }
+  client.close();
+  return response;
+}
+
+//Import sample data
+async function importData (){
+  if(!process.env.MONGO_DB_URL){
+    console.log("Couldn't find mongodb url");
+    return;
+  }
+  const dataExists = await checkDataExists(process.env.MONGO_DB_URL)
+  
+  if(dataExists){
+  console.log("Importing sample data...");
+  await exec(
+    "npm run import:sample-data",
+    (error: { message: string }, stdout: string, stderr: string) => {
+      if (error) {
+        console.error(`Error: ${error.message}`);
+        abort();
+      }
+      if (stderr) {
+        console.error(`Error: ${stderr}`);
+        abort();
+      }
+      console.log(`Output: ${stdout}`);
+      console.log(
+        "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
+      );
+    }
+  );
+  }else{
+    console.log(
+      "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
+    );
   }
 }
 
@@ -325,28 +364,11 @@ async function main(): Promise<void> {
       type: "confirm",
       name: "shouldRunDataImport",
       message: "Do you want to import sample data?",
-      default: false,
+      default: true,
     },
   ]);
   if (shouldRunDataImport) {
-    console.log("Importing sample data...");
-    exec(
-      "npm run import:sample-data",
-      (error: { message: string }, stdout: string, stderr: string) => {
-        if (error) {
-          console.error(`Error: ${error.message}`);
-          abort();
-        }
-        if (stderr) {
-          console.error(`Error: ${stderr}`);
-          abort();
-        }
-        console.log(`Output: ${stdout}`);
-        console.log(
-          "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
-        );
-      }
-    );
+    await importData();
   } else {
     console.log(
       "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
