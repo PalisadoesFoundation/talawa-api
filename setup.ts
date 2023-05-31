@@ -46,7 +46,7 @@ async function accessAndRefreshTokens(
 
 // Check the connection to MongoDB with the specified URL.
 async function checkConnection(url: string): Promise<boolean> {
-  let response  = false;
+  let response = false;
   const client = new mongodb.MongoClient(url, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -61,14 +61,14 @@ async function checkConnection(url: string): Promise<boolean> {
     response = true;
   } catch (error) {
     console.log(`\nConnection to MongoDB failed. Please try again.\n`);
-  } 
+  }
   client.close();
-  return response
+  return response;
 }
 
 //Mongodb url prompt
-const askForMongoDBUrl = async () => {
-  const {url} = await inquirer.prompt([
+async function askForMongoDBUrl(): Promise<string> {
+  const { url } = await inquirer.prompt([
     {
       type: "input",
       name: "url",
@@ -77,23 +77,24 @@ const askForMongoDBUrl = async () => {
   ]);
 
   return url;
-};
+}
 
 // Get the mongodb url
 async function mongoDB(): Promise<void> {
   let DB_URL = process.env.MONGO_DB_URL;
 
   try {
-    let isConnected = false, url="";
+    let isConnected = false,
+      url = "";
     while (!isConnected) {
       url = await askForMongoDBUrl();
       isConnected = await checkConnection(url);
     }
-    
-    DB_URL = url
+
+    DB_URL = url;
     const config = dotenv.parse(fs.readFileSync(".env"));
     config.MONGO_DB_URL = DB_URL;
-    process.env.MONGO_DB_URL = DB_URL
+    process.env.MONGO_DB_URL = DB_URL;
     fs.writeFileSync(".env", "");
     for (const key in config) {
       fs.appendFileSync(".env", `${key}=${config[key]}\n`);
@@ -193,7 +194,7 @@ async function twoFactorAuth(): Promise<void> {
 }
 
 //Checks if the data exists and ask for deletion
-async function checkDataExists(url: string) {
+async function checkDataExists(url: string): Promise<boolean> {
   let response = false;
   const client = new mongodb.MongoClient(url, {
     useNewUrlParser: true,
@@ -205,61 +206,60 @@ async function checkDataExists(url: string) {
     const collections = await db.listCollections().toArray();
 
     if (collections.length > 0) {
-      const { confirmDelete } = await inquirer.prompt(
-        {
-          type: 'confirm',
-          name: 'confirmDelete',
-          message: 'We found data in the database. Do you want to delete the existing data before importing?',
-        },
-      );
+      const { confirmDelete } = await inquirer.prompt({
+        type: "confirm",
+        name: "confirmDelete",
+        message:
+          "We found data in the database. Do you want to delete the existing data before importing?",
+      });
 
       if (confirmDelete) {
         for (const collection of collections) {
           await db.collection(collection.name).deleteMany({});
         }
-        console.log('All existing data has been deleted.');
-        response =  true;
+        console.log("All existing data has been deleted.");
+        response = true;
       } else {
-        console.log('Deletion & import operation cancelled.');
-      } 
-    }else{
+        console.log("Deletion & import operation cancelled.");
+      }
+    } else {
       response = true;
     }
   } catch (error) {
-    console.error('Could not connect to database to check for data');
+    console.error("Could not connect to database to check for data");
   }
   client.close();
   return response;
 }
 
 //Import sample data
-async function importData (){
-  if(!process.env.MONGO_DB_URL){
+async function importData(): Promise<void> {
+  if (!process.env.MONGO_DB_URL) {
     console.log("Couldn't find mongodb url");
     return;
   }
-  const dataExists = await checkDataExists(process.env.MONGO_DB_URL)
-  
-  if(dataExists){
-  console.log("Importing sample data...");
-  await exec(
-    "npm run import:sample-data",
-    (error: { message: string }, stdout: string, stderr: string) => {
-      if (error) {
-        console.error(`Error: ${error.message}`);
-        abort();
+  const dataExists = await checkDataExists(process.env.MONGO_DB_URL);
+
+  if (dataExists) {
+    console.log("Importing sample data...");
+    await exec(
+      "npm run import:sample-data",
+      (error: { message: string }, stdout: string, stderr: string) => {
+        if (error) {
+          console.error(`Error: ${error.message}`);
+          abort();
+        }
+        if (stderr) {
+          console.error(`Error: ${stderr}`);
+          abort();
+        }
+        console.log(`Output: ${stdout}`);
+        console.log(
+          "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
+        );
       }
-      if (stderr) {
-        console.error(`Error: ${stderr}`);
-        abort();
-      }
-      console.log(`Output: ${stdout}`);
-      console.log(
-        "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
-      );
-    }
-  );
-  }else{
+    );
+  } else {
     console.log(
       "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
     );
