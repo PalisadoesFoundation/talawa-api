@@ -5,6 +5,7 @@ import { directChatsMessagesByChatID } from "./directChatsMessagesByChatID";
 import { event } from "./event";
 import { eventsByOrganization } from "./eventsByOrganization";
 import { eventsByOrganizationConnection } from "./eventsByOrganizationConnection";
+import { eventsByUserType } from "./eventsByUserType";
 import { getDonationById } from "./getDonationById";
 import { getDonationByOrgId } from "./getDonationByOrgId";
 import { getDonationByOrgIdConnection } from "./getDonationByOrgIdConnection";
@@ -35,6 +36,7 @@ export const Query: QueryResolvers = {
   event,
   eventsByOrganization,
   eventsByOrganizationConnection,
+  eventsByUserType,
   getDonationById,
   getDonationByOrgId,
   getDonationByOrgIdConnection,

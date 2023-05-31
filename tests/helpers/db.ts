@@ -30,6 +30,14 @@ export async function dropDatabase(
   await mongooseInstance.connection.db.dropDatabase();
 }
 
+// drop a collection
+export async function dropCollection(
+  mongooseInstance: typeof mongoose,
+  collectionName: string
+): Promise<void> {
+  await mongooseInstance.connection.db.collection(collectionName).drop();
+}
+
 // Disconnects from the provided mongoose instance
 export async function disconnect(
   mongooseInstance: typeof mongoose

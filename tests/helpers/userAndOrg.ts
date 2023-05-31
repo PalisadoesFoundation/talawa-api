@@ -11,14 +11,28 @@ export type TestUserType =
   | (InterfaceUser & Document<any, any, InterfaceUser>)
   | null;
 
-export const createTestUser = async (): Promise<TestUserType> => {
-  const testUser = await User.create({
-    email: `email${nanoid().toLowerCase()}@gmail.com`,
-    password: `pass${nanoid().toLowerCase()}`,
-    firstName: `firstName${nanoid().toLowerCase()}`,
-    lastName: `lastName${nanoid().toLowerCase()}`,
-    appLanguageCode: "en",
-  });
+export const createTestUser = async (
+  userType?: string
+): Promise<TestUserType> => {
+  let testUser;
+  if (userType !== undefined) {
+    testUser = await User.create({
+      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      password: `pass${nanoid().toLowerCase()}`,
+      firstName: `firstName${nanoid().toLowerCase()}`,
+      lastName: `lastName${nanoid().toLowerCase()}`,
+      appLanguageCode: "en",
+      userType: userType,
+    });
+  } else {
+    testUser = await User.create({
+      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      password: `pass${nanoid().toLowerCase()}`,
+      firstName: `firstName${nanoid().toLowerCase()}`,
+      lastName: `lastName${nanoid().toLowerCase()}`,
+      appLanguageCode: "en",
+    });
+  }
 
   return testUser;
 };
@@ -55,11 +69,12 @@ export const createTestOrganizationWithAdmin = async (
 };
 
 export const createTestUserAndOrganization = async (
-  isMember = true,
-  isAdmin = true,
-  isPublic = true
+  isMember: boolean = true,
+  isAdmin: boolean = true,
+  isPublic: boolean = true,
+  userType?: string
 ): Promise<[TestUserType, TestOrganizationType]> => {
-  const testUser = await createTestUser();
+  const testUser = await createTestUser(userType);
   const testOrganization = await createTestOrganizationWithAdmin(
     testUser?._id,
     isMember,

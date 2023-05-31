@@ -54,20 +54,22 @@ export const createEventWithRegistrant = async (
   userId: string,
   organizationId: string,
   allDay: boolean,
-  recurrance: string
+  recurrance: string,
+  registrantId?: string | undefined,
+  isPublic: boolean = true
 ): Promise<TestEventType> => {
   const testEvent = await Event.create({
     creator: userId,
     registrants: [
       {
-        userId: userId,
-        user: userId,
+        userId: registrantId ? registrantId : userId,
+        user: registrantId ? registrantId : userId,
       },
     ],
     admins: [userId],
     organization: organizationId,
     isRegisterable: true,
-    isPublic: true,
+    isPublic: isPublic,
     title: `title${nanoid()}`,
     description: `description${nanoid()}`,
     allDay: allDay,
