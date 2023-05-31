@@ -2,9 +2,11 @@ import type { PopulatedDoc, Types, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceUser } from "./User";
+
 /**
  * This is an interface that represents a database(MongoDB) document for Task.
  */
+
 export interface InterfaceTask {
   _id: Types.ObjectId;
   title: string;
@@ -15,6 +17,7 @@ export interface InterfaceTask {
   event: PopulatedDoc<InterfaceEvent & Document>;
   creator: PopulatedDoc<InterfaceUser & Document>;
 }
+
 /**
  * This describes the schema for a `Task` that corresponds to `InterfaceTask` document.
  * @param title - Task title.
@@ -25,6 +28,7 @@ export interface InterfaceTask {
  * @param event - Event object for which task is added, refer to `Event` model.
  * @param creator - Task creator, refer to `User` model.
  */
+
 const taskSchema = new Schema({
   title: {
     type: String,

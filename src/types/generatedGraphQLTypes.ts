@@ -1289,6 +1289,7 @@ export type Task = {
   description?: Maybe<Scalars['String']>;
   event: Event;
   title: Scalars['String'];
+  volunteers?: Maybe<Array<Maybe<User>>>;
 };
 
 export type TaskInput = {
@@ -2250,6 +2251,7 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   event?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  volunteers?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

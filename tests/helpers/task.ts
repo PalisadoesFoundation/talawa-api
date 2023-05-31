@@ -1,7 +1,9 @@
 import type { InterfaceEvent, InterfaceTask } from "../../src/models";
-import { Event, Task } from "../../src/models";
+import { Event, Task, TaskVolunteer } from "../../src/models";
 import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
+import { createTestEvent } from "./events";
+import type { TestOrganizationType, TestUserType } from "./userAndOrg";
 
 export type TestEventType =
   | (InterfaceEvent & Document<any, any, InterfaceEvent>)
@@ -33,4 +35,16 @@ export const createTestTask = async (
   );
 
   return testTask;
+};
+
+export const createAndAssignTestTask = async (): Promise<
+  [TestUserType, TestOrganizationType, TestEventType, TestTaskType]
+> => {
+  const [testUser, testOrg, testEvent] = await createTestEvent();
+  const testTask = await createTestTask(testEvent!._id, testUser!._id);
+
+  // Assign the task to the user
+  await TaskVolunteer.create({ userId: testUser!._id, taskId: testTask!._id });
+
+  return [testUser, testOrg, testEvent, testTask];
 };

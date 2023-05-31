@@ -226,8 +226,10 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
           tasks: tasksIds,
         };
       });
+
     expect(eventsByOrganizationConnectionPayload).toEqual(events);
   });
+
   it(`returns list of all existing events filtered by args.where ===
   { id_in: testEvent[0]._id, title_in: testEvents[0].title, description_in:testEvents[0].description, location_in: testEvents[0].location}
   and sorted by ascending order of event.title if args.orderBy === 'title_ASC'`, async () => {

@@ -11,6 +11,7 @@ import { Organization } from "./Organization";
 import { Post } from "./Post";
 import { Query } from "./Query";
 import { Subscription } from "./Subscription";
+import { Task } from "./Task";
 import { User } from "./User";
 import { UserTag } from "./UserTag";
 import {
@@ -38,6 +39,7 @@ export const resolvers: Resolvers = {
   Post,
   Query,
   Subscription,
+  Task,
   User,
   UserTag,
 

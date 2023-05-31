@@ -312,6 +312,7 @@ export const types = gql`
     creator: User!
     createdAt: DateTime!
     deadline: DateTime
+    volunteers: [User]
   }
 
   type Translation {
