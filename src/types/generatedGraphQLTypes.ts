@@ -169,12 +169,12 @@ export type Event = {
   location?: Maybe<Scalars['String']>;
   longitude?: Maybe<Scalars['Longitude']>;
   organization?: Maybe<Organization>;
+  projects?: Maybe<Array<Maybe<EventProject>>>;
   recurrance?: Maybe<Recurrance>;
   recurring: Scalars['Boolean'];
   startDate: Scalars['Date'];
   startTime?: Maybe<Scalars['Time']>;
   status: Status;
-  tasks?: Maybe<Array<Maybe<Task>>>;
   title: Scalars['String'];
 };
 
@@ -1412,6 +1412,7 @@ export type User = {
   adminApproved?: Maybe<Scalars['Boolean']>;
   adminFor?: Maybe<Array<Maybe<Organization>>>;
   appLanguageCode: Scalars['String'];
+  assignedTasks?: Maybe<Array<Maybe<Task>>>;
   createdAt?: Maybe<Scalars['DateTime']>;
   createdEvents?: Maybe<Array<Maybe<Event>>>;
   createdOrganizations?: Maybe<Array<Maybe<Organization>>>;
@@ -1955,12 +1956,12 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   location?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   longitude?: Resolver<Maybe<ResolversTypes['Longitude']>, ParentType, ContextType>;
   organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
+  projects?: Resolver<Maybe<Array<Maybe<ResolversTypes['EventProject']>>>, ParentType, ContextType>;
   recurrance?: Resolver<Maybe<ResolversTypes['Recurrance']>, ParentType, ContextType>;
   recurring?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   startTime?: Resolver<Maybe<ResolversTypes['Time']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
-  tasks?: Resolver<Maybe<Array<Maybe<ResolversTypes['Task']>>>, ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2322,6 +2323,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   adminApproved?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   adminFor?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   appLanguageCode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  assignedTasks?: Resolver<Maybe<Array<Maybe<ResolversTypes['Task']>>>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   createdOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;

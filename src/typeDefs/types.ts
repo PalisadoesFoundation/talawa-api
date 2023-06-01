@@ -100,8 +100,8 @@ export const types = gql`
     creator: User!
     attendees: [User]
     admins(adminId: ID): [User]
-    tasks: [Task]
     status: Status!
+    projects: [EventProject]
   }
 
   type EventProject {
@@ -342,6 +342,7 @@ export const types = gql`
     organizationUserBelongsTo: Organization
     pluginCreationAllowed: Boolean
     adminApproved: Boolean
+    assignedTasks: [Task]
     createdAt: DateTime
     tagsAssignedWith(
       after: String
