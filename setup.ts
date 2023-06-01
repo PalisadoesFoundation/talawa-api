@@ -25,7 +25,7 @@ async function accessAndRefreshTokens(
 ): Promise<void> {
   const config = dotenv.parse(fs.readFileSync(".env"));
 
-  if (accessTokenSecret == null) {
+  if (accessTokenSecret === null) {
     accessTokenSecret = cryptolib.randomBytes(32).toString("hex");
     config.ACCESS_TOKEN_SECRET = accessTokenSecret;
     fs.writeFileSync(".env", "");
@@ -34,7 +34,7 @@ async function accessAndRefreshTokens(
     }
   }
 
-  if (refreshTokenSecret == null) {
+  if (refreshTokenSecret === null) {
     refreshTokenSecret = cryptolib.randomBytes(32).toString("hex");
     config.REFRESH_TOKEN_SECRET = refreshTokenSecret;
     fs.writeFileSync(".env", "");
