@@ -104,13 +104,13 @@ export const types = gql`
     status: Status!
   }
 
-  # type EventProject {
-  #     _id: ID!
-  #     title:String!
-  #     description: String!
-  #     event: Event!
-  #     tasks: [Task]
-  # }
+  type EventProject {
+    _id: ID!
+    title: String!
+    description: String!
+    event: Event!
+    tasks: [Task]
+  }
 
   type Group {
     _id: ID

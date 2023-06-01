@@ -1,7 +1,6 @@
 import type { Types, PopulatedDoc, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceOrganization } from "./Organization";
-import type { InterfaceTask } from "./Task";
 import type { InterfaceUser } from "./User";
 
 /**
@@ -27,7 +26,6 @@ export interface InterfaceEvent {
   creator: PopulatedDoc<InterfaceUser & Document>;
   admins: PopulatedDoc<InterfaceUser & Document>[];
   organization: PopulatedDoc<InterfaceOrganization & Document>;
-  tasks: PopulatedDoc<InterfaceTask & Document>[];
   status: string;
 }
 
@@ -51,7 +49,6 @@ export interface InterfaceEvent {
  * @param creator - Creator of the event
  * @param admins - Admins
  * @param organization - Organization
- * @param tasks - Tasks
  * @param status - whether the event is active, blocked, or deleted.
  */
 
@@ -147,12 +144,6 @@ const eventSchema = new Schema({
     ref: "Organization",
     required: true,
   },
-  tasks: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Task",
-    },
-  ],
   status: {
     type: String,
     required: true,

@@ -40,7 +40,7 @@ const config: CodegenConfig = {
 
           EventAttendee: "../models/EventAttendee#InterfaceEventAttendee",
 
-          // EventProject: '../models/EventProject#InterfaceEventProject'
+          EventProject: "../models/EventProject#InterfaceEventProject",
 
           // File: '../models/File#InterfaceFile',
 

@@ -53,6 +53,8 @@ export const mutations = gql`
 
     createEvent(data: EventInput): Event! @auth
 
+    createEventProject(data: EventProjectInput!): EventProject! @auth
+
     createGroupChat(data: createGroupChatInput!): GroupChat! @auth
 
     createMessageChat(data: MessageChatInput!): MessageChat! @auth
@@ -73,7 +75,7 @@ export const mutations = gql`
 
     createUserTag(input: CreateUserTagInput!): UserTag @auth
 
-    createTask(data: TaskInput, eventId: ID!): Task! @auth
+    createTask(data: TaskInput, eventProjectId: ID!): Task! @auth
 
     deleteDonationById(id: ID!): DeletePayload!
 
@@ -112,6 +114,8 @@ export const mutations = gql`
     removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat! @auth
 
     removeEvent(id: ID!): Event! @auth
+
+    removeEventProject(id: ID!): EventProject! @auth
 
     removeGroupChat(chatId: ID!): GroupChat! @auth
 
@@ -162,6 +166,9 @@ export const mutations = gql`
     unregisterForEventByUser(id: ID!): Event! @auth
 
     updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
+
+    updateEventProject(id: ID!, data: UpdateEventProjectInput!): EventProject!
+      @auth
 
     updatePost(id: ID!, data: PostUpdateInput): Post! @auth
 

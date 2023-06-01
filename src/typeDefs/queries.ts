@@ -80,10 +80,6 @@ export const queries = gql`
 
     registrantsByEvent(id: ID!): [User]
 
-    tasksByEvent(id: ID!, orderBy: TaskOrderByInput): [Task]
-
-    tasksByUser(id: ID!, orderBy: TaskOrderByInput): [Task]
-
     user(id: ID!): User! @auth
 
     userLanguage(userId: ID!): String @auth

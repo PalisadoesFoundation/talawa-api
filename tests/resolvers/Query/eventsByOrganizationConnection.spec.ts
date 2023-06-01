@@ -103,19 +103,15 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         for (let i = 0; i < event.admins.length; i++) {
           adminIds.push(event.admins[i]._id);
         }
-        const tasksIds = [];
-        for (let i = 0; i < event.tasks.length; i++) {
-          tasksIds.push(event.tasks[i]._id);
-        }
         return {
           ...event,
           creator: event?.creator._id,
           admins: adminIds,
-          tasks: tasksIds,
         };
       });
     expect(eventsByOrganizationConnectionPayload).toEqual(events);
   });
+
   it(`returns list of all existing events filtered by args.where ===
   { id_not: testEvent[0]._id, title_not: testEvents[0].title, description_not:testEvents[0].description, location_not:testEvents[0].location }
   and sorted by descending order of event._id if args.orderBy === 'id_DESC'`, async () => {
@@ -160,15 +156,10 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         for (let i = 0; i < event.admins.length; i++) {
           adminIds.push(event.admins[i]._id);
         }
-        const tasksIds = [];
-        for (let i = 0; i < event.tasks.length; i++) {
-          tasksIds.push(event.tasks[i]._id);
-        }
         return {
           ...event,
           creator: event?.creator._id,
           admins: adminIds,
-          tasks: tasksIds,
         };
       });
     expect(eventsByOrganizationConnectionPayload).toEqual(events);
@@ -215,15 +206,10 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         for (let i = 0; i < event.admins.length; i++) {
           adminIds.push(event.admins[i]._id);
         }
-        const tasksIds = [];
-        for (let i = 0; i < event.tasks.length; i++) {
-          tasksIds.push(event.tasks[i]._id);
-        }
         return {
           ...event,
           creator: event?.creator._id,
           admins: adminIds,
-          tasks: tasksIds,
         };
       });
 
@@ -274,15 +260,10 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         for (let i = 0; i < event.admins.length; i++) {
           adminIds.push(event.admins[i]._id);
         }
-        const tasksIds = [];
-        for (let i = 0; i < event.tasks.length; i++) {
-          tasksIds.push(event.tasks[i]._id);
-        }
         return {
           ...event,
           creator: event?.creator._id,
           admins: adminIds,
-          tasks: tasksIds,
         };
       });
     expect(eventsByOrganizationConnectionPayload).toEqual(events);
@@ -330,15 +311,10 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         for (let i = 0; i < event.admins.length; i++) {
           adminIds.push(event.admins[i]._id);
         }
-        const tasksIds = [];
-        for (let i = 0; i < event.tasks.length; i++) {
-          tasksIds.push(event.tasks[i]._id);
-        }
         return {
           ...event,
           creator: event?.creator._id,
           admins: adminIds,
-          tasks: tasksIds,
         };
       });
     expect(eventsByOrganizationConnectionPayload).toEqual(events);
@@ -375,15 +351,10 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         for (let i = 0; i < event.admins.length; i++) {
           adminIds.push(event.admins[i]._id);
         }
-        const tasksIds = [];
-        for (let i = 0; i < event.tasks.length; i++) {
-          tasksIds.push(event.tasks[i]._id);
-        }
         return {
           ...event,
           creator: event?.creator._id,
           admins: adminIds,
-          tasks: tasksIds,
         };
       });
     expect(eventsByOrganizationConnectionPayload).toEqual(events);

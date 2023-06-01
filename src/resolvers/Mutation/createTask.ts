@@ -1,5 +1,5 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, Task, Event } from "../../models";
+import { User, Task, EventProject } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import { USER_NOT_FOUND_ERROR, EVENT_NOT_FOUND_ERROR } from "../../constants";
 /**
@@ -12,6 +12,7 @@ import { USER_NOT_FOUND_ERROR, EVENT_NOT_FOUND_ERROR } from "../../constants";
  * 2. If the event exists
  * @returns Created task
  */
+
 export const createTask: MutationResolvers["createTask"] = async (
   _parent,
   args,
@@ -30,12 +31,12 @@ export const createTask: MutationResolvers["createTask"] = async (
     );
   }
 
-  const eventExists = await Event.exists({
-    _id: args.eventId,
+  const eventProjectExists = await EventProject.exists({
+    _id: args.eventProjectId,
   });
 
   // Checks whether event with _id == args.eventId exists.
-  if (eventExists === false) {
+  if (eventProjectExists === false) {
     throw new errors.NotFoundError(
       requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
       EVENT_NOT_FOUND_ERROR.CODE,
@@ -46,21 +47,9 @@ export const createTask: MutationResolvers["createTask"] = async (
   // Creates new task.
   const createdTask = await Task.create({
     ...args.data,
-    event: args.eventId,
+    eventProjectId: args.eventProjectId,
     creator: context.userId,
   });
-
-  // Adds createdTask._id to tasks list on event's document with _id === args.eventId.
-  await Event.updateOne(
-    {
-      _id: args.eventId,
-    },
-    {
-      $push: {
-        tasks: createdTask._id,
-      },
-    }
-  );
 
   // Returns createdTask.
   return createdTask.toObject();

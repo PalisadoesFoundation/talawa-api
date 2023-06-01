@@ -13,7 +13,7 @@ let testTask: TestTaskType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  [testUser, , , testTask] = await createAndAssignTestTask();
+  [testUser, , , , testTask] = await createAndAssignTestTask();
 });
 
 afterAll(async () => {

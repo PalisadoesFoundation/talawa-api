@@ -89,11 +89,11 @@ export const inputs = gql`
     organization_id: ID
   }
 
-  # input EventProjectInput {
-  #   title: String!
-  #   description: String!
-  #   eventId: String
-  # }
+  input EventProjectInput {
+    title: String!
+    description: String!
+    eventId: String
+  }
 
   input ForgotPasswordData {
     userOtp: String!
@@ -244,10 +244,10 @@ export const inputs = gql`
     endTime: Time
   }
 
-  # input UpdateEventProjectInput {
-  #   title: String
-  #   description: String
-  # }
+  input UpdateEventProjectInput {
+    title: String
+    description: String
+  }
 
   input UpdateOrganizationInput {
     name: String

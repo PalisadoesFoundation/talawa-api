@@ -6,6 +6,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   EVENT_NOT_FOUND_ERROR,
 } from "../../constants";
+
 /**
  * This function enables to create an event project.
  * @param _parent - parent of current request
@@ -17,6 +18,7 @@ import {
  * 3. If the user is an admin of the event.
  * @returns Created event project
  */
+
 export const createEventProject = async (
   _parent: any,
   args: any,

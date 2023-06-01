@@ -1,9 +1,7 @@
 import "dotenv/config";
-import type { Document } from "mongoose";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceTask } from "../../../src/models";
-import { User, Organization, Event, Task } from "../../../src/models";
+import { Task } from "../../../src/models";
 import type { MutationRemoveTaskArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -14,89 +12,18 @@ import {
   TASK_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { createTestUserFunc } from "../../helpers/user";
-import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
+import { createAndAssignTestTask, type TestTaskType } from "../../helpers/task";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testUsers: TestUserType[];
-let testTask: InterfaceTask & Document<any, any, InterfaceTask>;
+let testUser: TestUserType;
+let randomTestUser: TestUserType;
+let testTask: TestTaskType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-
-  const tempUser1 = await createTestUserFunc();
-  const tempUser2 = await createTestUserFunc();
-  testUsers = [tempUser1, tempUser2];
-
-  const testOrganization = await Organization.create({
-    name: "name",
-    description: "description",
-    isPublic: true,
-    creator: testUsers[0]?._id,
-    admins: [testUsers[0]?._id],
-    members: [testUsers[0]?._id],
-  });
-
-  await User.updateOne(
-    {
-      _id: testUsers[0]?._id,
-    },
-    {
-      $set: {
-        createdOrganizations: [testOrganization._id],
-        adminFor: [testOrganization._id],
-        joinedOrganizations: [testOrganization._id],
-      },
-    }
-  );
-
-  const testEvent = await Event.create({
-    creator: testUsers[0]?._id,
-    registrants: [
-      {
-        userId: testUsers[0]?._id,
-        user: testUsers[0]?._id,
-      },
-    ],
-    admins: [testUsers[0]?._id],
-    organization: testOrganization._id,
-    isRegisterable: true,
-    isPublic: true,
-    title: "title",
-    description: "description",
-    allDay: true,
-    startDate: new Date().toString(),
-  });
-
-  await User.updateOne(
-    {
-      _id: testUsers[0]?._id,
-    },
-    {
-      $set: {
-        createdEvents: [testEvent._id],
-        registeredEvents: [testEvent._id],
-        eventAdmin: [testEvent._id],
-      },
-    }
-  );
-
-  testTask = await Task.create({
-    title: "title",
-    event: testEvent._id,
-    creator: testUsers[0]?._id,
-  });
-
-  await Event.updateOne(
-    {
-      _id: testEvent._id,
-    },
-    {
-      $push: {
-        tasks: testTask._id,
-      },
-    }
-  );
+  randomTestUser = await createTestUser();
+  [testUser, , , , testTask] = await createAndAssignTestTask();
 });
 
 afterAll(async () => {
@@ -140,7 +67,7 @@ describe("resolvers -> Mutation -> removeTask", () => {
       };
 
       const context = {
-        userId: testUsers[0]?._id,
+        userId: testUser!._id,
       };
 
       const { removeTask: removeTaskResolver } = await import(
@@ -161,11 +88,11 @@ describe("resolvers -> Mutation -> removeTask", () => {
       .mockImplementationOnce((message) => message);
     try {
       const args: MutationRemoveTaskArgs = {
-        id: testTask._id,
+        id: testTask!._id,
       };
 
       const context = {
-        userId: testUsers[1]?._id,
+        userId: randomTestUser!._id,
       };
 
       const { removeTask: removeTaskResolver } = await import(
@@ -181,31 +108,21 @@ describe("resolvers -> Mutation -> removeTask", () => {
 
   it(`removes the task with _id === args.id and returns it`, async () => {
     const args: MutationRemoveTaskArgs = {
-      id: testTask._id,
+      id: testTask!._id,
     };
 
     const context = {
-      userId: testUsers[0]?._id,
+      userId: testUser!._id,
     };
 
     const removeTaskPayload = await removeTaskResolver?.({}, args, context);
 
-    expect(removeTaskPayload).toEqual(testTask.toObject());
+    expect(removeTaskPayload).toEqual(testTask!.toObject());
 
     const testRemovedTask = await Task.findOne({
-      _id: testTask._id,
+      _id: testTask!._id,
     }).lean();
 
     expect(testRemovedTask).toEqual(null);
-
-    const testUpdatedEvents = await Event.find({
-      _id: testTask.event,
-    }).lean();
-
-    testUpdatedEvents.forEach((testUpdatedEvent) => {
-      testUpdatedEvent.tasks.forEach((task) => {
-        expect(task.toString()).not.toEqual(testTask._id.toString());
-      });
-    });
   });
 });

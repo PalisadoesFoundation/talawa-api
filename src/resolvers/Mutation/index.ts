@@ -17,6 +17,7 @@ import { createComment } from "./createComment";
 import { createDirectChat } from "./createDirectChat";
 import { createDonation } from "./createDonation";
 import { createEvent } from "./createEvent";
+import { createEventProject } from "./createEventProject";
 import { createGroupChat } from "./createGroupChat";
 import { createMessageChat } from "./createMessageChat";
 import { createOrganization } from "./createOrganization";
@@ -42,6 +43,7 @@ import { removeAdmin } from "./removeAdmin";
 import { removeComment } from "./removeComment";
 import { removeDirectChat } from "./removeDirectChat";
 import { removeEvent } from "./removeEvent";
+import { removeEventProject } from "./removeEventProject";
 import { removeGroupChat } from "./removeGroupChat";
 import { removeMember } from "./removeMember";
 import { removeOrganization } from "./removeOrganization";
@@ -64,6 +66,7 @@ import { unlikeComment } from "./unlikeComment";
 import { unlikePost } from "./unlikePost";
 import { unregisterForEventByUser } from "./unregisterForEventByUser";
 import { updateEvent } from "./updateEvent";
+import { updateEventProject } from "./updateEventProject";
 import { updateLanguage } from "./updateLanguage";
 import { updateOrganization } from "./updateOrganization";
 import { updatePluginInstalledOrgs } from "./updatePluginInstalledOrgs";
@@ -94,6 +97,7 @@ export const Mutation: MutationResolvers = {
   createDirectChat,
   createDonation,
   createEvent,
+  createEventProject,
   createGroupChat,
   createMessageChat,
   createOrganization,
@@ -119,6 +123,7 @@ export const Mutation: MutationResolvers = {
   removeComment,
   removeDirectChat,
   removeEvent,
+  removeEventProject,
   removeGroupChat,
   removeMember,
   removeOrganization,
@@ -141,6 +146,7 @@ export const Mutation: MutationResolvers = {
   unlikePost,
   unregisterForEventByUser,
   updateEvent,
+  updateEventProject,
   updateLanguage,
   updateOrganization,
   updatePluginInstalledOrgs,

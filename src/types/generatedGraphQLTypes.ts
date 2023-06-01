@@ -6,6 +6,7 @@ import type { InterfaceDirectChatMessage as InterfaceDirectChatMessageModel } fr
 import type { InterfaceDonation as InterfaceDonationModel } from '../models/Donation';
 import type { InterfaceEvent as InterfaceEventModel } from '../models/Event';
 import type { InterfaceEventAttendee as InterfaceEventAttendeeModel } from '../models/EventAttendee';
+import type { InterfaceEventProject as InterfaceEventProjectModel } from '../models/EventProject';
 import type { InterfaceGroup as InterfaceGroupModel } from '../models/Group';
 import type { InterfaceGroupChat as InterfaceGroupChatModel } from '../models/GroupChat';
 import type { InterfaceGroupChatMessage as InterfaceGroupChatMessageModel } from '../models/GroupChatMessage';
@@ -222,6 +223,21 @@ export type EventOrderByInput =
   | 'title_ASC'
   | 'title_DESC';
 
+export type EventProject = {
+  __typename?: 'EventProject';
+  _id: Scalars['ID'];
+  description: Scalars['String'];
+  event: Event;
+  tasks?: Maybe<Array<Maybe<Task>>>;
+  title: Scalars['String'];
+};
+
+export type EventProjectInput = {
+  description: Scalars['String'];
+  eventId?: InputMaybe<Scalars['String']>;
+  title: Scalars['String'];
+};
+
 export type EventWhereInput = {
   description?: InputMaybe<Scalars['String']>;
   description_contains?: InputMaybe<Scalars['String']>;
@@ -380,6 +396,7 @@ export type Mutation = {
   createDirectChat: DirectChat;
   createDonation: Donation;
   createEvent: Event;
+  createEventProject: EventProject;
   createGroupChat: GroupChat;
   createMember: Organization;
   createMessageChat: MessageChat;
@@ -406,6 +423,7 @@ export type Mutation = {
   removeComment?: Maybe<Comment>;
   removeDirectChat: DirectChat;
   removeEvent: Event;
+  removeEventProject: EventProject;
   removeGroupChat: GroupChat;
   removeMember: Organization;
   removeOrganization: User;
@@ -428,6 +446,7 @@ export type Mutation = {
   unlikePost?: Maybe<Post>;
   unregisterForEventByUser: Event;
   updateEvent: Event;
+  updateEventProject: EventProject;
   updateLanguage: User;
   updateOrganization: Organization;
   updatePluginInstalledOrgs: Plugin;
@@ -536,6 +555,11 @@ export type MutationCreateEventArgs = {
 };
 
 
+export type MutationCreateEventProjectArgs = {
+  data: EventProjectInput;
+};
+
+
 export type MutationCreateGroupChatArgs = {
   data: CreateGroupChatInput;
 };
@@ -574,7 +598,7 @@ export type MutationCreatePostArgs = {
 
 export type MutationCreateTaskArgs = {
   data?: InputMaybe<TaskInput>;
-  eventId: Scalars['ID'];
+  eventProjectId: Scalars['ID'];
 };
 
 
@@ -665,6 +689,11 @@ export type MutationRemoveDirectChatArgs = {
 
 
 export type MutationRemoveEventArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type MutationRemoveEventProjectArgs = {
   id: Scalars['ID'];
 };
 
@@ -776,6 +805,12 @@ export type MutationUnregisterForEventByUserArgs = {
 
 export type MutationUpdateEventArgs = {
   data?: InputMaybe<UpdateEventInput>;
+  id: Scalars['ID'];
+};
+
+
+export type MutationUpdateEventProjectArgs = {
+  data: UpdateEventProjectInput;
   id: Scalars['ID'];
 };
 
@@ -1092,8 +1127,6 @@ export type Query = {
   postsByOrganizationConnection?: Maybe<PostConnection>;
   registeredEventsByUser?: Maybe<Array<Maybe<Event>>>;
   registrantsByEvent?: Maybe<Array<Maybe<User>>>;
-  tasksByEvent?: Maybe<Array<Maybe<Task>>>;
-  tasksByUser?: Maybe<Array<Maybe<Task>>>;
   user: User;
   userLanguage?: Maybe<Scalars['String']>;
   users?: Maybe<Array<Maybe<User>>>;
@@ -1222,18 +1255,6 @@ export type QueryRegistrantsByEventArgs = {
 };
 
 
-export type QueryTasksByEventArgs = {
-  id: Scalars['ID'];
-  orderBy?: InputMaybe<TaskOrderByInput>;
-};
-
-
-export type QueryTasksByUserArgs = {
-  id: Scalars['ID'];
-  orderBy?: InputMaybe<TaskOrderByInput>;
-};
-
-
 export type QueryUserArgs = {
   id: Scalars['ID'];
 };
@@ -1341,6 +1362,11 @@ export type UpdateEventInput = {
   recurring?: InputMaybe<Scalars['Boolean']>;
   startDate?: InputMaybe<Scalars['Date']>;
   startTime?: InputMaybe<Scalars['Time']>;
+  title?: InputMaybe<Scalars['String']>;
+};
+
+export type UpdateEventProjectInput = {
+  description?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
 };
 
@@ -1633,6 +1659,8 @@ export type ResolversTypes = {
   Event: ResolverTypeWrapper<InterfaceEventModel>;
   EventInput: EventInput;
   EventOrderByInput: EventOrderByInput;
+  EventProject: ResolverTypeWrapper<InterfaceEventProjectModel>;
+  EventProjectInput: EventProjectInput;
   EventWhereInput: EventWhereInput;
   ExtendSession: ResolverTypeWrapper<ExtendSession>;
   Float: ResolverTypeWrapper<Scalars['Float']>;
@@ -1689,6 +1717,7 @@ export type ResolversTypes = {
   Type: Type;
   URL: ResolverTypeWrapper<Scalars['URL']>;
   UpdateEventInput: UpdateEventInput;
+  UpdateEventProjectInput: UpdateEventProjectInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
   UpdateTaskInput: UpdateTaskInput;
   UpdateUserInput: UpdateUserInput;
@@ -1733,6 +1762,8 @@ export type ResolversParentTypes = {
   EmailAddress: Scalars['EmailAddress'];
   Event: InterfaceEventModel;
   EventInput: EventInput;
+  EventProject: InterfaceEventProjectModel;
+  EventProjectInput: EventProjectInput;
   EventWhereInput: EventWhereInput;
   ExtendSession: ExtendSession;
   Float: Scalars['Float'];
@@ -1783,6 +1814,7 @@ export type ResolversParentTypes = {
   Translation: Translation;
   URL: Scalars['URL'];
   UpdateEventInput: UpdateEventInput;
+  UpdateEventProjectInput: UpdateEventProjectInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
   UpdateTaskInput: UpdateTaskInput;
   UpdateUserInput: UpdateUserInput;
@@ -1933,6 +1965,15 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type EventProjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventProject'] = ResolversParentTypes['EventProject']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  event?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
+  tasks?: Resolver<Maybe<Array<Maybe<ResolversTypes['Task']>>>, ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type ExtendSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExtendSession'] = ResolversParentTypes['ExtendSession']> = {
   accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -2048,13 +2089,14 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationCreateDirectChatArgs, 'data'>>;
   createDonation?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<MutationCreateDonationArgs, 'amount' | 'nameOfOrg' | 'nameOfUser' | 'orgId' | 'payPalId' | 'userId'>>;
   createEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, Partial<MutationCreateEventArgs>>;
+  createEventProject?: Resolver<ResolversTypes['EventProject'], ParentType, ContextType, RequireFields<MutationCreateEventProjectArgs, 'data'>>;
   createGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationCreateGroupChatArgs, 'data'>>;
   createMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationCreateMemberArgs, 'input'>>;
   createMessageChat?: Resolver<ResolversTypes['MessageChat'], ParentType, ContextType, RequireFields<MutationCreateMessageChatArgs, 'data'>>;
   createOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, Partial<MutationCreateOrganizationArgs>>;
   createPlugin?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationCreatePluginArgs, 'pluginCreatedBy' | 'pluginDesc' | 'pluginInstallStatus' | 'pluginName'>>;
   createPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'data'>>;
-  createTask?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationCreateTaskArgs, 'eventId'>>;
+  createTask?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationCreateTaskArgs, 'eventProjectId'>>;
   createUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationCreateUserTagArgs, 'input'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;
@@ -2074,6 +2116,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationRemoveCommentArgs, 'id'>>;
   removeDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationRemoveDirectChatArgs, 'chatId' | 'organizationId'>>;
   removeEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRemoveEventArgs, 'id'>>;
+  removeEventProject?: Resolver<ResolversTypes['EventProject'], ParentType, ContextType, RequireFields<MutationRemoveEventProjectArgs, 'id'>>;
   removeGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationRemoveGroupChatArgs, 'chatId'>>;
   removeMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationRemoveMemberArgs, 'data'>>;
   removeOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationArgs, 'id'>>;
@@ -2096,6 +2139,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   unlikePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUnlikePostArgs, 'id'>>;
   unregisterForEventByUser?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUnregisterForEventByUserArgs, 'id'>>;
   updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'id'>>;
+  updateEventProject?: Resolver<ResolversTypes['EventProject'], ParentType, ContextType, RequireFields<MutationUpdateEventProjectArgs, 'data' | 'id'>>;
   updateLanguage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateLanguageArgs, 'languageCode'>>;
   updateOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateOrganizationArgs, 'id'>>;
   updatePluginInstalledOrgs?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginInstalledOrgsArgs, 'id' | 'orgId'>>;
@@ -2229,8 +2273,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   postsByOrganizationConnection?: Resolver<Maybe<ResolversTypes['PostConnection']>, ParentType, ContextType, RequireFields<QueryPostsByOrganizationConnectionArgs, 'id'>>;
   registeredEventsByUser?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryRegisteredEventsByUserArgs>>;
   registrantsByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<QueryRegistrantsByEventArgs, 'id'>>;
-  tasksByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['Task']>>>, ParentType, ContextType, RequireFields<QueryTasksByEventArgs, 'id'>>;
-  tasksByUser?: Resolver<Maybe<Array<Maybe<ResolversTypes['Task']>>>, ParentType, ContextType, RequireFields<QueryTasksByUserArgs, 'id'>>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
   userLanguage?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryUserLanguageArgs, 'userId'>>;
   users?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<QueryUsersArgs>>;
@@ -2356,6 +2398,7 @@ export type Resolvers<ContextType = any> = {
   Donation?: DonationResolvers<ContextType>;
   EmailAddress?: GraphQLScalarType;
   Event?: EventResolvers<ContextType>;
+  EventProject?: EventProjectResolvers<ContextType>;
   ExtendSession?: ExtendSessionResolvers<ContextType>;
   Group?: GroupResolvers<ContextType>;
   GroupChat?: GroupChatResolvers<ContextType>;

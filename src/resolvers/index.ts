@@ -3,6 +3,7 @@ import { Comment } from "./Comment";
 import { DirectChat } from "./DirectChat";
 import { DirectChatMessage } from "./DirectChatMessage";
 import { Event } from "./Event";
+import { EventProject } from "./EventProject";
 import { GroupChat } from "./GroupChat";
 import { GroupChatMessage } from "./GroupChatMessage";
 import { MembershipRequest } from "./MembershipRequest";
@@ -31,6 +32,7 @@ export const resolvers: Resolvers = {
   DirectChat,
   DirectChatMessage,
   Event,
+  EventProject,
   GroupChat,
   GroupChatMessage,
   MembershipRequest,

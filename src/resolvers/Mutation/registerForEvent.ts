@@ -57,7 +57,7 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
 
   if (currentUserIsEventRegistrant) {
     throw new errors.InputValidationError(
-      REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE,
+      requestContext.translate(REGISTRANT_ALREADY_EXIST_ERROR.MESSAGE),
       REGISTRANT_ALREADY_EXIST_ERROR.CODE,
       REGISTRANT_ALREADY_EXIST_ERROR.PARAM
     );

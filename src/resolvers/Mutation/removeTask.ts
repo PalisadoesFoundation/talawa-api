@@ -5,7 +5,7 @@ import {
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Task, Event } from "../../models";
+import { User, Task } from "../../models";
 /**
  * This function enables to remove a task.
  * @param _parent - parent of current request
@@ -61,18 +61,6 @@ export const removeTask: MutationResolvers["removeTask"] = async (
   await Task.deleteOne({
     _id: task._id,
   });
-
-  // Removes task._id from tasks list of task.event.
-  await Event.updateMany(
-    {
-      _id: task.event,
-    },
-    {
-      $pull: {
-        tasks: task._id,
-      },
-    }
-  );
 
   // Returns deleted task.
   return task;

@@ -1,7 +1,6 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Event } from "../../../src/models";
 import type { MutationCreateTaskArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -12,11 +11,11 @@ import {
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
-import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
-import type { TestEventType } from "../../helpers/events";
+import { createAndAssignTestTask } from "../../helpers/task";
+import type { TestEventProjectType } from "../../helpers/task";
 
 let testUser: TestUserType;
-let testEvent: TestEventType;
+let testEventProject: TestEventProjectType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
@@ -25,9 +24,8 @@ beforeAll(async () => {
   vi.spyOn(requestContext, "translate").mockImplementation(
     (message) => message
   );
-  const temp = await createTestEventWithRegistrants();
-  testUser = temp[0];
-  testEvent = temp[2];
+
+  [testUser, , , testEventProject] = await createAndAssignTestTask();
 });
 
 afterAll(async () => {
@@ -38,7 +36,7 @@ describe("resolvers -> Mutation -> createTask", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationCreateTaskArgs = {
-        eventId: "",
+        eventProjectId: "",
       };
 
       const context = {
@@ -54,7 +52,7 @@ describe("resolvers -> Mutation -> createTask", () => {
   it(`throws NotFoundError if no event exists with _id === args.eventId`, async () => {
     try {
       const args: MutationCreateTaskArgs = {
-        eventId: Types.ObjectId().toString(),
+        eventProjectId: Types.ObjectId().toString(),
       };
 
       const context = {
@@ -69,7 +67,7 @@ describe("resolvers -> Mutation -> createTask", () => {
 
   it(`creates the task and returns it`, async () => {
     const args: MutationCreateTaskArgs = {
-      eventId: testEvent?.id,
+      eventProjectId: testEventProject!.id,
       data: {
         title: "title",
         deadline: new Date().toString(),
@@ -90,13 +88,5 @@ describe("resolvers -> Mutation -> createTask", () => {
       })
     );
     expect(createTaskPayload?.deadline).toBeInstanceOf(Date);
-
-    const testUpdatedEvent = await Event.findOne({
-      _id: testEvent?._id,
-    })
-      .select(["tasks"])
-      .lean();
-
-    expect(testUpdatedEvent?.tasks).toEqual([createTaskPayload?._id]);
   });
 });

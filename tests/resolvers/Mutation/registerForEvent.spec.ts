@@ -30,31 +30,7 @@ let testEvent: TestEventType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  const temp = await createTestEventWithRegistrants();
-  testUser = temp[0];
-  const testOrganization = temp[1];
-
-  testEvent = await Event.create({
-    creator: testUser?._id,
-    organization: testOrganization?._id,
-    isRegisterable: true,
-    isPublic: true,
-    title: "title",
-    description: "description",
-    allDay: true,
-    startDate: new Date().toString(),
-  });
-
-  await User.updateOne(
-    {
-      _id: testUser?._id,
-    },
-    {
-      $set: {
-        createdEvents: [testEvent._id],
-      },
-    }
-  );
+  [testUser, , testEvent] = await createTestEventWithRegistrants();
 });
 
 afterAll(async () => {
@@ -97,6 +73,7 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
+
     try {
       const args: MutationRegisterForEventArgs = {
         id: Types.ObjectId().toString(),
@@ -117,19 +94,19 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
     }
   });
 
-  it(`throws error if user with _id === context.userId is already a
-  registrant of event with _id === args.id`, async () => {
+  it(`throws error if user with _id === context.userId is already a registrant of event with _id === args.id`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
+
     try {
       const args: MutationRegisterForEventArgs = {
-        id: testEvent?._id,
+        id: testEvent!._id,
       };
 
       const context = {
-        userId: testUser?._id,
+        userId: testUser!._id,
       };
 
       const { registerForEvent: registerForEventResolver } = await import(
@@ -143,8 +120,7 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
     }
   });
 
-  it(`registers user with _id === context.userId as a registrant for event with
-  _id === args.id`, async () => {
+  it(`registers user with _id === context.userId as a registrant for event with _id === args.id`, async () => {
     await EventAttendee.deleteOne({
       userId: testUser!._id,
       eventId: testEvent!._id,
@@ -162,11 +138,11 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
     );
 
     const args: MutationRegisterForEventArgs = {
-      id: testEvent?._id,
+      id: testEvent!._id,
     };
 
     const context = {
-      userId: testUser?._id,
+      userId: testUser!._id,
     };
 
     const registerForEventPayload = await registerForEventResolver?.(

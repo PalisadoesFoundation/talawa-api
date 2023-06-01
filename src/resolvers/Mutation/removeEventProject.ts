@@ -6,6 +6,7 @@ import {
   EVENT_PROJECT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
+
 /**
  * This function enables to remove an event project.
  * @param _parent - parent of current request
@@ -17,6 +18,7 @@ import {
  * 3. If the user is the creator of the event project.
  * @returns Deleted event project.
  */
+
 export const removeEventProject = async (
   _parent: any,
   args: any,
