@@ -121,7 +121,7 @@ async function recaptcha(): Promise<void> {
     {
       type: "input",
       name: "recaptchaSecretKey",
-      message: "Enter your reCAPTCHA secret site key:",
+      message: "Enter your reCAPTCHA secret key:",
       validate: async (input: string): Promise<boolean | string> => {
         if (validateRecaptcha(input)) {
           return true;
@@ -180,7 +180,6 @@ async function twoFactorAuth(): Promise<void> {
       type: "password",
       name: "password",
       message: "Enter the generated password:",
-      mask: "*",
     },
   ]);
   const config = dotenv.parse(fs.readFileSync(".env"));
@@ -194,8 +193,8 @@ async function twoFactorAuth(): Promise<void> {
 }
 
 //Checks if the data exists and ask for deletion
-async function checkDataExists(url: string): Promise<boolean> {
-  let response = false;
+async function shouldWipeExistingData(url: string): Promise<boolean> {
+  let shouldImport = false;
   const client = new mongodb.MongoClient(url, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -218,18 +217,18 @@ async function checkDataExists(url: string): Promise<boolean> {
           await db.collection(collection.name).deleteMany({});
         }
         console.log("All existing data has been deleted.");
-        response = true;
+        shouldImport = true;
       } else {
         console.log("Deletion & import operation cancelled.");
       }
     } else {
-      response = true;
+      shouldImport = true;
     }
   } catch (error) {
     console.error("Could not connect to database to check for data");
   }
   client.close();
-  return response;
+  return shouldImport;
 }
 
 //Import sample data
@@ -238,9 +237,9 @@ async function importData(): Promise<void> {
     console.log("Couldn't find mongodb url");
     return;
   }
-  const dataExists = await checkDataExists(process.env.MONGO_DB_URL);
+  const shouldImport = await shouldWipeExistingData(process.env.MONGO_DB_URL);
 
-  if (dataExists) {
+  if (shouldImport) {
     console.log("Importing sample data...");
     await exec(
       "npm run import:sample-data",
