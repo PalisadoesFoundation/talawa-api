@@ -92,7 +92,7 @@ export const inputs = gql`
   input EventProjectInput {
     title: String!
     description: String!
-    eventId: String
+    eventId: ID!
   }
 
   input ForgotPasswordData {
@@ -218,8 +218,8 @@ export const inputs = gql`
 
   input TaskInput {
     title: String!
-    description: String
-    deadline: DateTime
+    description: String!
+    deadline: DateTime!
   }
 
   input ToggleUserTagAssignInput {

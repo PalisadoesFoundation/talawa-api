@@ -36,7 +36,12 @@ describe("resolvers -> Mutation -> createTask", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationCreateTaskArgs = {
-        eventProjectId: "",
+        eventProjectId: testEventProject!._id,
+        data: {
+          title: `Test Task`,
+          description: `Test Description`,
+          deadline: new Date().toDateString(),
+        },
       };
 
       const context = {
@@ -53,6 +58,11 @@ describe("resolvers -> Mutation -> createTask", () => {
     try {
       const args: MutationCreateTaskArgs = {
         eventProjectId: Types.ObjectId().toString(),
+        data: {
+          title: `Test Task`,
+          description: `Test Description`,
+          deadline: new Date().toDateString(),
+        },
       };
 
       const context = {

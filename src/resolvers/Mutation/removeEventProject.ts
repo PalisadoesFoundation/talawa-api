@@ -24,12 +24,12 @@ export const removeEventProject = async (
   args: any,
   context: any
 ): Promise<InterfaceEventProject> => {
-  const currentUserExists = await User.exists({
+  const currentUser = await User.findOne({
     _id: context.userId,
   });
 
   // Checks if currentUser with _id === context.userId exists.
-  if (currentUserExists === false) {
+  if (currentUser === null) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
@@ -51,7 +51,10 @@ export const removeEventProject = async (
   }
 
   // Checks whether currentUser with _id === context.userId is not the creator of eventProject.
-  if (!eventProject.creator.equals(context.userId)) {
+  if (
+    !eventProject.creator.equals(context.userId) &&
+    currentUser.userType !== "SUPERADMIN"
+  ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,

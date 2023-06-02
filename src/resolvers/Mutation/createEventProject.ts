@@ -24,12 +24,12 @@ export const createEventProject = async (
   args: any,
   context: any
 ): Promise<InterfaceEventProject> => {
-  const currentUserExists = await User.exists({
+  const currentUser = await User.findOne({
     _id: context.userId,
   });
 
   // Checks whether currentUser with _id === context.userId exists.
-  if (currentUserExists === false) {
+  if (currentUser === null) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
@@ -55,7 +55,10 @@ export const createEventProject = async (
   );
 
   // Checks whether currentUser with _id === context.userId is an admin of event.
-  if (currentUserIsEventAdmin === false) {
+  if (
+    currentUserIsEventAdmin === false &&
+    currentUser.userType !== "SUPERADMIN"
+  ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,

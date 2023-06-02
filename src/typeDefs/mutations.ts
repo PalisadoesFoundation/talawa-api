@@ -75,7 +75,7 @@ export const mutations = gql`
 
     createUserTag(input: CreateUserTagInput!): UserTag @auth
 
-    createTask(data: TaskInput, eventProjectId: ID!): Task! @auth
+    createTask(data: TaskInput!, eventProjectId: ID!): Task! @auth
 
     deleteDonationById(id: ID!): DeletePayload!
 

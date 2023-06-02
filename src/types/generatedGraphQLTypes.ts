@@ -234,7 +234,7 @@ export type EventProject = {
 
 export type EventProjectInput = {
   description: Scalars['String'];
-  eventId?: InputMaybe<Scalars['String']>;
+  eventId: Scalars['ID'];
   title: Scalars['String'];
 };
 
@@ -597,7 +597,7 @@ export type MutationCreatePostArgs = {
 
 
 export type MutationCreateTaskArgs = {
-  data?: InputMaybe<TaskInput>;
+  data: TaskInput;
   eventProjectId: Scalars['ID'];
 };
 
@@ -1314,8 +1314,8 @@ export type Task = {
 };
 
 export type TaskInput = {
-  deadline?: InputMaybe<Scalars['DateTime']>;
-  description?: InputMaybe<Scalars['String']>;
+  deadline: Scalars['DateTime'];
+  description: Scalars['String'];
   title: Scalars['String'];
 };
 
@@ -2097,7 +2097,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, Partial<MutationCreateOrganizationArgs>>;
   createPlugin?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationCreatePluginArgs, 'pluginCreatedBy' | 'pluginDesc' | 'pluginInstallStatus' | 'pluginName'>>;
   createPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'data'>>;
-  createTask?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationCreateTaskArgs, 'eventProjectId'>>;
+  createTask?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationCreateTaskArgs, 'data' | 'eventProjectId'>>;
   createUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationCreateUserTagArgs, 'input'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;

@@ -69,7 +69,13 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   );
 
   // Checks whether currentUser neither created nor joined the organization.
-  if (!(userCreatedOrganization || userJoinedOrganization)) {
+  if (
+    !(
+      userCreatedOrganization ||
+      userJoinedOrganization ||
+      currentUser.userType == "SUPERADMIN"
+    )
+  ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE),
       ORGANIZATION_NOT_AUTHORIZED_ERROR.CODE,

@@ -24,11 +24,11 @@ export const updateEventProject = async (
   args: any,
   context: any
 ): Promise<InterfaceEventProject> => {
-  const currentUserExists = await User.exists({
+  const currentUser = await User.findOne({
     _id: context.userId,
   });
 
-  if (currentUserExists === false) {
+  if (currentUser === null) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
@@ -49,7 +49,10 @@ export const updateEventProject = async (
   }
 
   // toString() method converts mongodb's objectId to a javascript string for comparision
-  if (eventProject.creator.toString() !== context.userId.toString()) {
+  if (
+    eventProject.creator.toString() !== context.userId.toString() &&
+    currentUser.userType !== "SUPERADMIN"
+  ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
