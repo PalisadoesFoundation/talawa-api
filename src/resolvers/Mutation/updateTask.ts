@@ -21,11 +21,11 @@ export const updateTask: MutationResolvers["updateTask"] = async (
   args,
   context
 ) => {
-  const currentUserExists = await User.exists({
+  const currentUser = await User.findOne({
     _id: context.userId,
   });
 
-  if (currentUserExists === false) {
+  if (currentUser === null) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
@@ -45,7 +45,10 @@ export const updateTask: MutationResolvers["updateTask"] = async (
     );
   }
 
-  if (task.creator.toString() !== context.userId.toString()) {
+  if (
+    task.creator.toString() !== context.userId.toString() &&
+    currentUser.userType !== "SUPERADMIN"
+  ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,

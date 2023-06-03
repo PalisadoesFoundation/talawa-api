@@ -186,7 +186,7 @@ export const mutations = gql`
 
     updateUserTag(input: UpdateUserTagInput!): UserTag @auth
 
-    updateTask(id: ID!, data: UpdateTaskInput): Task @auth
+    updateTask(id: ID!, data: UpdateTaskInput!): Task @auth
 
     updateUserProfile(data: UpdateUserInput, file: String): User! @auth
 

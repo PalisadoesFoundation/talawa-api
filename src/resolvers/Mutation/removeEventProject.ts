@@ -1,5 +1,5 @@
 import type { InterfaceEventProject } from "../../models";
-import { User, EventProject } from "../../models";
+import { User, EventProject, Task, TaskVolunteer } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
   USER_NOT_FOUND_ERROR,
@@ -66,5 +66,25 @@ export const removeEventProject = async (
     _id: args.id,
   });
 
+  // Fetch all the tasks associated with the project
+  const tasks = await Task.find(
+    {
+      eventProjectId: args.id,
+    },
+    {
+      _id: 1,
+    }
+  ).lean();
+  const taskIds = tasks.map((task) => task._id);
+
+  await Task.deleteMany({
+    eventProjectId: args.id,
+  });
+
+  await TaskVolunteer.deleteMany({
+    taskId: {
+      $in: taskIds,
+    },
+  });
   return eventProject;
 };

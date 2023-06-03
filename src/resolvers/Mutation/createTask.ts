@@ -18,12 +18,12 @@ export const createTask: MutationResolvers["createTask"] = async (
   args,
   context
 ) => {
-  const currentUserExists = await User.exists({
+  const currentUser = await User.findOne({
     _id: context.userId,
   });
 
   // Checks whether currentUser with _id == context.userId exists.
-  if (currentUserExists === false) {
+  if (currentUser === null) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
@@ -43,6 +43,8 @@ export const createTask: MutationResolvers["createTask"] = async (
       EVENT_NOT_FOUND_ERROR.PARAM
     );
   }
+
+  // TODO: Add RBAC
 
   // Creates new task.
   const createdTask = await Task.create({
