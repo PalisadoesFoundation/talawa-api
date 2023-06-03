@@ -1,7 +1,11 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Task, EventProject } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import { USER_NOT_FOUND_ERROR, EVENT_NOT_FOUND_ERROR } from "../../constants";
+import {
+  USER_NOT_FOUND_ERROR,
+  EVENT_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+} from "../../constants";
 /**
  * This function enables to create a task.
  * @param _parent - parent of current request
@@ -31,12 +35,12 @@ export const createTask: MutationResolvers["createTask"] = async (
     );
   }
 
-  const eventProjectExists = await EventProject.exists({
+  const eventProject = await EventProject.findOne({
     _id: args.eventProjectId,
   });
 
   // Checks whether event with _id == args.eventId exists.
-  if (eventProjectExists === false) {
+  if (eventProject === null) {
     throw new errors.NotFoundError(
       requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
       EVENT_NOT_FOUND_ERROR.CODE,
@@ -44,8 +48,16 @@ export const createTask: MutationResolvers["createTask"] = async (
     );
   }
 
-  // TODO: Add RBAC
-
+  if (
+    eventProject.creator.toString() != currentUser._id.toString() &&
+    currentUser.userType !== "SUPERADMIN"
+  ) {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+      USER_NOT_AUTHORIZED_ERROR.CODE,
+      USER_NOT_AUTHORIZED_ERROR.PARAM
+    );
+  }
   // Creates new task.
   const createdTask = await Task.create({
     ...args.data,
