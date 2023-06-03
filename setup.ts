@@ -94,6 +94,7 @@ async function mongoDB(): Promise<void> {
     DB_URL = url;
     const config = dotenv.parse(fs.readFileSync(".env"));
     config.MONGO_DB_URL = DB_URL;
+    // Modifying the environment variable to be able to access the url in importData function.
     process.env.MONGO_DB_URL = DB_URL;
     fs.writeFileSync(".env", "");
     for (const key in config) {
