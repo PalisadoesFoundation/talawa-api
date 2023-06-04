@@ -16,5 +16,7 @@ npm run typecheck
 # Throws errors if lint issues requiring manual intervention are found in code.
 npm run lint:fix
 
+npm run gen:schema
+
 # Add the changes made to the stage
 git add .

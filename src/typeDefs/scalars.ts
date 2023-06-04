@@ -12,4 +12,5 @@ export const scalars = gql`
   scalar PositiveInt
   scalar Time
   scalar URL
+  scalar Upload
 `;
