@@ -9,6 +9,7 @@
     "prebuild": "graphql-codegen && rimraf ./build",
     "prod": "cross-env NODE_ENV=production pm2-runtime start ./build/server.js",
     "start": "cross-env pm2-runtime start ./build/server.js --watch",
+    "setup": "tsx setup.ts",
     "test": "vitest run --no-threads --coverage",
     "typecheck": "graphql-codegen && tsc --noEmit --pretty",
     "lint:check": "eslint . --max-warnings=0",
