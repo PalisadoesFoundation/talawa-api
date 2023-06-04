@@ -151,6 +151,8 @@ export const mutations = gql`
       messageContent: String!
     ): GroupChatMessage! @auth
 
+    setTaskVolunteers(id: ID!, volunteers: [ID]!): Task @auth
+
     signUp(data: UserInput!, file: String): AuthData!
 
     togglePostPin(id: ID!): Post! @auth

@@ -438,6 +438,7 @@ export type Mutation = {
   sendMembershipRequest: MembershipRequest;
   sendMessageToDirectChat: DirectChatMessage;
   sendMessageToGroupChat: GroupChatMessage;
+  setTaskVolunteers?: Maybe<Task>;
   signUp: AuthData;
   togglePostPin: Post;
   unassignUserTag?: Maybe<User>;
@@ -763,6 +764,12 @@ export type MutationSendMessageToDirectChatArgs = {
 export type MutationSendMessageToGroupChatArgs = {
   chatId: Scalars['ID'];
   messageContent: Scalars['String'];
+};
+
+
+export type MutationSetTaskVolunteersArgs = {
+  id: Scalars['ID'];
+  volunteers: Array<InputMaybe<Scalars['ID']>>;
 };
 
 
@@ -2132,6 +2139,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   sendMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationSendMembershipRequestArgs, 'organizationId'>>;
   sendMessageToDirectChat?: Resolver<ResolversTypes['DirectChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToDirectChatArgs, 'chatId' | 'messageContent'>>;
   sendMessageToGroupChat?: Resolver<ResolversTypes['GroupChatMessage'], ParentType, ContextType, RequireFields<MutationSendMessageToGroupChatArgs, 'chatId' | 'messageContent'>>;
+  setTaskVolunteers?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<MutationSetTaskVolunteersArgs, 'id' | 'volunteers'>>;
   signUp?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<MutationSignUpArgs, 'data'>>;
   togglePostPin?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationTogglePostPinArgs, 'id'>>;
   unassignUserTag?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUnassignUserTagArgs, 'input'>>;

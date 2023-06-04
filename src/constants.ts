@@ -308,6 +308,20 @@ export const EMAIL_ALREADY_EXISTS_ERROR = {
   PARAM: "email",
 };
 
+export const VOLUNTEER_NOT_FOUND_ERROR = {
+  DESC: "Volunteer not found",
+  CODE: "volunteer.notFound",
+  MESSAGE: "volunteer.notFound",
+  PARAM: "volunteers",
+};
+
+export const VOLUNTEER_NOT_MEMBER_ERROR = {
+  DESC: "Volunteer is not member of the organization.",
+  CODE: "volunteer.notMember",
+  MESSAGE: "volunteer.notMember",
+  PARAM: "volunteers",
+};
+
 export const BASE_URL = `http://localhost:${process.env.port || 4000}/`;
 
 export const ACCESS_TOKEN_SECRET = ENV.ACCESS_TOKEN_SECRET;
