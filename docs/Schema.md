@@ -5484,7 +5484,7 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 
 ### EmailAddress
 
-A field whose value conforms to the standard internet email address format as specified in RFC822: https://www.w3.org/Protocols/rfc822/.
+A field whose value conforms to the standard internet email address format as specified in HTML Spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address.
 
 ### Float
 
