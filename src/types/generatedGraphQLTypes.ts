@@ -151,6 +151,10 @@ export type DonationWhereInput = {
   name_of_user_starts_with?: InputMaybe<Scalars['String']>;
 };
 
+export type Error = {
+  message: Scalars['String'];
+};
+
 export type Event = {
   __typename?: 'Event';
   _id: Scalars['ID'];
@@ -261,9 +265,7 @@ export type ExtendSession = {
   refreshToken: Scalars['String'];
 };
 
-export type FetchLimitExceeded = PaginationArgsError & {
-  __typename?: 'FetchLimitExceeded';
-  limit: Scalars['Int'];
+export type FieldError = {
   message: Scalars['String'];
   path: Array<Scalars['String']>;
 };
@@ -313,13 +315,13 @@ export type IosFirebaseOptions = {
   storageBucket?: Maybe<Scalars['String']>;
 };
 
-export type IncorrectCursor = PaginationArgsError & {
+export type IncorrectCursor = FieldError & {
   __typename?: 'IncorrectCursor';
   message: Scalars['String'];
   path: Array<Scalars['String']>;
 };
 
-export type IncorrectPairingOfArguments = PaginationArgsError & {
+export type IncorrectPairingOfArguments = FieldError & {
   __typename?: 'IncorrectPairingOfArguments';
   message: Scalars['String'];
   path: Array<Scalars['String']>;
@@ -351,6 +353,19 @@ export type LanguageModel = {
 export type LoginInput = {
   email: Scalars['EmailAddress'];
   password: Scalars['String'];
+};
+
+export type MaximumLengthError = FieldError & {
+  __typename?: 'MaximumLengthError';
+  message: Scalars['String'];
+  path: Array<Scalars['String']>;
+};
+
+export type MaximumValueError = FieldError & {
+  __typename?: 'MaximumValueError';
+  limit: Scalars['Int'];
+  message: Scalars['String'];
+  path: Array<Scalars['String']>;
 };
 
 export type MembershipRequest = {
@@ -385,7 +400,20 @@ export type MessageChatInput = {
   receiver: Scalars['ID'];
 };
 
-export type MissingArguments = PaginationArgsError & {
+export type MinimumLengthError = FieldError & {
+  __typename?: 'MinimumLengthError';
+  limit: Scalars['Int'];
+  message: Scalars['String'];
+  path: Array<Scalars['String']>;
+};
+
+export type MinimumValueError = FieldError & {
+  __typename?: 'MinimumValueError';
+  message: Scalars['String'];
+  path: Array<Scalars['String']>;
+};
+
+export type MissingArguments = FieldError & {
   __typename?: 'MissingArguments';
   message: Scalars['String'];
   path: Array<Scalars['String']>;
@@ -983,12 +1011,7 @@ export type PageInfo = {
   totalPages?: Maybe<Scalars['Int']>;
 };
 
-export type PaginationArgsError = {
-  message: Scalars['String'];
-  path: Array<Scalars['String']>;
-};
-
-export type PaginationError = FetchLimitExceeded | IncorrectCursor | IncorrectPairingOfArguments | MissingArguments;
+export type PaginationError = IncorrectCursor | IncorrectPairingOfArguments | MaximumValueError | MissingArguments;
 
 export type Plugin = {
   __typename?: 'Plugin';
@@ -1369,6 +1392,16 @@ export type Type =
   | 'PRIVATE'
   | 'UNIVERSAL';
 
+export type UnauthenticatedError = Error & {
+  __typename?: 'UnauthenticatedError';
+  message: Scalars['String'];
+};
+
+export type UnauthorizedError = Error & {
+  __typename?: 'UnauthorizedError';
+  message: Scalars['String'];
+};
+
 export type UpdateEventInput = {
   allDay?: InputMaybe<Scalars['Boolean']>;
   description?: InputMaybe<Scalars['String']>;
@@ -1693,13 +1726,14 @@ export type ResolversTypes = {
   Donation: ResolverTypeWrapper<InterfaceDonationModel>;
   DonationWhereInput: DonationWhereInput;
   EmailAddress: ResolverTypeWrapper<Scalars['EmailAddress']>;
+  Error: ResolversTypes['UnauthenticatedError'] | ResolversTypes['UnauthorizedError'];
   Event: ResolverTypeWrapper<InterfaceEventModel>;
   EventInput: EventInput;
   EventOrderByInput: EventOrderByInput;
   EventRegistrants: ResolverTypeWrapper<Omit<EventRegistrants, 'event'> & { event: ResolversTypes['Event'] }>;
   EventWhereInput: EventWhereInput;
   ExtendSession: ResolverTypeWrapper<ExtendSession>;
-  FetchLimitExceeded: ResolverTypeWrapper<FetchLimitExceeded>;
+  FieldError: ResolversTypes['IncorrectCursor'] | ResolversTypes['IncorrectPairingOfArguments'] | ResolversTypes['MaximumLengthError'] | ResolversTypes['MaximumValueError'] | ResolversTypes['MinimumLengthError'] | ResolversTypes['MinimumValueError'] | ResolversTypes['MissingArguments'];
   Float: ResolverTypeWrapper<Scalars['Float']>;
   ForgotPasswordData: ForgotPasswordData;
   Group: ResolverTypeWrapper<InterfaceGroupModel>;
@@ -1716,10 +1750,14 @@ export type ResolversTypes = {
   Latitude: ResolverTypeWrapper<Scalars['Latitude']>;
   LoginInput: LoginInput;
   Longitude: ResolverTypeWrapper<Scalars['Longitude']>;
+  MaximumLengthError: ResolverTypeWrapper<MaximumLengthError>;
+  MaximumValueError: ResolverTypeWrapper<MaximumValueError>;
   MembershipRequest: ResolverTypeWrapper<InterfaceMembershipRequestModel>;
   Message: ResolverTypeWrapper<InterfaceMessageModel>;
   MessageChat: ResolverTypeWrapper<InterfaceMessageChatModel>;
   MessageChatInput: MessageChatInput;
+  MinimumLengthError: ResolverTypeWrapper<MinimumLengthError>;
+  MinimumValueError: ResolverTypeWrapper<MinimumValueError>;
   MissingArguments: ResolverTypeWrapper<MissingArguments>;
   Mutation: ResolverTypeWrapper<{}>;
   OTPInput: OtpInput;
@@ -1730,8 +1768,7 @@ export type ResolversTypes = {
   OrganizationWhereInput: OrganizationWhereInput;
   OtpData: ResolverTypeWrapper<OtpData>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
-  PaginationArgsError: ResolversTypes['FetchLimitExceeded'] | ResolversTypes['IncorrectCursor'] | ResolversTypes['IncorrectPairingOfArguments'] | ResolversTypes['MissingArguments'];
-  PaginationError: ResolversTypes['FetchLimitExceeded'] | ResolversTypes['IncorrectCursor'] | ResolversTypes['IncorrectPairingOfArguments'] | ResolversTypes['MissingArguments'];
+  PaginationError: ResolversTypes['IncorrectCursor'] | ResolversTypes['IncorrectPairingOfArguments'] | ResolversTypes['MaximumValueError'] | ResolversTypes['MissingArguments'];
   PhoneNumber: ResolverTypeWrapper<Scalars['PhoneNumber']>;
   Plugin: ResolverTypeWrapper<InterfacePluginModel>;
   PluginField: ResolverTypeWrapper<InterfacePluginFieldModel>;
@@ -1758,6 +1795,8 @@ export type ResolversTypes = {
   Translation: ResolverTypeWrapper<Translation>;
   Type: Type;
   URL: ResolverTypeWrapper<Scalars['URL']>;
+  UnauthenticatedError: ResolverTypeWrapper<UnauthenticatedError>;
+  UnauthorizedError: ResolverTypeWrapper<UnauthorizedError>;
   UpdateEventInput: UpdateEventInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
   UpdateTaskInput: UpdateTaskInput;
@@ -1804,12 +1843,13 @@ export type ResolversParentTypes = {
   Donation: InterfaceDonationModel;
   DonationWhereInput: DonationWhereInput;
   EmailAddress: Scalars['EmailAddress'];
+  Error: ResolversParentTypes['UnauthenticatedError'] | ResolversParentTypes['UnauthorizedError'];
   Event: InterfaceEventModel;
   EventInput: EventInput;
   EventRegistrants: Omit<EventRegistrants, 'event'> & { event: ResolversParentTypes['Event'] };
   EventWhereInput: EventWhereInput;
   ExtendSession: ExtendSession;
-  FetchLimitExceeded: FetchLimitExceeded;
+  FieldError: ResolversParentTypes['IncorrectCursor'] | ResolversParentTypes['IncorrectPairingOfArguments'] | ResolversParentTypes['MaximumLengthError'] | ResolversParentTypes['MaximumValueError'] | ResolversParentTypes['MinimumLengthError'] | ResolversParentTypes['MinimumValueError'] | ResolversParentTypes['MissingArguments'];
   Float: Scalars['Float'];
   ForgotPasswordData: ForgotPasswordData;
   Group: InterfaceGroupModel;
@@ -1826,10 +1866,14 @@ export type ResolversParentTypes = {
   Latitude: Scalars['Latitude'];
   LoginInput: LoginInput;
   Longitude: Scalars['Longitude'];
+  MaximumLengthError: MaximumLengthError;
+  MaximumValueError: MaximumValueError;
   MembershipRequest: InterfaceMembershipRequestModel;
   Message: InterfaceMessageModel;
   MessageChat: InterfaceMessageChatModel;
   MessageChatInput: MessageChatInput;
+  MinimumLengthError: MinimumLengthError;
+  MinimumValueError: MinimumValueError;
   MissingArguments: MissingArguments;
   Mutation: {};
   OTPInput: OtpInput;
@@ -1839,8 +1883,7 @@ export type ResolversParentTypes = {
   OrganizationWhereInput: OrganizationWhereInput;
   OtpData: OtpData;
   PageInfo: PageInfo;
-  PaginationArgsError: ResolversParentTypes['FetchLimitExceeded'] | ResolversParentTypes['IncorrectCursor'] | ResolversParentTypes['IncorrectPairingOfArguments'] | ResolversParentTypes['MissingArguments'];
-  PaginationError: ResolversParentTypes['FetchLimitExceeded'] | ResolversParentTypes['IncorrectCursor'] | ResolversParentTypes['IncorrectPairingOfArguments'] | ResolversParentTypes['MissingArguments'];
+  PaginationError: ResolversParentTypes['IncorrectCursor'] | ResolversParentTypes['IncorrectPairingOfArguments'] | ResolversParentTypes['MaximumValueError'] | ResolversParentTypes['MissingArguments'];
   PhoneNumber: Scalars['PhoneNumber'];
   Plugin: InterfacePluginModel;
   PluginField: InterfacePluginFieldModel;
@@ -1862,6 +1905,8 @@ export type ResolversParentTypes = {
   ToggleUserTagAssignInput: ToggleUserTagAssignInput;
   Translation: Translation;
   URL: Scalars['URL'];
+  UnauthenticatedError: UnauthenticatedError;
+  UnauthorizedError: UnauthorizedError;
   UpdateEventInput: UpdateEventInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
   UpdateTaskInput: UpdateTaskInput;
@@ -1991,6 +2036,11 @@ export interface EmailAddressScalarConfig extends GraphQLScalarTypeConfig<Resolv
   name: 'EmailAddress';
 }
 
+export type ErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Error'] = ResolversParentTypes['Error']> = {
+  __resolveType: TypeResolveFn<'UnauthenticatedError' | 'UnauthorizedError', ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+};
+
 export type EventResolvers<ContextType = any, ParentType extends ResolversParentTypes['Event'] = ResolversParentTypes['Event']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   admins?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<EventAdminsArgs>>;
@@ -2028,11 +2078,10 @@ export type ExtendSessionResolvers<ContextType = any, ParentType extends Resolve
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type FetchLimitExceededResolvers<ContextType = any, ParentType extends ResolversParentTypes['FetchLimitExceeded'] = ResolversParentTypes['FetchLimitExceeded']> = {
-  limit?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+export type FieldErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['FieldError'] = ResolversParentTypes['FieldError']> = {
+  __resolveType: TypeResolveFn<'IncorrectCursor' | 'IncorrectPairingOfArguments' | 'MaximumLengthError' | 'MaximumValueError' | 'MinimumLengthError' | 'MinimumValueError' | 'MissingArguments', ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type GroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['Group'] = ResolversParentTypes['Group']> = {
@@ -2111,6 +2160,19 @@ export interface LongitudeScalarConfig extends GraphQLScalarTypeConfig<Resolvers
   name: 'Longitude';
 }
 
+export type MaximumLengthErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['MaximumLengthError'] = ResolversParentTypes['MaximumLengthError']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type MaximumValueErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['MaximumValueError'] = ResolversParentTypes['MaximumValueError']> = {
+  limit?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type MembershipRequestResolvers<ContextType = any, ParentType extends ResolversParentTypes['MembershipRequest'] = ResolversParentTypes['MembershipRequest']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
@@ -2135,6 +2197,19 @@ export type MessageChatResolvers<ContextType = any, ParentType extends Resolvers
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   receiver?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   sender?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type MinimumLengthErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['MinimumLengthError'] = ResolversParentTypes['MinimumLengthError']> = {
+  limit?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type MinimumValueErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['MinimumValueError'] = ResolversParentTypes['MinimumValueError']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2269,14 +2344,8 @@ export type PageInfoResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type PaginationArgsErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['PaginationArgsError'] = ResolversParentTypes['PaginationArgsError']> = {
-  __resolveType: TypeResolveFn<'FetchLimitExceeded' | 'IncorrectCursor' | 'IncorrectPairingOfArguments' | 'MissingArguments', ParentType, ContextType>;
-  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-};
-
 export type PaginationErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['PaginationError'] = ResolversParentTypes['PaginationError']> = {
-  __resolveType: TypeResolveFn<'FetchLimitExceeded' | 'IncorrectCursor' | 'IncorrectPairingOfArguments' | 'MissingArguments', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'IncorrectCursor' | 'IncorrectPairingOfArguments' | 'MaximumValueError' | 'MissingArguments', ParentType, ContextType>;
 };
 
 export interface PhoneNumberScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['PhoneNumber'], any> {
@@ -2395,6 +2464,16 @@ export interface UrlScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes[
   name: 'URL';
 }
 
+export type UnauthenticatedErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['UnauthenticatedError'] = ResolversParentTypes['UnauthenticatedError']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UnauthorizedErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['UnauthorizedError'] = ResolversParentTypes['UnauthorizedError']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
   name: 'Upload';
 }
@@ -2500,10 +2579,11 @@ export type Resolvers<ContextType = any> = {
   DirectChatMessage?: DirectChatMessageResolvers<ContextType>;
   Donation?: DonationResolvers<ContextType>;
   EmailAddress?: GraphQLScalarType;
+  Error?: ErrorResolvers<ContextType>;
   Event?: EventResolvers<ContextType>;
   EventRegistrants?: EventRegistrantsResolvers<ContextType>;
   ExtendSession?: ExtendSessionResolvers<ContextType>;
-  FetchLimitExceeded?: FetchLimitExceededResolvers<ContextType>;
+  FieldError?: FieldErrorResolvers<ContextType>;
   Group?: GroupResolvers<ContextType>;
   GroupChat?: GroupChatResolvers<ContextType>;
   GroupChatMessage?: GroupChatMessageResolvers<ContextType>;
@@ -2514,16 +2594,19 @@ export type Resolvers<ContextType = any> = {
   LanguageModel?: LanguageModelResolvers<ContextType>;
   Latitude?: GraphQLScalarType;
   Longitude?: GraphQLScalarType;
+  MaximumLengthError?: MaximumLengthErrorResolvers<ContextType>;
+  MaximumValueError?: MaximumValueErrorResolvers<ContextType>;
   MembershipRequest?: MembershipRequestResolvers<ContextType>;
   Message?: MessageResolvers<ContextType>;
   MessageChat?: MessageChatResolvers<ContextType>;
+  MinimumLengthError?: MinimumLengthErrorResolvers<ContextType>;
+  MinimumValueError?: MinimumValueErrorResolvers<ContextType>;
   MissingArguments?: MissingArgumentsResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Organization?: OrganizationResolvers<ContextType>;
   OrganizationInfoNode?: OrganizationInfoNodeResolvers<ContextType>;
   OtpData?: OtpDataResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
-  PaginationArgsError?: PaginationArgsErrorResolvers<ContextType>;
   PaginationError?: PaginationErrorResolvers<ContextType>;
   PhoneNumber?: GraphQLScalarType;
   Plugin?: PluginResolvers<ContextType>;
@@ -2537,6 +2620,8 @@ export type Resolvers<ContextType = any> = {
   Time?: GraphQLScalarType;
   Translation?: TranslationResolvers<ContextType>;
   URL?: GraphQLScalarType;
+  UnauthenticatedError?: UnauthenticatedErrorResolvers<ContextType>;
+  UnauthorizedError?: UnauthorizedErrorResolvers<ContextType>;
   Upload?: GraphQLScalarType;
   User?: UserResolvers<ContextType>;
   UserAttende?: UserAttendeResolvers<ContextType>;

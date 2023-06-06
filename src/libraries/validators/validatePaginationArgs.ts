@@ -44,7 +44,7 @@ export const validatePaginationArgs = (
     (args.last && args.last > MAXIMUM_FETCH_LIMIT)
   ) {
     paginationErrors.push({
-      __typename: "FetchLimitExceeded",
+      __typename: "MaximumValueError",
       message:
         "More items than the allowed number of items were requested to be fetched.",
       limit: MAXIMUM_FETCH_LIMIT,
