@@ -58,6 +58,7 @@ import { saveFcmToken } from "./saveFcmToken";
 import { sendMembershipRequest } from "./sendMembershipRequest";
 import { sendMessageToDirectChat } from "./sendMessageToDirectChat";
 import { sendMessageToGroupChat } from "./sendMessageToGroupChat";
+import { setTaskVolunteers } from "./setTaskVolunteers";
 import { signUp } from "./signUp";
 import { togglePostPin } from "./togglePostPin";
 import { unassignUserTag } from "./unassignUserTag";
@@ -138,6 +139,7 @@ export const Mutation: MutationResolvers = {
   sendMembershipRequest,
   sendMessageToDirectChat,
   sendMessageToGroupChat,
+  setTaskVolunteers,
   signUp,
   togglePostPin,
   unassignUserTag,

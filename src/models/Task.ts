@@ -16,6 +16,7 @@ export interface InterfaceTask {
   deadline: Date | undefined;
   eventProjectId: PopulatedDoc<InterfaceEventProject & Document>;
   creator: PopulatedDoc<InterfaceUser & Document>;
+  completed: boolean;
 }
 
 /**
@@ -27,6 +28,7 @@ export interface InterfaceTask {
  * @param deadline - Task deadline.
  * @param eventProjectId - Event Project object for which task is added.
  * @param creator - Task creator, refer to `User` model.
+ * @param completed - Has the task been completed
  */
 
 const taskSchema = new Schema({
@@ -58,6 +60,11 @@ const taskSchema = new Schema({
   creator: {
     type: Schema.Types.ObjectId,
     ref: "User",
+    required: true,
+  },
+  completed: {
+    type: Boolean,
+    default: false,
     required: true,
   },
 });

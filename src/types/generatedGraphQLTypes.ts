@@ -1386,6 +1386,7 @@ export type UpdateOrganizationInput = {
 };
 
 export type UpdateTaskInput = {
+  completed?: InputMaybe<Scalars['Boolean']>;
   deadline?: InputMaybe<Scalars['DateTime']>;
   description?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;

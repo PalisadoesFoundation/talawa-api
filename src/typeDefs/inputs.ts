@@ -266,6 +266,7 @@ export const inputs = gql`
     title: String
     description: String
     deadline: DateTime
+    completed: Boolean
   }
 
   input UpdateUserInput {

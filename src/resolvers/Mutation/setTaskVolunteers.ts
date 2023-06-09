@@ -18,7 +18,7 @@ const verifyUser = async (
     _id: userId,
   });
 
-  if (user == null) {
+  if (user === null) {
     throw new errors.NotFoundError(
       requestContext.translate(VOLUNTEER_NOT_FOUND_ERROR.MESSAGE),
       VOLUNTEER_NOT_FOUND_ERROR.CODE,
@@ -89,13 +89,16 @@ export const setTaskVolunteers: MutationResolvers["setTaskVolunteers"] = async (
     );
   }
 
+  // Filter the volunteer list to only contain unique ids
+  const volunteerIds = Array.from(new Set(args.volunteers));
+
   const orgMemberIds = task.eventProjectId.event.organization.members.map(
     (member: ObjectId) => member.toString()
   );
 
   // Verify that each of the volunteer id exist and they are an organization member
-  for (let i = 0; i < args.volunteers.length; i++)
-    await verifyUser(args.volunteers[i]!, orgMemberIds);
+  for (let i = 0; i < volunteerIds.length; i++)
+    await verifyUser(volunteerIds[i]!, orgMemberIds);
 
   // Delete all the exisiting volunteers
   await TaskVolunteer.deleteMany({
@@ -104,7 +107,7 @@ export const setTaskVolunteers: MutationResolvers["setTaskVolunteers"] = async (
 
   // Add the new volunteers
   await TaskVolunteer.create(
-    args.volunteers.map((volunteerId) => ({
+    volunteerIds.map((volunteerId) => ({
       taskId: args.id,
       userId: volunteerId,
     }))
