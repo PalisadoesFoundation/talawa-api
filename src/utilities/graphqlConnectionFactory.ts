@@ -16,8 +16,8 @@ interface InterfaceConnection<T> {
 }
 
 interface InterfaceConnectionResult<T> {
-  connectionData: InterfaceConnection<T> | null;
-  connectionErrors: ConnectionError[];
+  data: InterfaceConnection<T> | null;
+  errors: ConnectionError[];
 }
 
 /*
@@ -143,8 +143,8 @@ export function generateConnectionObject<
   // Return the default object if the recieved list is empty
   if (!allFetchedObjects || allFetchedObjects.length === 0)
     return {
-      connectionData: connectionObject,
-      connectionErrors: [],
+      data: connectionObject,
+      errors: [],
     };
 
   // Handling the case when the cursor is provided
@@ -152,8 +152,8 @@ export function generateConnectionObject<
     // Validate the cursor
     if (allFetchedObjects[0]._id.toString() !== args.cursor) {
       return {
-        connectionData: null,
-        connectionErrors: [
+        data: null,
+        errors: [
           {
             __typename: "IncorrectCursor",
             message: "The provided cursor does not exist in the database.",
@@ -197,7 +197,7 @@ export function generateConnectionObject<
     connectionObject.edges[connectionObject.edges.length - 1]!.cursor;
 
   return {
-    connectionData: connectionObject,
-    connectionErrors: [],
+    data: connectionObject,
+    errors: [],
   };
 }

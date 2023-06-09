@@ -395,13 +395,13 @@ export const types = gql`
   }
 
   type UsersConnectionResult {
-    connectionData: UsersConnection
-    connectionErrors: [ConnectionError!]!
+    data: UsersConnection
+    errors: [ConnectionError!]!
   }
 
   type UserTagsConnectionResult {
-    connectionData: UserTagsConnection
-    connectionErrors: [ConnectionError!]!
+    data: UserTagsConnection
+    errors: [ConnectionError!]!
   }
 
   type UserTagsConnection {

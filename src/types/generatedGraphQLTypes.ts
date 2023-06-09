@@ -1576,8 +1576,8 @@ export type UserTagsConnection = {
 
 export type UserTagsConnectionResult = {
   __typename?: 'UserTagsConnectionResult';
-  connectionData?: Maybe<UserTagsConnection>;
-  connectionErrors: Array<ConnectionError>;
+  data?: Maybe<UserTagsConnection>;
+  errors: Array<ConnectionError>;
 };
 
 export type UserType =
@@ -1628,8 +1628,8 @@ export type UsersConnection = {
 
 export type UsersConnectionResult = {
   __typename?: 'UsersConnectionResult';
-  connectionData?: Maybe<UsersConnection>;
-  connectionErrors: Array<ConnectionError>;
+  data?: Maybe<UsersConnection>;
+  errors: Array<ConnectionError>;
 };
 
 export type CreateChatInput = {
@@ -1813,11 +1813,11 @@ export type ResolversTypes = {
   UserTag: ResolverTypeWrapper<InterfaceOrganizationTagUserModel>;
   UserTagEdge: ResolverTypeWrapper<Omit<UserTagEdge, 'node'> & { node: ResolversTypes['UserTag'] }>;
   UserTagsConnection: ResolverTypeWrapper<Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversTypes['UserTagEdge']> }>;
-  UserTagsConnectionResult: ResolverTypeWrapper<Omit<UserTagsConnectionResult, 'connectionData' | 'connectionErrors'> & { connectionData?: Maybe<ResolversTypes['UserTagsConnection']>, connectionErrors: Array<ResolversTypes['ConnectionError']> }>;
+  UserTagsConnectionResult: ResolverTypeWrapper<Omit<UserTagsConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UserTagsConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
   UserType: UserType;
   UserWhereInput: UserWhereInput;
   UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges: Array<ResolversTypes['UserEdge']> }>;
-  UsersConnectionResult: ResolverTypeWrapper<Omit<UsersConnectionResult, 'connectionData' | 'connectionErrors'> & { connectionData?: Maybe<ResolversTypes['UsersConnection']>, connectionErrors: Array<ResolversTypes['ConnectionError']> }>;
+  UsersConnectionResult: ResolverTypeWrapper<Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UsersConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
 };
@@ -1921,10 +1921,10 @@ export type ResolversParentTypes = {
   UserTag: InterfaceOrganizationTagUserModel;
   UserTagEdge: Omit<UserTagEdge, 'node'> & { node: ResolversParentTypes['UserTag'] };
   UserTagsConnection: Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserTagEdge']> };
-  UserTagsConnectionResult: Omit<UserTagsConnectionResult, 'connectionData' | 'connectionErrors'> & { connectionData?: Maybe<ResolversParentTypes['UserTagsConnection']>, connectionErrors: Array<ResolversParentTypes['ConnectionError']> };
+  UserTagsConnectionResult: Omit<UserTagsConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversParentTypes['UserTagsConnection']>, errors: Array<ResolversParentTypes['ConnectionError']> };
   UserWhereInput: UserWhereInput;
   UsersConnection: Omit<UsersConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserEdge']> };
-  UsersConnectionResult: Omit<UsersConnectionResult, 'connectionData' | 'connectionErrors'> & { connectionData?: Maybe<ResolversParentTypes['UsersConnection']>, connectionErrors: Array<ResolversParentTypes['ConnectionError']> };
+  UsersConnectionResult: Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversParentTypes['UsersConnection']>, errors: Array<ResolversParentTypes['ConnectionError']> };
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
 };
@@ -2541,8 +2541,8 @@ export type UserTagsConnectionResolvers<ContextType = any, ParentType extends Re
 };
 
 export type UserTagsConnectionResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnectionResult'] = ResolversParentTypes['UserTagsConnectionResult']> = {
-  connectionData?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType>;
-  connectionErrors?: Resolver<Array<ResolversTypes['ConnectionError']>, ParentType, ContextType>;
+  data?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType>;
+  errors?: Resolver<Array<ResolversTypes['ConnectionError']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2553,8 +2553,8 @@ export type UsersConnectionResolvers<ContextType = any, ParentType extends Resol
 };
 
 export type UsersConnectionResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnectionResult'] = ResolversParentTypes['UsersConnectionResult']> = {
-  connectionData?: Resolver<Maybe<ResolversTypes['UsersConnection']>, ParentType, ContextType>;
-  connectionErrors?: Resolver<Array<ResolversTypes['ConnectionError']>, ParentType, ContextType>;
+  data?: Resolver<Maybe<ResolversTypes['UsersConnection']>, ParentType, ContextType>;
+  errors?: Resolver<Array<ResolversTypes['ConnectionError']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

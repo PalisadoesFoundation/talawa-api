@@ -14,12 +14,12 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
   parent,
   args
 ) => {
-  const connectionErrors = validatePaginationArgs(args);
+  const errors = validatePaginationArgs(args);
 
-  if (connectionErrors.length !== 0) {
+  if (errors.length !== 0) {
     return {
-      connectionData: null,
-      connectionErrors,
+      data: null,
+      errors,
     };
   }
 
