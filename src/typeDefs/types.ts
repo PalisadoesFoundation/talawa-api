@@ -385,27 +385,27 @@ export const types = gql`
       before: String
       first: PositiveInt
       last: PositiveInt
-    ): UserTagsConnectionResult
+    ): UserTagsConnectionResult!
     usersAssignedTo(
       after: String
       before: String
       first: PositiveInt
       last: PositiveInt
-    ): UsersConnectionResult
+    ): UsersConnectionResult!
   }
 
   type UsersConnectionResult {
     connectionData: UsersConnection
-    connectionErrors: [PaginationError]
+    connectionErrors: [ConnectionError!]!
   }
 
   type UserTagsConnectionResult {
     connectionData: UserTagsConnection
-    connectionErrors: [PaginationError]
+    connectionErrors: [ConnectionError!]!
   }
 
   type UserTagsConnection {
-    edges: [UserTagEdge]
+    edges: [UserTagEdge!]!
     pageInfo: ConnectionPageInfo!
   }
 
@@ -415,7 +415,7 @@ export const types = gql`
   }
 
   type UsersConnection {
-    edges: [UserEdge]
+    edges: [UserEdge!]!
     pageInfo: ConnectionPageInfo!
   }
 `;

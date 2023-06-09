@@ -1,4 +1,4 @@
 import { commonErrors } from "./common";
-import { paginationError } from "./paginationError";
+import { connectionError } from "./connectionError";
 
-export const errors = [commonErrors, paginationError];
+export const errors = [commonErrors, connectionError];

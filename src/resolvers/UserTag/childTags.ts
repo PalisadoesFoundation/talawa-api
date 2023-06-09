@@ -25,9 +25,9 @@ export const childTags: UserTagResolvers["childTags"] = async (
 
   const newArgs = transformArguments(args);
 
-  const allUserObjects = await OrganizationTagUser.find({
-    parentTagId: parent._id,
+  const allChildTagObjects = await OrganizationTagUser.find({
     ...getFilterObject(newArgs),
+    parentTagId: parent._id,
   })
     .sort(
       getSortingObject(newArgs.direction, {
@@ -43,5 +43,5 @@ export const childTags: UserTagResolvers["childTags"] = async (
   return generateConnectionObject<
     InterfaceOrganizationTagUser,
     InterfaceOrganizationTagUser
-  >(newArgs, allUserObjects, (tag) => tag);
+  >(newArgs, allChildTagObjects, (tag) => tag);
 };

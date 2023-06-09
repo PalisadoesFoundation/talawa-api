@@ -86,6 +86,8 @@ export type CommentInput = {
   text: Scalars['String'];
 };
 
+export type ConnectionError = IncorrectCursor | IncorrectPairingOfArguments | MaximumValueError | MissingArguments;
+
 export type ConnectionPageInfo = {
   __typename?: 'ConnectionPageInfo';
   endCursor?: Maybe<Scalars['String']>;
@@ -1010,8 +1012,6 @@ export type PageInfo = {
   totalPages?: Maybe<Scalars['Int']>;
 };
 
-export type PaginationError = IncorrectCursor | IncorrectPairingOfArguments | MaximumValueError | MissingArguments;
-
 export type Plugin = {
   __typename?: 'Plugin';
   _id: Scalars['ID'];
@@ -1539,11 +1539,11 @@ export type UserOrderByInput =
 export type UserTag = {
   __typename?: 'UserTag';
   _id: Scalars['ID'];
-  childTags?: Maybe<UserTagsConnectionResult>;
+  childTags: UserTagsConnectionResult;
   name: Scalars['String'];
   organization?: Maybe<Organization>;
   parentTag?: Maybe<UserTag>;
-  usersAssignedTo?: Maybe<UsersConnectionResult>;
+  usersAssignedTo: UsersConnectionResult;
 };
 
 
@@ -1570,14 +1570,14 @@ export type UserTagEdge = {
 
 export type UserTagsConnection = {
   __typename?: 'UserTagsConnection';
-  edges?: Maybe<Array<Maybe<UserTagEdge>>>;
+  edges: Array<UserTagEdge>;
   pageInfo: ConnectionPageInfo;
 };
 
 export type UserTagsConnectionResult = {
   __typename?: 'UserTagsConnectionResult';
   connectionData?: Maybe<UserTagsConnection>;
-  connectionErrors?: Maybe<Array<Maybe<PaginationError>>>;
+  connectionErrors: Array<ConnectionError>;
 };
 
 export type UserType =
@@ -1622,14 +1622,14 @@ export type UserWhereInput = {
 
 export type UsersConnection = {
   __typename?: 'UsersConnection';
-  edges?: Maybe<Array<Maybe<UserEdge>>>;
+  edges: Array<UserEdge>;
   pageInfo: ConnectionPageInfo;
 };
 
 export type UsersConnectionResult = {
   __typename?: 'UsersConnectionResult';
   connectionData?: Maybe<UsersConnection>;
-  connectionErrors?: Maybe<Array<Maybe<PaginationError>>>;
+  connectionErrors: Array<ConnectionError>;
 };
 
 export type CreateChatInput = {
@@ -1715,6 +1715,7 @@ export type ResolversTypes = {
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Comment: ResolverTypeWrapper<InterfaceCommentModel>;
   CommentInput: CommentInput;
+  ConnectionError: ResolversTypes['IncorrectCursor'] | ResolversTypes['IncorrectPairingOfArguments'] | ResolversTypes['MaximumValueError'] | ResolversTypes['MissingArguments'];
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
   CreateUserTagInput: CreateUserTagInput;
   Date: ResolverTypeWrapper<Scalars['Date']>;
@@ -1767,7 +1768,6 @@ export type ResolversTypes = {
   OrganizationWhereInput: OrganizationWhereInput;
   OtpData: ResolverTypeWrapper<OtpData>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
-  PaginationError: ResolversTypes['IncorrectCursor'] | ResolversTypes['IncorrectPairingOfArguments'] | ResolversTypes['MaximumValueError'] | ResolversTypes['MissingArguments'];
   PhoneNumber: ResolverTypeWrapper<Scalars['PhoneNumber']>;
   Plugin: ResolverTypeWrapper<InterfacePluginModel>;
   PluginField: ResolverTypeWrapper<InterfacePluginFieldModel>;
@@ -1812,12 +1812,12 @@ export type ResolversTypes = {
   UserOrderByInput: UserOrderByInput;
   UserTag: ResolverTypeWrapper<InterfaceOrganizationTagUserModel>;
   UserTagEdge: ResolverTypeWrapper<Omit<UserTagEdge, 'node'> & { node: ResolversTypes['UserTag'] }>;
-  UserTagsConnection: ResolverTypeWrapper<Omit<UserTagsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['UserTagEdge']>>> }>;
-  UserTagsConnectionResult: ResolverTypeWrapper<Omit<UserTagsConnectionResult, 'connectionData' | 'connectionErrors'> & { connectionData?: Maybe<ResolversTypes['UserTagsConnection']>, connectionErrors?: Maybe<Array<Maybe<ResolversTypes['PaginationError']>>> }>;
+  UserTagsConnection: ResolverTypeWrapper<Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversTypes['UserTagEdge']> }>;
+  UserTagsConnectionResult: ResolverTypeWrapper<Omit<UserTagsConnectionResult, 'connectionData' | 'connectionErrors'> & { connectionData?: Maybe<ResolversTypes['UserTagsConnection']>, connectionErrors: Array<ResolversTypes['ConnectionError']> }>;
   UserType: UserType;
   UserWhereInput: UserWhereInput;
-  UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['UserEdge']>>> }>;
-  UsersConnectionResult: ResolverTypeWrapper<Omit<UsersConnectionResult, 'connectionData' | 'connectionErrors'> & { connectionData?: Maybe<ResolversTypes['UsersConnection']>, connectionErrors?: Maybe<Array<Maybe<ResolversTypes['PaginationError']>>> }>;
+  UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges: Array<ResolversTypes['UserEdge']> }>;
+  UsersConnectionResult: ResolverTypeWrapper<Omit<UsersConnectionResult, 'connectionData' | 'connectionErrors'> & { connectionData?: Maybe<ResolversTypes['UsersConnection']>, connectionErrors: Array<ResolversTypes['ConnectionError']> }>;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
 };
@@ -1831,6 +1831,7 @@ export type ResolversParentTypes = {
   Boolean: Scalars['Boolean'];
   Comment: InterfaceCommentModel;
   CommentInput: CommentInput;
+  ConnectionError: ResolversParentTypes['IncorrectCursor'] | ResolversParentTypes['IncorrectPairingOfArguments'] | ResolversParentTypes['MaximumValueError'] | ResolversParentTypes['MissingArguments'];
   ConnectionPageInfo: ConnectionPageInfo;
   CreateUserTagInput: CreateUserTagInput;
   Date: Scalars['Date'];
@@ -1881,7 +1882,6 @@ export type ResolversParentTypes = {
   OrganizationWhereInput: OrganizationWhereInput;
   OtpData: OtpData;
   PageInfo: PageInfo;
-  PaginationError: ResolversParentTypes['IncorrectCursor'] | ResolversParentTypes['IncorrectPairingOfArguments'] | ResolversParentTypes['MaximumValueError'] | ResolversParentTypes['MissingArguments'];
   PhoneNumber: Scalars['PhoneNumber'];
   Plugin: InterfacePluginModel;
   PluginField: InterfacePluginFieldModel;
@@ -1920,11 +1920,11 @@ export type ResolversParentTypes = {
   UserInput: UserInput;
   UserTag: InterfaceOrganizationTagUserModel;
   UserTagEdge: Omit<UserTagEdge, 'node'> & { node: ResolversParentTypes['UserTag'] };
-  UserTagsConnection: Omit<UserTagsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['UserTagEdge']>>> };
-  UserTagsConnectionResult: Omit<UserTagsConnectionResult, 'connectionData' | 'connectionErrors'> & { connectionData?: Maybe<ResolversParentTypes['UserTagsConnection']>, connectionErrors?: Maybe<Array<Maybe<ResolversParentTypes['PaginationError']>>> };
+  UserTagsConnection: Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserTagEdge']> };
+  UserTagsConnectionResult: Omit<UserTagsConnectionResult, 'connectionData' | 'connectionErrors'> & { connectionData?: Maybe<ResolversParentTypes['UserTagsConnection']>, connectionErrors: Array<ResolversParentTypes['ConnectionError']> };
   UserWhereInput: UserWhereInput;
-  UsersConnection: Omit<UsersConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['UserEdge']>>> };
-  UsersConnectionResult: Omit<UsersConnectionResult, 'connectionData' | 'connectionErrors'> & { connectionData?: Maybe<ResolversParentTypes['UsersConnection']>, connectionErrors?: Maybe<Array<Maybe<ResolversParentTypes['PaginationError']>>> };
+  UsersConnection: Omit<UsersConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserEdge']> };
+  UsersConnectionResult: Omit<UsersConnectionResult, 'connectionData' | 'connectionErrors'> & { connectionData?: Maybe<ResolversParentTypes['UsersConnection']>, connectionErrors: Array<ResolversParentTypes['ConnectionError']> };
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
 };
@@ -1976,6 +1976,10 @@ export type CommentResolvers<ContextType = any, ParentType extends ResolversPare
   post?: Resolver<ResolversTypes['Post'], ParentType, ContextType>;
   text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type ConnectionErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectionError'] = ResolversParentTypes['ConnectionError']> = {
+  __resolveType: TypeResolveFn<'IncorrectCursor' | 'IncorrectPairingOfArguments' | 'MaximumValueError' | 'MissingArguments', ParentType, ContextType>;
 };
 
 export type ConnectionPageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectionPageInfo'] = ResolversParentTypes['ConnectionPageInfo']> = {
@@ -2341,10 +2345,6 @@ export type PageInfoResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type PaginationErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['PaginationError'] = ResolversParentTypes['PaginationError']> = {
-  __resolveType: TypeResolveFn<'IncorrectCursor' | 'IncorrectPairingOfArguments' | 'MaximumValueError' | 'MissingArguments', ParentType, ContextType>;
-};
-
 export interface PhoneNumberScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['PhoneNumber'], any> {
   name: 'PhoneNumber';
 }
@@ -2520,11 +2520,11 @@ export type UserEdgeResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type UserTagResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTag'] = ResolversParentTypes['UserTag']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  childTags?: Resolver<Maybe<ResolversTypes['UserTagsConnectionResult']>, ParentType, ContextType, Partial<UserTagChildTagsArgs>>;
+  childTags?: Resolver<ResolversTypes['UserTagsConnectionResult'], ParentType, ContextType, Partial<UserTagChildTagsArgs>>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   parentTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType>;
-  usersAssignedTo?: Resolver<Maybe<ResolversTypes['UsersConnectionResult']>, ParentType, ContextType, Partial<UserTagUsersAssignedToArgs>>;
+  usersAssignedTo?: Resolver<ResolversTypes['UsersConnectionResult'], ParentType, ContextType, Partial<UserTagUsersAssignedToArgs>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2535,26 +2535,26 @@ export type UserTagEdgeResolvers<ContextType = any, ParentType extends Resolvers
 };
 
 export type UserTagsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnection'] = ResolversParentTypes['UserTagsConnection']> = {
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserTagEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['UserTagEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['ConnectionPageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type UserTagsConnectionResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnectionResult'] = ResolversParentTypes['UserTagsConnectionResult']> = {
   connectionData?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType>;
-  connectionErrors?: Resolver<Maybe<Array<Maybe<ResolversTypes['PaginationError']>>>, ParentType, ContextType>;
+  connectionErrors?: Resolver<Array<ResolversTypes['ConnectionError']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type UsersConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnection'] = ResolversParentTypes['UsersConnection']> = {
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['UserEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['ConnectionPageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type UsersConnectionResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnectionResult'] = ResolversParentTypes['UsersConnectionResult']> = {
   connectionData?: Resolver<Maybe<ResolversTypes['UsersConnection']>, ParentType, ContextType>;
-  connectionErrors?: Resolver<Maybe<Array<Maybe<ResolversTypes['PaginationError']>>>, ParentType, ContextType>;
+  connectionErrors?: Resolver<Array<ResolversTypes['ConnectionError']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2564,6 +2564,7 @@ export type Resolvers<ContextType = any> = {
   AndroidFirebaseOptions?: AndroidFirebaseOptionsResolvers<ContextType>;
   AuthData?: AuthDataResolvers<ContextType>;
   Comment?: CommentResolvers<ContextType>;
+  ConnectionError?: ConnectionErrorResolvers<ContextType>;
   ConnectionPageInfo?: ConnectionPageInfoResolvers<ContextType>;
   Date?: GraphQLScalarType;
   DateTime?: GraphQLScalarType;
@@ -2600,7 +2601,6 @@ export type Resolvers<ContextType = any> = {
   OrganizationInfoNode?: OrganizationInfoNodeResolvers<ContextType>;
   OtpData?: OtpDataResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
-  PaginationError?: PaginationErrorResolvers<ContextType>;
   PhoneNumber?: GraphQLScalarType;
   Plugin?: PluginResolvers<ContextType>;
   PluginField?: PluginFieldResolvers<ContextType>;

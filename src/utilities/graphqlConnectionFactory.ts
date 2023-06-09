@@ -1,6 +1,6 @@
 import type {
   ConnectionPageInfo,
-  PaginationError,
+  ConnectionError,
 } from "../types/generatedGraphQLTypes";
 import type { CursorPaginationArgsType } from "../libraries/validators/validatePaginationArgs";
 import type { Types } from "mongoose";
@@ -17,7 +17,7 @@ interface InterfaceConnection<T> {
 
 interface InterfaceConnectionResult<T> {
   connectionData: InterfaceConnection<T> | null;
-  connectionErrors: PaginationError[] | null;
+  connectionErrors: ConnectionError[];
 }
 
 /*
@@ -144,7 +144,7 @@ export function generateConnectionObject<
   if (!allFetchedObjects || allFetchedObjects.length === 0)
     return {
       connectionData: connectionObject,
-      connectionErrors: null,
+      connectionErrors: [],
     };
 
   // Handling the case when the cursor is provided
@@ -156,8 +156,7 @@ export function generateConnectionObject<
         connectionErrors: [
           {
             __typename: "IncorrectCursor",
-            message:
-              "The provided after cursor does not exist in the database.",
+            message: "The provided cursor does not exist in the database.",
             path: [args.direction === "FORWARD" ? "after" : "before"],
           },
         ],
@@ -199,6 +198,6 @@ export function generateConnectionObject<
 
   return {
     connectionData: connectionObject,
-    connectionErrors: null,
+    connectionErrors: [],
   };
 }

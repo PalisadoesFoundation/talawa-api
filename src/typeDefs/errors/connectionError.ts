@@ -1,7 +1,7 @@
 import { gql } from "apollo-server-core";
 
-export const paginationError = gql`
-  union PaginationError =
+export const connectionError = gql`
+  union ConnectionError =
       MissingArguments
     | IncorrectPairingOfArguments
     | IncorrectCursor

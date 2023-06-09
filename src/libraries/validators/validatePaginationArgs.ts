@@ -1,7 +1,7 @@
 import { MAXIMUM_FETCH_LIMIT } from "../../constants";
 import type {
   InputMaybe,
-  PaginationError,
+  ConnectionError,
   Scalars,
 } from "../../types/generatedGraphQLTypes";
 
@@ -14,12 +14,12 @@ export type CursorPaginationArgsType = {
 
 export const validatePaginationArgs = (
   args: CursorPaginationArgsType
-): PaginationError[] => {
-  const paginationErrors: PaginationError[] = [];
+): ConnectionError[] => {
+  const connectionErrors: ConnectionError[] = [];
 
   // Check that one of first or last must be provided
   if (!args.first && !args.last) {
-    paginationErrors.push({
+    connectionErrors.push({
       __typename: "MissingArguments",
       message:
         "Either first or last argument must be provided in the pagination arguments.",
@@ -29,7 +29,7 @@ export const validatePaginationArgs = (
 
   // Check that both first and last must not be provided together
   if (args.first && args.last) {
-    paginationErrors.push({
+    connectionErrors.push({
       __typename: "IncorrectPairingOfArguments",
       message:
         "Both first and last argument can not be provided in the pagination arguments. Only one must be provided in a single query.",
@@ -37,24 +37,9 @@ export const validatePaginationArgs = (
     });
   }
 
-  // Positive integer GraphQL Scalar ensures that the first and last are greater than zero
-  // Ensure that these arguments are less than the maximum allowed fetch limit
-  if (
-    (args.first && args.first > MAXIMUM_FETCH_LIMIT) ||
-    (args.last && args.last > MAXIMUM_FETCH_LIMIT)
-  ) {
-    paginationErrors.push({
-      __typename: "MaximumValueError",
-      message:
-        "More items than the allowed number of items were requested to be fetched.",
-      limit: MAXIMUM_FETCH_LIMIT,
-      path: ["first", "last"],
-    });
-  }
-
   // Check that only after can be provided with first
   if (args.first && args.before) {
-    paginationErrors.push({
+    connectionErrors.push({
       __typename: "IncorrectPairingOfArguments",
       message:
         "The pagination arguments must not contain before argument if the first argument is provided.",
@@ -64,7 +49,7 @@ export const validatePaginationArgs = (
 
   // Check that only before can be provided with last
   if (args.last && args.after) {
-    paginationErrors.push({
+    connectionErrors.push({
       __typename: "IncorrectPairingOfArguments",
       message:
         "The pagination arguments must not contain after argument if the last argument is provided.",
@@ -72,5 +57,20 @@ export const validatePaginationArgs = (
     });
   }
 
-  return paginationErrors;
+  // Positive integer GraphQL Scalar ensures that the first and last are greater than zero
+  // Ensure that these arguments are less than the maximum allowed fetch limit
+  if (
+    (args.first && args.first > MAXIMUM_FETCH_LIMIT) ||
+    (args.last && args.last > MAXIMUM_FETCH_LIMIT)
+  ) {
+    connectionErrors.push({
+      __typename: "MaximumValueError",
+      message:
+        "More items than the allowed number of items were requested to be fetched.",
+      limit: MAXIMUM_FETCH_LIMIT,
+      path: [args.first ? "first" : "last"],
+    });
+  }
+
+  return connectionErrors;
 };
