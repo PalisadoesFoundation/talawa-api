@@ -1,8 +1,8 @@
 import type {
   ConnectionPageInfo,
   ConnectionError,
+  CursorPaginationInput,
 } from "../types/generatedGraphQLTypes";
-import type { CursorPaginationArgsType } from "../libraries/validators/validatePaginationArgs";
 import type { Types } from "mongoose";
 
 interface InterfaceConnectionEdge<T> {
@@ -44,31 +44,8 @@ type GetNodeFromResultFnType<T1, T2> = {
   (result: T2): T1;
 };
 
-// A custom type for easier implementation of the business logic of the connection factory
-export type ConnectionArguments = {
-  cursor: string | null | undefined;
-  direction: "BACKWARD" | "FORWARD";
-  limit: number;
-};
-
-// Utility to convert the recieved arguments to the ConnetionArguments type
-export const transformArguments = (
-  args: CursorPaginationArgsType
-): ConnectionArguments => {
-  const transformedArgs: ConnectionArguments = {
-    cursor: undefined,
-    direction: args.first ? "FORWARD" : "BACKWARD",
-    limit: args.first | args.last,
-  };
-
-  if (args.after) transformedArgs.cursor = args.after;
-  else if (args.before) transformedArgs.cursor = args.before;
-
-  return transformedArgs;
-};
-
 // Generates the limit that can should be passed in the .limit() method
-export const getLimit = (args: ConnectionArguments): number => {
+export const getLimit = (args: CursorPaginationInput): number => {
   // We always fetch 1 object more than  args.limit
   // so that we can use that to get the information about hasNextPage / hasPreviousPage
   // When args.cursor is supplied, we fetch 1 more object so as validate the cursor as well
@@ -99,7 +76,7 @@ type FilterObjectType = {
 
 // Generates the sorting arguments for filterQuery that can be passed into the .find() method
 export function getFilterObject(
-  args: ConnectionArguments
+  args: CursorPaginationInput
 ): FilterObjectType | null {
   if (args.cursor) {
     if (args.direction === "FORWARD") return { _id: { $gte: args.cursor } };
@@ -133,7 +110,7 @@ export function generateConnectionObject<
   T1 extends { _id: Types.ObjectId },
   T2 extends { _id: Types.ObjectId }
 >(
-  args: ConnectionArguments,
+  args: CursorPaginationInput,
   allFetchedObjects: T2[] | null,
   getNodeFromResult: GetNodeFromResultFnType<T1, T2>
 ): InterfaceConnectionResult<T1> {

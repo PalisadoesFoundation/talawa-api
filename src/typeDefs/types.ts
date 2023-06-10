@@ -380,18 +380,8 @@ export const types = gql`
     name: String!
     organization: Organization
     parentTag: UserTag
-    childTags(
-      after: String
-      before: String
-      first: PositiveInt
-      last: PositiveInt
-    ): UserTagsConnectionResult!
-    usersAssignedTo(
-      after: String
-      before: String
-      first: PositiveInt
-      last: PositiveInt
-    ): UsersConnectionResult!
+    childTags(input: UserTagsConnectionInput!): UserTagsConnectionResult!
+    usersAssignedTo(input: UsersConnectionInput!): UsersConnectionResult!
   }
 
   type UsersConnectionResult {

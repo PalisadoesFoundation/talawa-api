@@ -2,7 +2,6 @@ import type { UserTagResolvers } from "../../types/generatedGraphQLTypes";
 import type { InterfaceOrganizationTagUser } from "../../models";
 import { OrganizationTagUser } from "../../models";
 import {
-  transformArguments,
   getLimit,
   getSortingObject,
   getFilterObject,
@@ -14,7 +13,7 @@ export const childTags: UserTagResolvers["childTags"] = async (
   parent,
   args
 ) => {
-  const errors = validatePaginationArgs(args);
+  const errors = validatePaginationArgs(args.input);
 
   if (errors.length !== 0) {
     return {
@@ -23,25 +22,23 @@ export const childTags: UserTagResolvers["childTags"] = async (
     };
   }
 
-  const newArgs = transformArguments(args);
-
   const allChildTagObjects = await OrganizationTagUser.find({
-    ...getFilterObject(newArgs),
+    ...getFilterObject(args.input),
     parentTagId: parent._id,
   })
     .sort(
-      getSortingObject(newArgs.direction, {
+      getSortingObject(args.input.direction, {
         // The default sorting logic of ascending order by MongoID should always be provided
         _id: 1,
         name: 1,
       })
     )
-    .limit(getLimit(newArgs))
+    .limit(getLimit(args.input))
     .populate("userId")
     .lean();
 
   return generateConnectionObject<
     InterfaceOrganizationTagUser,
     InterfaceOrganizationTagUser
-  >(newArgs, allChildTagObjects, (tag) => tag);
+  >(args.input, allChildTagObjects, (tag) => tag);
 };

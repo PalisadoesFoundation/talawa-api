@@ -23,6 +23,13 @@ export const inputs = gql`
     organizationId: ID!
   }
 
+  interface CursorPaginationInput {
+    # Optional cursor because cursor isn't needed for the first batch of results of a connection
+    cursor: String
+    direction: PaginationDirection!
+    limit: PositiveInt!
+  }
+
   input DonationWhereInput {
     id: ID
     id_not: ID
@@ -242,6 +249,18 @@ export const inputs = gql`
     allDay: Boolean
     startTime: Time
     endTime: Time
+  }
+
+  type UsersConnectionInput implements CursorPaginationInput {
+    cursor: String
+    direction: PaginationDirection!
+    limit: PositiveInt!
+  }
+
+  type UserTagsConnectionInput implements CursorPaginationInput {
+    cursor: String
+    direction: PaginationDirection!
+    limit: PositiveInt!
   }
 
   # input UpdateEventProjectInput {
