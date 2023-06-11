@@ -311,6 +311,7 @@ export const types = gql`
     event: Event!
     creator: User!
     createdAt: DateTime!
+    completed: Boolean
     deadline: DateTime
     volunteers: [User]
   }

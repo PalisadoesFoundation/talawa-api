@@ -1,6 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { acceptAdmin } from "./acceptAdmin";
 import { acceptMembershipRequest } from "./acceptMembershipRequest";
+import { addEventAttendee } from "./addEventAttendee";
 import { addLanguageTranslation } from "./addLanguageTranslation";
 import { addOrganizationImage } from "./addOrganizationImage";
 import { addUserImage } from "./addUserImage";
@@ -43,6 +44,7 @@ import { removeAdmin } from "./removeAdmin";
 import { removeComment } from "./removeComment";
 import { removeDirectChat } from "./removeDirectChat";
 import { removeEvent } from "./removeEvent";
+import { removeEventAttendee } from "./removeEventAttendee";
 import { removeEventProject } from "./removeEventProject";
 import { removeGroupChat } from "./removeGroupChat";
 import { removeMember } from "./removeMember";
@@ -82,6 +84,7 @@ import { updateUserType } from "./updateUserType";
 export const Mutation: MutationResolvers = {
   acceptAdmin,
   acceptMembershipRequest,
+  addEventAttendee,
   addLanguageTranslation,
   addOrganizationImage,
   addUserImage,
@@ -124,6 +127,7 @@ export const Mutation: MutationResolvers = {
   removeComment,
   removeDirectChat,
   removeEvent,
+  removeEventAttendee,
   removeEventProject,
   removeGroupChat,
   removeMember,

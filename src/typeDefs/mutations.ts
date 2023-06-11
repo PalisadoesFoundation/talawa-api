@@ -9,6 +9,8 @@ export const mutations = gql`
 
     acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
+    addEventAttendee(data: EventAttendeeInput!): User! @auth
+
     addLanguageTranslation(data: LanguageInput!): Language! @auth
 
     addOrganizationImage(file: String!, organizationId: String!): Organization!
@@ -114,6 +116,8 @@ export const mutations = gql`
     removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat! @auth
 
     removeEvent(id: ID!): Event! @auth
+
+    removeEventAttendee(data: EventAttendeeInput!): User! @auth
 
     removeEventProject(id: ID!): EventProject! @auth
 

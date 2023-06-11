@@ -134,6 +134,18 @@ export const USER_NOT_AUTHORIZED_ADMIN = {
   PARAM: "roleValidationAdmin",
 };
 
+export const USER_ALREADY_REGISTERED_FOR_EVENT = {
+  MESSAGE: "The user has already been registered for the event",
+  CODE: "user.alreadyRegistered",
+  PARAM: "user.alreadyRegistered",
+};
+
+export const USER_NOT_REGISTERED_FOR_EVENT = {
+  MESSAGE: "The user is not registered for the event",
+  CODE: "user.notRegistered",
+  PARAM: "user.notRegistered",
+};
+
 export const USER_NOT_ORGANIZATION_ADMIN = {
   MESSAGE: "Error: User must be an ADMIN",
   CODE: "role.notValid.admin",
@@ -295,12 +307,14 @@ export const INVALID_REFRESH_TOKEN_ERROR = {
   MESSAGE: "invalid.refreshToken",
   PARAM: "refreshToken",
 };
+
 export const USER_PROFILE_IMAGE_NOT_FOUND_ERROR = {
   DESC: "User profile image not found",
   CODE: "user.profileImage.notFound",
   MESSAGE: "user.profileImage.notFound",
   PARAM: "userProfileImage",
 };
+
 export const EMAIL_ALREADY_EXISTS_ERROR = {
   DESC: "Email already exists",
   CODE: "email.alreadyExists",

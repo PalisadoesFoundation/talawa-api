@@ -174,7 +174,6 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
 
       await updateUserPasswordResolver?.({}, args, context);
     } catch (error: any) {
-      console.log(error.message);
       expect(error.message).toEqual(INVALID_CREDENTIALS_ERROR.MESSAGE);
     }
   });
