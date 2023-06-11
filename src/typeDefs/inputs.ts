@@ -252,7 +252,7 @@ export const inputs = gql`
   }
 
   # Inputs in GraphQL cannot implement other inputs, but it must be ensured that connection inputs
-  # must "implement" CursorPaginationInput to pass argument validation
+  # "implement" CursorPaginationInput to pass argument validation
   input UsersConnectionInput {
     cursor: String
     direction: PaginationDirection!
