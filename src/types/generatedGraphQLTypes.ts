@@ -103,7 +103,7 @@ export type CreateUserTagInput = {
 };
 
 export type CursorPaginationInput = {
-  cursor?: Maybe<Scalars['String']>;
+  cursor?: InputMaybe<Scalars['String']>;
   direction: PaginationDirection;
   limit: Scalars['PositiveInt'];
 };
@@ -1566,9 +1566,8 @@ export type UserTagsConnection = {
   pageInfo: ConnectionPageInfo;
 };
 
-export type UserTagsConnectionInput = CursorPaginationInput & {
-  __typename?: 'UserTagsConnectionInput';
-  cursor?: Maybe<Scalars['String']>;
+export type UserTagsConnectionInput = {
+  cursor?: InputMaybe<Scalars['String']>;
   direction: PaginationDirection;
   limit: Scalars['PositiveInt'];
 };
@@ -1625,9 +1624,8 @@ export type UsersConnection = {
   pageInfo: ConnectionPageInfo;
 };
 
-export type UsersConnectionInput = CursorPaginationInput & {
-  __typename?: 'UsersConnectionInput';
-  cursor?: Maybe<Scalars['String']>;
+export type UsersConnectionInput = {
+  cursor?: InputMaybe<Scalars['String']>;
   direction: PaginationDirection;
   limit: Scalars['PositiveInt'];
 };
@@ -1724,7 +1722,7 @@ export type ResolversTypes = {
   ConnectionError: ResolversTypes['IncorrectCursor'] | ResolversTypes['MaximumValueError'];
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
   CreateUserTagInput: CreateUserTagInput;
-  CursorPaginationInput: ResolversTypes['UserTagsConnectionInput'] | ResolversTypes['UsersConnectionInput'];
+  CursorPaginationInput: CursorPaginationInput;
   Date: ResolverTypeWrapper<Scalars['Date']>;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']>;
   DeletePayload: ResolverTypeWrapper<DeletePayload>;
@@ -1819,12 +1817,12 @@ export type ResolversTypes = {
   UserTag: ResolverTypeWrapper<InterfaceOrganizationTagUserModel>;
   UserTagEdge: ResolverTypeWrapper<Omit<UserTagEdge, 'node'> & { node: ResolversTypes['UserTag'] }>;
   UserTagsConnection: ResolverTypeWrapper<Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversTypes['UserTagEdge']> }>;
-  UserTagsConnectionInput: ResolverTypeWrapper<UserTagsConnectionInput>;
+  UserTagsConnectionInput: UserTagsConnectionInput;
   UserTagsConnectionResult: ResolverTypeWrapper<Omit<UserTagsConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UserTagsConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
   UserType: UserType;
   UserWhereInput: UserWhereInput;
   UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges: Array<ResolversTypes['UserEdge']> }>;
-  UsersConnectionInput: ResolverTypeWrapper<UsersConnectionInput>;
+  UsersConnectionInput: UsersConnectionInput;
   UsersConnectionResult: ResolverTypeWrapper<Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UsersConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
@@ -1842,7 +1840,7 @@ export type ResolversParentTypes = {
   ConnectionError: ResolversParentTypes['IncorrectCursor'] | ResolversParentTypes['MaximumValueError'];
   ConnectionPageInfo: ConnectionPageInfo;
   CreateUserTagInput: CreateUserTagInput;
-  CursorPaginationInput: ResolversParentTypes['UserTagsConnectionInput'] | ResolversParentTypes['UsersConnectionInput'];
+  CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date'];
   DateTime: Scalars['DateTime'];
   DeletePayload: DeletePayload;
@@ -1997,13 +1995,6 @@ export type ConnectionPageInfoResolvers<ContextType = any, ParentType extends Re
   hasPreviousPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   startCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type CursorPaginationInputResolvers<ContextType = any, ParentType extends ResolversParentTypes['CursorPaginationInput'] = ResolversParentTypes['CursorPaginationInput']> = {
-  __resolveType: TypeResolveFn<'UserTagsConnectionInput' | 'UsersConnectionInput', ParentType, ContextType>;
-  cursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  direction?: Resolver<ResolversTypes['PaginationDirection'], ParentType, ContextType>;
-  limit?: Resolver<ResolversTypes['PositiveInt'], ParentType, ContextType>;
 };
 
 export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Date'], any> {
@@ -2544,13 +2535,6 @@ export type UserTagsConnectionResolvers<ContextType = any, ParentType extends Re
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type UserTagsConnectionInputResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnectionInput'] = ResolversParentTypes['UserTagsConnectionInput']> = {
-  cursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  direction?: Resolver<ResolversTypes['PaginationDirection'], ParentType, ContextType>;
-  limit?: Resolver<ResolversTypes['PositiveInt'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export type UserTagsConnectionResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnectionResult'] = ResolversParentTypes['UserTagsConnectionResult']> = {
   data?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType>;
   errors?: Resolver<Array<ResolversTypes['ConnectionError']>, ParentType, ContextType>;
@@ -2560,13 +2544,6 @@ export type UserTagsConnectionResultResolvers<ContextType = any, ParentType exte
 export type UsersConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnection'] = ResolversParentTypes['UsersConnection']> = {
   edges?: Resolver<Array<ResolversTypes['UserEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['ConnectionPageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type UsersConnectionInputResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnectionInput'] = ResolversParentTypes['UsersConnectionInput']> = {
-  cursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  direction?: Resolver<ResolversTypes['PaginationDirection'], ParentType, ContextType>;
-  limit?: Resolver<ResolversTypes['PositiveInt'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2584,7 +2561,6 @@ export type Resolvers<ContextType = any> = {
   Comment?: CommentResolvers<ContextType>;
   ConnectionError?: ConnectionErrorResolvers<ContextType>;
   ConnectionPageInfo?: ConnectionPageInfoResolvers<ContextType>;
-  CursorPaginationInput?: CursorPaginationInputResolvers<ContextType>;
   Date?: GraphQLScalarType;
   DateTime?: GraphQLScalarType;
   DeletePayload?: DeletePayloadResolvers<ContextType>;
@@ -2639,10 +2615,8 @@ export type Resolvers<ContextType = any> = {
   UserTag?: UserTagResolvers<ContextType>;
   UserTagEdge?: UserTagEdgeResolvers<ContextType>;
   UserTagsConnection?: UserTagsConnectionResolvers<ContextType>;
-  UserTagsConnectionInput?: UserTagsConnectionInputResolvers<ContextType>;
   UserTagsConnectionResult?: UserTagsConnectionResultResolvers<ContextType>;
   UsersConnection?: UsersConnectionResolvers<ContextType>;
-  UsersConnectionInput?: UsersConnectionInputResolvers<ContextType>;
   UsersConnectionResult?: UsersConnectionResultResolvers<ContextType>;
 };
 

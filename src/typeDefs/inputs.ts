@@ -23,7 +23,7 @@ export const inputs = gql`
     organizationId: ID!
   }
 
-  interface CursorPaginationInput {
+  input CursorPaginationInput {
     # Optional cursor because cursor isn't needed for the first batch of results of a connection
     cursor: String
     direction: PaginationDirection!
@@ -251,13 +251,16 @@ export const inputs = gql`
     endTime: Time
   }
 
-  type UsersConnectionInput implements CursorPaginationInput {
+  # Inputs in GraphQL cannot implement other inputs, but it must be ensured that connection inputs
+  # must "implement" CursorPaginationInput to pass argument validation
+  input UsersConnectionInput {
     cursor: String
     direction: PaginationDirection!
     limit: PositiveInt!
   }
 
-  type UserTagsConnectionInput implements CursorPaginationInput {
+  # Implements CursorPaginationInput
+  input UserTagsConnectionInput {
     cursor: String
     direction: PaginationDirection!
     limit: PositiveInt!
