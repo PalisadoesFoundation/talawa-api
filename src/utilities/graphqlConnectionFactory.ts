@@ -20,6 +20,10 @@ interface InterfaceConnectionResult<T> {
   errors: ConnectionError[];
 }
 
+type GetNodeFromResultFnType<T1, T2> = {
+  (result: T2): T1;
+};
+
 /*
 This is a factory function to quickly create a graphql connection object. The function accepts a generic type
 'T' which is used to reference the type of node that this connection and it's edges will reference. A node is
@@ -31,19 +35,13 @@ export function graphqlConnectionFactory<T>(): InterfaceConnection<T> {
   return {
     edges: [],
     pageInfo: {
+      startCursor: null,
       endCursor: null,
       hasNextPage: false,
       hasPreviousPage: false,
-      startCursor: null,
     },
   };
 }
-
-// Type definition for a mapping funtion
-type GetNodeFromResultFnType<T1, T2> = {
-  (result: T2): T1;
-};
-
 // Generates the limit that can should be passed in the .limit() method
 export const getLimit = (args: CursorPaginationInput): number => {
   // We always fetch 1 object more than  args.limit
@@ -134,7 +132,7 @@ export function generateConnectionObject<
           {
             __typename: "IncorrectCursor",
             message: "The provided cursor does not exist in the database.",
-            path: [args.direction === "FORWARD" ? "after" : "before"],
+            path: ["input", "direction"],
           },
         ],
       };

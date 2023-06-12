@@ -23,8 +23,8 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
   }
 
   const allUserObjects = await TagUser.find({
-    tagId: parent._id,
     ...getFilterObject(args.input),
+    tagId: parent._id,
   })
     .sort(
       getSortingObject(args.input.direction, {

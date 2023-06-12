@@ -34,7 +34,6 @@ export const childTags: UserTagResolvers["childTags"] = async (
       })
     )
     .limit(getLimit(args.input))
-    .populate("userId")
     .lean();
 
   return generateConnectionObject<
