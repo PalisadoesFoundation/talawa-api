@@ -75,6 +75,23 @@ export type AuthData = {
   user: User;
 };
 
+export type CheckIn = {
+  __typename?: 'CheckIn';
+  _id: Scalars['ID'];
+  allotedRoom?: Maybe<Scalars['String']>;
+  allotedSeat?: Maybe<Scalars['String']>;
+  event: Event;
+  time: Scalars['DateTime'];
+  user: User;
+};
+
+export type CheckInInput = {
+  allotedRoom?: InputMaybe<Scalars['String']>;
+  allotedSeat?: InputMaybe<Scalars['String']>;
+  eventId: Scalars['ID'];
+  userId: Scalars['ID'];
+};
+
 export type Comment = {
   __typename?: 'Comment';
   _id?: Maybe<Scalars['ID']>;
@@ -398,6 +415,7 @@ export type Mutation = {
   blockPluginCreationBySuperadmin: User;
   blockUser: User;
   cancelMembershipRequest: MembershipRequest;
+  checkIn: CheckIn;
   createAdmin: User;
   createComment?: Maybe<Comment>;
   createDirectChat: DirectChat;
@@ -535,6 +553,11 @@ export type MutationBlockUserArgs = {
 
 export type MutationCancelMembershipRequestArgs = {
   membershipRequestId: Scalars['ID'];
+};
+
+
+export type MutationCheckInArgs = {
+  data: CheckInInput;
 };
 
 
@@ -1672,6 +1695,8 @@ export type ResolversTypes = {
   AndroidFirebaseOptions: ResolverTypeWrapper<AndroidFirebaseOptions>;
   AuthData: ResolverTypeWrapper<Omit<AuthData, 'user'> & { user: ResolversTypes['User'] }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
+  CheckIn: ResolverTypeWrapper<InterfaceCheckInModel>;
+  CheckInInput: CheckInInput;
   Comment: ResolverTypeWrapper<InterfaceCommentModel>;
   CommentInput: CommentInput;
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
@@ -1777,6 +1802,8 @@ export type ResolversParentTypes = {
   AndroidFirebaseOptions: AndroidFirebaseOptions;
   AuthData: Omit<AuthData, 'user'> & { user: ResolversParentTypes['User'] };
   Boolean: Scalars['Boolean'];
+  CheckIn: InterfaceCheckInModel;
+  CheckInInput: CheckInInput;
   Comment: InterfaceCommentModel;
   CommentInput: CommentInput;
   ConnectionPageInfo: ConnectionPageInfo;
@@ -1900,6 +1927,16 @@ export type AuthDataResolvers<ContextType = any, ParentType extends ResolversPar
   androidFirebaseOptions?: Resolver<ResolversTypes['AndroidFirebaseOptions'], ParentType, ContextType>;
   iosFirebaseOptions?: Resolver<ResolversTypes['IOSFirebaseOptions'], ParentType, ContextType>;
   refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type CheckInResolvers<ContextType = any, ParentType extends ResolversParentTypes['CheckIn'] = ResolversParentTypes['CheckIn']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  allotedRoom?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  allotedSeat?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  event?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
+  time?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2115,6 +2152,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   blockPluginCreationBySuperadmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockPluginCreationBySuperadminArgs, 'blockUser' | 'userId'>>;
   blockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockUserArgs, 'organizationId' | 'userId'>>;
   cancelMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationCancelMembershipRequestArgs, 'membershipRequestId'>>;
+  checkIn?: Resolver<ResolversTypes['CheckIn'], ParentType, ContextType, RequireFields<MutationCheckInArgs, 'data'>>;
   createAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
   createComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'data' | 'postId'>>;
   createDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationCreateDirectChatArgs, 'data'>>;
@@ -2423,6 +2461,7 @@ export type Resolvers<ContextType = any> = {
   AggregateUser?: AggregateUserResolvers<ContextType>;
   AndroidFirebaseOptions?: AndroidFirebaseOptionsResolvers<ContextType>;
   AuthData?: AuthDataResolvers<ContextType>;
+  CheckIn?: CheckInResolvers<ContextType>;
   Comment?: CommentResolvers<ContextType>;
   ConnectionPageInfo?: ConnectionPageInfoResolvers<ContextType>;
   Date?: GraphQLScalarType;

@@ -1,4 +1,5 @@
 import type { Resolvers } from "../types/generatedGraphQLTypes";
+import { CheckIn } from "./CheckIn";
 import { Comment } from "./Comment";
 import { DirectChat } from "./DirectChat";
 import { DirectChatMessage } from "./DirectChatMessage";
@@ -28,6 +29,7 @@ import {
 } from "graphql-scalars";
 
 export const resolvers: Resolvers = {
+  CheckIn,
   Comment,
   DirectChat,
   DirectChatMessage,

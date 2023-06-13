@@ -48,6 +48,6 @@ const checkInModel = (): Model<InterfaceCheckIn> =>
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 
-export const CheckIn = (models.CheckInModel || checkInModel()) as ReturnType<
+export const CheckIn = (models.CheckIn || checkInModel()) as ReturnType<
   typeof checkInModel
 >;

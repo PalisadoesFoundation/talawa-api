@@ -26,6 +26,15 @@ export const types = gql`
     iosFirebaseOptions: IOSFirebaseOptions!
   }
 
+  type CheckIn {
+    _id: ID!
+    time: DateTime!
+    allotedRoom: String
+    allotedSeat: String
+    user: User!
+    event: Event!
+  }
+
   type Comment {
     _id: ID
     text: String!

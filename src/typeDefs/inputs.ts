@@ -11,6 +11,13 @@ export const inputs = gql`
     eventId: ID!
   }
 
+  input CheckInInput {
+    userId: ID!
+    eventId: ID!
+    allotedRoom: String
+    allotedSeat: String
+  }
+
   input createChatInput {
     userIds: [ID!]!
     organizationId: ID!
