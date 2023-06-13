@@ -1,3 +1,4 @@
+export * from "./CheckIn";
 export * from "./MessageChat";
 export * from "./Comment";
 export * from "./DirectChat";
