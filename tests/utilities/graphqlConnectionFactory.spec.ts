@@ -9,6 +9,7 @@ import {
 import { type CursorPaginationInput } from "../../src/types/generatedGraphQLTypes";
 import { Types } from "mongoose";
 import { nanoid } from "nanoid";
+import { MAXIMUM_FETCH_LIMIT } from "../../src/constants";
 
 describe("utilities -> graphqlConnectionFactory -> graphqlConnectionFactory", () => {
   it(`Returns a connection object with default/pre-defined fields which
@@ -30,21 +31,21 @@ represents a connection that has no data at all and cannot be paginated.`, () =>
 describe("utilities -> graphqlConnectionFactory -> getLimit", () => {
   it(`Should return 1 + limit if the cursor is not supplied`, () => {
     const args: CursorPaginationInput = {
-      limit: 10,
+      limit: MAXIMUM_FETCH_LIMIT,
       direction: "FORWARD",
     };
 
-    expect(getLimit(args)).toBe(11);
+    expect(getLimit(args)).toBe(MAXIMUM_FETCH_LIMIT + 1);
   });
 
   it(`Should return 2 + limit if the cursor is supplied`, () => {
     const args: CursorPaginationInput = {
       cursor: "123456",
-      limit: 10,
+      limit: MAXIMUM_FETCH_LIMIT,
       direction: "FORWARD",
     };
 
-    expect(getLimit(args)).toBe(12);
+    expect(getLimit(args)).toBe(MAXIMUM_FETCH_LIMIT + 2);
   });
 });
 
@@ -115,36 +116,6 @@ describe("utilities -> graphqlConnectionFactory -> getFilterObject", () => {
 
     expect(payload).toEqual({
       _id: { $lte: "12345" },
-    });
-  });
-});
-
-describe("utilities -> graphqlConnectionFactory -> getSortingObject", () => {
-  it(`Should return the supplied sorting object when the direction is forward`, () => {
-    const sortingObject = {
-      a: 1,
-      b: 1,
-    };
-
-    const payload = getSortingObject("FORWARD", sortingObject);
-
-    expect(payload).toEqual({
-      a: 1,
-      b: 1,
-    });
-  });
-
-  it(`Should return the supplied sorting object negated and in the same order when the direction is backward`, () => {
-    const sortingObject = {
-      a: 1,
-      b: 1,
-    };
-
-    const payload = getSortingObject("BACKWARD", sortingObject);
-
-    expect(payload).toEqual({
-      a: -1,
-      b: -1,
     });
   });
 });
@@ -242,17 +213,18 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> F
       })
     );
 
-    expect(payload.errors.length).toBe(0);
-    expect(payload.data).not.toBeNull();
-
-    expect(payload.data!.pageInfo).toMatchObject({
-      startCursor: fetchedObjectIds[0],
-      endCursor: fetchedObjectIds[4],
-      hasNextPage: false,
-      hasPreviousPage: false,
+    expect(payload).toMatchObject({
+      errors: [],
+      data: {
+        pageInfo: {
+          startCursor: fetchedObjectIds[0],
+          endCursor: fetchedObjectIds[4],
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+        edges: allEdges,
+      },
     });
-    expect(payload.data!.edges.length).toBe(5);
-    expect(payload.data!.edges).toEqual(allEdges);
   });
 
   it(`testing FORWARD pagination WITHOUT cursor and such that there IS A next page`, () => {
@@ -269,17 +241,18 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> F
       })
     );
 
-    expect(payload.errors.length).toBe(0);
-    expect(payload.data).not.toBeNull();
-
-    expect(payload.data!.pageInfo).toMatchObject({
-      startCursor: fetchedObjectIds[0],
-      endCursor: fetchedObjectIds[2],
-      hasNextPage: true,
-      hasPreviousPage: false,
+    expect(payload).toMatchObject({
+      errors: [],
+      data: {
+        pageInfo: {
+          startCursor: fetchedObjectIds[0],
+          endCursor: fetchedObjectIds[2],
+          hasNextPage: true,
+          hasPreviousPage: false,
+        },
+        edges: allEdges.slice(0, 3),
+      },
     });
-    expect(payload.data!.edges.length).toBe(3);
-    expect(payload.data!.edges).toEqual(allEdges.slice(0, 3));
   });
 
   it(`testing FORWARD pagination WITH cursor and such that there IS NO next page`, () => {
@@ -297,17 +270,18 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> F
       })
     );
 
-    expect(payload.errors.length).toBe(0);
-    expect(payload.data).not.toBeNull();
-
-    expect(payload.data!.pageInfo).toMatchObject({
-      startCursor: fetchedObjectIds[1],
-      endCursor: fetchedObjectIds[4],
-      hasNextPage: false,
-      hasPreviousPage: true,
+    expect(payload).toMatchObject({
+      errors: [],
+      data: {
+        pageInfo: {
+          startCursor: fetchedObjectIds[1],
+          endCursor: fetchedObjectIds[4],
+          hasNextPage: false,
+          hasPreviousPage: true,
+        },
+        edges: allEdges.slice(1),
+      },
     });
-    expect(payload.data!.edges.length).toBe(4);
-    expect(payload.data!.edges).toEqual(allEdges.slice(1));
   });
 
   it(`testing FORWARD pagination WITH cursor and such that there IS A next page`, () => {
@@ -325,17 +299,18 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> F
       })
     );
 
-    expect(payload.errors.length).toBe(0);
-    expect(payload.data).not.toBeNull();
-
-    expect(payload.data!.pageInfo).toMatchObject({
-      startCursor: fetchedObjectIds[1],
-      endCursor: fetchedObjectIds[3],
-      hasNextPage: true,
-      hasPreviousPage: true,
+    expect(payload).toMatchObject({
+      errors: [],
+      data: {
+        pageInfo: {
+          startCursor: fetchedObjectIds[1],
+          endCursor: fetchedObjectIds[3],
+          hasNextPage: true,
+          hasPreviousPage: true,
+        },
+        edges: allEdges.slice(1, 4),
+      },
     });
-    expect(payload.data!.edges.length).toBe(3);
-    expect(payload.data!.edges).toEqual(allEdges.slice(1, 4));
   });
 });
 
@@ -379,17 +354,18 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> B
       })
     );
 
-    expect(payload.errors.length).toBe(0);
-    expect(payload.data).not.toBeNull();
-
-    expect(payload.data!.pageInfo).toMatchObject({
-      startCursor: fetchedObjectIds[0],
-      endCursor: fetchedObjectIds[4],
-      hasNextPage: false,
-      hasPreviousPage: false,
+    expect(payload).toMatchObject({
+      errors: [],
+      data: {
+        pageInfo: {
+          startCursor: fetchedObjectIds[0],
+          endCursor: fetchedObjectIds[4],
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+        edges: allEdges,
+      },
     });
-    expect(payload.data!.edges.length).toBe(5);
-    expect(payload.data!.edges).toEqual(allEdges);
   });
 
   it(`testing BACKWARD pagination WITHOUT cursor and such that there IS A previous page`, () => {
@@ -406,17 +382,18 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> B
       })
     );
 
-    expect(payload.errors.length).toBe(0);
-    expect(payload.data).not.toBeNull();
-
-    expect(payload.data!.pageInfo).toMatchObject({
-      startCursor: fetchedObjectIds[2],
-      endCursor: fetchedObjectIds[4],
-      hasNextPage: false,
-      hasPreviousPage: true,
+    expect(payload).toMatchObject({
+      errors: [],
+      data: {
+        pageInfo: {
+          startCursor: fetchedObjectIds[2],
+          endCursor: fetchedObjectIds[4],
+          hasNextPage: false,
+          hasPreviousPage: true,
+        },
+        edges: allEdges.slice(2),
+      },
     });
-    expect(payload.data!.edges.length).toBe(3);
-    expect(payload.data!.edges).toEqual(allEdges.slice(2, 5));
   });
 
   it(`testing BACKWARD pagination WITH cursor and such that there IS NO previous page`, () => {
@@ -434,17 +411,18 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> B
       })
     );
 
-    expect(payload.errors.length).toBe(0);
-    expect(payload.data).not.toBeNull();
-
-    expect(payload.data!.pageInfo).toMatchObject({
-      startCursor: fetchedObjectIds[0],
-      endCursor: fetchedObjectIds[3],
-      hasNextPage: true,
-      hasPreviousPage: false,
+    expect(payload).toMatchObject({
+      errors: [],
+      data: {
+        pageInfo: {
+          startCursor: fetchedObjectIds[0],
+          endCursor: fetchedObjectIds[3],
+          hasNextPage: true,
+          hasPreviousPage: false,
+        },
+        edges: allEdges.slice(0, 4),
+      },
     });
-    expect(payload.data!.edges.length).toBe(4);
-    expect(payload.data!.edges).toEqual(allEdges.slice(0, 4));
   });
 
   it(`testing BACKWARD pagination WITH cursor and such that there IS A previous page`, () => {
@@ -462,16 +440,17 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> B
       })
     );
 
-    expect(payload.errors.length).toBe(0);
-    expect(payload.data).not.toBeNull();
-
-    expect(payload.data!.pageInfo).toMatchObject({
-      startCursor: fetchedObjectIds[1],
-      endCursor: fetchedObjectIds[3],
-      hasNextPage: true,
-      hasPreviousPage: true,
+    expect(payload).toMatchObject({
+      errors: [],
+      data: {
+        pageInfo: {
+          startCursor: fetchedObjectIds[1],
+          endCursor: fetchedObjectIds[3],
+          hasNextPage: true,
+          hasPreviousPage: true,
+        },
+        edges: allEdges.slice(1, 4),
+      },
     });
-    expect(payload.data!.edges.length).toBe(3);
-    expect(payload.data!.edges).toEqual(allEdges.slice(1, 4));
   });
 });

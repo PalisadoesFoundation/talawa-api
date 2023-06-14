@@ -39,6 +39,9 @@ describe("resolvers -> Tag -> usersAssignedTo", () => {
     const payload = await usersAssignedToResolver?.(parent, args, {});
 
     expect(payload!.errors.length).toEqual(1);
+    expect(payload!.errors[0]).toMatchObject({
+      __typename: "MaximumValueError",
+    });
     expect(payload!.data).toBeNull();
   });
 

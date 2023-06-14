@@ -20,7 +20,7 @@ describe("validators -> validatePaginationArgs", () => {
     });
   });
 
-  it("returns empty error object if the args are valid", () => {
+  it("returns empty error list if the args are valid", () => {
     const args: CursorPaginationInput = {
       direction: "FORWARD",
       limit: MAXIMUM_FETCH_LIMIT,

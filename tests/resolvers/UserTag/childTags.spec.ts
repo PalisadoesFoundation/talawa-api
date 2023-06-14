@@ -40,6 +40,9 @@ describe("resolvers -> Tag -> childTags", () => {
     const payload = await childTagsResolver?.(parent, args, {});
 
     expect(payload!.errors.length).toEqual(1);
+    expect(payload!.errors[0]).toMatchObject({
+      __typename: "MaximumValueError",
+    });
     expect(payload!.data).toBeNull();
   });
 
