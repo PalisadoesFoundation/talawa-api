@@ -26,6 +26,7 @@ export const types = gql`
     iosFirebaseOptions: IOSFirebaseOptions!
   }
 
+  # Stores the detail of an check in of an user in an event
   type CheckIn {
     _id: ID!
     time: DateTime!
@@ -33,6 +34,13 @@ export const types = gql`
     allotedSeat: String
     user: User!
     event: Event!
+  }
+
+  # Used to show whether an user has checked in for an event
+  type CheckInStatus {
+    _id: ID!
+    user: User!
+    checkIn: CheckIn
   }
 
   type Comment {
@@ -107,7 +115,9 @@ export const types = gql`
     longitude: Longitude
     organization: Organization
     creator: User!
-    attendees: [User]
+    attendees: [User!]!
+    # For each attendee, gives information about whether he/she has checked in yet or not
+    attendeesCheckInStatus: [CheckInStatus!]!
     admins(adminId: ID): [User]
     status: Status!
     projects: [EventProject]

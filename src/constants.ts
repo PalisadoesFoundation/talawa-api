@@ -336,6 +336,12 @@ export const VOLUNTEER_NOT_MEMBER_ERROR = {
   PARAM: "volunteers",
 };
 
+export const USER_ALREADY_CHECKED_IN = {
+  MESSAGE: "The user has already been checked for this event.",
+  CODE: "user.alreadyCheckedIn",
+  PARAM: "user.alreadyCheckedIn",
+};
+
 export const BASE_URL = `http://localhost:${process.env.port || 4000}/`;
 
 export const ACCESS_TOKEN_SECRET = ENV.ACCESS_TOKEN_SECRET;

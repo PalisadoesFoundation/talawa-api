@@ -92,6 +92,13 @@ export type CheckInInput = {
   userId: Scalars['ID'];
 };
 
+export type CheckInStatus = {
+  __typename?: 'CheckInStatus';
+  _id: Scalars['ID'];
+  checkIn?: Maybe<CheckIn>;
+  user: User;
+};
+
 export type Comment = {
   __typename?: 'Comment';
   _id?: Maybe<Scalars['ID']>;
@@ -176,7 +183,8 @@ export type Event = {
   _id: Scalars['ID'];
   admins?: Maybe<Array<Maybe<User>>>;
   allDay: Scalars['Boolean'];
-  attendees?: Maybe<Array<Maybe<User>>>;
+  attendees: Array<User>;
+  attendeesCheckInStatus: Array<CheckInStatus>;
   creator: User;
   description: Scalars['String'];
   endDate: Scalars['Date'];
@@ -1697,6 +1705,7 @@ export type ResolversTypes = {
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   CheckIn: ResolverTypeWrapper<InterfaceCheckInModel>;
   CheckInInput: CheckInInput;
+  CheckInStatus: ResolverTypeWrapper<Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversTypes['CheckIn']>, user: ResolversTypes['User'] }>;
   Comment: ResolverTypeWrapper<InterfaceCommentModel>;
   CommentInput: CommentInput;
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
@@ -1804,6 +1813,7 @@ export type ResolversParentTypes = {
   Boolean: Scalars['Boolean'];
   CheckIn: InterfaceCheckInModel;
   CheckInInput: CheckInInput;
+  CheckInStatus: Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversParentTypes['CheckIn']>, user: ResolversParentTypes['User'] };
   Comment: InterfaceCommentModel;
   CommentInput: CommentInput;
   ConnectionPageInfo: ConnectionPageInfo;
@@ -1941,6 +1951,13 @@ export type CheckInResolvers<ContextType = any, ParentType extends ResolversPare
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type CheckInStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['CheckInStatus'] = ResolversParentTypes['CheckInStatus']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  checkIn?: Resolver<Maybe<ResolversTypes['CheckIn']>, ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type CommentResolvers<ContextType = any, ParentType extends ResolversParentTypes['Comment'] = ResolversParentTypes['Comment']> = {
   _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -2011,7 +2028,8 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   admins?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<EventAdminsArgs>>;
   allDay?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  attendees?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
+  attendees?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
+  attendeesCheckInStatus?: Resolver<Array<ResolversTypes['CheckInStatus']>, ParentType, ContextType>;
   creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
@@ -2462,6 +2480,7 @@ export type Resolvers<ContextType = any> = {
   AndroidFirebaseOptions?: AndroidFirebaseOptionsResolvers<ContextType>;
   AuthData?: AuthDataResolvers<ContextType>;
   CheckIn?: CheckInResolvers<ContextType>;
+  CheckInStatus?: CheckInStatusResolvers<ContextType>;
   Comment?: CommentResolvers<ContextType>;
   ConnectionPageInfo?: ConnectionPageInfoResolvers<ContextType>;
   Date?: GraphQLScalarType;

@@ -2,11 +2,13 @@ import type { PopulatedDoc, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
 import type { InterfaceEvent } from "./Event";
+import type { InterfaceCheckIn } from "./CheckIn";
 
 export interface InterfaceEventAttendee {
   _id: Schema.Types.ObjectId;
   userId: PopulatedDoc<InterfaceUser & Document>;
   eventId: PopulatedDoc<InterfaceEvent & Document>;
+  checkInId: PopulatedDoc<InterfaceCheckIn & Document> | null;
 }
 
 const eventAttendeeSchema = new Schema({
@@ -19,6 +21,12 @@ const eventAttendeeSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Event",
     required: true,
+  },
+  checkInId: {
+    type: Schema.Types.ObjectId,
+    required: false,
+    default: null,
+    ref: "CheckIn",
   },
 });
 
