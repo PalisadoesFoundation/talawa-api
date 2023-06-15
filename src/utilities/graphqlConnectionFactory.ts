@@ -53,8 +53,8 @@ export const getLimit = (args: CursorPaginationInput): number => {
 // Generates the sortingObject that can be passed in the .sort() method
 export const getSortingObject = (
   direction: "FORWARD" | "BACKWARD",
-  sortingObject: { [key: string]: number }
-): { [key: string]: number } => {
+  sortingObject: Record<string, number>
+): Record<string, number> => {
   // We assume that the resolver would always be written with respect to the sorting that needs to be implemented for forward pagination
   if (direction === "FORWARD") return sortingObject;
 
