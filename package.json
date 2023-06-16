@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc --pretty --project tsconfig.build.json",
     "dev": "concurrently  \"tsx watch ./src/server.ts\" \"graphql-codegen --watch\"",
+    "apollo3": "concurrently  \"tsx watch ./src/index.ts\" \"graphql-codegen --watch\"",
     "prebuild": "graphql-codegen && rimraf ./build",
     "prod": "cross-env NODE_ENV=production pm2-runtime start ./build/server.js",
     "start": "cross-env pm2-runtime start ./build/server.js --watch",
@@ -43,7 +44,9 @@
   "dependencies": {
     "@graphql-inspector/cli": "^3.4.19",
     "@graphql-tools/schema": "^8.4.0",
+    "@graphql-tools/utils": "^10.0.1",
     "@types/yargs": "^17.0.24",
+    "apollo-server": "^3.12.0",
     "apollo-server-core": "^3.11.1",
     "apollo-server-express": "^2.25.4",
     "axios": "^0.21.4",

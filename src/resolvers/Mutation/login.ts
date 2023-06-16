@@ -31,7 +31,7 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
   // Checks whether user exists.
   if (!user) {
     throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.MESSAGE,
       USER_NOT_FOUND_ERROR.CODE,
       USER_NOT_FOUND_ERROR.PARAM
     );
@@ -45,12 +45,12 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     throw new errors.ValidationError(
       [
         {
-          message: requestContext.translate(INVALID_CREDENTIALS_ERROR.MESSAGE),
+          message: INVALID_CREDENTIALS_ERROR.MESSAGE,
           code: INVALID_CREDENTIALS_ERROR.CODE,
           param: INVALID_CREDENTIALS_ERROR.PARAM,
         },
       ],
-      requestContext.translate(INVALID_CREDENTIALS_ERROR.MESSAGE)
+      // requestContext.translate(INVALID_CREDENTIALS_ERROR.MESSAGE)
     );
   }
   const accessToken = await createAccessToken(user);
