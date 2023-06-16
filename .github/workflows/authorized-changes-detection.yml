@@ -16,7 +16,6 @@ on:
       - '.github/**'
       - '.husky/**'
       - '.env.sample'
-      - 'package.json'
       - 'tsconfig.json'
       - '.gitignore'
       - '.eslintrc.json'
