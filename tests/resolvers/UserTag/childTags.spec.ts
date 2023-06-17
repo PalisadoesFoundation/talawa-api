@@ -10,6 +10,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestUserTagType } from "../../helpers/tags";
 import { createTwoLevelTagsWithOrg } from "../../helpers/tags";
 import { MAXIMUM_FETCH_LIMIT } from "../../../src/constants";
+import { Types } from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testChildTag1: TestUserTagType,
@@ -27,7 +28,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Tag -> childTags", () => {
-  it(`returns error object when the arguments are incorrect`, async () => {
+  it(`returns error object when the maximum fetch limit is exceeded`, async () => {
     const parent = testParentTag!;
 
     const args: UserTagChildTagsArgs = {
@@ -42,6 +43,26 @@ describe("resolvers -> Tag -> childTags", () => {
     expect(payload!.errors.length).toEqual(1);
     expect(payload!.errors[0]).toMatchObject({
       __typename: "MaximumValueError",
+    });
+    expect(payload!.data).toBeNull();
+  });
+
+  it(`returns error object when the cursor provided is incorrect`, async () => {
+    const parent = testParentTag!;
+
+    const args: UserTagChildTagsArgs = {
+      input: {
+        limit: MAXIMUM_FETCH_LIMIT,
+        direction: "FORWARD",
+        cursor: Types.ObjectId().toString(),
+      },
+    };
+
+    const payload = await childTagsResolver?.(parent, args, {});
+
+    expect(payload!.errors.length).toEqual(1);
+    expect(payload!.errors[0]).toMatchObject({
+      __typename: "IncorrectCursor",
     });
     expect(payload!.data).toBeNull();
   });

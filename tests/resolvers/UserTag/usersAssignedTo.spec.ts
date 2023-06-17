@@ -12,6 +12,7 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTagsAndAssignToUser } from "../../helpers/tags";
 import { MAXIMUM_FETCH_LIMIT } from "../../../src/constants";
 import { TagUser } from "../../../src/models";
+import { Types } from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testTag: TestUserTagType, testUser: TestUserType;
@@ -26,7 +27,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Tag -> usersAssignedTo", () => {
-  it(`returns error object when the arguments are incorrect`, async () => {
+  it(`returns error object when the maximum fetch limit is exceeded`, async () => {
     const parent = testTag!;
 
     const args: UserTagUsersAssignedToArgs = {
@@ -41,6 +42,26 @@ describe("resolvers -> Tag -> usersAssignedTo", () => {
     expect(payload!.errors.length).toEqual(1);
     expect(payload!.errors[0]).toMatchObject({
       __typename: "MaximumValueError",
+    });
+    expect(payload!.data).toBeNull();
+  });
+
+  it(`returns error object when the cursor provided is invalid`, async () => {
+    const parent = testTag!;
+
+    const args: UserTagUsersAssignedToArgs = {
+      input: {
+        limit: MAXIMUM_FETCH_LIMIT,
+        direction: "FORWARD",
+        cursor: Types.ObjectId().toString(),
+      },
+    };
+
+    const payload = await usersAssignedToResolver?.(parent, args, {});
+
+    expect(payload!.errors.length).toEqual(1);
+    expect(payload!.errors[0]).toMatchObject({
+      __typename: "IncorrectCursor",
     });
     expect(payload!.data).toBeNull();
   });
