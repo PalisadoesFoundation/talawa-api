@@ -22,6 +22,24 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
     };
   }
 
+  if (args.input.cursor) {
+    const cursorExists = await TagUser.exists({
+      _id: args.input.cursor,
+    });
+
+    if (!cursorExists)
+      return {
+        data: null,
+        errors: [
+          {
+            __typename: "IncorrectCursor",
+            message: "The provided cursor does not exist in the database.",
+            path: ["input", "cursor"],
+          },
+        ],
+      };
+  }
+
   const allUserObjects = await TagUser.find({
     ...getFilterObject(args.input),
     tagId: parent._id,
@@ -32,7 +50,7 @@ export const usersAssignedTo: UserTagResolvers["usersAssignedTo"] = async (
         _id: 1,
       })
     )
-    .limit(getLimit(args.input))
+    .limit(getLimit(args.input.limit))
     .populate("userId")
     .lean();
 

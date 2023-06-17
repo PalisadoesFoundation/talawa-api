@@ -22,6 +22,24 @@ export const childTags: UserTagResolvers["childTags"] = async (
     };
   }
 
+  if (args.input.cursor) {
+    const cursorExists = await OrganizationTagUser.exists({
+      _id: args.input.cursor,
+    });
+
+    if (!cursorExists)
+      return {
+        data: null,
+        errors: [
+          {
+            __typename: "IncorrectCursor",
+            message: "The provided cursor does not exist in the database.",
+            path: ["input", "cursor"],
+          },
+        ],
+      };
+  }
+
   const allChildTagObjects = await OrganizationTagUser.find({
     ...getFilterObject(args.input),
     parentTagId: parent._id,
@@ -33,7 +51,7 @@ export const childTags: UserTagResolvers["childTags"] = async (
         name: 1,
       })
     )
-    .limit(getLimit(args.input))
+    .limit(getLimit(args.input.limit))
     .lean();
 
   return generateConnectionObject<

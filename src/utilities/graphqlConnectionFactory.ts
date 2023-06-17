@@ -43,11 +43,10 @@ export function graphqlConnectionFactory<T>(): InterfaceConnection<T> {
   };
 }
 // Generates the limit that can should be passed in the .limit() method
-export const getLimit = (args: CursorPaginationInput): number => {
+export const getLimit = (limit: number): number => {
   // We always fetch 1 object more than  args.limit
   // so that we can use that to get the information about hasNextPage / hasPreviousPage
-  // When args.cursor is supplied, we fetch 1 more object so as validate the cursor as well
-  return args.cursor ? args.limit + 2 : args.limit + 1;
+  return limit + 1;
 };
 
 // Generates the sortingObject that can be passed in the .sort() method
@@ -77,8 +76,8 @@ export function getFilterObject(
   args: CursorPaginationInput
 ): FilterObjectType | null {
   if (args.cursor) {
-    if (args.direction === "FORWARD") return { _id: { $gte: args.cursor } };
-    else return { _id: { $lte: args.cursor } };
+    if (args.direction === "FORWARD") return { _id: { $gt: args.cursor } };
+    else return { _id: { $lt: args.cursor } };
   }
 
   return null;
@@ -124,22 +123,6 @@ export function generateConnectionObject<
 
   // Handling the case when the cursor is provided
   if (args.cursor) {
-    // Validate the cursor
-    if (allFetchedObjects[0]._id.toString() !== args.cursor) {
-      return {
-        data: null,
-        errors: [
-          {
-            __typename: "IncorrectCursor",
-            message: "The provided cursor does not exist in the database.",
-            path: ["input", "direction"],
-          },
-        ],
-      };
-    }
-
-    // Remove the first object which was compared to the cursor in the previous step
-    allFetchedObjects!.shift();
     // Populate the relevant pageInfo fields
     if (args.direction === "FORWARD")
       connectionObject.pageInfo.hasPreviousPage = true;

@@ -29,23 +29,8 @@ represents a connection that has no data at all and cannot be paginated.`, () =>
 });
 
 describe("utilities -> graphqlConnectionFactory -> getLimit", () => {
-  it(`Should return 1 + limit if the cursor is not supplied`, () => {
-    const args: CursorPaginationInput = {
-      limit: MAXIMUM_FETCH_LIMIT,
-      direction: "FORWARD",
-    };
-
-    expect(getLimit(args)).toBe(MAXIMUM_FETCH_LIMIT + 1);
-  });
-
-  it(`Should return 2 + limit if the cursor is supplied`, () => {
-    const args: CursorPaginationInput = {
-      cursor: "123456",
-      limit: MAXIMUM_FETCH_LIMIT,
-      direction: "FORWARD",
-    };
-
-    expect(getLimit(args)).toBe(MAXIMUM_FETCH_LIMIT + 2);
+  it(`Should return 1 + limit `, () => {
+    expect(getLimit(MAXIMUM_FETCH_LIMIT)).toBe(MAXIMUM_FETCH_LIMIT + 1);
   });
 });
 
@@ -101,7 +86,7 @@ describe("utilities -> graphqlConnectionFactory -> getFilterObject", () => {
     const payload = getFilterObject(args);
 
     expect(payload).toEqual({
-      _id: { $gte: "12345" },
+      _id: { $gt: "12345" },
     });
   });
 
@@ -115,7 +100,7 @@ describe("utilities -> graphqlConnectionFactory -> getFilterObject", () => {
     const payload = getFilterObject(args);
 
     expect(payload).toEqual({
-      _id: { $lte: "12345" },
+      _id: { $lt: "12345" },
     });
   });
 });
@@ -127,15 +112,6 @@ type MongoModelBase = {
 };
 
 describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> General checks", () => {
-  let fetchedObjects: MongoModelBase[];
-
-  beforeAll(() => {
-    fetchedObjects = Array.from({ length: 5 }, () => ({
-      _id: Types.ObjectId(),
-      a: nanoid(),
-    }));
-  });
-
   it(`returns blank connection result if there are no fetched objects`, () => {
     const args: CursorPaginationInput = {
       direction: "FORWARD",
@@ -154,24 +130,6 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> G
         startCursor: null,
       },
     });
-  });
-
-  it(`returns error if the provided cursor is invalid`, () => {
-    const args: CursorPaginationInput = {
-      cursor: Types.ObjectId().toString(),
-      direction: "FORWARD",
-      limit: 10,
-    };
-
-    const payload = generateConnectionObject(args, fetchedObjects, (x) => x);
-
-    expect(payload.errors.length).toBe(1);
-    expect(payload.errors[0]).toMatchObject({
-      __typename: "IncorrectCursor",
-      path: ["input", "direction"],
-    });
-
-    expect(payload.data).toBeNull();
   });
 });
 
@@ -207,7 +165,7 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> F
 
     const payload = generateConnectionObject(
       args,
-      fetchedObjects.slice(0, getLimit(args)),
+      fetchedObjects.slice(0, getLimit(args.limit)),
       (x) => ({
         _id: x._id,
       })
@@ -235,7 +193,7 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> F
 
     const payload = generateConnectionObject(
       args,
-      fetchedObjects.slice(0, getLimit(args)),
+      fetchedObjects.slice(0, getLimit(args.limit)),
       (x) => ({
         _id: x._id,
       })
@@ -264,7 +222,7 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> F
 
     const payload = generateConnectionObject(
       args,
-      fetchedObjects.slice(0, getLimit(args)),
+      fetchedObjects.slice(1, getLimit(args.limit)),
       (x) => ({
         _id: x._id,
       })
@@ -293,7 +251,7 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> F
 
     const payload = generateConnectionObject(
       args,
-      fetchedObjects.slice(0, getLimit(args)),
+      fetchedObjects.slice(1, 1 + getLimit(args.limit)),
       (x) => ({
         _id: x._id,
       })
@@ -348,7 +306,7 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> B
 
     const payload = generateConnectionObject(
       args,
-      reversedFetchedObjects.slice(0, getLimit(args)),
+      reversedFetchedObjects.slice(0, getLimit(args.limit)),
       (x) => ({
         _id: x._id,
       })
@@ -376,7 +334,7 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> B
 
     const payload = generateConnectionObject(
       args,
-      reversedFetchedObjects.slice(0, getLimit(args)),
+      reversedFetchedObjects.slice(0, getLimit(args.limit)),
       (x) => ({
         _id: x._id,
       })
@@ -405,7 +363,7 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> B
 
     const payload = generateConnectionObject(
       args,
-      reversedFetchedObjects.slice(0, getLimit(args)),
+      reversedFetchedObjects.slice(1, getLimit(args.limit)),
       (x) => ({
         _id: x._id,
       })
@@ -434,7 +392,7 @@ describe("utilities -> graphqlConnectionFactory -> generateConnectionObject -> B
 
     const payload = generateConnectionObject(
       args,
-      reversedFetchedObjects.slice(0, getLimit(args)),
+      reversedFetchedObjects.slice(1, 1 + getLimit(args.limit)),
       (x) => ({
         _id: x._id,
       })
