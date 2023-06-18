@@ -9,10 +9,8 @@ import { ApolloServer } from "apollo-server-express";
 import "dotenv/config"; // Pull all the environment variables from .env file
 import { typeDefs } from "./typeDefs";
 import { resolvers } from "./resolvers";
-import {
-  AuthenticationDirective,
-  RoleAuthorizationDirective,
-} from "./directives";
+import { WebSocketServer } from 'ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
 import { isAuth } from "./middleware";
 import * as database from "./db";
 import { MapperKind, getDirective, mapSchema } from "@graphql-tools/utils";
@@ -22,42 +20,43 @@ import express from "express";
 import http from "http";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { execute, subscribe } from "graphql";
-import { SubscriptionServer } from "subscriptions-transport-ws";
+import { PubSub } from 'graphql-subscriptions';
 
-// const pubsub = new PubSub();
+const pubsub = new PubSub();
 
 //@ts-ignore
-// function directiveTransformer(schema, directiveName) {
-//   return mapSchema(schema, {
-//     [MapperKind.OBJECT_FIELD]: (
-//       fieldConfig: GraphQLFieldConfig<any, any>
-//     ): any => {
-//       // Check whether this field has the specified directive
-//       const authDirective = getDirective(
-//         schema,
-//         fieldConfig,
-//         directiveName
-//       )?.[0];
-//       if (authDirective) {
-//         //@ts-ignore
-//         const { resolve = defaultFieldResolver } = fieldConfig;
+function AuthDirectiveTransformer(schema, directiveName) {
+  return mapSchema(schema, {
+    [MapperKind.OBJECT_FIELD]: (
+      fieldConfig: GraphQLFieldConfig<any, any>
+    ): any => {
+      // Check whether this field has the specified directive
+      const authDirective = getDirective(
+        schema,
+        fieldConfig,
+        directiveName
+      )?.[0];
+      if (authDirective) {
+        //@ts-ignore
+        const { resolve = defaultFieldResolver } = fieldConfig;
 
-//         fieldConfig.resolve = (root, args, context, info): string => {
-//           if (context.expired || !context.isAuth)
-//             throw new errors.UnauthenticatedError(
-//               requestContext.translate("user.notAuthenticated"),
-//               "user.notAuthenticated",
-//               "userAuthentication"
-//             );
-//           return resolve(root, args, context, info);
-//         };
-//         return fieldConfig;
-//       }
-//     },
-//   });
-// }
+        fieldConfig.resolve = (root, args, context, info): string => {
+          if (context.expired || !context.isAuth)
+            throw new errors.UnauthenticatedError(
+              "user.notAuthenticated --auth directive",
+              "user.notAuthenticated-- auth directive",
+              "userAuthentication"
+            );
+          return resolve(root, args, context, info);
+        };
+        return fieldConfig;
+      }
+    },
+  });
+}
 
-const schema = makeExecutableSchema({
+
+let schema = makeExecutableSchema({
   typeDefs,
   resolvers,
   // schemaDirectives: {
@@ -65,7 +64,8 @@ const schema = makeExecutableSchema({
   //   role: RoleAuthorizationDirective,
   // },
 });
-// schema = directiveTransformer(schema, "auth");
+
+schema = AuthDirectiveTransformer(schema, "auth");
 
 const app = express();
 
@@ -73,9 +73,6 @@ const app = express();
 // Below, we tell Apollo Server to "drain" this httpServer, enabling our servers to shut down gracefully.
 const httpServer = http.createServer(app);
 
-// Intializing a variable to store the subscription server
-// TODO: Figure out typescript and ESLint (Prefer const) error
-let subscriptionServer: SubscriptionServer | undefined;
 
 const server = new ApolloServer({
   schema,
@@ -92,7 +89,7 @@ const server = new ApolloServer({
     if (connection) {
       return {
         ...connection,
-        // pubsub,
+        pubsub,
         res,
         req,
         apiRootUrl,
@@ -111,38 +108,37 @@ const server = new ApolloServer({
   cache: "bounded",
   plugins: [
     ApolloServerPluginLandingPageLocalDefault({ embed: true }),
-    process.env.NODE_ENV === "production"
-      ? ApolloServerPluginLandingPageDisabled()
-      : ApolloServerPluginLandingPageGraphQLPlayground(),
+
+    /* Commenting this out since not decided which landing page plugin to use*/ 
+    
+    // process.env.NODE_ENV === "production"
+    //   ? ApolloServerPluginLandingPageDisabled()
+    //   : ApolloServerPluginLandingPageGraphQLPlayground(),
+    ApolloServerPluginDrainHttpServer({ httpServer }),
     {
-      // TODO: Fix typescript error
       async serverWillStart() {
         return {
-          async drainServer(): Promise<void> {
-            subscriptionServer!.close();
+          async drainServer() {
+            await serverCleanup.dispose();
           },
         };
       },
-    },
+    }
+
   ],
 });
 
-subscriptionServer = SubscriptionServer.create(
-  {
-    schema,
-    execute,
-    subscribe,
-    // Return the context object for the subscription server
-    onConnect() {
-      // lookup userId by token, etc.
-      // return { userId };
-    },
-  },
-  {
-    server: httpServer,
-    path: server.graphqlPath,
-  }
-);
+// Creating the WebSocket server
+const wsServer = new WebSocketServer({
+  // This is the `httpServer` we created in a previous step.
+  server: httpServer,
+  // Path of Apollo server in http server
+  path: '/graphql',
+});
+
+// Hand in the schema we just created and have the
+// WebSocketServer start listening.
+const serverCleanup = useServer({ schema }, wsServer);
 
 async function startServer(): Promise<void> {
   await database.connect();
@@ -150,7 +146,7 @@ async function startServer(): Promise<void> {
   await server.start();
   server.applyMiddleware({
     app,
-    path: "/",
+    path: "/graphql",
   });
 
   // Modified server startup
