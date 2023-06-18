@@ -20,11 +20,13 @@ import { execute, subscribe } from "graphql";
 import { PubSub } from "graphql-subscriptions";
 import { app } from "./app";
 import { logIssues } from "./checks";
+import depthLimit from "graphql-depth-limit";
+import { errors } from "./libraries";
 
 const pubsub = new PubSub();
 
 //@ts-ignore
-function AuthDirectiveTransformer(schema, directiveName) {
+function authDirectiveTransformer(schema, directiveName) {
   return mapSchema(schema, {
     [MapperKind.OBJECT_FIELD]: (
       fieldConfig: GraphQLFieldConfig<any, any>
@@ -63,7 +65,7 @@ let schema = makeExecutableSchema({
   // },
 });
 
-schema = AuthDirectiveTransformer(schema, "auth");
+schema = authDirectiveTransformer(schema, "auth");
 
 // Our httpServer handles incoming requests to our Express app.
 // Below, we tell Apollo Server to "drain" this httpServer, enabling our servers to shut down gracefully.
@@ -99,6 +101,7 @@ const server = new ApolloServer({
       };
     }
   },
+  validationRules: [depthLimit(5)],
   csrfPrevention: true,
   cache: "bounded",
   plugins: [
