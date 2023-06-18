@@ -5,22 +5,21 @@ import {
   ApolloServerPluginDrainHttpServer,
 } from "apollo-server-core";
 import { ApolloServer } from "apollo-server-express";
-
 import "dotenv/config"; // Pull all the environment variables from .env file
 import { typeDefs } from "./typeDefs";
 import { resolvers } from "./resolvers";
-import { WebSocketServer } from 'ws';
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { WebSocketServer } from "ws";
+import { useServer } from "graphql-ws/lib/use/ws";
 import { isAuth } from "./middleware";
 import * as database from "./db";
 import { MapperKind, getDirective, mapSchema } from "@graphql-tools/utils";
 import type { GraphQLField, GraphQLFieldConfig } from "graphql";
-import { errors, requestContext } from "./libraries";
-import express from "express";
 import http from "http";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { execute, subscribe } from "graphql";
-import { PubSub } from 'graphql-subscriptions';
+import { PubSub } from "graphql-subscriptions";
+import { app } from "./app";
+import { logIssues } from "./checks";
 
 const pubsub = new PubSub();
 
@@ -55,7 +54,6 @@ function AuthDirectiveTransformer(schema, directiveName) {
   });
 }
 
-
 let schema = makeExecutableSchema({
   typeDefs,
   resolvers,
@@ -67,12 +65,9 @@ let schema = makeExecutableSchema({
 
 schema = AuthDirectiveTransformer(schema, "auth");
 
-const app = express();
-
 // Our httpServer handles incoming requests to our Express app.
 // Below, we tell Apollo Server to "drain" this httpServer, enabling our servers to shut down gracefully.
 const httpServer = http.createServer(app);
-
 
 const server = new ApolloServer({
   schema,
@@ -109,8 +104,8 @@ const server = new ApolloServer({
   plugins: [
     ApolloServerPluginLandingPageLocalDefault({ embed: true }),
 
-    /* Commenting this out since not decided which landing page plugin to use*/ 
-    
+    /* Commenting this out since not decided which landing page plugin to use*/
+
     // process.env.NODE_ENV === "production"
     //   ? ApolloServerPluginLandingPageDisabled()
     //   : ApolloServerPluginLandingPageGraphQLPlayground(),
@@ -123,8 +118,7 @@ const server = new ApolloServer({
           },
         };
       },
-    }
-
+    },
   ],
 });
 
@@ -133,7 +127,7 @@ const wsServer = new WebSocketServer({
   // This is the `httpServer` we created in a previous step.
   server: httpServer,
   // Path of Apollo server in http server
-  path: '/graphql',
+  path: "/graphql",
 });
 
 // Hand in the schema we just created and have the
@@ -153,6 +147,10 @@ async function startServer(): Promise<void> {
   await new Promise<void>((resolve) =>
     httpServer.listen({ port: 4000 }, resolve)
   );
+
+  // Log all the configuration related issues
+  await logIssues();
+
   console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`);
 }
 
