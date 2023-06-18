@@ -32,7 +32,7 @@ export const childTags: UserTagResolvers["childTags"] = async (
         data: null,
         errors: [
           {
-            __typename: "IncorrectCursor",
+            __typename: "InvalidCursor",
             message: "The provided cursor does not exist in the database.",
             path: ["input", "cursor"],
           },

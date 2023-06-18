@@ -40,7 +40,7 @@ input CommentInput {
   text: String!
 }
 
-union ConnectionError = IncorrectCursor | MaximumValueError
+union ConnectionError = InvalidCursor | MaximumValueError
 
 type ConnectionPageInfo {
   endCursor: String
@@ -266,7 +266,7 @@ type IOSFirebaseOptions {
   storageBucket: String
 }
 
-type IncorrectCursor implements FieldError {
+type InvalidCursor implements FieldError {
   message: String!
   path: [String!]!
 }

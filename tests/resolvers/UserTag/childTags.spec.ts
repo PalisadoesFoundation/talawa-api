@@ -62,7 +62,7 @@ describe("resolvers -> Tag -> childTags", () => {
 
     expect(payload!.errors.length).toEqual(1);
     expect(payload!.errors[0]).toMatchObject({
-      __typename: "IncorrectCursor",
+      __typename: "InvalidCursor",
     });
     expect(payload!.data).toBeNull();
   });

@@ -35,7 +35,7 @@ describe("utilities -> graphqlConnectionFactory -> getLimit", () => {
 });
 
 describe("utilities -> graphqlConnectionFactory -> getSortingObject", () => {
-  it(`Should return the supplied sorting object when the direction is forward`, () => {
+  it(`Should return the default sorting object when the direction is forward`, () => {
     const sortingObject = {
       a: 1,
       b: 1,

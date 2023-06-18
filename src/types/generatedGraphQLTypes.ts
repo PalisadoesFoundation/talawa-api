@@ -86,7 +86,7 @@ export type CommentInput = {
   text: Scalars['String'];
 };
 
-export type ConnectionError = IncorrectCursor | MaximumValueError;
+export type ConnectionError = InvalidCursor | MaximumValueError;
 
 export type ConnectionPageInfo = {
   __typename?: 'ConnectionPageInfo';
@@ -322,8 +322,8 @@ export type IosFirebaseOptions = {
   storageBucket?: Maybe<Scalars['String']>;
 };
 
-export type IncorrectCursor = FieldError & {
-  __typename?: 'IncorrectCursor';
+export type InvalidCursor = FieldError & {
+  __typename?: 'InvalidCursor';
   message: Scalars['String'];
   path: Array<Scalars['String']>;
 };
@@ -1719,7 +1719,7 @@ export type ResolversTypes = {
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Comment: ResolverTypeWrapper<InterfaceCommentModel>;
   CommentInput: CommentInput;
-  ConnectionError: ResolversTypes['IncorrectCursor'] | ResolversTypes['MaximumValueError'];
+  ConnectionError: ResolversTypes['InvalidCursor'] | ResolversTypes['MaximumValueError'];
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
@@ -1738,7 +1738,7 @@ export type ResolversTypes = {
   EventRegistrants: ResolverTypeWrapper<Omit<EventRegistrants, 'event'> & { event: ResolversTypes['Event'] }>;
   EventWhereInput: EventWhereInput;
   ExtendSession: ResolverTypeWrapper<ExtendSession>;
-  FieldError: ResolversTypes['IncorrectCursor'] | ResolversTypes['MaximumLengthError'] | ResolversTypes['MaximumValueError'] | ResolversTypes['MinimumLengthError'] | ResolversTypes['MinimumValueError'];
+  FieldError: ResolversTypes['InvalidCursor'] | ResolversTypes['MaximumLengthError'] | ResolversTypes['MaximumValueError'] | ResolversTypes['MinimumLengthError'] | ResolversTypes['MinimumValueError'];
   Float: ResolverTypeWrapper<Scalars['Float']>;
   ForgotPasswordData: ForgotPasswordData;
   Group: ResolverTypeWrapper<InterfaceGroupModel>;
@@ -1746,8 +1746,8 @@ export type ResolversTypes = {
   GroupChatMessage: ResolverTypeWrapper<InterfaceGroupChatMessageModel>;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   IOSFirebaseOptions: ResolverTypeWrapper<IosFirebaseOptions>;
-  IncorrectCursor: ResolverTypeWrapper<IncorrectCursor>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
+  InvalidCursor: ResolverTypeWrapper<InvalidCursor>;
   Language: ResolverTypeWrapper<InterfaceLanguageModel>;
   LanguageInput: LanguageInput;
   LanguageModel: ResolverTypeWrapper<LanguageModel>;
@@ -1837,7 +1837,7 @@ export type ResolversParentTypes = {
   Boolean: Scalars['Boolean'];
   Comment: InterfaceCommentModel;
   CommentInput: CommentInput;
-  ConnectionError: ResolversParentTypes['IncorrectCursor'] | ResolversParentTypes['MaximumValueError'];
+  ConnectionError: ResolversParentTypes['InvalidCursor'] | ResolversParentTypes['MaximumValueError'];
   ConnectionPageInfo: ConnectionPageInfo;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
@@ -1855,7 +1855,7 @@ export type ResolversParentTypes = {
   EventRegistrants: Omit<EventRegistrants, 'event'> & { event: ResolversParentTypes['Event'] };
   EventWhereInput: EventWhereInput;
   ExtendSession: ExtendSession;
-  FieldError: ResolversParentTypes['IncorrectCursor'] | ResolversParentTypes['MaximumLengthError'] | ResolversParentTypes['MaximumValueError'] | ResolversParentTypes['MinimumLengthError'] | ResolversParentTypes['MinimumValueError'];
+  FieldError: ResolversParentTypes['InvalidCursor'] | ResolversParentTypes['MaximumLengthError'] | ResolversParentTypes['MaximumValueError'] | ResolversParentTypes['MinimumLengthError'] | ResolversParentTypes['MinimumValueError'];
   Float: Scalars['Float'];
   ForgotPasswordData: ForgotPasswordData;
   Group: InterfaceGroupModel;
@@ -1863,8 +1863,8 @@ export type ResolversParentTypes = {
   GroupChatMessage: InterfaceGroupChatMessageModel;
   ID: Scalars['ID'];
   IOSFirebaseOptions: IosFirebaseOptions;
-  IncorrectCursor: IncorrectCursor;
   Int: Scalars['Int'];
+  InvalidCursor: InvalidCursor;
   Language: InterfaceLanguageModel;
   LanguageInput: LanguageInput;
   LanguageModel: LanguageModel;
@@ -1986,7 +1986,7 @@ export type CommentResolvers<ContextType = any, ParentType extends ResolversPare
 };
 
 export type ConnectionErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectionError'] = ResolversParentTypes['ConnectionError']> = {
-  __resolveType: TypeResolveFn<'IncorrectCursor' | 'MaximumValueError', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'InvalidCursor' | 'MaximumValueError', ParentType, ContextType>;
 };
 
 export type ConnectionPageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectionPageInfo'] = ResolversParentTypes['ConnectionPageInfo']> = {
@@ -2087,7 +2087,7 @@ export type ExtendSessionResolvers<ContextType = any, ParentType extends Resolve
 };
 
 export type FieldErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['FieldError'] = ResolversParentTypes['FieldError']> = {
-  __resolveType: TypeResolveFn<'IncorrectCursor' | 'MaximumLengthError' | 'MaximumValueError' | 'MinimumLengthError' | 'MinimumValueError', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'InvalidCursor' | 'MaximumLengthError' | 'MaximumValueError' | 'MinimumLengthError' | 'MinimumValueError', ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
 };
@@ -2131,7 +2131,7 @@ export type IosFirebaseOptionsResolvers<ContextType = any, ParentType extends Re
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type IncorrectCursorResolvers<ContextType = any, ParentType extends ResolversParentTypes['IncorrectCursor'] = ResolversParentTypes['IncorrectCursor']> = {
+export type InvalidCursorResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvalidCursor'] = ResolversParentTypes['InvalidCursor']> = {
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -2577,7 +2577,7 @@ export type Resolvers<ContextType = any> = {
   GroupChat?: GroupChatResolvers<ContextType>;
   GroupChatMessage?: GroupChatMessageResolvers<ContextType>;
   IOSFirebaseOptions?: IosFirebaseOptionsResolvers<ContextType>;
-  IncorrectCursor?: IncorrectCursorResolvers<ContextType>;
+  InvalidCursor?: InvalidCursorResolvers<ContextType>;
   Language?: LanguageResolvers<ContextType>;
   LanguageModel?: LanguageModelResolvers<ContextType>;
   Latitude?: GraphQLScalarType;

@@ -1,9 +1,9 @@
 import { gql } from "apollo-server-core";
 
 export const connectionError = gql`
-  union ConnectionError = IncorrectCursor | MaximumValueError
+  union ConnectionError = InvalidCursor | MaximumValueError
 
-  type IncorrectCursor implements FieldError {
+  type InvalidCursor implements FieldError {
     message: String!
     path: [String!]!
   }
