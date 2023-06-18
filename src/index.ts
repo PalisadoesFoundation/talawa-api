@@ -45,7 +45,7 @@ function authDirectiveTransformer(schema, directiveName) {
           if (context.expired || !context.isAuth)
             throw new errors.UnauthenticatedError(
               "user.notAuthenticated --auth directive",
-              "user.notAuthenticated-- auth directive",
+              "user.notAuthenticated --auth directive",
               "userAuthentication"
             );
           return resolve(root, args, context, info);
