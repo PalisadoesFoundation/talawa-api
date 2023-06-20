@@ -1,7 +1,5 @@
 import {
   ApolloServerPluginLandingPageLocalDefault,
-  ApolloServerPluginLandingPageGraphQLPlayground,
-  ApolloServerPluginLandingPageDisabled,
   ApolloServerPluginDrainHttpServer,
 } from "apollo-server-core";
 import { ApolloServer } from "apollo-server-express";
@@ -12,60 +10,25 @@ import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/lib/use/ws";
 import { isAuth } from "./middleware";
 import * as database from "./db";
-import { MapperKind, getDirective, mapSchema } from "@graphql-tools/utils";
-import type { GraphQLField, GraphQLFieldConfig } from "graphql";
 import http from "http";
 import { makeExecutableSchema } from "@graphql-tools/schema";
-import { execute, subscribe } from "graphql";
 import { PubSub } from "graphql-subscriptions";
 import { app } from "./app";
 import { logIssues } from "./checks";
 import depthLimit from "graphql-depth-limit";
-import { errors } from "./libraries";
+import authDirectiveTransformer from "./directives/directiveTransformer/authDirectiveTransformer";
+import roleDirectiveTransformer from "./directives/directiveTransformer/roleDirectiveTransformer";
 
 const pubsub = new PubSub();
 
-//@ts-ignore
-function authDirectiveTransformer(schema, directiveName) {
-  return mapSchema(schema, {
-    [MapperKind.OBJECT_FIELD]: (
-      fieldConfig: GraphQLFieldConfig<any, any>
-    ): any => {
-      // Check whether this field has the specified directive
-      const authDirective = getDirective(
-        schema,
-        fieldConfig,
-        directiveName
-      )?.[0];
-      if (authDirective) {
-        //@ts-ignore
-        const { resolve = defaultFieldResolver } = fieldConfig;
-
-        fieldConfig.resolve = (root, args, context, info): string => {
-          if (context.expired || !context.isAuth)
-            throw new errors.UnauthenticatedError(
-              "user.notAuthenticated --auth directive",
-              "user.notAuthenticated --auth directive",
-              "userAuthentication"
-            );
-          return resolve(root, args, context, info);
-        };
-        return fieldConfig;
-      }
-    },
-  });
-}
-
+// defines schema
 let schema = makeExecutableSchema({
   typeDefs,
   resolvers,
-  // schemaDirectives: {
-  //   auth: AuthenticationDirective,
-  //   role: RoleAuthorizationDirective,
-  // },
 });
-
+// defines directives
 schema = authDirectiveTransformer(schema, "auth");
+schema = roleDirectiveTransformer(schema, "role");
 
 // Our httpServer handles incoming requests to our Express app.
 // Below, we tell Apollo Server to "drain" this httpServer, enabling our servers to shut down gracefully.
