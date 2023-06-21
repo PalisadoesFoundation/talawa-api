@@ -1,4 +1,4 @@
-import { withFilter } from 'graphql-subscriptions';
+import { withFilter } from "graphql-subscriptions";
 import type { SubscriptionResolvers } from "../../types/generatedGraphQLTypes";
 
 const CHAT_CHANNEL = "CHAT_CHANNEL";

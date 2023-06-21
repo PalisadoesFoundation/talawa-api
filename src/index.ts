@@ -18,6 +18,7 @@ import { logIssues } from "./checks";
 import depthLimit from "graphql-depth-limit";
 import authDirectiveTransformer from "./directives/directiveTransformer/authDirectiveTransformer";
 import roleDirectiveTransformer from "./directives/directiveTransformer/roleDirectiveTransformer";
+import { logger } from "./libraries";
 
 const pubsub = new PubSub();
 
@@ -63,6 +64,22 @@ const server = new ApolloServer({
         apiRootUrl,
       };
     }
+  },
+  formatError: (
+    error: any
+  ): { message: string; status: number; data: string[] } => {
+    if (!error.originalError) {
+      return error;
+    }
+    const message = error.message ?? "Something went wrong !";
+    const data = error.originalError.errors ?? [];
+    const code = error.originalError.code ?? 422;
+    logger.error(message, error);
+    return {
+      message,
+      status: code,
+      data,
+    };
   },
   validationRules: [depthLimit(5)],
   csrfPrevention: true,

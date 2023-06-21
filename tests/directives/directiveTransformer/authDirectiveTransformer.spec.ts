@@ -1,25 +1,27 @@
-import { AuthenticationDirective } from "../../src/directives/authDirective";
 import { beforeAll, afterAll, it, expect } from "vitest";
-import { connect, disconnect } from "../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { ApolloServer, gql } from "apollo-server-express";
-import { errors } from "../../src/libraries";
 import "dotenv/config";
 import i18n from "i18n";
 import express from "express";
-import { appConfig } from "../../src/config";
-import type { TestUserType } from "../helpers/userAndOrg";
-import { createTestUserFunc } from "../helpers/user";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUserFunc } from "../../helpers/user";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+import authDirectiveTransformer from "../../../src/directives/directiveTransformer/authDirectiveTransformer";
+import roleDirectiveTransformer from "../../../src/directives/directiveTransformer/roleDirectiveTransformer";
+import { appConfig } from "../../../src/config";
+import { errors } from "../../../src/libraries";
 
 const app = express();
 i18n.configure({
   directory: `${__dirname}/locales`,
   staticCatalog: {
-    en: require("../../locales/en.json"),
-    hi: require("../../locales/hi.json"),
-    zh: require("../../locales/zh.json"),
-    sp: require("../../locales/sp.json"),
-    fr: require("../../locales/fr.json"),
+    en: require("../../../locales/en.json"),
+    hi: require("../../../locales/hi.json"),
+    zh: require("../../../locales/zh.json"),
+    sp: require("../../../locales/sp.json"),
+    fr: require("../../../locales/fr.json"),
   },
   queryParameter: "lang",
   defaultLocale: appConfig.defaultLocale,
@@ -67,12 +69,16 @@ it("throws UnauthenticatedError when context is expired", async () => {
   const authenticatedContext = {
     expired: true,
   };
-  const apolloServer = new ApolloServer({
+  let schema = makeExecutableSchema({
     typeDefs,
     resolvers,
-    schemaDirectives: {
-      auth: AuthenticationDirective,
-    },
+  });
+  // defines directives
+  schema = authDirectiveTransformer(schema, "auth");
+  schema = roleDirectiveTransformer(schema, "role");
+  const apolloServer = new ApolloServer({
+    schema,
+    
     context: authenticatedContext,
   });
   apolloServer.applyMiddleware({
@@ -99,12 +105,15 @@ it("throws UnauthenticatedError when context: isAuth == false", async () => {
   const authenticatedContext = {
     isAuth: false,
   };
-  const apolloServer = new ApolloServer({
+  let schema = makeExecutableSchema({
     typeDefs,
     resolvers,
-    schemaDirectives: {
-      auth: AuthenticationDirective,
-    },
+  });
+  // defines directives
+  schema = authDirectiveTransformer(schema, "auth");
+  schema = roleDirectiveTransformer(schema, "role");
+  const apolloServer = new ApolloServer({
+    schema,
     context: authenticatedContext,
   });
   apolloServer.applyMiddleware({
@@ -132,11 +141,15 @@ it("checks if the resolver is supplied, and return null data, if not", async () 
     expired: true,
     isAuth: false,
   };
-  const apolloServer = new ApolloServer({
+  let schema = makeExecutableSchema({
     typeDefs,
-    schemaDirectives: {
-      auth: AuthenticationDirective,
-    },
+    resolvers,
+  });
+  // defines directives
+  schema = authDirectiveTransformer(schema, "auth");
+  schema = roleDirectiveTransformer(schema, "role");
+  const apolloServer = new ApolloServer({
+    schema,
     context: authenticatedContext,
   });
   apolloServer.applyMiddleware({
@@ -159,12 +172,15 @@ it("returns data if isAuth == true and expire == false", async () => {
     expired: false,
     isAuth: true,
   };
-  const apolloServer = new ApolloServer({
+  let schema = makeExecutableSchema({
     typeDefs,
     resolvers,
-    schemaDirectives: {
-      auth: AuthenticationDirective,
-    },
+  });
+  // defines directives
+  schema = authDirectiveTransformer(schema, "auth");
+  schema = roleDirectiveTransformer(schema, "role");
+  const apolloServer = new ApolloServer({
+    schema,
     context: authenticatedContext,
   });
   apolloServer.applyMiddleware({
