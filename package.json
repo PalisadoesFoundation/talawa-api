@@ -9,6 +9,7 @@
     "prebuild": "graphql-codegen && rimraf ./build",
     "prod": "cross-env NODE_ENV=production pm2-runtime start ./build/server.js",
     "start": "cross-env pm2-runtime start ./build/server.js --watch",
+    "setup": "tsx setup.ts",
     "test": "vitest run --no-threads --coverage",
     "typecheck": "graphql-codegen && tsc --noEmit --pretty",
     "lint:check": "eslint . --max-warnings=0",
@@ -19,7 +20,8 @@
     "generate:graphql-markdown": "graphql-markdown http://localhost:4000/graphql > docs/Schema.md",
     "generate:graphql-schema": "get-graphql-schema http://localhost:4000/graphql --json > docs/schema.json",
     "import:sample-data": "ts-node ./src/utilities/loadSampleData.ts",
-    "import:sample-data:prod": "node ./build/utilities/loadSampleData.js"
+    "import:sample-data:prod": "node ./build/utilities/loadSampleData.js",
+    "gen:schema": "graphql-inspector introspect ./src/typeDefs/**/**/*.ts --write ./schema.graphql "
   },
   "repository": {
     "type": "git",
@@ -38,6 +40,7 @@
   },
   "homepage": "https://github.com/PalisadoesFoundation/talawa-api#readme",
   "dependencies": {
+    "@graphql-inspector/cli": "^3.4.19",
     "@graphql-tools/schema": "^8.4.0",
     "@types/yargs": "^17.0.24",
     "apollo-server-core": "^3.11.1",
@@ -76,9 +79,9 @@
     "validator": "^13.7.0",
     "winston": "^3.8.0",
     "xss-clean": "^0.1.1",
+    "yargs": "^17.7.2",
     "zod": "^3.21.4",
-    "zod-error": "^1.5.0",
-    "yargs": "^17.7.1"
+    "zod-error": "^1.5.0"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^2.6.2",

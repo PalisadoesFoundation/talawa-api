@@ -12,6 +12,8 @@ export const requestContextNamespace = cls.createNamespace(
 clsBluebird(requestContextNamespace);
 
 export const setRequestContextValue = <T>(key: string, value: T): T => {
+  // Needs type fixing. Currently ignored by typescript
+  // @ts-ignore
   return requestContextNamespace.set<T>(key, value);
 };
 

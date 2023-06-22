@@ -87,8 +87,8 @@ export const createTagsAndAssignToUser = async (
 ): Promise<[TestUserType, TestOrganizationType, TestUserTagType[]]> => {
   const [testUser, testOrg, testTag] = await createRootTagWithOrg();
   await TagUser.create({
-    userId: testUser?._id,
-    tagId: testTag?._id,
+    userId: testUser!._id,
+    tagId: testTag!._id,
   });
 
   const tags: TestUserTagType[] = [testTag];
@@ -101,8 +101,8 @@ export const createTagsAndAssignToUser = async (
     tags.push(newTag.toObject());
 
     await TagUser.create({
-      tagId: newTag?._id,
-      userId: testUser?._id,
+      tagId: newTag!._id,
+      userId: testUser!._id,
     });
   }
 

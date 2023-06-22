@@ -44,7 +44,6 @@ export type Scalars = {
   PositiveInt: any;
   Time: any;
   URL: any;
-  Upload: any;
 };
 
 export type AggregatePost = {
@@ -114,6 +113,8 @@ export type CommentInput = {
   text: Scalars['String'];
 };
 
+export type ConnectionError = InvalidCursor | MaximumValueError;
+
 export type ConnectionPageInfo = {
   __typename?: 'ConnectionPageInfo';
   endCursor?: Maybe<Scalars['String']>;
@@ -126,6 +127,12 @@ export type CreateUserTagInput = {
   name: Scalars['String'];
   organizationId: Scalars['ID'];
   parentTagId?: InputMaybe<Scalars['ID']>;
+};
+
+export type CursorPaginationInput = {
+  cursor?: InputMaybe<Scalars['String']>;
+  direction: PaginationDirection;
+  limit: Scalars['PositiveInt'];
 };
 
 export type DeletePayload = {
@@ -176,6 +183,10 @@ export type DonationWhereInput = {
   name_of_user_not?: InputMaybe<Scalars['String']>;
   name_of_user_not_in?: InputMaybe<Array<Scalars['String']>>;
   name_of_user_starts_with?: InputMaybe<Scalars['String']>;
+};
+
+export type Error = {
+  message: Scalars['String'];
 };
 
 export type Event = {
@@ -303,6 +314,11 @@ export type ExtendSession = {
   refreshToken: Scalars['String'];
 };
 
+export type FieldError = {
+  message: Scalars['String'];
+  path: Array<Scalars['String']>;
+};
+
 export type ForgotPasswordData = {
   newPassword: Scalars['String'];
   otpToken: Scalars['String'];
@@ -348,6 +364,12 @@ export type IosFirebaseOptions = {
   storageBucket?: Maybe<Scalars['String']>;
 };
 
+export type InvalidCursor = FieldError & {
+  __typename?: 'InvalidCursor';
+  message: Scalars['String'];
+  path: Array<Scalars['String']>;
+};
+
 export type Language = {
   __typename?: 'Language';
   _id: Scalars['ID'];
@@ -374,6 +396,19 @@ export type LanguageModel = {
 export type LoginInput = {
   email: Scalars['EmailAddress'];
   password: Scalars['String'];
+};
+
+export type MaximumLengthError = FieldError & {
+  __typename?: 'MaximumLengthError';
+  message: Scalars['String'];
+  path: Array<Scalars['String']>;
+};
+
+export type MaximumValueError = FieldError & {
+  __typename?: 'MaximumValueError';
+  limit: Scalars['Int'];
+  message: Scalars['String'];
+  path: Array<Scalars['String']>;
 };
 
 export type MembershipRequest = {
@@ -406,6 +441,19 @@ export type MessageChat = {
 export type MessageChatInput = {
   message: Scalars['String'];
   receiver: Scalars['ID'];
+};
+
+export type MinimumLengthError = FieldError & {
+  __typename?: 'MinimumLengthError';
+  limit: Scalars['Int'];
+  message: Scalars['String'];
+  path: Array<Scalars['String']>;
+};
+
+export type MinimumValueError = FieldError & {
+  __typename?: 'MinimumValueError';
+  message: Scalars['String'];
+  path: Array<Scalars['String']>;
 };
 
 export type Mutation = {
@@ -1044,6 +1092,10 @@ export type PageInfo = {
   totalPages?: Maybe<Scalars['Int']>;
 };
 
+export type PaginationDirection =
+  | 'BACKWARD'
+  | 'FORWARD';
+
 export type Plugin = {
   __typename?: 'Plugin';
   _id: Scalars['ID'];
@@ -1405,6 +1457,16 @@ export type Type =
   | 'PRIVATE'
   | 'UNIVERSAL';
 
+export type UnauthenticatedError = Error & {
+  __typename?: 'UnauthenticatedError';
+  message: Scalars['String'];
+};
+
+export type UnauthorizedError = Error & {
+  __typename?: 'UnauthorizedError';
+  message: Scalars['String'];
+};
+
 export type UpdateEventInput = {
   allDay?: InputMaybe<Scalars['Boolean']>;
   description?: InputMaybe<Scalars['String']>;
@@ -1541,27 +1603,21 @@ export type UserOrderByInput =
 export type UserTag = {
   __typename?: 'UserTag';
   _id: Scalars['ID'];
-  childTags?: Maybe<UserTagsConnection>;
+  childTags: UserTagsConnectionResult;
   name: Scalars['String'];
   organization?: Maybe<Organization>;
   parentTag?: Maybe<UserTag>;
-  usersAssignedTo?: Maybe<UsersConnection>;
+  usersAssignedTo: UsersConnectionResult;
 };
 
 
 export type UserTagChildTagsArgs = {
-  after?: InputMaybe<Scalars['String']>;
-  before?: InputMaybe<Scalars['String']>;
-  first?: InputMaybe<Scalars['PositiveInt']>;
-  last?: InputMaybe<Scalars['PositiveInt']>;
+  input: UserTagsConnectionInput;
 };
 
 
 export type UserTagUsersAssignedToArgs = {
-  after?: InputMaybe<Scalars['String']>;
-  before?: InputMaybe<Scalars['String']>;
-  first?: InputMaybe<Scalars['PositiveInt']>;
-  last?: InputMaybe<Scalars['PositiveInt']>;
+  input: UsersConnectionInput;
 };
 
 export type UserTagEdge = {
@@ -1572,8 +1628,20 @@ export type UserTagEdge = {
 
 export type UserTagsConnection = {
   __typename?: 'UserTagsConnection';
-  edges?: Maybe<Array<Maybe<UserTagEdge>>>;
+  edges: Array<UserTagEdge>;
   pageInfo: ConnectionPageInfo;
+};
+
+export type UserTagsConnectionInput = {
+  cursor?: InputMaybe<Scalars['String']>;
+  direction: PaginationDirection;
+  limit: Scalars['PositiveInt'];
+};
+
+export type UserTagsConnectionResult = {
+  __typename?: 'UserTagsConnectionResult';
+  data?: Maybe<UserTagsConnection>;
+  errors: Array<ConnectionError>;
 };
 
 export type UserType =
@@ -1618,8 +1686,20 @@ export type UserWhereInput = {
 
 export type UsersConnection = {
   __typename?: 'UsersConnection';
-  edges?: Maybe<Array<Maybe<UserEdge>>>;
+  edges: Array<UserEdge>;
   pageInfo: ConnectionPageInfo;
+};
+
+export type UsersConnectionInput = {
+  cursor?: InputMaybe<Scalars['String']>;
+  direction: PaginationDirection;
+  limit: Scalars['PositiveInt'];
+};
+
+export type UsersConnectionResult = {
+  __typename?: 'UsersConnectionResult';
+  data?: Maybe<UsersConnection>;
+  errors: Array<ConnectionError>;
 };
 
 export type CreateChatInput = {
@@ -1708,8 +1788,10 @@ export type ResolversTypes = {
   CheckInStatus: ResolverTypeWrapper<Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversTypes['CheckIn']>, user: ResolversTypes['User'] }>;
   Comment: ResolverTypeWrapper<InterfaceCommentModel>;
   CommentInput: CommentInput;
+  ConnectionError: ResolversTypes['InvalidCursor'] | ResolversTypes['MaximumValueError'];
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
   CreateUserTagInput: CreateUserTagInput;
+  CursorPaginationInput: CursorPaginationInput;
   Date: ResolverTypeWrapper<Scalars['Date']>;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']>;
   DeletePayload: ResolverTypeWrapper<DeletePayload>;
@@ -1718,6 +1800,7 @@ export type ResolversTypes = {
   Donation: ResolverTypeWrapper<InterfaceDonationModel>;
   DonationWhereInput: DonationWhereInput;
   EmailAddress: ResolverTypeWrapper<Scalars['EmailAddress']>;
+  Error: ResolversTypes['UnauthenticatedError'] | ResolversTypes['UnauthorizedError'];
   Event: ResolverTypeWrapper<InterfaceEventModel>;
   EventAttendeeInput: EventAttendeeInput;
   EventInput: EventInput;
@@ -1726,6 +1809,7 @@ export type ResolversTypes = {
   EventProjectInput: EventProjectInput;
   EventWhereInput: EventWhereInput;
   ExtendSession: ResolverTypeWrapper<ExtendSession>;
+  FieldError: ResolversTypes['InvalidCursor'] | ResolversTypes['MaximumLengthError'] | ResolversTypes['MaximumValueError'] | ResolversTypes['MinimumLengthError'] | ResolversTypes['MinimumValueError'];
   Float: ResolverTypeWrapper<Scalars['Float']>;
   ForgotPasswordData: ForgotPasswordData;
   Group: ResolverTypeWrapper<InterfaceGroupModel>;
@@ -1734,16 +1818,21 @@ export type ResolversTypes = {
   ID: ResolverTypeWrapper<Scalars['ID']>;
   IOSFirebaseOptions: ResolverTypeWrapper<IosFirebaseOptions>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
+  InvalidCursor: ResolverTypeWrapper<InvalidCursor>;
   Language: ResolverTypeWrapper<InterfaceLanguageModel>;
   LanguageInput: LanguageInput;
   LanguageModel: ResolverTypeWrapper<LanguageModel>;
   Latitude: ResolverTypeWrapper<Scalars['Latitude']>;
   LoginInput: LoginInput;
   Longitude: ResolverTypeWrapper<Scalars['Longitude']>;
+  MaximumLengthError: ResolverTypeWrapper<MaximumLengthError>;
+  MaximumValueError: ResolverTypeWrapper<MaximumValueError>;
   MembershipRequest: ResolverTypeWrapper<InterfaceMembershipRequestModel>;
   Message: ResolverTypeWrapper<InterfaceMessageModel>;
   MessageChat: ResolverTypeWrapper<InterfaceMessageChatModel>;
   MessageChatInput: MessageChatInput;
+  MinimumLengthError: ResolverTypeWrapper<MinimumLengthError>;
+  MinimumValueError: ResolverTypeWrapper<MinimumValueError>;
   Mutation: ResolverTypeWrapper<{}>;
   OTPInput: OtpInput;
   Organization: ResolverTypeWrapper<InterfaceOrganizationModel>;
@@ -1753,6 +1842,7 @@ export type ResolversTypes = {
   OrganizationWhereInput: OrganizationWhereInput;
   OtpData: ResolverTypeWrapper<OtpData>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
+  PaginationDirection: PaginationDirection;
   PhoneNumber: ResolverTypeWrapper<Scalars['PhoneNumber']>;
   Plugin: ResolverTypeWrapper<InterfacePluginModel>;
   PluginField: ResolverTypeWrapper<InterfacePluginFieldModel>;
@@ -1779,6 +1869,8 @@ export type ResolversTypes = {
   Translation: ResolverTypeWrapper<Translation>;
   Type: Type;
   URL: ResolverTypeWrapper<Scalars['URL']>;
+  UnauthenticatedError: ResolverTypeWrapper<UnauthenticatedError>;
+  UnauthorizedError: ResolverTypeWrapper<UnauthorizedError>;
   UpdateEventInput: UpdateEventInput;
   UpdateEventProjectInput: UpdateEventProjectInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
@@ -1787,7 +1879,6 @@ export type ResolversTypes = {
   UpdateUserPasswordInput: UpdateUserPasswordInput;
   UpdateUserTagInput: UpdateUserTagInput;
   UpdateUserTypeInput: UpdateUserTypeInput;
-  Upload: ResolverTypeWrapper<Scalars['Upload']>;
   User: ResolverTypeWrapper<InterfaceUserModel>;
   UserAndOrganizationInput: UserAndOrganizationInput;
   UserConnection: ResolverTypeWrapper<Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['User']>> }>;
@@ -1796,10 +1887,14 @@ export type ResolversTypes = {
   UserOrderByInput: UserOrderByInput;
   UserTag: ResolverTypeWrapper<InterfaceOrganizationTagUserModel>;
   UserTagEdge: ResolverTypeWrapper<Omit<UserTagEdge, 'node'> & { node: ResolversTypes['UserTag'] }>;
-  UserTagsConnection: ResolverTypeWrapper<Omit<UserTagsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['UserTagEdge']>>> }>;
+  UserTagsConnection: ResolverTypeWrapper<Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversTypes['UserTagEdge']> }>;
+  UserTagsConnectionInput: UserTagsConnectionInput;
+  UserTagsConnectionResult: ResolverTypeWrapper<Omit<UserTagsConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UserTagsConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
   UserType: UserType;
   UserWhereInput: UserWhereInput;
-  UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['UserEdge']>>> }>;
+  UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges: Array<ResolversTypes['UserEdge']> }>;
+  UsersConnectionInput: UsersConnectionInput;
+  UsersConnectionResult: ResolverTypeWrapper<Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UsersConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
 };
@@ -1816,8 +1911,10 @@ export type ResolversParentTypes = {
   CheckInStatus: Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversParentTypes['CheckIn']>, user: ResolversParentTypes['User'] };
   Comment: InterfaceCommentModel;
   CommentInput: CommentInput;
+  ConnectionError: ResolversParentTypes['InvalidCursor'] | ResolversParentTypes['MaximumValueError'];
   ConnectionPageInfo: ConnectionPageInfo;
   CreateUserTagInput: CreateUserTagInput;
+  CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date'];
   DateTime: Scalars['DateTime'];
   DeletePayload: DeletePayload;
@@ -1826,6 +1923,7 @@ export type ResolversParentTypes = {
   Donation: InterfaceDonationModel;
   DonationWhereInput: DonationWhereInput;
   EmailAddress: Scalars['EmailAddress'];
+  Error: ResolversParentTypes['UnauthenticatedError'] | ResolversParentTypes['UnauthorizedError'];
   Event: InterfaceEventModel;
   EventAttendeeInput: EventAttendeeInput;
   EventInput: EventInput;
@@ -1833,6 +1931,7 @@ export type ResolversParentTypes = {
   EventProjectInput: EventProjectInput;
   EventWhereInput: EventWhereInput;
   ExtendSession: ExtendSession;
+  FieldError: ResolversParentTypes['InvalidCursor'] | ResolversParentTypes['MaximumLengthError'] | ResolversParentTypes['MaximumValueError'] | ResolversParentTypes['MinimumLengthError'] | ResolversParentTypes['MinimumValueError'];
   Float: Scalars['Float'];
   ForgotPasswordData: ForgotPasswordData;
   Group: InterfaceGroupModel;
@@ -1841,16 +1940,21 @@ export type ResolversParentTypes = {
   ID: Scalars['ID'];
   IOSFirebaseOptions: IosFirebaseOptions;
   Int: Scalars['Int'];
+  InvalidCursor: InvalidCursor;
   Language: InterfaceLanguageModel;
   LanguageInput: LanguageInput;
   LanguageModel: LanguageModel;
   Latitude: Scalars['Latitude'];
   LoginInput: LoginInput;
   Longitude: Scalars['Longitude'];
+  MaximumLengthError: MaximumLengthError;
+  MaximumValueError: MaximumValueError;
   MembershipRequest: InterfaceMembershipRequestModel;
   Message: InterfaceMessageModel;
   MessageChat: InterfaceMessageChatModel;
   MessageChatInput: MessageChatInput;
+  MinimumLengthError: MinimumLengthError;
+  MinimumValueError: MinimumValueError;
   Mutation: {};
   OTPInput: OtpInput;
   Organization: InterfaceOrganizationModel;
@@ -1880,6 +1984,8 @@ export type ResolversParentTypes = {
   ToggleUserTagAssignInput: ToggleUserTagAssignInput;
   Translation: Translation;
   URL: Scalars['URL'];
+  UnauthenticatedError: UnauthenticatedError;
+  UnauthorizedError: UnauthorizedError;
   UpdateEventInput: UpdateEventInput;
   UpdateEventProjectInput: UpdateEventProjectInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
@@ -1888,7 +1994,6 @@ export type ResolversParentTypes = {
   UpdateUserPasswordInput: UpdateUserPasswordInput;
   UpdateUserTagInput: UpdateUserTagInput;
   UpdateUserTypeInput: UpdateUserTypeInput;
-  Upload: Scalars['Upload'];
   User: InterfaceUserModel;
   UserAndOrganizationInput: UserAndOrganizationInput;
   UserConnection: Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['User']>> };
@@ -1896,9 +2001,13 @@ export type ResolversParentTypes = {
   UserInput: UserInput;
   UserTag: InterfaceOrganizationTagUserModel;
   UserTagEdge: Omit<UserTagEdge, 'node'> & { node: ResolversParentTypes['UserTag'] };
-  UserTagsConnection: Omit<UserTagsConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['UserTagEdge']>>> };
+  UserTagsConnection: Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserTagEdge']> };
+  UserTagsConnectionInput: UserTagsConnectionInput;
+  UserTagsConnectionResult: Omit<UserTagsConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversParentTypes['UserTagsConnection']>, errors: Array<ResolversParentTypes['ConnectionError']> };
   UserWhereInput: UserWhereInput;
-  UsersConnection: Omit<UsersConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['UserEdge']>>> };
+  UsersConnection: Omit<UsersConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserEdge']> };
+  UsersConnectionInput: UsersConnectionInput;
+  UsersConnectionResult: Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversParentTypes['UsersConnection']>, errors: Array<ResolversParentTypes['ConnectionError']> };
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
 };
@@ -1969,6 +2078,10 @@ export type CommentResolvers<ContextType = any, ParentType extends ResolversPare
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type ConnectionErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectionError'] = ResolversParentTypes['ConnectionError']> = {
+  __resolveType: TypeResolveFn<'InvalidCursor' | 'MaximumValueError', ParentType, ContextType>;
+};
+
 export type ConnectionPageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectionPageInfo'] = ResolversParentTypes['ConnectionPageInfo']> = {
   endCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   hasNextPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -2024,6 +2137,11 @@ export interface EmailAddressScalarConfig extends GraphQLScalarTypeConfig<Resolv
   name: 'EmailAddress';
 }
 
+export type ErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Error'] = ResolversParentTypes['Error']> = {
+  __resolveType: TypeResolveFn<'UnauthenticatedError' | 'UnauthorizedError', ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+};
+
 export type EventResolvers<ContextType = any, ParentType extends ResolversParentTypes['Event'] = ResolversParentTypes['Event']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   admins?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<EventAdminsArgs>>;
@@ -2065,6 +2183,12 @@ export type ExtendSessionResolvers<ContextType = any, ParentType extends Resolve
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type FieldErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['FieldError'] = ResolversParentTypes['FieldError']> = {
+  __resolveType: TypeResolveFn<'InvalidCursor' | 'MaximumLengthError' | 'MaximumValueError' | 'MinimumLengthError' | 'MinimumValueError', ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+};
+
 export type GroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['Group'] = ResolversParentTypes['Group']> = {
   _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   admins?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
@@ -2104,6 +2228,12 @@ export type IosFirebaseOptionsResolvers<ContextType = any, ParentType extends Re
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type InvalidCursorResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvalidCursor'] = ResolversParentTypes['InvalidCursor']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type LanguageResolvers<ContextType = any, ParentType extends ResolversParentTypes['Language'] = ResolversParentTypes['Language']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -2129,6 +2259,19 @@ export interface LongitudeScalarConfig extends GraphQLScalarTypeConfig<Resolvers
   name: 'Longitude';
 }
 
+export type MaximumLengthErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['MaximumLengthError'] = ResolversParentTypes['MaximumLengthError']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type MaximumValueErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['MaximumValueError'] = ResolversParentTypes['MaximumValueError']> = {
+  limit?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type MembershipRequestResolvers<ContextType = any, ParentType extends ResolversParentTypes['MembershipRequest'] = ResolversParentTypes['MembershipRequest']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
@@ -2153,6 +2296,19 @@ export type MessageChatResolvers<ContextType = any, ParentType extends Resolvers
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   receiver?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   sender?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type MinimumLengthErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['MinimumLengthError'] = ResolversParentTypes['MinimumLengthError']> = {
+  limit?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type MinimumValueErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['MinimumValueError'] = ResolversParentTypes['MinimumValueError']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2403,9 +2559,15 @@ export interface UrlScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes[
   name: 'URL';
 }
 
-export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
-  name: 'Upload';
-}
+export type UnauthenticatedErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['UnauthenticatedError'] = ResolversParentTypes['UnauthenticatedError']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UnauthorizedErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['UnauthorizedError'] = ResolversParentTypes['UnauthorizedError']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -2448,11 +2610,11 @@ export type UserEdgeResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type UserTagResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTag'] = ResolversParentTypes['UserTag']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  childTags?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<UserTagChildTagsArgs>>;
+  childTags?: Resolver<ResolversTypes['UserTagsConnectionResult'], ParentType, ContextType, RequireFields<UserTagChildTagsArgs, 'input'>>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   parentTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType>;
-  usersAssignedTo?: Resolver<Maybe<ResolversTypes['UsersConnection']>, ParentType, ContextType, Partial<UserTagUsersAssignedToArgs>>;
+  usersAssignedTo?: Resolver<ResolversTypes['UsersConnectionResult'], ParentType, ContextType, RequireFields<UserTagUsersAssignedToArgs, 'input'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2463,14 +2625,26 @@ export type UserTagEdgeResolvers<ContextType = any, ParentType extends Resolvers
 };
 
 export type UserTagsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnection'] = ResolversParentTypes['UserTagsConnection']> = {
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserTagEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['UserTagEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['ConnectionPageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type UserTagsConnectionResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTagsConnectionResult'] = ResolversParentTypes['UserTagsConnectionResult']> = {
+  data?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType>;
+  errors?: Resolver<Array<ResolversTypes['ConnectionError']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type UsersConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnection'] = ResolversParentTypes['UsersConnection']> = {
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['UserEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['ConnectionPageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UsersConnectionResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['UsersConnectionResult'] = ResolversParentTypes['UsersConnectionResult']> = {
+  data?: Resolver<Maybe<ResolversTypes['UsersConnection']>, ParentType, ContextType>;
+  errors?: Resolver<Array<ResolversTypes['ConnectionError']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2482,6 +2656,7 @@ export type Resolvers<ContextType = any> = {
   CheckIn?: CheckInResolvers<ContextType>;
   CheckInStatus?: CheckInStatusResolvers<ContextType>;
   Comment?: CommentResolvers<ContextType>;
+  ConnectionError?: ConnectionErrorResolvers<ContextType>;
   ConnectionPageInfo?: ConnectionPageInfoResolvers<ContextType>;
   Date?: GraphQLScalarType;
   DateTime?: GraphQLScalarType;
@@ -2490,20 +2665,27 @@ export type Resolvers<ContextType = any> = {
   DirectChatMessage?: DirectChatMessageResolvers<ContextType>;
   Donation?: DonationResolvers<ContextType>;
   EmailAddress?: GraphQLScalarType;
+  Error?: ErrorResolvers<ContextType>;
   Event?: EventResolvers<ContextType>;
   EventProject?: EventProjectResolvers<ContextType>;
   ExtendSession?: ExtendSessionResolvers<ContextType>;
+  FieldError?: FieldErrorResolvers<ContextType>;
   Group?: GroupResolvers<ContextType>;
   GroupChat?: GroupChatResolvers<ContextType>;
   GroupChatMessage?: GroupChatMessageResolvers<ContextType>;
   IOSFirebaseOptions?: IosFirebaseOptionsResolvers<ContextType>;
+  InvalidCursor?: InvalidCursorResolvers<ContextType>;
   Language?: LanguageResolvers<ContextType>;
   LanguageModel?: LanguageModelResolvers<ContextType>;
   Latitude?: GraphQLScalarType;
   Longitude?: GraphQLScalarType;
+  MaximumLengthError?: MaximumLengthErrorResolvers<ContextType>;
+  MaximumValueError?: MaximumValueErrorResolvers<ContextType>;
   MembershipRequest?: MembershipRequestResolvers<ContextType>;
   Message?: MessageResolvers<ContextType>;
   MessageChat?: MessageChatResolvers<ContextType>;
+  MinimumLengthError?: MinimumLengthErrorResolvers<ContextType>;
+  MinimumValueError?: MinimumValueErrorResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Organization?: OrganizationResolvers<ContextType>;
   OrganizationInfoNode?: OrganizationInfoNodeResolvers<ContextType>;
@@ -2521,14 +2703,17 @@ export type Resolvers<ContextType = any> = {
   Time?: GraphQLScalarType;
   Translation?: TranslationResolvers<ContextType>;
   URL?: GraphQLScalarType;
-  Upload?: GraphQLScalarType;
+  UnauthenticatedError?: UnauthenticatedErrorResolvers<ContextType>;
+  UnauthorizedError?: UnauthorizedErrorResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
   UserConnection?: UserConnectionResolvers<ContextType>;
   UserEdge?: UserEdgeResolvers<ContextType>;
   UserTag?: UserTagResolvers<ContextType>;
   UserTagEdge?: UserTagEdgeResolvers<ContextType>;
   UserTagsConnection?: UserTagsConnectionResolvers<ContextType>;
+  UserTagsConnectionResult?: UserTagsConnectionResultResolvers<ContextType>;
   UsersConnection?: UsersConnectionResolvers<ContextType>;
+  UsersConnectionResult?: UsersConnectionResultResolvers<ContextType>;
 };
 
 export type DirectiveResolvers<ContextType = any> = {

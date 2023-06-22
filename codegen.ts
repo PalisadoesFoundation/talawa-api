@@ -2,7 +2,7 @@ import type { CodegenConfig } from "@graphql-codegen/cli";
 
 const config: CodegenConfig = {
   // Points to our schema and the additional scalar Upload which is added by Apollo-Server at runtime
-  schema: ["./src/typeDefs/**/*.ts", "scalar Upload"],
+  schema: ["./src/typeDefs/**/*.ts"],
 
   generates: {
     "./src/types/generatedGraphQLTypes.ts": {
