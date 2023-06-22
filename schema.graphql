@@ -40,6 +40,8 @@ input CommentInput {
   text: String!
 }
 
+union ConnectionError = InvalidCursor | MaximumValueError
+
 type ConnectionPageInfo {
   endCursor: String
   hasNextPage: Boolean!
@@ -51,6 +53,12 @@ input CreateUserTagInput {
   name: String!
   organizationId: ID!
   parentTagId: ID
+}
+
+input CursorPaginationInput {
+  cursor: String
+  direction: PaginationDirection!
+  limit: PositiveInt!
 }
 
 scalar Date
@@ -104,6 +112,10 @@ input DonationWhereInput {
 }
 
 scalar EmailAddress
+
+interface Error {
+  message: String!
+}
 
 type Event {
   _id: ID!
@@ -208,6 +220,11 @@ type ExtendSession {
   refreshToken: String!
 }
 
+interface FieldError {
+  message: String!
+  path: [String!]!
+}
+
 input ForgotPasswordData {
   newPassword: String!
   otpToken: String!
@@ -249,6 +266,11 @@ type IOSFirebaseOptions {
   storageBucket: String
 }
 
+type InvalidCursor implements FieldError {
+  message: String!
+  path: [String!]!
+}
+
 type Language {
   _id: ID!
   createdAt: String!
@@ -279,6 +301,17 @@ input LoginInput {
 
 scalar Longitude
 
+type MaximumLengthError implements FieldError {
+  message: String!
+  path: [String!]!
+}
+
+type MaximumValueError implements FieldError {
+  limit: Int!
+  message: String!
+  path: [String!]!
+}
+
 type MembershipRequest {
   _id: ID!
   organization: Organization!
@@ -306,6 +339,17 @@ type MessageChat {
 input MessageChatInput {
   message: String!
   receiver: ID!
+}
+
+type MinimumLengthError implements FieldError {
+  limit: Int!
+  message: String!
+  path: [String!]!
+}
+
+type MinimumValueError implements FieldError {
+  message: String!
+  path: [String!]!
 }
 
 type Mutation {
@@ -487,6 +531,11 @@ type PageInfo {
   nextPageNo: Int
   prevPageNo: Int
   totalPages: Int
+}
+
+enum PaginationDirection {
+  BACKWARD
+  FORWARD
 }
 
 scalar PhoneNumber
@@ -713,6 +762,14 @@ enum Type {
 
 scalar URL
 
+type UnauthenticatedError implements Error {
+  message: String!
+}
+
+type UnauthorizedError implements Error {
+  message: String!
+}
+
 input UpdateEventInput {
   allDay: Boolean
   description: String
@@ -838,11 +895,11 @@ enum UserOrderByInput {
 
 type UserTag {
   _id: ID!
-  childTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
+  childTags(input: UserTagsConnectionInput!): UserTagsConnectionResult!
   name: String!
   organization: Organization
   parentTag: UserTag
-  usersAssignedTo(after: String, before: String, first: PositiveInt, last: PositiveInt): UsersConnection
+  usersAssignedTo(input: UsersConnectionInput!): UsersConnectionResult!
 }
 
 type UserTagEdge {
@@ -851,8 +908,19 @@ type UserTagEdge {
 }
 
 type UserTagsConnection {
-  edges: [UserTagEdge]
+  edges: [UserTagEdge!]!
   pageInfo: ConnectionPageInfo!
+}
+
+input UserTagsConnectionInput {
+  cursor: String
+  direction: PaginationDirection!
+  limit: PositiveInt!
+}
+
+type UserTagsConnectionResult {
+  data: UserTagsConnection
+  errors: [ConnectionError!]!
 }
 
 enum UserType {
@@ -897,8 +965,19 @@ input UserWhereInput {
 }
 
 type UsersConnection {
-  edges: [UserEdge]
+  edges: [UserEdge!]!
   pageInfo: ConnectionPageInfo!
+}
+
+input UsersConnectionInput {
+  cursor: String
+  direction: PaginationDirection!
+  limit: PositiveInt!
+}
+
+type UsersConnectionResult {
+  data: UsersConnection
+  errors: [ConnectionError!]!
 }
 
 input createChatInput {
