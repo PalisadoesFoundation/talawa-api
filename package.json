@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc --pretty --project tsconfig.build.json",
     "dev": "concurrently  \"tsx watch ./src/server.ts\" \"graphql-codegen --watch\"",
-    "apollo3": "concurrently  \"tsx watch ./src/index.ts\" \"graphql-codegen --watch\"",
+    "apollo4": "concurrently  \"tsx watch ./src/index.ts\" \"graphql-codegen --watch\"",
     "prebuild": "graphql-codegen && rimraf ./build",
     "prod": "cross-env NODE_ENV=production pm2-runtime start ./build/server.js",
     "start": "cross-env pm2-runtime start ./build/server.js --watch",
@@ -42,6 +42,7 @@
   },
   "homepage": "https://github.com/PalisadoesFoundation/talawa-api#readme",
   "dependencies": {
+    "@apollo/server": "^4.7.4",
     "@graphql-inspector/cli": "^3.4.19",
     "@graphql-tools/schema": "^7.1.5",
     "@graphql-tools/utils": "^10.0.1",
@@ -60,7 +61,7 @@
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^5.5.1",
     "firebase-admin": "^10.3.0",
-    "graphql": "^15.8.0",
+    "graphql": "^16.7.1",
     "graphql-depth-limit": "^1.1.0",
     "graphql-scalars": "^1.20.1",
     "graphql-subscriptions": "^2.0.0",
@@ -131,7 +132,7 @@
   },
   "overrides": {
     "graphql-voyager": {
-      "graphql": "^15.8.0"
+      "graphql": "^16.6.0"
     }
   }
 }

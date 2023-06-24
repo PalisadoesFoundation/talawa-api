@@ -1,8 +1,3 @@
-import {
-  ApolloServerPluginLandingPageLocalDefault,
-  ApolloServerPluginDrainHttpServer,
-} from "apollo-server-core";
-import { ApolloServer } from "apollo-server-express";
 import "dotenv/config"; // Pull all the environment variables from .env file
 import { typeDefs } from "./typeDefs";
 import { resolvers } from "./resolvers";
@@ -19,6 +14,10 @@ import depthLimit from "graphql-depth-limit";
 import authDirectiveTransformer from "./directives/directiveTransformer/authDirectiveTransformer";
 import roleDirectiveTransformer from "./directives/directiveTransformer/roleDirectiveTransformer";
 import { logger } from "./libraries";
+import { ApolloServer } from "@apollo/server";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default"
+import { expressMiddleware } from '@apollo/server/express4';
 
 const pubsub = new PubSub();
 
@@ -37,34 +36,6 @@ const httpServer = http.createServer(app);
 
 const server = new ApolloServer({
   schema,
-  context: ({
-    req,
-    res,
-    connection,
-  }: {
-    req: any;
-    res: any;
-    connection: any;
-  }): any => {
-    const apiRootUrl = `${req.protocol}://${req.get("host")}/`;
-    if (connection) {
-      return {
-        ...connection,
-        pubsub,
-        res,
-        req,
-        apiRootUrl,
-      };
-    } else {
-      return {
-        ...isAuth(req),
-        // pubsub,
-        res,
-        req,
-        apiRootUrl,
-      };
-    }
-  },
   formatError: (
     error: any
   ): { message: string; status: number; data: string[] } => {
@@ -121,10 +92,21 @@ async function startServer(): Promise<void> {
   await database.connect();
 
   await server.start();
-  server.applyMiddleware({
-    app,
-    path: "/graphql",
-  });
+
+  app.use('/graphql', expressMiddleware(server , {
+      //@ts-ignore
+      context:async ({
+        req,
+        res,
+      }) => ({
+        ...isAuth(req),
+        req ,
+        res ,
+        pubsub,
+        apiRootUrl : `${req.protocol}://${req.get("host")}/`,
+
+      }),
+  }));
 
   // Modified server startup
   await new Promise<void>((resolve) =>
@@ -134,7 +116,7 @@ async function startServer(): Promise<void> {
   // Log all the configuration related issues
   await logIssues();
 
-  console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`);
+  console.log(`🚀 Server ready at http://localhost:4000/graphql`);
 }
 
 startServer();
