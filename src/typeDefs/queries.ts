@@ -1,4 +1,4 @@
-import { gql } from "apollo-server-core";
+import { gql } from "graphql-tag";
 /**
  * This graphQL typeDef defines the logic for different queries defined in the talawa-api.
  */

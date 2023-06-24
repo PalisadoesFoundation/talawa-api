@@ -1,4 +1,4 @@
-import { gql } from "apollo-server-core";
+import { gql } from "graphql-tag";
 
 // Place fields alphabetically to ensure easier lookup and navigation.
 export const subscriptions = gql`

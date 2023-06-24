@@ -1,7 +1,8 @@
 import { beforeAll, afterAll, it, expect } from "vitest";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
-import { ApolloServer, gql } from "apollo-server-express";
+import { ApolloServer } from "@apollo/server";
+import { gql } from "graphql-tag";
 import "dotenv/config";
 import i18n from "i18n";
 import express from "express";
@@ -78,7 +79,7 @@ it("throws UnauthenticatedError when context is expired", async () => {
   schema = roleDirectiveTransformer(schema, "role");
   const apolloServer = new ApolloServer({
     schema,
-    
+    // TODO: Fix Type Errors
     context: authenticatedContext,
   });
   apolloServer.applyMiddleware({

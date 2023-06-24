@@ -16,8 +16,8 @@ import roleDirectiveTransformer from "./directives/directiveTransformer/roleDire
 import { logger } from "./libraries";
 import { ApolloServer } from "@apollo/server";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
-import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default"
-import { expressMiddleware } from '@apollo/server/express4';
+import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
+import { expressMiddleware } from "@apollo/server/express4";
 
 const pubsub = new PubSub();
 
@@ -26,7 +26,7 @@ let schema = makeExecutableSchema({
   typeDefs,
   resolvers,
 });
-// defines directives
+// Defines directives
 schema = authDirectiveTransformer(schema, "auth");
 schema = roleDirectiveTransformer(schema, "role");
 
@@ -57,12 +57,6 @@ const server = new ApolloServer({
   cache: "bounded",
   plugins: [
     ApolloServerPluginLandingPageLocalDefault({ embed: true }),
-
-    /* Commenting this out since not decided which landing page plugin to use*/
-
-    // process.env.NODE_ENV === "production"
-    //   ? ApolloServerPluginLandingPageDisabled()
-    //   : ApolloServerPluginLandingPageGraphQLPlayground(),
     ApolloServerPluginDrainHttpServer({ httpServer }),
     {
       async serverWillStart() {
@@ -93,20 +87,19 @@ async function startServer(): Promise<void> {
 
   await server.start();
 
-  app.use('/graphql', expressMiddleware(server , {
+  app.use(
+    "/graphql",
+    expressMiddleware(server, {
       //@ts-ignore
-      context:async ({
+      context: async ({ req, res }) => ({
+        ...isAuth(req),
         req,
         res,
-      }) => ({
-        ...isAuth(req),
-        req ,
-        res ,
         pubsub,
-        apiRootUrl : `${req.protocol}://${req.get("host")}/`,
-
+        apiRootUrl: `${req.protocol}://${req.get("host")}/`,
       }),
-  }));
+    })
+  );
 
   // Modified server startup
   await new Promise<void>((resolve) =>
