@@ -79,17 +79,18 @@ it("throws UnauthenticatedError when context is expired", async () => {
   schema = roleDirectiveTransformer(schema, "role");
   const apolloServer = new ApolloServer({
     schema,
-    // TODO: Fix Type Errors
-    context: authenticatedContext,
   });
-  apolloServer.applyMiddleware({
-    app,
-  });
+
   try {
-    await apolloServer.executeOperation({
-      query,
-      variables: {},
-    });
+    await apolloServer.executeOperation(
+      {
+        query,
+        variables: {},
+      },
+      {
+        contextValue: authenticatedContext,
+      }
+    );
   } catch (err) {
     if (err instanceof errors.UnauthenticatedError) {
       expect(err.message).toEqual("user.notAuthenticated");
@@ -115,16 +116,18 @@ it("throws UnauthenticatedError when context: isAuth == false", async () => {
   schema = roleDirectiveTransformer(schema, "role");
   const apolloServer = new ApolloServer({
     schema,
-    context: authenticatedContext,
   });
-  apolloServer.applyMiddleware({
-    app,
-  });
+
   try {
-    await apolloServer.executeOperation({
-      query,
-      variables: {},
-    });
+    await apolloServer.executeOperation(
+      {
+        query,
+        variables: {},
+      },
+      {
+        contextValue: authenticatedContext,
+      }
+    );
   } catch (err) {
     if (err instanceof errors.UnauthenticatedError) {
       expect(err.message).toEqual("user.notAuthenticated");
@@ -151,16 +154,20 @@ it("checks if the resolver is supplied, and return null data, if not", async () 
   schema = roleDirectiveTransformer(schema, "role");
   const apolloServer = new ApolloServer({
     schema,
-    context: authenticatedContext,
   });
-  apolloServer.applyMiddleware({
-    app,
-  });
-  const result = await apolloServer.executeOperation({
-    query,
-    variables: {},
-  });
-  expect(result.data).toEqual({ hello: null });
+
+  const result = await apolloServer.executeOperation(
+    {
+      query,
+      variables: {},
+    },
+    {
+      contextValue: authenticatedContext,
+    }
+  );
+
+  //@ts-ignore
+  expect(result.body.singleResult.data).toEqual({ hello: null });
 });
 
 it("returns data if isAuth == true and expire == false", async () => {
@@ -182,14 +189,17 @@ it("returns data if isAuth == true and expire == false", async () => {
   schema = roleDirectiveTransformer(schema, "role");
   const apolloServer = new ApolloServer({
     schema,
-    context: authenticatedContext,
   });
-  apolloServer.applyMiddleware({
-    app,
-  });
-  const result = await apolloServer.executeOperation({
-    query,
-    variables: {},
-  });
-  expect(result.data).toEqual({ hello: "hi" });
+
+  const result = await apolloServer.executeOperation(
+    {
+      query,
+      variables: {},
+    },
+    {
+      contextValue: authenticatedContext,
+    }
+  );
+  //@ts-ignore
+  expect(result.body.singleResult.data).toEqual({ hello: "hi" });
 });

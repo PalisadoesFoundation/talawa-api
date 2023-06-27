@@ -93,16 +93,18 @@ it("throws NotFoundError if no user exists with _id === context.userId", async (
   schema = roleDirectiveTransformer(schema, "role");
   const apolloServer = new ApolloServer({
     schema,
-    context: authenticatedContext,
   });
-  apolloServer.applyMiddleware({
-    app,
-  });
+
   try {
-    await apolloServer.executeOperation({
-      query,
-      variables: {},
-    });
+    await apolloServer.executeOperation(
+      {
+        query,
+        variables: {},
+      },
+      {
+        contextValue: authenticatedContext,
+      }
+    );
   } catch (err) {
     if (err instanceof errors.NotFoundError) {
       expect(err.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
@@ -131,17 +133,21 @@ it("throws UnauthenticatedError if user exists but userType != requires", async 
   schema = roleDirectiveTransformer(schema, "role");
   const apolloServer = new ApolloServer({
     schema,
-    context: authenticatedContext,
   });
-  apolloServer.applyMiddleware({
-    app,
-  });
+
   try {
-    const result = await apolloServer.executeOperation({
-      query,
-      variables: {},
-    });
-    expect(result.data).toEqual({ hello: "hi" });
+    await apolloServer.executeOperation(
+      {
+        query,
+        variables: {},
+      },
+      {
+        contextValue: authenticatedContext,
+      }
+    );
+
+    //@ts-ignore
+    expect(result.body.singleResult.data).toEqual({ hello: "hi" });
   } catch (err) {
     if (err instanceof errors.UnauthenticatedError) {
       expect(err.message).toEqual("user.notAuthenticated");
@@ -170,16 +176,21 @@ it("returns data if user exists and userType === requires", async () => {
   schema = roleDirectiveTransformer(schema, "role");
   const apolloServer = new ApolloServer({
     schema,
-    context: authenticatedContext,
   });
-  apolloServer.applyMiddleware({
-    app,
-  });
-  const result = await apolloServer.executeOperation({
-    query,
-    variables: {},
-  });
-  expect(result.data).toEqual({ hello: "hi" });
+
+  const result = await apolloServer.executeOperation(
+    {
+      query,
+      variables: {},
+    },
+    {
+      contextValue: authenticatedContext,
+    }
+  );
+
+  //@ts-ignore
+
+  expect(result.body.singleResult.data).toEqual({ hello: "hi" });
 });
 
 it("checks if the resolver is supplied, and return null data, if not", async () => {
@@ -203,14 +214,18 @@ it("checks if the resolver is supplied, and return null data, if not", async () 
   schema = roleDirectiveTransformer(schema, "role");
   const apolloServer = new ApolloServer({
     schema,
-    context: authenticatedContext,
   });
-  apolloServer.applyMiddleware({
-    app,
-  });
-  const result = await apolloServer.executeOperation({
-    query,
-    variables: {},
-  });
-  expect(result.data).toEqual({ hello: null });
+
+  const result = await apolloServer.executeOperation(
+    {
+      query,
+      variables: {},
+    },
+    {
+      contextValue: authenticatedContext,
+    }
+  );
+  //@ts-ignore
+
+  expect(result.body.singleResult.data).toEqual({ hello: "hi" });
 });

@@ -219,9 +219,10 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         for (let i = 0; i < event.tasks.length; i++) {
           tasksIds.push(event.tasks[i]._id);
         }
+
         return {
           ...event,
-          creator: event?.creator._id,
+          creator: event?.creator?._id,
           admins: adminIds,
           tasks: tasksIds,
         };

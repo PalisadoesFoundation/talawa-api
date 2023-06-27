@@ -90,7 +90,6 @@ async function startServer(): Promise<void> {
   app.use(
     "/graphql",
     expressMiddleware(server, {
-      //@ts-ignore
       context: async ({ req, res }) => ({
         ...isAuth(req),
         req,
