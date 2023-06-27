@@ -12,6 +12,8 @@ import { appConfig } from "./config";
 import { requestContext, requestTracing, stream } from "./libraries";
 import { express as voyagerMiddleware } from "graphql-voyager/middleware";
 import path from "path";
+//@ts-ignore
+import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
 
 export const app = express();
 
@@ -52,6 +54,7 @@ app.use(
 app.use(mongoSanitize());
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
+app.use(graphqlUploadExpress());
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // Fix added to stream

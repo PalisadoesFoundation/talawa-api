@@ -12,6 +12,8 @@ import { Query } from "./Query";
 import { Subscription } from "./Subscription";
 import { User } from "./User";
 import { UserTag } from "./UserTag";
+//@ts-ignore
+import GraphQLUpload from "graphql-upload/GraphQLUpload.mjs";
 import {
   DateResolver,
   DateTimeResolver,
@@ -49,4 +51,7 @@ export const resolvers: Resolvers = {
   PositiveInt: PositiveIntResolver,
   Time: TimeResolver,
   URL: URLResolver,
+
+  // Graphql Upload
+  Upload: GraphQLUpload,
 };

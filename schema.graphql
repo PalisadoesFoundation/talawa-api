@@ -766,6 +766,8 @@ input UpdateUserTypeInput {
   userType: String
 }
 
+scalar Upload
+
 type User {
   _id: ID!
   adminApproved: Boolean

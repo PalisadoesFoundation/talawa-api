@@ -41,6 +41,7 @@ export type Scalars = {
   PositiveInt: any;
   Time: any;
   URL: any;
+  Upload: any;
 };
 
 export type AggregatePost = {
@@ -1714,6 +1715,7 @@ export type ResolversTypes = {
   UpdateUserPasswordInput: UpdateUserPasswordInput;
   UpdateUserTagInput: UpdateUserTagInput;
   UpdateUserTypeInput: UpdateUserTypeInput;
+  Upload: ResolverTypeWrapper<Scalars['Upload']>;
   User: ResolverTypeWrapper<InterfaceUserModel>;
   UserAndOrganizationInput: UserAndOrganizationInput;
   UserAttende: ResolverTypeWrapper<Omit<UserAttende, 'user'> & { user: ResolversTypes['User'] }>;
@@ -1809,6 +1811,7 @@ export type ResolversParentTypes = {
   UpdateUserPasswordInput: UpdateUserPasswordInput;
   UpdateUserTagInput: UpdateUserTagInput;
   UpdateUserTypeInput: UpdateUserTypeInput;
+  Upload: Scalars['Upload'];
   User: InterfaceUserModel;
   UserAndOrganizationInput: UserAndOrganizationInput;
   UserAttende: Omit<UserAttende, 'user'> & { user: ResolversParentTypes['User'] };
@@ -2297,6 +2300,10 @@ export interface UrlScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes[
   name: 'URL';
 }
 
+export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
+  name: 'Upload';
+}
+
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   adminApproved?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -2417,6 +2424,7 @@ export type Resolvers<ContextType = any> = {
   Time?: GraphQLScalarType;
   Translation?: TranslationResolvers<ContextType>;
   URL?: GraphQLScalarType;
+  Upload?: GraphQLScalarType;
   User?: UserResolvers<ContextType>;
   UserAttende?: UserAttendeResolvers<ContextType>;
   UserConnection?: UserConnectionResolvers<ContextType>;
