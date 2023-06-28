@@ -23,6 +23,7 @@ import {
 import type { TestUserType } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
+import { Types } from "mongoose";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -70,9 +71,7 @@ afterEach(() => {
 describe("resolvers -> Mutation -> removeEventProject", () => {
   it("Should throw an error if the user is not found", async () => {
     const args = {
-      data: {
-        eventId: null,
-      },
+      id: Types.ObjectId().toString(),
     };
 
     const context = {
@@ -90,7 +89,7 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     );
 
     try {
-      await removeEventProject(null, args, context);
+      await removeEventProject!({}, args, context);
     } catch (error: any) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toBe(`Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`);
@@ -98,7 +97,7 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
   });
   it("Should throw an error if the eventProject is not found", async () => {
     const args = {
-      id: null,
+      id: Types.ObjectId().toString(),
     };
 
     const context = {
@@ -116,7 +115,7 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     );
 
     try {
-      await removeEventProject(null, args, context);
+      await removeEventProject!({}, args, context);
     } catch (error: any) {
       expect(spy).toBeCalledWith(EVENT_PROJECT_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toBe(
@@ -144,7 +143,7 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     );
 
     try {
-      await removeEventProject(null, args, context);
+      await removeEventProject!({}, args, context);
     } catch (error: any) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect(error.message).toBe(
@@ -165,7 +164,7 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
       "../../../src/resolvers/Mutation/removeEventProject"
     );
 
-    await removeEventProject(null, args, context);
+    await removeEventProject!({}, args, context);
 
     const eventProject = await EventProject.findOne(testEventProject._id);
 

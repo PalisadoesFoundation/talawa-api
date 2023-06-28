@@ -1,3 +1,4 @@
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import type { InterfaceEventProject } from "../../models";
 import { User, EventProject, Event } from "../../models";
 import { errors, requestContext } from "../../libraries";
@@ -19,61 +20,58 @@ import {
  * @returns Created event project
  */
 
-export const createEventProject = async (
-  _parent: any,
-  args: any,
-  context: any
-): Promise<InterfaceEventProject> => {
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  });
+export const createEventProject: MutationResolvers["createEventProject"] =
+  async (_parent, args, context): Promise<InterfaceEventProject> => {
+    const currentUser = await User.findOne({
+      _id: context.userId,
+    });
 
-  // Checks whether currentUser with _id === context.userId exists.
-  if (currentUser === null) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
+    // Checks whether currentUser with _id === context.userId exists.
+    if (currentUser === null) {
+      throw new errors.NotFoundError(
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM
+      );
+    }
+
+    const event = await Event.findOne({
+      _id: args.data.eventId,
+    }).lean();
+
+    // Checks whether event exists.
+    if (!event) {
+      throw new errors.NotFoundError(
+        requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
+        EVENT_NOT_FOUND_ERROR.CODE,
+        EVENT_NOT_FOUND_ERROR.PARAM
+      );
+    }
+
+    const currentUserIsEventAdmin = event.admins.some((admin) =>
+      admin.equals(context.userId)
     );
-  }
 
-  const event = await Event.findOne({
-    _id: args.data.eventId,
-  }).lean();
+    // Checks whether currentUser with _id === context.userId is an admin of event.
+    if (
+      currentUserIsEventAdmin === false &&
+      currentUser.userType !== "SUPERADMIN"
+    ) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM
+      );
+    }
 
-  // Checks whether event exists.
-  if (!event) {
-    throw new errors.NotFoundError(
-      requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
-      EVENT_NOT_FOUND_ERROR.CODE,
-      EVENT_NOT_FOUND_ERROR.PARAM
-    );
-  }
+    // Creates new eventProject.
+    const createdEventProject = await EventProject.create({
+      title: args.data.title,
+      description: args.data.description,
+      event: args.data.eventId,
+      creator: context.userId,
+    });
 
-  const currentUserIsEventAdmin = event.admins.some((admin) =>
-    admin.equals(context.userId)
-  );
-
-  // Checks whether currentUser with _id === context.userId is an admin of event.
-  if (
-    currentUserIsEventAdmin === false &&
-    currentUser.userType !== "SUPERADMIN"
-  ) {
-    throw new errors.UnauthorizedError(
-      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-      USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
-    );
-  }
-
-  // Creates new eventProject.
-  const createdEventProject = await EventProject.create({
-    title: args.data.title,
-    description: args.data.description,
-    event: args.data.eventId,
-    creator: context.userId,
-  });
-
-  // Returns createdEventProject.
-  return createdEventProject.toObject();
-};
+    // Returns createdEventProject.
+    return createdEventProject.toObject();
+  };
