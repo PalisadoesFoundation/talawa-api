@@ -31,9 +31,10 @@
     {
       // Disable explicit function return type for index.ts as it uses a lot of templated code
       // which has convulated return types
-      "files": ["./src/index.ts"],
+      "files": ["./src/index.ts", "./src/utilities/copyToClipboard.ts"],
       "rules": {
-        "@typescript-eslint/explicit-function-return-type": "off"
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/no-empty-function": "off"
       }
     }
   ],
