@@ -30,9 +30,8 @@ import { User } from "./models";
 import { express as voyagerMiddleware } from "graphql-voyager/middleware";
 import { generateErrorMessage } from "zod-error";
 import { getEnvIssues } from "./env";
-
+import loadPlugins from "./config/plugins/loadPlugins";
 const app = express();
-
 app.use(requestTracing.middleware());
 
 const pubsub = new PubSub();
@@ -249,3 +248,4 @@ const serverStart = async (): Promise<void> => {
 };
 
 serverStart();
+loadPlugins();
