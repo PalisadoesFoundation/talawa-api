@@ -308,6 +308,8 @@ export const EMAIL_ALREADY_EXISTS_ERROR = {
   PARAM: "email",
 };
 
+export const MAXIMUM_FETCH_LIMIT = 100;
+
 export const BASE_URL = `http://localhost:${process.env.port || 4000}/`;
 
 export const ACCESS_TOKEN_SECRET = ENV.ACCESS_TOKEN_SECRET;

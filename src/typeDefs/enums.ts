@@ -36,6 +36,11 @@ export const enums = gql`
     apiUrl_DESC
   }
 
+  enum PaginationDirection {
+    BACKWARD
+    FORWARD
+  }
+
   enum PostOrderByInput {
     id_ASC
     id_DESC

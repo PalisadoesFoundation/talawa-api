@@ -380,22 +380,22 @@ export const types = gql`
     name: String!
     organization: Organization
     parentTag: UserTag
-    childTags(
-      after: String
-      before: String
-      first: PositiveInt
-      last: PositiveInt
-    ): UserTagsConnection
-    usersAssignedTo(
-      after: String
-      before: String
-      first: PositiveInt
-      last: PositiveInt
-    ): UsersConnection
+    childTags(input: UserTagsConnectionInput!): UserTagsConnectionResult!
+    usersAssignedTo(input: UsersConnectionInput!): UsersConnectionResult!
+  }
+
+  type UsersConnectionResult {
+    data: UsersConnection
+    errors: [ConnectionError!]!
+  }
+
+  type UserTagsConnectionResult {
+    data: UserTagsConnection
+    errors: [ConnectionError!]!
   }
 
   type UserTagsConnection {
-    edges: [UserTagEdge]
+    edges: [UserTagEdge!]!
     pageInfo: ConnectionPageInfo!
   }
 
@@ -405,7 +405,7 @@ export const types = gql`
   }
 
   type UsersConnection {
-    edges: [UserEdge]
+    edges: [UserEdge!]!
     pageInfo: ConnectionPageInfo!
   }
 `;

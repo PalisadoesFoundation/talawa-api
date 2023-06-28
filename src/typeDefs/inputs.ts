@@ -23,6 +23,12 @@ export const inputs = gql`
     organizationId: ID!
   }
 
+  input CursorPaginationInput {
+    cursor: String
+    direction: PaginationDirection!
+    limit: PositiveInt!
+  }
+
   input DonationWhereInput {
     id: ID
     id_not: ID
@@ -242,6 +248,20 @@ export const inputs = gql`
     allDay: Boolean
     startTime: Time
     endTime: Time
+  }
+
+  # Implements CursorPaginationInput
+  input UsersConnectionInput {
+    cursor: String
+    direction: PaginationDirection!
+    limit: PositiveInt!
+  }
+
+  # Implements CursorPaginationInput
+  input UserTagsConnectionInput {
+    cursor: String
+    direction: PaginationDirection!
+    limit: PositiveInt!
   }
 
   # input UpdateEventProjectInput {
