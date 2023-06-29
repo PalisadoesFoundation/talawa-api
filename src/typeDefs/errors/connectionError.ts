@@ -1,4 +1,4 @@
-import { gql } from "apollo-server-core";
+import { gql } from "graphql-tag";
 
 export const connectionError = gql`
   union ConnectionError = InvalidCursor | MaximumValueError

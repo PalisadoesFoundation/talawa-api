@@ -45,7 +45,7 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     throw new errors.ValidationError(
       [
         {
-          message: requestContext.translate(INVALID_CREDENTIALS_ERROR.MESSAGE),
+          message: INVALID_CREDENTIALS_ERROR.MESSAGE,
           code: INVALID_CREDENTIALS_ERROR.CODE,
           param: INVALID_CREDENTIALS_ERROR.PARAM,
         },
