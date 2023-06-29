@@ -23,11 +23,16 @@
     * [GroupChat](#groupchat)
     * [GroupChatMessage](#groupchatmessage)
     * [IOSFirebaseOptions](#iosfirebaseoptions)
+    * [InvalidCursor](#invalidcursor)
     * [Language](#language)
     * [LanguageModel](#languagemodel)
+    * [MaximumLengthError](#maximumlengtherror)
+    * [MaximumValueError](#maximumvalueerror)
     * [MembershipRequest](#membershiprequest)
     * [Message](#message)
     * [MessageChat](#messagechat)
+    * [MinimumLengthError](#minimumlengtherror)
+    * [MinimumValueError](#minimumvalueerror)
     * [Organization](#organization)
     * [OrganizationInfoNode](#organizationinfonode)
     * [OtpData](#otpdata)
@@ -39,6 +44,8 @@
     * [Subscription](#subscription)
     * [Task](#task)
     * [Translation](#translation)
+    * [UnauthenticatedError](#unauthenticatederror)
+    * [UnauthorizedError](#unauthorizederror)
     * [User](#user)
     * [UserAttende](#userattende)
     * [UserConnection](#userconnection)
@@ -46,10 +53,13 @@
     * [UserTag](#usertag)
     * [UserTagEdge](#usertagedge)
     * [UserTagsConnection](#usertagsconnection)
+    * [UserTagsConnectionResult](#usertagsconnectionresult)
     * [UsersConnection](#usersconnection)
+    * [UsersConnectionResult](#usersconnectionresult)
   * [Inputs](#inputs)
     * [CommentInput](#commentinput)
     * [CreateUserTagInput](#createusertaginput)
+    * [CursorPaginationInput](#cursorpaginationinput)
     * [DonationWhereInput](#donationwhereinput)
     * [EventInput](#eventinput)
     * [EventWhereInput](#eventwhereinput)
@@ -77,13 +87,16 @@
     * [UpdateUserTypeInput](#updateusertypeinput)
     * [UserAndOrganizationInput](#userandorganizationinput)
     * [UserInput](#userinput)
+    * [UserTagsConnectionInput](#usertagsconnectioninput)
     * [UserWhereInput](#userwhereinput)
+    * [UsersConnectionInput](#usersconnectioninput)
     * [createChatInput](#createchatinput)
     * [createGroupChatInput](#creategroupchatinput)
   * [Enums](#enums)
     * [CacheControlScope](#cachecontrolscope)
     * [EventOrderByInput](#eventorderbyinput)
     * [OrganizationOrderByInput](#organizationorderbyinput)
+    * [PaginationDirection](#paginationdirection)
     * [PostOrderByInput](#postorderbyinput)
     * [Recurrance](#recurrance)
     * [Status](#status)
@@ -107,6 +120,11 @@
     * [Time](#time)
     * [URL](#url)
     * [Upload](#upload)
+  * [Interfaces](#interfaces)
+    * [Error](#error)
+    * [FieldError](#fielderror)
+  * [Unions](#unions)
+    * [ConnectionError](#connectionerror)
 
 </details>
 
@@ -2170,6 +2188,31 @@
 </tbody>
 </table>
 
+### InvalidCursor
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>message</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>path</strong></td>
+<td valign="top">[<a href="#string">String</a>!]!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
 ### Language
 
 <table>
@@ -2240,6 +2283,61 @@
 <tr>
 <td colspan="2" valign="top"><strong>createdAt</strong></td>
 <td valign="top"><a href="#datetime">DateTime</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### MaximumLengthError
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>message</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>path</strong></td>
+<td valign="top">[<a href="#string">String</a>!]!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### MaximumValueError
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>message</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>path</strong></td>
+<td valign="top">[<a href="#string">String</a>!]!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>limit</strong></td>
+<td valign="top"><a href="#int">Int</a>!</td>
 <td></td>
 </tr>
 </tbody>
@@ -2360,6 +2458,61 @@
 <tr>
 <td colspan="2" valign="top"><strong>createdAt</strong></td>
 <td valign="top"><a href="#datetime">DateTime</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### MinimumLengthError
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>message</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>path</strong></td>
+<td valign="top">[<a href="#string">String</a>!]!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>limit</strong></td>
+<td valign="top"><a href="#int">Int</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### MinimumValueError
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>message</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>path</strong></td>
+<td valign="top">[<a href="#string">String</a>!]!</td>
 <td></td>
 </tr>
 </tbody>
@@ -2925,6 +3078,46 @@ A list of edges.
 </tbody>
 </table>
 
+### UnauthenticatedError
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>message</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### UnauthorizedError
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>message</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
 ### User
 
 <table>
@@ -3199,52 +3392,22 @@ A list of edges.
 </tr>
 <tr>
 <td colspan="2" valign="top"><strong>childTags</strong></td>
-<td valign="top"><a href="#usertagsconnection">UserTagsConnection</a></td>
+<td valign="top"><a href="#usertagsconnectionresult">UserTagsConnectionResult</a>!</td>
 <td></td>
 </tr>
 <tr>
-<td colspan="2" align="right" valign="top">after</td>
-<td valign="top"><a href="#string">String</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">before</td>
-<td valign="top"><a href="#string">String</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">first</td>
-<td valign="top"><a href="#positiveint">PositiveInt</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">last</td>
-<td valign="top"><a href="#positiveint">PositiveInt</a></td>
+<td colspan="2" align="right" valign="top">input</td>
+<td valign="top"><a href="#usertagsconnectioninput">UserTagsConnectionInput</a>!</td>
 <td></td>
 </tr>
 <tr>
 <td colspan="2" valign="top"><strong>usersAssignedTo</strong></td>
-<td valign="top"><a href="#usersconnection">UsersConnection</a></td>
+<td valign="top"><a href="#usersconnectionresult">UsersConnectionResult</a>!</td>
 <td></td>
 </tr>
 <tr>
-<td colspan="2" align="right" valign="top">after</td>
-<td valign="top"><a href="#string">String</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">before</td>
-<td valign="top"><a href="#string">String</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">first</td>
-<td valign="top"><a href="#positiveint">PositiveInt</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">last</td>
-<td valign="top"><a href="#positiveint">PositiveInt</a></td>
+<td colspan="2" align="right" valign="top">input</td>
+<td valign="top"><a href="#usersconnectioninput">UsersConnectionInput</a>!</td>
 <td></td>
 </tr>
 </tbody>
@@ -3289,12 +3452,37 @@ A list of edges.
 <tbody>
 <tr>
 <td colspan="2" valign="top"><strong>edges</strong></td>
-<td valign="top">[<a href="#usertagedge">UserTagEdge</a>]</td>
+<td valign="top">[<a href="#usertagedge">UserTagEdge</a>!]!</td>
 <td></td>
 </tr>
 <tr>
 <td colspan="2" valign="top"><strong>pageInfo</strong></td>
 <td valign="top"><a href="#connectionpageinfo">ConnectionPageInfo</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### UserTagsConnectionResult
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>data</strong></td>
+<td valign="top"><a href="#usertagsconnection">UserTagsConnection</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>errors</strong></td>
+<td valign="top">[<a href="#connectionerror">ConnectionError</a>!]!</td>
 <td></td>
 </tr>
 </tbody>
@@ -3314,12 +3502,37 @@ A list of edges.
 <tbody>
 <tr>
 <td colspan="2" valign="top"><strong>edges</strong></td>
-<td valign="top">[<a href="#useredge">UserEdge</a>]</td>
+<td valign="top">[<a href="#useredge">UserEdge</a>!]!</td>
 <td></td>
 </tr>
 <tr>
 <td colspan="2" valign="top"><strong>pageInfo</strong></td>
 <td valign="top"><a href="#connectionpageinfo">ConnectionPageInfo</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### UsersConnectionResult
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>data</strong></td>
+<td valign="top"><a href="#usersconnection">UsersConnection</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>errors</strong></td>
+<td valign="top">[<a href="#connectionerror">ConnectionError</a>!]!</td>
 <td></td>
 </tr>
 </tbody>
@@ -3370,6 +3583,35 @@ A list of edges.
 <tr>
 <td colspan="2" valign="top"><strong>organizationId</strong></td>
 <td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### CursorPaginationInput
+
+<table>
+<thead>
+<tr>
+<th colspan="2" align="left">Field</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>cursor</strong></td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>direction</strong></td>
+<td valign="top"><a href="#paginationdirection">PaginationDirection</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>limit</strong></td>
+<td valign="top"><a href="#positiveint">PositiveInt</a>!</td>
 <td></td>
 </tr>
 </tbody>
@@ -4648,6 +4890,35 @@ A list of edges.
 </tbody>
 </table>
 
+### UserTagsConnectionInput
+
+<table>
+<thead>
+<tr>
+<th colspan="2" align="left">Field</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>cursor</strong></td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>direction</strong></td>
+<td valign="top"><a href="#paginationdirection">PaginationDirection</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>limit</strong></td>
+<td valign="top"><a href="#positiveint">PositiveInt</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
 ### UserWhereInput
 
 <table>
@@ -4817,6 +5088,35 @@ A list of edges.
 <tr>
 <td colspan="2" valign="top"><strong>event_title_contains</strong></td>
 <td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### UsersConnectionInput
+
+<table>
+<thead>
+<tr>
+<th colspan="2" align="left">Field</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>cursor</strong></td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>direction</strong></td>
+<td valign="top"><a href="#paginationdirection">PaginationDirection</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>limit</strong></td>
+<td valign="top"><a href="#positiveint">PositiveInt</a>!</td>
 <td></td>
 </tr>
 </tbody>
@@ -5025,6 +5325,25 @@ A list of edges.
 </tr>
 <tr>
 <td valign="top"><strong>apiUrl_DESC</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### PaginationDirection
+
+<table>
+<thead>
+<th align="left">Value</th>
+<th align="left">Description</th>
+</thead>
+<tbody>
+<tr>
+<td valign="top"><strong>BACKWARD</strong></td>
+<td></td>
+</tr>
+<tr>
+<td valign="top"><strong>FORWARD</strong></td>
 <td></td>
 </tr>
 </tbody>
@@ -5319,7 +5638,7 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 
 ### EmailAddress
 
-A field whose value conforms to the standard internet email address format as specified in HTML Spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address.
+A field whose value conforms to the standard internet email address format as specified in RFC822: https://www.w3.org/Protocols/rfc822/.
 
 ### Float
 
@@ -5365,3 +5684,72 @@ A field whose value conforms to the standard URL format as specified in RFC3986:
 
 The `Upload` scalar type represents a file upload.
 
+
+## Interfaces
+
+
+### Error
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>message</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### FieldError
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>message</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>path</strong></td>
+<td valign="top">[<a href="#string">String</a>!]!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+## Unions
+
+### ConnectionError
+
+<table>
+<thead>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</thead>
+<tbody>
+<tr>
+<td valign="top"><strong><a href="#invalidcursor">InvalidCursor</a></strong></td>
+<td></td>
+</tr>
+<tr>
+<td valign="top"><strong><a href="#maximumvalueerror">MaximumValueError</a></strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
