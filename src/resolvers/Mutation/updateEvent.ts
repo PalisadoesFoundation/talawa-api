@@ -24,12 +24,12 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
   args,
   context
 ) => {
-  const currentUserExists = await User.exists({
+  const currentUser = await User.findOne({
     _id: context.userId,
   });
 
   // checks if current user exists
-  if (currentUserExists === false) {
+  if (currentUser === null) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
@@ -55,7 +55,10 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
   );
 
   // checks if current user is an admin of the event with _id === args.id
-  if (currentUserIsEventAdmin === false) {
+  if (
+    currentUserIsEventAdmin === false &&
+    currentUser.userType !== "SUPERADMIN"
+  ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,

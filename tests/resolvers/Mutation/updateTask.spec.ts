@@ -1,12 +1,9 @@
 import "dotenv/config";
-import type { Document } from "mongoose";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceTask } from "../../../src/models";
-import { Event, Task } from "../../../src/models";
+import { Task } from "../../../src/models";
 import type { MutationUpdateTaskArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-
 import { updateTask as updateTaskResolver } from "../../../src/resolvers/Mutation/updateTask";
 import {
   TASK_NOT_FOUND_ERROR,
@@ -14,42 +11,18 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import type { TestUserType } from "../../helpers/userAndOrg";
-import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
+import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
+import { createAndAssignTestTask, type TestTaskType } from "../../helpers/task";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
-let testTasks: (InterfaceTask & Document<any, any, InterfaceTask>)[];
+let randomTestUser: TestUserType;
+let testTask: TestTaskType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  const temp = await createTestEventWithRegistrants();
-  testUser = temp[0];
-  const testEvent = temp[2];
-
-  testTasks = await Task.insertMany([
-    {
-      title: "title",
-      event: testEvent?._id,
-      creator: testUser?._id,
-    },
-    {
-      title: "title",
-      event: testEvent?._id,
-      creator: Types.ObjectId().toString(),
-    },
-  ]);
-
-  await Event.updateOne(
-    {
-      _id: testEvent?._id,
-    },
-    {
-      $push: {
-        tasks: [testTasks[0]._id, testTasks[1]._id],
-      },
-    }
-  );
+  randomTestUser = await createTestUser();
+  [testUser, , , , testTask] = await createAndAssignTestTask();
 });
 
 afterAll(async () => {
@@ -124,12 +97,12 @@ describe("resolvers -> Mutation -> updateTask", () => {
 
     try {
       const args: MutationUpdateTaskArgs = {
-        id: testTasks[1]._id,
+        id: testTask!._id,
         data: {},
       };
 
       const context = {
-        userId: testUser?._id,
+        userId: randomTestUser!._id,
       };
 
       const { updateTask: updateTaskResolverNotFoundError } = await import(
@@ -149,7 +122,7 @@ describe("resolvers -> Mutation -> updateTask", () => {
 
   it(`updates the task with _id === args.id and returns it`, async () => {
     const args: MutationUpdateTaskArgs = {
-      id: testTasks[0]._id,
+      id: testTask!._id,
       data: {
         title: "newTitle",
         deadline: Date.now().toString(),
@@ -162,7 +135,7 @@ describe("resolvers -> Mutation -> updateTask", () => {
     const updateTaskPayload = await updateTaskResolver?.({}, args, context);
 
     const updatedTestTask = await Task.findOne({
-      _id: testTasks[0]._id,
+      _id: testTask!._id,
     }).lean();
 
     expect(updateTaskPayload).toEqual(updatedTestTask);

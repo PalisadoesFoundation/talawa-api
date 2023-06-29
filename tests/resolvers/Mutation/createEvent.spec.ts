@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization } from "../../../src/models";
+import { User, Organization, EventAttendee } from "../../../src/models";
 import type { MutationCreateEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -202,16 +202,17 @@ describe("resolvers -> Mutation -> createEvent", () => {
         title: "newTitle",
         recurrance: "DAILY",
         creator: testUser?._id,
-        registrants: expect.arrayContaining([
-          expect.objectContaining({
-            userId: testUser?._id.toString(),
-            user: testUser?._id,
-          }),
-        ]),
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
       })
     );
+
+    const attendeeExists = await EventAttendee.exists({
+      userId: testUser!._id,
+      eventId: createEventPayload!._id,
+    });
+
+    expect(attendeeExists).toBeTruthy();
 
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,

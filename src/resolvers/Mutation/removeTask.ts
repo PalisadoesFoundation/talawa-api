@@ -5,7 +5,7 @@ import {
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Task, Event } from "../../models";
+import { User, Task, TaskVolunteer } from "../../models";
 /**
  * This function enables to remove a task.
  * @param _parent - parent of current request
@@ -22,12 +22,12 @@ export const removeTask: MutationResolvers["removeTask"] = async (
   args,
   context
 ) => {
-  const currentUserExists = await User.exists({
+  const currentUser = await User.findOne({
     _id: context.userId,
   });
 
   // Checks whether currentUser with _id === context.userId exists.
-  if (currentUserExists === false) {
+  if (currentUser === null) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
       USER_NOT_FOUND_ERROR.CODE,
@@ -49,7 +49,10 @@ export const removeTask: MutationResolvers["removeTask"] = async (
   }
 
   // Checks whether currentUser with _id === context.userId is not the creator of task.
-  if (!task.creator.equals(context.userId)) {
+  if (
+    !task.creator.equals(context.userId) &&
+    currentUser.userType !== "SUPERADMIN"
+  ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
@@ -62,17 +65,9 @@ export const removeTask: MutationResolvers["removeTask"] = async (
     _id: task._id,
   });
 
-  // Removes task._id from tasks list of task.event.
-  await Event.updateMany(
-    {
-      _id: task.event,
-    },
-    {
-      $pull: {
-        tasks: task._id,
-      },
-    }
-  );
+  await TaskVolunteer.deleteMany({
+    taskId: task._id,
+  });
 
   // Returns deleted task.
   return task;

@@ -39,8 +39,6 @@ export const queries = gql`
 
     getPlugins: [Plugin]
 
-    isUserRegister(eventId: ID!): EventRegistrants
-
     joinedOrganizations(id: ID): [Organization]
 
     me: User! @auth
@@ -81,10 +79,6 @@ export const queries = gql`
     registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
 
     registrantsByEvent(id: ID!): [User]
-
-    tasksByEvent(id: ID!, orderBy: TaskOrderByInput): [Task]
-
-    tasksByUser(id: ID!, orderBy: TaskOrderByInput): [Task]
 
     user(id: ID!): User! @auth
 

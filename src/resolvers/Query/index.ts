@@ -10,7 +10,6 @@ import { getDonationByOrgId } from "./getDonationByOrgId";
 import { getDonationByOrgIdConnection } from "./getDonationByOrgIdConnection";
 import { getlanguage } from "./getlanguage";
 import { getPlugins } from "./getPlugins";
-import { isUserRegister } from "./isUserRegister";
 import { me } from "./me";
 import { myLanguage } from "./myLanguage";
 import { organizations } from "./organizations";
@@ -20,9 +19,6 @@ import { post } from "./post";
 import { postsByOrganization } from "./postsByOrganization";
 import { postsByOrganizationConnection } from "./postsByOrganizationConnection";
 import { registeredEventsByUser } from "./registeredEventsByUser";
-import { registrantsByEvent } from "./registrantsByEvent";
-import { tasksByEvent } from "./tasksByEvent";
-import { tasksByUser } from "./tasksByUser";
 import { user } from "./user";
 import { userLanguage } from "./userLanguage";
 import { users } from "./users";
@@ -40,7 +36,6 @@ export const Query: QueryResolvers = {
   getDonationByOrgIdConnection,
   getlanguage,
   getPlugins,
-  isUserRegister,
   me,
   myLanguage,
   organizations,
@@ -50,9 +45,6 @@ export const Query: QueryResolvers = {
   postsByOrganization,
   postsByOrganizationConnection,
   registeredEventsByUser,
-  registrantsByEvent,
-  tasksByEvent,
-  tasksByUser,
   user,
   userLanguage,
   users,

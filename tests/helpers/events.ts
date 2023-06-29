@@ -1,7 +1,7 @@
 import type { TestOrganizationType, TestUserType } from "./userAndOrg";
 import { createTestUserAndOrganization } from "./userAndOrg";
 import type { InterfaceEvent } from "../../src/models";
-import { Event, User } from "../../src/models";
+import { Event, EventAttendee, User } from "../../src/models";
 import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
 
@@ -27,7 +27,6 @@ export const createTestEvent = async (): Promise<
       isRegisterable: true,
       creator: testUser._id,
       admins: [testUser._id],
-      registrants: [],
       organization: testOrganization._id,
     });
 
@@ -58,12 +57,6 @@ export const createEventWithRegistrant = async (
 ): Promise<TestEventType> => {
   const testEvent = await Event.create({
     creator: userId,
-    registrants: [
-      {
-        userId: userId,
-        user: userId,
-      },
-    ],
     admins: [userId],
     organization: organizationId,
     isRegisterable: true,
@@ -77,6 +70,11 @@ export const createEventWithRegistrant = async (
     endTime: new Date().toString(),
     recurrance: recurrance,
     location: `location${nanoid()}`,
+  });
+
+  await EventAttendee.create({
+    userId,
+    eventId: testEvent!._id,
   });
 
   await User.updateOne(

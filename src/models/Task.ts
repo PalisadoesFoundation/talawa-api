@@ -1,10 +1,12 @@
 import type { PopulatedDoc, Types, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
-import type { InterfaceEvent } from "./Event";
 import type { InterfaceUser } from "./User";
+import type { InterfaceEventProject } from "./EventProject";
+
 /**
  * This is an interface that represents a database(MongoDB) document for Task.
  */
+
 export interface InterfaceTask {
   _id: Types.ObjectId;
   title: string;
@@ -12,9 +14,11 @@ export interface InterfaceTask {
   status: string;
   createdAt: Date;
   deadline: Date | undefined;
-  event: PopulatedDoc<InterfaceEvent & Document>;
+  eventProjectId: PopulatedDoc<InterfaceEventProject & Document>;
   creator: PopulatedDoc<InterfaceUser & Document>;
+  completed: boolean;
 }
+
 /**
  * This describes the schema for a `Task` that corresponds to `InterfaceTask` document.
  * @param title - Task title.
@@ -22,9 +26,11 @@ export interface InterfaceTask {
  * @param status - Status.
  * @param createdAt - Time stamp of data creation.
  * @param deadline - Task deadline.
- * @param event - Event object for which task is added, refer to `Event` model.
+ * @param eventProjectId - Event Project object for which task is added.
  * @param creator - Task creator, refer to `User` model.
+ * @param completed - Has the task been completed
  */
+
 const taskSchema = new Schema({
   title: {
     type: String,
@@ -46,14 +52,19 @@ const taskSchema = new Schema({
   deadline: {
     type: Date,
   },
-  event: {
+  eventProjectId: {
     type: Schema.Types.ObjectId,
-    ref: "Event",
+    ref: "EventProject",
     required: true,
   },
   creator: {
     type: Schema.Types.ObjectId,
     ref: "User",
+    required: true,
+  },
+  completed: {
+    type: Boolean,
+    default: false,
     required: true,
   },
 });

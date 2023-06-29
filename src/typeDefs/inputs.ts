@@ -6,6 +6,18 @@ export const inputs = gql`
     text: String!
   }
 
+  input EventAttendeeInput {
+    userId: ID!
+    eventId: ID!
+  }
+
+  input CheckInInput {
+    userId: ID!
+    eventId: ID!
+    allotedRoom: String
+    allotedSeat: String
+  }
+
   input createChatInput {
     userIds: [ID!]!
     organizationId: ID!
@@ -95,11 +107,11 @@ export const inputs = gql`
     organization_id: ID
   }
 
-  # input EventProjectInput {
-  #   title: String!
-  #   description: String!
-  #   eventId: String
-  # }
+  input EventProjectInput {
+    title: String!
+    description: String!
+    eventId: ID!
+  }
 
   input ForgotPasswordData {
     userOtp: String!
@@ -224,8 +236,8 @@ export const inputs = gql`
 
   input TaskInput {
     title: String!
-    description: String
-    deadline: DateTime
+    description: String!
+    deadline: DateTime!
   }
 
   input ToggleUserTagAssignInput {
@@ -264,10 +276,10 @@ export const inputs = gql`
     limit: PositiveInt!
   }
 
-  # input UpdateEventProjectInput {
-  #   title: String
-  #   description: String
-  # }
+  input UpdateEventProjectInput {
+    title: String
+    description: String
+  }
 
   input UpdateOrganizationInput {
     name: String
@@ -286,6 +298,7 @@ export const inputs = gql`
     title: String
     description: String
     deadline: DateTime
+    completed: Boolean
   }
 
   input UpdateUserInput {
