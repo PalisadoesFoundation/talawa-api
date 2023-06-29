@@ -10,6 +10,8 @@
     * [AggregateUser](#aggregateuser)
     * [AndroidFirebaseOptions](#androidfirebaseoptions)
     * [AuthData](#authdata)
+    * [CheckIn](#checkin)
+    * [CheckInStatus](#checkinstatus)
     * [Comment](#comment)
     * [ConnectionPageInfo](#connectionpageinfo)
     * [DeletePayload](#deletepayload)
@@ -17,7 +19,7 @@
     * [DirectChatMessage](#directchatmessage)
     * [Donation](#donation)
     * [Event](#event)
-    * [EventRegistrants](#eventregistrants)
+    * [EventProject](#eventproject)
     * [ExtendSession](#extendsession)
     * [Group](#group)
     * [GroupChat](#groupchat)
@@ -47,7 +49,6 @@
     * [UnauthenticatedError](#unauthenticatederror)
     * [UnauthorizedError](#unauthorizederror)
     * [User](#user)
-    * [UserAttende](#userattende)
     * [UserConnection](#userconnection)
     * [UserEdge](#useredge)
     * [UserTag](#usertag)
@@ -57,11 +58,14 @@
     * [UsersConnection](#usersconnection)
     * [UsersConnectionResult](#usersconnectionresult)
   * [Inputs](#inputs)
+    * [CheckInInput](#checkininput)
     * [CommentInput](#commentinput)
     * [CreateUserTagInput](#createusertaginput)
     * [CursorPaginationInput](#cursorpaginationinput)
     * [DonationWhereInput](#donationwhereinput)
+    * [EventAttendeeInput](#eventattendeeinput)
     * [EventInput](#eventinput)
+    * [EventProjectInput](#eventprojectinput)
     * [EventWhereInput](#eventwhereinput)
     * [ForgotPasswordData](#forgotpassworddata)
     * [LanguageInput](#languageinput)
@@ -79,6 +83,7 @@
     * [TaskInput](#taskinput)
     * [ToggleUserTagAssignInput](#toggleusertagassigninput)
     * [UpdateEventInput](#updateeventinput)
+    * [UpdateEventProjectInput](#updateeventprojectinput)
     * [UpdateOrganizationInput](#updateorganizationinput)
     * [UpdateTaskInput](#updatetaskinput)
     * [UpdateUserInput](#updateuserinput)
@@ -93,7 +98,6 @@
     * [createChatInput](#createchatinput)
     * [createGroupChatInput](#creategroupchatinput)
   * [Enums](#enums)
-    * [CacheControlScope](#cachecontrolscope)
     * [EventOrderByInput](#eventorderbyinput)
     * [OrganizationOrderByInput](#organizationorderbyinput)
     * [PaginationDirection](#paginationdirection)
@@ -285,16 +289,6 @@
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>isUserRegister</strong></td>
-<td valign="top"><a href="#eventregistrants">EventRegistrants</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">eventId</td>
-<td valign="top"><a href="#id">ID</a>!</td>
-<td></td>
-</tr>
-<tr>
 <td colspan="2" valign="top"><strong>joinedOrganizations</strong></td>
 <td valign="top">[<a href="#organization">Organization</a>]</td>
 <td></td>
@@ -475,36 +469,6 @@
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>tasksByEvent</strong></td>
-<td valign="top">[<a href="#task">Task</a>]</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">id</td>
-<td valign="top"><a href="#id">ID</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">orderBy</td>
-<td valign="top"><a href="#taskorderbyinput">TaskOrderByInput</a></td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>tasksByUser</strong></td>
-<td valign="top">[<a href="#task">Task</a>]</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">id</td>
-<td valign="top"><a href="#id">ID</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">orderBy</td>
-<td valign="top"><a href="#taskorderbyinput">TaskOrderByInput</a></td>
-<td></td>
-</tr>
-<tr>
 <td colspan="2" valign="top"><strong>user</strong></td>
 <td valign="top"><a href="#user">User</a>!</td>
 <td></td>
@@ -596,6 +560,16 @@
 <tr>
 <td colspan="2" align="right" valign="top">membershipRequestId</td>
 <td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>addEventAttendee</strong></td>
+<td valign="top"><a href="#user">User</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">data</td>
+<td valign="top"><a href="#eventattendeeinput">EventAttendeeInput</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -719,6 +693,16 @@
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>checkIn</strong></td>
+<td valign="top"><a href="#checkin">CheckIn</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">data</td>
+<td valign="top"><a href="#checkininput">CheckInInput</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>createMember</strong></td>
 <td valign="top"><a href="#organization">Organization</a>!</td>
 <td></td>
@@ -806,6 +790,16 @@
 <tr>
 <td colspan="2" align="right" valign="top">data</td>
 <td valign="top"><a href="#eventinput">EventInput</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>createEventProject</strong></td>
+<td valign="top"><a href="#eventproject">EventProject</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">data</td>
+<td valign="top"><a href="#eventprojectinput">EventProjectInput</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -905,11 +899,11 @@
 </tr>
 <tr>
 <td colspan="2" align="right" valign="top">data</td>
-<td valign="top"><a href="#taskinput">TaskInput</a></td>
+<td valign="top"><a href="#taskinput">TaskInput</a>!</td>
 <td></td>
 </tr>
 <tr>
-<td colspan="2" align="right" valign="top">eventId</td>
+<td colspan="2" align="right" valign="top">eventProjectId</td>
 <td valign="top"><a href="#id">ID</a>!</td>
 <td></td>
 </tr>
@@ -1094,6 +1088,26 @@
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>removeEventAttendee</strong></td>
+<td valign="top"><a href="#user">User</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">data</td>
+<td valign="top"><a href="#eventattendeeinput">EventAttendeeInput</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>removeEventProject</strong></td>
+<td valign="top"><a href="#eventproject">EventProject</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">id</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>removeGroupChat</strong></td>
 <td valign="top"><a href="#groupchat">GroupChat</a>!</td>
 <td></td>
@@ -1244,6 +1258,21 @@
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>setTaskVolunteers</strong></td>
+<td valign="top"><a href="#task">Task</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">id</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">volunteers</td>
+<td valign="top">[<a href="#id">ID</a>]!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>signUp</strong></td>
 <td valign="top"><a href="#authdata">AuthData</a>!</td>
 <td></td>
@@ -1336,6 +1365,21 @@
 <tr>
 <td colspan="2" align="right" valign="top">data</td>
 <td valign="top"><a href="#updateeventinput">UpdateEventInput</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>updateEventProject</strong></td>
+<td valign="top"><a href="#eventproject">EventProject</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">id</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">data</td>
+<td valign="top"><a href="#updateeventprojectinput">UpdateEventProjectInput</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -1435,7 +1479,7 @@
 </tr>
 <tr>
 <td colspan="2" align="right" valign="top">data</td>
-<td valign="top"><a href="#updatetaskinput">UpdateTaskInput</a></td>
+<td valign="top"><a href="#updatetaskinput">UpdateTaskInput</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -1593,6 +1637,81 @@
 <tr>
 <td colspan="2" valign="top"><strong>iosFirebaseOptions</strong></td>
 <td valign="top"><a href="#iosfirebaseoptions">IOSFirebaseOptions</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### CheckIn
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>_id</strong></td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>time</strong></td>
+<td valign="top"><a href="#datetime">DateTime</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>allotedRoom</strong></td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>allotedSeat</strong></td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>user</strong></td>
+<td valign="top"><a href="#user">User</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>event</strong></td>
+<td valign="top"><a href="#event">Event</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### CheckInStatus
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>_id</strong></td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>user</strong></td>
+<td valign="top"><a href="#user">User</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>checkIn</strong></td>
+<td valign="top"><a href="#checkin">CheckIn</a></td>
 <td></td>
 </tr>
 </tbody>
@@ -1936,8 +2055,13 @@
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>registrants</strong></td>
-<td valign="top">[<a href="#userattende">UserAttende</a>]</td>
+<td colspan="2" valign="top"><strong>attendees</strong></td>
+<td valign="top">[<a href="#user">User</a>!]!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>attendeesCheckInStatus</strong></td>
+<td valign="top">[<a href="#checkinstatus">CheckInStatus</a>!]!</td>
 <td></td>
 </tr>
 <tr>
@@ -1951,19 +2075,19 @@
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>tasks</strong></td>
-<td valign="top">[<a href="#task">Task</a>]</td>
+<td colspan="2" valign="top"><strong>status</strong></td>
+<td valign="top"><a href="#status">Status</a>!</td>
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>status</strong></td>
-<td valign="top"><a href="#status">Status</a>!</td>
+<td colspan="2" valign="top"><strong>projects</strong></td>
+<td valign="top">[<a href="#eventproject">EventProject</a>]</td>
 <td></td>
 </tr>
 </tbody>
 </table>
 
-### EventRegistrants
+### EventProject
 
 <table>
 <thead>
@@ -1976,13 +2100,28 @@
 </thead>
 <tbody>
 <tr>
+<td colspan="2" valign="top"><strong>_id</strong></td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>title</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>description</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>event</strong></td>
 <td valign="top"><a href="#event">Event</a>!</td>
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>isRegistered</strong></td>
-<td valign="top"><a href="#boolean">Boolean</a>!</td>
+<td colspan="2" valign="top"><strong>tasks</strong></td>
+<td valign="top">[<a href="#task">Task</a>]</td>
 <td></td>
 </tr>
 </tbody>
@@ -3036,8 +3175,18 @@ A list of edges.
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>completed</strong></td>
+<td valign="top"><a href="#boolean">Boolean</a></td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>deadline</strong></td>
 <td valign="top"><a href="#datetime">DateTime</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>volunteers</strong></td>
+<td valign="top">[<a href="#user">User</a>]</td>
 <td></td>
 </tr>
 </tbody>
@@ -3226,6 +3375,11 @@ A list of edges.
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>assignedTasks</strong></td>
+<td valign="top">[<a href="#task">Task</a>]</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>createdAt</strong></td>
 <td valign="top"><a href="#datetime">DateTime</a></td>
 <td></td>
@@ -3258,46 +3412,6 @@ A list of edges.
 <tr>
 <td colspan="2" align="right" valign="top">organizationId</td>
 <td valign="top"><a href="#id">ID</a></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-
-### UserAttende
-
-<table>
-<thead>
-<tr>
-<th align="left">Field</th>
-<th align="right">Argument</th>
-<th align="left">Type</th>
-<th align="left">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td colspan="2" valign="top"><strong>_id</strong></td>
-<td valign="top"><a href="#id">ID</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>userId</strong></td>
-<td valign="top"><a href="#string">String</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>user</strong></td>
-<td valign="top"><a href="#user">User</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>status</strong></td>
-<td valign="top"><a href="#status">Status</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>createdAt</strong></td>
-<td valign="top"><a href="#datetime">DateTime</a></td>
 <td></td>
 </tr>
 </tbody>
@@ -3540,6 +3654,40 @@ A list of edges.
 
 ## Inputs
 
+### CheckInInput
+
+<table>
+<thead>
+<tr>
+<th colspan="2" align="left">Field</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>userId</strong></td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>eventId</strong></td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>allotedRoom</strong></td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>allotedSeat</strong></td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
 ### CommentInput
 
 <table>
@@ -3691,6 +3839,30 @@ A list of edges.
 </tbody>
 </table>
 
+### EventAttendeeInput
+
+<table>
+<thead>
+<tr>
+<th colspan="2" align="left">Field</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>userId</strong></td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>eventId</strong></td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
 ### EventInput
 
 <table>
@@ -3774,6 +3946,35 @@ A list of edges.
 </tr>
 <tr>
 <td colspan="2" valign="top"><strong>organizationId</strong></td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### EventProjectInput
+
+<table>
+<thead>
+<tr>
+<th colspan="2" align="left">Field</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>title</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>description</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>eventId</strong></td>
 <td valign="top"><a href="#id">ID</a>!</td>
 <td></td>
 </tr>
@@ -4529,12 +4730,12 @@ A list of edges.
 </tr>
 <tr>
 <td colspan="2" valign="top"><strong>description</strong></td>
-<td valign="top"><a href="#string">String</a></td>
+<td valign="top"><a href="#string">String</a>!</td>
 <td></td>
 </tr>
 <tr>
 <td colspan="2" valign="top"><strong>deadline</strong></td>
-<td valign="top"><a href="#datetime">DateTime</a></td>
+<td valign="top"><a href="#datetime">DateTime</a>!</td>
 <td></td>
 </tr>
 </tbody>
@@ -4648,6 +4849,30 @@ A list of edges.
 </tbody>
 </table>
 
+### UpdateEventProjectInput
+
+<table>
+<thead>
+<tr>
+<th colspan="2" align="left">Field</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>title</strong></td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>description</strong></td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
 ### UpdateOrganizationInput
 
 <table>
@@ -4711,6 +4936,11 @@ A list of edges.
 <tr>
 <td colspan="2" valign="top"><strong>deadline</strong></td>
 <td valign="top"><a href="#datetime">DateTime</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>completed</strong></td>
+<td valign="top"><a href="#boolean">Boolean</a></td>
 <td></td>
 </tr>
 </tbody>
@@ -5177,25 +5407,6 @@ A list of edges.
 
 ## Enums
 
-### CacheControlScope
-
-<table>
-<thead>
-<th align="left">Value</th>
-<th align="left">Description</th>
-</thead>
-<tbody>
-<tr>
-<td valign="top"><strong>PUBLIC</strong></td>
-<td></td>
-</tr>
-<tr>
-<td valign="top"><strong>PRIVATE</strong></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-
 ### EventOrderByInput
 
 <table>
@@ -5638,7 +5849,7 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 
 ### EmailAddress
 
-A field whose value conforms to the standard internet email address format as specified in RFC822: https://www.w3.org/Protocols/rfc822/.
+A field whose value conforms to the standard internet email address format as specified in HTML Spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address.
 
 ### Float
 
