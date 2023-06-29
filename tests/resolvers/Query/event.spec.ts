@@ -30,8 +30,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Query -> event", () => {
-  it(`throws NotFoundError if no event exists with _id === args.id
-   and event.status === 'ACTIVE'`, async () => {
+  it(`throws NotFoundError if no event exists with _id === args.id and event.status === 'ACTIVE'`, async () => {
     try {
       const args: QueryEventArgs = {
         id: Types.ObjectId().toString(),
@@ -54,7 +53,6 @@ describe("resolvers -> Query -> event", () => {
       _id: testEvent?._id,
     })
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 

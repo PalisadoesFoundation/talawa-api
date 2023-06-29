@@ -1,7 +1,5 @@
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import type { InterfaceUserAttende } from "../../models";
 import { Event } from "../../models";
-import { STATUS_ACTIVE } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
 /**
  * This query will fetch all events for the organization which have `ACTIVE` status from database.
@@ -22,13 +20,6 @@ export const eventsByOrganization: QueryResolvers["eventsByOrganization"] =
       .populate("tasks")
       .populate("admins", "-password")
       .lean();
-
-    events.forEach((event) => {
-      event.registrants = event.registrants.filter(
-        (registrant: InterfaceUserAttende) =>
-          registrant.status === STATUS_ACTIVE
-      );
-    });
 
     return events;
   };

@@ -26,6 +26,28 @@ type AuthData {
   user: User!
 }
 
+type CheckIn {
+  _id: ID!
+  allotedRoom: String
+  allotedSeat: String
+  event: Event!
+  time: DateTime!
+  user: User!
+}
+
+input CheckInInput {
+  allotedRoom: String
+  allotedSeat: String
+  eventId: ID!
+  userId: ID!
+}
+
+type CheckInStatus {
+  _id: ID!
+  checkIn: CheckIn
+  user: User!
+}
+
 type Comment {
   _id: ID
   createdAt: DateTime
@@ -121,6 +143,8 @@ type Event {
   _id: ID!
   admins(adminId: ID): [User]
   allDay: Boolean!
+  attendees: [User!]!
+  attendeesCheckInStatus: [CheckInStatus!]!
   creator: User!
   description: String!
   endDate: Date!
@@ -131,14 +155,18 @@ type Event {
   location: String
   longitude: Longitude
   organization: Organization
+  projects: [EventProject]
   recurrance: Recurrance
   recurring: Boolean!
-  registrants: [UserAttende]
   startDate: Date!
   startTime: Time
   status: Status!
-  tasks: [Task]
   title: String!
+}
+
+input EventAttendeeInput {
+  eventId: ID!
+  userId: ID!
 }
 
 input EventInput {
@@ -182,9 +210,18 @@ enum EventOrderByInput {
   title_DESC
 }
 
-type EventRegistrants {
+type EventProject {
+  _id: ID!
+  description: String!
   event: Event!
-  isRegistered: Boolean!
+  tasks: [Task]
+  title: String!
+}
+
+input EventProjectInput {
+  description: String!
+  eventId: ID!
+  title: String!
 }
 
 input EventWhereInput {
@@ -355,6 +392,7 @@ type MinimumValueError implements FieldError {
 type Mutation {
   acceptAdmin(id: ID!): Boolean!
   acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest!
+  addEventAttendee(data: EventAttendeeInput!): User!
   addLanguageTranslation(data: LanguageInput!): Language!
   addOrganizationImage(file: String!, organizationId: String!): Organization!
   addUserImage(file: String!): User!
@@ -365,18 +403,20 @@ type Mutation {
   blockPluginCreationBySuperadmin(blockUser: Boolean!, userId: ID!): User!
   blockUser(organizationId: ID!, userId: ID!): User!
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
+  checkIn(data: CheckInInput!): CheckIn!
   createAdmin(data: UserAndOrganizationInput!): User!
   createComment(data: CommentInput!, postId: ID!): Comment
   createDirectChat(data: createChatInput!): DirectChat!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
   createEvent(data: EventInput): Event!
+  createEventProject(data: EventProjectInput!): EventProject!
   createGroupChat(data: createGroupChatInput!): GroupChat!
   createMember(input: UserAndOrganizationInput!): Organization!
   createMessageChat(data: MessageChatInput!): MessageChat!
   createOrganization(data: OrganizationInput, file: String): Organization!
   createPlugin(installedOrgs: [ID!], pluginCreatedBy: String!, pluginDesc: String!, pluginInstallStatus: Boolean!, pluginName: String!): Plugin!
   createPost(data: PostInput!, file: String): Post
-  createTask(data: TaskInput, eventId: ID!): Task!
+  createTask(data: TaskInput!, eventProjectId: ID!): Task!
   createUserTag(input: CreateUserTagInput!): UserTag
   deleteDonationById(id: ID!): DeletePayload!
   forgotPassword(data: ForgotPasswordData!): Boolean!
@@ -396,6 +436,8 @@ type Mutation {
   removeComment(id: ID!): Comment
   removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
   removeEvent(id: ID!): Event!
+  removeEventAttendee(data: EventAttendeeInput!): User!
+  removeEventProject(id: ID!): EventProject!
   removeGroupChat(chatId: ID!): GroupChat!
   removeMember(data: UserAndOrganizationInput!): Organization!
   removeOrganization(id: ID!): User!
@@ -410,6 +452,7 @@ type Mutation {
   sendMembershipRequest(organizationId: ID!): MembershipRequest!
   sendMessageToDirectChat(chatId: ID!, messageContent: String!): DirectChatMessage!
   sendMessageToGroupChat(chatId: ID!, messageContent: String!): GroupChatMessage!
+  setTaskVolunteers(id: ID!, volunteers: [ID]!): Task
   signUp(data: UserInput!, file: String): AuthData!
   togglePostPin(id: ID!): Post!
   unassignUserTag(input: ToggleUserTagAssignInput!): User
@@ -418,12 +461,13 @@ type Mutation {
   unlikePost(id: ID!): Post
   unregisterForEventByUser(id: ID!): Event!
   updateEvent(data: UpdateEventInput, id: ID!): Event!
+  updateEventProject(data: UpdateEventProjectInput!, id: ID!): EventProject!
   updateLanguage(languageCode: String!): User!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
   updatePluginInstalledOrgs(id: ID!, orgId: ID!): Plugin!
   updatePluginStatus(id: ID!, status: Boolean!): Plugin!
   updatePost(data: PostUpdateInput, id: ID!): Post!
-  updateTask(data: UpdateTaskInput, id: ID!): Task
+  updateTask(data: UpdateTaskInput!, id: ID!): Task
   updateUserPassword(data: UpdateUserPasswordInput!): User!
   updateUserProfile(data: UpdateUserInput, file: String): User!
   updateUserTag(input: UpdateUserTagInput!): UserTag
@@ -667,7 +711,6 @@ type Query {
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
   getPlugins: [Plugin]
   getlanguage(lang_code: String!): [Translation]
-  isUserRegister(eventId: ID!): EventRegistrants
   joinedOrganizations(id: ID): [Organization]
   me: User!
   myLanguage: String
@@ -680,8 +723,6 @@ type Query {
   postsByOrganizationConnection(first: Int, id: ID!, orderBy: PostOrderByInput, skip: Int, where: PostWhereInput): PostConnection
   registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
   registrantsByEvent(id: ID!): [User]
-  tasksByEvent(id: ID!, orderBy: TaskOrderByInput): [Task]
-  tasksByUser(id: ID!, orderBy: TaskOrderByInput): [Task]
   user(id: ID!): User!
   userLanguage(userId: ID!): String
   users(orderBy: UserOrderByInput, where: UserWhereInput): [User]
@@ -714,17 +755,19 @@ type Subscription {
 
 type Task {
   _id: ID!
+  completed: Boolean
   createdAt: DateTime!
   creator: User!
   deadline: DateTime
   description: String
   event: Event!
   title: String!
+  volunteers: [User]
 }
 
 input TaskInput {
-  deadline: DateTime
-  description: String
+  deadline: DateTime!
+  description: String!
   title: String!
 }
 
@@ -787,6 +830,11 @@ input UpdateEventInput {
   title: String
 }
 
+input UpdateEventProjectInput {
+  description: String
+  title: String
+}
+
 input UpdateOrganizationInput {
   description: String
   isPublic: Boolean
@@ -796,6 +844,7 @@ input UpdateOrganizationInput {
 }
 
 input UpdateTaskInput {
+  completed: Boolean
   deadline: DateTime
   description: String
   title: String
@@ -830,6 +879,7 @@ type User {
   adminApproved: Boolean
   adminFor: [Organization]
   appLanguageCode: String!
+  assignedTasks: [Task]
   createdAt: DateTime
   createdEvents: [Event]
   createdOrganizations: [Organization]
@@ -852,14 +902,6 @@ type User {
 input UserAndOrganizationInput {
   organizationId: ID!
   userId: ID!
-}
-
-type UserAttende {
-  _id: ID!
-  createdAt: DateTime
-  status: Status!
-  user: User!
-  userId: String!
 }
 
 type UserConnection {

@@ -69,8 +69,9 @@ describe("resolvers -> Mutation -> createEventProject", () => {
 
     try {
       const args = {
+        id: Types.ObjectId().toString(),
         data: {
-          eventId: null,
+          title: "New Title",
         },
       };
 
@@ -101,6 +102,9 @@ describe("resolvers -> Mutation -> createEventProject", () => {
     try {
       const args = {
         id: Types.ObjectId().toString(),
+        data: {
+          title: "New title",
+        },
       };
 
       const context = {
@@ -132,6 +136,9 @@ describe("resolvers -> Mutation -> createEventProject", () => {
     try {
       const args = {
         id: testEventProject.id.toString(),
+        data: {
+          title: "New Title",
+        },
       };
 
       const context = {

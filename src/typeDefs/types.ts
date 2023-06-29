@@ -26,6 +26,23 @@ export const types = gql`
     iosFirebaseOptions: IOSFirebaseOptions!
   }
 
+  # Stores the detail of an check in of an user in an event
+  type CheckIn {
+    _id: ID!
+    time: DateTime!
+    allotedRoom: String
+    allotedSeat: String
+    user: User!
+    event: Event!
+  }
+
+  # Used to show whether an user has checked in for an event
+  type CheckInStatus {
+    _id: ID!
+    user: User!
+    checkIn: CheckIn
+  }
+
   type Comment {
     _id: ID
     text: String!
@@ -98,23 +115,20 @@ export const types = gql`
     longitude: Longitude
     organization: Organization
     creator: User!
-    registrants: [UserAttende]
+    attendees: [User!]!
+    # For each attendee, gives information about whether he/she has checked in yet or not
+    attendeesCheckInStatus: [CheckInStatus!]!
     admins(adminId: ID): [User]
-    tasks: [Task]
     status: Status!
+    projects: [EventProject]
   }
 
-  # type EventProject {
-  #     _id: ID!
-  #     title:String!
-  #     description: String!
-  #     event: Event!
-  #     tasks: [Task]
-  # }
-
-  type EventRegistrants {
+  type EventProject {
+    _id: ID!
+    title: String!
+    description: String!
     event: Event!
-    isRegistered: Boolean!
+    tasks: [Task]
   }
 
   type Group {
@@ -316,7 +330,9 @@ export const types = gql`
     event: Event!
     creator: User!
     createdAt: DateTime!
+    completed: Boolean
     deadline: DateTime
+    volunteers: [User]
   }
 
   type Translation {
@@ -346,6 +362,7 @@ export const types = gql`
     organizationUserBelongsTo: Organization
     pluginCreationAllowed: Boolean
     adminApproved: Boolean
+    assignedTasks: [Task]
     createdAt: DateTime
     tagsAssignedWith(
       after: String
@@ -354,14 +371,6 @@ export const types = gql`
       last: PositiveInt
       organizationId: ID
     ): UserTagsConnection
-  }
-
-  type UserAttende {
-    _id: ID!
-    userId: String!
-    user: User!
-    status: Status!
-    createdAt: DateTime
   }
 
   type UserConnection {

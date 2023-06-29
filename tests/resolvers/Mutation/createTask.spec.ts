@@ -1,22 +1,22 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Event } from "../../../src/models";
 import type { MutationCreateTaskArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-
 import { createTask as createTaskResolver } from "../../../src/resolvers/Mutation/createTask";
 import {
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import type { TestUserType } from "../../helpers/userAndOrg";
-import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
-import type { TestEventType } from "../../helpers/events";
+import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
+import { createAndAssignTestTask } from "../../helpers/task";
+import type { TestEventProjectType } from "../../helpers/task";
 
+let randomUser: TestUserType;
 let testUser: TestUserType;
-let testEvent: TestEventType;
+let testEventProject: TestEventProjectType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
@@ -25,9 +25,9 @@ beforeAll(async () => {
   vi.spyOn(requestContext, "translate").mockImplementation(
     (message) => message
   );
-  const temp = await createTestEventWithRegistrants();
-  testUser = temp[0];
-  testEvent = temp[2];
+
+  randomUser = await createTestUser();
+  [testUser, , , testEventProject] = await createAndAssignTestTask();
 });
 
 afterAll(async () => {
@@ -38,7 +38,12 @@ describe("resolvers -> Mutation -> createTask", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationCreateTaskArgs = {
-        eventId: "",
+        eventProjectId: testEventProject!._id,
+        data: {
+          title: `Test Task`,
+          description: `Test Description`,
+          deadline: new Date().toDateString(),
+        },
       };
 
       const context = {
@@ -54,7 +59,12 @@ describe("resolvers -> Mutation -> createTask", () => {
   it(`throws NotFoundError if no event exists with _id === args.eventId`, async () => {
     try {
       const args: MutationCreateTaskArgs = {
-        eventId: Types.ObjectId().toString(),
+        eventProjectId: Types.ObjectId().toString(),
+        data: {
+          title: `Test Task`,
+          description: `Test Description`,
+          deadline: new Date().toDateString(),
+        },
       };
 
       const context = {
@@ -67,9 +77,30 @@ describe("resolvers -> Mutation -> createTask", () => {
     }
   });
 
+  it(`throws NotAuthorizedError if the user is not a superadmin on the creator of the event project`, async () => {
+    try {
+      const args: MutationCreateTaskArgs = {
+        eventProjectId: testEventProject!._id,
+        data: {
+          title: `Test Task`,
+          description: `Test Description`,
+          deadline: new Date().toDateString(),
+        },
+      };
+
+      const context = {
+        userId: randomUser!.id,
+      };
+
+      await createTaskResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+    }
+  });
+
   it(`creates the task and returns it`, async () => {
     const args: MutationCreateTaskArgs = {
-      eventId: testEvent?.id,
+      eventProjectId: testEventProject!.id,
       data: {
         title: "title",
         deadline: new Date().toString(),
@@ -90,13 +121,5 @@ describe("resolvers -> Mutation -> createTask", () => {
       })
     );
     expect(createTaskPayload?.deadline).toBeInstanceOf(Date);
-
-    const testUpdatedEvent = await Event.findOne({
-      _id: testEvent?._id,
-    })
-      .select(["tasks"])
-      .lean();
-
-    expect(testUpdatedEvent?.tasks).toEqual([createTaskPayload?._id]);
   });
 });
