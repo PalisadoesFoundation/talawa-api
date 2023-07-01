@@ -9,6 +9,7 @@ import { IN_PRODUCTION } from "../constants";
 export const copyToClipboard = (text: string): void => {
   // Only copies in development or test mode
   if (IN_PRODUCTION !== true) {
-    ncp.copy(text);
+    //@ts-ignore
+    ncp.copy(text, () => {});
   }
 };

@@ -1,4 +1,4 @@
-import { gql } from "apollo-server-core";
+import { gql } from "graphql-tag";
 /**
  * This graphQL typeDef defines the logic for different queries defined in the talawa-api.
  */
@@ -38,8 +38,6 @@ export const queries = gql`
     getlanguage(lang_code: String!): [Translation]
 
     getPlugins: [Plugin]
-
-    isUserRegister(eventId: ID!): EventRegistrants
 
     joinedOrganizations(id: ID): [Organization]
 
@@ -81,10 +79,6 @@ export const queries = gql`
     registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
 
     registrantsByEvent(id: ID!): [User]
-
-    tasksByEvent(id: ID!, orderBy: TaskOrderByInput): [Task]
-
-    tasksByUser(id: ID!, orderBy: TaskOrderByInput): [Task]
 
     user(id: ID!): User! @auth
 

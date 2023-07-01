@@ -1,4 +1,4 @@
-import { gql } from "apollo-server-core";
+import { gql } from "graphql-tag";
 /**
  * This graphQL typeDef defines the logic for different mutations defined in the talawa-api.
  */
@@ -8,6 +8,8 @@ export const mutations = gql`
     acceptAdmin(id: ID!): Boolean! @auth @role(requires: SUPERADMIN)
 
     acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
+
+    addEventAttendee(data: EventAttendeeInput!): User! @auth
 
     addLanguageTranslation(data: LanguageInput!): Language! @auth
 
@@ -32,6 +34,8 @@ export const mutations = gql`
 
     cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
+    checkIn(data: CheckInInput!): CheckIn! @auth
+
     createMember(input: UserAndOrganizationInput!): Organization! @auth
 
     createAdmin(data: UserAndOrganizationInput!): User!
@@ -53,6 +57,8 @@ export const mutations = gql`
 
     createEvent(data: EventInput): Event! @auth
 
+    createEventProject(data: EventProjectInput!): EventProject! @auth
+
     createGroupChat(data: createGroupChatInput!): GroupChat! @auth
 
     createMessageChat(data: MessageChatInput!): MessageChat! @auth
@@ -73,7 +79,7 @@ export const mutations = gql`
 
     createUserTag(input: CreateUserTagInput!): UserTag @auth
 
-    createTask(data: TaskInput, eventId: ID!): Task! @auth
+    createTask(data: TaskInput!, eventProjectId: ID!): Task! @auth
 
     deleteDonationById(id: ID!): DeletePayload!
 
@@ -113,6 +119,10 @@ export const mutations = gql`
 
     removeEvent(id: ID!): Event! @auth
 
+    removeEventAttendee(data: EventAttendeeInput!): User! @auth
+
+    removeEventProject(id: ID!): EventProject! @auth
+
     removeGroupChat(chatId: ID!): GroupChat! @auth
 
     removeMember(data: UserAndOrganizationInput!): Organization! @auth
@@ -147,6 +157,8 @@ export const mutations = gql`
       messageContent: String!
     ): GroupChatMessage! @auth
 
+    setTaskVolunteers(id: ID!, volunteers: [ID]!): Task @auth
+
     signUp(data: UserInput!, file: String): AuthData!
 
     togglePostPin(id: ID!): Post! @auth
@@ -162,6 +174,9 @@ export const mutations = gql`
     unregisterForEventByUser(id: ID!): Event! @auth
 
     updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
+
+    updateEventProject(id: ID!, data: UpdateEventProjectInput!): EventProject!
+      @auth
 
     updatePost(id: ID!, data: PostUpdateInput): Post! @auth
 
@@ -179,7 +194,7 @@ export const mutations = gql`
 
     updateUserTag(input: UpdateUserTagInput!): UserTag @auth
 
-    updateTask(id: ID!, data: UpdateTaskInput): Task @auth
+    updateTask(id: ID!, data: UpdateTaskInput!): Task @auth
 
     updateUserProfile(data: UpdateUserInput, file: String): User! @auth
 

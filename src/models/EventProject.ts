@@ -1,8 +1,8 @@
 import type { Types, PopulatedDoc, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceEvent } from "./Event";
-import type { InterfaceTask } from "./Task";
 import type { InterfaceUser } from "./User";
+
 /**
  * This is an interface representing a document for an event project in the database(MongoDB).
  */
@@ -13,9 +13,9 @@ export interface InterfaceEventProject {
   createdAt: Date;
   event: PopulatedDoc<InterfaceEvent & Document>;
   creator: PopulatedDoc<InterfaceUser & Document>;
-  tasks: PopulatedDoc<InterfaceTask & Document>[];
   status: string;
 }
+
 /**
  * This is the Structure of the event project
  * @param title - Title
@@ -49,12 +49,6 @@ const eventProjectSchema = new Schema({
     ref: "User",
     required: true,
   },
-  tasks: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Task",
-    },
-  ],
   status: {
     type: String,
     required: true,

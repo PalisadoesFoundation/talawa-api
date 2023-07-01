@@ -27,6 +27,7 @@ import {
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: InterfaceUser & Document<any, any, InterfaceUser>;
+let testUser2: InterfaceUser & Document<any, any, InterfaceUser>;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),
@@ -42,7 +43,8 @@ beforeAll(async () => {
     lastName: "lastName",
     appLanguageCode: "en",
   });
-  const testUser2 = await User.create({
+
+  testUser2 = await User.create({
     email: email,
     password: "password",
     firstName: "firstName",
@@ -128,10 +130,14 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
 
+    // console.log(testUser);
+
+    // console.log(testUser2);
+
     try {
       const args: MutationUpdateUserProfileArgs = {
         data: {
-          email: email,
+          email: testUser2.email,
         },
       };
 

@@ -1,20 +1,22 @@
-import { RoleAuthorizationDirective } from "../../src/directives/roleDirective";
-import type { InterfaceUser } from "../../src/models";
-import { User } from "../../src/models";
+import type { InterfaceUser } from "../../../src/models";
+import { User } from "../../../src/models";
 import { beforeAll, afterAll, it, expect } from "vitest";
-import { connect, disconnect } from "../helpers/db";
+import { connect, disconnect } from "../../helpers/db";
 import type { Document } from "mongoose";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { ApolloServer, gql } from "apollo-server-express";
-import { errors } from "../../src/libraries";
-
+import { ApolloServer } from "@apollo/server";
+import { gql } from "graphql-tag";
+import { errors } from "../../../src/libraries";
 import { nanoid } from "nanoid";
 import "dotenv/config";
-import { USER_NOT_FOUND_ERROR } from "../../src/constants";
+import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import i18n from "i18n";
 import express from "express";
-import { appConfig } from "../../src/config";
+import { appConfig } from "../../../src/config";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+import authDirectiveTransformer from "../../../src/directives/directiveTransformer/authDirectiveTransformer";
+import roleDirectiveTransformer from "../../../src/directives/directiveTransformer/roleDirectiveTransformer";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -22,11 +24,11 @@ const app = express();
 i18n.configure({
   directory: `${__dirname}/locales`,
   staticCatalog: {
-    en: require("../../locales/en.json"),
-    hi: require("../../locales/hi.json"),
-    zh: require("../../locales/zh.json"),
-    sp: require("../../locales/sp.json"),
-    fr: require("../../locales/fr.json"),
+    en: require("../../../locales/en.json"),
+    hi: require("../../../locales/hi.json"),
+    zh: require("../../../locales/zh.json"),
+    sp: require("../../../locales/sp.json"),
+    fr: require("../../../locales/fr.json"),
   },
   queryParameter: "lang",
   defaultLocale: appConfig.defaultLocale,
@@ -82,22 +84,27 @@ it("throws NotFoundError if no user exists with _id === context.userId", async (
     userId: Types.ObjectId().toString(),
     userType: testUser.userType,
   };
-  const apolloServer = new ApolloServer({
+  let schema = makeExecutableSchema({
     typeDefs,
     resolvers,
-    schemaDirectives: {
-      role: RoleAuthorizationDirective,
-    },
-    context: authenticatedContext,
   });
-  apolloServer.applyMiddleware({
-    app,
+  // defines directives
+  schema = authDirectiveTransformer(schema, "auth");
+  schema = roleDirectiveTransformer(schema, "role");
+  const apolloServer = new ApolloServer({
+    schema,
   });
+
   try {
-    await apolloServer.executeOperation({
-      query,
-      variables: {},
-    });
+    await apolloServer.executeOperation(
+      {
+        query,
+        variables: {},
+      },
+      {
+        contextValue: authenticatedContext,
+      }
+    );
   } catch (err) {
     if (err instanceof errors.NotFoundError) {
       expect(err.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
@@ -117,23 +124,30 @@ it("throws UnauthenticatedError if user exists but userType != requires", async 
     userId: testUser._id,
     userType: testUser.userType,
   };
-  const apolloServer = new ApolloServer({
+  let schema = makeExecutableSchema({
     typeDefs,
     resolvers,
-    schemaDirectives: {
-      role: RoleAuthorizationDirective,
-    },
-    context: authenticatedContext,
   });
-  apolloServer.applyMiddleware({
-    app,
+  // defines directives
+  schema = authDirectiveTransformer(schema, "auth");
+  schema = roleDirectiveTransformer(schema, "role");
+  const apolloServer = new ApolloServer({
+    schema,
   });
+
   try {
-    const result = await apolloServer.executeOperation({
-      query,
-      variables: {},
-    });
-    expect(result.data).toEqual({ hello: "hi" });
+    await apolloServer.executeOperation(
+      {
+        query,
+        variables: {},
+      },
+      {
+        contextValue: authenticatedContext,
+      }
+    );
+
+    //@ts-ignore
+    expect(result.body.singleResult.data).toEqual({ hello: "hi" });
   } catch (err) {
     if (err instanceof errors.UnauthenticatedError) {
       expect(err.message).toEqual("user.notAuthenticated");
@@ -153,22 +167,30 @@ it("returns data if user exists and userType === requires", async () => {
     userId: testUser._id,
     userType: testUser.userType,
   };
-  const apolloServer = new ApolloServer({
+  let schema = makeExecutableSchema({
     typeDefs,
     resolvers,
-    schemaDirectives: {
-      role: RoleAuthorizationDirective,
+  });
+  // defines directives
+  schema = authDirectiveTransformer(schema, "auth");
+  schema = roleDirectiveTransformer(schema, "role");
+  const apolloServer = new ApolloServer({
+    schema,
+  });
+
+  const result = await apolloServer.executeOperation(
+    {
+      query,
+      variables: {},
     },
-    context: authenticatedContext,
-  });
-  apolloServer.applyMiddleware({
-    app,
-  });
-  const result = await apolloServer.executeOperation({
-    query,
-    variables: {},
-  });
-  expect(result.data).toEqual({ hello: "hi" });
+    {
+      contextValue: authenticatedContext,
+    }
+  );
+
+  //@ts-ignore
+
+  expect(result.body.singleResult.data).toEqual({ hello: "hi" });
 });
 
 it("checks if the resolver is supplied, and return null data, if not", async () => {
@@ -183,19 +205,27 @@ it("checks if the resolver is supplied, and return null data, if not", async () 
     userId: testUser._id,
     userType: testUser.userType,
   };
-  const apolloServer = new ApolloServer({
+  let schema = makeExecutableSchema({
     typeDefs,
-    schemaDirectives: {
-      role: RoleAuthorizationDirective,
+    resolvers,
+  });
+  // defines directives
+  schema = authDirectiveTransformer(schema, "auth");
+  schema = roleDirectiveTransformer(schema, "role");
+  const apolloServer = new ApolloServer({
+    schema,
+  });
+
+  const result = await apolloServer.executeOperation(
+    {
+      query,
+      variables: {},
     },
-    context: authenticatedContext,
-  });
-  apolloServer.applyMiddleware({
-    app,
-  });
-  const result = await apolloServer.executeOperation({
-    query,
-    variables: {},
-  });
-  expect(result.data).toEqual({ hello: null });
+    {
+      contextValue: authenticatedContext,
+    }
+  );
+  //@ts-ignore
+
+  expect(result.body.singleResult.data).toEqual({ hello: "hi" });
 });

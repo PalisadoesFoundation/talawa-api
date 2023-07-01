@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Event } from "../../../src/models";
+import { User, EventAttendee } from "../../../src/models";
 import type { MutationUnregisterForEventByUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -29,9 +29,7 @@ let testEvent: TestEventType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  const temp = await createTestEvent();
-  testUser = temp[0];
-  testEvent = temp[2];
+  [testUser, , testEvent] = await createTestEvent();
 });
 
 afterAll(async () => {
@@ -102,89 +100,7 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
     }
   });
 
-  it(`throws NotFoundError if current user with _id === context.userId is
-  not a registrant of event with _id === args.id`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementation((message) => `Translated ${message}`);
-
-    try {
-      const args: MutationUnregisterForEventByUserArgs = {
-        id: testEvent?._id,
-      };
-
-      const context = {
-        userId: testUser?._id,
-      };
-
-      const { unregisterForEventByUser: unregisterForEventByUserResolver } =
-        await import(
-          "../../../src/resolvers/Mutation/unregisterForEventByUser"
-        );
-
-      await unregisterForEventByUserResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
-      );
-    }
-  });
-
-  it(`unregisters current user with _id === context.userId from event with
-  _id === args.id`, async () => {
-    await Event.updateOne(
-      {
-        _id: testEvent?._id,
-      },
-      {
-        $push: {
-          registrants: {
-            userId: testUser?._id,
-            user: testUser?._id,
-            status: "ACTIVE",
-          },
-        },
-      }
-    );
-
-    await User.updateOne(
-      {
-        _id: testUser?._id,
-      },
-      {
-        $push: {
-          registeredEvents: testEvent?._id,
-        },
-      }
-    );
-
-    const args: MutationUnregisterForEventByUserArgs = {
-      id: testEvent?._id,
-    };
-
-    const context = {
-      userId: testUser?._id,
-    };
-
-    const { unregisterForEventByUser: unregisterForEventByUserResolver } =
-      await import("../../../src/resolvers/Mutation/unregisterForEventByUser");
-
-    const unregisterForEventByUserPayload =
-      await unregisterForEventByUserResolver?.({}, args, context);
-
-    const testUnregisterForEventByUserPayload = await Event.findOne({
-      _id: testEvent?._id,
-    }).lean();
-
-    expect(unregisterForEventByUserPayload).toEqual(
-      testUnregisterForEventByUserPayload
-    );
-  });
-
-  it(`throws NotFoundError if current user with _id === context.userId has
-  already unregistered from the event with _id === args.id`, async () => {
+  it(`throws NotFoundError if current user with _id === context.userId is not a registrant of event with _id === args.id`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -211,5 +127,44 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
         `Translated ${USER_ALREADY_UNREGISTERED_ERROR.MESSAGE}`
       );
     }
+  });
+
+  it(`unregisters current user with _id === context.userId from event with
+  _id === args.id`, async () => {
+    await EventAttendee.create({
+      userId: testUser!._id,
+      eventId: testEvent!._id,
+    });
+
+    await User.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          registeredEvents: testEvent?._id,
+        },
+      }
+    );
+
+    const args: MutationUnregisterForEventByUserArgs = {
+      id: testEvent?._id,
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    const { unregisterForEventByUser: unregisterForEventByUserResolver } =
+      await import("../../../src/resolvers/Mutation/unregisterForEventByUser");
+
+    await unregisterForEventByUserResolver?.({}, args, context);
+
+    const isUserRegistered = await EventAttendee.exists({
+      userId: testUser!._id,
+      eventId: testEvent!._id,
+    });
+
+    expect(isUserRegistered).toBeFalsy();
   });
 });

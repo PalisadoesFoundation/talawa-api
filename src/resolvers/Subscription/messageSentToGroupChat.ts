@@ -1,4 +1,4 @@
-import { withFilter } from "apollo-server-express";
+import { withFilter } from "graphql-subscriptions";
 import type { SubscriptionResolvers } from "../../types/generatedGraphQLTypes";
 import { GroupChat } from "../../models";
 

@@ -11,6 +11,7 @@ import admin, { credential } from "firebase-admin";
 import { getApps } from "firebase-admin/app";
 import { isValidString } from "../../libraries/validators/validateString";
 import { compareDates } from "../../libraries/validators/compareDates";
+import { EventAttendee } from "../../models/EventAttendee";
 
 const applicationDefault = credential.applicationDefault;
 
@@ -68,7 +69,13 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   );
 
   // Checks whether currentUser neither created nor joined the organization.
-  if (!(userCreatedOrganization || userJoinedOrganization)) {
+  if (
+    !(
+      userCreatedOrganization ||
+      userJoinedOrganization ||
+      currentUser.userType == "SUPERADMIN"
+    )
+  ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE),
       ORGANIZATION_NOT_AUTHORIZED_ERROR.CODE,
@@ -122,14 +129,13 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   const createdEvent = await Event.create({
     ...args.data,
     creator: currentUser._id,
-    registrants: [
-      {
-        userId: currentUser._id.toString(),
-        user: currentUser._id,
-      },
-    ],
     admins: [currentUser._id],
     organization: organization._id,
+  });
+
+  await EventAttendee.create({
+    userId: currentUser._id.toString(),
+    eventId: createdEvent._id,
   });
 
   /*

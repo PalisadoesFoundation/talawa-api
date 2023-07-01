@@ -22,6 +22,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
+import { Types } from "mongoose";
 
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
@@ -92,7 +93,9 @@ describe("resolvers -> Mutation -> createEventProject", () => {
     try {
       const args = {
         data: {
-          eventId: null,
+          title: "Test Event",
+          description: "Test Description",
+          eventId: Types.ObjectId().toString(),
         },
       };
 
@@ -100,7 +103,7 @@ describe("resolvers -> Mutation -> createEventProject", () => {
         "../../../src/resolvers/Mutation/createEventProject"
       );
 
-      await createEventProject(null, args, { user: null });
+      await createEventProject!({}, args, { user: null });
     } catch (err: any) {
       expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(err.message).toEqual(`Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`);
@@ -110,7 +113,9 @@ describe("resolvers -> Mutation -> createEventProject", () => {
   it("Should throw an error if the event is not found", async () => {
     const args = {
       data: {
-        eventId: null,
+        title: "Test Event",
+        description: "Test Description",
+        eventId: Types.ObjectId().toString(),
       },
     };
 
@@ -129,7 +134,7 @@ describe("resolvers -> Mutation -> createEventProject", () => {
     );
 
     try {
-      await createEventProject(null, args, context);
+      await createEventProject!({}, args, context);
     } catch (error: any) {
       expect(spy).toBeCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
@@ -141,10 +146,11 @@ describe("resolvers -> Mutation -> createEventProject", () => {
   it("Should throw an error if the user is not an admin of the event", async () => {
     const args = {
       data: {
-        eventId: testEvent?._id,
+        title: "Test Event",
+        description: "Test Description",
+        eventId: testEvent!._id,
       },
     };
-
     const context = {
       userId: testUser?._id,
     };
@@ -160,7 +166,7 @@ describe("resolvers -> Mutation -> createEventProject", () => {
     );
 
     try {
-      await createEventProject(null, args, context);
+      await createEventProject!({}, args, context);
     } catch (error: any) {
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
       expect(error.message).toEqual(
@@ -187,7 +193,7 @@ describe("resolvers -> Mutation -> createEventProject", () => {
       "../../../src/resolvers/Mutation/createEventProject"
     );
 
-    const result = await createEventProject(null, args, context);
+    const result = await createEventProject!({}, args, context);
 
     expect(result).toHaveProperty("event", testEvent?._id);
     expect(result).toHaveProperty("title", args.data.title);
