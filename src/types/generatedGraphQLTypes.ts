@@ -1408,6 +1408,7 @@ export type Subscription = {
   directMessageChat?: Maybe<MessageChat>;
   messageSentToDirectChat?: Maybe<DirectChatMessage>;
   messageSentToGroupChat?: Maybe<GroupChatMessage>;
+  onPluginUpdate?: Maybe<Plugin>;
 };
 
 export type Task = {
@@ -2531,6 +2532,7 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   directMessageChat?: SubscriptionResolver<Maybe<ResolversTypes['MessageChat']>, "directMessageChat", ParentType, ContextType>;
   messageSentToDirectChat?: SubscriptionResolver<Maybe<ResolversTypes['DirectChatMessage']>, "messageSentToDirectChat", ParentType, ContextType>;
   messageSentToGroupChat?: SubscriptionResolver<Maybe<ResolversTypes['GroupChatMessage']>, "messageSentToGroupChat", ParentType, ContextType>;
+  onPluginUpdate?: SubscriptionResolver<Maybe<ResolversTypes['Plugin']>, "onPluginUpdate", ParentType, ContextType>;
 };
 
 export type TaskResolvers<ContextType = any, ParentType extends ResolversParentTypes['Task'] = ResolversParentTypes['Task']> = {

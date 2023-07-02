@@ -751,6 +751,7 @@ type Subscription {
   directMessageChat: MessageChat
   messageSentToDirectChat: DirectChatMessage
   messageSentToGroupChat: GroupChatMessage
+  onPluginUpdate: Plugin
 }
 
 type Task {

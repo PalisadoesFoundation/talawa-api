@@ -11,11 +11,16 @@ import { Plugin } from "../../models";
 
 export const createPlugin: MutationResolvers["createPlugin"] = async (
   _parent,
-  args
+  args,
+  context
 ) => {
   // Creates new plugin.
   const createdPlugin = await Plugin.create({
     ...args,
+  });
+  // calls subscription
+  context.pubsub.publish("TALAWA_PLUGIN_UPDATED", {
+    Plugin: createdPlugin.toObject(),
   });
 
   // Returns createdPlugin.

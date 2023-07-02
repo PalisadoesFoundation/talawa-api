@@ -80,7 +80,10 @@ const wsServer = new WebSocketServer({
 
 // Hand in the schema we just created and have the
 // WebSocketServer start listening.
-const serverCleanup = useServer({ schema }, wsServer);
+const serverCleanup = useServer(
+  { schema, context: (ctx, _msg, _args) => ({ pubsub }) },
+  wsServer
+);
 
 async function startServer(): Promise<void> {
   await database.connect();
@@ -109,6 +112,7 @@ async function startServer(): Promise<void> {
   await logIssues();
 
   console.log(`🚀 Server ready at http://localhost:4000/graphql`);
+  console.log(`🚀 Subscription endpoint ready at ws://localhost:4000/graphql`);
 }
 
 startServer();
