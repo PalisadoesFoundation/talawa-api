@@ -17,6 +17,7 @@ export const createPlugin: MutationResolvers["createPlugin"] = async (
   // Creates new plugin.
   const createdPlugin = await Plugin.create({
     ...args,
+    uninstalledOrgs: [],
   });
   // calls subscription
   context.pubsub.publish("TALAWA_PLUGIN_UPDATED", {

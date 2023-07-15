@@ -71,8 +71,7 @@ export const mutations = gql`
       pluginName: String!
       pluginCreatedBy: String!
       pluginDesc: String!
-      pluginInstallStatus: Boolean!
-      installedOrgs: [ID!]
+      uninstalledOrgs: [ID!]
     ): Plugin!
 
     createPost(data: PostInput!, file: String): Post @auth
@@ -188,9 +187,7 @@ export const mutations = gql`
       file: String
     ): Organization! @auth
 
-    updatePluginInstalledOrgs(id: ID!, orgId: ID!): Plugin!
-
-    updatePluginStatus(id: ID!, status: Boolean!): Plugin!
+    updatePluginStatus(id: ID!, orgId: ID!): Plugin!
 
     updateUserTag(input: UpdateUserTagInput!): UserTag @auth
 
