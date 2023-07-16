@@ -1,5 +1,5 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { InterfacePlugin, Plugin } from "../../models";
+import { Plugin } from "../../models";
 import mongoose from "mongoose";
 
 /**
@@ -10,7 +10,6 @@ import mongoose from "mongoose";
  * @returns Updated PLugin status.
  */
 
-// @ts-ignore
 export const updatePluginStatus: MutationResolvers["updatePluginStatus"] =
   async (_parent, args, context) => {
     const uid = args.id;
@@ -21,7 +20,7 @@ export const updatePluginStatus: MutationResolvers["updatePluginStatus"] =
 
     if (!plugin) {
       console.log("Document not found");
-      return;
+      return plugin;
     }
 
     let uninstalledOrgsList = plugin.uninstalledOrgs;

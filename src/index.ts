@@ -81,7 +81,7 @@ const wsServer = new WebSocketServer({
 // Hand in the schema we just created and have the
 // WebSocketServer start listening.
 const serverCleanup = useServer(
-  { schema, context: (ctx, _msg, _args) => ({ pubsub }) },
+  { schema, context: (_ctx, _msg, _args) => ({ pubsub }) },
   wsServer
 );
 
