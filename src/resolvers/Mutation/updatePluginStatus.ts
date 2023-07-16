@@ -10,6 +10,7 @@ import mongoose from "mongoose";
  * @returns Updated PLugin status.
  */
 
+// @ts-ignore
 export const updatePluginStatus: MutationResolvers["updatePluginStatus"] =
   async (_parent, args, context) => {
     const uid = args.id;
@@ -20,7 +21,7 @@ export const updatePluginStatus: MutationResolvers["updatePluginStatus"] =
 
     if (!plugin) {
       console.log("Document not found");
-      return plugin;
+      return;
     }
 
     let uninstalledOrgsList = plugin.uninstalledOrgs;
