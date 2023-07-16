@@ -18,7 +18,7 @@ import { ApolloServer } from "@apollo/server";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
 import { expressMiddleware } from "@apollo/server/express4";
-
+import loadPlugins from "./config/plugins/loadPlugins";
 const pubsub = new PubSub();
 
 // defines schema
@@ -116,3 +116,4 @@ async function startServer(): Promise<void> {
 }
 
 startServer();
+loadPlugins();
