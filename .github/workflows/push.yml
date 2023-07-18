@@ -85,6 +85,7 @@ jobs:
   Generate-Documentation:
     name: Generate Documentation
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/automated-docs'
     needs: Push-Workflow
     steps:
       - name: Checkout repository
@@ -135,6 +136,7 @@ jobs:
   
   Copy-docs-to-talawa-docs:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/automated-docs'
     needs: Generate-Documentation
     steps:
     - uses: actions/checkout@v3
