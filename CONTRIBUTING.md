@@ -278,7 +278,7 @@ Go to `http://localhost:4000/voyager` after running the development server to ex
 
 We use the [GraphQL Markdown](https://github.com/exogen/graphql-markdown) project to generate the documentation to describe the schema. To generate the same manually, you first need to start the development server locally with `npm run dev`, and then run the script `npm run generate:graphql-markdown`.
 
-You can then view the [generated documentation here](./docs/Schema.md).
+You can then view the [generated documentation here](./talawa-api-docs/modules.md).
 
 While we use a GitHub workflow to update ths schema documentation every time a PR is merged into the repository, it is highly advisable that if you making changes to the schema, then you should also update the schema documentation by the process described above.
 
