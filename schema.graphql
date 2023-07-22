@@ -2,6 +2,21 @@ directive @auth on FIELD_DEFINITION
 
 directive @role(requires: UserType) on FIELD_DEFINITION
 
+union AcceptAdminError = CurrentUserNotFound | GivenUserNotFound
+
+input AcceptAdminInput {
+  id: ID!
+}
+
+type AcceptAdminResult {
+  data: Boolean!
+  errors: [AcceptAdminError!]!
+}
+
+input AcceptMembershipRequestInput {
+  membershipRequestId: ID!
+}
+
 type AggregatePost {
   count: Int!
 }
@@ -75,6 +90,11 @@ input CreateUserTagInput {
   name: String!
   organizationId: ID!
   parentTagId: ID
+}
+
+type CurrentUserNotFound implements UserNotFound {
+  message: String!
+  path: [String!]!
 }
 
 input CursorPaginationInput {
@@ -268,6 +288,11 @@ input ForgotPasswordData {
   userOtp: String!
 }
 
+type GivenUserNotFound implements UserNotFound {
+  message: String!
+  path: [String!]!
+}
+
 type Group {
   _id: ID
   admins: [User]
@@ -390,7 +415,7 @@ type MinimumValueError implements FieldError {
 }
 
 type Mutation {
-  acceptAdmin(id: ID!): Boolean!
+  acceptAdmin(input: AcceptAdminInput!): AcceptAdminResult!
   acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   addEventAttendee(data: EventAttendeeInput!): User!
   addLanguageTranslation(data: LanguageInput!): Language!
@@ -922,6 +947,11 @@ input UserInput {
   lastName: String!
   organizationUserBelongsToId: ID
   password: String!
+}
+
+interface UserNotFound {
+  message: String!
+  path: [String!]!
 }
 
 enum UserOrderByInput {

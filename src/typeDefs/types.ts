@@ -2,6 +2,11 @@ import { gql } from "graphql-tag";
 
 // Place fields alphabetically to ensure easier lookup and navigation.
 export const types = gql`
+  type AcceptAdminResult {
+    data: Boolean!
+    errors: [AcceptAdminError!]!
+  }
+
   type AggregatePost {
     count: Int!
   }

@@ -1,7 +1,6 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { User } from "../../models";
-import { errors, requestContext } from "../../libraries";
 import { superAdminCheck } from "../../utilities/superAdminCheck";
 /**
  * This function accepts the admin request sent by a user.
@@ -22,30 +21,40 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
   }).lean();
 
   if (!currentUser) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
+    return {
+      data: false,
+      errors: [
+        {
+          __typename: "CurrentUserNotFound",
+          message: USER_NOT_FOUND_ERROR.MESSAGE,
+          path: [USER_NOT_FOUND_ERROR.PARAM],
+        },
+      ],
+    };
   }
 
   superAdminCheck(currentUser);
 
   const userExists = await User.exists({
-    _id: args.id,
+    _id: args.input.id,
   });
 
   if (userExists === false) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
+    return {
+      data: false,
+      errors: [
+        {
+          __typename: "GivenUserNotFound",
+          message: USER_NOT_FOUND_ERROR.MESSAGE,
+          path: [USER_NOT_FOUND_ERROR.PARAM],
+        },
+      ],
+    };
   }
 
   await User.updateOne(
     {
-      _id: args.id,
+      _id: args.input.id,
     },
     {
       $set: {
@@ -54,5 +63,8 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
     }
   );
 
-  return true;
+  return {
+    data: true,
+    errors: [],
+  };
 };
