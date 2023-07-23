@@ -3,7 +3,7 @@ import { gql } from "graphql-tag";
 // Place fields alphabetically to ensure easier lookup and navigation.
 export const inputs = gql`
   input AcceptAdminInput {
-    id: ID!
+    userId: ID!
   }
   input AcceptMembershipRequestInput {
     membershipRequestId: ID!

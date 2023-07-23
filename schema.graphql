@@ -2,10 +2,10 @@ directive @auth on FIELD_DEFINITION
 
 directive @role(requires: UserType) on FIELD_DEFINITION
 
-union AcceptAdminError = CurrentUserNotFound | GivenUserNotFound
+union AcceptAdminError = UnauthenticatedError | UnauthorizedError | UserNotFoundError
 
 input AcceptAdminInput {
-  id: ID!
+  userId: ID!
 }
 
 type AcceptAdminResult {
@@ -90,11 +90,6 @@ input CreateUserTagInput {
   name: String!
   organizationId: ID!
   parentTagId: ID
-}
-
-type CurrentUserNotFound implements UserNotFound {
-  message: String!
-  path: [String!]!
 }
 
 input CursorPaginationInput {
@@ -286,11 +281,6 @@ input ForgotPasswordData {
   newPassword: String!
   otpToken: String!
   userOtp: String!
-}
-
-type GivenUserNotFound implements UserNotFound {
-  message: String!
-  path: [String!]!
 }
 
 type Group {
@@ -949,7 +939,7 @@ input UserInput {
   password: String!
 }
 
-interface UserNotFound {
+type UserNotFoundError implements Error {
   message: String!
   path: [String!]!
 }

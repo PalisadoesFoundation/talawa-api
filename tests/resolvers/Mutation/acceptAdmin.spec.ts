@@ -44,7 +44,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     try {
       const args: MutationAcceptAdminArgs = {
         input: {
-          id: Types.ObjectId().toString(),
+          userId: Types.ObjectId().toString(),
         },
       };
 
@@ -61,7 +61,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
         data: false,
         errors: [
           {
-            __typename: "CurrentUserNotFound",
+            __typename: "UnauthenticatedError",
             message: "user.notFound",
             path: [USER_NOT_FOUND_ERROR.PARAM],
           },
@@ -76,7 +76,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     try {
       const args: MutationAcceptAdminArgs = {
         input: {
-          id: testUserAdmin!.id,
+          userId: testUserAdmin!.id,
         },
       };
 
@@ -108,7 +108,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
 
     const args: MutationAcceptAdminArgs = {
       input: {
-        id: testUserAdmin?.id,
+        userId: testUserAdmin?.id,
       },
     };
 
@@ -136,7 +136,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     try {
       const args: MutationAcceptAdminArgs = {
         input: {
-          id: Types.ObjectId().toString(),
+          userId: Types.ObjectId().toString(),
         },
       };
 
@@ -154,7 +154,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
         data: false,
         errors: [
           {
-            __typename: "GivenUserNotFound",
+            __typename: "UserNotFoundError",
             message: "user.notFound",
             path: ["user"],
           },

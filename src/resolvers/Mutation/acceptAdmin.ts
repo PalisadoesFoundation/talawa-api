@@ -25,7 +25,7 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
       data: false,
       errors: [
         {
-          __typename: "CurrentUserNotFound",
+          __typename: "UnauthenticatedError",
           message: USER_NOT_FOUND_ERROR.MESSAGE,
           path: [USER_NOT_FOUND_ERROR.PARAM],
         },
@@ -36,7 +36,7 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
   superAdminCheck(currentUser);
 
   const userExists = await User.exists({
-    _id: args.input.id,
+    _id: args.input.userId,
   });
 
   if (userExists === false) {
@@ -44,7 +44,7 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
       data: false,
       errors: [
         {
-          __typename: "GivenUserNotFound",
+          __typename: "UserNotFoundError",
           message: USER_NOT_FOUND_ERROR.MESSAGE,
           path: [USER_NOT_FOUND_ERROR.PARAM],
         },
@@ -54,7 +54,7 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
 
   await User.updateOne(
     {
-      _id: args.input.id,
+      _id: args.input.userId,
     },
     {
       $set: {

@@ -1,19 +1,12 @@
 import { gql } from "graphql-tag";
 
 export const mutationErrrors = gql`
-  union AcceptAdminError = CurrentUserNotFound | GivenUserNotFound
+  union AcceptAdminError =
+      UnauthenticatedError
+    | UnauthorizedError
+    | UserNotFoundError
 
-  interface UserNotFound {
-    message: String!
-    path: [String!]!
-  }
-
-  type CurrentUserNotFound implements UserNotFound {
-    message: String!
-    path: [String!]!
-  }
-
-  type GivenUserNotFound implements UserNotFound {
+  type UserNotFoundError implements Error {
     message: String!
     path: [String!]!
   }

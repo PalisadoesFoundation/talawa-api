@@ -1,9 +1,15 @@
 import { MapperKind, getDirective, mapSchema } from "@graphql-tools/utils";
-import type { GraphQLFieldConfig } from "graphql";
+import {
+  defaultFieldResolver,
+  type GraphQLFieldConfig,
+  type GraphQLSchema,
+} from "graphql";
 import { errors, requestContext } from "../../libraries";
 
-//@ts-ignore
-function authDirectiveTransformer(schema, directiveName): any {
+function authDirectiveTransformer(
+  schema: GraphQLSchema,
+  directiveName: string
+): GraphQLSchema {
   return mapSchema(schema, {
     [MapperKind.OBJECT_FIELD]: (
       fieldConfig: GraphQLFieldConfig<any, any>
@@ -15,10 +21,9 @@ function authDirectiveTransformer(schema, directiveName): any {
         directiveName
       )?.[0];
       if (authDirective) {
-        //@ts-ignore
         const { resolve = defaultFieldResolver } = fieldConfig;
 
-        fieldConfig.resolve = (root, args, context, info): string => {
+        fieldConfig.resolve = (root, args, context, info): any => {
           if (context.expired || !context.isAuth)
             throw new errors.UnauthenticatedError(
               requestContext.translate("user.notAuthenticated"),

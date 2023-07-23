@@ -47,10 +47,10 @@ export type Scalars = {
   Upload: any;
 };
 
-export type AcceptAdminError = CurrentUserNotFound | GivenUserNotFound;
+export type AcceptAdminError = UnauthenticatedError | UnauthorizedError | UserNotFoundError;
 
 export type AcceptAdminInput = {
-  id: Scalars['ID'];
+  userId: Scalars['ID'];
 };
 
 export type AcceptAdminResult = {
@@ -144,12 +144,6 @@ export type CreateUserTagInput = {
   name: Scalars['String'];
   organizationId: Scalars['ID'];
   parentTagId?: InputMaybe<Scalars['ID']>;
-};
-
-export type CurrentUserNotFound = UserNotFound & {
-  __typename?: 'CurrentUserNotFound';
-  message: Scalars['String'];
-  path: Array<Scalars['String']>;
 };
 
 export type CursorPaginationInput = {
@@ -346,12 +340,6 @@ export type ForgotPasswordData = {
   newPassword: Scalars['String'];
   otpToken: Scalars['String'];
   userOtp: Scalars['String'];
-};
-
-export type GivenUserNotFound = UserNotFound & {
-  __typename?: 'GivenUserNotFound';
-  message: Scalars['String'];
-  path: Array<Scalars['String']>;
 };
 
 export type Group = {
@@ -1617,7 +1605,8 @@ export type UserInput = {
   password: Scalars['String'];
 };
 
-export type UserNotFound = {
+export type UserNotFoundError = Error & {
+  __typename?: 'UserNotFoundError';
   message: Scalars['String'];
   path: Array<Scalars['String']>;
 };
@@ -1812,7 +1801,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
-  AcceptAdminError: ResolversTypes['CurrentUserNotFound'] | ResolversTypes['GivenUserNotFound'];
+  AcceptAdminError: ResolversTypes['UnauthenticatedError'] | ResolversTypes['UnauthorizedError'] | ResolversTypes['UserNotFoundError'];
   AcceptAdminInput: AcceptAdminInput;
   AcceptAdminResult: ResolverTypeWrapper<Omit<AcceptAdminResult, 'errors'> & { errors: Array<ResolversTypes['AcceptAdminError']> }>;
   AcceptMembershipRequestInput: AcceptMembershipRequestInput;
@@ -1829,7 +1818,6 @@ export type ResolversTypes = {
   ConnectionError: ResolversTypes['InvalidCursor'] | ResolversTypes['MaximumValueError'];
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
   CreateUserTagInput: CreateUserTagInput;
-  CurrentUserNotFound: ResolverTypeWrapper<CurrentUserNotFound>;
   CursorPaginationInput: CursorPaginationInput;
   Date: ResolverTypeWrapper<Scalars['Date']>;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']>;
@@ -1839,7 +1827,7 @@ export type ResolversTypes = {
   Donation: ResolverTypeWrapper<InterfaceDonationModel>;
   DonationWhereInput: DonationWhereInput;
   EmailAddress: ResolverTypeWrapper<Scalars['EmailAddress']>;
-  Error: ResolversTypes['UnauthenticatedError'] | ResolversTypes['UnauthorizedError'];
+  Error: ResolversTypes['UnauthenticatedError'] | ResolversTypes['UnauthorizedError'] | ResolversTypes['UserNotFoundError'];
   Event: ResolverTypeWrapper<InterfaceEventModel>;
   EventAttendeeInput: EventAttendeeInput;
   EventInput: EventInput;
@@ -1851,7 +1839,6 @@ export type ResolversTypes = {
   FieldError: ResolversTypes['InvalidCursor'] | ResolversTypes['MaximumLengthError'] | ResolversTypes['MaximumValueError'] | ResolversTypes['MinimumLengthError'] | ResolversTypes['MinimumValueError'];
   Float: ResolverTypeWrapper<Scalars['Float']>;
   ForgotPasswordData: ForgotPasswordData;
-  GivenUserNotFound: ResolverTypeWrapper<GivenUserNotFound>;
   Group: ResolverTypeWrapper<InterfaceGroupModel>;
   GroupChat: ResolverTypeWrapper<InterfaceGroupChatModel>;
   GroupChatMessage: ResolverTypeWrapper<InterfaceGroupChatMessageModel>;
@@ -1925,7 +1912,7 @@ export type ResolversTypes = {
   UserConnection: ResolverTypeWrapper<Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['User']>> }>;
   UserEdge: ResolverTypeWrapper<Omit<UserEdge, 'node'> & { node: ResolversTypes['User'] }>;
   UserInput: UserInput;
-  UserNotFound: ResolversTypes['CurrentUserNotFound'] | ResolversTypes['GivenUserNotFound'];
+  UserNotFoundError: ResolverTypeWrapper<UserNotFoundError>;
   UserOrderByInput: UserOrderByInput;
   UserTag: ResolverTypeWrapper<InterfaceOrganizationTagUserModel>;
   UserTagEdge: ResolverTypeWrapper<Omit<UserTagEdge, 'node'> & { node: ResolversTypes['UserTag'] }>;
@@ -1943,7 +1930,7 @@ export type ResolversTypes = {
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
-  AcceptAdminError: ResolversParentTypes['CurrentUserNotFound'] | ResolversParentTypes['GivenUserNotFound'];
+  AcceptAdminError: ResolversParentTypes['UnauthenticatedError'] | ResolversParentTypes['UnauthorizedError'] | ResolversParentTypes['UserNotFoundError'];
   AcceptAdminInput: AcceptAdminInput;
   AcceptAdminResult: Omit<AcceptAdminResult, 'errors'> & { errors: Array<ResolversParentTypes['AcceptAdminError']> };
   AcceptMembershipRequestInput: AcceptMembershipRequestInput;
@@ -1960,7 +1947,6 @@ export type ResolversParentTypes = {
   ConnectionError: ResolversParentTypes['InvalidCursor'] | ResolversParentTypes['MaximumValueError'];
   ConnectionPageInfo: ConnectionPageInfo;
   CreateUserTagInput: CreateUserTagInput;
-  CurrentUserNotFound: CurrentUserNotFound;
   CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date'];
   DateTime: Scalars['DateTime'];
@@ -1970,7 +1956,7 @@ export type ResolversParentTypes = {
   Donation: InterfaceDonationModel;
   DonationWhereInput: DonationWhereInput;
   EmailAddress: Scalars['EmailAddress'];
-  Error: ResolversParentTypes['UnauthenticatedError'] | ResolversParentTypes['UnauthorizedError'];
+  Error: ResolversParentTypes['UnauthenticatedError'] | ResolversParentTypes['UnauthorizedError'] | ResolversParentTypes['UserNotFoundError'];
   Event: InterfaceEventModel;
   EventAttendeeInput: EventAttendeeInput;
   EventInput: EventInput;
@@ -1981,7 +1967,6 @@ export type ResolversParentTypes = {
   FieldError: ResolversParentTypes['InvalidCursor'] | ResolversParentTypes['MaximumLengthError'] | ResolversParentTypes['MaximumValueError'] | ResolversParentTypes['MinimumLengthError'] | ResolversParentTypes['MinimumValueError'];
   Float: Scalars['Float'];
   ForgotPasswordData: ForgotPasswordData;
-  GivenUserNotFound: GivenUserNotFound;
   Group: InterfaceGroupModel;
   GroupChat: InterfaceGroupChatModel;
   GroupChatMessage: InterfaceGroupChatMessageModel;
@@ -2048,7 +2033,7 @@ export type ResolversParentTypes = {
   UserConnection: Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['User']>> };
   UserEdge: Omit<UserEdge, 'node'> & { node: ResolversParentTypes['User'] };
   UserInput: UserInput;
-  UserNotFound: ResolversParentTypes['CurrentUserNotFound'] | ResolversParentTypes['GivenUserNotFound'];
+  UserNotFoundError: UserNotFoundError;
   UserTag: InterfaceOrganizationTagUserModel;
   UserTagEdge: Omit<UserTagEdge, 'node'> & { node: ResolversParentTypes['UserTag'] };
   UserTagsConnection: Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserTagEdge']> };
@@ -2073,7 +2058,7 @@ export type RoleDirectiveArgs = {
 export type RoleDirectiveResolver<Result, Parent, ContextType = any, Args = RoleDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
 export type AcceptAdminErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['AcceptAdminError'] = ResolversParentTypes['AcceptAdminError']> = {
-  __resolveType: TypeResolveFn<'CurrentUserNotFound' | 'GivenUserNotFound', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'UnauthenticatedError' | 'UnauthorizedError' | 'UserNotFoundError', ParentType, ContextType>;
 };
 
 export type AcceptAdminResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['AcceptAdminResult'] = ResolversParentTypes['AcceptAdminResult']> = {
@@ -2150,12 +2135,6 @@ export type ConnectionPageInfoResolvers<ContextType = any, ParentType extends Re
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type CurrentUserNotFoundResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurrentUserNotFound'] = ResolversParentTypes['CurrentUserNotFound']> = {
-  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Date'], any> {
   name: 'Date';
 }
@@ -2204,7 +2183,7 @@ export interface EmailAddressScalarConfig extends GraphQLScalarTypeConfig<Resolv
 }
 
 export type ErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Error'] = ResolversParentTypes['Error']> = {
-  __resolveType: TypeResolveFn<'UnauthenticatedError' | 'UnauthorizedError', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'UnauthenticatedError' | 'UnauthorizedError' | 'UserNotFoundError', ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 };
 
@@ -2253,12 +2232,6 @@ export type FieldErrorResolvers<ContextType = any, ParentType extends ResolversP
   __resolveType: TypeResolveFn<'InvalidCursor' | 'MaximumLengthError' | 'MaximumValueError' | 'MinimumLengthError' | 'MinimumValueError', ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-};
-
-export type GivenUserNotFoundResolvers<ContextType = any, ParentType extends ResolversParentTypes['GivenUserNotFound'] = ResolversParentTypes['GivenUserNotFound']> = {
-  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type GroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['Group'] = ResolversParentTypes['Group']> = {
@@ -2684,10 +2657,10 @@ export type UserEdgeResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type UserNotFoundResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserNotFound'] = ResolversParentTypes['UserNotFound']> = {
-  __resolveType: TypeResolveFn<'CurrentUserNotFound' | 'GivenUserNotFound', ParentType, ContextType>;
+export type UserNotFoundErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserNotFoundError'] = ResolversParentTypes['UserNotFoundError']> = {
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type UserTagResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserTag'] = ResolversParentTypes['UserTag']> = {
@@ -2742,7 +2715,6 @@ export type Resolvers<ContextType = any> = {
   Comment?: CommentResolvers<ContextType>;
   ConnectionError?: ConnectionErrorResolvers<ContextType>;
   ConnectionPageInfo?: ConnectionPageInfoResolvers<ContextType>;
-  CurrentUserNotFound?: CurrentUserNotFoundResolvers<ContextType>;
   Date?: GraphQLScalarType;
   DateTime?: GraphQLScalarType;
   DeletePayload?: DeletePayloadResolvers<ContextType>;
@@ -2755,7 +2727,6 @@ export type Resolvers<ContextType = any> = {
   EventProject?: EventProjectResolvers<ContextType>;
   ExtendSession?: ExtendSessionResolvers<ContextType>;
   FieldError?: FieldErrorResolvers<ContextType>;
-  GivenUserNotFound?: GivenUserNotFoundResolvers<ContextType>;
   Group?: GroupResolvers<ContextType>;
   GroupChat?: GroupChatResolvers<ContextType>;
   GroupChatMessage?: GroupChatMessageResolvers<ContextType>;
@@ -2795,7 +2766,7 @@ export type Resolvers<ContextType = any> = {
   User?: UserResolvers<ContextType>;
   UserConnection?: UserConnectionResolvers<ContextType>;
   UserEdge?: UserEdgeResolvers<ContextType>;
-  UserNotFound?: UserNotFoundResolvers<ContextType>;
+  UserNotFoundError?: UserNotFoundErrorResolvers<ContextType>;
   UserTag?: UserTagResolvers<ContextType>;
   UserTagEdge?: UserTagEdgeResolvers<ContextType>;
   UserTagsConnection?: UserTagsConnectionResolvers<ContextType>;
