@@ -6,5 +6,6 @@ export const subscriptions = gql`
     directMessageChat: MessageChat
     messageSentToDirectChat: DirectChatMessage
     messageSentToGroupChat: GroupChatMessage
+    onPluginUpdate: Plugin
   }
 `;

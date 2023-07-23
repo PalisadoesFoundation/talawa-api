@@ -414,7 +414,7 @@ type Mutation {
   createMember(input: UserAndOrganizationInput!): Organization!
   createMessageChat(data: MessageChatInput!): MessageChat!
   createOrganization(data: OrganizationInput, file: String): Organization!
-  createPlugin(installedOrgs: [ID!], pluginCreatedBy: String!, pluginDesc: String!, pluginInstallStatus: Boolean!, pluginName: String!): Plugin!
+  createPlugin(pluginCreatedBy: String!, pluginDesc: String!, pluginName: String!, uninstalledOrgs: [ID!]): Plugin!
   createPost(data: PostInput!, file: String): Post
   createTask(data: TaskInput!, eventProjectId: ID!): Task!
   createUserTag(input: CreateUserTagInput!): UserTag
@@ -464,8 +464,7 @@ type Mutation {
   updateEventProject(data: UpdateEventProjectInput!, id: ID!): EventProject!
   updateLanguage(languageCode: String!): User!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
-  updatePluginInstalledOrgs(id: ID!, orgId: ID!): Plugin!
-  updatePluginStatus(id: ID!, status: Boolean!): Plugin!
+  updatePluginStatus(id: ID!, orgId: ID!): Plugin!
   updatePost(data: PostUpdateInput, id: ID!): Post!
   updateTask(data: UpdateTaskInput!, id: ID!): Task
   updateUserPassword(data: UpdateUserPasswordInput!): User!
@@ -586,11 +585,10 @@ scalar PhoneNumber
 
 type Plugin {
   _id: ID!
-  installedOrgs: [ID!]!
   pluginCreatedBy: String!
   pluginDesc: String!
-  pluginInstallStatus: Boolean!
   pluginName: String!
+  uninstalledOrgs: [ID!]!
 }
 
 type PluginField {
@@ -751,6 +749,7 @@ type Subscription {
   directMessageChat: MessageChat
   messageSentToDirectChat: DirectChatMessage
   messageSentToGroupChat: GroupChatMessage
+  onPluginUpdate: Plugin
 }
 
 type Task {

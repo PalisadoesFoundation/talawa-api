@@ -8,16 +8,14 @@ export interface InterfacePlugin {
   pluginName: string;
   pluginCreatedBy: string;
   pluginDesc: string;
-  pluginInstallStatus: boolean;
-  installedOrgs: Types.ObjectId[];
+  uninstalledOrgs: Types.ObjectId[];
 }
 
 /**
  * @param  pluginName- Name of the plugin preferred having underscores "_",(type: String)
  * @param pluginCreatedBy- name of the plugin creator ex.John Doe,(type: String)
  * @param pluginDesc- brief description of the plugin and it's features,(type: String)
- * @param  pluginInstallStatus- shows if the plugin is enabled or not,(type: Boolean)
- * @param  installedOrgs- list of orgIDs on which the plugin is enabled,(type: String[])
+ * @param uninstalledOrgs - list of orgIDs which have disabled the feature on mobile app,(type: String[])
  */
 
 const pluginSchema = new Schema({
@@ -33,12 +31,7 @@ const pluginSchema = new Schema({
     type: String,
     required: true,
   },
-  pluginInstallStatus: {
-    type: Boolean,
-    required: true,
-    default: false,
-  },
-  installedOrgs: [
+  uninstalledOrgs: [
     {
       type: Schema.Types.ObjectId,
       required: false,
