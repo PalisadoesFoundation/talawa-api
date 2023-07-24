@@ -1,6 +1,6 @@
 import { gql } from "graphql-tag";
 
-export const mutationErrrors = gql`
+export const acceptAdminErrors = gql`
   union AcceptAdminError =
       UnauthenticatedError
     | UnauthorizedError

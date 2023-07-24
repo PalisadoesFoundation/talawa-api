@@ -7,6 +7,11 @@ export const types = gql`
     errors: [AcceptAdminError!]!
   }
 
+  type AcceptMembershipRequestResults {
+    data: MembershipRequest
+    errors: [AcceptMembershipRequestErrors!]!
+  }
+
   type AggregatePost {
     count: Int!
   }

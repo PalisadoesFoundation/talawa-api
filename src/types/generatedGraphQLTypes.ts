@@ -59,8 +59,16 @@ export type AcceptAdminResult = {
   errors: Array<AcceptAdminError>;
 };
 
+export type AcceptMembershipRequestErrors = MembershipRequestNotFoundError | OrganizationNotFoundError | UserAlreadyMemberError | UserNotFoundError;
+
 export type AcceptMembershipRequestInput = {
   membershipRequestId: Scalars['ID'];
+};
+
+export type AcceptMembershipRequestResults = {
+  __typename?: 'AcceptMembershipRequestResults';
+  data?: Maybe<MembershipRequest>;
+  errors: Array<AcceptMembershipRequestErrors>;
 };
 
 export type AggregatePost = {
@@ -435,6 +443,12 @@ export type MembershipRequest = {
   user: User;
 };
 
+export type MembershipRequestNotFoundError = Error & {
+  __typename?: 'MembershipRequestNotFoundError';
+  message: Scalars['String'];
+  path: Array<Scalars['String']>;
+};
+
 export type Message = {
   __typename?: 'Message';
   _id: Scalars['ID'];
@@ -476,7 +490,7 @@ export type MinimumValueError = FieldError & {
 export type Mutation = {
   __typename?: 'Mutation';
   acceptAdmin: AcceptAdminResult;
-  acceptMembershipRequest: MembershipRequest;
+  acceptMembershipRequest: AcceptMembershipRequestResults;
   addEventAttendee: User;
   addLanguageTranslation: Language;
   addOrganizationImage: Organization;
@@ -566,7 +580,7 @@ export type MutationAcceptAdminArgs = {
 
 
 export type MutationAcceptMembershipRequestArgs = {
-  membershipRequestId: Scalars['ID'];
+  input: AcceptMembershipRequestInput;
 };
 
 
@@ -1050,6 +1064,12 @@ export type OrganizationInput = {
   location?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
   visibleInSearch: Scalars['Boolean'];
+};
+
+export type OrganizationNotFoundError = Error & {
+  __typename?: 'OrganizationNotFoundError';
+  message: Scalars['String'];
+  path: Array<Scalars['String']>;
 };
 
 export type OrganizationOrderByInput =
@@ -1578,6 +1598,12 @@ export type UserTagsAssignedWithArgs = {
   organizationId?: InputMaybe<Scalars['ID']>;
 };
 
+export type UserAlreadyMemberError = Error & {
+  __typename?: 'UserAlreadyMemberError';
+  message: Scalars['String'];
+  path: Array<Scalars['String']>;
+};
+
 export type UserAndOrganizationInput = {
   organizationId: Scalars['ID'];
   userId: Scalars['ID'];
@@ -1804,7 +1830,9 @@ export type ResolversTypes = {
   AcceptAdminError: ResolversTypes['UnauthenticatedError'] | ResolversTypes['UnauthorizedError'] | ResolversTypes['UserNotFoundError'];
   AcceptAdminInput: AcceptAdminInput;
   AcceptAdminResult: ResolverTypeWrapper<Omit<AcceptAdminResult, 'errors'> & { errors: Array<ResolversTypes['AcceptAdminError']> }>;
+  AcceptMembershipRequestErrors: ResolversTypes['MembershipRequestNotFoundError'] | ResolversTypes['OrganizationNotFoundError'] | ResolversTypes['UserAlreadyMemberError'] | ResolversTypes['UserNotFoundError'];
   AcceptMembershipRequestInput: AcceptMembershipRequestInput;
+  AcceptMembershipRequestResults: ResolverTypeWrapper<Omit<AcceptMembershipRequestResults, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['MembershipRequest']>, errors: Array<ResolversTypes['AcceptMembershipRequestErrors']> }>;
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
   AndroidFirebaseOptions: ResolverTypeWrapper<AndroidFirebaseOptions>;
@@ -1827,7 +1855,7 @@ export type ResolversTypes = {
   Donation: ResolverTypeWrapper<InterfaceDonationModel>;
   DonationWhereInput: DonationWhereInput;
   EmailAddress: ResolverTypeWrapper<Scalars['EmailAddress']>;
-  Error: ResolversTypes['UnauthenticatedError'] | ResolversTypes['UnauthorizedError'] | ResolversTypes['UserNotFoundError'];
+  Error: ResolversTypes['MembershipRequestNotFoundError'] | ResolversTypes['OrganizationNotFoundError'] | ResolversTypes['UnauthenticatedError'] | ResolversTypes['UnauthorizedError'] | ResolversTypes['UserAlreadyMemberError'] | ResolversTypes['UserNotFoundError'];
   Event: ResolverTypeWrapper<InterfaceEventModel>;
   EventAttendeeInput: EventAttendeeInput;
   EventInput: EventInput;
@@ -1855,6 +1883,7 @@ export type ResolversTypes = {
   MaximumLengthError: ResolverTypeWrapper<MaximumLengthError>;
   MaximumValueError: ResolverTypeWrapper<MaximumValueError>;
   MembershipRequest: ResolverTypeWrapper<InterfaceMembershipRequestModel>;
+  MembershipRequestNotFoundError: ResolverTypeWrapper<MembershipRequestNotFoundError>;
   Message: ResolverTypeWrapper<InterfaceMessageModel>;
   MessageChat: ResolverTypeWrapper<InterfaceMessageChatModel>;
   MessageChatInput: MessageChatInput;
@@ -1865,6 +1894,7 @@ export type ResolversTypes = {
   Organization: ResolverTypeWrapper<InterfaceOrganizationModel>;
   OrganizationInfoNode: ResolverTypeWrapper<Omit<OrganizationInfoNode, 'creator'> & { creator: ResolversTypes['User'] }>;
   OrganizationInput: OrganizationInput;
+  OrganizationNotFoundError: ResolverTypeWrapper<OrganizationNotFoundError>;
   OrganizationOrderByInput: OrganizationOrderByInput;
   OrganizationWhereInput: OrganizationWhereInput;
   OtpData: ResolverTypeWrapper<OtpData>;
@@ -1908,6 +1938,7 @@ export type ResolversTypes = {
   UpdateUserTypeInput: UpdateUserTypeInput;
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
   User: ResolverTypeWrapper<InterfaceUserModel>;
+  UserAlreadyMemberError: ResolverTypeWrapper<UserAlreadyMemberError>;
   UserAndOrganizationInput: UserAndOrganizationInput;
   UserConnection: ResolverTypeWrapper<Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['User']>> }>;
   UserEdge: ResolverTypeWrapper<Omit<UserEdge, 'node'> & { node: ResolversTypes['User'] }>;
@@ -1933,7 +1964,9 @@ export type ResolversParentTypes = {
   AcceptAdminError: ResolversParentTypes['UnauthenticatedError'] | ResolversParentTypes['UnauthorizedError'] | ResolversParentTypes['UserNotFoundError'];
   AcceptAdminInput: AcceptAdminInput;
   AcceptAdminResult: Omit<AcceptAdminResult, 'errors'> & { errors: Array<ResolversParentTypes['AcceptAdminError']> };
+  AcceptMembershipRequestErrors: ResolversParentTypes['MembershipRequestNotFoundError'] | ResolversParentTypes['OrganizationNotFoundError'] | ResolversParentTypes['UserAlreadyMemberError'] | ResolversParentTypes['UserNotFoundError'];
   AcceptMembershipRequestInput: AcceptMembershipRequestInput;
+  AcceptMembershipRequestResults: Omit<AcceptMembershipRequestResults, 'data' | 'errors'> & { data?: Maybe<ResolversParentTypes['MembershipRequest']>, errors: Array<ResolversParentTypes['AcceptMembershipRequestErrors']> };
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
   AndroidFirebaseOptions: AndroidFirebaseOptions;
@@ -1956,7 +1989,7 @@ export type ResolversParentTypes = {
   Donation: InterfaceDonationModel;
   DonationWhereInput: DonationWhereInput;
   EmailAddress: Scalars['EmailAddress'];
-  Error: ResolversParentTypes['UnauthenticatedError'] | ResolversParentTypes['UnauthorizedError'] | ResolversParentTypes['UserNotFoundError'];
+  Error: ResolversParentTypes['MembershipRequestNotFoundError'] | ResolversParentTypes['OrganizationNotFoundError'] | ResolversParentTypes['UnauthenticatedError'] | ResolversParentTypes['UnauthorizedError'] | ResolversParentTypes['UserAlreadyMemberError'] | ResolversParentTypes['UserNotFoundError'];
   Event: InterfaceEventModel;
   EventAttendeeInput: EventAttendeeInput;
   EventInput: EventInput;
@@ -1983,6 +2016,7 @@ export type ResolversParentTypes = {
   MaximumLengthError: MaximumLengthError;
   MaximumValueError: MaximumValueError;
   MembershipRequest: InterfaceMembershipRequestModel;
+  MembershipRequestNotFoundError: MembershipRequestNotFoundError;
   Message: InterfaceMessageModel;
   MessageChat: InterfaceMessageChatModel;
   MessageChatInput: MessageChatInput;
@@ -1993,6 +2027,7 @@ export type ResolversParentTypes = {
   Organization: InterfaceOrganizationModel;
   OrganizationInfoNode: Omit<OrganizationInfoNode, 'creator'> & { creator: ResolversParentTypes['User'] };
   OrganizationInput: OrganizationInput;
+  OrganizationNotFoundError: OrganizationNotFoundError;
   OrganizationWhereInput: OrganizationWhereInput;
   OtpData: OtpData;
   PageInfo: PageInfo;
@@ -2029,6 +2064,7 @@ export type ResolversParentTypes = {
   UpdateUserTypeInput: UpdateUserTypeInput;
   Upload: Scalars['Upload'];
   User: InterfaceUserModel;
+  UserAlreadyMemberError: UserAlreadyMemberError;
   UserAndOrganizationInput: UserAndOrganizationInput;
   UserConnection: Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['User']>> };
   UserEdge: Omit<UserEdge, 'node'> & { node: ResolversParentTypes['User'] };
@@ -2064,6 +2100,16 @@ export type AcceptAdminErrorResolvers<ContextType = any, ParentType extends Reso
 export type AcceptAdminResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['AcceptAdminResult'] = ResolversParentTypes['AcceptAdminResult']> = {
   data?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   errors?: Resolver<Array<ResolversTypes['AcceptAdminError']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type AcceptMembershipRequestErrorsResolvers<ContextType = any, ParentType extends ResolversParentTypes['AcceptMembershipRequestErrors'] = ResolversParentTypes['AcceptMembershipRequestErrors']> = {
+  __resolveType: TypeResolveFn<'MembershipRequestNotFoundError' | 'OrganizationNotFoundError' | 'UserAlreadyMemberError' | 'UserNotFoundError', ParentType, ContextType>;
+};
+
+export type AcceptMembershipRequestResultsResolvers<ContextType = any, ParentType extends ResolversParentTypes['AcceptMembershipRequestResults'] = ResolversParentTypes['AcceptMembershipRequestResults']> = {
+  data?: Resolver<Maybe<ResolversTypes['MembershipRequest']>, ParentType, ContextType>;
+  errors?: Resolver<Array<ResolversTypes['AcceptMembershipRequestErrors']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2183,7 +2229,7 @@ export interface EmailAddressScalarConfig extends GraphQLScalarTypeConfig<Resolv
 }
 
 export type ErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Error'] = ResolversParentTypes['Error']> = {
-  __resolveType: TypeResolveFn<'UnauthenticatedError' | 'UnauthorizedError' | 'UserNotFoundError', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'MembershipRequestNotFoundError' | 'OrganizationNotFoundError' | 'UnauthenticatedError' | 'UnauthorizedError' | 'UserAlreadyMemberError' | 'UserNotFoundError', ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 };
 
@@ -2324,6 +2370,12 @@ export type MembershipRequestResolvers<ContextType = any, ParentType extends Res
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type MembershipRequestNotFoundErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['MembershipRequestNotFoundError'] = ResolversParentTypes['MembershipRequestNotFoundError']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type MessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['Message'] = ResolversParentTypes['Message']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -2359,7 +2411,7 @@ export type MinimumValueErrorResolvers<ContextType = any, ParentType extends Res
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   acceptAdmin?: Resolver<ResolversTypes['AcceptAdminResult'], ParentType, ContextType, RequireFields<MutationAcceptAdminArgs, 'input'>>;
-  acceptMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationAcceptMembershipRequestArgs, 'membershipRequestId'>>;
+  acceptMembershipRequest?: Resolver<ResolversTypes['AcceptMembershipRequestResults'], ParentType, ContextType, RequireFields<MutationAcceptMembershipRequestArgs, 'input'>>;
   addEventAttendee?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddEventAttendeeArgs, 'data'>>;
   addLanguageTranslation?: Resolver<ResolversTypes['Language'], ParentType, ContextType, RequireFields<MutationAddLanguageTranslationArgs, 'data'>>;
   addOrganizationImage?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationAddOrganizationImageArgs, 'file' | 'organizationId'>>;
@@ -2471,6 +2523,12 @@ export type OrganizationInfoNodeResolvers<ContextType = any, ParentType extends 
   isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type OrganizationNotFoundErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrganizationNotFoundError'] = ResolversParentTypes['OrganizationNotFoundError']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2644,6 +2702,12 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type UserAlreadyMemberErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserAlreadyMemberError'] = ResolversParentTypes['UserAlreadyMemberError']> = {
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type UserConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserConnection'] = ResolversParentTypes['UserConnection']> = {
   aggregate?: Resolver<ResolversTypes['AggregateUser'], ParentType, ContextType>;
   edges?: Resolver<Array<Maybe<ResolversTypes['User']>>, ParentType, ContextType>;
@@ -2706,6 +2770,8 @@ export type UsersConnectionResultResolvers<ContextType = any, ParentType extends
 export type Resolvers<ContextType = any> = {
   AcceptAdminError?: AcceptAdminErrorResolvers<ContextType>;
   AcceptAdminResult?: AcceptAdminResultResolvers<ContextType>;
+  AcceptMembershipRequestErrors?: AcceptMembershipRequestErrorsResolvers<ContextType>;
+  AcceptMembershipRequestResults?: AcceptMembershipRequestResultsResolvers<ContextType>;
   AggregatePost?: AggregatePostResolvers<ContextType>;
   AggregateUser?: AggregateUserResolvers<ContextType>;
   AndroidFirebaseOptions?: AndroidFirebaseOptionsResolvers<ContextType>;
@@ -2739,6 +2805,7 @@ export type Resolvers<ContextType = any> = {
   MaximumLengthError?: MaximumLengthErrorResolvers<ContextType>;
   MaximumValueError?: MaximumValueErrorResolvers<ContextType>;
   MembershipRequest?: MembershipRequestResolvers<ContextType>;
+  MembershipRequestNotFoundError?: MembershipRequestNotFoundErrorResolvers<ContextType>;
   Message?: MessageResolvers<ContextType>;
   MessageChat?: MessageChatResolvers<ContextType>;
   MinimumLengthError?: MinimumLengthErrorResolvers<ContextType>;
@@ -2746,6 +2813,7 @@ export type Resolvers<ContextType = any> = {
   Mutation?: MutationResolvers<ContextType>;
   Organization?: OrganizationResolvers<ContextType>;
   OrganizationInfoNode?: OrganizationInfoNodeResolvers<ContextType>;
+  OrganizationNotFoundError?: OrganizationNotFoundErrorResolvers<ContextType>;
   OtpData?: OtpDataResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
   PhoneNumber?: GraphQLScalarType;
@@ -2764,6 +2832,7 @@ export type Resolvers<ContextType = any> = {
   UnauthorizedError?: UnauthorizedErrorResolvers<ContextType>;
   Upload?: GraphQLScalarType;
   User?: UserResolvers<ContextType>;
+  UserAlreadyMemberError?: UserAlreadyMemberErrorResolvers<ContextType>;
   UserConnection?: UserConnectionResolvers<ContextType>;
   UserEdge?: UserEdgeResolvers<ContextType>;
   UserNotFoundError?: UserNotFoundErrorResolvers<ContextType>;

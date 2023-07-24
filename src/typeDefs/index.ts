@@ -1,7 +1,6 @@
 import { directives } from "./directives";
 import { enums } from "./enums";
 import { errors } from "./errors";
-import { mutationErrrors } from "./errors/mutationErrors";
 import { inputs } from "./inputs";
 // import { interfaces } from "./interfaces";
 import { mutations } from "./mutations";
@@ -21,7 +20,6 @@ export const typeDefs = [
   directives,
   enums,
   ...errors,
-  mutationErrrors,
   inputs,
   // interfaces,
   mutations,

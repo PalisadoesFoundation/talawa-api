@@ -1,4 +1,4 @@
-import type { GraphQLFieldConfig } from "graphql";
+import { defaultFieldResolver, type GraphQLFieldConfig, type GraphQLSchema } from "graphql";
 import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -7,8 +7,10 @@ import { errors } from "../../libraries";
 import { User } from "../../models";
 import { MapperKind, getDirective, mapSchema } from "@graphql-tools/utils";
 
-//@ts-ignore
-function roleDirectiveTransformer(schema, directiveName): any {
+function roleDirectiveTransformer(
+  schema: GraphQLSchema,
+  directiveName: string
+): GraphQLSchema  {
   return mapSchema(schema, {
     [MapperKind.OBJECT_FIELD]: (
       fieldConfig: GraphQLFieldConfig<any, any>
@@ -21,7 +23,6 @@ function roleDirectiveTransformer(schema, directiveName): any {
       )?.[0];
 
       if (roleDirective) {
-        //@ts-ignore
 
         const { resolve = defaultFieldResolver } = fieldConfig;
 
@@ -32,7 +33,7 @@ function roleDirectiveTransformer(schema, directiveName): any {
           args,
           context,
           info
-        ): Promise<string> => {
+        ): Promise<any> => {
           const currentUser = await User.findOne({
             _id: context.userId,
           }).lean();

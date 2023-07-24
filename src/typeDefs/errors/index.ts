@@ -1,5 +1,11 @@
 import { commonErrors } from "./common";
 import { connectionError } from "./connectionError";
-import { mutationErrrors } from "./mutationErrors";
+import { acceptAdminErrors } from "../MutationError/acceptAdminErrors";
+import { acceptMembershipRequestErrors } from "../MutationError/acceptMembershipRequestErrors";
 
-export const errors = [mutationErrrors, commonErrors, connectionError];
+export const errors = [
+    acceptAdminErrors ,
+    acceptMembershipRequestErrors,
+    commonErrors,
+    connectionError
+];
