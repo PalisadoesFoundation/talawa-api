@@ -39,6 +39,8 @@ export const queries = gql`
 
     getPlugins: [Plugin]
 
+    isSampleOrganization(id: ID!): Boolean!
+
     joinedOrganizations(id: ID): [Organization]
 
     me: User! @auth

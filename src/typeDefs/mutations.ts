@@ -78,6 +78,8 @@ export const mutations = gql`
 
     createUserTag(input: CreateUserTagInput!): UserTag @auth
 
+    createSampleOrganization: Boolean! @auth
+
     createTask(data: TaskInput!, eventProjectId: ID!): Task! @auth
 
     deleteDonationById(id: ID!): DeletePayload!
@@ -133,6 +135,8 @@ export const mutations = gql`
     removePost(id: ID!): Post @auth
 
     removeUserTag(id: ID!): UserTag @auth
+
+    removeSampleOrganization: Boolean! @auth
 
     removeTask(id: ID!): Task @auth
 
