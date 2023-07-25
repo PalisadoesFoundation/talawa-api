@@ -17,6 +17,7 @@ const TALAWA_PLUGIN_UPDATED = "TALAWA_PLUGIN_UPDATED";
 export const filterFunction = async function (
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   payload: any,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   context: any
 ): Promise<boolean> {
   return true;
