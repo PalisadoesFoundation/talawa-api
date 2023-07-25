@@ -1,7 +1,5 @@
 import { withFilter } from "graphql-subscriptions";
 import type { SubscriptionResolvers } from "../../types/generatedGraphQLTypes";
-import { Plugin } from "../../models";
-// import { GroupChat } from "../GroupChat";
 
 const TALAWA_PLUGIN_UPDATED = "TALAWA_PLUGIN_UPDATED";
 /**
@@ -19,26 +17,9 @@ export const filterFunction = async function (
   payload: any,
   context: any
 ): Promise<boolean> {
-  // const { currentUserId } = context.context;
-  // const groupChatId = payload.messageSentToGroupChat.groupChatMessageBelongsTo;
-
-  // const groupChat = await GroupChat.findOne({
-  //   _id: groupChatId,
-  // }).lean();
-
-  // if (groupChat) {
-  //   const currentUserIsGroupChatMember = groupChat.users.some((user) =>
-  //     user.equals(currentUserId)
-  //   );
-  //   return currentUserIsGroupChatMember;
-  // } else {
-  //   return false;
-  // }
-  console.log("=====>  PAYLOAD", payload);
-  console.log("=====>  context", context);
   return true;
 };
-//   const getPlugins = async() => await Plugin.find().lean();
+
 export const onPluginUpdate: SubscriptionResolvers["onPluginUpdate"] = {
   // @ts-ignorep
   subscribe: withFilter(
@@ -48,10 +29,6 @@ export const onPluginUpdate: SubscriptionResolvers["onPluginUpdate"] = {
     (payload, _variables, context) => filterFunction(payload, context)
   ),
   resolve: (payload: any) => {
-    console.log("============OG PAYLOAD", payload);
     return payload.Plugin;
   },
 };
-//    const res = getPlugins();
-//     console.log("datais ", _parent, _args, context,res);
-//     context.pubsub.publish(TALAWA_PLUGIN_UPDATED , {res})
