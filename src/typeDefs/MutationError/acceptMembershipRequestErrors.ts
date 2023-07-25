@@ -1,9 +1,9 @@
 import { gql } from "graphql-tag";
 
 export const acceptMembershipRequestErrors = gql`
-  union AcceptMembershipRequestErrors  = 
-    MembershipRequestNotFoundError
-    | OrganizationNotFoundError 
+  union AcceptMembershipRequestErrors =
+      MembershipRequestNotFoundError
+    | OrganizationNotFoundError
     | UserNotFoundError
     | UserAlreadyMemberError
 
@@ -16,6 +16,4 @@ export const acceptMembershipRequestErrors = gql`
     message: String!
     path: [String!]!
   }
-
-
 `;

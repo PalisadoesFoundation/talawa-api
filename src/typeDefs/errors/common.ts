@@ -44,7 +44,7 @@ export const commonErrors = gql`
     message: String!
     path: [String!]!
   }
-  
+
   type OrganizationNotFoundError implements Error {
     message: String!
     path: [String!]!

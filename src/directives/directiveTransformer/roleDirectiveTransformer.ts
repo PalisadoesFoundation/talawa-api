@@ -1,4 +1,8 @@
-import { defaultFieldResolver, type GraphQLFieldConfig, type GraphQLSchema } from "graphql";
+import {
+  defaultFieldResolver,
+  type GraphQLFieldConfig,
+  type GraphQLSchema,
+} from "graphql";
 import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -10,7 +14,7 @@ import { MapperKind, getDirective, mapSchema } from "@graphql-tools/utils";
 function roleDirectiveTransformer(
   schema: GraphQLSchema,
   directiveName: string
-): GraphQLSchema  {
+): GraphQLSchema {
   return mapSchema(schema, {
     [MapperKind.OBJECT_FIELD]: (
       fieldConfig: GraphQLFieldConfig<any, any>
@@ -23,7 +27,6 @@ function roleDirectiveTransformer(
       )?.[0];
 
       if (roleDirective) {
-
         const { resolve = defaultFieldResolver } = fieldConfig;
 
         const { requires } = roleDirective;

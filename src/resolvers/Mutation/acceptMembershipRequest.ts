@@ -31,15 +31,15 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
     // Checks whether membershipRequest exists.
     if (!membershipRequest) {
       return {
-        data: null ,
-        errors : [
+        data: null,
+        errors: [
           {
-            __typename:"MembershipRequestNotFoundError",
-            message : MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE,
-            path:[MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM]
-          }
-        ]
-      }
+            __typename: "MembershipRequestNotFoundError",
+            message: MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.MESSAGE,
+            path: [MEMBERSHIP_REQUEST_NOT_FOUND_ERROR.PARAM],
+          },
+        ],
+      };
     }
 
     const organization = membershipRequest.organization;
@@ -47,15 +47,15 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
     // Checks whether organization exists.
     if (!organization) {
       return {
-        data: null ,
-        errors : [
+        data: null,
+        errors: [
           {
-            __typename:"OrganizationNotFoundError",
-            message : ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
-            path:[ORGANIZATION_NOT_FOUND_ERROR.PARAM]
-          }
-        ]
-      }
+            __typename: "OrganizationNotFoundError",
+            message: ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
+            path: [ORGANIZATION_NOT_FOUND_ERROR.PARAM],
+          },
+        ],
+      };
     }
 
     const user = membershipRequest.user;
@@ -63,15 +63,15 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
     // Checks whether user exists.
     if (!user) {
       return {
-        data: null ,
-        errors : [
+        data: null,
+        errors: [
           {
-            __typename:"UserNotFoundError",
-            message : USER_NOT_FOUND_ERROR.MESSAGE,
-            path:[USER_NOT_FOUND_ERROR.PARAM]
-          }
-        ]
-      }
+            __typename: "UserNotFoundError",
+            message: USER_NOT_FOUND_ERROR.MESSAGE,
+            path: [USER_NOT_FOUND_ERROR.PARAM],
+          },
+        ],
+      };
     }
 
     // Checks whether currentUser with _id === context.userId is an admin of organization.
@@ -84,15 +84,15 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
     // Checks whether user is already a member of organization.
     if (userIsOrganizationMember === true) {
       return {
-        data: null ,
-        errors : [
+        data: null,
+        errors: [
           {
-            __typename:"UserAlreadyMemberError",
-            message : USER_ALREADY_MEMBER_ERROR.MESSAGE,
-            path:[USER_ALREADY_MEMBER_ERROR.PARAM]
-          }
-        ]
-      }
+            __typename: "UserAlreadyMemberError",
+            message: USER_ALREADY_MEMBER_ERROR.MESSAGE,
+            path: [USER_ALREADY_MEMBER_ERROR.PARAM],
+          },
+        ],
+      };
     }
 
     // Delete the membershipRequest.

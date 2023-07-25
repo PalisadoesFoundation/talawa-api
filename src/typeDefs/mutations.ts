@@ -9,7 +9,9 @@ export const mutations = gql`
       @auth
       @role(requires: SUPERADMIN)
 
-    acceptMembershipRequest(input: AcceptMembershipRequestInput!): AcceptMembershipRequestResults! @auth
+    acceptMembershipRequest(
+      input: AcceptMembershipRequestInput!
+    ): AcceptMembershipRequestResults! @auth
 
     addEventAttendee(data: EventAttendeeInput!): User! @auth
 
