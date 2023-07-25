@@ -7,7 +7,7 @@ export const types = gql`
     errors: [AcceptAdminError!]!
   }
 
-  type AcceptMembershipRequestResults {
+  type AcceptMembershipRequestResult {
     data: MembershipRequest
     errors: [AcceptMembershipRequestErrors!]!
   }

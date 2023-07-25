@@ -19,7 +19,7 @@ input AcceptMembershipRequestInput {
   membershipRequestId: ID!
 }
 
-type AcceptMembershipRequestResults {
+type AcceptMembershipRequestResult {
   data: MembershipRequest
   errors: [AcceptMembershipRequestErrors!]!
 }
@@ -418,7 +418,7 @@ type MinimumValueError implements FieldError {
 
 type Mutation {
   acceptAdmin(input: AcceptAdminInput!): AcceptAdminResult!
-  acceptMembershipRequest(input: AcceptMembershipRequestInput!): AcceptMembershipRequestResults!
+  acceptMembershipRequest(input: AcceptMembershipRequestInput!): AcceptMembershipRequestResult!
   addEventAttendee(data: EventAttendeeInput!): User!
   addLanguageTranslation(data: LanguageInput!): Language!
   addOrganizationImage(file: String!, organizationId: String!): Organization!

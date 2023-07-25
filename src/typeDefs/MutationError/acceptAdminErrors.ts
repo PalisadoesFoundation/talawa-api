@@ -6,8 +6,4 @@ export const acceptAdminErrors = gql`
     | UnauthorizedError
     | UserNotFoundError
 
-  type UserNotFoundError implements Error {
-    message: String!
-    path: [String!]!
-  }
 `;

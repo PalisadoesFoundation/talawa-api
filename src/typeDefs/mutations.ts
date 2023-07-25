@@ -11,7 +11,7 @@ export const mutations = gql`
 
     acceptMembershipRequest(
       input: AcceptMembershipRequestInput!
-    ): AcceptMembershipRequestResults! @auth
+    ): AcceptMembershipRequestResult! @auth
 
     addEventAttendee(data: EventAttendeeInput!): User! @auth
 
