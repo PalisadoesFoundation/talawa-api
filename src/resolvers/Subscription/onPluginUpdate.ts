@@ -13,7 +13,9 @@ const TALAWA_PLUGIN_UPDATED = "TALAWA_PLUGIN_UPDATED";
 // const subscribers: any = [];
 // const messages: any = [];
 // const onMessagesUpdates = (fn:any) => subscribers.push(fn);
+
 export const filterFunction = async function (
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   payload: any,
   context: any
 ): Promise<boolean> {
@@ -25,7 +27,6 @@ export const onPluginUpdate: SubscriptionResolvers["onPluginUpdate"] = {
   subscribe: withFilter(
     (_parent, _args, context) =>
       context.pubsub.asyncIterator([TALAWA_PLUGIN_UPDATED]),
-
     (payload, _variables, context) => filterFunction(payload, context)
   ),
   resolve: (payload: any) => {
