@@ -24,6 +24,13 @@ type AcceptMembershipRequestResult {
   errors: [AcceptMembershipRequestErrors!]!
 }
 
+union AddEventAttendeeErrors = EventNotFoundError | UnauthenticatedError | UnauthorizedError | UserAlreadyAttendeeError | UserNotFoundError
+
+type AddEventAttendeeResult {
+  data: User
+  errors: [AddEventAttendeeErrors!]!
+}
+
 type AggregatePost {
   count: Int!
 }
@@ -207,6 +214,11 @@ input EventInput {
   startDate: Date!
   startTime: Time
   title: String!
+}
+
+type EventNotFoundError implements Error {
+  message: String!
+  path: [String!]!
 }
 
 enum EventOrderByInput {
@@ -419,7 +431,7 @@ type MinimumValueError implements FieldError {
 type Mutation {
   acceptAdmin(input: AcceptAdminInput!): AcceptAdminResult!
   acceptMembershipRequest(input: AcceptMembershipRequestInput!): AcceptMembershipRequestResult!
-  addEventAttendee(data: EventAttendeeInput!): User!
+  addEventAttendee(input: EventAttendeeInput!): AddEventAttendeeResult!
   addLanguageTranslation(data: LanguageInput!): Language!
   addOrganizationImage(file: String!, organizationId: String!): Organization!
   addUserImage(file: String!): User!
@@ -928,6 +940,11 @@ type User {
   tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection
   tokenVersion: Int!
   userType: String
+}
+
+type UserAlreadyAttendeeError implements Error {
+  message: String!
+  path: [String!]!
 }
 
 type UserAlreadyMemberError implements Error {

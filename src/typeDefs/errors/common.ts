@@ -49,4 +49,9 @@ export const commonErrors = gql`
     message: String!
     path: [String!]!
   }
+
+  type EventNotFoundError implements Error {
+    message: String!
+    path: [String!]!
+  }
 `;

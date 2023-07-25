@@ -5,7 +5,6 @@ import {
   USER_ALREADY_REGISTERED_FOR_EVENT,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { errors, requestContext } from "../../libraries";
 import { User, Event, EventAttendee } from "../../models";
 
 export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
@@ -18,23 +17,33 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
   });
 
   if (currentUser === null) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
+    return {
+      data: null,
+      errors: [
+        {
+          __typename: "UnauthenticatedError",
+          message: USER_NOT_FOUND_ERROR.MESSAGE,
+          path: [USER_NOT_FOUND_ERROR.PARAM],
+        },
+      ],
+    };
   }
 
   const currentEvent = await Event.findOne({
-    _id: args.data.eventId,
+    _id: args.input.eventId,
   }).lean();
 
   if (currentEvent === null) {
-    throw new errors.NotFoundError(
-      requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
-      EVENT_NOT_FOUND_ERROR.CODE,
-      EVENT_NOT_FOUND_ERROR.PARAM
-    );
+    return {
+      data: null,
+      errors: [
+        {
+          __typename: "EventNotFoundError",
+          message: EVENT_NOT_FOUND_ERROR.MESSAGE,
+          path: [EVENT_NOT_FOUND_ERROR.PARAM],
+        },
+      ],
+    };
   }
 
   const isUserEventAdmin = currentEvent.admins.some(
@@ -42,38 +51,56 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
   );
 
   if (!isUserEventAdmin && currentUser.userType !== "SUPERADMIN") {
-    throw new errors.UnauthorizedError(
-      requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-      USER_NOT_AUTHORIZED_ERROR.CODE,
-      USER_NOT_AUTHORIZED_ERROR.PARAM
-    );
+    return {
+      data: null,
+      errors: [
+        {
+          __typename: "UnauthorizedError",
+          message: USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+          path: [USER_NOT_AUTHORIZED_ERROR.PARAM],
+        },
+      ],
+    };
   }
 
   const requestUser = await User.findOne({
-    _id: args.data.userId,
+    _id: args.input.userId,
   }).lean();
 
   if (requestUser === null) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
+    return {
+      data: null,
+      errors: [
+        {
+          __typename: "UserNotFoundError",
+          message: USER_NOT_FOUND_ERROR.MESSAGE,
+          path: [USER_NOT_FOUND_ERROR.PARAM],
+        },
+      ],
+    };
   }
 
   const userAlreadyAttendee = await EventAttendee.exists({
-    ...args.data,
+    ...args.input,
   });
 
   if (userAlreadyAttendee) {
-    throw new errors.ConflictError(
-      requestContext.translate(USER_ALREADY_REGISTERED_FOR_EVENT.MESSAGE),
-      USER_ALREADY_REGISTERED_FOR_EVENT.CODE,
-      USER_ALREADY_REGISTERED_FOR_EVENT.PARAM
-    );
+    return {
+      data: null,
+      errors: [
+        {
+          __typename: "UserAlreadyAttendeeError",
+          message: USER_ALREADY_REGISTERED_FOR_EVENT.MESSAGE,
+          path: [USER_ALREADY_REGISTERED_FOR_EVENT.PARAM],
+        },
+      ],
+    };
   }
 
-  await EventAttendee.create({ ...args.data });
+  await EventAttendee.create({ ...args.input });
 
-  return requestUser;
+  return {
+    data: requestUser,
+    errors: [],
+  };
 };

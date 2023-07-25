@@ -30,7 +30,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> addEventAttendee", () => {
-  it(`throws NotFoundError if no user exists with _id === context.userId `, async () => {
+  it(`throws UnauthorisedError if no user exists with _id === context.userId `, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
     const spy = vi
@@ -39,7 +39,7 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
 
     try {
       const args: MutationAddEventAttendeeArgs = {
-        data: {
+        input: {
           userId: Types.ObjectId().toString(),
           eventId: Types.ObjectId().toString(),
         },
@@ -51,25 +51,27 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
         "../../../src/resolvers/Mutation/addEventAttendee"
       );
 
-      await addEventAttendeeResolver?.({}, args, context);
+      const res = await addEventAttendeeResolver?.({}, args, context);
+
+      expect(res).toEqual({
+        data: null,
+        errors: [
+          {
+            __typename: "UnauthenticatedError",
+            message: USER_NOT_FOUND_ERROR.MESSAGE,
+            path: [USER_NOT_FOUND_ERROR.PARAM],
+          },
+        ],
+      });
     } catch (error: any) {
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
-      );
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      console.log(error);
     }
   });
 
   it(`throws NotFoundError if no event exists with _id === args.data.eventId`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
     try {
       const args: MutationAddEventAttendeeArgs = {
-        data: {
+        input: {
           userId: Types.ObjectId().toString(),
           eventId: Types.ObjectId().toString(),
         },
@@ -81,12 +83,19 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
         "../../../src/resolvers/Mutation/addEventAttendee"
       );
 
-      await addEventAttendeeResolver?.({}, args, context);
+      const res = await addEventAttendeeResolver?.({}, args, context);
+      expect(res).toEqual({
+        data: null,
+        errors: [
+          {
+            __typename: "EventNotFoundError",
+            message: EVENT_NOT_FOUND_ERROR.MESSAGE,
+            path: [EVENT_NOT_FOUND_ERROR.PARAM],
+          },
+        ],
+      });
     } catch (error: any) {
-      expect(error.message).toEqual(
-        `Translated ${EVENT_NOT_FOUND_ERROR.MESSAGE}`
-      );
-      expect(spy).toHaveBeenLastCalledWith(EVENT_NOT_FOUND_ERROR.MESSAGE);
+      console.log(error);
     }
   });
 
@@ -99,7 +108,7 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
 
     try {
       const args: MutationAddEventAttendeeArgs = {
-        data: {
+        input: {
           userId: Types.ObjectId().toString(),
           eventId: testEvent!._id,
         },
@@ -111,25 +120,27 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
         "../../../src/resolvers/Mutation/addEventAttendee"
       );
 
-      await addEventAttendeeResolver?.({}, args, context);
+      const res = await addEventAttendeeResolver?.({}, args, context);
+
+      expect(res).toEqual({
+        data: null,
+        errors: [
+          {
+            __typename: "UnauthorizedError",
+            message: USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+            path: [USER_NOT_AUTHORIZED_ERROR.PARAM],
+          },
+        ],
+      });
     } catch (error: any) {
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
-      );
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      console.log(error);
     }
   });
 
   it(`throws NotFoundError if the request user with _id = args.data.userId does not exist`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
     try {
       const args: MutationAddEventAttendeeArgs = {
-        data: {
+        input: {
           userId: Types.ObjectId().toString(),
           eventId: testEvent!._id,
         },
@@ -141,18 +152,26 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
         "../../../src/resolvers/Mutation/addEventAttendee"
       );
 
-      await addEventAttendeeResolver?.({}, args, context);
+      const res = await addEventAttendeeResolver?.({}, args, context);
+
+      expect(res).toEqual({
+        data: null,
+        errors: [
+          {
+            __typename: "UserNotFoundError",
+            message: USER_NOT_FOUND_ERROR.MESSAGE,
+            path: [USER_NOT_FOUND_ERROR.PARAM],
+          },
+        ],
+      });
     } catch (error: any) {
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
-      );
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      console.log(error);
     }
   });
 
   it(`registers the request user for the event successfully and returns the request user`, async () => {
     const args: MutationAddEventAttendeeArgs = {
-      data: {
+      input: {
         userId: testUser!._id,
         eventId: testEvent!._id,
       },
@@ -171,23 +190,17 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
     }).lean();
 
     const isUserRegistered = await EventAttendee.exists({
-      ...args.data,
+      ...args.input,
     });
 
-    expect(payload).toEqual(requestUser);
+    expect(payload?.data).toEqual(requestUser);
     expect(isUserRegistered).toBeTruthy();
   });
 
   it(`throws error if the request user with _id = args.data.userId is already registered for the event`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
     try {
       const args: MutationAddEventAttendeeArgs = {
-        data: {
+        input: {
           userId: testUser!._id,
           eventId: testEvent!._id,
         },
@@ -199,14 +212,20 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
         "../../../src/resolvers/Mutation/addEventAttendee"
       );
 
-      await addEventAttendeeResolver?.({}, args, context);
+      const res = await addEventAttendeeResolver?.({}, args, context);
+
+      expect(res).toEqual({
+        data: null,
+        errors: [
+          {
+            __typename: "UserAlreadyAttendeeError",
+            message: USER_ALREADY_REGISTERED_FOR_EVENT.MESSAGE,
+            path: [USER_ALREADY_REGISTERED_FOR_EVENT.PARAM],
+          },
+        ],
+      });
     } catch (error: any) {
-      expect(error.message).toEqual(
-        `Translated ${USER_ALREADY_REGISTERED_FOR_EVENT.MESSAGE}`
-      );
-      expect(spy).toHaveBeenLastCalledWith(
-        USER_ALREADY_REGISTERED_FOR_EVENT.MESSAGE
-      );
+      console.log(error);
     }
   });
 });

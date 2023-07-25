@@ -5,5 +5,4 @@ export const acceptAdminErrors = gql`
       UnauthenticatedError
     | UnauthorizedError
     | UserNotFoundError
-
 `;

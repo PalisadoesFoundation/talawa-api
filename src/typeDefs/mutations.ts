@@ -13,7 +13,7 @@ export const mutations = gql`
       input: AcceptMembershipRequestInput!
     ): AcceptMembershipRequestResult! @auth
 
-    addEventAttendee(data: EventAttendeeInput!): User! @auth
+    addEventAttendee(input: EventAttendeeInput!): AddEventAttendeeResult! @auth
 
     addLanguageTranslation(data: LanguageInput!): Language! @auth
 

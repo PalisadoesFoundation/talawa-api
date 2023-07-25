@@ -12,6 +12,11 @@ export const types = gql`
     errors: [AcceptMembershipRequestErrors!]!
   }
 
+  type AddEventAttendeeResult {
+    data: User
+    errors: [AddEventAttendeeErrors!]!
+  }
+
   type AggregatePost {
     count: Int!
   }
