@@ -280,8 +280,7 @@ export const types = gql`
     pluginName: String!
     pluginCreatedBy: String!
     pluginDesc: String!
-    pluginInstallStatus: Boolean!
-    installedOrgs: [ID!]!
+    uninstalledOrgs: [ID!]!
   }
 
   # type Plugin {

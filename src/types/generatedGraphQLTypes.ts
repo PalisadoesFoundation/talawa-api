@@ -563,7 +563,6 @@ export type Mutation = {
   updateEventProject: EventProject;
   updateLanguage: User;
   updateOrganization: Organization;
-  updatePluginInstalledOrgs: Plugin;
   updatePluginStatus: Plugin;
   updatePost: Post;
   updateTask?: Maybe<Task>;
@@ -706,11 +705,10 @@ export type MutationCreateOrganizationArgs = {
 
 
 export type MutationCreatePluginArgs = {
-  installedOrgs?: InputMaybe<Array<Scalars['ID']>>;
   pluginCreatedBy: Scalars['String'];
   pluginDesc: Scalars['String'];
-  pluginInstallStatus: Scalars['Boolean'];
   pluginName: Scalars['String'];
+  uninstalledOrgs?: InputMaybe<Array<Scalars['ID']>>;
 };
 
 
@@ -962,15 +960,9 @@ export type MutationUpdateOrganizationArgs = {
 };
 
 
-export type MutationUpdatePluginInstalledOrgsArgs = {
-  id: Scalars['ID'];
-  orgId: Scalars['ID'];
-};
-
-
 export type MutationUpdatePluginStatusArgs = {
   id: Scalars['ID'];
-  status: Scalars['Boolean'];
+  orgId: Scalars['ID'];
 };
 
 
@@ -1136,11 +1128,10 @@ export type PaginationDirection =
 export type Plugin = {
   __typename?: 'Plugin';
   _id: Scalars['ID'];
-  installedOrgs: Array<Scalars['ID']>;
   pluginCreatedBy: Scalars['String'];
   pluginDesc: Scalars['String'];
-  pluginInstallStatus: Scalars['Boolean'];
   pluginName: Scalars['String'];
+  uninstalledOrgs: Array<Scalars['ID']>;
 };
 
 export type PluginField = {
@@ -1444,6 +1435,7 @@ export type Subscription = {
   directMessageChat?: Maybe<MessageChat>;
   messageSentToDirectChat?: Maybe<DirectChatMessage>;
   messageSentToGroupChat?: Maybe<GroupChatMessage>;
+  onPluginUpdate?: Maybe<Plugin>;
 };
 
 export type Task = {
@@ -2434,7 +2426,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationCreateMemberArgs, 'input'>>;
   createMessageChat?: Resolver<ResolversTypes['MessageChat'], ParentType, ContextType, RequireFields<MutationCreateMessageChatArgs, 'data'>>;
   createOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, Partial<MutationCreateOrganizationArgs>>;
-  createPlugin?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationCreatePluginArgs, 'pluginCreatedBy' | 'pluginDesc' | 'pluginInstallStatus' | 'pluginName'>>;
+  createPlugin?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationCreatePluginArgs, 'pluginCreatedBy' | 'pluginDesc' | 'pluginName'>>;
   createPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'data'>>;
   createTask?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationCreateTaskArgs, 'data' | 'eventProjectId'>>;
   createUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationCreateUserTagArgs, 'input'>>;
@@ -2484,8 +2476,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateEventProject?: Resolver<ResolversTypes['EventProject'], ParentType, ContextType, RequireFields<MutationUpdateEventProjectArgs, 'data' | 'id'>>;
   updateLanguage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateLanguageArgs, 'languageCode'>>;
   updateOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateOrganizationArgs, 'id'>>;
-  updatePluginInstalledOrgs?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginInstalledOrgsArgs, 'id' | 'orgId'>>;
-  updatePluginStatus?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginStatusArgs, 'id' | 'status'>>;
+  updatePluginStatus?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginStatusArgs, 'id' | 'orgId'>>;
   updatePost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationUpdatePostArgs, 'id'>>;
   updateTask?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<MutationUpdateTaskArgs, 'data' | 'id'>>;
   updateUserPassword?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserPasswordArgs, 'data'>>;
@@ -2553,11 +2544,10 @@ export interface PhoneNumberScalarConfig extends GraphQLScalarTypeConfig<Resolve
 
 export type PluginResolvers<ContextType = any, ParentType extends ResolversParentTypes['Plugin'] = ResolversParentTypes['Plugin']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  installedOrgs?: Resolver<Array<ResolversTypes['ID']>, ParentType, ContextType>;
   pluginCreatedBy?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pluginDesc?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  pluginInstallStatus?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   pluginName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  uninstalledOrgs?: Resolver<Array<ResolversTypes['ID']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2631,6 +2621,7 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   directMessageChat?: SubscriptionResolver<Maybe<ResolversTypes['MessageChat']>, "directMessageChat", ParentType, ContextType>;
   messageSentToDirectChat?: SubscriptionResolver<Maybe<ResolversTypes['DirectChatMessage']>, "messageSentToDirectChat", ParentType, ContextType>;
   messageSentToGroupChat?: SubscriptionResolver<Maybe<ResolversTypes['GroupChatMessage']>, "messageSentToGroupChat", ParentType, ContextType>;
+  onPluginUpdate?: SubscriptionResolver<Maybe<ResolversTypes['Plugin']>, "onPluginUpdate", ParentType, ContextType>;
 };
 
 export type TaskResolvers<ContextType = any, ParentType extends ResolversParentTypes['Task'] = ResolversParentTypes['Task']> = {
