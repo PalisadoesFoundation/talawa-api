@@ -858,12 +858,7 @@
 <td></td>
 </tr>
 <tr>
-<td colspan="2" align="right" valign="top">pluginInstallStatus</td>
-<td valign="top"><a href="#boolean">Boolean</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">installedOrgs</td>
+<td colspan="2" align="right" valign="top">uninstalledOrgs</td>
 <td valign="top">[<a href="#id">ID</a>!]</td>
 <td></td>
 </tr>
@@ -1428,7 +1423,7 @@
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>updatePluginInstalledOrgs</strong></td>
+<td colspan="2" valign="top"><strong>updatePluginStatus</strong></td>
 <td valign="top"><a href="#plugin">Plugin</a>!</td>
 <td></td>
 </tr>
@@ -1440,21 +1435,6 @@
 <tr>
 <td colspan="2" align="right" valign="top">orgId</td>
 <td valign="top"><a href="#id">ID</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>updatePluginStatus</strong></td>
-<td valign="top"><a href="#plugin">Plugin</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">id</td>
-<td valign="top"><a href="#id">ID</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">status</td>
-<td valign="top"><a href="#boolean">Boolean</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -2940,12 +2920,7 @@ When paginating backwards, are there more items?
 <td></td>
 </tr>
 <tr>
-<td colspan="2" valign="top"><strong>pluginInstallStatus</strong></td>
-<td valign="top"><a href="#boolean">Boolean</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" valign="top"><strong>installedOrgs</strong></td>
+<td colspan="2" valign="top"><strong>uninstalledOrgs</strong></td>
 <td valign="top">[<a href="#id">ID</a>!]!</td>
 <td></td>
 </tr>
@@ -3127,6 +3102,11 @@ A list of edges.
 <tr>
 <td colspan="2" valign="top"><strong>messageSentToGroupChat</strong></td>
 <td valign="top"><a href="#groupchatmessage">GroupChatMessage</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>onPluginUpdate</strong></td>
+<td valign="top"><a href="#plugin">Plugin</a></td>
 <td></td>
 </tr>
 </tbody>
