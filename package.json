@@ -93,6 +93,7 @@
     "zod-error": "^1.5.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^8.0.2",
     "@graphql-codegen/cli": "^2.6.2",
     "@graphql-codegen/typescript": "^2.5.1",
     "@graphql-codegen/typescript-resolvers": "^2.6.6",

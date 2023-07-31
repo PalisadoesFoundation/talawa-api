@@ -393,3 +393,10 @@ export const SMTP_OPTIONS = {
   SMTP_PORT: process.env.SMTP_PORT,
   SMTP_SSL_TLS: process.env.SMTP_SSL_TLS,
 };
+
+export const SAMPLE_ORGANIZATION_ALREADY_EXISTS = {
+  DESC: "Sample Organization was already generated",
+  CODE: "sampleOrganization.duplicate",
+  MESSAGE: "sampleOrganization.duplicate",
+  PARAM: "sampleOrganization",
+};
