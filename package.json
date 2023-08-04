@@ -134,6 +134,7 @@
   "overrides": {
     "graphql-voyager": {
       "graphql": "^16.6.0"
-    }
+    },
+    "tough-cookie": "^4.1.3"
   }
 }
