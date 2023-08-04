@@ -97,6 +97,9 @@ jobs:
           path: './coverage/lcov.info'
           min_coverage: 95.0
 
+      - name: Run dev server
+        run: npm run dev
+
   JSDocs:
     name: 'JSDocs comments and pipeline'
     runs-on: ubuntu-latest
