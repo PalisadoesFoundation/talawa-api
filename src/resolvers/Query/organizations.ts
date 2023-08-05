@@ -4,6 +4,7 @@ import { errors } from "../../libraries";
 import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
 import { OrganizationCache } from "../../services/redis";
+import { RedisKey } from "ioredis";
 /**
  * If a 'id' is specified, this query will return an organisation;
  * otherwise, it will return all organisations with a size of limit 100.
@@ -16,19 +17,25 @@ export const organizations: QueryResolvers["organizations"] = async (
   _parent,
   args
 ) => {
+
   const sort = getSort(args.orderBy);
+  
   let organizationFound;
   if (args.id) {
 
+
+
     console.time('redis')
+    
     const organizationFoundInCache = await OrganizationCache.get(`organization:${args.id}`);
-    console.timeEnd('redis')
+    console.timeEnd('redis')    
+    
 
     if (organizationFoundInCache) {
-      return JSON.parse(organizationFoundInCache)
+      return [JSON.parse(organizationFoundInCache)]
     }
 
-    console.time('db qeury')
+    console.time('db query')
 
     organizationFound = await Organization.find({
       _id: args.id,
@@ -36,7 +43,10 @@ export const organizations: QueryResolvers["organizations"] = async (
       .sort(sort)
       .lean();
 
-      console.timeEnd('db qeury')
+      cacheOrganizations(organizationFound)
+
+
+      console.timeEnd('db query')
 
     if (!organizationFound[0]) {
       throw new errors.NotFoundError(
@@ -51,6 +61,7 @@ export const organizations: QueryResolvers["organizations"] = async (
     
 
     return organizationFound;
+
   } else {
     organizationFound = await Organization.find().sort(sort).limit(100).lean();
   }
@@ -64,14 +75,17 @@ export const organizations: QueryResolvers["organizations"] = async (
 // Function to store organizations in the cache using pipelining
 async function cacheOrganizations(organizations:InterfaceOrganization[]) {
   const pipeline = OrganizationCache.pipeline();
-
+  let keys: RedisKey[]=[];
   organizations.forEach(org => {
-    const key = `organization:${org.id}`;
-    pipeline.hset(key, 'id', JSON.stringify(org));
+    const key = `organization:${org._id}`;
+    keys.push(key);
+    pipeline.set(key,  JSON.stringify(org));
+    pipeline.expire(key, 300)
   });
 
   // Execute the pipeline
   await pipeline.exec();
+  
 
   console.log('Organizations cached successfully.');
 }
