@@ -8,7 +8,7 @@ import * as database from "./db";
 import http from "http";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { PubSub } from "graphql-subscriptions";
-import { app } from "./app";
+import app  from "./app";
 import { logIssues } from "./checks";
 import depthLimit from "graphql-depth-limit";
 import authDirectiveTransformer from "./directives/directiveTransformer/authDirectiveTransformer";
@@ -19,6 +19,7 @@ import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHt
 import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
 import { expressMiddleware } from "@apollo/server/express4";
 import loadPlugins from "./config/plugins/loadPlugins";
+import { redis } from "./services/redis";
 const pubsub = new PubSub();
 
 // defines schema
@@ -112,6 +113,7 @@ async function startServer(): Promise<void> {
   // Log all the configuration related issues
   await logIssues();
 
+    
   console.log(`🚀 Server ready at http://localhost:4000/graphql`);
   console.log(`🚀 Subscription endpoint ready at ws://localhost:4000/graphql`);
 }

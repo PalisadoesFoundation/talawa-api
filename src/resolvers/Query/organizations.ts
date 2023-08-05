@@ -1,8 +1,9 @@
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { Organization } from "../../models";
+import { InterfaceOrganization, Organization } from "../../models";
 import { errors } from "../../libraries";
 import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
+import { OrganizationCache } from "../../services/redis";
 /**
  * If a 'id' is specified, this query will return an organisation;
  * otherwise, it will return all organisations with a size of limit 100.
@@ -16,13 +17,26 @@ export const organizations: QueryResolvers["organizations"] = async (
   args
 ) => {
   const sort = getSort(args.orderBy);
-
+  let organizationFound;
   if (args.id) {
-    const organizationFound = await Organization.find({
+
+    console.time('redis')
+    const organizationFoundInCache = await OrganizationCache.get(`organization:${args.id}`);
+    console.timeEnd('redis')
+
+    if (organizationFoundInCache) {
+      return JSON.parse(organizationFoundInCache)
+    }
+
+    console.time('db qeury')
+
+    organizationFound = await Organization.find({
       _id: args.id,
     })
       .sort(sort)
       .lean();
+
+      console.timeEnd('db qeury')
 
     if (!organizationFound[0]) {
       throw new errors.NotFoundError(
@@ -32,8 +46,33 @@ export const organizations: QueryResolvers["organizations"] = async (
       );
     }
 
+
+
+    
+
     return organizationFound;
   } else {
-    return await Organization.find().sort(sort).limit(100).lean();
+    organizationFound = await Organization.find().sort(sort).limit(100).lean();
   }
+
+  cacheOrganizations(organizationFound)
+
+  return organizationFound;
 };
+
+
+// Function to store organizations in the cache using pipelining
+async function cacheOrganizations(organizations:InterfaceOrganization[]) {
+  const pipeline = OrganizationCache.pipeline();
+
+  organizations.forEach(org => {
+    const key = `organization:${org.id}`;
+    pipeline.hset(key, 'id', JSON.stringify(org));
+  });
+
+  // Execute the pipeline
+  await pipeline.exec();
+
+  console.log('Organizations cached successfully.');
+}
+
