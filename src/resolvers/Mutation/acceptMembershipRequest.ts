@@ -9,6 +9,7 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 /**
  * This function accepts the membership request sent by a user.
  * @param _parent - parent of current request
@@ -82,7 +83,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
     });
 
     // Update the organization
-    await Organization.updateOne(
+    const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: organization._id,
       },
@@ -93,8 +94,14 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
         $pull: {
           membershipRequests: membershipRequest._id,
         },
+        
+      },
+      {
+        new:true
       }
     );
+
+    cacheOrganizations([updatedOrganization!])
 
     // Update the user
     await User.updateOne(
