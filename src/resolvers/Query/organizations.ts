@@ -1,10 +1,11 @@
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
-import { InterfaceOrganization, Organization } from "../../models";
+import { Organization } from "../../models";
 import { errors } from "../../libraries";
 import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
-import { OrganizationCache } from "../../services/redis";
-import { RedisKey } from "ioredis";
+import  OrganizationCache  from "../../services/redis";
+import { cacheOrganizations } from "../../services/OrganizationCacheHelpers/cacheOrganizations";
+import { findOrganizations } from "../../services/OrganizationCacheHelpers/findOrganizations";
 /**
  * If a 'id' is specified, this query will return an organisation;
  * otherwise, it will return all organisations with a size of limit 100.
@@ -27,12 +28,12 @@ export const organizations: QueryResolvers["organizations"] = async (
 
     console.time('redis')
     
-    const organizationFoundInCache = await OrganizationCache.get(`organization:${args.id}`);
+    const organizationFoundInCache = await findOrganizations([args.id])
     console.timeEnd('redis')    
     
 
-    if (organizationFoundInCache) {
-      return [JSON.parse(organizationFoundInCache)]
+    if (!organizationFoundInCache.includes(null)) {
+      return organizationFoundInCache
     }
 
     console.time('db query')
@@ -63,30 +64,17 @@ export const organizations: QueryResolvers["organizations"] = async (
     return organizationFound;
 
   } else {
+
+
     organizationFound = await Organization.find().sort(sort).limit(100).lean();
+    cacheOrganizations(organizationFound)
+
   }
 
-  cacheOrganizations(organizationFound)
 
   return organizationFound;
 };
 
 
-// Function to store organizations in the cache using pipelining
-async function cacheOrganizations(organizations:InterfaceOrganization[]) {
-  const pipeline = OrganizationCache.pipeline();
-  let keys: RedisKey[]=[];
-  organizations.forEach(org => {
-    const key = `organization:${org._id}`;
-    keys.push(key);
-    pipeline.set(key,  JSON.stringify(org));
-    pipeline.expire(key, 300)
-  });
 
-  // Execute the pipeline
-  await pipeline.exec();
-  
-
-  console.log('Organizations cached successfully.');
-}
 
