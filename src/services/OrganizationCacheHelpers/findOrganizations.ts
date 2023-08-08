@@ -1,7 +1,7 @@
 import { ObjectId } from "mongoose";
 import OrganizationCache from "../OrganizationCache";
 
-export async function findOrganizations(ids:string[]) {
+export async function findOrganizationsInCache(ids:string[]) {
     const keys:string[] = ids.map(id=>{
         return `organization:${id}`
     })

@@ -3,9 +3,8 @@ import { Organization } from "../../models";
 import { errors } from "../../libraries";
 import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
-import  OrganizationCache  from "../../services/redis";
 import { cacheOrganizations } from "../../services/OrganizationCacheHelpers/cacheOrganizations";
-import { findOrganizations } from "../../services/OrganizationCacheHelpers/findOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCacheHelpers/findOrganizations";
 /**
  * If a 'id' is specified, this query will return an organisation;
  * otherwise, it will return all organisations with a size of limit 100.
@@ -28,7 +27,7 @@ export const organizations: QueryResolvers["organizations"] = async (
 
     console.time('redis')
     
-    const organizationFoundInCache = await findOrganizations([args.id])
+    const organizationFoundInCache = await findOrganizationsInCache([args.id])
     console.timeEnd('redis')    
     
 
