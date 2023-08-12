@@ -22,7 +22,7 @@ export const organization: GroupChatResolvers["organization"] = async (
   }).lean();
 
 
-  cacheOrganizations([organization!]);
+  await cacheOrganizations([organization!]);
 
   return organization!;
 

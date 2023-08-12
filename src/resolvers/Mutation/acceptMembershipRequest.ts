@@ -101,7 +101,7 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       }
     );
 
-    cacheOrganizations([updatedOrganization!])
+    await cacheOrganizations([updatedOrganization!])
 
     // Update the user
     await User.updateOne(

@@ -9,6 +9,8 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 /**
  * This function adds user to group chat.
  * @param _parent - parent of current request
@@ -37,9 +39,22 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
       );
     }
 
-    const organization = await Organization.findOne({
-      _id: groupChat.organization,
-    }).lean();
+    let organization
+    const organizationFoundInCache = await findOrganizationsInCache([groupChat.organization]);
+    
+    organization = organizationFoundInCache[0];
+
+    if (organizationFoundInCache.includes(null)) {
+
+      organization = await Organization.findOne({
+        _id: groupChat.organization,
+      }).lean();
+      
+
+      await cacheOrganizations([organization!])
+    } 
+
+
 
     // Checks whether organization exists.
     if (!organization) {

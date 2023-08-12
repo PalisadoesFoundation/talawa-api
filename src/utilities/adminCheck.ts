@@ -1,4 +1,4 @@
-import type { Types } from "mongoose";
+import { Types } from "mongoose";
 import { errors, requestContext } from "../libraries";
 import { USER_NOT_AUTHORIZED_ADMIN } from "../constants";
 import type { InterfaceOrganization } from "../models";
@@ -15,9 +15,15 @@ export const adminCheck = async (
   userId: string | Types.ObjectId,
   organization: InterfaceOrganization
 ): Promise<void> => {
+
+
   const userIsOrganizationAdmin = organization.admins.some((admin) =>
-    admin.equals(userId)
+
+    
+    admin===userId||Types.ObjectId(admin).equals(userId)||admin.equals(userId)
+    
   );
+  
 
   const user = await User.findOne({
     _id: userId,

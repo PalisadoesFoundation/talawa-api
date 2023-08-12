@@ -10,7 +10,10 @@ export async function findOrganizationsInCache(ids:string[]):Promise<(InterfaceO
     const organizationFoundInCache = await OrganizationCache.mget(keys);    
 
     const organizations = organizationFoundInCache.map(org => {
-        return JSON.parse(org!);
+        if (org ===null) {
+            return null;
+        }
+        return JSON.parse(org);
     })
     
     return organizations
