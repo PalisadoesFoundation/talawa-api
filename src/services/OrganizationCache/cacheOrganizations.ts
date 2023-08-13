@@ -1,8 +1,8 @@
-import { InterfaceOrganization } from "../../models";
+import type { InterfaceOrganization } from "../../models";
 import OrganizationCache from "./OrganizationCache";
 
 // Function to store organizations in the cache using pipelining
-export async function cacheOrganizations(organizations:InterfaceOrganization[]) {
+export async function cacheOrganizations(organizations:InterfaceOrganization[]):Promise<void> {
   try {
     const pipeline = OrganizationCache.pipeline();
     

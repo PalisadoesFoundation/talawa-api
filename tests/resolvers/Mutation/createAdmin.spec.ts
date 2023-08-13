@@ -18,6 +18,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -155,7 +156,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
   it(`throws UnauthorizedError if user with _id === args.data.userId is already an admin
   of organzation with _id === args.data.organizationId`, async () => {
     try {
-      await Organization.updateOne(
+      const updatedOrganization=await Organization.findOneAndUpdate(
         {
           _id: testOrganization?._id,
         },
@@ -163,8 +164,13 @@ describe("resolvers -> Mutation -> createAdmin", () => {
           $push: {
             members: testUser?._id,
           },
+        },
+        {
+          new:true
         }
       );
+
+      await cacheOrganizations([updatedOrganization!])
 
       const args: MutationCreateAdminArgs = {
         data: {
@@ -184,7 +190,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
   });
 
   it(`creates the admin and returns admin's user object`, async () => {
-    await Organization.updateOne(
+    const updatedOrganization=await Organization.findOneAndUpdate(
       {
         _id: testOrganization?._id,
       },
@@ -192,8 +198,13 @@ describe("resolvers -> Mutation -> createAdmin", () => {
         $set: {
           admins: [],
         },
+      },
+      {
+        new:true
       }
     );
+
+    await cacheOrganizations([updatedOrganization!])
 
     const args: MutationCreateAdminArgs = {
       data: {

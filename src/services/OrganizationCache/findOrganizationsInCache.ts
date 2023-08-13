@@ -1,6 +1,6 @@
 import { ObjectId } from "mongoose";
 import OrganizationCache from "./OrganizationCache";
-import { InterfaceOrganization } from "../../models";
+import type { InterfaceOrganization } from "../../models";
 
 export async function findOrganizationsInCache(ids:string[]):Promise<(InterfaceOrganization|null)[]> {
     const keys:string[] = ids.map(id=>{

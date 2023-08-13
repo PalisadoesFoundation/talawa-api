@@ -19,7 +19,6 @@ import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHt
 import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
 import { expressMiddleware } from "@apollo/server/express4";
 import loadPlugins from "./config/plugins/loadPlugins";
-import { redis } from "./services/redis";
 const pubsub = new PubSub();
 
 // defines schema

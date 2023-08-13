@@ -19,6 +19,7 @@ import type {
 } from "../../helpers/userAndOrg";
 import type { TestGroupChatType } from "../../helpers/groupChat";
 import { createTestGroupChat } from "../../helpers/groupChat";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -128,7 +129,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
         }
       );
 
-      await Organization.updateOne(
+      const updatedOrganization = await Organization.findOneAndUpdate(
         {
           _id: testOrganization?._id,
         },
@@ -136,8 +137,14 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
           $set: {
             admins: [],
           },
+        } , 
+        {
+          new:true
         }
       );
+
+      cacheOrganizations([updatedOrganization!])
+
 
       const args: MutationAdminRemoveGroupArgs = {
         groupId: testGroupChat?.id,
@@ -154,7 +161,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
   });
 
   it(`deletes the post and returns it`, async () => {
-    await Organization.updateOne(
+    const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: testOrganization?._id,
       },
@@ -162,8 +169,14 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
         $push: {
           admins: testUser?._id,
         },
+      } , 
+      {
+        new:true
       }
     );
+
+    cacheOrganizations([updatedOrganization!])
+
 
     const args: MutationAdminRemoveGroupArgs = {
       groupId: testGroupChat?.id,

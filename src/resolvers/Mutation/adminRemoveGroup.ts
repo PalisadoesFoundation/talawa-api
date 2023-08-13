@@ -7,6 +7,8 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   CHAT_NOT_FOUND_ERROR,
 } from "../../constants";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 /**
  * This function enables an admin to remove a group.
  * @param _parent - parent of current request
@@ -38,9 +40,23 @@ export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
     );
   }
 
-  const organization = await Organization.findOne({
-    _id: groupChat.organization,
-  }).lean();
+  let organization;
+
+  const organizationFoundInCache = await findOrganizationsInCache([groupChat.organization]);
+    
+  organization = organizationFoundInCache[0];
+
+  if (organizationFoundInCache.includes(null)) {
+
+    organization = await Organization.findOne({
+      _id: groupChat.organization,
+    }).lean();
+    
+
+    await cacheOrganizations([organization!])
+  } 
+
+
 
   // Checks whether organization exists.
   if (!organization) {
