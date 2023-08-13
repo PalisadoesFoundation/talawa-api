@@ -9,6 +9,9 @@ import {
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { update } from "lodash";
 /**
  * This function enables to create a post.
  * @param _parent - parent of current request
@@ -38,12 +41,24 @@ export const createPost: MutationResolvers["createPost"] = async (
     );
   }
 
-  const organizationExists = await Organization.exists({
-    _id: args.data.organizationId,
-  });
+  let organization;
+
+  const organizationFoundInCache = await findOrganizationsInCache([args.data.organizationId]);
+    
+  organization = organizationFoundInCache[0];
+
+  if (organizationFoundInCache.includes(null)) {
+
+    organization = await Organization.findOne({
+      _id: args.data.organizationId,
+    }).lean();
+    
+
+    await cacheOrganizations([organization!])
+  } 
 
   // Checks whether organization with _id == args.data.organizationId exists.
-  if (organizationExists === false) {
+  if (!organization) {
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
@@ -109,14 +124,19 @@ export const createPost: MutationResolvers["createPost"] = async (
 
   if (args.data.pinned) {
     // Add the post to pinnedPosts of the organization
-    await Organization.updateOne(
+    const updatedOrganizaiton = await Organization.findOneAndUpdate(
       { _id: args.data.organizationId },
       {
         $push: {
           pinnedPosts: createdPost._id,
         },
+      },
+      {
+        new:true
       }
     );
+
+    await cacheOrganizations([updatedOrganizaiton!])
   }
 
   // Returns createdPost.

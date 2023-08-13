@@ -25,6 +25,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -101,7 +102,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
     try {
-      await Organization.updateOne(
+      const updatedOrganizaiton=await Organization.findOneAndUpdate(
         {
           _id: testOrganization?._id,
         },
@@ -109,8 +110,13 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
           $set: {
             isPublic: true,
           },
+        } , 
+        { 
+          new:true
         }
       );
+
+      await cacheOrganizations([updatedOrganizaiton!])
 
       const args: MutationJoinPublicOrganizationArgs = {
         organizationId: testOrganization?.id,
@@ -155,7 +161,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
   });
 
   it(`returns user object with _id === context.userId after joining the organization    `, async () => {
-    await Organization.updateOne(
+    const updatedOrganizaiton = await Organization.findOneAndUpdate(
       {
         _id: testOrganization?._id,
       },
@@ -163,8 +169,13 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
         $set: {
           members: [],
         },
+      } , 
+      {
+        new:true
       }
     );
+
+    await cacheOrganizations([updatedOrganizaiton!]);
 
     const args: MutationJoinPublicOrganizationArgs = {
       organizationId: testOrganization?.id,

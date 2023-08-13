@@ -7,6 +7,8 @@ import {
   USER_NOT_FOUND_ERROR,
   MEMBER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 /**
  * This function enables to add a member.
  * @param _parent - parent of current request
@@ -39,9 +41,21 @@ export const createMember: MutationResolvers["createMember"] = async (
   superAdminCheck(currentUser);
 
   // Checks if organization exists.
-  const organization = await Organization.findOne({
-    _id: args.input.organizationId,
-  }).lean();
+  let organization;
+
+  const organizationFoundInCache = await findOrganizationsInCache([args.input.organizationId]);
+    
+  organization = organizationFoundInCache[0];
+
+  if (organizationFoundInCache.includes(null)) {
+
+    organization = await Organization.findOne({
+      _id: args.input.organizationId,
+    }).lean();
+    
+
+    await cacheOrganizations([organization!])
+  } 
 
   if (!organization) {
     throw new errors.NotFoundError(
@@ -93,7 +107,7 @@ export const createMember: MutationResolvers["createMember"] = async (
   );
 
   // add user's id to members list on organization and return it.
-  return await Organization.findOneAndUpdate(
+  const updatedOrganization = await Organization.findOneAndUpdate(
     {
       _id: organization?._id,
     },
@@ -106,4 +120,8 @@ export const createMember: MutationResolvers["createMember"] = async (
       new: true,
     }
   ).lean();
+
+  await cacheOrganizations([updatedOrganization!])
+
+  return updatedOrganization!;
 };

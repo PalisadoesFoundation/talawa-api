@@ -7,6 +7,9 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { Types } from "mongoose";
 /**
  * This function enables to join a public organization.
  * @param _parent - parent of current request
@@ -21,9 +24,22 @@ import {
  */
 export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"] =
   async (_parent, args, context) => {
-    const organization = await Organization.findOne({
+    
+  let organization;
+
+  const organizationFoundInCache = await findOrganizationsInCache([args.organizationId]);
+    
+  organization = organizationFoundInCache[0];
+
+  if (organizationFoundInCache.includes(null)) {
+
+    organization = await Organization.findOne({
       _id: args.organizationId,
     }).lean();
+    
+
+    await cacheOrganizations([organization!])
+  } 
 
     // Checks whether organization exists.
     if (!organization) {
@@ -57,7 +73,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
     }
 
     const currentUserIsOrganizationMember = organization.members.some(
-      (member) => member.equals(context.userId)
+      (member) => Types.ObjectId(member).equals(context.userId)
     );
 
     // Checks whether currentUser with _id === context.userId is already a member of organzation.
@@ -70,7 +86,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
     }
 
     // Adds context.userId to members list of organzation's document.
-    await Organization.updateOne(
+    const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: organization._id,
       },
@@ -78,8 +94,14 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
         $push: {
           members: context.userId,
         },
+      },
+      {
+        new:true
       }
     );
+
+
+    await cacheOrganizations([updatedOrganization!])
 
     /* 
     Adds organization._id to joinedOrganizations list of currentUser's document
