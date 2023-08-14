@@ -25,6 +25,7 @@ import type {
 } from "../../helpers/userAndOrg";
 import type { TestGroupChatType } from "../../helpers/groupChat";
 import { createTestGroupChatMessage } from "../../helpers/groupChat";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -151,7 +152,7 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
         }
       );
 
-      await Organization.updateOne(
+      const updatedOrganization = await Organization.findOneAndUpdate(
         {
           _id: testOrganization?._id,
         },
@@ -159,8 +160,13 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
           $set: {
             admins: [],
           },
+        },
+        {
+          new: true,
         }
       );
+
+      await cacheOrganizations([updatedOrganization!]);
 
       const args: MutationRemoveGroupChatArgs = {
         chatId: testGroupChat?.id,
@@ -185,7 +191,7 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
 
   it(`deletes the groupChat with _id === args.chatId and all groupChatMessages
   associated to it and returns it`, async () => {
-    await Organization.updateOne(
+    const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: testOrganization?._id,
       },
@@ -193,8 +199,13 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
         $push: {
           admins: testUser?._id,
         },
+      },
+      {
+        new: true,
       }
     );
+
+    await cacheOrganizations([updatedOrganization!]);
 
     const args: MutationRemoveGroupChatArgs = {
       chatId: testGroupChat?.id,
