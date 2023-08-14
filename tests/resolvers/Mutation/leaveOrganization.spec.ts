@@ -25,6 +25,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -135,7 +136,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
   });
 
   it(`returns user object with _id === context.userId after leaving the organization`, async () => {
-    await Organization.updateOne(
+    const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: testOrganization?._id,
       },
@@ -143,8 +144,13 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
         $push: {
           members: testUser?._id,
         },
+      },
+      {
+        new: true,
       }
     );
+
+    await cacheOrganizations([updatedOrganization!]);
 
     const args: MutationLeaveOrganizationArgs = {
       organizationId: testOrganization?.id,

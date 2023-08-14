@@ -10,17 +10,17 @@ import type { DirectChatResolvers } from "../../types/generatedGraphQLTypes";
 export const organization: DirectChatResolvers["organization"] = async (
   parent
 ) => {
-
-  const organizationFoundInCache = await findOrganizationsInCache([parent.organization])
+  const organizationFoundInCache = await findOrganizationsInCache([
+    parent.organization,
+  ]);
 
   if (!organizationFoundInCache.includes(null)) {
-    return (organizationFoundInCache[0]!);
+    return organizationFoundInCache[0]!;
   }
-  
+
   const organization = await Organization.findOne({
     _id: parent.organization,
   }).lean();
-
 
   cacheOrganizations([organization!]);
 

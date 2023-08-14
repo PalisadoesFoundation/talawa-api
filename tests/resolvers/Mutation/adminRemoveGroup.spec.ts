@@ -137,14 +137,13 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
           $set: {
             admins: [],
           },
-        } , 
+        },
         {
-          new:true
+          new: true,
         }
       );
 
-      cacheOrganizations([updatedOrganization!])
-
+      cacheOrganizations([updatedOrganization!]);
 
       const args: MutationAdminRemoveGroupArgs = {
         groupId: testGroupChat?.id,
@@ -169,14 +168,13 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
         $push: {
           admins: testUser?._id,
         },
-      } , 
+      },
       {
-        new:true
+        new: true,
       }
     );
 
-    cacheOrganizations([updatedOrganization!])
-
+    cacheOrganizations([updatedOrganization!]);
 
     const args: MutationAdminRemoveGroupArgs = {
       groupId: testGroupChat?.id,

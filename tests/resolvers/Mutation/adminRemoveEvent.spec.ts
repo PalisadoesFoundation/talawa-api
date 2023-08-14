@@ -130,13 +130,13 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
           $set: {
             admins: [],
           },
-        } , 
+        },
         {
-          new: true
+          new: true,
         }
       );
 
-      await cacheOrganizations([updatedOrganization!])
+      await cacheOrganizations([updatedOrganization!]);
 
       const args: MutationAdminRemoveEventArgs = {
         eventId: testEvent?.id,
@@ -161,15 +161,13 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
         $push: {
           admins: testUser?._id,
         },
-      } , 
+      },
       {
-        new:true
+        new: true,
       }
     );
 
-    await cacheOrganizations([updatedOrganization!])
-
-    
+    await cacheOrganizations([updatedOrganization!]);
 
     const args: MutationAdminRemoveEventArgs = {
       eventId: testEvent?.id,

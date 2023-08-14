@@ -394,5 +394,5 @@ export const SMTP_OPTIONS = {
   SMTP_SSL_TLS: process.env.SMTP_SSL_TLS,
 };
 
-export const REDIS_HOST = process.env.REDIS_HOST!
-export const REDIS_PORT = 6379
+export const REDIS_HOST = process.env.REDIS_HOST!;
+export const REDIS_PORT = 6379;

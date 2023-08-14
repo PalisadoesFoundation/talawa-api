@@ -43,19 +43,19 @@ export const createPost: MutationResolvers["createPost"] = async (
 
   let organization;
 
-  const organizationFoundInCache = await findOrganizationsInCache([args.data.organizationId]);
-    
+  const organizationFoundInCache = await findOrganizationsInCache([
+    args.data.organizationId,
+  ]);
+
   organization = organizationFoundInCache[0];
 
   if (organizationFoundInCache.includes(null)) {
-
     organization = await Organization.findOne({
       _id: args.data.organizationId,
     }).lean();
-    
 
-    await cacheOrganizations([organization!])
-  } 
+    await cacheOrganizations([organization!]);
+  }
 
   // Checks whether organization with _id == args.data.organizationId exists.
   if (!organization) {
@@ -132,11 +132,11 @@ export const createPost: MutationResolvers["createPost"] = async (
         },
       },
       {
-        new:true
+        new: true,
       }
     );
 
-    await cacheOrganizations([updatedOrganizaiton!])
+    await cacheOrganizations([updatedOrganizaiton!]);
   }
 
   // Returns createdPost.

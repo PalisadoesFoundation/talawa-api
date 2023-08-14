@@ -7,6 +7,7 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 /**
  * This function enables to reject membership request.
  * @param _parent - parent of current request
@@ -64,7 +65,7 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
     });
 
     // Removes membershipRequest._id from membershipRequests list of organization.
-    await Organization.updateOne(
+    const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: membershipRequest.organization._id,
       },
@@ -72,8 +73,13 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
         $pull: {
           membershipRequests: membershipRequest._id,
         },
+      },
+      {
+        new: true,
       }
     );
+
+    await cacheOrganizations([updatedOrganization!]);
 
     // Removes membershipRequest._id from membershipRequests list of user.
     await User.updateOne(

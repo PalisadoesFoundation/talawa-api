@@ -24,22 +24,21 @@ import { Types } from "mongoose";
  */
 export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"] =
   async (_parent, args, context) => {
-    
-  let organization;
+    let organization;
 
-  const organizationFoundInCache = await findOrganizationsInCache([args.organizationId]);
-    
-  organization = organizationFoundInCache[0];
+    const organizationFoundInCache = await findOrganizationsInCache([
+      args.organizationId,
+    ]);
 
-  if (organizationFoundInCache.includes(null)) {
+    organization = organizationFoundInCache[0];
 
-    organization = await Organization.findOne({
-      _id: args.organizationId,
-    }).lean();
-    
+    if (organizationFoundInCache.includes(null)) {
+      organization = await Organization.findOne({
+        _id: args.organizationId,
+      }).lean();
 
-    await cacheOrganizations([organization!])
-  } 
+      await cacheOrganizations([organization!]);
+    }
 
     // Checks whether organization exists.
     if (!organization) {
@@ -96,12 +95,11 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
         },
       },
       {
-        new:true
+        new: true,
       }
     );
 
-
-    await cacheOrganizations([updatedOrganization!])
+    await cacheOrganizations([updatedOrganization!]);
 
     /* 
     Adds organization._id to joinedOrganizations list of currentUser's document

@@ -38,20 +38,19 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
 
     let organization;
 
-    const organizationFoundInCache = await findOrganizationsInCache([membershipRequest.organization]);
-      
+    const organizationFoundInCache = await findOrganizationsInCache([
+      membershipRequest.organization,
+    ]);
+
     organization = organizationFoundInCache[0];
-  
+
     if (organizationFoundInCache.includes(null)) {
-  
       organization = await Organization.findOne({
         _id: membershipRequest.organization,
       }).lean();
-      
-  
-      await cacheOrganizations([organization!])
-    } 
 
+      await cacheOrganizations([organization!]);
+    }
 
     // Checks whether organization exists.
     if (!organization) {
@@ -102,13 +101,13 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
         $pull: {
           membershipRequests: membershipRequest._id,
         },
-      } ,
+      },
       {
-        new:true
+        new: true,
       }
     );
 
-    await cacheOrganizations([updatedOrganization!])
+    await cacheOrganizations([updatedOrganization!]);
 
     // Removes membershipRequest._id from membershipRequests list on currentUser's document.
     await User.updateOne(

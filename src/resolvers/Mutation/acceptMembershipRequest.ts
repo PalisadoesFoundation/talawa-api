@@ -94,14 +94,13 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
         $pull: {
           membershipRequests: membershipRequest._id,
         },
-        
       },
       {
-        new:true
+        new: true,
       }
     );
 
-    await cacheOrganizations([updatedOrganization!])
+    await cacheOrganizations([updatedOrganization!]);
 
     // Update the user
     await User.updateOne(

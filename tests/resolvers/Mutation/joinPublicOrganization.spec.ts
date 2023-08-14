@@ -102,7 +102,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
     try {
-      const updatedOrganizaiton=await Organization.findOneAndUpdate(
+      const updatedOrganizaiton = await Organization.findOneAndUpdate(
         {
           _id: testOrganization?._id,
         },
@@ -110,13 +110,13 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
           $set: {
             isPublic: true,
           },
-        } , 
-        { 
-          new:true
+        },
+        {
+          new: true,
         }
       );
 
-      await cacheOrganizations([updatedOrganizaiton!])
+      await cacheOrganizations([updatedOrganizaiton!]);
 
       const args: MutationJoinPublicOrganizationArgs = {
         organizationId: testOrganization?.id,
@@ -169,9 +169,9 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
         $set: {
           members: [],
         },
-      } , 
+      },
       {
-        new:true
+        new: true,
       }
     );
 

@@ -29,23 +29,21 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   args,
   context
 ) => {
-  
-  
   let organization;
 
-  const organizationFoundInCache = await findOrganizationsInCache([args.organizationId]);
-    
+  const organizationFoundInCache = await findOrganizationsInCache([
+    args.organizationId,
+  ]);
+
   organization = organizationFoundInCache[0];
 
   if (organizationFoundInCache.includes(null)) {
-
     organization = await Organization.findOne({
       _id: args.organizationId,
     }).lean();
-    
 
-    await cacheOrganizations([organization!])
-  } 
+    await cacheOrganizations([organization!]);
+  }
 
   // Checks whether organization exists.
   if (!organization) {
@@ -70,8 +68,9 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   }
 
   // Check whether the user - args.userId is a member of the organization before blocking
-  const userIsOrganizationMember = organization?.members.some((member) =>
-    member===args.userId||Types.ObjectId(member).equals(args.userId)
+  const userIsOrganizationMember = organization?.members.some(
+    (member) =>
+      member === args.userId || Types.ObjectId(member).equals(args.userId)
   );
 
   if (!userIsOrganizationMember) {
@@ -93,8 +92,10 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   // Checks whether currentUser with _id === context.userId is an admin of organization.
   await adminCheck(context.userId, organization);
 
-  const userIsBlocked = organization.blockedUsers.some((blockedUser) =>
-    blockedUser===args.userId||Types.ObjectId(blockedUser).equals(args.userId)
+  const userIsBlocked = organization.blockedUsers.some(
+    (blockedUser) =>
+      blockedUser === args.userId ||
+      Types.ObjectId(blockedUser).equals(args.userId)
   );
 
   // Checks whether user with _id === args.userId is already blocked from organization.
@@ -115,13 +116,13 @@ export const blockUser: MutationResolvers["blockUser"] = async (
       $push: {
         blockedUsers: args.userId,
       },
-    } , 
+    },
     {
-      new:true
+      new: true,
     }
   );
 
-  await cacheOrganizations([updatedOrganization!])
+  await cacheOrganizations([updatedOrganization!]);
 
   /*
   Adds organization._id to organizationsBlockedBy list on user's document

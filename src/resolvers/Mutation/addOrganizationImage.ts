@@ -38,17 +38,17 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
 
     let organization;
 
-    const organizationsFoundInCache= await findOrganizationsInCache([args.organizationId]);
+    const organizationsFoundInCache = await findOrganizationsInCache([
+      args.organizationId,
+    ]);
 
     organization = organizationsFoundInCache[0];
 
-    if (organization===(null)) {
+    if (organization === null) {
       organization = await Organization.findOne({
         _id: args.organizationId,
       }).lean();
     }
-  
-
 
     // Checks whether organization exists.
     if (!organization) {
@@ -82,7 +82,7 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
       }
     ).lean();
 
-    await cacheOrganizations([updatedOrganization!])
+    await cacheOrganizations([updatedOrganization!]);
 
     return updatedOrganization!;
   };

@@ -40,21 +40,19 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
   }
 
   let organization;
-    const organizationFoundInCache = await findOrganizationsInCache([event.organization]);
-    
-    organization = organizationFoundInCache[0];
+  const organizationFoundInCache = await findOrganizationsInCache([
+    event.organization,
+  ]);
 
-    if (organizationFoundInCache.includes(null)) {
+  organization = organizationFoundInCache[0];
 
-      organization = await Organization.findOne({
-        _id: event.organization,
-      }).lean();
-      
+  if (organizationFoundInCache.includes(null)) {
+    organization = await Organization.findOne({
+      _id: event.organization,
+    }).lean();
 
-      await cacheOrganizations([organization!])
-    } 
-
-
+    await cacheOrganizations([organization!]);
+  }
 
   // Checks whether organization exists.
   if (!organization) {

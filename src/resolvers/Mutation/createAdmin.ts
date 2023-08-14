@@ -31,19 +31,19 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
 ) => {
   let organization;
 
-  const organizationFoundInCache = await findOrganizationsInCache([args.data.organizationId]);
-    
+  const organizationFoundInCache = await findOrganizationsInCache([
+    args.data.organizationId,
+  ]);
+
   organization = organizationFoundInCache[0];
 
   if (organizationFoundInCache.includes(null)) {
-
     organization = await Organization.findOne({
       _id: args.data.organizationId,
     }).lean();
-    
 
-    await cacheOrganizations([organization!])
-  } 
+    await cacheOrganizations([organization!]);
+  }
 
   // Checks whether organization exists.
   if (!organization) {
@@ -92,9 +92,9 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
     );
   }
 
-  const userIsOrganizationAdmin =organization.admins.some((admin) =>
-  Types.ObjectId(admin).equals(args.data.userId)
-  )
+  const userIsOrganizationAdmin = organization.admins.some((admin) =>
+    Types.ObjectId(admin).equals(args.data.userId)
+  );
 
   // Checks whether user with _id === args.data.userId is already an admin of organization.
   if (userIsOrganizationAdmin === true) {
@@ -114,13 +114,13 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
       $push: {
         admins: args.data.userId,
       },
-    } ,
+    },
     {
-      new:true
+      new: true,
     }
   );
 
-  await cacheOrganizations([updatedOrganization!])
+  await cacheOrganizations([updatedOrganization!]);
 
   /*
   Adds organization._id to adminFor list on user's document with _id === args.data.userId

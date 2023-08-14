@@ -43,19 +43,19 @@ export const createMember: MutationResolvers["createMember"] = async (
   // Checks if organization exists.
   let organization;
 
-  const organizationFoundInCache = await findOrganizationsInCache([args.input.organizationId]);
-    
+  const organizationFoundInCache = await findOrganizationsInCache([
+    args.input.organizationId,
+  ]);
+
   organization = organizationFoundInCache[0];
 
   if (organizationFoundInCache.includes(null)) {
-
     organization = await Organization.findOne({
       _id: args.input.organizationId,
     }).lean();
-    
 
-    await cacheOrganizations([organization!])
-  } 
+    await cacheOrganizations([organization!]);
+  }
 
   if (!organization) {
     throw new errors.NotFoundError(
@@ -121,7 +121,7 @@ export const createMember: MutationResolvers["createMember"] = async (
     }
   ).lean();
 
-  await cacheOrganizations([updatedOrganization!])
+  await cacheOrganizations([updatedOrganization!]);
 
   return updatedOrganization!;
 };

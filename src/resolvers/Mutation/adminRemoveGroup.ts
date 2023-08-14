@@ -42,21 +42,19 @@ export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
 
   let organization;
 
-  const organizationFoundInCache = await findOrganizationsInCache([groupChat.organization]);
-    
+  const organizationFoundInCache = await findOrganizationsInCache([
+    groupChat.organization,
+  ]);
+
   organization = organizationFoundInCache[0];
 
   if (organizationFoundInCache.includes(null)) {
-
     organization = await Organization.findOne({
       _id: groupChat.organization,
     }).lean();
-    
 
-    await cacheOrganizations([organization!])
-  } 
-
-
+    await cacheOrganizations([organization!]);
+  }
 
   // Checks whether organization exists.
   if (!organization) {

@@ -10,20 +10,19 @@ import { findOrganizationsInCache } from "../../services/OrganizationCache/findO
 export const organization: GroupChatResolvers["organization"] = async (
   parent
 ) => {
-
-  const organizationFoundInCache = await findOrganizationsInCache([parent.organization])
+  const organizationFoundInCache = await findOrganizationsInCache([
+    parent.organization,
+  ]);
 
   if (!organizationFoundInCache.includes(null)) {
     return organizationFoundInCache[0]!;
   }
 
-  const organization= await Organization.findOne({
+  const organization = await Organization.findOne({
     _id: parent.organization,
   }).lean();
-
 
   await cacheOrganizations([organization!]);
 
   return organization!;
-
 };

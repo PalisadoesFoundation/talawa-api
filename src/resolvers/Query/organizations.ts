@@ -17,25 +17,20 @@ export const organizations: QueryResolvers["organizations"] = async (
   _parent,
   args
 ) => {
-
   const sort = getSort(args.orderBy);
-  
+
   let organizationFound;
   if (args.id) {
+    console.time("redis");
 
-
-
-    console.time('redis')
-    
-    const organizationFoundInCache = await findOrganizationsInCache([args.id])
-    console.timeEnd('redis')    
-    
+    const organizationFoundInCache = await findOrganizationsInCache([args.id]);
+    console.timeEnd("redis");
 
     if (!organizationFoundInCache.includes(null)) {
-      return organizationFoundInCache
+      return organizationFoundInCache;
     }
 
-    console.time('db query')
+    console.time("db query");
 
     organizationFound = await Organization.find({
       _id: args.id,
@@ -43,10 +38,9 @@ export const organizations: QueryResolvers["organizations"] = async (
       .sort(sort)
       .lean();
 
-      await cacheOrganizations(organizationFound)
+    console.timeEnd("db query");
 
-
-      console.timeEnd('db query')
+    await cacheOrganizations(organizationFound);
 
     if (!organizationFound[0]) {
       throw new errors.NotFoundError(
@@ -56,24 +50,11 @@ export const organizations: QueryResolvers["organizations"] = async (
       );
     }
 
-
-
-    
-
     return organizationFound;
-
   } else {
-
-
     organizationFound = await Organization.find().sort(sort).limit(100).lean();
-    await cacheOrganizations(organizationFound)
-
+    await cacheOrganizations(organizationFound);
   }
-
 
   return organizationFound;
 };
-
-
-
-

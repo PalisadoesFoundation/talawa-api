@@ -183,21 +183,18 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
           $push: {
             admins: testUser?._id,
           },
-        } , 
+        },
         {
-          new:true
+          new: true,
         }
       );
 
-      
       console.log(updatedOrganization);
-      
 
-      await cacheOrganizations([updatedOrganization!])
+      await cacheOrganizations([updatedOrganization!]);
 
-      const a = await findOrganizationsInCache([updatedOrganization?.id])
+      const a = await findOrganizationsInCache([updatedOrganization?.id]);
       console.log(a);
-
 
       const args: MutationAddUserToGroupChatArgs = {
         chatId: testGroupChat?.id,
