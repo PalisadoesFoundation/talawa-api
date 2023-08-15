@@ -28,7 +28,6 @@ import type {
 import type { TestGroupChatType } from "../../helpers/groupChat";
 import { createTestGroupChat } from "../../helpers/groupChat";
 import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
-import { updateOrganization } from "../../../src/resolvers/Mutation/updateOrganization";
 import { findOrganizationsInCache } from "../../../src/services/OrganizationCache/findOrganizationsInCache";
 
 let testUser: TestUserType;
