@@ -7,6 +7,8 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Organization } from "../../models";
 import { adminCheck, deleteImage } from "../../utilities";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 /**
  * This function enables to remove an organization's image.
  * @param _parent - parent of current request
@@ -33,9 +35,21 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
       );
     }
 
-    const organization = await Organization.findOne({
-      _id: args.organizationId,
-    }).lean();
+    let organization;
+
+    const organizationFoundInCache = await findOrganizationsInCache([
+      args.organizationId,
+    ]);
+
+    organization = organizationFoundInCache[0];
+
+    if (organizationFoundInCache[0] == null) {
+      organization = await Organization.findOne({
+        _id: args.organizationId,
+      }).lean();
+
+      await cacheOrganizations([organization!]);
+    }
 
     // Checks whether organization exists.
     if (!organization) {
@@ -61,7 +75,7 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
     await deleteImage(organization.image);
 
     // Sets image field of organization to null and returns the updated organization.
-    return await Organization.findOneAndUpdate(
+    const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: organization._id,
       },
@@ -74,4 +88,8 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
         new: true,
       }
     ).lean();
+
+    await cacheOrganizations([updatedOrganization!]);
+
+    return updatedOrganization!;
   };

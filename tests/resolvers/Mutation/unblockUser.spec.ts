@@ -17,6 +17,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -164,7 +165,7 @@ describe("resolvers -> Mutation -> unblockUser", () => {
 
   it(`removes the user with _id === args.userId from blockedUsers list of the
   organization with _id === args.organizationId and returns the updated user`, async () => {
-    await Organization.updateOne(
+    const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: testOrganization?._id,
       },
@@ -172,8 +173,13 @@ describe("resolvers -> Mutation -> unblockUser", () => {
         $push: {
           blockedUsers: testUser?._id,
         },
+      },
+      {
+        new: true,
       }
-    );
+    ).lean();
+
+    await cacheOrganizations([updatedOrganization!]);
 
     await User.updateOne(
       {
