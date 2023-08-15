@@ -2,7 +2,7 @@ import "dotenv/config";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
-import { User, Organization, InterfaceOrganization } from "../../models";
+import { User, Organization } from "../../models";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,

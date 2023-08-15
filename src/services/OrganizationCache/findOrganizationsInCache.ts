@@ -1,4 +1,3 @@
-import { ObjectId } from "mongoose";
 import OrganizationCache from "./OrganizationCache";
 import type { InterfaceOrganization } from "../../models";
 
