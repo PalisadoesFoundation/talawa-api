@@ -109,8 +109,79 @@ Talawa-api makes use of `MongoDB` for its database needs. We make use of `mongoo
 We're listing some common approaches to set up a running instance of MongoDB database:
 
 1. `System native database approach:` (Highly Recommended) You can install MongoDB natively on your system and create/connect to the database. Follow the setup guide on official [MongoDB Docs](https://www.mongodb.com/docs/manual/administration/install-community/) for your respective operating system.
-1. `Hosted database approach:` MongoDB Atlas is the easiest way to get a running instance of mongodb database. It is a hosted(remote) mongodb database provided by mongodb itself. If you're a beginner and don't want too much of a hassle setting up the database you should use this approach but you should eventually switch to local instance. Follow the setup guide on official [MongoDB Atlas Docs](https://www.mongodb.com/docs/atlas/getting-started/). Mongodb Atlas is just one of the many hosted database solutions. Some issues that you might face while using this are slower tests, slower API requests, dependence on Internet connection etc.
-1. `Docker container approach:` If you are fluent in working with docker you should use this approach. Docker is a great way to manage and run applications without natively installing anything on your system. With this you can set up the mongodb database inside a docker container and manage it as per your will. Follow this [video tutorial](https://www.youtube.com/watch?v=uklyCSKQ1Po) to set up a mongodb docker container. You can learn about docker from [Docker docs](https://docs.docker.com/).
+2. `Hosted database approach:` MongoDB Atlas is the easiest way to get a running instance of mongodb database. It is a hosted(remote) mongodb database provided by mongodb itself. If you're a beginner and don't want too much of a hassle setting up the database you should use this approach but you should eventually switch to local instance. Follow the setup guide on official [MongoDB Atlas Docs](https://www.mongodb.com/docs/atlas/getting-started/). Mongodb Atlas is just one of the many hosted database solutions. Some issues that you might face while using this are slower tests, slower API requests, dependence on Internet connection etc.
+3. `Docker container approach:` If you are fluent in working with docker you should use this approach. Docker is a great way to manage and run applications without natively installing anything on your system. With this you can set up the mongodb database inside a docker container and manage it as per your will. Follow this [video tutorial](https://www.youtube.com/watch?v=uklyCSKQ1Po) to set up a mongodb docker container. You can learn about docker from [Docker docs](https://docs.docker.com/).
+
+## Install Redis 
+
+Talawa-api makes use of `Redis` for caching frequently accessed data items in the primary database. We make use of `ioredis` to interact with the `redis-server` from within the code. The main Idea is the in production this will act as an in-memory cache. So it is recommended that you set it up locally. However for simplicity purposes, a section to accomodate for setting Redis up using a remote instance like Redis Cloud has been added. Please note that this is not recommended since the remote connection takes a considerable amount of time to be considered as a cache to improve application performance.
+
+### Setting Up Redis 
+
+
+1. `For Linux Users`:
+
+   If you are using a Linux distribution, follow these steps to set up Redis:
+
+   - **Step 1**: Open a terminal.
+
+   - **Step 2**: Update the package list:
+     ```bash
+     sudo apt update
+     ```
+
+   - **Step 3**: Install Redis Server:
+     ```bash
+     sudo apt install redis-server
+     ```
+
+   - **Step 4**: Start the Redis service:
+     ```bash
+     sudo service redis-server start
+     ```
+
+   - **Step 5**: Test if Redis is running by running the Redis CLI:
+     ```bash
+     redis-cli
+     ```
+
+2. `For Windows Users using WSL`:
+
+   PS: If you don't want to go through the trouble of setting up WSL locally you can use a hosted DB like Redis Cloud , more about that below for development purposes. Although it is recommended to set up Redis locally. Currently , Windows does not natively support Windows.It can only be installed and run using WSL. If you are a Windows user and want to set up Redis using Windows Subsystem for Linux (WSL), follow these steps:
+
+   - **Step 1**: Install WSL (Windows Subsystem for Linux) following the official [WSL Installation Guide](https://docs.microsoft.com/en-us/windows/wsl/install).
+
+   - **Step 2**: Open a WSL terminal.
+
+   - **Step 3**: Update the package list:
+     ```bash
+     sudo apt update
+     ```
+
+   - **Step 4**: Install Redis Server:
+     ```bash
+     sudo apt install redis-server
+     ```
+
+   - **Step 5**: Start the Redis service:
+     ```bash
+     sudo service redis-server start
+     ```
+
+   - **Step 6**: Test if Redis is running by running the Redis CLI:
+     ```bash
+     redis-cli
+     ```
+3. **Connecting to Redis Cloud**:
+
+   To connect to a Redis cloud service, you will need the host and port information provided by your cloud service provider. Use these values in your application to establish a connection. Typically, the host and port strings are provided in the following format:
+
+   - Host: `your-redis-host.redisprovider.com`
+   - Port: `6379` (default Redis port)
+
+   Replace `your-redis-host.redisprovider.com` with the actual host provided by your Redis cloud service. You can then use these values in your application's configuration to connect to your Redis cloud instance.
+
+Remember to adjust any paths or details as needed for your specific environment. After following these steps, you will have successfully set up Redis.
 
 # Configuration
 It's important to configure Talawa-Admin. 
@@ -241,6 +312,27 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 ...
 
 ```
+
+## Configuring Redis
+
+Here's how you will configure Redis.
+
+In the `.env` file there should be 3 variables namely:`REDIS_HOST`
+`REDIS_PORT`and `REDIS_PASSWORD`.The values of these three environment varibles will be responsible for connection to an active `redis-server` from the codebase.
+
+### For Local Setup (Linux and WSL) 
+  For both of these cases (after installation) the values of the variables shall be as follows:
+
+  1. `REDIS_HOST`=localhost
+  2. `REDIS_PORT`=6379 **Note** This is the default `redis-server` port however if your `redis-server` is running on a different port you wil need to specify that port number instead.
+  3. `REDIS_PASSWORD` should remain empty since for local connections passwords are not needed.
+
+### For Remote Setup (Redis Cloud) 
+  First you will need to create a free account on redis-cloud. After which you can continue with a free tier database with the limit of 30MB of data. After which you can go ahead and check out your Database under the `Databases` menu.
+
+  1. `REDIS_HOST`= The `Public endpoint` given to your Database. till the `.com`. eg something like `redis-13354.c169.us-east-1-1.ec2.cloud.redislabs.com`. The number after that is the port number.
+  2. `REDIS_PORT`=The number specified in the `Public Endpoint after the ':'` eg: `13354`
+  3. `REDIS_PASSWORD` = The `Default user password` under the Security Section.
 
 ## Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter
 
