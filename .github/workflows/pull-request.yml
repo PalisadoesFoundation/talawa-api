@@ -169,10 +169,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Sleep for 10s
-        uses: juliangruber/sleep-action@v1
-        with:
-          time: 10s
-
       - name: Run dev server
         run: npm run dev
