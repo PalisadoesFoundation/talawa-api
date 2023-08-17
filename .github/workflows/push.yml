@@ -33,7 +33,7 @@ jobs:
         node-version: [14.x]
     services:
       redis:
-        image: redis:latest
+        image: redis:6.0
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
