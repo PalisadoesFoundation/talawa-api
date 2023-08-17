@@ -29,6 +29,9 @@ export const checkAuth: QueryResolvers["checkAuth"] = async (
 
   return {
     ...currentUser,
+    image: currentUser.image
+      ? `${context.apiRootUrl}${currentUser.image}`
+      : null,
     organizationsBlockedBy: [],
   };
 };

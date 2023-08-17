@@ -17,6 +17,7 @@ export const createTestUser = async (): Promise<TestUserType> => {
     password: `pass${nanoid().toLowerCase()}`,
     firstName: `firstName${nanoid().toLowerCase()}`,
     lastName: `lastName${nanoid().toLowerCase()}`,
+    image: null,
     appLanguageCode: "en",
   });
 
