@@ -32,6 +32,15 @@ jobs:
       matrix:
         node-version: [14.x]
     services:
+      redis:
+        image: redis:latest
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 6379:6379
       mongo:
         image: mongo:4.4
         options: >-
@@ -41,15 +50,6 @@ jobs:
           --health-retries 10
         ports:
           - 27017:27017
-      redis:
-        image: redis:latest
-        options: >-
-          --health-cmd redis-cli ping
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-        ports:
-          - 6379:6379
     env:
       MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
       REDIS_HOST: localhost
