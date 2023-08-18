@@ -323,17 +323,18 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 Here's how you will configure Redis.
 
 In the `.env` file there should be 3 variables namely:`REDIS_HOST`
-`REDIS_PORT`and `REDIS_PASSWORD`.The values of these three environment varibles will be responsible for connection to an active `redis-server` from the codebase.
+`REDIS_PORT`and `REDIS_PASSWORD`.The values of these three environment variables will be responsible for the connection to an active `redis-server` from the codebase.
 
 ### For Local Setup (Linux and WSL) 
   For both of these cases (after installation) the values of the variables shall be as follows:
 
   1. `REDIS_HOST`=localhost
-  2. `REDIS_PORT`=6379 **Note** This is the default `redis-server` port however if your `redis-server` is running on a different port you wil need to specify that port number instead.
+  2. `REDIS_PORT`=6379 **Note** This is the default `redis-server` port however if your `redis-server` is running on a different port you will need to specify that port number instead.
   3. `REDIS_PASSWORD` should remain empty since for local connections passwords are not needed.
 
 ### For Remote Setup (Redis Cloud) 
-  First you will need to create a free account on redis-cloud. After which you can continue with a free tier database with the limit of 30MB of data. After which you can go ahead and check out your Database under the `Databases` menu.
+  First, you will need to create a free account on redis-cloud. After which you can continue with a free tier database with the limit of 30MB of data. After which you can go ahead and check out your Database under the `Databases` menu, there you can visit the general configurations of your free instance.
+    ![Screenshot from 2023-08-18 12-08-35](https://github.com/kb-0311/talawa-api/assets/96020697/86ef137d-5a52-47fc-9075-3ded42b16aaf)
 
   1. `REDIS_HOST`= The `Public endpoint` given to your Database. till the `.com`. eg something like `redis-13354.c169.us-east-1-1.ec2.cloud.redislabs.com`. The number after that is the port number.
   2. `REDIS_PORT`=The number specified in the `Public Endpoint after the ':'` eg: `13354`
