@@ -152,7 +152,7 @@ Talawa-api makes use of `Redis` for caching frequently accessed data items in th
 
 2. `For Windows Users using WSL`:
 
-   PS: If you don't want to go through the trouble of setting up WSL locally you can use a hosted DB like Redis Cloud , more about that below for development purposes. Although it is recommended to set up Redis locally. Currently , Windows does not natively support Windows.It can only be installed and run using WSL. If you are a Windows user and want to set up Redis using Windows Subsystem for Linux (WSL), follow these steps:
+If you'd rather not deal with the hassle of setting up WSL on your computer, there's another option: you can use a hosted database like Redis Cloud. More details about this are provided below, mainly for when you're working on development tasks. But it's a good idea to set up Redis on your own computer if you can. Right now, Redis isn't supported directly on Windows – you can only install and use it through WSL. If you're a Windows user and want to get Redis working using the Windows Subsystem for Linux (WSL), just follow these steps:
 
    - **Step 1**: Install WSL (Windows Subsystem for Linux) following the official [WSL Installation Guide](https://docs.microsoft.com/en-us/windows/wsl/install).
 
@@ -218,6 +218,10 @@ This `.env` file must be populated with the following environment variables for 
 | LAST_RESORT_SUPERADMIN_EMAIL | Used for promoting the default super admin             |
 | COLORIZE_LOGS                | Used for colorized log formats in console              |
 | LOG_LEVEL                    | Used for setting the logging level                     |
+| REDIS HOST                   | Used for connecting talawa-api to the redis instance   |
+| REDIS_PORT                   | Specifies the port of the active redis-server          |
+| REDIS_PASSWORD(optional)     | Used for authenticating the connection request to      |
+|                              | a hosted redis-server                                  | 
 
 The following sections will show you how to configure each of these parameters.
 
@@ -320,26 +324,27 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 
 ## Configuring Redis
 
-Here's how you will configure Redis.
+Here's the procedure to set up Redis.
 
-In the `.env` file there should be 3 variables namely:`REDIS_HOST`
-`REDIS_PORT`and `REDIS_PASSWORD`.The values of these three environment variables will be responsible for the connection to an active `redis-server` from the codebase.
+In the `.env` file, you should find three variables: `REDIS_HOST`, `REDIS_PORT`, and `REDIS_PASSWORD`. These environment variables will contain the necessary information for your codebase to connect to a running `redis-server`.
 
 ### For Local Setup (Linux and WSL) 
-  For both of these cases (after installation) the values of the variables shall be as follows:
+In both scenarios (Linux or WSL post-installation), the variable values should be configured as follows:
 
-  1. `REDIS_HOST`=localhost
-  2. `REDIS_PORT`=6379 **Note** This is the default `redis-server` port however if your `redis-server` is running on a different port you will need to specify that port number instead.
-  3. `REDIS_PASSWORD` should remain empty since for local connections passwords are not needed.
+1. `REDIS_HOST` = localhost
+2. `REDIS_PORT` = 6379 **Note**: This default port is used by the `redis-server`. However, if your `redis-server` operates on a different port, you must provide that port number.
+3. `REDIS_PASSWORD` should be left empty, as passwords are unnecessary for local connections.
 
 ### For Remote Setup (Redis Cloud) 
-  First, you will need to create a free account on redis-cloud. After which you can continue with a free tier database with the limit of 30MB of data. After which you can go ahead and check out your Database under the `Databases` menu, there you can visit the general configurations of your free instance.
-    ![Screenshot from 2023-08-18 12-08-35](https://github.com/kb-0311/talawa-api/assets/96020697/86ef137d-5a52-47fc-9075-3ded42b16aaf)
+To begin, you must register for a free account on Redis Cloud. Following this step, you can proceed by selecting a database from the free tier, which comes with a 30MB data storage limit. Once completed, you can then access your Database by navigating to the `Databases` section. Here, you will find the option to view the overall settings of your free instance.
 
-  1. `REDIS_HOST`= The `Public endpoint` given to your Database. till the `.com`. eg something like `redis-13354.c169.us-east-1-1.ec2.cloud.redislabs.com`. The number after that is the port number.
-  2. `REDIS_PORT`=The number specified in the `Public Endpoint after the ':'` eg: `13354`
-  3. `REDIS_PASSWORD` = The `Default user password` under the Security Section.
+![Screenshot from 2023-08-18 12-08-35](https://github.com/kb-0311/talawa-api/assets/96020697/86ef137d-5a52-47fc-9075-3ded42b16aaf)
 
+Here are the configuration details:
+
+1. `REDIS_HOST` = The `Public endpoint` assigned to your Database, excluding the `.com`. It will resemble something like `redis-13354.c169.us-east-1-1.ec2.cloud.redislabs.com`. The numerical value following this address is the port number.
+2. `REDIS_PORT` = The number provided in the `Public Endpoint` after the colon (`:`), for instance: `13354`.
+3. `REDIS_PASSWORD` = The `Default user password` located in the Security Section.
 ## Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter
 
 The user with the email address set with this parameter will automatically be elevated to Super Admin status on registration. 
