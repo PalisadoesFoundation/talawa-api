@@ -221,4 +221,46 @@ describe("Remove Sample Organization Resolver - User Authorization", async () =>
       expect(error.message).toBe(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
+
+  it("should NOT throw error when organization doesn't exist", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message
+    );
+
+    const admin = generateUserData(ORGANIZATION_ID.toString(), "ADMIN");
+    (await admin).save();
+
+    const args = {};
+    const adminContext = { userId: (await admin)._id };
+    const parent = {};
+
+    await SampleData.deleteMany({ collectionName: "Organization" });
+
+    try {
+      await removeSampleOrganization!(parent, args, adminContext);
+    } catch (error: any) {
+      expect(error.message).toBe(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
+
+  it("should throw error when the collection name is not a valid one", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message
+    );
+
+    const admin = generateUserData(ORGANIZATION_ID.toString(), "ADMIN");
+    (await admin).save();
+
+    const args = {};
+    const adminContext = { userId: (await admin)._id };
+    const parent = {};
+
+    try {
+      await removeSampleOrganization!(parent, args, adminContext);
+    } catch (error: any) {
+      expect(error.message).toBe(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
 });

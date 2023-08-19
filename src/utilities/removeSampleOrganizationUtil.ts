@@ -16,15 +16,10 @@ export async function removeSampleOrganization(): Promise<void> {
 
       const collectionModel = collectionModels[collectionName];
 
-      if (!collectionModel) {
-        throw new Error(`Invalid collection name: ${collectionName}`);
-      }
-
       await collectionModel.findByIdAndDelete(documentId);
     }
 
     await SampleData.deleteMany({});
-    console.log("SampleData collection cleared.");
   } catch (error) {
     console.error(error);
   }

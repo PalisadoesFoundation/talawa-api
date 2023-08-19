@@ -55,7 +55,6 @@ export const createSampleOrganization: MutationResolvers["createSampleOrganizati
       await createSampleOrgUtil();
       return true;
     } catch (error) {
-      console.error("Error generating sample data:", error);
       return false;
     }
   };

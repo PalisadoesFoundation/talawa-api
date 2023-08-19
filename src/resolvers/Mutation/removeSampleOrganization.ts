@@ -51,7 +51,6 @@ export const removeSampleOrganization: MutationResolvers["removeSampleOrganizati
       await removeSampleOrgUtil();
       return true;
     } catch (error) {
-      console.error("Error removing generated sample data:", error);
       return false;
     }
   };

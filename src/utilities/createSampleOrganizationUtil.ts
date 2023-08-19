@@ -35,7 +35,6 @@ export const generateUserData = async (
     adminFor,
   });
 
-  // Save elsewhere to prevent filling the database when running tests
   await user.save();
 
   const sampleModel = new SampleData({
@@ -51,18 +50,13 @@ export const generateUserData = async (
 const createUser = async (
   generatedUser: InterfaceUser & mongoose.Document<any, any, InterfaceUser>
 ): Promise<InterfaceUser & mongoose.Document<any, any, InterfaceUser>> => {
-  try {
-    const savedUser = await generatedUser.save();
-    const sampleModel = new SampleData({
-      documentId: savedUser._id,
-      collectionName: "User",
-    });
-    await sampleModel.save();
-    return savedUser;
-  } catch (error) {
-    console.error("Error creating user:", error);
-    throw error;
-  }
+  const savedUser = await generatedUser.save();
+  const sampleModel = new SampleData({
+    documentId: savedUser._id,
+    collectionName: "User",
+  });
+  await sampleModel.save();
+  return savedUser;
 };
 
 export const generateEventData = async (
@@ -217,60 +211,56 @@ export const generateRandomPlugins = async (
 };
 
 export const createSampleOrganization = async (): Promise<void> => {
-  try {
-    const _id = faker.database.mongodbObjectId();
-    const creator = await generateUserData(_id, "ADMIN");
+  const _id = faker.database.mongodbObjectId();
+  const creator = await generateUserData(_id, "ADMIN");
 
-    const organization = new Organization({
-      _id,
-      name: faker.company.name(),
-      description: faker.lorem.sentences(),
-      location: `${faker.location.country()}, ${faker.location.city()}`,
-      isPublic: true,
-      creator: creator._id,
-      status: "ACTIVE",
-      members: [creator._id],
-      admins: [creator._id],
-      groupChats: [],
-      posts: [],
-      pinnedPosts: [],
-      membershipRequests: [],
-      blockedUsers: [],
-      visibleInSearch: true,
-      createdAt: Date.now(),
-    });
+  const organization = new Organization({
+    _id,
+    name: faker.company.name(),
+    description: faker.lorem.sentences(),
+    location: `${faker.location.country()}, ${faker.location.city()}`,
+    isPublic: true,
+    creator: creator._id,
+    status: "ACTIVE",
+    members: [creator._id],
+    admins: [creator._id],
+    groupChats: [],
+    posts: [],
+    pinnedPosts: [],
+    membershipRequests: [],
+    blockedUsers: [],
+    visibleInSearch: true,
+    createdAt: Date.now(),
+  });
 
-    creator.adminFor.push(organization._id);
+  creator.adminFor.push(organization._id);
 
-    await creator.save();
+  await creator.save();
 
-    for (let j = 0; j < 10; j++) {
-      const userType = j === 0 ? "ADMIN" : "USER";
+  for (let j = 0; j < 10; j++) {
+    const userType = j === 0 ? "ADMIN" : "USER";
 
-      const newUserData = await generateUserData(_id, userType);
-      const newUser = await createUser(newUserData);
+    const newUserData = await generateUserData(_id, userType);
+    const newUser = await createUser(newUserData);
 
-      organization.members.push(newUser._id);
+    organization.members.push(newUser._id);
 
-      if (userType === "ADMIN") {
-        organization.admins.push(newUser);
-      }
+    if (userType === "ADMIN") {
+      organization.admins.push(newUser);
     }
-
-    await organization.save();
-
-    const sampleModel = new SampleData({
-      documentId: organization._id,
-      collectionName: "Organization",
-    });
-
-    await sampleModel.save();
-
-    await createEvents(5, organization.members, organization._id.toString());
-    await createPosts(5, organization.members, organization._id.toString());
-
-    await generateRandomPlugins(10, organization.members);
-  } catch (error) {
-    console.error("MongoError while creating sample organization:", error);
   }
+
+  await organization.save();
+
+  const sampleModel = new SampleData({
+    documentId: organization._id,
+    collectionName: "Organization",
+  });
+
+  await sampleModel.save();
+
+  await createEvents(5, organization.members, organization._id.toString());
+  await createPosts(5, organization.members, organization._id.toString());
+
+  await generateRandomPlugins(10, organization.members);
 };
