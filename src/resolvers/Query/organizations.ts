@@ -21,20 +21,17 @@ export const organizations: QueryResolvers["organizations"] = async (
 
   let organizationFound;
   if (args.id) {
-
     const organizationFoundInCache = await findOrganizationsInCache([args.id]);
 
     if (!organizationFoundInCache.includes(null)) {
       return organizationFoundInCache;
     }
 
-
     organizationFound = await Organization.find({
       _id: args.id,
     })
       .sort(sort)
       .lean();
-
 
     await cacheOrganizations(organizationFound);
 
