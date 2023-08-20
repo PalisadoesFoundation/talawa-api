@@ -24,6 +24,7 @@ export default defineConfig({
       exclude: [
         "src/config",
         "src/models",
+        "src/services",
         "src/typeDefs",
         "src/types",
         "src/constants.ts",

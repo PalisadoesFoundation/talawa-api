@@ -19,8 +19,6 @@ export async function cacheOrganizations(
 
     // Execute the pipeline
     await pipeline.exec();
-
-    console.log("Organizations cached successfully.");
   } catch (error) {
     console.log(error);
   }

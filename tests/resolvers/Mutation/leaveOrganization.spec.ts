@@ -104,17 +104,22 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
     try {
-      await Organization.updateOne(
+      const updatedOrganization = await Organization.findOneAndUpdate(
         {
           _id: testOrganization?._id,
         },
         {
           $set: {
             creator: Types.ObjectId().toString(),
-            members: [],
+            members: [Types.ObjectId().toString()],
           },
+        },
+        {
+          new: true,
         }
       );
+
+      await cacheOrganizations([updatedOrganization!]);
 
       const args: MutationLeaveOrganizationArgs = {
         organizationId: testOrganization?.id,
@@ -141,8 +146,8 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
         _id: testOrganization?._id,
       },
       {
-        $push: {
-          members: testUser?._id,
+        $set: {
+          members: [testUser?._id],
         },
       },
       {
