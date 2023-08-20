@@ -1,7 +1,6 @@
 import OrganizationCache from "./OrganizationCache";
 import type { InterfaceOrganization } from "../../models";
 import { Types } from "mongoose";
-import { Organization } from "../../types/generatedGraphQLTypes";
 
 export async function findOrganizationsInCache(
   ids: string[]
