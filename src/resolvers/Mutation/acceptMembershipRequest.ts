@@ -100,7 +100,9 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       }
     );
 
-    await cacheOrganizations([updatedOrganization!]);
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     // Update the user
     await User.updateOne(

@@ -89,7 +89,9 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
       }
     ).lean();
 
-    await cacheOrganizations([updatedOrganization!]);
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     return updatedOrganization!;
   };

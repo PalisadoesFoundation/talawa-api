@@ -98,7 +98,9 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
     }
   ).lean();
 
-  await cacheOrganizations([updatedOrganization!]);
+  if (updatedOrganization !== null) {
+    await cacheOrganizations([updatedOrganization]);
+  }
   // remove the organization from the organizationsBlockedBy array inside the user record
   return await User.findOneAndUpdate(
     {

@@ -103,7 +103,9 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
     }
   );
 
-  await cacheOrganizations([updatedOrganization!]);
+  if (updatedOrganization !== null) {
+    await cacheOrganizations([updatedOrganization]);
+  }
 
   // Removes organization._id from adminFor list of the user and returns the updated user.
   return await User.findOneAndUpdate(

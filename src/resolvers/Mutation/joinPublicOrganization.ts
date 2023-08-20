@@ -99,7 +99,9 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
       }
     );
 
-    await cacheOrganizations([updatedOrganization!]);
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     /* 
     Adds organization._id to joinedOrganizations list of currentUser's document

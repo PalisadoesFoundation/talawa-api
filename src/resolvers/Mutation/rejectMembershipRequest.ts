@@ -79,7 +79,9 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
       }
     );
 
-    await cacheOrganizations([updatedOrganization!]);
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     // Removes membershipRequest._id from membershipRequests list of user.
     await User.updateOne(

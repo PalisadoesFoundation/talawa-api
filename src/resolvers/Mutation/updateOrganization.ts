@@ -69,7 +69,9 @@ export const updateOrganization: MutationResolvers["updateOrganization"] =
       }
     ).lean();
 
-    await cacheOrganizations([updatedOrganization!]);
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     return updatedOrganization!;
   };

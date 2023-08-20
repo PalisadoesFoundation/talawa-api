@@ -120,7 +120,9 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
     }
   );
 
-  await cacheOrganizations([updatedOrganization!]);
+  if (updatedOrganization !== null) {
+    await cacheOrganizations([updatedOrganization]);
+  }
 
   /*
   Adds organization._id to adminFor list on user's document with _id === args.data.userId

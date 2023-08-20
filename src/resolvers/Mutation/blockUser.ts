@@ -122,7 +122,9 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     }
   );
 
-  await cacheOrganizations([updatedOrganization!]);
+  if (updatedOrganization !== null) {
+    await cacheOrganizations([updatedOrganization]);
+  }
 
   /*
   Adds organization._id to organizationsBlockedBy list on user's document

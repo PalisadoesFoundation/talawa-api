@@ -107,7 +107,9 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       }
     );
 
-    await cacheOrganizations([updatedOrganization!]);
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     // Removes membershipRequest._id from membershipRequests list on currentUser's document.
     await User.updateOne(

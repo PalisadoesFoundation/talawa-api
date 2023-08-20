@@ -121,7 +121,9 @@ export const createMember: MutationResolvers["createMember"] = async (
     }
   ).lean();
 
-  await cacheOrganizations([updatedOrganization!]);
+  if (updatedOrganization !== null) {
+    await cacheOrganizations([updatedOrganization]);
+  }
 
   return updatedOrganization!;
 };

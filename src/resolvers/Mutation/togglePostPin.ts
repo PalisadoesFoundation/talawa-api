@@ -93,7 +93,9 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       }
     );
 
-    await cacheOrganizations([updatedOrganization!]);
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     return await Post.findOneAndUpdate(
       {
@@ -120,8 +122,9 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       }
     );
 
-    await cacheOrganizations([updatedOrganization!]);
-
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
     return await Post.findOneAndUpdate(
       {
         _id: args.id,

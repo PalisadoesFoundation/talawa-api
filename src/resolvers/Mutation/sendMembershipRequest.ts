@@ -46,7 +46,9 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
         _id: args.organizationId,
       }).lean();
 
-      await cacheOrganizations([organization!]);
+      if (organization !== null) {
+        await cacheOrganizations([organization]);
+      }
     }
 
     if (!organization) {

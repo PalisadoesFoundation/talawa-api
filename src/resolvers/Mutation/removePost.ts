@@ -86,7 +86,9 @@ export const removePost: MutationResolvers["removePost"] = async (
     }
   ).lean();
 
-  await cacheOrganizations([updatedOrganization!]);
+  if (updatedOrganization !== null) {
+    await cacheOrganizations([updatedOrganization]);
+  }
 
   // Returns deleted post.
   return post;

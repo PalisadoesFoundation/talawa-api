@@ -82,7 +82,9 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
       }
     ).lean();
 
-    await cacheOrganizations([updatedOrganization!]);
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     return updatedOrganization!;
   };

@@ -92,7 +92,9 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
     }
   );
 
-  await cacheOrganizations([updatedOrganization!]);
+  if (updatedOrganization !== null) {
+    await cacheOrganizations([updatedOrganization]);
+  }
   /*
   Removes organization._id from joinedOrganizations list of currentUser's document
   and returns the updated currentUser.
