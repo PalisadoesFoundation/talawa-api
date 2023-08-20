@@ -179,7 +179,9 @@ describe("resolvers -> Mutation -> blockUser", () => {
         }
       );
 
-      await cacheOrganizations([updatedOrganization!]);
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
 
       const args: MutationBlockUserArgs = {
         organizationId: testOrganization?.id,
@@ -214,7 +216,9 @@ describe("resolvers -> Mutation -> blockUser", () => {
         }
       );
 
-      await cacheOrganizations([updatedOrganization!]);
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
 
       await User.updateOne(
         {
@@ -258,7 +262,9 @@ describe("resolvers -> Mutation -> blockUser", () => {
       }
     );
 
-    await cacheOrganizations([updatedOrganization!]);
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     const args: MutationBlockUserArgs = {
       organizationId: testOrganization?.id,

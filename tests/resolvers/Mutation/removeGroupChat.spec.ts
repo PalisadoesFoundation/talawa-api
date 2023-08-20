@@ -166,7 +166,9 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
         }
       );
 
-      await cacheOrganizations([updatedOrganization!]);
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
 
       const args: MutationRemoveGroupChatArgs = {
         chatId: testGroupChat?.id,
@@ -205,7 +207,9 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
       }
     );
 
-    await cacheOrganizations([updatedOrganization!]);
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     const args: MutationRemoveGroupChatArgs = {
       chatId: testGroupChat?.id,

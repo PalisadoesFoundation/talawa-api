@@ -188,9 +188,9 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
         }
       );
 
-      console.log(updatedOrganization);
-
-      await cacheOrganizations([updatedOrganization!]);
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
 
       const a = await findOrganizationsInCache([updatedOrganization?.id]);
       console.log(a);

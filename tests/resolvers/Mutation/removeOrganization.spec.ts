@@ -224,7 +224,9 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
         }
       );
 
-      await cacheOrganizations([updatedOrganization!]);
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
 
       const args: MutationRemoveOrganizationArgs = {
         id: testOrganization.id,
@@ -261,7 +263,9 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       }
     );
 
-    await cacheOrganizations([updatedOrganization!]);
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     await User.updateOne(
       {

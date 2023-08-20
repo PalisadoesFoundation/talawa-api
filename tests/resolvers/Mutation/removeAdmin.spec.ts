@@ -132,7 +132,9 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
         }
       );
 
-      await cacheOrganizations([updatedOrganization!]);
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
 
       const args: MutationRemoveAdminArgs = {
         data: {
@@ -182,7 +184,9 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
         }
       );
 
-      await cacheOrganizations([updatedOrganization!]);
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
 
       const args: MutationRemoveAdminArgs = {
         data: {

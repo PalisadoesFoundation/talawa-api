@@ -119,7 +119,9 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
         }
       );
 
-      await cacheOrganizations([updatedOrganization!]);
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
 
       const args: MutationLeaveOrganizationArgs = {
         organizationId: testOrganization?.id,
@@ -155,7 +157,9 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       }
     );
 
-    await cacheOrganizations([updatedOrganization!]);
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     const args: MutationLeaveOrganizationArgs = {
       organizationId: testOrganization?.id,

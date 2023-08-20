@@ -170,7 +170,9 @@ describe("resolvers -> Mutation -> createAdmin", () => {
         }
       );
 
-      await cacheOrganizations([updatedOrganization!]);
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
 
       const args: MutationCreateAdminArgs = {
         data: {
@@ -204,7 +206,9 @@ describe("resolvers -> Mutation -> createAdmin", () => {
       }
     );
 
-    await cacheOrganizations([updatedOrganization!]);
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     const args: MutationCreateAdminArgs = {
       data: {

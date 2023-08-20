@@ -92,7 +92,9 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
       }
     ).lean();
 
-    await cacheOrganizations([updatedOrganization!]);
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     // add membership request to user
     await User.updateOne(

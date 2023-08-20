@@ -154,7 +154,9 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
         }
       );
 
-      await cacheOrganizations([updatedOrganization!]);
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
 
       const args: MutationRemoveDirectChatArgs = {
         chatId: testDirectChat?.id,
@@ -193,7 +195,9 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
       }
     );
 
-    await cacheOrganizations([updatedOrganization!]);
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     const args: MutationRemoveDirectChatArgs = {
       chatId: testDirectChat?.id,

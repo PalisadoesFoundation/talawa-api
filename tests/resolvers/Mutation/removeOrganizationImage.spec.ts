@@ -216,7 +216,9 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       }
     ).lean();
 
-    await cacheOrganizations([updatedOrganization!]);
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     const context = {
       userId: testAdminUser?._id,

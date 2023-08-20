@@ -179,7 +179,9 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       }
     ).lean();
 
-    await cacheOrganizations([updatedOrganization!]);
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     await User.updateOne(
       {

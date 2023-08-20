@@ -136,7 +136,9 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
         }
       );
 
-      await cacheOrganizations([updatedOrganization!]);
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
 
       const args: MutationAdminRemoveEventArgs = {
         eventId: testEvent?.id,
@@ -167,7 +169,9 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
       }
     );
 
-    await cacheOrganizations([updatedOrganization!]);
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     const args: MutationAdminRemoveEventArgs = {
       eventId: testEvent?.id,
