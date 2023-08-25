@@ -112,7 +112,7 @@ jobs:
         if: env.RUN_JSDOCS == 'True'
         run: echo "Run JSdocs :${{ env.RUN_JSDOCS }}"
 
-  Dev Server:
+  Dev-Server:
     name: Dev-Server
     runs-on: ubuntu-latest
     needs: Test-Application
@@ -130,33 +130,33 @@ jobs:
         ports:
           - 27017:27017
     env:
-      ACCESS_TOKEN_SECRET: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-      REFRESH_TOKEN_SECRET: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-      MONGO_DB_URL: "mongodb://localhost:27017/talawa",
-      RECAPTCHA_SITE_KEY: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-      RECAPTCHA_SECRET_KEY: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-      MAIL_USERNAME: "abc@gmail.com",
-      MAIL_PASSWORD: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-      IS_SMTP: "",
-      SMTP_HOST: "",
-      SMTP_PASSWORD: "",
-      SMTP_USERNAME: "",
-      SMTP_PORT: "",
-      SMTP_SSL_TLS: "",
-      apiKey: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-      appId: "1:XXXXXXXXXXXX:android:XXXXXXXXXXXXXXXXXXXXXX",
-      messagingSenderId: "XXXXXXXXXXXX",
-      projectId: "appname-XXXXXX",
-      storageBucket: "appname-XXXXXX.appspot.com",
-      iOSapiKey: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-      iOSappId: "1:XXXXXXXXXXXX:ios:XXXXXXXXXXXXXXXXXXXXXX",
-      iOSmessagingSenderId: "XXXXXXXXXXXX",
-      iOSprojectId: "appame-XXXXXX",
-      iOSstorageBucket: "appame-XXXXXX.appspot.com",
-      iosClientId: "XXXXXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.apps.googleusercontent.   com",
-      iosBundleId: "com.appname.app",
-      LAST_RESORT_SUPERADMIN_EMAIL: "abc@gmail.com",
-      COLORIZE_LOGS: "true",
+      ACCESS_TOKEN_SECRET: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      REFRESH_TOKEN_SECRET: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      MONGO_DB_URL: "mongodb://localhost:27017/talawa"
+      RECAPTCHA_SITE_KEY: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      RECAPTCHA_SECRET_KEY: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      MAIL_USERNAME: "abc@gmail.com"
+      MAIL_PASSWORD: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      IS_SMTP: ""
+      SMTP_HOST: ""
+      SMTP_PASSWORD: ""
+      SMTP_USERNAME: ""
+      SMTP_PORT: ""
+      SMTP_SSL_TLS: ""
+      apiKey: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      appId: "1:XXXXXXXXXXXX:android:XXXXXXXXXXXXXXXXXXXXXX"
+      messagingSenderId: "XXXXXXXXXXXX"
+      projectId: "appname-XXXXXX"
+      storageBucket: "appname-XXXXXX.appspot.com"
+      iOSapiKey: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      iOSappId: "1:XXXXXXXXXXXX:ios:XXXXXXXXXXXXXXXXXXXXXX"
+      iOSmessagingSenderId: "XXXXXXXXXXXX"
+      iOSprojectId: "appame-XXXXXX"
+      iOSstorageBucket: "appame-XXXXXX.appspot.com"
+      iosClientId: "XXXXXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.apps.googleusercontent.com"
+      iosBundleId: "com.appname.app"
+      LAST_RESORT_SUPERADMIN_EMAIL: "abc@gmail.com"
+      COLORIZE_LOGS: "true"
       LOG_LEVEL: "info"
 
     steps:
