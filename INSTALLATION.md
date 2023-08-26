@@ -17,6 +17,7 @@ This document provides instructions on how to set up and start a running instanc
     - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
   - [Install Redis](#install-redis)
     - [Setting Up Redis](#setting-up-redis )
+    - [Benchmark For Performance Benefits](#performance-benefits)
 - [Configuration](#configuration)
   - [The .env Configuration File](#the-env-configuration-file)
   - [Generating Token Secrets](#generating-token-secrets)
@@ -29,8 +30,8 @@ This document provides instructions on how to set up and start a running instanc
     - [Using the CLI to get the MONGODB\_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
     - [Using Microsoft Windows to get the MONGODB\_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
   - [Configuring Redis](#configuring-redis)
-    - [For Local Setup (Linux and WSL)](#for-local-setup-(linux-and-WSL))
-    - [For Remote Setup (Redis Cloud)](#for-remote-setup-(redis-cloud) )
+    - [For Local Setup (Linux and WSL)](#for-local-setup-linux-and-wsl)
+    - [For Remote Setup (Redis Cloud)](#for-remote-setup-redis-cloud)
   - [Setting up .env LAST\_RESORT\_SUPERADMIN\_EMAIL parameter](#setting-up-env-last_resort_superadmin_email-parameter)
   - [Configuring Google ReCAPTCHA](#configuring-google-recaptcha)
     - [Setting up RECAPTCHA\_SECRET\_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
@@ -120,6 +121,11 @@ We're listing some common approaches to set up a running instance of MongoDB dat
 ## Install Redis 
 
 Talawa-api makes use of `Redis` for caching frequently accessed data items in the primary database. We make use of `ioredis` to interact with the `redis-server` from within the code. The main Idea is the in production this will act as an in-memory cache. So it is recommended that you set it up locally. However for simplicity purposes, a section to accomodate for setting Redis up using a remote instance like Redis Cloud has been added. Please note that this is not recommended since the remote connection takes a considerable amount of time to be considered as a cache to improve application performance.
+
+### Performance Benefits 
+![Screenshot from 2023-08-26 18-37-34](https://github.com/kb-0311/talawa-api/assets/96020697/e8b99d5c-6abf-4e71-999c-f8ae1e84de45)
+![Screenshot from 2023-08-26 18-37-48](https://github.com/kb-0311/talawa-api/assets/96020697/55d1388d-cc15-4d5e-931d-6befa0fa7a10)
+
 
 ### Setting Up Redis 
 
