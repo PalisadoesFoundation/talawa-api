@@ -7,6 +7,8 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
 } from "../../constants";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 /**
  * This function enables an admin to remove a event
  * @param _parent - parent of current request
@@ -37,9 +39,20 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
     );
   }
 
-  const organization = await Organization.findOne({
-    _id: event.organization,
-  }).lean();
+  let organization;
+  const organizationFoundInCache = await findOrganizationsInCache([
+    event.organization,
+  ]);
+
+  organization = organizationFoundInCache[0];
+
+  if (organizationFoundInCache.includes(null)) {
+    organization = await Organization.findOne({
+      _id: event.organization,
+    }).lean();
+
+    await cacheOrganizations([organization!]);
+  }
 
   // Checks whether organization exists.
   if (!organization) {

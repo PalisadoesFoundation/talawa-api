@@ -6,6 +6,7 @@ import {
   POST_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 /**
  * This function enables to remove a post.
  * @param _parent - parent of current request
@@ -71,7 +72,7 @@ export const removePost: MutationResolvers["removePost"] = async (
   });
 
   // Removes the post from the organization, doesn't fail if the post wasn't pinned
-  await Organization.updateOne(
+  const updatedOrganization = await Organization.findOneAndUpdate(
     {
       _id: post.organization,
     },
@@ -79,8 +80,15 @@ export const removePost: MutationResolvers["removePost"] = async (
       $pull: {
         pinnedPosts: args.id,
       },
+    },
+    {
+      new: true,
     }
-  );
+  ).lean();
+
+  if (updatedOrganization !== null) {
+    await cacheOrganizations([updatedOrganization]);
+  }
 
   // Returns deleted post.
   return post;

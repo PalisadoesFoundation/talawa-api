@@ -53,6 +53,16 @@ describe("resolvers -> Query -> organizations", () => {
     expect(organizationsPayload).toEqual([testOrganization1?.toObject()]);
   });
 
+  it("returns organization object with _id === args.id from cache", async () => {
+    const args: QueryOrganizationsArgs = {
+      id: testOrganization1?._id,
+    };
+
+    const organizationsPayload = await organizationsResolver?.({}, args, {});
+
+    expect(organizationsPayload).toEqual([testOrganization1?.toObject()]);
+  });
+
   it(`returns list of at most 100 organizations sorted by ascending order of
   organization._id if args.orderBy === 'id_ASC'`, async () => {
     const sort = {

@@ -27,6 +27,8 @@ import type {
 } from "../../helpers/userAndOrg";
 import type { TestGroupChatType } from "../../helpers/groupChat";
 import { createTestGroupChat } from "../../helpers/groupChat";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../../src/services/OrganizationCache/findOrganizationsInCache";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -172,7 +174,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
     try {
-      await Organization.updateOne(
+      const updatedOrganization = await Organization.findOneAndUpdate(
         {
           _id: testOrganization?._id,
         },
@@ -180,8 +182,18 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
           $push: {
             admins: testUser?._id,
           },
+        },
+        {
+          new: true,
         }
       );
+
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
+
+      const a = await findOrganizationsInCache([updatedOrganization?.id]);
+      console.log(a);
 
       const args: MutationAddUserToGroupChatArgs = {
         chatId: testGroupChat?.id,

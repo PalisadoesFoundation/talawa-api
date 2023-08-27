@@ -6,7 +6,11 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import type { InterfaceOrganization } from "../../models";
 import { Organization, User } from "../../models";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { Types } from "mongoose";
 /**
  * This function enables to unblock user.
  * @param _parent - parent of current request
@@ -23,9 +27,21 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
   args,
   context
 ) => {
-  const organization = await Organization.findOne({
-    _id: args.organizationId,
-  }).lean();
+  let organization: InterfaceOrganization;
+
+  const organizationFoundInCache = await findOrganizationsInCache([
+    args.organizationId,
+  ]);
+
+  if (organizationFoundInCache[0] == null) {
+    organization = await Organization.findOne({
+      _id: args.organizationId,
+    }).lean();
+
+    await cacheOrganizations([organization!]);
+  } else {
+    organization = organizationFoundInCache[0];
+  }
 
   // checks if there exists an organization with _id === args.organizationId
   if (!organization) {
@@ -53,7 +69,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
   await adminCheck(context.userId, organization);
 
   const userIsBlockedFromOrganization = organization.blockedUsers.some(
-    (blockedUser) => blockedUser.equals(user._id)
+    (blockedUser) => Types.ObjectId(blockedUser).equals(user._id)
   );
 
   // checks if user with _id === args.userId is blocked by organzation with _id == args.organizationId
@@ -66,7 +82,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
   }
 
   // remove user from the blockedUsers list inside the organization record
-  await Organization.updateOne(
+  const updatedOrganization = await Organization.findOneAndUpdate(
     {
       _id: organization._id,
     },
@@ -76,8 +92,15 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
           (blockedUser) => !user._id.equals(blockedUser)
         ),
       },
+    },
+    {
+      new: true,
     }
-  );
+  ).lean();
+
+  if (updatedOrganization !== null) {
+    await cacheOrganizations([updatedOrganization]);
+  }
   // remove the organization from the organizationsBlockedBy array inside the user record
   return await User.findOneAndUpdate(
     {
@@ -87,7 +110,9 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
       $set: {
         organizationsBlockedBy: user.organizationsBlockedBy.filter(
           (organizationBlockedBy) =>
-            !organization._id.equals(organizationBlockedBy)
+            !Types.ObjectId(String(organization._id)).equals(
+              organizationBlockedBy
+            )
         ),
       },
     },

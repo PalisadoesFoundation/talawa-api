@@ -393,3 +393,7 @@ export const SMTP_OPTIONS = {
   SMTP_PORT: process.env.SMTP_PORT,
   SMTP_SSL_TLS: process.env.SMTP_SSL_TLS,
 };
+
+export const REDIS_HOST = process.env.REDIS_HOST!;
+export const REDIS_PORT = Number(process.env.REDIS_PORT);
+export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;

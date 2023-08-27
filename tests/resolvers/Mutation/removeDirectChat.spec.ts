@@ -29,6 +29,7 @@ import type {
 } from "../../helpers/userAndOrg";
 import type { TestDirectChatType } from "../../helpers/directChat";
 import { createTestDirectChat } from "../../helpers/directChat";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -139,7 +140,7 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
-      await Organization.updateOne(
+      const updatedOrganization = await Organization.findOneAndUpdate(
         {
           _id: testOrganization?._id,
         },
@@ -147,8 +148,15 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
           $set: {
             admins: [],
           },
+        },
+        {
+          new: true,
         }
       );
+
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
 
       const args: MutationRemoveDirectChatArgs = {
         chatId: testDirectChat?.id,
@@ -173,7 +181,7 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
   });
 
   it(`deletes the directChat with _id === args.chatId`, async () => {
-    await Organization.updateOne(
+    const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: testOrganization?._id,
       },
@@ -181,8 +189,15 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
         $push: {
           admins: testUser?._id,
         },
+      },
+      {
+        new: true,
       }
     );
+
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     const args: MutationRemoveDirectChatArgs = {
       chatId: testDirectChat?.id,

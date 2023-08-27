@@ -6,6 +6,8 @@ import {
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { GroupChat, GroupChatMessage, Organization } from "../../models";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 /**
  * This function enables to remove an graoup chat.
  * @param _parent - parent of current request
@@ -35,9 +37,21 @@ export const removeGroupChat: MutationResolvers["removeGroupChat"] = async (
     );
   }
 
-  const organization = await Organization.findOne({
-    _id: groupChat.organization,
-  }).lean();
+  let organization;
+
+  const organizationFoundInCache = await findOrganizationsInCache([
+    groupChat.organization,
+  ]);
+
+  organization = organizationFoundInCache[0];
+
+  if (organizationFoundInCache.includes(null)) {
+    organization = await Organization.findOne({
+      _id: groupChat.organization,
+    }).lean();
+
+    await cacheOrganizations([organization!]);
+  }
 
   // Checks if an organization with _id === groupChat.organization exists.
   if (!organization) {

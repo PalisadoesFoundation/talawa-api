@@ -6,6 +6,7 @@ import { LENGTH_VALIDATION_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
 import { superAdminCheck } from "../../utilities";
 import { isValidString } from "../../libraries/validators/validateString";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 /**
  * This function enables to create an organization.
  * @param _parent - parent of current request
@@ -94,6 +95,8 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       admins: [context.userId],
       members: [context.userId],
     });
+
+    await cacheOrganizations([createdOrganization.toObject()!]);
 
     /*
     Adds createdOrganization._id to joinedOrganizations, createdOrganizations

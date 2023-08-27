@@ -12,6 +12,9 @@ import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
 } from "../../constants";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { deleteOrganizationFromCache } from "../../services/OrganizationCache/deleteOrganizationFromCache";
 /**
  * This function enables to remove an organization.
  * @param _parent - parent of current request
@@ -38,9 +41,19 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
       );
     }
 
-    const organization = await Organization.findOne({
-      _id: args.id,
-    }).lean();
+    let organization;
+
+    const organizationFoundInCache = await findOrganizationsInCache([args.id]);
+
+    organization = organizationFoundInCache[0];
+
+    if (organizationFoundInCache[0] == null) {
+      organization = await Organization.findOne({
+        _id: args.id,
+      }).lean();
+
+      await cacheOrganizations([organization!]);
+    }
 
     // Checks whether organization exists.
     if (!organization) {
@@ -115,6 +128,8 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     await Organization.deleteOne({
       _id: organization._id,
     });
+
+    await deleteOrganizationFromCache(organization);
 
     // Returns updated currentUser.
     return await User.findOne({
