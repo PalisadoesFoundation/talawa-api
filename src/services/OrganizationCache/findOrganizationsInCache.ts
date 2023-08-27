@@ -1,4 +1,4 @@
-import OrganizationCache from "./OrganizationCache";
+import OrganizationCache from "../redisCache";
 import type { InterfaceOrganization } from "../../models";
 import { Types } from "mongoose";
 

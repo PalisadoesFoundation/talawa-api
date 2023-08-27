@@ -1,5 +1,5 @@
 import type { InterfaceOrganization } from "../../models";
-import OrganizationCache from "./OrganizationCache";
+import OrganizationCache from "../redisCache";
 
 // Function to store organizations in the cache using pipelining
 export async function cacheOrganizations(
