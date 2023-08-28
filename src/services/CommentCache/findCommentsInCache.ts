@@ -1,23 +1,23 @@
-import PostCache from "../redisCache";
-import type { InterfacePost } from "../../models";
+import CommentCache from "../redisCache";
+import type { InterfaceComment } from "../../models";
 import { Types } from "mongoose";
 
-export async function findPostsInCache(
+export async function findCommentsInCache(
   ids: string[]
-): Promise<(InterfacePost | null)[]> {
+): Promise<(InterfaceComment | null)[]> {
   const keys: string[] = ids.map((id) => {
-    return `post:${id}`;
+    return `comment:${id}`;
   });
 
-  const postsFoundInCache = await PostCache.mget(keys);
+  const commentsFoundInCache = await CommentCache.mget(keys);
 
-  const posts = postsFoundInCache.map((post) => {
-    if (post === null) {
+  const comments = commentsFoundInCache.map((comment) => {
+    if (comment === null) {
       return null;
     }
 
     try {
-      const postObj = JSON.parse(post);
+      const commentObj = JSON.parse(comment);
 
       // Note: While JSON parsing successfully restores the fields, including those with
       // Mongoose Object IDs, these fields are returned as strings due to the serialization
@@ -26,27 +26,27 @@ export async function findPostsInCache(
       // the requesting resolver.
 
       return {
-        ...postObj,
+        ...commentObj,
 
-        _id: Types.ObjectId(postObj._id),
+        _id: Types.ObjectId(commentObj._id),
 
-        createdAt: new Date(postObj.createdAt),
+        createdAt: new Date(commentObj.createdAt),
 
-        organization: Types.ObjectId(postObj.organization),
+        creator: Types.ObjectId(commentObj.creator),
+
+        postId: Types.ObjectId(commentObj.postId),
 
         likedBy:
-          postObj?.likedBy.length !== 0
-            ? postObj?.likedBy?.map((user: string) => {
+          commentObj?.likedBy.length !== 0
+            ? commentObj?.likedBy?.map((user: string) => {
                 return Types.ObjectId(user);
               })
             : [],
-
-        creator: Types.ObjectId(postObj.creator),
       };
     } catch (parseError) {
       console.error("Error parsing JSON:", parseError);
     }
   });
 
-  return posts;
+  return comments;
 }

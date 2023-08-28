@@ -32,9 +32,12 @@ export async function findOrganizationsInCache(
 
         _id: Types.ObjectId(organization._id),
 
-        admins: organization?.admins?.map((admin: string) => {
-          return Types.ObjectId(admin);
-        }),
+        admins:
+          organization?.admins.length === 0
+            ? organization?.admins?.map((admin: string) => {
+                return Types.ObjectId(admin);
+              })
+            : [],
 
         members:
           organization.members.length !== 0
