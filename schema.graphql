@@ -145,10 +145,12 @@ type Event {
   allDay: Boolean!
   attendees: [User!]!
   attendeesCheckInStatus: [CheckInStatus!]!
+  averageFeedbackScore: Int
   creator: User!
   description: String!
   endDate: Date!
   endTime: Time
+  feedback: [Feedback!]!
   isPublic: Boolean!
   isRegisterable: Boolean!
   latitude: Latitude
@@ -255,6 +257,21 @@ input EventWhereInput {
 type ExtendSession {
   accessToken: String!
   refreshToken: String!
+}
+
+type Feedback {
+  _id: ID!
+  event: Event!
+  hashedUserId: ID!
+  rating: Int!
+  review: String
+}
+
+input FeedbackInput {
+  eventId: ID!
+  rating: Int!
+  review: String
+  userId: ID!
 }
 
 interface FieldError {
@@ -393,6 +410,7 @@ type Mutation {
   acceptAdmin(id: ID!): Boolean!
   acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   addEventAttendee(data: EventAttendeeInput!): User!
+  addFeedback(data: FeedbackInput!): Feedback!
   addLanguageTranslation(data: LanguageInput!): Language!
   addOrganizationImage(file: String!, organizationId: String!): Organization!
   addUserImage(file: String!): User!
@@ -709,6 +727,7 @@ type Query {
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
   getPlugins: [Plugin]
   getlanguage(lang_code: String!): [Translation]
+  hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean
   joinedOrganizations(id: ID): [Organization]
   me: User!
   myLanguage: String

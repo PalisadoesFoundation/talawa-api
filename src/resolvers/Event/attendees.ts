@@ -7,6 +7,7 @@ export const attendees: EventResolvers["attendees"] = async (parent) => {
   })
     .populate("userId")
     .lean();
+
   return eventAttendeeObjects.map(
     (eventAttendeeObject) => eventAttendeeObject.userId
   );

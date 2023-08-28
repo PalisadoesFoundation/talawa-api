@@ -121,6 +121,8 @@ export const types = gql`
     admins(adminId: ID): [User]
     status: Status!
     projects: [EventProject]
+    feedback: [Feedback!]!
+    averageFeedbackScore: Int
   }
 
   type EventProject {
@@ -129,6 +131,14 @@ export const types = gql`
     description: String!
     event: Event!
     tasks: [Task]
+  }
+
+  type Feedback {
+    _id: ID!
+    event: Event!
+    rating: Int!
+    review: String
+    hashedUserId: ID!
   }
 
   type Group {
