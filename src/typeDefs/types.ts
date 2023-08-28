@@ -122,7 +122,7 @@ export const types = gql`
     status: Status!
     projects: [EventProject]
     feedback: [Feedback!]!
-    averageFeedbackScore: Int
+    averageFeedbackScore: Float
   }
 
   type EventProject {

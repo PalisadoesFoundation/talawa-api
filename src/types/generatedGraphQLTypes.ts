@@ -198,7 +198,7 @@ export type Event = {
   allDay: Scalars['Boolean'];
   attendees: Array<User>;
   attendeesCheckInStatus: Array<CheckInStatus>;
-  averageFeedbackScore?: Maybe<Scalars['Int']>;
+  averageFeedbackScore?: Maybe<Scalars['Float']>;
   creator: User;
   description: Scalars['String'];
   endDate: Scalars['Date'];
@@ -2179,7 +2179,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   allDay?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   attendees?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
   attendeesCheckInStatus?: Resolver<Array<ResolversTypes['CheckInStatus']>, ParentType, ContextType>;
-  averageFeedbackScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  averageFeedbackScore?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;

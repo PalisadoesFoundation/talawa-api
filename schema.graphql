@@ -145,7 +145,7 @@ type Event {
   allDay: Boolean!
   attendees: [User!]!
   attendeesCheckInStatus: [CheckInStatus!]!
-  averageFeedbackScore: Int
+  averageFeedbackScore: Float
   creator: User!
   description: String!
   endDate: Date!
