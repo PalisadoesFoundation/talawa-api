@@ -115,7 +115,6 @@ export const inputs = gql`
 
   input FeedbackInput {
     eventId: ID!
-    userId: ID!
     rating: Int!
     review: String
   }

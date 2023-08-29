@@ -82,6 +82,7 @@ export type CheckIn = {
   allotedRoom?: Maybe<Scalars['String']>;
   allotedSeat?: Maybe<Scalars['String']>;
   event: Event;
+  feedbackSubmitted: Scalars['Boolean'];
   time: Scalars['DateTime'];
   user: User;
 };
@@ -322,7 +323,6 @@ export type Feedback = {
   __typename?: 'Feedback';
   _id: Scalars['ID'];
   event: Event;
-  hashedUserId: Scalars['ID'];
   rating: Scalars['Int'];
   review?: Maybe<Scalars['String']>;
 };
@@ -331,7 +331,6 @@ export type FeedbackInput = {
   eventId: Scalars['ID'];
   rating: Scalars['Int'];
   review?: InputMaybe<Scalars['String']>;
-  userId: Scalars['ID'];
 };
 
 export type FieldError = {
@@ -2086,6 +2085,7 @@ export type CheckInResolvers<ContextType = any, ParentType extends ResolversPare
   allotedRoom?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   allotedSeat?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   event?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
+  feedbackSubmitted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   time?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -2219,7 +2219,6 @@ export type ExtendSessionResolvers<ContextType = any, ParentType extends Resolve
 export type FeedbackResolvers<ContextType = any, ParentType extends ResolversParentTypes['Feedback'] = ResolversParentTypes['Feedback']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   event?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
-  hashedUserId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   rating?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   review?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

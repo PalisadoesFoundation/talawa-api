@@ -31,6 +31,7 @@ type CheckIn {
   allotedRoom: String
   allotedSeat: String
   event: Event!
+  feedbackSubmitted: Boolean!
   time: DateTime!
   user: User!
 }
@@ -262,7 +263,6 @@ type ExtendSession {
 type Feedback {
   _id: ID!
   event: Event!
-  hashedUserId: ID!
   rating: Int!
   review: String
 }
@@ -271,7 +271,6 @@ input FeedbackInput {
   eventId: ID!
   rating: Int!
   review: String
-  userId: ID!
 }
 
 interface FieldError {

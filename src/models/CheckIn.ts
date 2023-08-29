@@ -15,6 +15,7 @@ export interface InterfaceCheckIn {
   time: Date;
   allotedRoom: string;
   allotedSeat: string;
+  feedbackSubmitted: boolean;
 }
 
 const checkInSchema = new Schema({
@@ -35,6 +36,11 @@ const checkInSchema = new Schema({
   allotedSeat: {
     type: String,
     required: false,
+  },
+  feedbackSubmitted: {
+    type: Boolean,
+    required: true,
+    default: false,
   },
 });
 

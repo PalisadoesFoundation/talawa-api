@@ -7,7 +7,6 @@ export interface InterfaceFeedback {
   eventId: PopulatedDoc<InterfaceEvent & Document>;
   rating: number;
   review: string | null;
-  hashedUserId: string;
 }
 
 const feedbackSchema = new Schema({
@@ -25,10 +24,6 @@ const feedbackSchema = new Schema({
   review: {
     type: String,
     required: false,
-  },
-  hashedUserId: {
-    type: String,
-    required: true,
   },
 });
 

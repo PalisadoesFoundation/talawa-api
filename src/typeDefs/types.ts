@@ -34,6 +34,7 @@ export const types = gql`
     allotedSeat: String
     user: User!
     event: Event!
+    feedbackSubmitted: Boolean!
   }
 
   # Used to show whether an user has checked in for an event
@@ -138,7 +139,6 @@ export const types = gql`
     event: Event!
     rating: Int!
     review: String
-    hashedUserId: ID!
   }
 
   type Group {
