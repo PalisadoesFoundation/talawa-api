@@ -36,6 +36,6 @@ const feedbackModel = (): Model<InterfaceFeedback> =>
   model<InterfaceFeedback>("Feedback", feedbackSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const Feedback = (models.FeedbackModel || feedbackModel()) as ReturnType<
+export const Feedback = (models.Feedback || feedbackModel()) as ReturnType<
   typeof feedbackModel
 >;
