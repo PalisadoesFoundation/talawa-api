@@ -42,7 +42,7 @@ export const hasSubmittedFeedback: QueryResolvers["hasSubmittedFeedback"] =
 
     if (eventAttendeeObject === null) {
       throw new errors.ConflictError(
-        requestContext.translate(USER_NOT_REGISTERED_FOR_EVENT),
+        requestContext.translate(USER_NOT_REGISTERED_FOR_EVENT.MESSAGE),
         USER_NOT_REGISTERED_FOR_EVENT.CODE,
         USER_NOT_REGISTERED_FOR_EVENT.PARAM
       );
