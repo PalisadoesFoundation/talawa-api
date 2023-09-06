@@ -30,10 +30,8 @@ import {
 } from "../../helpers/userAndOrg";
 import { Organization } from "../../../src/models";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
-import { nanoid } from "nanoid";
 import { createPost as createPostResolverImage } from "../../../src/resolvers/Mutation/createPost";
 
-const testImagePath = `${nanoid().toLowerCase()}test.png`;
 let testUser: TestUserType;
 let randomUser: TestUserType;
 let testOrganization: TestOrganizationType;
