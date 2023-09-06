@@ -7,6 +7,8 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
 } from "../../constants";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 /**
  * This function enables to cancel membership request.
  * @param _parent - parent of current request
@@ -34,9 +36,21 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       );
     }
 
-    const organization = await Organization.findOne({
-      _id: membershipRequest.organization,
-    }).lean();
+    let organization;
+
+    const organizationFoundInCache = await findOrganizationsInCache([
+      membershipRequest.organization,
+    ]);
+
+    organization = organizationFoundInCache[0];
+
+    if (organizationFoundInCache.includes(null)) {
+      organization = await Organization.findOne({
+        _id: membershipRequest.organization,
+      }).lean();
+
+      await cacheOrganizations([organization!]);
+    }
 
     // Checks whether organization exists.
     if (!organization) {
@@ -79,7 +93,7 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
     });
 
     // Removes membershipRequest._id from membershipRequests list on organization's document.
-    await Organization.updateOne(
+    const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: organization._id,
       },
@@ -87,8 +101,15 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
         $pull: {
           membershipRequests: membershipRequest._id,
         },
+      },
+      {
+        new: true,
       }
     );
+
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     // Removes membershipRequest._id from membershipRequests list on currentUser's document.
     await User.updateOne(

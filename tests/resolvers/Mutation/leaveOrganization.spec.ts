@@ -25,6 +25,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -103,17 +104,24 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
     try {
-      await Organization.updateOne(
+      const updatedOrganization = await Organization.findOneAndUpdate(
         {
           _id: testOrganization?._id,
         },
         {
           $set: {
             creator: Types.ObjectId().toString(),
-            members: [],
+            members: [Types.ObjectId().toString()],
           },
+        },
+        {
+          new: true,
         }
       );
+
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
 
       const args: MutationLeaveOrganizationArgs = {
         organizationId: testOrganization?.id,
@@ -135,16 +143,23 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
   });
 
   it(`returns user object with _id === context.userId after leaving the organization`, async () => {
-    await Organization.updateOne(
+    const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: testOrganization?._id,
       },
       {
-        $push: {
-          members: testUser?._id,
+        $set: {
+          members: [testUser?._id],
         },
+      },
+      {
+        new: true,
       }
     );
+
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     const args: MutationLeaveOrganizationArgs = {
       organizationId: testOrganization?.id,

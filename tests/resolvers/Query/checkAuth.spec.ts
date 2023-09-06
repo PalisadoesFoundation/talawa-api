@@ -10,6 +10,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 import { createTestUser } from "../../helpers/userAndOrg";
+import { User } from "../../../src/models";
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 });
@@ -40,6 +41,35 @@ describe("resolvers -> Query -> checkAuth", () => {
 
     const user = await checkAuthResolver?.({}, {}, context);
 
-    expect(user).toEqual(testUser?.toObject());
+    expect(user).toEqual({ ...testUser?.toObject(), image: null });
+  });
+
+  it("returns user object with image ", async () => {
+    let testUser = await createTestUser();
+
+    await User.findOneAndUpdate(
+      {
+        _id: testUser?.id,
+      },
+      {
+        image: `path`,
+      }
+    );
+
+    testUser = await User.findOne({
+      _id: testUser?.id,
+    });
+
+    const context = {
+      userId: testUser?._id,
+      apiRootUrl: `http://localhost:3000`,
+    };
+
+    const user = await checkAuthResolver?.({}, {}, context);
+
+    expect(user).toEqual({
+      ...testUser?.toObject(),
+      image: `${context.apiRootUrl}${testUser?.image}`,
+    });
   });
 });

@@ -1,5 +1,6 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { superAdminCheck } from "../../utilities";
+import type { InterfaceOrganization } from "../../models";
 import { User, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
@@ -7,6 +8,9 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_ORGANIZATION_ADMIN,
 } from "../../constants";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { Types } from "mongoose";
 /**
  * This function enables to remove an admin.
  * @param _parent - parent of current request
@@ -24,9 +28,21 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
   args,
   context
 ) => {
-  const organization = await Organization.findOne({
-    _id: args.data.organizationId,
-  }).lean();
+  let organization: InterfaceOrganization;
+
+  const organizationFoundInCache = await findOrganizationsInCache([
+    args.data.organizationId,
+  ]);
+
+  if (organizationFoundInCache[0] === null) {
+    organization = await Organization.findOne({
+      _id: args.data.organizationId,
+    }).lean();
+
+    await cacheOrganizations([organization!]);
+  } else {
+    organization = organizationFoundInCache[0];
+  }
 
   // Checks whether organization exists.
   if (!organization) {
@@ -56,7 +72,7 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
 
   // Checks whether user is an admin of the organization.
   const userIsOrganizationAdmin = organization.admins.some((admin) =>
-    admin.equals(user._id)
+    Types.ObjectId(admin).equals(user._id)
   );
 
   if (!userIsOrganizationAdmin) {
@@ -71,7 +87,7 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
   superAdminCheck(currentUser!);
 
   // Removes user._id from admins list of the organization.
-  await Organization.updateOne(
+  const updatedOrganization = await Organization.findOneAndUpdate(
     {
       _id: organization._id,
     },
@@ -81,8 +97,15 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
           (admin) => admin.toString() !== user!._id.toString()
         ),
       },
+    },
+    {
+      new: true,
     }
   );
+
+  if (updatedOrganization !== null) {
+    await cacheOrganizations([updatedOrganization]);
+  }
 
   // Removes organization._id from adminFor list of the user and returns the updated user.
   return await User.findOneAndUpdate(

@@ -6,6 +6,8 @@ import {
   CHAT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
 } from "../../constants";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 /**
  * This function enables to remove direct chat.
  * @param _parent - parent of current request
@@ -22,9 +24,21 @@ export const removeDirectChat: MutationResolvers["removeDirectChat"] = async (
   args,
   context
 ) => {
-  const organization = await Organization.findOne({
-    _id: args.organizationId,
-  }).lean();
+  let organization;
+
+  const organizationFoundInCache = await findOrganizationsInCache([
+    args.organizationId,
+  ]);
+
+  organization = organizationFoundInCache[0];
+
+  if (organizationFoundInCache.includes(null)) {
+    organization = await Organization.findOne({
+      _id: args.organizationId,
+    }).lean();
+
+    await cacheOrganizations([organization!]);
+  }
 
   // Checks whether organization exists.
   if (!organization) {

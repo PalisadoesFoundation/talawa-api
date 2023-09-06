@@ -19,6 +19,7 @@ import type {
 } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -121,7 +122,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
   it(`throws UnauthorizedError if user with _id === context.userId is not an admin
   of organization with _id === event.organization for event with _id === args.eventId`, async () => {
     try {
-      await Organization.updateOne(
+      const updatedOrganization = await Organization.findOneAndUpdate(
         {
           _id: testOrganization?._id,
         },
@@ -129,8 +130,15 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
           $set: {
             admins: [],
           },
+        },
+        {
+          new: true,
         }
       );
+
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
 
       const args: MutationAdminRemoveEventArgs = {
         eventId: testEvent?.id,
@@ -147,7 +155,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
   });
 
   it(`removes event with _id === args.eventId and returns it`, async () => {
-    await Organization.updateOne(
+    const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: testOrganization?._id,
       },
@@ -155,8 +163,15 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
         $push: {
           admins: testUser?._id,
         },
+      },
+      {
+        new: true,
       }
     );
+
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     const args: MutationAdminRemoveEventArgs = {
       eventId: testEvent?.id,

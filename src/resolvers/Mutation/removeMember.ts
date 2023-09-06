@@ -11,6 +11,9 @@ import {
   ADMIN_REMOVING_ADMIN,
   ADMIN_REMOVING_CREATOR,
 } from "../../constants";
+import { Types } from "mongoose";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 /**
  * This function enables to remove a member.
  * @param _parent - parent of current request
@@ -28,9 +31,21 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   args,
   context
 ) => {
-  let organization = await Organization.findOne({
-    _id: args.data.organizationId,
-  }).lean();
+  let organization: InterfaceOrganization;
+
+  const organizationFoundInCache = await findOrganizationsInCache([
+    args.data.organizationId,
+  ]);
+
+  if (organizationFoundInCache[0] == null) {
+    organization = await Organization.findOne({
+      _id: args.data.organizationId,
+    }).lean();
+
+    await cacheOrganizations([organization!]);
+  } else {
+    organization = organizationFoundInCache[0];
+  }
 
   // Checks if organization exists.
   if (!organization) {
@@ -62,7 +77,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   }
 
   const userIsOrganizationMember = organization?.members.some((member) =>
-    member.equals(user._id)
+    Types.ObjectId(member).equals(user._id)
   );
 
   if (!userIsOrganizationMember) {
@@ -83,7 +98,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
   }
 
   const userIsOrganizationAdmin = organization?.admins.some((admin) =>
-    admin.equals(user._id)
+    Types.ObjectId(admin).equals(user._id)
   );
 
   /*
@@ -105,7 +120,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     of organization. If match is true assigns error message to errors list
     and breaks out of loop.
     */
-  if (organization?.creator.equals(user._id)) {
+  if (Types.ObjectId(organization?.creator).equals(user._id)) {
     throw new errors.UnauthorizedError(
       requestContext.translate(ADMIN_REMOVING_CREATOR.MESSAGE),
       ADMIN_REMOVING_CREATOR.CODE,
@@ -129,6 +144,8 @@ export const removeMember: MutationResolvers["removeMember"] = async (
       new: true,
     }
   ).lean();
+
+  await cacheOrganizations([organization!]);
 
   // Remove organization's id from joinedOrganizations list on user.
   await User.updateOne(

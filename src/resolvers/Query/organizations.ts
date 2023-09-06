@@ -3,6 +3,8 @@ import { Organization } from "../../models";
 import { errors } from "../../libraries";
 import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
 import { getSort } from "./helperFunctions/getSort";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 /**
  * If a 'id' is specified, this query will return an organisation;
  * otherwise, it will return all organisations with a size of limit 100.
@@ -17,12 +19,21 @@ export const organizations: QueryResolvers["organizations"] = async (
 ) => {
   const sort = getSort(args.orderBy);
 
+  let organizationFound;
   if (args.id) {
-    const organizationFound = await Organization.find({
+    const organizationFoundInCache = await findOrganizationsInCache([args.id]);
+
+    if (!organizationFoundInCache.includes(null)) {
+      return organizationFoundInCache;
+    }
+
+    organizationFound = await Organization.find({
       _id: args.id,
     })
       .sort(sort)
       .lean();
+
+    await cacheOrganizations(organizationFound);
 
     if (!organizationFound[0]) {
       throw new errors.NotFoundError(
@@ -34,6 +45,9 @@ export const organizations: QueryResolvers["organizations"] = async (
 
     return organizationFound;
   } else {
-    return await Organization.find().sort(sort).limit(100).lean();
+    organizationFound = await Organization.find().sort(sort).limit(100).lean();
+    await cacheOrganizations(organizationFound);
   }
+
+  return organizationFound;
 };

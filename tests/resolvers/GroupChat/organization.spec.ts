@@ -32,4 +32,15 @@ describe("resolvers -> GroupChat -> organization", () => {
       expect(organizationPayload).toEqual(organization);
     }
   });
+  it(`returns user objects for parent.organization from cache`, async () => {
+    const parent = testGroupChat?.toObject();
+    if (parent) {
+      const organizationPayload = await organizationResolver?.(parent, {}, {});
+      const organization = await Organization.findOne({
+        _id: testGroupChat?.organization,
+      }).lean();
+
+      expect(organizationPayload).toEqual(organization);
+    }
+  });
 });

@@ -15,7 +15,7 @@ import path from "path";
 //@ts-ignore
 import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
 
-export const app = express();
+const app = express();
 
 app.use(requestTracing.middleware());
 
@@ -81,3 +81,5 @@ app.get("/", (req, res) =>
     status: "healthy",
   })
 );
+
+export default app;
