@@ -303,6 +303,7 @@ export const types = gql`
     comments: [Comment]
     likeCount: Int
     commentCount: Int
+    pinned: Boolean
   }
 
   """

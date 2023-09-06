@@ -68,6 +68,8 @@ app.use(
 );
 
 app.use("/images", express.static(path.join(__dirname, "./../images")));
+app.use("/videos", express.static(path.join(__dirname, "./../videos")));
+
 app.use(requestContext.middleware());
 
 if (process.env.NODE_ENV !== "production")

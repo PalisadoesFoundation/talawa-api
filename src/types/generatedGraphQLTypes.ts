@@ -1130,6 +1130,7 @@ export type Post = {
   likeCount?: Maybe<Scalars['Int']>;
   likedBy?: Maybe<Array<Maybe<User>>>;
   organization: Organization;
+  pinned?: Maybe<Scalars['Boolean']>;
   text: Scalars['String'];
   title?: Maybe<Scalars['String']>;
   videoUrl?: Maybe<Scalars['URL']>;
@@ -1174,10 +1175,10 @@ export type PostOrderByInput =
   | 'videoUrl_DESC';
 
 export type PostUpdateInput = {
-  imageUrl?: InputMaybe<Scalars['URL']>;
+  imageUrl?: InputMaybe<Scalars['String']>;
   text?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
-  videoUrl?: InputMaybe<Scalars['URL']>;
+  videoUrl?: InputMaybe<Scalars['String']>;
 };
 
 export type PostWhereInput = {
@@ -2473,6 +2474,7 @@ export type PostResolvers<ContextType = any, ParentType extends ResolversParentT
   likeCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   likedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
+  pinned?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   videoUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;

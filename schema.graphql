@@ -623,6 +623,7 @@ type Post {
   likeCount: Int
   likedBy: [User]
   organization: Organization!
+  pinned: Boolean
   text: String!
   title: String
   videoUrl: URL
@@ -669,10 +670,10 @@ enum PostOrderByInput {
 }
 
 input PostUpdateInput {
-  imageUrl: URL
+  imageUrl: String
   text: String
   title: String
-  videoUrl: URL
+  videoUrl: String
 }
 
 input PostWhereInput {

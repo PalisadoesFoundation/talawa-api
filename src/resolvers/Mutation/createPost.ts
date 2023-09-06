@@ -9,6 +9,7 @@ import {
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
 /**
  * This function enables to create a post.
  * @param _parent - parent of current request
@@ -51,10 +52,18 @@ export const createPost: MutationResolvers["createPost"] = async (
     );
   }
 
-  let uploadImageFileName;
+  let uploadImageFileName = null;
+  let uploadVideoFileName = null;
 
   if (args.file) {
-    uploadImageFileName = await uploadEncodedImage(args.file, null);
+    const dataUrlPrefix = "data:";
+    if (args.file.startsWith(dataUrlPrefix + "image/")) {
+      uploadImageFileName = await uploadEncodedImage(args.file, null);
+    } else if (args.file.startsWith(dataUrlPrefix + "video/")) {
+      uploadVideoFileName = await uploadEncodedVideo(args.file, null);
+    } else {
+      throw new Error("Unsupported file type.");
+    }
   }
 
   // Checks if the recieved arguments are valid according to standard input norms
@@ -104,7 +113,8 @@ export const createPost: MutationResolvers["createPost"] = async (
     pinned: args.data.pinned ? true : false,
     creator: context.userId,
     organization: args.data.organizationId,
-    imageUrl: args.file ? uploadImageFileName : null,
+    imageUrl: uploadImageFileName,
+    videoUrl: uploadVideoFileName,
   });
 
   if (args.data.pinned) {
@@ -122,8 +132,11 @@ export const createPost: MutationResolvers["createPost"] = async (
   // Returns createdPost.
   return {
     ...createdPost.toObject(),
-    imageUrl: createdPost.imageUrl
+    imageUrl: uploadImageFileName
       ? `${context.apiRootUrl}${uploadImageFileName}`
+      : null,
+    videoUrl: uploadVideoFileName
+      ? `${context.apiRootUrl}${uploadVideoFileName}`
       : null,
   };
 };
