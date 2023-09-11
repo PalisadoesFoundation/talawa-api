@@ -11,15 +11,16 @@ export async function findCommentsByPostIdInCache(
 
   const commentIDs = await CommentCache.hkeys(hashKey);
 
+  if (commentIDs.length==0) {
+    return [];
+  }
+
   // fetches the comment json data in the cache.
 
-  const keys: string[] = commentIDs.map((id) => {
-    return `comment:${id}`;
-  });
 
-  const commentsFoundInCache = await CommentCache.mget(keys);
+  const commentsFoundInCache = await CommentCache.mget(commentIDs);
 
-
+  
   const comments = commentsFoundInCache.map((comment) => {
     if (comment === null) {
       return null;
