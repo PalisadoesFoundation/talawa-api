@@ -8,12 +8,20 @@ export async function cacheComments(
   try {
     const pipeline = CommentCache.pipeline();
 
+
+
     comments.forEach((comment) => {
       if (comment !== null) {
         const key = `comment:${comment._id}`;
+        const postID = `post_comments:${comment.postId}`;
+        // Set the comment in the cache
         pipeline.set(key, JSON.stringify(comment));
+        // Index comment on its postId
+        pipeline.hset(postID, key , 'null');
         // SET the time to live for each of the organization in the cache to 300s.
         pipeline.expire(key, 300);
+        pipeline.expire(postID, 300);
+
       }
     });
 
