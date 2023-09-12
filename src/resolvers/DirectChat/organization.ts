@@ -22,7 +22,11 @@ export const organization: DirectChatResolvers["organization"] = async (
     _id: parent.organization,
   }).lean();
 
-  cacheOrganizations([organization!]);
+  
+  if (organization!==null) {
+    await cacheOrganizations([organization]);
+
+  }
 
   return organization!;
 };

@@ -1,11 +1,13 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, Post, Comment } from "../../models";
+import { User, Post, Comment, InterfaceComment } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
   USER_NOT_FOUND_ERROR,
   COMMENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
+import { findCommentsInCache } from "../../services/CommentCache/findCommentsInCache";
+import { deleteCommentFromCache } from "../../services/CommentCache/deleteCommentFromCache";
 
 /**
  * This function enables to remove a comment.
@@ -36,12 +38,21 @@ export const removeComment: MutationResolvers["removeComment"] = async (
       USER_NOT_FOUND_ERROR.PARAM
     );
   }
+  
+  let comment:InterfaceComment;
 
-  const comment = await Comment.findOne({
-    _id: args.id,
-  })
-    .populate("postId")
-    .lean();
+  const commentsFoundInCache = await findCommentsInCache([args.id]);
+
+
+
+  if (commentsFoundInCache[0]==null) {
+    comment = await Comment.findOne({
+      _id: args.id,
+    }).populate("postId").lean();
+  } else {
+    comment =  commentsFoundInCache[0];
+  }
+
 
   // Checks whether comment exists.
   if (!comment) {
@@ -85,6 +96,8 @@ export const removeComment: MutationResolvers["removeComment"] = async (
   await Comment.deleteOne({
     _id: comment._id,
   });
+
+  await deleteCommentFromCache(comment)
 
   // Replace the populated postId in comment object with just the id
   comment.postId = comment.postId._id;

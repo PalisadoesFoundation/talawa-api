@@ -24,6 +24,7 @@ import {
 import type { TestUserType } from "../../helpers/userAndOrg";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
+import { cacheComments } from "../../../src/services/CommentCache/cacheComments";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -126,7 +127,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
       .mockImplementationOnce((message) => message);
     try {
       // Remove the user as the creator of the comment
-      await Comment.updateOne(
+      const updatedComment = await Comment.findOneAndUpdate(
         {
           _id: testComment?._id,
         },
@@ -134,8 +135,15 @@ describe("resolvers -> Mutation -> removeComment", () => {
           $set: {
             creator: Types.ObjectId().toString(),
           },
+        }, 
+        {
+          new:true
         }
       );
+
+      if (updatedComment!==null) {
+        await cacheComments([updatedComment]);
+      }
 
       // Remove the user as the admin of the organization of the post of the comment
       await User.updateOne(
@@ -170,16 +178,23 @@ describe("resolvers -> Mutation -> removeComment", () => {
 
   it(`deletes the comment with _id === args.id`, async () => {
     // Make the user creator of the comment again
-    await Comment.updateOne(
+    const updatedComment = await Comment.findOneAndUpdate(
       {
         _id: testComment?._id,
       },
       {
         $set: {
-          creator: testUser?._id,
+          creator: testUser!._id,
         },
+      }, 
+      {
+        new:true
       }
     );
+
+    if (updatedComment!==null) {
+      await cacheComments([updatedComment]);
+    }
 
     // Set the user as the admin of the organization of the post of the comment
     await User.updateOne(
