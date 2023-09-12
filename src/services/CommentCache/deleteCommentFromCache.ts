@@ -6,6 +6,8 @@ export async function deleteCommentFromCache(
 ): Promise<void> {
   const key = `comment:${comment._id}`;
 
+
+
   await CommentCache.del(key);
 
   console.log("Comment deleted from cache");

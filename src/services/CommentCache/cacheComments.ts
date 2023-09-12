@@ -6,6 +6,8 @@ export async function cacheComments(
   comments: InterfaceComment[]
 ): Promise<void> {
   try {
+
+    
     const pipeline = CommentCache.pipeline();
 
 
