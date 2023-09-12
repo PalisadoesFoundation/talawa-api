@@ -14,6 +14,8 @@ export const post: QueryResolvers["post"] = async (_parent, args) => {
     .populate("likedBy")
     .lean();
 
+  
+
   if (!post) {
     throw new errors.NotFoundError(
       POST_NOT_FOUND_ERROR.DESC,

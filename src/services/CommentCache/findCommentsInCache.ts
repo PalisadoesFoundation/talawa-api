@@ -5,6 +5,7 @@ import { Types } from "mongoose";
 export async function findCommentsInCache(
   ids: string[]
 ): Promise<(InterfaceComment | null)[]> {
+  
   const keys: string[] = ids.map((id) => {
     return `comment:${id}`;
   });
