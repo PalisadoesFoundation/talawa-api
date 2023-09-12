@@ -1,4 +1,4 @@
-import OrganizationCache from "../redisCache";
+import OrganizationCache from "./OrganizationCache";
 import type { InterfaceOrganization } from "../../models";
 
 export async function deleteOrganizationFromCache(
