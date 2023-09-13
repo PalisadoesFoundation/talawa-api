@@ -1,5 +1,6 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
+import type { InterfacePost } from "../../models";
 import { User, Post } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
@@ -8,6 +9,8 @@ import {
   LENGTH_VALIDATION_ERROR,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
+import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
+import { cachePosts } from "../../services/PostCache/cachePosts";
 
 export const updatePost: MutationResolvers["updatePost"] = async (
   _parent,
@@ -27,9 +30,17 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     );
   }
 
-  const post = await Post.findOne({
-    _id: args.id,
-  }).lean();
+  let post: InterfacePost | null;
+
+  const postFoundInCache = await findPostsInCache([args.id]);
+
+  post = postFoundInCache[0];
+
+  if (postFoundInCache[0] === null) {
+    post = await Post.findOne({
+      _id: args.id,
+    }).lean();
+  }
 
   // checks if there exists a post with _id === args.id
   if (!post) {
@@ -71,7 +82,7 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     );
   }
 
-  return await Post.findOneAndUpdate(
+  const updatedPost = await Post.findOneAndUpdate(
     {
       _id: args.id,
     },
@@ -82,4 +93,10 @@ export const updatePost: MutationResolvers["updatePost"] = async (
       new: true,
     }
   ).lean();
+
+  if (updatedPost !== null) {
+    await cachePosts([updatedPost]);
+  }
+
+  return updatedPost!;
 };

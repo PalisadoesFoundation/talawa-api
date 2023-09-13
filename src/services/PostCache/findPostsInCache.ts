@@ -3,7 +3,7 @@ import type { InterfacePost } from "../../models";
 import { Types } from "mongoose";
 
 export async function findPostsInCache(
-  ids: string[]
+  ids: string[] | any[]
 ): Promise<(InterfacePost | null)[]> {
   const keys: string[] = ids.map((id) => {
     return `post:${id}`;
@@ -33,6 +33,10 @@ export async function findPostsInCache(
         createdAt: new Date(postObj.createdAt),
 
         organization: Types.ObjectId(postObj.organization),
+
+        likeCount: Number(postObj.likeCount),
+
+        commentCount: Number(postObj.commentCount),
 
         likedBy:
           postObj?.likedBy.length !== 0

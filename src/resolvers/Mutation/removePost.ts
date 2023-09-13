@@ -7,6 +7,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { deletePostFromCache } from "../../services/PostCache/deletePostFromCache";
 /**
  * This function enables to remove a post.
  * @param _parent - parent of current request
@@ -70,6 +71,8 @@ export const removePost: MutationResolvers["removePost"] = async (
   await Post.deleteOne({
     _id: args.id,
   });
+
+  await deletePostFromCache(args.id);
 
   // Removes the post from the organization, doesn't fail if the post wasn't pinned
   const updatedOrganization = await Organization.findOneAndUpdate(

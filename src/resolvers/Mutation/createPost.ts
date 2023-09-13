@@ -11,6 +11,7 @@ import { isValidString } from "../../libraries/validators/validateString";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { cachePosts } from "../../services/PostCache/cachePosts";
 /**
  * This function enables to create a post.
  * @param _parent - parent of current request
@@ -120,6 +121,10 @@ export const createPost: MutationResolvers["createPost"] = async (
     organization: args.data.organizationId,
     imageUrl: args.file ? uploadImageFileName : null,
   });
+
+  if (createdPost !== null) {
+    await cachePosts([createdPost]);
+  }
 
   if (args.data.pinned) {
     // Add the post to pinnedPosts of the organization
