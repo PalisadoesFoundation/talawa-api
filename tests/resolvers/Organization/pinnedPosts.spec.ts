@@ -5,7 +5,7 @@ import type mongoose from "mongoose";
 import { Organization, Post } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestOrganizationType } from "../../helpers/userAndOrg";
-import type { TestPostType} from "../../helpers/posts";
+import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
