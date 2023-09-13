@@ -6,11 +6,7 @@ export async function cacheComments(
   comments: InterfaceComment[]
 ): Promise<void> {
   try {
-
-    
     const pipeline = CommentCache.pipeline();
-
-
 
     comments.forEach((comment) => {
       if (comment !== null) {
@@ -19,11 +15,10 @@ export async function cacheComments(
         // Set the comment in the cache
         pipeline.set(key, JSON.stringify(comment));
         // Index comment on its postId
-        pipeline.hset(postID, key , 'null');
+        pipeline.hset(postID, key, "null");
         // SET the time to live for each of the organization in the cache to 300s.
         pipeline.expire(key, 300);
         pipeline.expire(postID, 300);
-
       }
     });
 

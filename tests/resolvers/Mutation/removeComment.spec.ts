@@ -135,13 +135,13 @@ describe("resolvers -> Mutation -> removeComment", () => {
           $set: {
             creator: Types.ObjectId().toString(),
           },
-        }, 
+        },
         {
-          new:true
+          new: true,
         }
       );
 
-      if (updatedComment!==null) {
+      if (updatedComment !== null) {
         await cacheComments([updatedComment]);
       }
 
@@ -186,13 +186,13 @@ describe("resolvers -> Mutation -> removeComment", () => {
         $set: {
           creator: testUser!._id,
         },
-      }, 
+      },
       {
-        new:true
+        new: true,
       }
     );
 
-    if (updatedComment!==null) {
+    if (updatedComment !== null) {
       await cacheComments([updatedComment]);
     }
 

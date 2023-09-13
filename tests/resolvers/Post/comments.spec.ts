@@ -23,14 +23,14 @@ beforeAll(async () => {
 
   await Post.findOneAndUpdate(
     {
-      _id:testPost?._id
-    } , 
+      _id: testPost?._id,
+    },
     {
-      $inc :{
-        commentCount:1
-      }
+      $inc: {
+        commentCount: 1,
+      },
     }
-  )
+  );
 });
 
 afterAll(async () => {
@@ -41,7 +41,26 @@ describe("resolvers -> Post -> comments", () => {
   it(`returns the comment object for parent post`, async () => {
     const parent = await Post.findById(testPost?._id);
 
-    const commentsPayload = await commentsResolver?.(parent!.toObject(), {}, {});
+    const commentsPayload = await commentsResolver?.(
+      parent!.toObject(),
+      {},
+      {}
+    );
+
+    const comments = await Comment.find({
+      postId: testPost!._id,
+    }).lean();
+
+    expect(commentsPayload).toEqual(comments);
+  });
+  it(`returns the comment object for parent post from cache`, async () => {
+    const parent = await Post.findById(testPost?._id);
+
+    const commentsPayload = await commentsResolver?.(
+      parent!.toObject(),
+      {},
+      {}
+    );
 
     const comments = await Comment.find({
       postId: testPost!._id,

@@ -32,20 +32,18 @@ export const likeComment: MutationResolvers["likeComment"] = async (
       USER_NOT_FOUND_ERROR.PARAM
     );
   }
-  
+
   let comment;
 
   const commentsFoundInCache = await findCommentsInCache([args.id]);
 
-  comment =  commentsFoundInCache[0];
+  comment = commentsFoundInCache[0];
 
   if (commentsFoundInCache.includes(null)) {
     comment = await Comment.findOne({
       _id: args.id,
     }).lean();
   }
-
-
 
   // Checks whether comment exists.
   if (!comment) {
@@ -66,7 +64,7 @@ export const likeComment: MutationResolvers["likeComment"] = async (
     Adds context.userId to likedBy list and increases likeCount field by 1
     of comment's document and returns the updated comment.
     */
-    const updatedComment =  await Comment.findOneAndUpdate(
+    const updatedComment = await Comment.findOneAndUpdate(
       {
         _id: comment._id,
       },
@@ -82,9 +80,9 @@ export const likeComment: MutationResolvers["likeComment"] = async (
         new: true,
       }
     ).lean();
-    
-    if (updatedComment!==null) {
-      await cacheComments([updatedComment])
+
+    if (updatedComment !== null) {
+      await cacheComments([updatedComment]);
     }
 
     return updatedComment;

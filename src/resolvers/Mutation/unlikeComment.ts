@@ -35,7 +35,7 @@ export const unlikeComment: MutationResolvers["unlikeComment"] = async (
 
   const commentsFoundInCache = await findCommentsInCache([args.id]);
 
-  comment =  commentsFoundInCache[0];
+  comment = commentsFoundInCache[0];
 
   if (commentsFoundInCache.includes(null)) {
     comment = await Comment.findOne({
@@ -56,7 +56,7 @@ export const unlikeComment: MutationResolvers["unlikeComment"] = async (
   );
 
   if (currentUserHasLikedComment === true) {
-    const updatedComment =   await Comment.findOneAndUpdate(
+    const updatedComment = await Comment.findOneAndUpdate(
       {
         _id: args.id,
       },
@@ -73,10 +73,9 @@ export const unlikeComment: MutationResolvers["unlikeComment"] = async (
       }
     ).lean();
 
-    if (updatedComment!==null) {
-      await cacheComments([updatedComment])
+    if (updatedComment !== null) {
+      await cacheComments([updatedComment]);
     }
-
 
     return updatedComment;
   }

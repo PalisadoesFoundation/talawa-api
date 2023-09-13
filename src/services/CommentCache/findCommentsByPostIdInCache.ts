@@ -5,22 +5,19 @@ import { Types } from "mongoose";
 export async function findCommentsByPostIdInCache(
   postID: Types.ObjectId
 ): Promise<(InterfaceComment | null)[]> {
-
   // fetches the comment id for a particular post
   const hashKey = `post_comments:${postID}`;
 
   const commentIDs = await CommentCache.hkeys(hashKey);
 
-  if (commentIDs.length==0) {
+  if (commentIDs.length == 0) {
     return [];
   }
 
   // fetches the comment json data in the cache.
 
-
   const commentsFoundInCache = await CommentCache.mget(commentIDs);
 
-  
   const comments = commentsFoundInCache.map((comment) => {
     if (comment === null) {
       return null;
