@@ -1,10 +1,10 @@
 import EventCache from "../redisCache";
-import type { InterfaceEvent } from "../../models";
+import type { Types } from "mongoose";
 
 export async function deleteEventFromCache(
-  event: InterfaceEvent
+  eventId: Types.ObjectId
 ): Promise<void> {
-  const key = `event:${event._id}`;
+  const key = `event:${eventId}`;
 
   await EventCache.del(key);
 

@@ -37,17 +37,17 @@ export async function findEventsInCache(
               })
             : [],
 
-        createdAt: new Date(eventObj.createdAt),
-
         organization: Types.ObjectId(eventObj.organization),
 
         startDate: new Date(eventObj.startDate),
 
-        endDate: eventObj?.endDate ? new Date(eventObj.endDate) : null,
+        ...(eventObj?.endDate ? { endDate: new Date(eventObj.endDate) } : {}), // Conditional removal of endDate field
 
-        startTime: eventObj?.startTime ? new Date(eventObj.startTime) : null,
+        ...(eventObj?.startTime
+          ? { startTime: new Date(eventObj.startTime) }
+          : {}), // Conditional removal of startTime field
 
-        endTime: eventObj?.endTime ? new Date(eventObj.endTime) : null,
+        ...(eventObj?.endTime ? { endTime: new Date(eventObj.endTime) } : {}), // Conditional removal of endTime field
 
         creator: Types.ObjectId(eventObj.creator),
       };
