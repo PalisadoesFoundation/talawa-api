@@ -44,6 +44,7 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
       await cacheEvents([event]);
     }
   }
+
   if (event === null) {
     throw new errors.NotFoundError(
       requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),

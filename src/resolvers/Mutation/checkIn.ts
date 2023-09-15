@@ -7,7 +7,17 @@ import {
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Event, EventAttendee, CheckIn } from "../../models";
+import type {
+  InterfaceEvent} from "../../models";
+import {
+  User,
+  Event,
+  EventAttendee,
+  CheckIn
+} from "../../models";
+import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { cacheEvents } from "../../services/EventCache/cacheEvents";
+import { Types } from "mongoose";
 
 export const checkIn: MutationResolvers["checkIn"] = async (
   _parent,
@@ -26,9 +36,21 @@ export const checkIn: MutationResolvers["checkIn"] = async (
     );
   }
 
-  const currentEvent = await Event.findOne({
-    _id: args.data.eventId,
-  }).lean();
+  let currentEvent: InterfaceEvent | null;
+
+  const eventFoundInCache = await findEventsInCache([args.data.eventId]);
+
+  currentEvent = eventFoundInCache[0];
+
+  if (eventFoundInCache[0] === null) {
+    currentEvent = await Event.findOne({
+      _id: args.data.eventId,
+    }).lean();
+
+    if (currentEvent !== null) {
+      await cacheEvents([currentEvent]);
+    }
+  }
 
   if (currentEvent === null) {
     throw new errors.NotFoundError(
@@ -39,7 +61,8 @@ export const checkIn: MutationResolvers["checkIn"] = async (
   }
 
   const isUserEventAdmin = currentEvent.admins.some(
-    (admin) => admin.toString() === context.userId.toString()
+    (admin) =>
+      admin === context.userID || Types.ObjectId(admin).equals(context.userId)
   );
 
   if (!isUserEventAdmin && currentUser.userType !== "SUPERADMIN") {
