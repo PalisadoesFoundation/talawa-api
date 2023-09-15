@@ -7,14 +7,8 @@ import {
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import type {
-  InterfaceEvent} from "../../models";
-import {
-  User,
-  Event,
-  EventAttendee,
-  CheckIn
-} from "../../models";
+import type { InterfaceEvent } from "../../models";
+import { User, Event, EventAttendee, CheckIn } from "../../models";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { Types } from "mongoose";

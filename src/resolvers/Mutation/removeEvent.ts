@@ -1,14 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import type {
-  InterfaceEvent} from "../../models";
-import {
-  User,
-  Event,
-  EventProject,
-  Task,
-  TaskVolunteer
-} from "../../models";
+import type { InterfaceEvent } from "../../models";
+import { User, Event, EventProject, Task, TaskVolunteer } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
