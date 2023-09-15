@@ -40,6 +40,9 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     post = await Post.findOne({
       _id: args.id,
     }).lean();
+    if (post !== null) {
+      await cachePosts([post]);
+    }
   }
 
   // checks if there exists a post with _id === args.id

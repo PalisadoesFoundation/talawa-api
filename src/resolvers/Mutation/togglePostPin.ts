@@ -43,6 +43,9 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     post = await Post.findOne({
       _id: args.id,
     }).lean();
+    if (post !== null) {
+      await cachePosts([post]);
+    }
   }
 
   if (!post) {

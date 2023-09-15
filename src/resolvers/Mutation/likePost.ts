@@ -43,6 +43,10 @@ export const likePost: MutationResolvers["likePost"] = async (
     post = await Post.findOne({
       _id: args.id,
     }).lean();
+
+    if (post !== null) {
+      await cachePosts([post]);
+    }
   }
 
   // Checks whether post exists.

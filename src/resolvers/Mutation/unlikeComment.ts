@@ -41,6 +41,10 @@ export const unlikeComment: MutationResolvers["unlikeComment"] = async (
     comment = await Comment.findOne({
       _id: args.id,
     }).lean();
+
+    if (comment !== null) {
+      await cacheComments([comment]);
+    }
   }
 
   if (!comment) {

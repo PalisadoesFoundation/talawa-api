@@ -43,6 +43,10 @@ export const likeComment: MutationResolvers["likeComment"] = async (
     comment = await Comment.findOne({
       _id: args.id,
     }).lean();
+
+    if (comment !== null) {
+      await cacheComments([comment]);
+    }
   }
 
   // Checks whether comment exists.
