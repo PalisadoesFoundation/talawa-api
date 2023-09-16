@@ -1,4 +1,4 @@
-import { InterfaceOrganization, Post } from "../../models";
+import { Post } from "../../models";
 import { cachePosts } from "../../services/PostCache/cachePosts";
 import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
 import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
