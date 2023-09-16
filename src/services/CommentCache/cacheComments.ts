@@ -1,3 +1,4 @@
+import { logger } from "../../libraries";
 import type { InterfaceComment } from "../../models";
 import CommentCache from "../redisCache";
 
@@ -25,6 +26,6 @@ export async function cacheComments(
     // Execute the pipeline
     await pipeline.exec();
   } catch (error) {
-    console.log(error);
+    logger.info(error);
   }
 }

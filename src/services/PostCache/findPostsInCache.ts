@@ -1,6 +1,7 @@
 import PostCache from "../redisCache";
 import type { InterfacePost } from "../../models";
 import { Types } from "mongoose";
+import { logger } from "../../libraries";
 
 export async function findPostsInCache(
   ids: string[] | any[]
@@ -48,7 +49,7 @@ export async function findPostsInCache(
         creator: Types.ObjectId(postObj.creator),
       };
     } catch (parseError) {
-      console.error("Error parsing JSON:", parseError);
+      logger.info(`Error parsing JSON:${parseError}`);
     }
   });
 

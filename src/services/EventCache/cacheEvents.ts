@@ -1,3 +1,4 @@
+import { logger } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
 import EventCache from "../redisCache";
 
@@ -18,6 +19,6 @@ export async function cacheEvents(events: InterfaceEvent[]): Promise<void> {
     // Execute the pipeline
     await pipeline.exec();
   } catch (error) {
-    console.log(error);
+    logger.info(error);
   }
 }

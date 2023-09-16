@@ -1,3 +1,4 @@
+import { logger } from "../../libraries";
 import type { InterfacePost } from "../../models";
 import PostCache from "../redisCache";
 
@@ -18,6 +19,6 @@ export async function cachePosts(posts: InterfacePost[]): Promise<void> {
     // Execute the pipeline
     await pipeline.exec();
   } catch (error) {
-    console.log(error);
+    logger.info(`Error parsing JSON:${error}`);
   }
 }

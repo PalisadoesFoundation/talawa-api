@@ -7,6 +7,4 @@ export async function deleteEventFromCache(
   const key = `event:${eventId}`;
 
   await EventCache.del(key);
-
-  console.log("Event deleted from cache");
 }

@@ -1,4 +1,4 @@
-import OrganizationCache from "./OrganizationCache";
+import OrganizationCache from "../redisCache";
 import type { InterfaceOrganization } from "../../models";
 
 export async function deleteOrganizationFromCache(
@@ -7,6 +7,4 @@ export async function deleteOrganizationFromCache(
   const key = `organization:${organization._id}`;
 
   await OrganizationCache.del(key);
-
-  console.log("Organization deleted from cache");
 }

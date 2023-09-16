@@ -2,7 +2,7 @@ import { Redis } from "ioredis";
 import { REDIS_HOST, REDIS_PASSWORD, REDIS_PORT } from "../constants";
 
 const RedisCache = new Redis({
-  host: REDIS_HOST!,
+  host: REDIS_HOST,
   port: REDIS_PORT || 6379,
   password: REDIS_PASSWORD,
 });

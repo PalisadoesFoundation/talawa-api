@@ -1,6 +1,7 @@
 import EventCache from "../redisCache";
 import type { InterfaceEvent } from "../../models";
 import { Types } from "mongoose";
+import { logger } from "../../libraries";
 
 export async function findEventsInCache(
   ids: string[]
@@ -52,7 +53,7 @@ export async function findEventsInCache(
         creator: Types.ObjectId(eventObj.creator),
       };
     } catch (parseError) {
-      console.error("Error parsing JSON:", parseError);
+      logger.info(`Error parsing JSON:${parseError}`);
     }
   });
 

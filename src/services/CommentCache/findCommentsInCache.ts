@@ -1,6 +1,7 @@
 import CommentCache from "../redisCache";
 import type { InterfaceComment } from "../../models";
 import { Types } from "mongoose";
+import { logger } from "../../libraries";
 
 export async function findCommentsInCache(
   ids: string[]
@@ -44,7 +45,7 @@ export async function findCommentsInCache(
             : [],
       };
     } catch (parseError) {
-      console.error("Error parsing JSON:", parseError);
+      logger.info(`Error parsing JSON:${parseError}`);
     }
   });
 
