@@ -82,10 +82,6 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
         }
       );
 
-      if (updatedEvent !== null) {
-        await cacheEvents([updatedEvent]);
-      }
-
       const args: MutationAdminRemoveEventArgs = {
         eventId: testEvent?.id,
       };

@@ -30,13 +30,13 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
   args,
   context
 ) => {
-  let event: InterfaceEvent | null;
+  let event;
 
   const eventFoundInCache = await findEventsInCache([args.eventId]);
 
   event = eventFoundInCache[0];
 
-  if (eventFoundInCache[0] === null) {
+  if (event === null) {
     event = await Event.findOne({
       _id: args.eventId,
     }).lean();
