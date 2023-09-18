@@ -96,7 +96,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       members: [context.userId],
     });
 
-    await cacheOrganizations([createdOrganization.toObject()!]);
+    await cacheOrganizations([createdOrganization?.toObject()]);
 
     /*
     Adds createdOrganization._id to joinedOrganizations, createdOrganizations

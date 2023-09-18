@@ -53,7 +53,7 @@ export const createPost: MutationResolvers["createPost"] = async (
       _id: args.data.organizationId,
     }).lean();
 
-    await cacheOrganizations([organization!]);
+    if (organization !== null) await cacheOrganizations([organization]);
   }
 
   // Checks whether organization with _id == args.data.organizationId exists.
@@ -135,7 +135,7 @@ export const createPost: MutationResolvers["createPost"] = async (
       }
     );
 
-    await cacheOrganizations([updatedOrganizaiton!]);
+    if (updatedOrganizaiton) await cacheOrganizations([updatedOrganizaiton]);
   }
 
   // Returns createdPost.

@@ -53,7 +53,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
         _id: args.data.organizationUserBelongsToId,
       }).lean();
 
-      await cacheOrganizations([organization!]);
+      if (organization) await cacheOrganizations([organization]);
     }
 
     if (!organization) {

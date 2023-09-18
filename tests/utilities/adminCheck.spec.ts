@@ -49,7 +49,8 @@ describe("utilities -> adminCheck", () => {
         testUser?._id,
         testOrganization ?? ({} as InterfaceOrganization)
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof Error)) return;
       expect(error.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
       );
@@ -132,7 +133,8 @@ describe("utilities -> adminCheck", () => {
         new mongoose.Types.ObjectId(),
         testOrganization ?? ({} as InterfaceOrganization)
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof Error)) return;
       expect(error.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
       );

@@ -8,5 +8,5 @@ export const event: CheckInResolvers["event"] = async (parent) => {
     .populate("eventId")
     .lean();
 
-  return attendeeObject!.eventId;
+  return attendeeObject?.eventId;
 };

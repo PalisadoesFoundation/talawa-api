@@ -42,7 +42,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
       _id: args.data.organizationId,
     }).lean();
 
-    await cacheOrganizations([organization!]);
+    if (organization) await cacheOrganizations([organization]);
   }
 
   // Checks whether organization exists.

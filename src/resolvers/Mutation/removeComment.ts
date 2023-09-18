@@ -72,7 +72,7 @@ export const removeComment: MutationResolvers["removeComment"] = async (
   // Reduce the commentCount by 1 of the post with _id === commentPost.postId
   await Post.updateOne(
     {
-      _id: comment!.postId._id,
+      _id: comment?.postId._id,
     },
     {
       $inc: {

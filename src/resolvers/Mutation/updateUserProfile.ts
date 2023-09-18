@@ -77,9 +77,10 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
       new: true,
     }
   ).lean();
-  updatedUser!.image = updatedUser?.image
-    ? `${context.apiRootUrl}${updatedUser?.image}`
-    : null;
+  if (updatedUser)
+    updatedUser.image = updatedUser.image
+      ? `${context.apiRootUrl}${updatedUser?.image}`
+      : null;
 
   return updatedUser ?? ({} as InterfaceUser);
 };

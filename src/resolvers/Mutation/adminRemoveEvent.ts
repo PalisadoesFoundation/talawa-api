@@ -51,7 +51,7 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
       _id: event.organization,
     }).lean();
 
-    await cacheOrganizations([organization!]);
+    if (organization) await cacheOrganizations([organization]);
   }
 
   // Checks whether organization exists.

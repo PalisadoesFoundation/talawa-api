@@ -37,7 +37,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
         _id: args.organizationId,
       }).lean();
 
-      await cacheOrganizations([organization!]);
+      if (organization) await cacheOrganizations([organization]);
     }
 
     // Checks whether organization exists.

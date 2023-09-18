@@ -42,7 +42,7 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
 
   // Boolean to determine whether user is an admin of organization of the tag folder.
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) => organization.equals(existingTag?.organizationId)
+    (organization) => organization.equals(existingTag.organizationId)
   );
 
   // Checks whether currentUser can update the tag
@@ -58,7 +58,7 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
   }
 
   // Throw error if the new tag name is the same as the old one
-  if (existingTag!.name === args.input.name) {
+  if (existingTag.name === args.input.name) {
     throw new errors.ConflictError(
       requestContext.translate(NO_CHANGE_IN_TAG_NAME.MESSAGE),
       NO_CHANGE_IN_TAG_NAME.CODE,
@@ -69,8 +69,8 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
   // Check if another tag with the new name exists under the same parent tag
   const anotherTagExists = await OrganizationTagUser.exists({
     name: args.input.name,
-    parentTagId: existingTag!.parentTagId,
-    organizationId: existingTag!.organizationId,
+    parentTagId: existingTag.parentTagId,
+    organizationId: existingTag.organizationId,
   });
 
   if (anotherTagExists) {

@@ -52,7 +52,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
         _id: args.id,
       }).lean();
 
-      await cacheOrganizations([organization!]);
+      if (organization) await cacheOrganizations([organization]);
     }
 
     // Checks whether organization exists.

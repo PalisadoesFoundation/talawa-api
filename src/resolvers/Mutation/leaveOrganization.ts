@@ -39,7 +39,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
       _id: args.organizationId,
     }).lean();
 
-    await cacheOrganizations([organization!]);
+    if (organization) await cacheOrganizations([organization]);
   }
 
   // Checks whether organization exists.

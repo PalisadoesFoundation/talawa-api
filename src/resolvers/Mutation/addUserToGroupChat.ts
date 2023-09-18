@@ -51,7 +51,7 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
         _id: groupChat.organization,
       }).lean();
 
-      await cacheOrganizations([organization!]);
+      if (organization) await cacheOrganizations([organization]);
     }
 
     // Checks whether organization exists.

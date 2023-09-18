@@ -39,7 +39,7 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
       _id: args.data.organizationId,
     }).lean();
 
-    await cacheOrganizations([organization!]);
+    if (organization !== null) await cacheOrganizations([organization]);
   } else {
     organization = organizationFoundInCache[0];
   }
@@ -84,7 +84,7 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
   }
 
   // Checks whether the current user is a superadmin.
-  superAdminCheck(currentUser!);
+  if (currentUser) superAdminCheck(currentUser);
 
   // Removes user._id from admins list of the organization.
   const updatedOrganization = await Organization.findOneAndUpdate(
@@ -94,7 +94,7 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
     {
       $set: {
         admins: organization.admins.filter(
-          (admin) => admin.toString() !== user!._id.toString()
+          (admin) => admin.toString() !== user._id.toString()
         ),
       },
     },

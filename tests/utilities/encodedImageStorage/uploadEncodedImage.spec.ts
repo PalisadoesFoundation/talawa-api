@@ -5,6 +5,7 @@ import { uploadEncodedImage } from "../../../src/utilities/encodedImageStorage/u
 import { connect, disconnect } from "../../helpers/db";
 import path from "path";
 import { INVALID_FILE_TYPE } from "../../../src/constants";
+import { ApplicationError } from "../../../src/libraries/errors";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testPreviousImagePath: string;
@@ -31,7 +32,8 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
         "NAAAAKElEQVQ4jWNgYGD4Twzu6FhFFGYYNXDUwGFpIAk2E4dHDRw1cDgaCAASFOffhEIO" +
         "3gAAAABJRU5ErkJggg==";
       await uploadEncodedImage(img, null);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
       expect(error.message).toEqual(`Translated ${INVALID_FILE_TYPE.MESSAGE}`);
 
       expect(spy).toBeCalledWith(INVALID_FILE_TYPE.MESSAGE);
@@ -46,7 +48,7 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
         "3gAAAABJRU5ErkJggg==";
       const fileName = await uploadEncodedImage(img, null);
       expect(fileName).not.toBe(null);
-    } catch (error: any) {
+    } catch (error) {
       console.log(error);
     }
   });
@@ -60,7 +62,7 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
       const fileName = await uploadEncodedImage(img, null);
       expect(fileName).not.toBe(null);
       testPreviousImagePath = fileName;
-    } catch (error: any) {
+    } catch (error) {
       console.log(error);
     }
   });
@@ -78,7 +80,7 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
           if (err) throw err;
         });
       }
-    } catch (error: any) {
+    } catch (error) {
       console.log(error);
     }
   });
