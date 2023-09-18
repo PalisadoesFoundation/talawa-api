@@ -68,7 +68,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
   it(`throws NotFoundError if no organization exists with _id === event.organization
   for event with _id === args.eventId`, async () => {
     try {
-      const updatedEvent = await Event.findOneAndUpdate(
+      await Event.findOneAndUpdate(
         {
           _id: testEvent?._id,
         },

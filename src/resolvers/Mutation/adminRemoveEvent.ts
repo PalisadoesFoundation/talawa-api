@@ -1,7 +1,6 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
-import type { InterfaceEvent } from "../../models";
 import { User, Organization, Event } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
