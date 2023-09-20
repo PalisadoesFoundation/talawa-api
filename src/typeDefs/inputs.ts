@@ -375,7 +375,7 @@ export const inputs = gql`
   input PostUpdateInput {
     text: String
     title: String
-    imageUrl: URL
-    videoUrl: URL
+    imageUrl: String
+    videoUrl: String
   }
 `;
