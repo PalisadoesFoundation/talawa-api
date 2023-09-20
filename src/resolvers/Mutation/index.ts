@@ -2,6 +2,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { acceptAdmin } from "./acceptAdmin";
 import { acceptMembershipRequest } from "./acceptMembershipRequest";
 import { addEventAttendee } from "./addEventAttendee";
+import { addFeedback } from "./addFeedback";
 import { addLanguageTranslation } from "./addLanguageTranslation";
 import { addOrganizationImage } from "./addOrganizationImage";
 import { addUserImage } from "./addUserImage";
@@ -85,6 +86,7 @@ export const Mutation: MutationResolvers = {
   acceptAdmin,
   acceptMembershipRequest,
   addEventAttendee,
+  addFeedback,
   addLanguageTranslation,
   addOrganizationImage,
   addUserImage,

@@ -7,6 +7,7 @@ export * from "./Donation";
 export * from "./Event";
 export * from "./EventAttendee";
 export * from "./EventProject";
+export * from "./Feedback";
 export * from "./File";
 export * from "./Group";
 export * from "./GroupChat";

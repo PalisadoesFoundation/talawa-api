@@ -113,6 +113,12 @@ export const inputs = gql`
     eventId: ID!
   }
 
+  input FeedbackInput {
+    eventId: ID!
+    rating: Int!
+    review: String
+  }
+
   input ForgotPasswordData {
     userOtp: String!
     newPassword: String!
