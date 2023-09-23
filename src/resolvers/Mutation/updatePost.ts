@@ -14,7 +14,6 @@ import { cachePosts } from "../../services/PostCache/cachePosts";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
 
-
 export const updatePost: MutationResolvers["updatePost"] = async (
   _parent,
   args,
