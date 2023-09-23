@@ -2,7 +2,7 @@ import "dotenv/config";
 import { comments as commentsResolver } from "../../../src/resolvers/Post/comments";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
-import { Comment } from "../../../src/models";
+import { Comment, Post } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
@@ -20,6 +20,17 @@ beforeAll(async () => {
     creator: testUser!._id,
     postId: testPost!._id,
   });
+
+  await Post.findOneAndUpdate(
+    {
+      _id: testPost?._id,
+    },
+    {
+      $inc: {
+        commentCount: 1,
+      },
+    }
+  );
 });
 
 afterAll(async () => {
@@ -28,9 +39,28 @@ afterAll(async () => {
 
 describe("resolvers -> Post -> comments", () => {
   it(`returns the comment object for parent post`, async () => {
-    const parent = testPost!.toObject();
+    const parent = await Post.findById(testPost?._id);
 
-    const commentsPayload = await commentsResolver?.(parent, {}, {});
+    const commentsPayload = await commentsResolver?.(
+      parent!.toObject(),
+      {},
+      {}
+    );
+
+    const comments = await Comment.find({
+      postId: testPost!._id,
+    }).lean();
+
+    expect(commentsPayload).toEqual(comments);
+  });
+  it(`returns the comment object for parent post from cache`, async () => {
+    const parent = await Post.findById(testPost?._id);
+
+    const commentsPayload = await commentsResolver?.(
+      parent!.toObject(),
+      {},
+      {}
+    );
 
     const comments = await Comment.find({
       postId: testPost!._id,

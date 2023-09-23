@@ -9,6 +9,9 @@ import {
 } from "../../constants";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { cacheEvents } from "../../services/EventCache/cacheEvents";
+import { deleteEventFromCache } from "../../services/EventCache/deleteEventFromCache";
 /**
  * This function enables an admin to remove a event
  * @param _parent - parent of current request
@@ -26,9 +29,21 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
   args,
   context
 ) => {
-  const event = await Event.findOne({
-    _id: args.eventId,
-  }).lean();
+  let event;
+
+  const eventFoundInCache = await findEventsInCache([args.eventId]);
+
+  event = eventFoundInCache[0];
+
+  if (event === null) {
+    event = await Event.findOne({
+      _id: args.eventId,
+    }).lean();
+
+    if (event !== null) {
+      await cacheEvents([event]);
+    }
+  }
 
   // Checks whether event exists.
   if (!event) {
@@ -100,6 +115,8 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
   await Event.deleteOne({
     _id: event._id,
   });
+
+  await deleteEventFromCache(event._id);
 
   // Returns the deleted event.
   return event;

@@ -1,6 +1,7 @@
-import OrganizationCache from "./OrganizationCache";
+import OrganizationCache from "../redisCache";
 import type { InterfaceOrganization } from "../../models";
 import { Types } from "mongoose";
+import { logger } from "../../libraries";
 
 export async function findOrganizationsInCache(
   ids: string[]
@@ -83,7 +84,7 @@ export async function findOrganizationsInCache(
             : [],
       };
     } catch (parseError) {
-      console.error("Error parsing JSON:", parseError);
+      logger.info(`Error parsing JSON:${parseError}`);
     }
   });
 

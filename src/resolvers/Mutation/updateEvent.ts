@@ -1,5 +1,6 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
+import type { InterfaceEvent } from "../../models";
 import { User, Event } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
@@ -8,6 +9,9 @@ import {
   LENGTH_VALIDATION_ERROR,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
+import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { cacheEvents } from "../../services/EventCache/cacheEvents";
+import { Types } from "mongoose";
 /**
  * This function enables to update an event.
  * @param _parent - parent of current request
@@ -37,9 +41,21 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     );
   }
 
-  const event = await Event.findOne({
-    _id: args.id,
-  }).lean();
+  let event: InterfaceEvent | null;
+
+  const eventFoundInCache = await findEventsInCache([args.id]);
+
+  event = eventFoundInCache[0];
+
+  if (eventFoundInCache[0] === null) {
+    event = await Event.findOne({
+      _id: args.id,
+    }).lean();
+
+    if (event !== null) {
+      await cacheEvents([event]);
+    }
+  }
 
   // checks if there exists an event with _id === args.id
   if (!event) {
@@ -50,8 +66,9 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     );
   }
 
-  const currentUserIsEventAdmin = event.admins.some((admin) =>
-    admin.equals(context.userId)
+  const currentUserIsEventAdmin = event.admins.some(
+    (admin) =>
+      admin === context.userID || Types.ObjectId(admin).equals(context.userId)
   );
 
   // checks if current user is an admin of the event with _id === args.id
@@ -98,7 +115,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     );
   }
 
-  return await Event.findOneAndUpdate(
+  const updatedEvent = await Event.findOneAndUpdate(
     {
       _id: args.id,
     },
@@ -109,4 +126,10 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
       new: true,
     }
   ).lean();
+
+  if (updatedEvent !== null) {
+    await cacheEvents([updatedEvent]);
+  }
+
+  return updatedEvent!;
 };

@@ -6,7 +6,11 @@ import {
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
+import type { InterfaceEvent } from "../../models";
 import { User, Event, EventAttendee } from "../../models";
+import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { cacheEvents } from "../../services/EventCache/cacheEvents";
+import { Types } from "mongoose";
 
 export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
   _parent,
@@ -25,11 +29,23 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
     );
   }
 
-  const currentEvent = await Event.findOne({
-    _id: args.data.eventId,
-  }).lean();
+  let event: InterfaceEvent | null;
 
-  if (currentEvent === null) {
+  const eventFoundInCache = await findEventsInCache([args.data.eventId]);
+
+  event = eventFoundInCache[0];
+
+  if (eventFoundInCache[0] === null) {
+    event = await Event.findOne({
+      _id: args.data.eventId,
+    }).lean();
+
+    if (event !== null) {
+      await cacheEvents([event]);
+    }
+  }
+
+  if (event === null) {
     throw new errors.NotFoundError(
       requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
       EVENT_NOT_FOUND_ERROR.CODE,
@@ -37,8 +53,9 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
     );
   }
 
-  const isUserEventAdmin = currentEvent.admins.some(
-    (admin) => admin.toString() === context.userId.toString()
+  const isUserEventAdmin = event.admins.some(
+    (admin) =>
+      admin === context.userID || Types.ObjectId(admin).equals(context.userId)
   );
 
   if (!isUserEventAdmin && currentUser.userType !== "SUPERADMIN") {

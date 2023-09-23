@@ -20,6 +20,7 @@ import type {
 import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
 import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
+import { cacheEvents } from "../../../src/services/EventCache/cacheEvents";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -67,7 +68,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
   it(`throws NotFoundError if no organization exists with _id === event.organization
   for event with _id === args.eventId`, async () => {
     try {
-      await Event.updateOne(
+      await Event.findOneAndUpdate(
         {
           _id: testEvent?._id,
         },
@@ -75,6 +76,9 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
           $set: {
             organization: Types.ObjectId().toString(),
           },
+        },
+        {
+          new: true,
         }
       );
 
@@ -94,7 +98,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
 
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
-      await Event.updateOne(
+      const updatedEvent = await Event.findOneAndUpdate(
         {
           _id: testEvent?._id,
         },
@@ -102,9 +106,15 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
           $set: {
             organization: testOrganization?._id,
           },
+        },
+        {
+          new: true,
         }
       );
 
+      if (updatedEvent !== null) {
+        await cacheEvents([updatedEvent]);
+      }
       const args: MutationAdminRemoveEventArgs = {
         eventId: testEvent?.id,
       };

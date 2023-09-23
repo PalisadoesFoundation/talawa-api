@@ -12,7 +12,7 @@ import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEn
 import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
-
+import { cachePosts } from "../../services/PostCache/cachePosts";
 /**
  * This function enables to create a post.
  * @param _parent - parent of current request
@@ -131,6 +131,10 @@ export const createPost: MutationResolvers["createPost"] = async (
     imageUrl: uploadImageFileName,
     videoUrl: uploadVideoFileName,
   });
+
+  if (createdPost !== null) {
+    await cachePosts([createdPost]);
+  }
 
   if (args.data.pinned) {
     // Add the post to pinnedPosts of the organization

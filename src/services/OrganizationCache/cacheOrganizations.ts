@@ -1,5 +1,6 @@
+import { logger } from "../../libraries";
 import type { InterfaceOrganization } from "../../models";
-import OrganizationCache from "./OrganizationCache";
+import OrganizationCache from "../redisCache";
 
 // Function to store organizations in the cache using pipelining
 export async function cacheOrganizations(
@@ -20,6 +21,6 @@ export async function cacheOrganizations(
     // Execute the pipeline
     await pipeline.exec();
   } catch (error) {
-    console.log(error);
+    logger.info(error);
   }
 }

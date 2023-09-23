@@ -1,5 +1,6 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
+import type { InterfacePost } from "../../models";
 import { User, Post, Organization } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
@@ -7,6 +8,9 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { deletePostFromCache } from "../../services/PostCache/deletePostFromCache";
+import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
+import { cachePosts } from "../../services/PostCache/cachePosts";
 /**
  * This function enables to remove a post.
  * @param _parent - parent of current request
@@ -38,9 +42,20 @@ export const removePost: MutationResolvers["removePost"] = async (
     );
   }
 
-  const post = await Post.findOne({
-    _id: args.id,
-  }).lean();
+  let post: InterfacePost | null;
+
+  const postFoundInCache = await findPostsInCache([args.id]);
+
+  post = postFoundInCache[0];
+
+  if (postFoundInCache[0] === null) {
+    post = await Post.findOne({
+      _id: args.id,
+    }).lean();
+    if (post !== null) {
+      await cachePosts([post]);
+    }
+  }
 
   // Checks whether post exists.
   if (!post) {
@@ -55,7 +70,7 @@ export const removePost: MutationResolvers["removePost"] = async (
   const isCreator = post.creator.equals(context.userId);
   const isSuperAdmin = currentUser?.userType === "SUPERADMIN";
   const isAdminOfPostOrganization = currentUser?.adminFor.some((orgID) =>
-    orgID.equals(post.organization)
+    orgID.equals(post?.organization)
   );
 
   if (!isCreator && !isSuperAdmin && !isAdminOfPostOrganization) {
@@ -70,6 +85,8 @@ export const removePost: MutationResolvers["removePost"] = async (
   await Post.deleteOne({
     _id: args.id,
   });
+
+  await deletePostFromCache(args.id);
 
   // Removes the post from the organization, doesn't fail if the post wasn't pinned
   const updatedOrganization = await Organization.findOneAndUpdate(
