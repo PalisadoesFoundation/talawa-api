@@ -19,6 +19,6 @@ export async function cachePosts(posts: InterfacePost[]): Promise<void> {
     // Execute the pipeline
     await pipeline.exec();
   } catch (error) {
-    logger.info(`Error parsing JSON:${error}`);
+    logger.info(error);
   }
 }
