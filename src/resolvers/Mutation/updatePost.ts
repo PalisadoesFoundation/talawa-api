@@ -11,6 +11,9 @@ import {
 import { isValidString } from "../../libraries/validators/validateString";
 import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
 import { cachePosts } from "../../services/PostCache/cachePosts";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
+
 
 export const updatePost: MutationResolvers["updatePost"] = async (
   _parent,
@@ -62,6 +65,20 @@ export const updatePost: MutationResolvers["updatePost"] = async (
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
       USER_NOT_AUTHORIZED_ERROR.PARAM
+    );
+  }
+
+  if (args.data?.imageUrl && args.data?.imageUrl !== null) {
+    args.data.imageUrl = await uploadEncodedImage(
+      args.data.imageUrl,
+      post.imageUrl
+    );
+  }
+
+  if (args.data?.videoUrl && args.data?.videoUrl !== null) {
+    args.data.videoUrl = await uploadEncodedVideo(
+      args.data.videoUrl,
+      post.videoUrl
     );
   }
 

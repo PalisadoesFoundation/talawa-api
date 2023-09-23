@@ -8,6 +8,7 @@ import type { InterfaceDonation as InterfaceDonationModel } from '../models/Dona
 import type { InterfaceEvent as InterfaceEventModel } from '../models/Event';
 import type { InterfaceEventAttendee as InterfaceEventAttendeeModel } from '../models/EventAttendee';
 import type { InterfaceEventProject as InterfaceEventProjectModel } from '../models/EventProject';
+import type { InterfaceFeedback as InterfaceFeedbackModel } from '../models/Feedback';
 import type { InterfaceGroup as InterfaceGroupModel } from '../models/Group';
 import type { InterfaceGroupChat as InterfaceGroupChatModel } from '../models/GroupChat';
 import type { InterfaceGroupChatMessage as InterfaceGroupChatMessageModel } from '../models/GroupChatMessage';
@@ -81,6 +82,7 @@ export type CheckIn = {
   allotedRoom?: Maybe<Scalars['String']>;
   allotedSeat?: Maybe<Scalars['String']>;
   event: Event;
+  feedbackSubmitted: Scalars['Boolean'];
   time: Scalars['DateTime'];
   user: User;
 };
@@ -197,10 +199,12 @@ export type Event = {
   allDay: Scalars['Boolean'];
   attendees: Array<User>;
   attendeesCheckInStatus: Array<CheckInStatus>;
+  averageFeedbackScore?: Maybe<Scalars['Float']>;
   creator: User;
   description: Scalars['String'];
   endDate: Scalars['Date'];
   endTime?: Maybe<Scalars['Time']>;
+  feedback: Array<Feedback>;
   isPublic: Scalars['Boolean'];
   isRegisterable: Scalars['Boolean'];
   latitude?: Maybe<Scalars['Latitude']>;
@@ -313,6 +317,20 @@ export type ExtendSession = {
   __typename?: 'ExtendSession';
   accessToken: Scalars['String'];
   refreshToken: Scalars['String'];
+};
+
+export type Feedback = {
+  __typename?: 'Feedback';
+  _id: Scalars['ID'];
+  event: Event;
+  rating: Scalars['Int'];
+  review?: Maybe<Scalars['String']>;
+};
+
+export type FeedbackInput = {
+  eventId: Scalars['ID'];
+  rating: Scalars['Int'];
+  review?: InputMaybe<Scalars['String']>;
 };
 
 export type FieldError = {
@@ -462,6 +480,7 @@ export type Mutation = {
   acceptAdmin: Scalars['Boolean'];
   acceptMembershipRequest: MembershipRequest;
   addEventAttendee: User;
+  addFeedback: Feedback;
   addLanguageTranslation: Language;
   addOrganizationImage: Organization;
   addUserImage: User;
@@ -555,6 +574,11 @@ export type MutationAcceptMembershipRequestArgs = {
 
 export type MutationAddEventAttendeeArgs = {
   data: EventAttendeeInput;
+};
+
+
+export type MutationAddFeedbackArgs = {
+  data: FeedbackInput;
 };
 
 
@@ -1130,6 +1154,7 @@ export type Post = {
   likeCount?: Maybe<Scalars['Int']>;
   likedBy?: Maybe<Array<Maybe<User>>>;
   organization: Organization;
+  pinned?: Maybe<Scalars['Boolean']>;
   text: Scalars['String'];
   title?: Maybe<Scalars['String']>;
   videoUrl?: Maybe<Scalars['URL']>;
@@ -1174,10 +1199,10 @@ export type PostOrderByInput =
   | 'videoUrl_DESC';
 
 export type PostUpdateInput = {
-  imageUrl?: InputMaybe<Scalars['URL']>;
+  imageUrl?: InputMaybe<Scalars['String']>;
   text?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
-  videoUrl?: InputMaybe<Scalars['URL']>;
+  videoUrl?: InputMaybe<Scalars['String']>;
 };
 
 export type PostWhereInput = {
@@ -1215,6 +1240,7 @@ export type Query = {
   getDonationByOrgIdConnection: Array<Donation>;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
+  hasSubmittedFeedback?: Maybe<Scalars['Boolean']>;
   joinedOrganizations?: Maybe<Array<Maybe<Organization>>>;
   me: User;
   myLanguage?: Maybe<Scalars['String']>;
@@ -1288,6 +1314,12 @@ export type QueryGetDonationByOrgIdConnectionArgs = {
 
 export type QueryGetlanguageArgs = {
   lang_code: Scalars['String'];
+};
+
+
+export type QueryHasSubmittedFeedbackArgs = {
+  eventId: Scalars['ID'];
+  userId: Scalars['ID'];
 };
 
 
@@ -1802,6 +1834,8 @@ export type ResolversTypes = {
   EventProjectInput: EventProjectInput;
   EventWhereInput: EventWhereInput;
   ExtendSession: ResolverTypeWrapper<ExtendSession>;
+  Feedback: ResolverTypeWrapper<InterfaceFeedbackModel>;
+  FeedbackInput: FeedbackInput;
   FieldError: ResolversTypes['InvalidCursor'] | ResolversTypes['MaximumLengthError'] | ResolversTypes['MaximumValueError'] | ResolversTypes['MinimumLengthError'] | ResolversTypes['MinimumValueError'];
   Float: ResolverTypeWrapper<Scalars['Float']>;
   ForgotPasswordData: ForgotPasswordData;
@@ -1925,6 +1959,8 @@ export type ResolversParentTypes = {
   EventProjectInput: EventProjectInput;
   EventWhereInput: EventWhereInput;
   ExtendSession: ExtendSession;
+  Feedback: InterfaceFeedbackModel;
+  FeedbackInput: FeedbackInput;
   FieldError: ResolversParentTypes['InvalidCursor'] | ResolversParentTypes['MaximumLengthError'] | ResolversParentTypes['MaximumValueError'] | ResolversParentTypes['MinimumLengthError'] | ResolversParentTypes['MinimumValueError'];
   Float: Scalars['Float'];
   ForgotPasswordData: ForgotPasswordData;
@@ -2050,6 +2086,7 @@ export type CheckInResolvers<ContextType = any, ParentType extends ResolversPare
   allotedRoom?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   allotedSeat?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   event?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
+  feedbackSubmitted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   time?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -2143,10 +2180,12 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   allDay?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   attendees?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
   attendeesCheckInStatus?: Resolver<Array<ResolversTypes['CheckInStatus']>, ParentType, ContextType>;
+  averageFeedbackScore?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   endTime?: Resolver<Maybe<ResolversTypes['Time']>, ParentType, ContextType>;
+  feedback?: Resolver<Array<ResolversTypes['Feedback']>, ParentType, ContextType>;
   isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isRegisterable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   latitude?: Resolver<Maybe<ResolversTypes['Latitude']>, ParentType, ContextType>;
@@ -2175,6 +2214,14 @@ export type EventProjectResolvers<ContextType = any, ParentType extends Resolver
 export type ExtendSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExtendSession'] = ResolversParentTypes['ExtendSession']> = {
   accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type FeedbackResolvers<ContextType = any, ParentType extends ResolversParentTypes['Feedback'] = ResolversParentTypes['Feedback']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  event?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
+  rating?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  review?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2311,6 +2358,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   acceptAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationAcceptAdminArgs, 'id'>>;
   acceptMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationAcceptMembershipRequestArgs, 'membershipRequestId'>>;
   addEventAttendee?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddEventAttendeeArgs, 'data'>>;
+  addFeedback?: Resolver<ResolversTypes['Feedback'], ParentType, ContextType, RequireFields<MutationAddFeedbackArgs, 'data'>>;
   addLanguageTranslation?: Resolver<ResolversTypes['Language'], ParentType, ContextType, RequireFields<MutationAddLanguageTranslationArgs, 'data'>>;
   addOrganizationImage?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationAddOrganizationImageArgs, 'file' | 'organizationId'>>;
   addUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddUserImageArgs, 'file'>>;
@@ -2473,6 +2521,7 @@ export type PostResolvers<ContextType = any, ParentType extends ResolversParentT
   likeCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   likedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
+  pinned?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   videoUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
@@ -2499,6 +2548,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getDonationByOrgIdConnection?: Resolver<Array<ResolversTypes['Donation']>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdConnectionArgs, 'orgId'>>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
+  hasSubmittedFeedback?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryHasSubmittedFeedbackArgs, 'eventId' | 'userId'>>;
   joinedOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType, Partial<QueryJoinedOrganizationsArgs>>;
   me?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   myLanguage?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -2667,6 +2717,7 @@ export type Resolvers<ContextType = any> = {
   Event?: EventResolvers<ContextType>;
   EventProject?: EventProjectResolvers<ContextType>;
   ExtendSession?: ExtendSessionResolvers<ContextType>;
+  Feedback?: FeedbackResolvers<ContextType>;
   FieldError?: FieldErrorResolvers<ContextType>;
   Group?: GroupResolvers<ContextType>;
   GroupChat?: GroupChatResolvers<ContextType>;
