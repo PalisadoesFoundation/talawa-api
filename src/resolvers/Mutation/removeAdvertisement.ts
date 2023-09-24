@@ -2,7 +2,6 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { Advertisement } from "../../models";
 import { ADVERTISEMENT_NOT_FOUND_ERROR } from "../../constants";
-import { ObjectId } from "mongoose";
 
 // @ts-ignore
 export const removeAdvertisement: MutationResolvers["removeAdvertisement"] =
