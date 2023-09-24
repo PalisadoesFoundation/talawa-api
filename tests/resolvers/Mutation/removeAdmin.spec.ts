@@ -29,6 +29,7 @@ import {
   createTestUser,
   createTestUserAndOrganization,
 } from "../../helpers/userAndOrg";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUserRemoved: TestUserType;
@@ -117,7 +118,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
-      await Organization.updateOne(
+      const updatedOrganization = await Organization.findOneAndUpdate(
         {
           _id: testOrganization?._id,
         },
@@ -125,8 +126,15 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
           $set: {
             admins: [],
           },
+        },
+        {
+          new: true,
         }
       );
+
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
 
       const args: MutationRemoveAdminArgs = {
         data: {
@@ -159,7 +167,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
-      await Organization.updateOne(
+      const updatedOrganization = await Organization.findOneAndUpdate(
         {
           _id: testOrganization?._id,
         },
@@ -170,8 +178,15 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
           $set: {
             creator: Types.ObjectId().toString(),
           },
+        },
+        {
+          new: true,
         }
       );
+
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
 
       const args: MutationRemoveAdminArgs = {
         data: {

@@ -1,4 +1,6 @@
 import { Organization } from "../../models";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import type { DirectChatResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This resolver function will fetch and return the Organization for the Direct Chat from database.
@@ -8,7 +10,19 @@ import type { DirectChatResolvers } from "../../types/generatedGraphQLTypes";
 export const organization: DirectChatResolvers["organization"] = async (
   parent
 ) => {
-  return await Organization.findOne({
+  const organizationFoundInCache = await findOrganizationsInCache([
+    parent.organization,
+  ]);
+
+  if (!organizationFoundInCache.includes(null)) {
+    return organizationFoundInCache[0]!;
+  }
+
+  const organization = await Organization.findOne({
     _id: parent.organization,
   }).lean();
+
+  cacheOrganizations([organization!]);
+
+  return organization!;
 };

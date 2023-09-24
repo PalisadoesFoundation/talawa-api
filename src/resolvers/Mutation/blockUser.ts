@@ -9,6 +9,9 @@ import {
   USER_BLOCKING_SELF,
 } from "../../constants";
 import { Organization, User } from "../../models";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { Types } from "mongoose";
 /**
  * This function enables blocking a user.
  * @param _parent - parent of current request
@@ -26,9 +29,21 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   args,
   context
 ) => {
-  const organization = await Organization.findOne({
-    _id: args.organizationId,
-  }).lean();
+  let organization;
+
+  const organizationFoundInCache = await findOrganizationsInCache([
+    args.organizationId,
+  ]);
+
+  organization = organizationFoundInCache[0];
+
+  if (organizationFoundInCache.includes(null)) {
+    organization = await Organization.findOne({
+      _id: args.organizationId,
+    }).lean();
+
+    await cacheOrganizations([organization!]);
+  }
 
   // Checks whether organization exists.
   if (!organization) {
@@ -53,8 +68,9 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   }
 
   // Check whether the user - args.userId is a member of the organization before blocking
-  const userIsOrganizationMember = organization?.members.some((member) =>
-    member.equals(args.userId)
+  const userIsOrganizationMember = organization?.members.some(
+    (member) =>
+      member === args.userId || Types.ObjectId(member).equals(args.userId)
   );
 
   if (!userIsOrganizationMember) {
@@ -77,7 +93,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   await adminCheck(context.userId, organization);
 
   const userIsBlocked = organization.blockedUsers.some((blockedUser) =>
-    blockedUser.equals(args.userId)
+    Types.ObjectId(blockedUser).equals(args.userId)
   );
 
   // Checks whether user with _id === args.userId is already blocked from organization.
@@ -90,7 +106,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   }
 
   // Adds args.userId to blockedUsers list on organization's document.
-  await Organization.updateOne(
+  const updatedOrganization = await Organization.findOneAndUpdate(
     {
       _id: organization._id,
     },
@@ -98,8 +114,15 @@ export const blockUser: MutationResolvers["blockUser"] = async (
       $push: {
         blockedUsers: args.userId,
       },
+    },
+    {
+      new: true,
     }
   );
+
+  if (updatedOrganization !== null) {
+    await cacheOrganizations([updatedOrganization]);
+  }
 
   /*
   Adds organization._id to organizationsBlockedBy list on user's document

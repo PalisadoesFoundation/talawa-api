@@ -1,11 +1,14 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
+import type { InterfaceEvent } from "../../models";
 import { User, Event, EventAttendee } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
   USER_ALREADY_UNREGISTERED_ERROR,
 } from "../../constants";
+import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { cacheEvents } from "../../services/EventCache/cacheEvents";
 
 /**
  * This function enables a user to unregister from an event.
@@ -34,10 +37,21 @@ export const unregisterForEventByUser: MutationResolvers["unregisterForEventByUs
       );
     }
 
-    const event = await Event.findOne({
-      _id: args.id,
-    }).lean();
+    let event: InterfaceEvent | null;
 
+    const eventFoundInCache = await findEventsInCache([args.id]);
+
+    event = eventFoundInCache[0];
+
+    if (eventFoundInCache[0] === null) {
+      event = await Event.findOne({
+        _id: args.id,
+      }).lean();
+
+      if (event !== null) {
+        await cacheEvents([event]);
+      }
+    }
     // checks if there exists an event with _id === args.id
     if (!event) {
       throw new errors.NotFoundError(

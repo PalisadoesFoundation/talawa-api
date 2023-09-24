@@ -18,6 +18,7 @@ import type {
 } from "../../helpers/userAndOrg";
 import type { TestGroupChatType } from "../../helpers/groupChat";
 import { createTestGroupChatMessage } from "../../helpers/groupChat";
+import { deleteOrganizationFromCache } from "../../../src/services/OrganizationCache/deleteOrganizationFromCache";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -192,9 +193,11 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => message);
 
-    await Organization.findOneAndRemove({
+    const deletedOrgaization = await Organization.findOneAndRemove({
       _id: testOrganization?._id,
     });
+
+    await deleteOrganizationFromCache(deletedOrgaization!);
 
     try {
       const args: MutationRemoveUserFromGroupChatArgs = {

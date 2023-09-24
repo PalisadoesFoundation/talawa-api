@@ -21,6 +21,7 @@
     * [Event](#event)
     * [EventProject](#eventproject)
     * [ExtendSession](#extendsession)
+    * [Feedback](#feedback)
     * [Group](#group)
     * [GroupChat](#groupchat)
     * [GroupChatMessage](#groupchatmessage)
@@ -67,6 +68,7 @@
     * [EventInput](#eventinput)
     * [EventProjectInput](#eventprojectinput)
     * [EventWhereInput](#eventwhereinput)
+    * [FeedbackInput](#feedbackinput)
     * [ForgotPasswordData](#forgotpassworddata)
     * [LanguageInput](#languageinput)
     * [LoginInput](#logininput)
@@ -286,6 +288,21 @@
 <tr>
 <td colspan="2" valign="top"><strong>getPlugins</strong></td>
 <td valign="top">[<a href="#plugin">Plugin</a>]</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>hasSubmittedFeedback</strong></td>
+<td valign="top"><a href="#boolean">Boolean</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">userId</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">eventId</td>
+<td valign="top"><a href="#id">ID</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -570,6 +587,16 @@
 <tr>
 <td colspan="2" align="right" valign="top">data</td>
 <td valign="top"><a href="#eventattendeeinput">EventAttendeeInput</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>addFeedback</strong></td>
+<td valign="top"><a href="#feedback">Feedback</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">data</td>
+<td valign="top"><a href="#feedbackinput">FeedbackInput</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -1664,6 +1691,11 @@
 <td valign="top"><a href="#event">Event</a>!</td>
 <td></td>
 </tr>
+<tr>
+<td colspan="2" valign="top"><strong>feedbackSubmitted</strong></td>
+<td valign="top"><a href="#boolean">Boolean</a>!</td>
+<td></td>
+</tr>
 </tbody>
 </table>
 
@@ -2064,6 +2096,16 @@
 <td valign="top">[<a href="#eventproject">EventProject</a>]</td>
 <td></td>
 </tr>
+<tr>
+<td colspan="2" valign="top"><strong>feedback</strong></td>
+<td valign="top">[<a href="#feedback">Feedback</a>!]!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>averageFeedbackScore</strong></td>
+<td valign="top"><a href="#float">Float</a></td>
+<td></td>
+</tr>
 </tbody>
 </table>
 
@@ -2127,6 +2169,41 @@
 <tr>
 <td colspan="2" valign="top"><strong>refreshToken</strong></td>
 <td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### Feedback
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>_id</strong></td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>event</strong></td>
+<td valign="top"><a href="#event">Event</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>rating</strong></td>
+<td valign="top"><a href="#int">Int</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>review</strong></td>
+<td valign="top"><a href="#string">String</a></td>
 <td></td>
 </tr>
 </tbody>
@@ -3032,6 +3109,11 @@ When paginating backwards, are there more items?
 <tr>
 <td colspan="2" valign="top"><strong>commentCount</strong></td>
 <td valign="top"><a href="#int">Int</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>pinned</strong></td>
+<td valign="top"><a href="#boolean">Boolean</a></td>
 <td></td>
 </tr>
 </tbody>
@@ -4100,6 +4182,35 @@ A list of edges.
 </tbody>
 </table>
 
+### FeedbackInput
+
+<table>
+<thead>
+<tr>
+<th colspan="2" align="left">Field</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>eventId</strong></td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>rating</strong></td>
+<td valign="top"><a href="#int">Int</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>review</strong></td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
 ### ForgotPasswordData
 
 <table>
@@ -4558,12 +4669,12 @@ A list of edges.
 </tr>
 <tr>
 <td colspan="2" valign="top"><strong>imageUrl</strong></td>
-<td valign="top"><a href="#url">URL</a></td>
+<td valign="top"><a href="#string">String</a></td>
 <td></td>
 </tr>
 <tr>
 <td colspan="2" valign="top"><strong>videoUrl</strong></td>
-<td valign="top"><a href="#url">URL</a></td>
+<td valign="top"><a href="#string">String</a></td>
 <td></td>
 </tr>
 </tbody>

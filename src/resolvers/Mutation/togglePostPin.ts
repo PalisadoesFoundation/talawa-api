@@ -5,7 +5,13 @@ import {
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
+import type { InterfacePost } from "../../models";
 import { User, Post, Organization } from "../../models";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { Types } from "mongoose";
+import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
+import { cachePosts } from "../../services/PostCache/cachePosts";
 
 export const togglePostPin: MutationResolvers["togglePostPin"] = async (
   _parent,
@@ -27,9 +33,20 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
   }
 
   // Check if the post object exists
-  const post = await Post.findOne({
-    _id: args.id,
-  }).lean();
+  let post: InterfacePost | null;
+
+  const postFoundInCache = await findPostsInCache([args.id]);
+
+  post = postFoundInCache[0];
+
+  if (postFoundInCache[0] === null) {
+    post = await Post.findOne({
+      _id: args.id,
+    }).lean();
+    if (post !== null) {
+      await cachePosts([post]);
+    }
+  }
 
   if (!post) {
     throw new errors.NotFoundError(
@@ -56,16 +73,27 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
   }
 
   // Toggle the post's status for the organization
-  const organization = await Organization.findOne({
-    _id: post.organization,
-  }).lean();
+  let organization;
 
+  const organizationFoundInCache = await findOrganizationsInCache([
+    post.organization,
+  ]);
+
+  organization = organizationFoundInCache[0];
+
+  if (organizationFoundInCache[0] == null) {
+    organization = await Organization.findOne({
+      _id: post.organization,
+    }).lean();
+
+    await cacheOrganizations([organization!]);
+  }
   const currentPostIsPinned = organization?.pinnedPosts.some((postID) =>
-    postID.equals(args.id)
+    Types.ObjectId(postID).equals(args.id)
   );
 
   if (currentPostIsPinned) {
-    await Organization.updateOne(
+    const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: post.organization,
       },
@@ -78,7 +106,12 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
         new: true,
       }
     );
-    return await Post.findOneAndUpdate(
+
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
+
+    const updatedPost = await Post.findOneAndUpdate(
       {
         _id: args.id,
       },
@@ -88,8 +121,14 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
         },
       }
     ).lean();
+
+    if (updatedPost !== null) {
+      await cachePosts([updatedPost]);
+    }
+
+    return updatedPost!;
   } else {
-    await Organization.updateOne(
+    const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: post.organization,
       },
@@ -102,7 +141,11 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
         new: true,
       }
     );
-    return await Post.findOneAndUpdate(
+
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
+    const updatedPost = await Post.findOneAndUpdate(
       {
         _id: args.id,
       },
@@ -112,5 +155,11 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
         },
       }
     ).lean();
+
+    if (updatedPost !== null) {
+      await cachePosts([updatedPost]);
+    }
+
+    return updatedPost!;
   }
 };

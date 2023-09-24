@@ -11,6 +11,8 @@ export const mutations = gql`
 
     addEventAttendee(data: EventAttendeeInput!): User! @auth
 
+    addFeedback(data: FeedbackInput!): Feedback! @auth
+
     addLanguageTranslation(data: LanguageInput!): Language! @auth
 
     addOrganizationImage(file: String!, organizationId: String!): Organization!

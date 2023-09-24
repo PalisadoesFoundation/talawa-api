@@ -8,6 +8,9 @@ import {
   ORGANIZATION_MEMBER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { Types } from "mongoose";
 /**
  * This function enables to create an admin for an organization.
  * @param _parent - parent of current request
@@ -26,9 +29,21 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   args,
   context
 ) => {
-  const organization = await Organization.findOne({
-    _id: args.data.organizationId,
-  }).lean();
+  let organization;
+
+  const organizationFoundInCache = await findOrganizationsInCache([
+    args.data.organizationId,
+  ]);
+
+  organization = organizationFoundInCache[0];
+
+  if (organizationFoundInCache.includes(null)) {
+    organization = await Organization.findOne({
+      _id: args.data.organizationId,
+    }).lean();
+
+    await cacheOrganizations([organization!]);
+  }
 
   // Checks whether organization exists.
   if (!organization) {
@@ -65,7 +80,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   }
 
   const userIsOrganizationMember = organization.members.some((member) =>
-    member.equals(args.data.userId)
+    Types.ObjectId(member).equals(args.data.userId)
   );
 
   // Checks whether user with _id === args.data.userId is not a member of organization.
@@ -78,7 +93,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   }
 
   const userIsOrganizationAdmin = organization.admins.some((admin) =>
-    admin.equals(args.data.userId)
+    Types.ObjectId(admin).equals(args.data.userId)
   );
 
   // Checks whether user with _id === args.data.userId is already an admin of organization.
@@ -91,7 +106,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   }
 
   // Adds args.data.userId to admins list of organization's document.
-  await Organization.updateOne(
+  const updatedOrganization = await Organization.findOneAndUpdate(
     {
       _id: organization._id,
     },
@@ -99,8 +114,15 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
       $push: {
         admins: args.data.userId,
       },
+    },
+    {
+      new: true,
     }
   );
+
+  if (updatedOrganization !== null) {
+    await cacheOrganizations([updatedOrganization]);
+  }
 
   /*
   Adds organization._id to adminFor list on user's document with _id === args.data.userId

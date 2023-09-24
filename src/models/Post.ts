@@ -13,7 +13,7 @@ export interface InterfacePost {
   status: string;
   createdAt: Date;
   imageUrl: string | undefined | null;
-  videoUrl: string | undefined;
+  videoUrl: string | undefined | null;
   creator: PopulatedDoc<InterfaceUser & Document>;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   likedBy: PopulatedDoc<InterfaceUser & Document>[];

@@ -2,6 +2,8 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Post } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import { POST_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
+import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
+import { cachePosts } from "../../services/PostCache/cachePosts";
 /**
  * This function enables to like a post.
  * @param _parent - parent of current request
@@ -31,9 +33,21 @@ export const likePost: MutationResolvers["likePost"] = async (
     );
   }
 
-  const post = await Post.findOne({
-    _id: args.id,
-  }).lean();
+  let post;
+
+  const postFoundInCache = await findPostsInCache([args.id]);
+
+  post = postFoundInCache[0];
+
+  if (postFoundInCache.includes(null)) {
+    post = await Post.findOne({
+      _id: args.id,
+    }).lean();
+
+    if (post !== null) {
+      await cachePosts([post]);
+    }
+  }
 
   // Checks whether post exists.
   if (!post) {
@@ -54,7 +68,7 @@ export const likePost: MutationResolvers["likePost"] = async (
     Adds context.userId to likedBy list and increases likeCount field by 1
     of post's document and returns the updated post.
     */
-    return await Post.findOneAndUpdate(
+    const updatedPost = await Post.findOneAndUpdate(
       {
         _id: args.id,
       },
@@ -70,6 +84,12 @@ export const likePost: MutationResolvers["likePost"] = async (
         new: true,
       }
     ).lean();
+
+    if (updatedPost !== null) {
+      await cachePosts([updatedPost]);
+    }
+
+    return updatedPost;
   }
 
   // Returns the post without liking.

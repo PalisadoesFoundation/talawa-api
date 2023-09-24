@@ -31,6 +31,13 @@ export const EVENT_PROJECT_NOT_FOUND_ERROR = {
   MESSAGE: "eventProject.notFound",
   PARAM: "eventProject",
 };
+
+export const FEEDBACK_ALREADY_SUBMITTED = {
+  MESSAGE: "The user has already submitted a feedback for this event.",
+  CODE: "feedback.alreadySubmitted",
+  PARAM: "feedback.alreadySubmitted",
+};
+
 export const INVALID_OTP = "Invalid OTP";
 
 export const IN_PRODUCTION = process.env.NODE_ENV === "production";
@@ -144,6 +151,12 @@ export const USER_NOT_REGISTERED_FOR_EVENT = {
   MESSAGE: "The user is not registered for the event",
   CODE: "user.notRegistered",
   PARAM: "user.notRegistered",
+};
+
+export const USER_NOT_CHECKED_IN = {
+  MESSAGE: "The user did not check in for the event.",
+  CODE: "user.notCheckedIn",
+  PARAM: "user.notCheckedIn",
 };
 
 export const USER_NOT_ORGANIZATION_ADMIN = {
@@ -393,3 +406,7 @@ export const SMTP_OPTIONS = {
   SMTP_PORT: process.env.SMTP_PORT,
   SMTP_SSL_TLS: process.env.SMTP_SSL_TLS,
 };
+
+export const REDIS_HOST = process.env.REDIS_HOST!;
+export const REDIS_PORT = Number(process.env.REDIS_PORT);
+export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;

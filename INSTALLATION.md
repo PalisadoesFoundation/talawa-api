@@ -15,6 +15,9 @@ This document provides instructions on how to set up and start a running instanc
   - [Install the Required Packages](#install-the-required-packages)
   - [Install MongoDB](#install-mongodb)
     - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
+  - [Install Redis](#install-redis)
+    - [Setting Up Redis](#setting-up-redis )
+    - [Benchmark For Performance Benefits](#performance-benefits)
 - [Configuration](#configuration)
   - [The .env Configuration File](#the-env-configuration-file)
   - [Generating Token Secrets](#generating-token-secrets)
@@ -26,6 +29,9 @@ This document provides instructions on how to set up and start a running instanc
     - [Setting up the MONGODB\_URL in .env file](#setting-up-the-mongodb_url-in-env-file)
     - [Using the CLI to get the MONGODB\_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
     - [Using Microsoft Windows to get the MONGODB\_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
+  - [Configuring Redis](#configuring-redis)
+    - [For Local Setup (Linux and WSL)](#for-local-setup-linux-and-wsl)
+    - [For Remote Setup (Redis Cloud)](#for-remote-setup-redis-cloud)
   - [Setting up .env LAST\_RESORT\_SUPERADMIN\_EMAIL parameter](#setting-up-env-last_resort_superadmin_email-parameter)
   - [Configuring Google ReCAPTCHA](#configuring-google-recaptcha)
     - [Setting up RECAPTCHA\_SECRET\_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
@@ -109,8 +115,84 @@ Talawa-api makes use of `MongoDB` for its database needs. We make use of `mongoo
 We're listing some common approaches to set up a running instance of MongoDB database:
 
 1. `System native database approach:` (Highly Recommended) You can install MongoDB natively on your system and create/connect to the database. Follow the setup guide on official [MongoDB Docs](https://www.mongodb.com/docs/manual/administration/install-community/) for your respective operating system.
-1. `Hosted database approach:` MongoDB Atlas is the easiest way to get a running instance of mongodb database. It is a hosted(remote) mongodb database provided by mongodb itself. If you're a beginner and don't want too much of a hassle setting up the database you should use this approach but you should eventually switch to local instance. Follow the setup guide on official [MongoDB Atlas Docs](https://www.mongodb.com/docs/atlas/getting-started/). Mongodb Atlas is just one of the many hosted database solutions. Some issues that you might face while using this are slower tests, slower API requests, dependence on Internet connection etc.
-1. `Docker container approach:` If you are fluent in working with docker you should use this approach. Docker is a great way to manage and run applications without natively installing anything on your system. With this you can set up the mongodb database inside a docker container and manage it as per your will. Follow this [video tutorial](https://www.youtube.com/watch?v=uklyCSKQ1Po) to set up a mongodb docker container. You can learn about docker from [Docker docs](https://docs.docker.com/).
+2. `Hosted database approach:` MongoDB Atlas is the easiest way to get a running instance of mongodb database. It is a hosted(remote) mongodb database provided by mongodb itself. If you're a beginner and don't want too much of a hassle setting up the database you should use this approach but you should eventually switch to local instance. Follow the setup guide on official [MongoDB Atlas Docs](https://www.mongodb.com/docs/atlas/getting-started/). Mongodb Atlas is just one of the many hosted database solutions. Some issues that you might face while using this are slower tests, slower API requests, dependence on Internet connection etc.
+3. `Docker container approach:` If you are fluent in working with docker you should use this approach. Docker is a great way to manage and run applications without natively installing anything on your system. With this you can set up the mongodb database inside a docker container and manage it as per your will. Follow this [video tutorial](https://www.youtube.com/watch?v=uklyCSKQ1Po) to set up a mongodb docker container. You can learn about docker from [Docker docs](https://docs.docker.com/).
+
+## Install Redis 
+
+Talawa-api makes use of `Redis` for caching frequently accessed data items in the primary database. We make use of `ioredis` to interact with the `redis-server` from within the code. The main Idea is the in production this will act as an in-memory cache. So it is recommended that you set it up locally. However for simplicity purposes, a section to accomodate for setting Redis up using a remote instance like Redis Cloud has been added. Please note that this is not recommended since the remote connection takes a considerable amount of time to be considered as a cache to improve application performance.
+
+### Performance Benefits 
+![Screenshot from 2023-08-26 18-37-34](https://github.com/kb-0311/talawa-api/assets/96020697/e8b99d5c-6abf-4e71-999c-f8ae1e84de45)
+![Screenshot from 2023-08-26 18-37-48](https://github.com/kb-0311/talawa-api/assets/96020697/55d1388d-cc15-4d5e-931d-6befa0fa7a10)
+
+
+### Setting Up Redis 
+
+
+1. `For Linux Users`:
+
+   If you are using a Linux distribution, follow these steps to set up Redis:
+
+   - **Step 1**: Open a terminal.
+
+   - **Step 2**: Update the package list:
+     ```bash
+     sudo apt update
+     ```
+
+   - **Step 3**: Install Redis Server:
+     ```bash
+     sudo apt install redis-server
+     ```
+
+   - **Step 4**: Start the Redis service:
+     ```bash
+     sudo service redis-server start
+     ```
+
+   - **Step 5**: Test if Redis is running by running the Redis CLI:
+     ```bash
+     redis-cli
+     ```
+
+2. `For Windows Users using WSL`:
+
+If you'd rather not deal with the hassle of setting up WSL on your computer, there's another option: you can use a hosted database like Redis Cloud. More details about this are provided below, mainly for when you're working on development tasks. But it's a good idea to set up Redis on your own computer if you can. Right now, Redis isn't supported directly on Windows – you can only install and use it through WSL. If you're a Windows user and want to get Redis working using the Windows Subsystem for Linux (WSL), just follow these steps:
+
+   - **Step 1**: Install WSL (Windows Subsystem for Linux) following the official [WSL Installation Guide](https://docs.microsoft.com/en-us/windows/wsl/install).
+
+   - **Step 2**: Open a WSL terminal.
+
+   - **Step 3**: Update the package list:
+     ```bash
+     sudo apt update
+     ```
+
+   - **Step 4**: Install Redis Server:
+     ```bash
+     sudo apt install redis-server
+     ```
+
+   - **Step 5**: Start the Redis service:
+     ```bash
+     sudo service redis-server start
+     ```
+
+   - **Step 6**: Test if Redis is running by running the Redis CLI:
+     ```bash
+     redis-cli
+     ```
+3. **Connecting to Redis Cloud**:
+
+   To connect to a Redis cloud service, you will need the host and port information provided by your cloud service provider. Use these values in your application to establish a connection. Typically, the host and port strings are provided in the following format:
+
+   - Host: `your-redis-host.redisprovider.com`
+   - Port: `6379` (default Redis port)
+
+   Replace `your-redis-host.redisprovider.com` with the actual host provided by your Redis cloud service. You can then use these values in your application's configuration to connect to your Redis cloud instance.
+
+Remember to adjust any paths or details as needed for your specific environment. After following these steps, you will have successfully set up Redis.
 
 # Configuration
 It's important to configure Talawa-Admin. 
@@ -142,6 +224,10 @@ This `.env` file must be populated with the following environment variables for 
 | LAST_RESORT_SUPERADMIN_EMAIL | Used for promoting the default super admin             |
 | COLORIZE_LOGS                | Used for colorized log formats in console              |
 | LOG_LEVEL                    | Used for setting the logging level                     |
+| REDIS HOST                   | Used for connecting talawa-api to the redis instance   |
+| REDIS_PORT                   | Specifies the port of the active redis-server          |
+| REDIS_PASSWORD(optional)     | Used for authenticating the connection request to      |
+|                              | a hosted redis-server                                  | 
 
 The following sections will show you how to configure each of these parameters.
 
@@ -242,6 +328,29 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 
 ```
 
+## Configuring Redis
+
+Here's the procedure to set up Redis.
+
+In the `.env` file, you should find three variables: `REDIS_HOST`, `REDIS_PORT`, and `REDIS_PASSWORD`. These environment variables will contain the necessary information for your codebase to connect to a running `redis-server`.
+
+### For Local Setup (Linux and WSL) 
+In both scenarios (Linux or WSL post-installation), the variable values should be configured as follows:
+
+1. `REDIS_HOST` = localhost
+2. `REDIS_PORT` = 6379 **Note**: This default port is used by the `redis-server`. However, if your `redis-server` operates on a different port, you must provide that port number.
+3. `REDIS_PASSWORD` should be left empty, as passwords are unnecessary for local connections.
+
+### For Remote Setup (Redis Cloud) 
+To begin, you must register for a free account on Redis Cloud. Following this step, you can proceed by selecting a database from the free tier, which comes with a 30MB data storage limit. Once completed, you can then access your Database by navigating to the `Databases` section. Here, you will find the option to view the overall settings of your free instance.
+
+![Screenshot from 2023-08-18 12-08-35](https://github.com/kb-0311/talawa-api/assets/96020697/86ef137d-5a52-47fc-9075-3ded42b16aaf)
+
+Here are the configuration details:
+
+1. `REDIS_HOST` = The `Public endpoint` assigned to your Database, excluding the `.com`. It will resemble something like `redis-13354.c169.us-east-1-1.ec2.cloud.redislabs.com`. The numerical value following this address is the port number.
+2. `REDIS_PORT` = The number provided in the `Public Endpoint` after the colon (`:`), for instance: `13354`.
+3. `REDIS_PASSWORD` = The `Default user password` located in the Security Section.
 ## Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter
 
 The user with the email address set with this parameter will automatically be elevated to Super Admin status on registration. 

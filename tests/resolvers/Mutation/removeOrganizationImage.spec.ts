@@ -25,6 +25,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserFunc } from "../../helpers/user";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -201,7 +202,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
 
     const testImage = "testImage";
 
-    await Organization.updateOne(
+    const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: testOrganization?._id,
       },
@@ -209,8 +210,15 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
         $set: {
           image: testImage,
         },
+      },
+      {
+        new: true,
       }
-    );
+    ).lean();
+
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     const context = {
       userId: testAdminUser?._id,

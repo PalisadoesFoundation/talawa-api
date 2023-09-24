@@ -9,6 +9,10 @@ import {
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { cachePosts } from "../../services/PostCache/cachePosts";
 /**
  * This function enables to create a post.
  * @param _parent - parent of current request
@@ -38,12 +42,24 @@ export const createPost: MutationResolvers["createPost"] = async (
     );
   }
 
-  const organizationExists = await Organization.exists({
-    _id: args.data.organizationId,
-  });
+  let organization;
+
+  const organizationFoundInCache = await findOrganizationsInCache([
+    args.data.organizationId,
+  ]);
+
+  organization = organizationFoundInCache[0];
+
+  if (organizationFoundInCache.includes(null)) {
+    organization = await Organization.findOne({
+      _id: args.data.organizationId,
+    }).lean();
+
+    await cacheOrganizations([organization!]);
+  }
 
   // Checks whether organization with _id == args.data.organizationId exists.
-  if (organizationExists === false) {
+  if (!organization) {
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
@@ -51,10 +67,18 @@ export const createPost: MutationResolvers["createPost"] = async (
     );
   }
 
-  let uploadImageFileName;
+  let uploadImageFileName = null;
+  let uploadVideoFileName = null;
 
   if (args.file) {
-    uploadImageFileName = await uploadEncodedImage(args.file, null);
+    const dataUrlPrefix = "data:";
+    if (args.file.startsWith(dataUrlPrefix + "image/")) {
+      uploadImageFileName = await uploadEncodedImage(args.file, null);
+    } else if (args.file.startsWith(dataUrlPrefix + "video/")) {
+      uploadVideoFileName = await uploadEncodedVideo(args.file, null);
+    } else {
+      throw new Error("Unsupported file type.");
+    }
   }
 
   // Checks if the recieved arguments are valid according to standard input norms
@@ -104,26 +128,39 @@ export const createPost: MutationResolvers["createPost"] = async (
     pinned: args.data.pinned ? true : false,
     creator: context.userId,
     organization: args.data.organizationId,
-    imageUrl: args.file ? uploadImageFileName : null,
+    imageUrl: uploadImageFileName,
+    videoUrl: uploadVideoFileName,
   });
+
+  if (createdPost !== null) {
+    await cachePosts([createdPost]);
+  }
 
   if (args.data.pinned) {
     // Add the post to pinnedPosts of the organization
-    await Organization.updateOne(
+    const updatedOrganizaiton = await Organization.findOneAndUpdate(
       { _id: args.data.organizationId },
       {
         $push: {
           pinnedPosts: createdPost._id,
         },
+      },
+      {
+        new: true,
       }
     );
+
+    await cacheOrganizations([updatedOrganizaiton!]);
   }
 
   // Returns createdPost.
   return {
     ...createdPost.toObject(),
-    imageUrl: createdPost.imageUrl
+    imageUrl: uploadImageFileName
       ? `${context.apiRootUrl}${uploadImageFileName}`
+      : null,
+    videoUrl: uploadVideoFileName
+      ? `${context.apiRootUrl}${uploadVideoFileName}`
       : null,
   };
 };
