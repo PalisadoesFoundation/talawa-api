@@ -7,7 +7,7 @@ type AdvertisementTypes = {
   type: "POPUP" | "MENU" | "BANNER";
   // Other properties specific to each type
 };
-export interface InterfacePlugin {
+export interface InterfaceAdvertisement {
   _id: Types.ObjectId;
   orgId: Types.ObjectId;
   name: string;
@@ -74,8 +74,8 @@ const advertisementSchema = new Schema({
   },
 });
 
-const advertisementModel = (): Model<InterfacePlugin> =>
-  model<InterfacePlugin>("Advertisement", advertisementSchema);
+const advertisementModel = (): Model<InterfaceAdvertisement> =>
+  model<InterfaceAdvertisement>("Advertisement", advertisementSchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const Advertisement = (models.Advertisement ||
