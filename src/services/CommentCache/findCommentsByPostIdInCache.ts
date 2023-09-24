@@ -19,7 +19,7 @@ export async function findCommentsByPostIdInCache(
 
   const commentsFoundInCache = await CommentCache.mget(commentIDs);
 
-  const comments = commentsFoundInCache.map((comment) => {
+  const comments = commentsFoundInCache.map((comment: string | null) => {
     if (comment === null) {
       return null;
     }
