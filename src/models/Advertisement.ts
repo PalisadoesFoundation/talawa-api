@@ -53,7 +53,6 @@ const advertisementSchema = new Schema({
   },
   orgId: {
     type: Schema.Types.ObjectId,
-    required: true,
   },
   link: {
     type: String,
