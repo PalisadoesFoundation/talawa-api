@@ -6,9 +6,9 @@ import { ObjectId } from "mongoose";
 
 // @ts-ignore
 export const removeAdvertisement: MutationResolvers["removeAdvertisement"] =
-  async (_parent, args, context) => {
+  async (_parent, args, _context) => {
     const currentAd = await Advertisement.findOne({
-      _id: context.id ? context.id : "",
+      _id: args.id ? args.id : "",
     }).lean();
 
     if (!currentAd) {
@@ -21,7 +21,7 @@ export const removeAdvertisement: MutationResolvers["removeAdvertisement"] =
 
     // Deletes the ad.
     await Advertisement.deleteOne({
-      _id: context.id ? context.id : "",
+      _id: args.id ? args.id : "",
     });
     // Returns deleted ad.
     return currentAd;
