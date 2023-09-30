@@ -99,6 +99,13 @@ export const INVALID_FILE_TYPE = {
   PARAM: "internalServerError",
 };
 
+export const INVALID_ROLE_TYPE = {
+  DESC: "Invalid Role Type",
+  MESSAGE: "invalid.roleType",
+  CODE: "internalServerError",
+  PARAM: "internalServerError",
+};
+
 export const SAME_FILE_ERROR = {
   MESSAGE: "The newer image is the same as the previous image in the database",
   CODE: "internalServerError",

@@ -13,6 +13,7 @@ import { assignUserTag } from "./assignUserTag";
 import { blockPluginCreationBySuperadmin } from "./blockPluginCreationBySuperadmin";
 import { blockUser } from "./blockUser";
 import { cancelMembershipRequest } from "./cancelMembershipRequest";
+import { changeUserRoleInOrganization } from "./changeUserRoleInOrganization";
 import { checkIn } from "./checkIn";
 import { createMember } from "./createMember";
 import { createAdmin } from "./createAdmin";
@@ -98,6 +99,7 @@ export const Mutation: MutationResolvers = {
   blockPluginCreationBySuperadmin,
   blockUser,
   cancelMembershipRequest,
+  changeUserRoleInOrganization,
   checkIn,
   createMember,
   createAdmin,

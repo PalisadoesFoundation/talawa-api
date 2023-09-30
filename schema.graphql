@@ -420,6 +420,7 @@ type Mutation {
   blockPluginCreationBySuperadmin(blockUser: Boolean!, userId: ID!): User!
   blockUser(organizationId: ID!, userId: ID!): User!
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
+  changeUserRoleInOrganization(organizationId: ID!, role: String!, userId: ID!): Organization!
   checkIn(data: CheckInInput!): CheckIn!
   createAdmin(data: UserAndOrganizationInput!): User!
   createComment(data: CommentInput!, postId: ID!): Comment
@@ -462,6 +463,7 @@ type Mutation {
   removePost(id: ID!): Post
   removeTask(id: ID!): Task
   removeUserFromGroupChat(chatId: ID!, userId: ID!): GroupChat!
+  removeUserFromOrganization(organizationId: ID!, userId: ID!): Organization!
   removeUserImage: User!
   removeUserTag(id: ID!): UserTag
   revokeRefreshTokenForUser(userId: String!): Boolean!

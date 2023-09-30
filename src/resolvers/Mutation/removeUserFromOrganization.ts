@@ -4,7 +4,7 @@ import {
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { Organization, User } from "../../models";
-import { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
  * This function enables a SUPERADMIN to remove a user/admin from organization.
@@ -20,8 +20,7 @@ import { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const removeUserFromOrganization: MutationResolvers["removeUserFromOrganization"] =
   async (_parent, args, context) => {
-
-    let organization = await Organization.findOne({
+    const organization = await Organization.findOne({
       _id: args.organizationId,
     }).lean();
 
@@ -43,7 +42,6 @@ export const removeUserFromOrganization: MutationResolvers["removeUserFromOrgani
         USER_NOT_FOUND_ERROR.PARAM
       );
     }
-    console.log({ user });
 
     // Checks whether user to be removed is a member of the organization.
     let isUserMember = false;

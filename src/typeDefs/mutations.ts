@@ -36,6 +36,12 @@ export const mutations = gql`
 
     cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
+    changeUserRoleInOrganization(
+      organizationId: ID!
+      userId: ID!
+      role: String!
+    ): Organization! @auth @role(requires: SUPERADMIN)
+
     checkIn(data: CheckInInput!): CheckIn! @auth
 
     createMember(input: UserAndOrganizationInput!): Organization! @auth
@@ -140,7 +146,8 @@ export const mutations = gql`
 
     removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
 
-    removeUserFromOrganization(organizationId: ID!, userId: ID!): Organization! @auth
+    removeUserFromOrganization(organizationId: ID!, userId: ID!): Organization!
+      @auth
 
     removeUserImage: User! @auth
 
