@@ -140,6 +140,8 @@ export const mutations = gql`
 
     removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
 
+    removeUserFromOrganization(organizationId: ID!, userId: ID!): Organization! @auth
+
     removeUserImage: User! @auth
 
     revokeRefreshTokenForUser(userId: String!): Boolean!
