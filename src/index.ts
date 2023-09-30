@@ -8,7 +8,7 @@ import * as database from "./db";
 import http from "http";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { PubSub } from "graphql-subscriptions";
-import { app } from "./app";
+import app from "./app";
 import { logIssues } from "./checks";
 import depthLimit from "graphql-depth-limit";
 import authDirectiveTransformer from "./directives/directiveTransformer/authDirectiveTransformer";

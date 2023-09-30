@@ -34,6 +34,7 @@ import {
 } from "vitest";
 import { createTestUserFunc } from "../../helpers/user";
 import type { TestUserType } from "../../helpers/userAndOrg";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -209,7 +210,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       .mockImplementation((message) => `Translated ${message}`);
 
     try {
-      await Organization.updateOne(
+      const updatedOrganization = await Organization.findOneAndUpdate(
         {
           _id: testOrganization._id,
         },
@@ -217,8 +218,15 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
           $set: {
             creator: Types.ObjectId().toString(),
           },
+        },
+        {
+          new: true,
         }
       );
+
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
 
       const args: MutationRemoveOrganizationArgs = {
         id: testOrganization.id,
@@ -241,7 +249,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
   });
 
   it(`removes the organization and returns the updated user's object with _id === context.userId`, async () => {
-    await Organization.updateOne(
+    const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: testOrganization._id,
       },
@@ -249,8 +257,15 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
         $set: {
           creator: testUsers[0]?._id,
         },
+      },
+      {
+        new: true,
       }
     );
+
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     await User.updateOne(
       {

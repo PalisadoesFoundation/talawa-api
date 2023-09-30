@@ -15,7 +15,7 @@ import path from "path";
 //@ts-ignore
 import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
 
-export const app = express();
+const app = express();
 
 app.use(requestTracing.middleware());
 
@@ -68,6 +68,8 @@ app.use(
 );
 
 app.use("/images", express.static(path.join(__dirname, "./../images")));
+app.use("/videos", express.static(path.join(__dirname, "./../videos")));
+
 app.use(requestContext.middleware());
 
 if (process.env.NODE_ENV !== "production")
@@ -79,3 +81,5 @@ app.get("/", (req, res) =>
     status: "healthy",
   })
 );
+
+export default app;

@@ -188,6 +188,29 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     }
   });
 
+  it(`updates if email not changed by user`, async () => {
+    const args: MutationUpdateUserProfileArgs = {
+      data: {
+        email: testUser.email,
+      },
+    };
+
+    const context = {
+      userId: testUser._id,
+    };
+
+    const updateUserProfilePayload = await updateUserProfileResolver?.(
+      {},
+      args,
+      context
+    );
+
+    expect(updateUserProfilePayload).toEqual({
+      ...testUser.toObject(),
+      image: null,
+    });
+  });
+
   it(`updates current user's user object when any single argument(email) is given w/0 changing other fields `, async () => {
     const args: MutationUpdateUserProfileArgs = {
       data: {

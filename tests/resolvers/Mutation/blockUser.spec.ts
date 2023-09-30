@@ -29,6 +29,7 @@ import type {
   TestOrganizationType,
 } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let testUser: TestUserType;
 let testUser2: TestUserType;
@@ -164,7 +165,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
   it(`throws UnauthorizedError if current user with _id === context.userId is not
   an admin of the organization with _id === args.organizationId`, async () => {
     try {
-      await Organization.findByIdAndUpdate(
+      const updatedOrganization = await Organization.findByIdAndUpdate(
         {
           _id: testOrganization?._id,
         },
@@ -172,8 +173,15 @@ describe("resolvers -> Mutation -> blockUser", () => {
           $push: {
             members: testUser2?.id,
           },
+        },
+        {
+          new: true,
         }
       );
+
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
 
       const args: MutationBlockUserArgs = {
         organizationId: testOrganization?.id,
@@ -193,7 +201,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
   it(`throws UnauthorizedError if user with _id === args.userId is already blocked
   from organization with _id === args.organizationId`, async () => {
     try {
-      await Organization.updateOne(
+      const updatedOrganization = await Organization.findOneAndUpdate(
         {
           _id: testOrganization?._id,
         },
@@ -202,8 +210,15 @@ describe("resolvers -> Mutation -> blockUser", () => {
             admins: testUser?._id,
             blockedUsers: testUser2?._id,
           },
+        },
+        {
+          new: true,
         }
       );
+
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
 
       await User.updateOne(
         {
@@ -233,7 +248,7 @@ describe("resolvers -> Mutation -> blockUser", () => {
 
   it(`blocks the user with _id === args.userId from the organization with
   _id === args.organizationId and returns the blocked user`, async () => {
-    await Organization.findOneAndUpdate(
+    const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: testOrganization?._id,
       },
@@ -246,6 +261,10 @@ describe("resolvers -> Mutation -> blockUser", () => {
         new: true,
       }
     );
+
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
 
     const args: MutationBlockUserArgs = {
       organizationId: testOrganization?.id,

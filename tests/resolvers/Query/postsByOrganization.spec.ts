@@ -59,6 +59,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
       ...post,
       imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+      videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : undefined,
     }));
     expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
@@ -94,6 +95,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
       ...post,
       imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+      videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : undefined,
     }));
     expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
@@ -129,6 +131,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
       ...post,
       imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+      videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : undefined,
     }));
     expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
@@ -164,6 +167,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
       ...post,
       imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+      videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : undefined,
     }));
     expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
@@ -199,6 +203,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
       ...post,
       imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+      videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : undefined,
     }));
     expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
@@ -233,6 +238,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
       ...post,
       imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+      videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : undefined,
     }));
     expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
@@ -268,6 +274,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
       ...post,
       imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+      videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : undefined,
     }));
     expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
@@ -303,6 +310,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
       ...post,
       imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+      videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : undefined,
     }));
     expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
@@ -338,6 +346,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
       ...post,
       imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+      videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : undefined,
     }));
     expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
@@ -374,6 +383,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
       ...post,
       imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+      videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : undefined,
     }));
     expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
@@ -409,6 +419,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
       ...post,
       imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+      videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : undefined,
     }));
     expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
@@ -445,6 +456,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
       ...post,
       imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+      videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : undefined,
     }));
     expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
@@ -480,6 +492,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
       ...post,
       imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+      videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : undefined,
     }));
     expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
@@ -515,6 +528,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
       ...post,
       imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+      videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : undefined,
     }));
     expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
@@ -550,6 +564,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
       ...post,
       imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+      videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : undefined,
     }));
     expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
@@ -584,6 +599,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
       ...post,
       imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+      videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : undefined,
     }));
     expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
@@ -619,6 +635,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
       ...post,
       imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : undefined,
+      videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : undefined,
     }));
     expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });
@@ -665,6 +682,7 @@ describe("resolvers -> Query -> posts", () => {
     const postsWithImageURLResolved = postsByOrganization.map((post) => ({
       ...post,
       imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : null,
+      videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : null,
     }));
     expect(postsByOrganizationPayload).toEqual(postsWithImageURLResolved);
   });

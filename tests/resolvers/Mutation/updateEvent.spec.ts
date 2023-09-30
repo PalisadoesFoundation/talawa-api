@@ -23,6 +23,7 @@ import {
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
+import { cacheEvents } from "../../../src/services/EventCache/cacheEvents";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -154,7 +155,7 @@ describe("resolvers -> Mutation -> updateEvent", () => {
   });
 
   it(`updates the event with _id === args.id and returns the updated event`, async () => {
-    await Event.updateOne(
+    const updatedEvent = await Event.findOneAndUpdate(
       {
         _id: testEvent?._id,
       },
@@ -162,8 +163,15 @@ describe("resolvers -> Mutation -> updateEvent", () => {
         $push: {
           admins: testUser?._id,
         },
+      },
+      {
+        new: true,
       }
-    );
+    ).lean();
+
+    if (updatedEvent !== null) {
+      await cacheEvents([updatedEvent]);
+    }
 
     await User.updateOne(
       {

@@ -32,4 +32,16 @@ describe("resolvers -> DirectChat -> organization", () => {
 
     expect(organizationPayload).toEqual(organization);
   });
+
+  it(`returns user object for parent.organization`, async () => {
+    const parent = testDirectChat!.toObject();
+
+    const organizationPayload = await organizationResolver?.(parent, {}, {});
+
+    const organization = await Organization.findOne({
+      _id: testDirectChat?.organization,
+    }).lean();
+
+    expect(organizationPayload).toEqual(organization);
+  });
 });

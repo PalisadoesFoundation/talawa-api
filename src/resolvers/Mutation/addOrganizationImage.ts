@@ -8,6 +8,8 @@ import {
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 /**
  * This function adds Organization Image.
  * @param _parent - parent of current request
@@ -34,9 +36,19 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
       );
     }
 
-    const organization = await Organization.findOne({
-      _id: args.organizationId,
-    }).lean();
+    let organization;
+
+    const organizationsFoundInCache = await findOrganizationsInCache([
+      args.organizationId,
+    ]);
+
+    organization = organizationsFoundInCache[0];
+
+    if (organization === null) {
+      organization = await Organization.findOne({
+        _id: args.organizationId,
+      }).lean();
+    }
 
     // Checks whether organization exists.
     if (!organization) {
@@ -56,7 +68,7 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
       organization.image
     );
     // Updates the organization with new image and returns the updated organization.
-    return await Organization.findOneAndUpdate(
+    const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: organization._id,
       },
@@ -69,4 +81,10 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
         new: true,
       }
     ).lean();
+
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
+
+    return updatedOrganization!;
   };

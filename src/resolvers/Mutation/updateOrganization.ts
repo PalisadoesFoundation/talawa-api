@@ -5,6 +5,8 @@ import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
 import { adminCheck } from "../../utilities";
 
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 /**
  * This function enables to update an organization.
  * @param _parent - parent of current request
@@ -18,9 +20,19 @@ import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEn
 
 export const updateOrganization: MutationResolvers["updateOrganization"] =
   async (_parent, args, context) => {
-    const organization = await Organization.findOne({
-      _id: args.id,
-    }).lean();
+    let organization;
+
+    const organizationFoundInCache = await findOrganizationsInCache([args.id]);
+
+    organization = organizationFoundInCache[0];
+
+    if (organizationFoundInCache[0] == null) {
+      organization = await Organization.findOne({
+        _id: args.id,
+      }).lean();
+
+      await cacheOrganizations([organization!]);
+    }
 
     // Checks if organization with _id === args.id exists.
     if (!organization) {
@@ -42,7 +54,7 @@ export const updateOrganization: MutationResolvers["updateOrganization"] =
       );
     }
 
-    return await Organization.findOneAndUpdate(
+    const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: organization._id,
       },
@@ -56,4 +68,10 @@ export const updateOrganization: MutationResolvers["updateOrganization"] =
         new: true,
       }
     ).lean();
+
+    if (updatedOrganization !== null) {
+      await cacheOrganizations([updatedOrganization]);
+    }
+
+    return updatedOrganization!;
   };

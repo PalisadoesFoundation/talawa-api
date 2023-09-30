@@ -1,11 +1,14 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
+import type { InterfaceEvent } from "../../models";
 import { User, Event, EventAttendee } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
   REGISTRANT_ALREADY_EXIST_ERROR,
 } from "../../constants";
+import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { cacheEvents } from "../../services/EventCache/cacheEvents";
 
 /**
  * This function enables to register for event.
@@ -37,9 +40,21 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
     );
   }
 
-  const event = await Event.findOne({
-    _id: args.id,
-  }).lean();
+  let event: InterfaceEvent | null;
+
+  const eventFoundInCache = await findEventsInCache([args.id]);
+
+  event = eventFoundInCache[0];
+
+  if (eventFoundInCache[0] === null) {
+    event = await Event.findOne({
+      _id: args.id,
+    }).lean();
+
+    if (event !== null) {
+      await cacheEvents([event]);
+    }
+  }
 
   // Checks whether event exists.
   if (!event) {

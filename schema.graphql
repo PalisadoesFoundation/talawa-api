@@ -31,6 +31,7 @@ type CheckIn {
   allotedRoom: String
   allotedSeat: String
   event: Event!
+  feedbackSubmitted: Boolean!
   time: DateTime!
   user: User!
 }
@@ -145,10 +146,12 @@ type Event {
   allDay: Boolean!
   attendees: [User!]!
   attendeesCheckInStatus: [CheckInStatus!]!
+  averageFeedbackScore: Float
   creator: User!
   description: String!
   endDate: Date!
   endTime: Time
+  feedback: [Feedback!]!
   isPublic: Boolean!
   isRegisterable: Boolean!
   latitude: Latitude
@@ -255,6 +258,19 @@ input EventWhereInput {
 type ExtendSession {
   accessToken: String!
   refreshToken: String!
+}
+
+type Feedback {
+  _id: ID!
+  event: Event!
+  rating: Int!
+  review: String
+}
+
+input FeedbackInput {
+  eventId: ID!
+  rating: Int!
+  review: String
 }
 
 interface FieldError {
@@ -393,6 +409,7 @@ type Mutation {
   acceptAdmin(id: ID!): Boolean!
   acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   addEventAttendee(data: EventAttendeeInput!): User!
+  addFeedback(data: FeedbackInput!): Feedback!
   addLanguageTranslation(data: LanguageInput!): Language!
   addOrganizationImage(file: String!, organizationId: String!): Organization!
   addUserImage(file: String!): User!
@@ -625,6 +642,7 @@ type Post {
   likeCount: Int
   likedBy: [User]
   organization: Organization!
+  pinned: Boolean
   text: String!
   title: String
   videoUrl: URL
@@ -671,10 +689,10 @@ enum PostOrderByInput {
 }
 
 input PostUpdateInput {
-  imageUrl: URL
+  imageUrl: String
   text: String
   title: String
-  videoUrl: URL
+  videoUrl: String
 }
 
 input PostWhereInput {
@@ -712,6 +730,7 @@ type Query {
   getPlugins: [Plugin]
   getlanguage(lang_code: String!): [Translation]
   isSampleOrganization(id: ID!): Boolean!
+  hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean
   joinedOrganizations(id: ID): [Organization]
   me: User!
   myLanguage: String

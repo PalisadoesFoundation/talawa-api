@@ -16,6 +16,8 @@ import {
 } from "../../utilities";
 import { androidFirebaseOptions, iosFirebaseOptions } from "../../config";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 //import { isValidString } from "../../libraries/validators/validateString";
 //import { validatePassword } from "../../libraries/validators/validatePassword";
 /**
@@ -40,9 +42,19 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
   // TODO: this check is to be removed
   let organization;
   if (args.data.organizationUserBelongsToId) {
-    organization = await Organization.findOne({
-      _id: args.data.organizationUserBelongsToId,
-    }).lean();
+    const organizationFoundInCache = await findOrganizationsInCache([
+      args.data.organizationUserBelongsToId,
+    ]);
+
+    organization = organizationFoundInCache[0];
+
+    if (organizationFoundInCache[0] == null) {
+      organization = await Organization.findOne({
+        _id: args.data.organizationUserBelongsToId,
+      }).lean();
+
+      await cacheOrganizations([organization!]);
+    }
 
     if (!organization) {
       throw new errors.NotFoundError(

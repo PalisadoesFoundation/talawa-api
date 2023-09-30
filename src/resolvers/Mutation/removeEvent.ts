@@ -1,11 +1,14 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
+import type { InterfaceEvent } from "../../models";
 import { User, Event, EventProject, Task, TaskVolunteer } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
+import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { cacheEvents } from "../../services/EventCache/cacheEvents";
 /**
  * This function enables to remove an event.
  * @param _parent - parent of current request
@@ -36,9 +39,21 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
     );
   }
 
-  const event = await Event.findOne({
-    _id: args.id,
-  }).lean();
+  let event: InterfaceEvent | null;
+
+  const eventFoundInCache = await findEventsInCache([args.id]);
+
+  event = eventFoundInCache[0];
+
+  if (eventFoundInCache[0] === null) {
+    event = await Event.findOne({
+      _id: args.id,
+    }).lean();
+
+    if (event !== null) {
+      await cacheEvents([event]);
+    }
+  }
 
   // Checks whether event exists.
   if (!event) {
@@ -51,7 +66,7 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
 
   // Boolean to determine whether user is an admin of organization.
   const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-    (organization) => organization.equals(event.organization)
+    (organization) => organization.equals(event?.organization)
   );
 
   // Boolean to determine whether user is an admin of event.
@@ -96,14 +111,21 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
     }
   );
 
-  await Event.updateOne(
+  const updatedEvent = await Event.findOneAndUpdate(
     {
       _id: event._id,
     },
     {
       status: "DELETED",
+    },
+    {
+      new: true,
     }
   );
+
+  if (updatedEvent !== null) {
+    await cacheEvents([updatedEvent]);
+  }
 
   // Fetch and delete all the event projects under the particular event
   const eventProjects = await EventProject.find(

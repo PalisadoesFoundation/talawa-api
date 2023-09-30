@@ -6,6 +6,9 @@ import {
   MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
 } from "../../constants";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { Types } from "mongoose";
 /**
  * This function enables to leave an organization.
  * @param _parent - parent of current request
@@ -23,9 +26,21 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   args,
   context
 ) => {
-  const organization = await Organization.findOne({
-    _id: args.organizationId,
-  }).lean();
+  let organization;
+
+  const organizationFoundInCache = await findOrganizationsInCache([
+    args.organizationId,
+  ]);
+
+  organization = organizationFoundInCache[0];
+
+  if (organizationFoundInCache.includes(null)) {
+    organization = await Organization.findOne({
+      _id: args.organizationId,
+    }).lean();
+
+    await cacheOrganizations([organization!]);
+  }
 
   // Checks whether organization exists.
   if (!organization) {
@@ -50,8 +65,9 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   }
 
   const currentUserIsOrganizationMember = organization.members.some((member) =>
-    member.equals(currentUser?._id)
+    Types.ObjectId(member).equals(currentUser?._id)
   );
+
   // Checks whether currentUser is not a member of organzation.
   if (!currentUserIsOrganizationMember) {
     throw new errors.ConflictError(
@@ -62,7 +78,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   }
 
   // Removes currentUser._id from admins and members lists of organzation's document.
-  await Organization.updateOne(
+  const updatedOrganization = await Organization.findOneAndUpdate(
     {
       _id: organization._id,
     },
@@ -71,9 +87,15 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
         admins: currentUser._id,
         members: currentUser._id,
       },
+    },
+    {
+      new: true,
     }
   );
 
+  if (updatedOrganization !== null) {
+    await cacheOrganizations([updatedOrganization]);
+  }
   /*
   Removes organization._id from joinedOrganizations list of currentUser's document
   and returns the updated currentUser.
