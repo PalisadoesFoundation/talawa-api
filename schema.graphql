@@ -742,7 +742,7 @@ type Query {
   registrantsByEvent(id: ID!): [User]
   user(id: ID!): User!
   userLanguage(userId: ID!): String
-  users(orderBy: UserOrderByInput, where: UserWhereInput): [User]
+  users(adminApproved: Boolean, first: Int, orderBy: UserOrderByInput, skip: Int, userType: String, where: UserWhereInput): [User]
   usersConnection(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [User]!
 }
 

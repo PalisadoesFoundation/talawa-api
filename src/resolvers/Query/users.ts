@@ -33,9 +33,20 @@ export const users: QueryResolvers["users"] = async (
       UNAUTHENTICATED_ERROR.PARAM
     );
   }
+  const filterCriteria = {
+    ...where,
+    ...(args.userType ? { userType: args.userType } : {}),
+  };
+  if (args.adminApproved === true) {
+    filterCriteria.adminApproved = true;
+  } else if (args.adminApproved === false) {
+    filterCriteria.adminApproved = false;
+  }
 
-  const users = await User.find(where)
+  const users = await User.find(filterCriteria)
     .sort(sort)
+    .limit(args.first ?? 0)
+    .skip(args.skip ?? 0)
     .select(["-password"])
     .populate("createdOrganizations")
     .populate("createdEvents")

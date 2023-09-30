@@ -1398,7 +1398,11 @@ export type QueryUserLanguageArgs = {
 
 
 export type QueryUsersArgs = {
+  adminApproved?: InputMaybe<Scalars['Boolean']>;
+  first?: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<UserOrderByInput>;
+  skip?: InputMaybe<Scalars['Int']>;
+  userType?: InputMaybe<Scalars['String']>;
   where?: InputMaybe<UserWhereInput>;
 };
 
