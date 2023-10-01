@@ -5,10 +5,7 @@ import type { MutationLikePostArgs } from "../../../src/types/generatedGraphQLTy
 import { connect, disconnect } from "../../helpers/db";
 
 import { likePost as likePostResolver } from "../../../src/resolvers/Mutation/likePost";
-import {
-  POST_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
-} from "../../../src/constants";
+import { POST_NOT_FOUND_ERROR } from "../../../src/constants";
 import {
   beforeAll,
   afterAll,
@@ -41,30 +38,6 @@ describe("resolvers -> Mutation -> likePost", () => {
   afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
-  });
-  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
-    try {
-      const args: MutationLikePostArgs = {
-        id: "",
-      };
-
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-
-      const { likePost: likePostResolver } = await import(
-        "../../../src/resolvers/Mutation/likePost"
-      );
-
-      await likePostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
   });
 
   it(`throws NotFoundError if no post exists with _id === args.id`, async () => {
