@@ -1,8 +1,8 @@
-import { POST_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
+import { POST_NOT_FOUND_ERROR } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfacePost } from "../../models";
-import { User, Post } from "../../models";
+import { Post } from "../../models";
 import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
 import { cachePosts } from "../../services/PostCache/cachePosts";
 /**
@@ -20,18 +20,6 @@ export const unlikePost: MutationResolvers["unlikePost"] = async (
   args,
   context
 ) => {
-  const currentUserExists = await User.exists({
-    _id: context.userId,
-  });
-
-  if (currentUserExists === false) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
-  }
-
   let post: InterfacePost | null;
 
   const postFoundInCache = await findPostsInCache([args.id]);

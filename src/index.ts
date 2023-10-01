@@ -1,6 +1,6 @@
 import "dotenv/config"; // Pull all the environment variables from .env file
 import { typeDefs } from "./typeDefs";
-import { resolvers } from "./resolvers";
+import { composedResolvers } from "./resolvers";
 import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/lib/use/ws";
 import { isAuth } from "./middleware";
@@ -24,8 +24,9 @@ const pubsub = new PubSub();
 // defines schema
 let schema = makeExecutableSchema({
   typeDefs,
-  resolvers,
+  resolvers: composedResolvers,
 });
+
 // Defines directives
 schema = authDirectiveTransformer(schema, "auth");
 schema = roleDirectiveTransformer(schema, "role");
