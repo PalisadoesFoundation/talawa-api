@@ -3,6 +3,7 @@ import { User } from "../../models";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 
+// This is a middleware that checks that the user specificied by the `userId` parameter in the context does indeed exist in the database
 export const currentUserExists =
   () =>
   (next: (root: any, args: any, context: any, info: any) => any) =>
