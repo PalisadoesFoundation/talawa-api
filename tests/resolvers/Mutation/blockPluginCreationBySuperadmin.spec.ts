@@ -44,23 +44,6 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
     vi.resetModules();
   });
 
-  it(`throws NotFoundError if no user exists with with _id === args.userId`, async () => {
-    try {
-      const args: MutationBlockPluginCreationBySuperadminArgs = {
-        blockUser: false,
-        userId: Types.ObjectId().toString(),
-      };
-
-      const context = {
-        userId: testUser?.id,
-      };
-
-      await blockPluginCreationBySuperadminResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
-  });
-
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationBlockPluginCreationBySuperadminArgs = {

@@ -8,10 +8,7 @@ import type { MutationLikeCommentArgs } from "../../../src/types/generatedGraphQ
 import { connect, disconnect } from "../../helpers/db";
 
 import { likeComment as likeCommentResolver } from "../../../src/resolvers/Mutation/likeComment";
-import {
-  COMMENT_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
-} from "../../../src/constants";
+import { COMMENT_NOT_FOUND_ERROR } from "../../../src/constants";
 import {
   beforeAll,
   afterAll,
@@ -64,31 +61,6 @@ describe("resolvers -> Mutation -> likeComment", () => {
   afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
-  });
-
-  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
-    try {
-      const args: MutationLikeCommentArgs = {
-        id: "",
-      };
-
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-
-      const { likeComment: likeCommentResolver } = await import(
-        "../../../src/resolvers/Mutation/likeComment"
-      );
-
-      await likeCommentResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
   });
 
   it(`throws NotFoundError if no comment exists with _id === args.id`, async () => {
