@@ -50,7 +50,7 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
     vi.resetAllMocks();
   });
 
-  it(`creates the post and returns it when image is not provided`, async () => {
+  it(`creates the ad and then deleting the ad`, async () => {
     const args: MutationCreateAdvertisementArgs = {
       name: "myad",
       orgId: "64d1f8cb77a4b61004f824b8",
