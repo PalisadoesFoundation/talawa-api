@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type mongoose from "mongoose";
 import * as fs from "fs";
 import { uploadEncodedVideo } from "../../../src/utilities/encodedVideoStorage/uploadEncodedVideo"; // Import the video upload function
+import { EncodedVideo } from "../../../src/models/EncodedVideo";
 import { connect, disconnect } from "../../helpers/db";
 import path from "path";
 import { INVALID_FILE_TYPE } from "../../../src/constants";
@@ -58,18 +59,41 @@ describe("src -> utilities -> encodedVideoStorage -> uploadEncodedVideo", () => 
   });
 
   it("should not create new video but return the pointer to that binary data and delete the previous video", async () => {
-    try {
-      const vid = "data:video/mp4;base64,VIDEO_BASE64_DATA_HERE"; // Replace with valid video data
-      const fileName = await uploadEncodedVideo(vid, testPreviousVideoPath); // Update variable name
-      expect(fileName).not.toBe(null);
+    const vid = "data:video/mp4;base64,VIDEO_BASE64_DATA_HERE"; // Replace with valid video data
 
-      if (fs.existsSync(path.join(__dirname, "../../../".concat(fileName)))) {
-        fs.unlink(path.join(__dirname, "../../../".concat(fileName)), (err) => {
-          if (err) throw err;
-        });
-      }
-    } catch (error: any) {
-      console.log(error);
+    const encodedVideoBefore = await EncodedVideo.findOne({
+      fileName: testPreviousVideoPath,
+    });
+    expect(encodedVideoBefore?.numberOfUses).toBe(2);
+
+    const fileName = await uploadEncodedVideo(vid, testPreviousVideoPath); // Update variable name
+    expect(fileName).not.toBe(null);
+
+    const encodedVideoAfter = await EncodedVideo.findOne({
+      fileName: testPreviousVideoPath,
+    });
+    expect(encodedVideoAfter?.numberOfUses).toBe(3);
+
+    fs.unlink(path.join(__dirname, "../../../".concat(fileName)), (err) => {
+      if (err) throw err;
+    });
+  });
+
+  it("should not create new video but return the pointer to that binary data and not delete the previous video", async () => {
+    const vid = "data:video/mp4;base64,NEW_VIDEO_BASE64_DATA_HERE"; // Replace with new valid video data
+
+    testPreviousVideoPath = await uploadEncodedVideo(vid, null);
+
+    const fileName = await uploadEncodedVideo(vid, testPreviousVideoPath);
+    expect(fileName).equals(testPreviousVideoPath);
+
+    let prevVideoExists;
+    if (fs.existsSync(path.join(__dirname, "../../../".concat(fileName)))) {
+      prevVideoExists = true;
+      fs.unlink(path.join(__dirname, "../../../".concat(fileName)), (err) => {
+        if (err) throw err;
+      });
     }
+    expect(prevVideoExists).toBe(true);
   });
 });

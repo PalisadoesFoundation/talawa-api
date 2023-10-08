@@ -26,10 +26,6 @@ export const uploadEncodedImage = async (
     content: encodedImageURL,
   });
 
-  if (previousImagePath) {
-    await deletePreviousImage(previousImagePath);
-  }
-
   if (encodedImageAlreadyExist) {
     await EncodedImage.findOneAndUpdate(
       {
@@ -42,6 +38,10 @@ export const uploadEncodedImage = async (
       }
     );
     return encodedImageAlreadyExist.fileName;
+  }
+
+  if (previousImagePath) {
+    await deletePreviousImage(previousImagePath);
   }
 
   let id = shortid.generate();

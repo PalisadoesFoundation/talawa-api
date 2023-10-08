@@ -27,10 +27,6 @@ export const uploadEncodedVideo = async (
     content: encodedVideoURL,
   });
 
-  if (previousVideoPath) {
-    await deletePreviousVideo(previousVideoPath);
-  }
-
   if (encodedVideoAlreadyExist) {
     await EncodedVideo.findOneAndUpdate(
       {
@@ -43,6 +39,10 @@ export const uploadEncodedVideo = async (
       }
     );
     return encodedVideoAlreadyExist.fileName;
+  }
+
+  if (previousVideoPath) {
+    await deletePreviousVideo(previousVideoPath);
   }
 
   let id = shortid.generate();
