@@ -204,8 +204,7 @@ If you'd rather not deal with the hassle of setting up WSL on your computer, the
 Remember to adjust any paths or details as needed for your specific environment. After following these steps, you will have successfully set up Redis.
 
 # Configuration
-
-It's important to configure Talawa-Admin.
+It's important to configure Talawa-API to complete it's setup.
 
 You can use our interactive setup script for the configuration. Use the following command for the same.
 

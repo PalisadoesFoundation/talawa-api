@@ -3,7 +3,6 @@ import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
 import { User, Event, EventAttendee } from "../../models";
 import {
-  USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
   REGISTRANT_ALREADY_EXIST_ERROR,
 } from "../../constants";
@@ -27,19 +26,6 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
   args,
   context
 ) => {
-  const currentUserExists = await User.exists({
-    _id: context.userId,
-  });
-
-  // Checks whether currentUser with _id == context.userId exists.
-  if (currentUserExists === false) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
-  }
-
   let event: InterfaceEvent | null;
 
   const eventFoundInCache = await findEventsInCache([args.id]);

@@ -2,11 +2,8 @@ import "dotenv/config";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
-import { User, Organization } from "../../models";
-import {
-  ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
-} from "../../constants";
+import { Organization } from "../../models";
+import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
@@ -23,19 +20,6 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
  */
 export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
   async (_parent, args, context) => {
-    const currentUserExists = await User.exists({
-      _id: context.userId,
-    });
-
-    // Checks whether currentUser exists.
-    if (currentUserExists === false) {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
-      );
-    }
-
     let organization;
 
     const organizationsFoundInCache = await findOrganizationsInCache([

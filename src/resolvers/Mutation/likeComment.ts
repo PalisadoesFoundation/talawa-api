@@ -1,7 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, Comment } from "../../models";
+import { Comment } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import { COMMENT_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
+import { COMMENT_NOT_FOUND_ERROR } from "../../constants";
 import { findCommentsInCache } from "../../services/CommentCache/findCommentsInCache";
 import { cacheComments } from "../../services/CommentCache/cacheComments";
 /**
@@ -20,19 +20,6 @@ export const likeComment: MutationResolvers["likeComment"] = async (
   args,
   context
 ) => {
-  const currentUserExists = await User.exists({
-    _id: context.userId,
-  });
-
-  // Checks whether currentUser with _id == context.userId exists.
-  if (currentUserExists === false) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
-  }
-
   let comment;
 
   const commentsFoundInCache = await findCommentsInCache([args.id]);
