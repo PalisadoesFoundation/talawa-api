@@ -22,7 +22,9 @@ import {
 } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let randomUser: TestUserType;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -67,7 +69,7 @@ describe("resolvers -> Mutation -> getAdvertisement", () => {
     const { createAdvertisement: createAdvertisementResolver } = await import(
       "../../../src/resolvers/Mutation/createAdvertisement"
     );
-
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const createdAdvertisementPayload = await createAdvertisementResolver?.(
       {},
       args,

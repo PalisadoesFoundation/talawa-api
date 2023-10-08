@@ -23,7 +23,9 @@ import {
 import { ADVERTISEMENT_NOT_FOUND_ERROR } from "../../../src/constants";
 
 let testUser: TestUserType;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let randomUser: TestUserType;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -114,6 +116,7 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
       .mockImplementationOnce((message) => `Translated ${message}`);
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const removeAdvertisementPayload = await removeAdvertisement?.(
         {},
         { id: "64d1f8cb77a4b51004f824b8" },

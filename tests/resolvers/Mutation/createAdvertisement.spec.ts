@@ -20,9 +20,10 @@ import {
   createTestUserAndOrganization,
   createTestUser,
 } from "../../helpers/userAndOrg";
-
 let testUser: TestUserType;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let randomUser: TestUserType;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
