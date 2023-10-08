@@ -1,31 +1,18 @@
 import {
   EVENT_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
   USER_NOT_CHECKED_IN,
   USER_NOT_REGISTERED_FOR_EVENT,
   FEEDBACK_ALREADY_SUBMITTED,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Event, EventAttendee, CheckIn, Feedback } from "../../models";
+import { Event, EventAttendee, CheckIn, Feedback } from "../../models";
 
 export const addFeedback: MutationResolvers["addFeedback"] = async (
   _parent,
   args,
   context
 ) => {
-  const currentUserExists = await User.exists({
-    _id: context.userId,
-  });
-
-  if (!currentUserExists) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
-  }
-
   const currentEventExists = await Event.exists({
     _id: args.data.eventId,
   });

@@ -1,9 +1,8 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfacePost } from "../../models";
-import { User, Post } from "../../models";
+import { Post } from "../../models";
 import {
-  USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   POST_NOT_FOUND_ERROR,
   LENGTH_VALIDATION_ERROR,
@@ -19,19 +18,6 @@ export const updatePost: MutationResolvers["updatePost"] = async (
   args,
   context
 ) => {
-  const currentUserExists = await User.exists({
-    _id: context.userId,
-  });
-
-  // checks if current user exists
-  if (currentUserExists === false) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
-  }
-
   let post: InterfacePost | null;
 
   const postFoundInCache = await findPostsInCache([args.id]);

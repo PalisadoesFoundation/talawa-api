@@ -1,11 +1,9 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
-import { Types } from "mongoose";
 import { User } from "../../../src/models";
 import type { MutationUpdateLanguageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import {
   beforeAll,
   afterAll,
@@ -37,35 +35,6 @@ afterEach(() => {
 });
 
 describe("resolvers -> Mutation -> updateLanguage", () => {
-  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementation((message) => `Translated ${message}`);
-
-    try {
-      const args: MutationUpdateLanguageArgs = {
-        languageCode: "newLanguageCode",
-      };
-
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-
-      const { updateLanguage: updateLanguageResolver } = await import(
-        "../../../src/resolvers/Mutation/updateLanguage"
-      );
-
-      await updateLanguageResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
-      );
-    }
-  });
-
   it(`updates the organization with _id === args.id and returns the updated organization`, async () => {
     const args: MutationUpdateLanguageArgs = {
       languageCode: "newLanguageCode",

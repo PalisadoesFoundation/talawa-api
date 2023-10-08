@@ -1,7 +1,7 @@
-import { COMMENT_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
+import { COMMENT_NOT_FOUND_ERROR } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Comment } from "../../models";
+import { Comment } from "../../models";
 import { findCommentsInCache } from "../../services/CommentCache/findCommentsInCache";
 import { cacheComments } from "../../services/CommentCache/cacheComments";
 /**
@@ -19,18 +19,6 @@ export const unlikeComment: MutationResolvers["unlikeComment"] = async (
   args,
   context
 ) => {
-  const currentUserExists = await User.exists({
-    _id: context.userId,
-  });
-
-  if (currentUserExists === false) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
-  }
-
   let comment;
 
   const commentsFoundInCache = await findCommentsInCache([args.id]);
