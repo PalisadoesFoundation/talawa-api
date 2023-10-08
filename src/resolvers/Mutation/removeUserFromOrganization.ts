@@ -1,8 +1,13 @@
+import { Types } from "mongoose";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_ERROR,
+  USER_NOT_MEMBER_FOR_ORGANIZATION,
+  USER_TO_BE_REMOVED_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
+import type { InterfaceOrganization} from "../../models";
 import { Organization, User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
@@ -20,7 +25,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 export const removeUserFromOrganization: MutationResolvers["removeUserFromOrganization"] =
   async (_parent, args, context) => {
-    const organization = await Organization.findOne({
+    let organization = await Organization.findOne({
       _id: args.organizationId,
     }).lean();
 
@@ -32,35 +37,58 @@ export const removeUserFromOrganization: MutationResolvers["removeUserFromOrgani
         ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
     }
-
+    // Check wheter user to be removed exists.
     const user = await User.findOne({ _id: args.userId });
 
     if (!user) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
+        requestContext.translate(USER_TO_BE_REMOVED_NOT_FOUND_ERROR.MESSAGE),
+        USER_TO_BE_REMOVED_NOT_FOUND_ERROR.CODE,
+        USER_TO_BE_REMOVED_NOT_FOUND_ERROR.PARAM
       );
     }
 
     // Checks whether user to be removed is a member of the organization.
-    let isUserMember = false;
-    organization.members.map((_id) => {
-      if (_id == args.userId) {
-        isUserMember = true;
-        return;
-      }
-    });
+    const userIsOrganizationMember = organization?.members.some(
+      (member) =>
+        member === args.userId || Types.ObjectId(member).equals(args.userId)
+    );
 
-    if (!isUserMember) {
+    if (!userIsOrganizationMember) {
+      throw new errors.NotFoundError(
+        requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),
+        USER_NOT_MEMBER_FOR_ORGANIZATION.CODE,
+        USER_NOT_MEMBER_FOR_ORGANIZATION.PARAM
+      );
+    }
+    // Check whether the logged in user is a super admin by userType
+    const loggedInUser = await User.findOne({ _id: context.userId }).lean();
+    if (!loggedInUser) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
         USER_NOT_FOUND_ERROR.PARAM
       );
     }
-    // Removes joined organization, admin for and blocked organization from user.
-    await User.updateOne(
+
+    // Check whether current user is admin of the organization.
+    const currentUserIsOrganizationAdmin = organization?.admins.some(
+      (admin) =>
+        admin === context.userId || Types.ObjectId(admin).equals(context.userId)
+    );
+
+    if (
+      !currentUserIsOrganizationAdmin &&
+      loggedInUser.userType !== "SUPERADMIN"
+    ) {
+      throw new errors.NotFoundError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ADMIN.MESSAGE),
+        USER_NOT_AUTHORIZED_ADMIN.CODE,
+        USER_NOT_AUTHORIZED_ADMIN.PARAM
+      );
+    }
+
+    await User.findOneAndUpdate(
       { _id: args.userId },
       {
         $pull: {
@@ -69,12 +97,12 @@ export const removeUserFromOrganization: MutationResolvers["removeUserFromOrgani
           organizationsBlockedBy: args.organizationId,
         },
       }
-    );
-    // Removes user from organization.
-    const updatedOrg = await Organization.updateOne(
+    ).lean();
+
+    organization = await Organization.findOneAndUpdate(
       { _id: organization._id },
       { $pull: { members: args.userId, admins: args.userId } }
-    );
+    ).lean();
 
-    return { ...organization, ...updatedOrg };
+    return organization ?? ({} as InterfaceOrganization);
   };

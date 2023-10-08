@@ -303,6 +303,18 @@ export const USER_NOT_FOUND_ERROR = {
   MESSAGE: "user.notFound",
   PARAM: "user",
 };
+export const USER_NOT_MEMBER_FOR_ORGANIZATION = {
+  DESC: "User is not a member of the organization",
+  CODE: "user.notMember",
+  MESSAGE: "user.notMember",
+  PARAM: "user",
+};
+export const USER_TO_BE_REMOVED_NOT_FOUND_ERROR = {
+  DESC: "User to be removed not found",
+  CODE: "user.notFound",
+  MESSAGE: "user.notFound",
+  PARAM: "user",
+};
 export const SUPERADMIN_CANT_CHANGE_OWN_ROLE = {
   MESSAGE:
     "Superadmin's are not allowed to change their own roles. This is done as SUPERADMIN is the highest level of access to the system, and downgrading their own role may result in them being locked out of the system.",
