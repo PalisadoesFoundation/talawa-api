@@ -491,7 +491,6 @@ export type Mutation = {
   blockPluginCreationBySuperadmin: User;
   blockUser: User;
   cancelMembershipRequest: MembershipRequest;
-  changeUserRoleInOrganization: Organization;
   checkIn: CheckIn;
   createAdmin: User;
   createComment?: Maybe<Comment>;
@@ -559,6 +558,7 @@ export type Mutation = {
   updateTask?: Maybe<Task>;
   updateUserPassword: User;
   updateUserProfile: User;
+  updateUserRoleInOrganization: Organization;
   updateUserTag?: Maybe<UserTag>;
   updateUserType: Scalars['Boolean'];
 };
@@ -635,13 +635,6 @@ export type MutationBlockUserArgs = {
 
 export type MutationCancelMembershipRequestArgs = {
   membershipRequestId: Scalars['ID'];
-};
-
-
-export type MutationChangeUserRoleInOrganizationArgs = {
-  organizationId: Scalars['ID'];
-  role: Scalars['String'];
-  userId: Scalars['ID'];
 };
 
 
@@ -995,6 +988,13 @@ export type MutationUpdateUserPasswordArgs = {
 export type MutationUpdateUserProfileArgs = {
   data?: InputMaybe<UpdateUserInput>;
   file?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUpdateUserRoleInOrganizationArgs = {
+  organizationId: Scalars['ID'];
+  role: Scalars['String'];
+  userId: Scalars['ID'];
 };
 
 
@@ -2388,7 +2388,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   blockPluginCreationBySuperadmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockPluginCreationBySuperadminArgs, 'blockUser' | 'userId'>>;
   blockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockUserArgs, 'organizationId' | 'userId'>>;
   cancelMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationCancelMembershipRequestArgs, 'membershipRequestId'>>;
-  changeUserRoleInOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationChangeUserRoleInOrganizationArgs, 'organizationId' | 'role' | 'userId'>>;
   checkIn?: Resolver<ResolversTypes['CheckIn'], ParentType, ContextType, RequireFields<MutationCheckInArgs, 'data'>>;
   createAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
   createComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'data' | 'postId'>>;
@@ -2456,6 +2455,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateTask?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<MutationUpdateTaskArgs, 'data' | 'id'>>;
   updateUserPassword?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserPasswordArgs, 'data'>>;
   updateUserProfile?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;
+  updateUserRoleInOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateUserRoleInOrganizationArgs, 'organizationId' | 'role' | 'userId'>>;
   updateUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationUpdateUserTagArgs, 'input'>>;
   updateUserType?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateUserTypeArgs, 'data'>>;
 };

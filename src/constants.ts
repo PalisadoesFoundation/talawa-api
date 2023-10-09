@@ -197,6 +197,25 @@ export const ADMIN_REMOVING_CREATOR = {
   PARAM: "admin.removeCreator",
 };
 
+export const ADMIN_CHANGING_ROLE_OF_CREATOR = {
+  MESSAGE:
+    "Error: Current admin cannot change the role of the creator of the Org",
+  CODE: "admin.changeRoleOfCreator",
+  PARAM: "admin.changeRoleOfCreator",
+};
+
+export const ADMIN_CHANGING_ROLE_OF_ADMIN = {
+  MESSAGE: "Error: Current admin cannot change the role of another admin",
+  CODE: "admin.changeRoleOfAdmin",
+  PARAM: "admin.changeRoleOfAdmin",
+};
+
+export const ADMIN_CANNOT_CHANGE_ITS_ROLE = {
+  MESSAGE: "Error: Current admin cannot change its own role",
+  CODE: "admin.changeOwnRole",
+  PARAM: "admin.changeOwnRole",
+};
+
 export const USER_NOT_AUTHORIZED_TO_PIN = {
   MESSAGE:
     "The user must be a superadmin or an admin of the organization to pin/unpin posts",

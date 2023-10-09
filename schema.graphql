@@ -420,7 +420,6 @@ type Mutation {
   blockPluginCreationBySuperadmin(blockUser: Boolean!, userId: ID!): User!
   blockUser(organizationId: ID!, userId: ID!): User!
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
-  changeUserRoleInOrganization(organizationId: ID!, role: String!, userId: ID!): Organization!
   checkIn(data: CheckInInput!): CheckIn!
   createAdmin(data: UserAndOrganizationInput!): User!
   createComment(data: CommentInput!, postId: ID!): Comment
@@ -488,6 +487,7 @@ type Mutation {
   updateTask(data: UpdateTaskInput!, id: ID!): Task
   updateUserPassword(data: UpdateUserPasswordInput!): User!
   updateUserProfile(data: UpdateUserInput, file: String): User!
+  updateUserRoleInOrganization(organizationId: ID!, role: String!, userId: ID!): Organization!
   updateUserTag(input: UpdateUserTagInput!): UserTag
   updateUserType(data: UpdateUserTypeInput!): Boolean!
 }

@@ -36,12 +36,6 @@ export const mutations = gql`
 
     cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
-    changeUserRoleInOrganization(
-      organizationId: ID!
-      userId: ID!
-      role: String!
-    ): Organization! @auth @role(requires: SUPERADMIN)
-
     checkIn(data: CheckInInput!): CheckIn! @auth
 
     createMember(input: UserAndOrganizationInput!): Organization! @auth
@@ -207,6 +201,12 @@ export const mutations = gql`
     updateUserProfile(data: UpdateUserInput, file: String): User! @auth
 
     updateUserPassword(data: UpdateUserPasswordInput!): User! @auth
+
+    updateUserRoleInOrganization(
+      organizationId: ID!
+      userId: ID!
+      role: String!
+    ): Organization! @auth
 
     updateUserType(data: UpdateUserTypeInput!): Boolean!
       @auth

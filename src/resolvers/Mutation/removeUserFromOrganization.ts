@@ -7,7 +7,7 @@ import {
   USER_TO_BE_REMOVED_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceOrganization} from "../../models";
+import type { InterfaceOrganization } from "../../models";
 import { Organization, User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
