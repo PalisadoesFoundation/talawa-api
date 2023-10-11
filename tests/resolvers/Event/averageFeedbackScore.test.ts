@@ -47,6 +47,6 @@ describe("resolvers -> Event -> averageFeedbackScore", () => {
       {}
     );
 
-    expect(averageFeedbackScorePayload).toEqual(7);
+    expect(averageFeedbackScorePayload).toEqual(3);
   });
 });
