@@ -42,7 +42,7 @@ describe("resolvers -> Query -> addFeedback", () => {
       const args: MutationAddFeedbackArgs = {
         data: {
           eventId: Types.ObjectId().toString(),
-          rating: 7,
+          rating: 4,
           review: "Test Review",
         },
       };
@@ -116,7 +116,7 @@ describe("resolvers -> Query -> addFeedback", () => {
       const args: MutationAddFeedbackArgs = {
         data: {
           eventId: testEvent!._id,
-          rating: 7,
+          rating: 4,
           review: "Test Review",
         },
       };
@@ -149,7 +149,7 @@ describe("resolvers -> Query -> addFeedback", () => {
     const args: MutationAddFeedbackArgs = {
       data: {
         eventId: testEvent!._id,
-        rating: 7,
+        rating: 4,
         review: "Test Review",
       },
     };
@@ -166,7 +166,7 @@ describe("resolvers -> Query -> addFeedback", () => {
 
     expect(payload).toMatchObject({
       eventId: testEvent!._id,
-      rating: 7,
+      rating: 4,
       review: "Test Review",
     });
   });
@@ -182,7 +182,7 @@ describe("resolvers -> Query -> addFeedback", () => {
       const args: MutationAddFeedbackArgs = {
         data: {
           eventId: testEvent!._id,
-          rating: 7,
+          rating: 4,
           review: "Test Review",
         },
       };
