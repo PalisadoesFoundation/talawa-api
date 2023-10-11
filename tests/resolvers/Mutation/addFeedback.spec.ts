@@ -75,7 +75,7 @@ describe("resolvers -> Query -> addFeedback", () => {
       const args: MutationAddFeedbackArgs = {
         data: {
           eventId: testEvent!._id,
-          rating: 7,
+          rating: 4,
           review: "Test Review",
         },
       };
