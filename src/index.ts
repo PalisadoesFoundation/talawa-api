@@ -6,6 +6,8 @@ import { useServer } from "graphql-ws/lib/use/ws";
 import { isAuth } from "./middleware";
 import * as database from "./db";
 import http from "http";
+import https from "https";
+import fs from "fs";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { PubSub } from "graphql-subscriptions";
 import app from "./app";
@@ -19,6 +21,7 @@ import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHt
 import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
 import { expressMiddleware } from "@apollo/server/express4";
 import loadPlugins from "./config/plugins/loadPlugins";
+import path from "path";
 const pubsub = new PubSub();
 
 // defines schema
@@ -33,7 +36,19 @@ schema = roleDirectiveTransformer(schema, "role");
 
 // Our httpServer handles incoming requests to our Express app.
 // Below, we tell Apollo Server to "drain" this httpServer, enabling our servers to shut down gracefully.
-const httpServer = http.createServer(app);
+
+const httpServer =
+  process.env.NODE_ENV === "production"
+    ? https.createServer(
+        {
+          //@ts-ignore
+          key: fs.readFileSync(path.join(__dirname, "../key.pem")),
+          cert: fs.readFileSync(path.join(__dirname, "../cert.pem")),
+        },
+        // :{}
+        app
+      )
+    : http.createServer(app);
 
 const server = new ApolloServer({
   schema,
@@ -113,7 +128,11 @@ async function startServer(): Promise<void> {
   // Log all the configuration related issues
   await logIssues();
 
-  console.log(`🚀 Server ready at http://localhost:4000/graphql`);
+  console.log(
+    `🚀 Server ready at ${
+      process.env.NODE_ENV === "production" ? "https" : "http"
+    }://localhost:4000/graphql`
+  );
   console.log(`🚀 Subscription endpoint ready at ws://localhost:4000/graphql`);
 }
 
