@@ -24,7 +24,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Event -> averageFeedbackScore", () => {
-  it(`Should return null if there are no submitted feedbacks for the event`, async () => {
+  it(`Should return 0 if there are no submitted feedbacks for the event`, async () => {
     const parent = testEvent!.toObject();
 
     const averageFeedbackScorePayload = await averageFeedbackScoreResolver?.(
@@ -33,7 +33,7 @@ describe("resolvers -> Event -> averageFeedbackScore", () => {
       {}
     );
 
-    expect(averageFeedbackScorePayload).toEqual(null);
+    expect(averageFeedbackScorePayload).toEqual(0);
   });
 
   it(`Should return the proper average score if there are some submitted feedbacks for the event`, async () => {
@@ -47,6 +47,6 @@ describe("resolvers -> Event -> averageFeedbackScore", () => {
       {}
     );
 
-    expect(averageFeedbackScorePayload).toEqual(7);
+    expect(averageFeedbackScorePayload).toEqual(3);
   });
 });
