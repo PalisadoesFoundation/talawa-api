@@ -95,10 +95,10 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
       "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJA" +
       "AAADUlEQVR42mN858n7HwAFtgJFXAJi7wAAAABJRU5ErkJggg==";
 
-    testPreviousImagePath = await uploadEncodedImage(img, null);
+    const previousImagePath = await uploadEncodedImage(img, null);
 
-    const fileName = await uploadEncodedImage(img, testPreviousImagePath);
-    expect(fileName).equals(testPreviousImagePath);
+    const fileName = await uploadEncodedImage(img, previousImagePath);
+    expect(fileName).equals(previousImagePath);
 
     let prevImageExists;
     if (fs.existsSync(path.join(__dirname, "../../../".concat(fileName)))) {
@@ -108,5 +108,33 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
       });
     }
     expect(prevImageExists).toBe(true);
+  });
+
+  it("should create new image and return the pointer to that binary data and decrease the previous image count", async () => {
+    try {
+      const img =
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAA" +
+        "AAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAACxIAAAsSAdLdfvwAAAAWSURB" +
+        "VBhXY2Rg+PefAQiYQAQDAwMDAB0KAgGZq0EVAAAAAElFTkSuQmCC";
+
+      const encodedImageBefore = await EncodedImage.findOne({
+        fileName: testPreviousImagePath,
+      });
+      expect(encodedImageBefore?.numberOfUses).toBe(3);
+
+      const fileName = await uploadEncodedImage(img, testPreviousImagePath);
+      expect(fileName).not.equals(testPreviousImagePath);
+
+      const encodedImageAfter = await EncodedImage.findOne({
+        fileName: testPreviousImagePath,
+      });
+      expect(encodedImageAfter?.numberOfUses).toBe(2);
+
+      fs.unlink(path.join(__dirname, "../../../".concat(fileName)), (err) => {
+        if (err) throw err;
+      });
+    } catch (error: any) {
+      console.log(error);
+    }
   });
 });

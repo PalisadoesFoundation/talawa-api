@@ -58,7 +58,7 @@ describe("src -> utilities -> encodedVideoStorage -> uploadEncodedVideo", () => 
     }
   });
 
-  it("should not create new video but return the pointer to that binary data and delete the previous video", async () => {
+  it("should not create new video but return the pointer to that binary data and increase numberOfUses by 1", async () => {
     const vid = "data:video/mp4;base64,VIDEO_BASE64_DATA_HERE"; // Replace with valid video data
 
     const encodedVideoBefore = await EncodedVideo.findOne({
@@ -82,10 +82,10 @@ describe("src -> utilities -> encodedVideoStorage -> uploadEncodedVideo", () => 
   it("should not create new video but return the pointer to that binary data and not delete the previous video", async () => {
     const vid = "data:video/mp4;base64,NEW_VIDEO_BASE64_DATA_HERE"; // Replace with new valid video data
 
-    testPreviousVideoPath = await uploadEncodedVideo(vid, null);
+    const previousVideoPath = await uploadEncodedVideo(vid, null);
 
-    const fileName = await uploadEncodedVideo(vid, testPreviousVideoPath);
-    expect(fileName).equals(testPreviousVideoPath);
+    const fileName = await uploadEncodedVideo(vid, previousVideoPath);
+    expect(fileName).equals(previousVideoPath);
 
     let prevVideoExists;
     if (fs.existsSync(path.join(__dirname, "../../../".concat(fileName)))) {
@@ -95,5 +95,30 @@ describe("src -> utilities -> encodedVideoStorage -> uploadEncodedVideo", () => 
       });
     }
     expect(prevVideoExists).toBe(true);
+  });
+
+  it("should create new video and return the pointer to that binary data and decrease the previous video count", async () => {
+    try {
+      const vid = "data:video/mp4;base64,NEW2_VIDEO_BASE64_DATA_HERE"; // Replace with new valid video data
+
+      const encodedVideoBefore = await EncodedVideo.findOne({
+        fileName: testPreviousVideoPath,
+      });
+      expect(encodedVideoBefore?.numberOfUses).toBe(3);
+
+      const fileName = await uploadEncodedVideo(vid, testPreviousVideoPath);
+      expect(fileName).not.equals(testPreviousVideoPath);
+
+      const encodedVideoAfter = await EncodedVideo.findOne({
+        fileName: testPreviousVideoPath,
+      });
+      expect(encodedVideoAfter?.numberOfUses).toBe(2);
+
+      fs.unlink(path.join(__dirname, "../../../".concat(fileName)), (err) => {
+        if (err) throw err;
+      });
+    } catch (error: any) {
+      console.log(error);
+    }
   });
 });
