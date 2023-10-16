@@ -58,7 +58,7 @@ describe("src -> utilities -> encodedVideoStorage -> uploadEncodedVideo", () => 
     }
   });
 
-  it("should not create new video but return the pointer to that binary data and increase numberOfUses by 1", async () => {
+  it("should not create new video but return the pointer to that binary data and and not change numberOfUses", async () => {
     const vid = "data:video/mp4;base64,VIDEO_BASE64_DATA_HERE"; // Replace with valid video data
 
     const encodedVideoBefore = await EncodedVideo.findOne({
@@ -67,16 +67,36 @@ describe("src -> utilities -> encodedVideoStorage -> uploadEncodedVideo", () => 
     expect(encodedVideoBefore?.numberOfUses).toBe(2);
 
     const fileName = await uploadEncodedVideo(vid, testPreviousVideoPath); // Update variable name
-    expect(fileName).not.toBe(null);
+    expect(fileName).equals(testPreviousVideoPath);
 
     const encodedVideoAfter = await EncodedVideo.findOne({
       fileName: testPreviousVideoPath,
     });
-    expect(encodedVideoAfter?.numberOfUses).toBe(3);
+    expect(encodedVideoAfter?.numberOfUses).toBe(2);
 
     fs.unlink(path.join(__dirname, "../../../".concat(fileName)), (err) => {
       if (err) throw err;
     });
+  });
+
+  it("should not create new video but return the pointer to that binary data and increase numberOfUses by 1", async () => {
+    const vid = "data:video/mp4;base64,VIDEO_BASE64_DATA_HERE"; // Replace with valid video data
+
+    const tempImg = "data:video/mp4;base64,TEMP_VIDEO";
+
+    const previousVideoPath = await uploadEncodedVideo(tempImg, null);
+
+    const encodedVideoBefore = await EncodedVideo.findOne({
+      fileName: testPreviousVideoPath,
+    });
+    expect(encodedVideoBefore?.numberOfUses).toBe(2);
+
+    const filePath = await uploadEncodedVideo(vid, previousVideoPath);
+
+    const encodedVideoAfter = await EncodedVideo.findOne({
+      fileName: filePath,
+    });
+    expect(encodedVideoAfter?.numberOfUses).toBe(3);
   });
 
   it("should not create new video but return the pointer to that binary data and not delete the previous video", async () => {

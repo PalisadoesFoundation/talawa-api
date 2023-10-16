@@ -27,6 +27,10 @@ export const uploadEncodedImage = async (
   });
 
   if (encodedImageAlreadyExist) {
+    if (encodedImageAlreadyExist?.fileName === previousImagePath) {
+      return encodedImageAlreadyExist?.fileName;
+    }
+
     await EncodedImage.findOneAndUpdate(
       {
         content: encodedImageURL,
@@ -37,6 +41,11 @@ export const uploadEncodedImage = async (
         },
       }
     );
+
+    if (previousImagePath) {
+      await deletePreviousImage(previousImagePath);
+    }
+
     return encodedImageAlreadyExist.fileName;
   }
 

@@ -66,7 +66,7 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
     }
   });
 
-  it("should not create new image but return the pointer to that binary data and increase numberOfUses by 1", async () => {
+  it("should not create new image but return the pointer to that binary data and not change numberOfUses", async () => {
     const img =
       "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0" +
       "NAAAAKElEQVQ4jWNgYGD4Twzu6FhFFGYYNXDUwGFpIAk2E4dHDRw1cDgaCAASFOffhEIO" +
@@ -78,16 +78,39 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
     expect(encodedImageBefore?.numberOfUses).toBe(2);
 
     const filePath = await uploadEncodedImage(img, testPreviousImagePath);
-    expect(filePath).not.toBe(null);
+    expect(filePath).equals(testPreviousImagePath);
+
+    const encodedImageAfter = await EncodedImage.findOne({
+      fileName: filePath,
+    });
+    expect(encodedImageAfter?.numberOfUses).toBe(2);
+
+    fs.unlink(path.join(__dirname, "../../../".concat(filePath)), (err) => {
+      if (err) throw err;
+    });
+  });
+
+  it("should not create new image but return the pointer to that binary data and increase numberOfUses by 1", async () => {
+    const img =
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0" +
+      "NAAAAKElEQVQ4jWNgYGD4Twzu6FhFFGYYNXDUwGFpIAk2E4dHDRw1cDgaCAASFOffhEIO" +
+      "3gAAAABJRU5ErkJggg==";
+
+    const tempImg = "data:image/png;base64,TEMP_IMAGE";
+
+    const previousImagePath = await uploadEncodedImage(tempImg, null);
+
+    const encodedImageBefore = await EncodedImage.findOne({
+      fileName: testPreviousImagePath,
+    });
+    expect(encodedImageBefore?.numberOfUses).toBe(2);
+
+    const filePath = await uploadEncodedImage(img, previousImagePath);
 
     const encodedImageAfter = await EncodedImage.findOne({
       fileName: filePath,
     });
     expect(encodedImageAfter?.numberOfUses).toBe(3);
-
-    fs.unlink(path.join(__dirname, "../../../".concat(filePath)), (err) => {
-      if (err) throw err;
-    });
   });
 
   it("should not create new image but return the pointer to that binary data and not delete the previous image", async () => {
