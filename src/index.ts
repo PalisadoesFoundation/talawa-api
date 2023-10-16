@@ -128,12 +128,12 @@ async function startServer(): Promise<void> {
   // Log all the configuration related issues
   await logIssues();
 
-  console.log(
+  logger.info(
     `🚀 Server ready at ${
       process.env.NODE_ENV === "production" ? "https" : "http"
     }://localhost:4000/graphql`
   );
-  console.log(`🚀 Subscription endpoint ready at ws://localhost:4000/graphql`);
+  logger.info(`🚀 Subscription endpoint ready at ws://localhost:4000/graphql`);
 }
 
 startServer();
