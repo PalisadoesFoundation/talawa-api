@@ -91,6 +91,51 @@ describe("resolvers -> Mutation -> updatePost", () => {
 
     expect(updatePostPayload).toEqual(testUpdatePostPayload);
   });
+  it(`updates the post with imageUrl and returns the updated post`, async () => {
+    const args: MutationUpdatePostArgs = {
+      id: testPost?._id,
+      data: {
+        title: "newTitle",
+        text: "nextText",
+        imageUrl:
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAZSURBVBhXYzxz5sx/BiBgefLkCQMbGxsDAEdkBicg9wbaAAAAAElFTkSuQmCC",
+      },
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    const updatePostPayload = await updatePostResolver?.({}, args, context);
+
+    const testUpdatePostPayload = await Post.findOne({
+      _id: testPost?._id,
+    }).lean();
+
+    expect(updatePostPayload).toEqual(testUpdatePostPayload);
+  });
+  it(`updates the post with videoUrl and returns the updated post`, async () => {
+    const args: MutationUpdatePostArgs = {
+      id: testPost?._id,
+      data: {
+        title: "newTitle",
+        text: "nextText",
+        videoUrl: "data:video/mp4;base64,VIDEO_BASE64_DATA_HERE",
+      },
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    const updatePostPayload = await updatePostResolver?.({}, args, context);
+
+    const testUpdatePostPayload = await Post.findOne({
+      _id: testPost?._id,
+    }).lean();
+
+    expect(updatePostPayload).toEqual(testUpdatePostPayload);
+  });
   it(`throws String Length Validation error if title is greater than 256 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
