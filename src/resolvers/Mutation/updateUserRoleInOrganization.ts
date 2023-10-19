@@ -1,16 +1,14 @@
 import { Types } from "mongoose";
 import {
   ADMIN_CANNOT_CHANGE_ITS_ROLE,
-  ADMIN_CHANGING_ROLE_OF_ADMIN,
   ADMIN_CHANGING_ROLE_OF_CREATOR,
-  ADMIN_REMOVING_CREATOR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_ERROR,
   USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
-import { InterfaceOrganization, Organization, User } from "../../models";
+import { Organization, User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 
 /**
