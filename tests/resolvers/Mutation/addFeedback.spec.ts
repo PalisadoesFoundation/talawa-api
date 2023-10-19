@@ -6,7 +6,6 @@ import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import {
   EVENT_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
   USER_NOT_CHECKED_IN,
   FEEDBACK_ALREADY_SUBMITTED,
   USER_NOT_REGISTERED_FOR_EVENT,
@@ -32,39 +31,6 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Query -> addFeedback", () => {
-  it(`throws NotFoundError if no user exists with _id === context.userId `, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
-    try {
-      const args: MutationAddFeedbackArgs = {
-        data: {
-          eventId: Types.ObjectId().toString(),
-          rating: 7,
-          review: "Test Review",
-        },
-      };
-
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-
-      const { addFeedback: addFeedbackResolver } = await import(
-        "../../../src/resolvers/Mutation/addFeedback"
-      );
-
-      await addFeedbackResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
-      );
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
-  });
-
   it(`throws NotFoundError if no event exists with _id === args.eventId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
@@ -76,7 +42,7 @@ describe("resolvers -> Query -> addFeedback", () => {
       const args: MutationAddFeedbackArgs = {
         data: {
           eventId: Types.ObjectId().toString(),
-          rating: 7,
+          rating: 4,
           review: "Test Review",
         },
       };
@@ -109,7 +75,7 @@ describe("resolvers -> Query -> addFeedback", () => {
       const args: MutationAddFeedbackArgs = {
         data: {
           eventId: testEvent!._id,
-          rating: 7,
+          rating: 4,
           review: "Test Review",
         },
       };
@@ -150,7 +116,7 @@ describe("resolvers -> Query -> addFeedback", () => {
       const args: MutationAddFeedbackArgs = {
         data: {
           eventId: testEvent!._id,
-          rating: 7,
+          rating: 4,
           review: "Test Review",
         },
       };
@@ -183,7 +149,7 @@ describe("resolvers -> Query -> addFeedback", () => {
     const args: MutationAddFeedbackArgs = {
       data: {
         eventId: testEvent!._id,
-        rating: 7,
+        rating: 4,
         review: "Test Review",
       },
     };
@@ -200,7 +166,7 @@ describe("resolvers -> Query -> addFeedback", () => {
 
     expect(payload).toMatchObject({
       eventId: testEvent!._id,
-      rating: 7,
+      rating: 4,
       review: "Test Review",
     });
   });
@@ -216,7 +182,7 @@ describe("resolvers -> Query -> addFeedback", () => {
       const args: MutationAddFeedbackArgs = {
         data: {
           eventId: testEvent!._id,
-          rating: 7,
+          rating: 4,
           review: "Test Review",
         },
       };

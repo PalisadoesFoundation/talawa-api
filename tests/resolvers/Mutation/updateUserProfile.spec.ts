@@ -130,10 +130,6 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
 
-    // console.log(testUser);
-
-    // console.log(testUser2);
-
     try {
       const args: MutationUpdateUserProfileArgs = {
         data: {

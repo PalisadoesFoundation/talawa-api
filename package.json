@@ -19,6 +19,7 @@
     "prepare": "husky install",
     "generate:graphql-markdown": "graphql-markdown http://localhost:4000/graphql > docs/Schema.md",
     "generate:graphql-schema": "get-graphql-schema http://localhost:4000/graphql --json > docs/schema.json",
+    "generate:ssl-private-key": "openssl genrsa -out ./key.pem",
     "import:sample-data": "ts-node ./src/utilities/loadSampleData.ts",
     "import:sample-data:prod": "node ./build/utilities/loadSampleData.js",
     "gen:schema": "graphql-inspector introspect ./src/typeDefs/**/**/*.ts --write ./schema.graphql "
@@ -42,6 +43,7 @@
   "dependencies": {
     "@apollo/server": "^4.9.3",
     "@graphql-inspector/cli": "^3.4.19",
+    "@graphql-tools/resolvers-composition": "^7.0.0",
     "@graphql-tools/schema": "^10.0.0",
     "@graphql-tools/utils": "^10.0.1",
     "@types/graphql-upload": "^16.0.0",
@@ -90,7 +92,7 @@
     "ws": "^8.13.0",
     "xss-clean": "^0.1.1",
     "yargs": "^17.7.2",
-    "zod": "^3.21.4",
+    "zod": "^3.22.3",
     "zod-error": "^1.5.0"
   },
   "devDependencies": {

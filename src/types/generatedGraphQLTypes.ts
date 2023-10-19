@@ -48,6 +48,17 @@ export type Scalars = {
   Upload: any;
 };
 
+export type Advertisement = {
+  __typename?: 'Advertisement';
+  _id?: Maybe<Scalars['ID']>;
+  endDate: Scalars['Date'];
+  link: Scalars['String'];
+  name: Scalars['String'];
+  orgId?: Maybe<Scalars['ID']>;
+  startDate: Scalars['Date'];
+  type: Scalars['String'];
+};
+
 export type AggregatePost = {
   __typename?: 'AggregatePost';
   count: Scalars['Int'];
@@ -493,6 +504,7 @@ export type Mutation = {
   cancelMembershipRequest: MembershipRequest;
   checkIn: CheckIn;
   createAdmin: User;
+  createAdvertisement: Advertisement;
   createComment?: Maybe<Comment>;
   createDirectChat: DirectChat;
   createDonation: Donation;
@@ -521,6 +533,7 @@ export type Mutation = {
   rejectAdmin: Scalars['Boolean'];
   rejectMembershipRequest: MembershipRequest;
   removeAdmin: User;
+  removeAdvertisement?: Maybe<Advertisement>;
   removeComment?: Maybe<Comment>;
   removeDirectChat: DirectChat;
   removeEvent: Event;
@@ -645,6 +658,16 @@ export type MutationCheckInArgs = {
 
 export type MutationCreateAdminArgs = {
   data: UserAndOrganizationInput;
+};
+
+
+export type MutationCreateAdvertisementArgs = {
+  endDate: Scalars['Date'];
+  link: Scalars['String'];
+  name: Scalars['String'];
+  orgId: Scalars['ID'];
+  startDate: Scalars['Date'];
+  type: Scalars['String'];
 };
 
 
@@ -792,6 +815,11 @@ export type MutationRejectMembershipRequestArgs = {
 
 export type MutationRemoveAdminArgs = {
   data: UserAndOrganizationInput;
+};
+
+
+export type MutationRemoveAdvertisementArgs = {
+  id: Scalars['ID'];
 };
 
 
@@ -1250,6 +1278,7 @@ export type Query = {
   event?: Maybe<Event>;
   eventsByOrganization?: Maybe<Array<Maybe<Event>>>;
   eventsByOrganizationConnection: Array<Event>;
+  getAdvertisements?: Maybe<Array<Maybe<Advertisement>>>;
   getDonationById: Donation;
   getDonationByOrgId?: Maybe<Array<Maybe<Donation>>>;
   getDonationByOrgIdConnection: Array<Donation>;
@@ -1822,6 +1851,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  Advertisement: ResolverTypeWrapper<Advertisement>;
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
   AndroidFirebaseOptions: ResolverTypeWrapper<AndroidFirebaseOptions>;
@@ -1948,6 +1978,7 @@ export type ResolversTypes = {
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  Advertisement: Advertisement;
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
   AndroidFirebaseOptions: AndroidFirebaseOptions;
@@ -2071,6 +2102,17 @@ export type RoleDirectiveArgs = {
 };
 
 export type RoleDirectiveResolver<Result, Parent, ContextType = any, Args = RoleDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
+export type AdvertisementResolvers<ContextType = any, ParentType extends ResolversParentTypes['Advertisement'] = ResolversParentTypes['Advertisement']> = {
+  _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  link?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  orgId?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
 
 export type AggregatePostResolvers<ContextType = any, ParentType extends ResolversParentTypes['AggregatePost'] = ResolversParentTypes['AggregatePost']> = {
   count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -2390,6 +2432,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   cancelMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationCancelMembershipRequestArgs, 'membershipRequestId'>>;
   checkIn?: Resolver<ResolversTypes['CheckIn'], ParentType, ContextType, RequireFields<MutationCheckInArgs, 'data'>>;
   createAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
+  createAdvertisement?: Resolver<ResolversTypes['Advertisement'], ParentType, ContextType, RequireFields<MutationCreateAdvertisementArgs, 'endDate' | 'link' | 'name' | 'orgId' | 'startDate' | 'type'>>;
   createComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'data' | 'postId'>>;
   createDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationCreateDirectChatArgs, 'data'>>;
   createDonation?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<MutationCreateDonationArgs, 'amount' | 'nameOfOrg' | 'nameOfUser' | 'orgId' | 'payPalId' | 'userId'>>;
@@ -2418,6 +2461,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   rejectAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRejectAdminArgs, 'id'>>;
   rejectMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationRejectMembershipRequestArgs, 'membershipRequestId'>>;
   removeAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveAdminArgs, 'data'>>;
+  removeAdvertisement?: Resolver<Maybe<ResolversTypes['Advertisement']>, ParentType, ContextType, RequireFields<MutationRemoveAdvertisementArgs, 'id'>>;
   removeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationRemoveCommentArgs, 'id'>>;
   removeDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationRemoveDirectChatArgs, 'chatId' | 'organizationId'>>;
   removeEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRemoveEventArgs, 'id'>>;
@@ -2564,6 +2608,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<QueryEventArgs, 'id'>>;
   eventsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryEventsByOrganizationArgs>>;
   eventsByOrganizationConnection?: Resolver<Array<ResolversTypes['Event']>, ParentType, ContextType, Partial<QueryEventsByOrganizationConnectionArgs>>;
+  getAdvertisements?: Resolver<Maybe<Array<Maybe<ResolversTypes['Advertisement']>>>, ParentType, ContextType>;
   getDonationById?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<QueryGetDonationByIdArgs, 'id'>>;
   getDonationByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Donation']>>>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdArgs, 'orgId'>>;
   getDonationByOrgIdConnection?: Resolver<Array<ResolversTypes['Donation']>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdConnectionArgs, 'orgId'>>;
@@ -2718,6 +2763,7 @@ export type UsersConnectionResultResolvers<ContextType = any, ParentType extends
 };
 
 export type Resolvers<ContextType = any> = {
+  Advertisement?: AdvertisementResolvers<ContextType>;
   AggregatePost?: AggregatePostResolvers<ContextType>;
   AggregateUser?: AggregateUserResolvers<ContextType>;
   AndroidFirebaseOptions?: AndroidFirebaseOptionsResolvers<ContextType>;

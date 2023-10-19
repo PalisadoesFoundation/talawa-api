@@ -15,7 +15,7 @@ export const createFeedbackWithIDs = async (
 ): Promise<TestFeedbackType> => {
   const feedback = await Feedback.create({
     eventId,
-    rating: 7,
+    rating: 3,
     review: nanoid(),
   });
 

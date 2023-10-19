@@ -12,7 +12,7 @@ export async function findOrganizationsInCache(
 
   const organizationFoundInCache = await OrganizationCache.mget(keys);
 
-  const organizations = organizationFoundInCache.map((org) => {
+  const organizations = organizationFoundInCache.map((org: string | null) => {
     if (org === null) {
       return null;
     }

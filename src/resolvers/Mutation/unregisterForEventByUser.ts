@@ -1,9 +1,8 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
-import { User, Event, EventAttendee } from "../../models";
+import { Event, EventAttendee } from "../../models";
 import {
-  USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
   USER_ALREADY_UNREGISTERED_ERROR,
 } from "../../constants";
@@ -24,19 +23,6 @@ import { cacheEvents } from "../../services/EventCache/cacheEvents";
 
 export const unregisterForEventByUser: MutationResolvers["unregisterForEventByUser"] =
   async (_parent, args, context) => {
-    const currentUserExists = await User.exists({
-      _id: context.userId,
-    });
-
-    // checks if current user exists
-    if (currentUserExists === false) {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
-      );
-    }
-
     let event: InterfaceEvent | null;
 
     const eventFoundInCache = await findEventsInCache([args.id]);

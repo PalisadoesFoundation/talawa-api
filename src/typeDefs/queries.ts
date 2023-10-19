@@ -38,6 +38,7 @@ export const queries = gql`
     getlanguage(lang_code: String!): [Translation]
 
     getPlugins: [Plugin]
+    getAdvertisements: [Advertisement]
 
     hasSubmittedFeedback(userId: ID!, eventId: ID!): Boolean
 
