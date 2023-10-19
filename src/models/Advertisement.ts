@@ -9,12 +9,12 @@ type AdvertisementTypes = {
 };
 export interface InterfaceAdvertisement {
   _id: Types.ObjectId;
-  orgId: Types.ObjectId;
+  orgId: string;
   name: string;
   link: string;
   type: AdvertisementTypes;
-  startDate: Date;
-  endDate: Date;
+  startDate: string;
+  endDate: string;
 }
 
 /**
@@ -52,7 +52,7 @@ const advertisementSchema = new Schema({
     required: true,
   },
   orgId: {
-    type: Schema.Types.ObjectId,
+    type: String,
   },
   link: {
     type: String,
@@ -64,11 +64,11 @@ const advertisementSchema = new Schema({
     required: true,
   },
   startDate: {
-    type: Date,
+    type: String,
     required: true,
   },
   endDate: {
-    type: Date,
+    type: String,
     required: true,
   },
 });
