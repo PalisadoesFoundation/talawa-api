@@ -58,7 +58,6 @@ import { removeOrganizationImage } from "./removeOrganizationImage";
 import { removePost } from "./removePost";
 import { removeTask } from "./removeTask";
 import { removeUserFromGroupChat } from "./removeUserFromGroupChat";
-import { removeUserFromOrganization } from "./removeUserFromOrganization";
 import { removeUserImage } from "./removeUserImage";
 import { removeUserTag } from "./removeUserTag";
 import { revokeRefreshTokenForUser } from "./revokeRefreshTokenForUser";
@@ -146,7 +145,6 @@ export const Mutation: MutationResolvers = {
   removePost,
   removeTask,
   removeUserFromGroupChat,
-  removeUserFromOrganization,
   removeUserImage,
   removeUserTag,
   revokeRefreshTokenForUser,

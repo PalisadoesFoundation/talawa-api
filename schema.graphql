@@ -474,7 +474,6 @@ type Mutation {
   removePost(id: ID!): Post
   removeTask(id: ID!): Task
   removeUserFromGroupChat(chatId: ID!, userId: ID!): GroupChat!
-  removeUserFromOrganization(organizationId: ID!, userId: ID!): Organization!
   removeUserImage: User!
   removeUserTag(id: ID!): UserTag
   revokeRefreshTokenForUser(userId: String!): Boolean!
