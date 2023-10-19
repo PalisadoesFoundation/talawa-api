@@ -25,6 +25,7 @@ import { createGroupChat } from "./createGroupChat";
 import { createMessageChat } from "./createMessageChat";
 import { createOrganization } from "./createOrganization";
 import { createPlugin } from "./createPlugin";
+import { createAdvertisement } from "./createAdvertisement";
 import { createPost } from "./createPost";
 import { createTask } from "./createTask";
 import { createUserTag } from "./createUserTag";
@@ -49,6 +50,7 @@ import { removeEvent } from "./removeEvent";
 import { removeEventAttendee } from "./removeEventAttendee";
 import { removeEventProject } from "./removeEventProject";
 import { removeGroupChat } from "./removeGroupChat";
+import { removeAdvertisement } from "./removeAdvertisement";
 import { removeMember } from "./removeMember";
 import { removeOrganization } from "./removeOrganization";
 import { removeOrganizationImage } from "./removeOrganizationImage";
@@ -101,6 +103,7 @@ export const Mutation: MutationResolvers = {
   createMember,
   createAdmin,
   createComment,
+  createAdvertisement,
   createDirectChat,
   createDonation,
   createEvent,
@@ -131,6 +134,7 @@ export const Mutation: MutationResolvers = {
   removeDirectChat,
   removeEvent,
   removeEventAttendee,
+  removeAdvertisement,
   removeEventProject,
   removeGroupChat,
   removeMember,

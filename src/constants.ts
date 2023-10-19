@@ -265,7 +265,12 @@ export const TASK_NOT_FOUND_ERROR = {
   MESSAGE: "task.notFound",
   PARAM: "task",
 };
-
+export const ADVERTISEMENT_NOT_FOUND_ERROR = {
+  DESC: "Advertisement not found",
+  CODE: "advertisement.notFound",
+  MESSAGE: "advertisement.notFound",
+  PARAM: "advertisement",
+};
 export const STATUS_ACTIVE = "ACTIVE";
 
 export const URL =
