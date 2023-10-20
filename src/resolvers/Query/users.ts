@@ -36,13 +36,10 @@ export const users: QueryResolvers["users"] = async (
   const filterCriteria = {
     ...where,
     ...(args.userType ? { userType: args.userType } : {}),
+    ...(args.adminApproved !== undefined && args.adminApproved === true
+      ? { adminApproved: true }
+      : { adminApproved: false }),
   };
-  if (args.adminApproved === true) {
-    filterCriteria.adminApproved = true;
-  } else if (args.adminApproved === false) {
-    filterCriteria.adminApproved = false;
-  }
-
   const users = await User.find(filterCriteria)
     .sort(sort)
     .limit(args.first ?? 0)
