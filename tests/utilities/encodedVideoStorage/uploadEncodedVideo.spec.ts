@@ -68,7 +68,7 @@ describe("src -> utilities -> encodedVideoStorage -> uploadEncodedVideo", () => 
           if (err) throw err;
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log(error);
     }
   });

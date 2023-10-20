@@ -12,6 +12,7 @@ import {
 import { connect, disconnect } from "../helpers/db";
 import type mongoose from "mongoose";
 import { nanoid } from "nanoid";
+import { ApplicationError } from "../../src/libraries/errors";
 dotenv.config();
 
 const testNewImagePath = `${nanoid()}-testNewImagePath`;
@@ -124,7 +125,8 @@ describe("utilities -> reuploadDuplicateCheck", () => {
       );
 
       await reuploadDuplicateCheck(null, testNewImagePath);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
       expect(error.message).toEqual("invalid.fileType");
       expect(error.errors).toEqual(testErrors);
       expect(mockedRequestTranslate).toBeCalledWith("invalid.fileType");

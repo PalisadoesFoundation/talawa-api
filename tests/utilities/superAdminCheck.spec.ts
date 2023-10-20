@@ -42,7 +42,8 @@ describe("utilities -> superAdminCheck", () => {
       if (testUser) {
         superAdminCheck(testUser);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof Error)) return;
       expect(error.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
       );

@@ -28,8 +28,8 @@ export const createTestEventProject = async (): Promise<
   const testEventProject = await EventProject.create({
     title: `test${nanoid()}`,
     description: `testDesc${nanoid()}`,
-    event: testEvent!._id,
-    creator: testUser!._id,
+    event: testEvent && testEvent._id,
+    creator: testUser && testUser._id,
   });
 
   return [testUser, testOrg, testEvent, testEventProject];
@@ -50,12 +50,15 @@ export const createAndAssignTestTask = async (): Promise<
   const testTask = await Task.create({
     title: `test${nanoid()}`,
     description: `testDesc${nanoid()}`,
-    creator: testUser!._id,
-    eventProjectId: testEventProject!._id,
+    creator: testUser && testUser._id,
+    eventProjectId: testEventProject && testEventProject._id,
   });
 
   // Assign the task to the user
-  await TaskVolunteer.create({ userId: testUser!._id, taskId: testTask!._id });
+  await TaskVolunteer.create({
+    userId: testUser && testUser._id,
+    taskId: testTask && testTask._id,
+  });
 
   return [testUser, testOrg, testEvent, testEventProject, testTask];
 };
