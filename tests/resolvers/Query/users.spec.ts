@@ -335,10 +335,68 @@ describe("resolvers -> Query -> users", () => {
 
       const filterCriteria = {
         ...where,
-        ...(args.userType ? { userType: args.userType } : {}),
-        ...(args.adminApproved !== undefined && args.adminApproved === true
-          ? { adminApproved: true }
-          : { adminApproved: false }),
+        userType: args.userType as string,
+        adminApproved: args.adminApproved as boolean,
+      };
+
+      const usersPayload = await usersResolver?.({}, args, {
+        userId: testUsers[0]._id,
+      });
+
+      let users = await User.find(filterCriteria)
+        .sort(sort)
+        .select(["-password"])
+        .populate("createdOrganizations")
+        .populate("createdEvents")
+        .populate("joinedOrganizations")
+        .populate("registeredEvents")
+        .populate("eventAdmin")
+        .populate("adminFor")
+        .lean();
+
+      users = users.map((user) => ({
+        ...user,
+        organizationsBlockedBy: [],
+      }));
+
+      expect(usersPayload).toEqual(users);
+    });
+
+    it(`returns list of all existing users filtered by
+    args.where === { id: testUsers[1].id, firstName: testUsers[1].firstName,
+    lastName: testUsers[1].lastName, email: testUsers[1].email,
+    appLanguageCode: testUsers[1].appLanguageCode }, args.adminApproved: false 
+    and args.userType : "SUPERADMIN" and sorted by
+    args.orderBy === 'id_ASC'`, async () => {
+      const where = {
+        _id: testUsers[1].id,
+        firstName: testUsers[1].firstName,
+        lastName: testUsers[1].lastName,
+        email: testUsers[1].email,
+        appLanguageCode: testUsers[1].appLanguageCode,
+      };
+
+      const sort = {
+        _id: 1,
+      };
+
+      const args: QueryUsersArgs = {
+        where: {
+          id: testUsers[1].id,
+          firstName: testUsers[1].firstName,
+          lastName: testUsers[1].lastName,
+          email: testUsers[1].email,
+          appLanguageCode: testUsers[1].appLanguageCode,
+        },
+        userType: "SUPERADMIN",
+        adminApproved: false,
+        orderBy: "id_ASC",
+      };
+
+      const filterCriteria = {
+        ...where,
+        userType: args.userType as string,
+        adminApproved: args.adminApproved as boolean,
       };
 
       const usersPayload = await usersResolver?.({}, args, {
