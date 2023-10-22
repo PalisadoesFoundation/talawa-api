@@ -1,4 +1,5 @@
 import { getEnvIssues, envSchema } from "./env";
+import crypto from "crypto";
 
 const issues = getEnvIssues();
 let ENV = process.env;
@@ -264,7 +265,12 @@ export const TASK_NOT_FOUND_ERROR = {
   MESSAGE: "task.notFound",
   PARAM: "task",
 };
-
+export const ADVERTISEMENT_NOT_FOUND_ERROR = {
+  DESC: "Advertisement not found",
+  CODE: "advertisement.notFound",
+  MESSAGE: "advertisement.notFound",
+  PARAM: "advertisement",
+};
 export const STATUS_ACTIVE = "ACTIVE";
 
 export const URL =
@@ -410,3 +416,6 @@ export const SMTP_OPTIONS = {
 export const REDIS_HOST = process.env.REDIS_HOST!;
 export const REDIS_PORT = Number(process.env.REDIS_PORT);
 export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
+
+export const key = process.env.ENCRYPTION_KEY as string;
+export const iv = crypto.randomBytes(16).toString("hex");
