@@ -6,6 +6,7 @@
   * [Query](#query)
   * [Mutation](#mutation)
   * [Objects](#objects)
+    * [Advertisement](#advertisement)
     * [AggregatePost](#aggregatepost)
     * [AggregateUser](#aggregateuser)
     * [AndroidFirebaseOptions](#androidfirebaseoptions)
@@ -288,6 +289,11 @@
 <tr>
 <td colspan="2" valign="top"><strong>getPlugins</strong></td>
 <td valign="top">[<a href="#plugin">Plugin</a>]</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>getAdvertisements</strong></td>
+<td valign="top">[<a href="#advertisement">Advertisement</a>]</td>
 <td></td>
 </tr>
 <tr>
@@ -890,6 +896,41 @@
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>createAdvertisement</strong></td>
+<td valign="top"><a href="#advertisement">Advertisement</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">orgId</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">name</td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">link</td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">type</td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">startDate</td>
+<td valign="top"><a href="#date">Date</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">endDate</td>
+<td valign="top"><a href="#date">Date</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>createPost</strong></td>
 <td valign="top"><a href="#post">Post</a></td>
 <td></td>
@@ -1172,6 +1213,16 @@
 <tr>
 <td colspan="2" valign="top"><strong>removePost</strong></td>
 <td valign="top"><a href="#post">Post</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">id</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>removeAdvertisement</strong></td>
+<td valign="top"><a href="#advertisement">Advertisement</a></td>
 <td></td>
 </tr>
 <tr>
@@ -1528,6 +1579,56 @@
 </table>
 
 ## Objects
+
+### Advertisement
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>_id</strong></td>
+<td valign="top"><a href="#id">ID</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>name</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>orgId</strong></td>
+<td valign="top"><a href="#id">ID</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>link</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>type</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>startDate</strong></td>
+<td valign="top"><a href="#date">Date</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>endDate</strong></td>
+<td valign="top"><a href="#date">Date</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
 
 ### AggregatePost
 
