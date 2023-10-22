@@ -6,6 +6,10 @@ import { logger } from "../../libraries";
 export async function findOrganizationsInCache(
   ids: string[]
 ): Promise<(InterfaceOrganization | null)[]> {
+  if (ids.length === 0) {
+    return [null];
+  }
+
   const keys: string[] = ids.map((id) => {
     return `organization:${id}`;
   });
