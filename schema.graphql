@@ -729,8 +729,8 @@ type Query {
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
   getPlugins: [Plugin]
   getlanguage(lang_code: String!): [Translation]
-  isSampleOrganization(id: ID!): Boolean!
   hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean
+  isSampleOrganization(id: ID!): Boolean!
   joinedOrganizations(id: ID): [Organization]
   me: User!
   myLanguage: String
