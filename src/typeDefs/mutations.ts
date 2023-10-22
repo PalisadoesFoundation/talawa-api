@@ -93,6 +93,8 @@ export const mutations = gql`
 
     deleteDonationById(id: ID!): DeletePayload!
 
+    deleteAdvertisementById(id: ID!): DeletePayload!
+
     forgotPassword(data: ForgotPasswordData!): Boolean!
 
     joinPublicOrganization(organizationId: ID!): User! @auth

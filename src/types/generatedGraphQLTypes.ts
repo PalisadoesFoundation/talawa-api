@@ -518,6 +518,7 @@ export type Mutation = {
   createPost?: Maybe<Post>;
   createTask: Task;
   createUserTag?: Maybe<UserTag>;
+  deleteAdvertisementById: DeletePayload;
   deleteDonationById: DeletePayload;
   forgotPassword: Scalars['Boolean'];
   joinPublicOrganization: User;
@@ -743,6 +744,11 @@ export type MutationCreateTaskArgs = {
 
 export type MutationCreateUserTagArgs = {
   input: CreateUserTagInput;
+};
+
+
+export type MutationDeleteAdvertisementByIdArgs = {
+  id: Scalars['ID'];
 };
 
 
@@ -2427,6 +2433,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'data'>>;
   createTask?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationCreateTaskArgs, 'data' | 'eventProjectId'>>;
   createUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationCreateUserTagArgs, 'input'>>;
+  deleteAdvertisementById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteAdvertisementByIdArgs, 'id'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;
   joinPublicOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationJoinPublicOrganizationArgs, 'organizationId'>>;

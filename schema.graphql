@@ -446,6 +446,7 @@ type Mutation {
   createPost(data: PostInput!, file: String): Post
   createTask(data: TaskInput!, eventProjectId: ID!): Task!
   createUserTag(input: CreateUserTagInput!): UserTag
+  deleteAdvertisementById(id: ID!): DeletePayload!
   deleteDonationById(id: ID!): DeletePayload!
   forgotPassword(data: ForgotPasswordData!): Boolean!
   joinPublicOrganization(organizationId: ID!): User!
