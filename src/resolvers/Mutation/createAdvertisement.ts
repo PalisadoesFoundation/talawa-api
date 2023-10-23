@@ -1,7 +1,5 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { Advertisement } from "../../models";
-//eslint-disable-next-line @typescript-eslint/naming-convention
-const { ObjectId } = require("mongodb");
 // @ts-ignore
 export const createAdvertisement: MutationResolvers["createAdvertisement"] =
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
