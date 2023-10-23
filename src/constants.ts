@@ -100,6 +100,13 @@ export const INVALID_FILE_TYPE = {
   PARAM: "internalServerError",
 };
 
+export const INVALID_ROLE_TYPE = {
+  DESC: "Invalid Role Type",
+  MESSAGE: "invalid.roleType",
+  CODE: "internalServerError",
+  PARAM: "internalServerError",
+};
+
 export const SAME_FILE_ERROR = {
   MESSAGE: "The newer image is the same as the previous image in the database",
   CODE: "internalServerError",
@@ -189,6 +196,19 @@ export const ADMIN_REMOVING_CREATOR = {
   MESSAGE: "Error: Current admin cannot remove the creator of the Org",
   CODE: "admin.removeCreator",
   PARAM: "admin.removeCreator",
+};
+
+export const ADMIN_CHANGING_ROLE_OF_CREATOR = {
+  MESSAGE:
+    "Error: Current admin cannot change the role of the creator of the Org",
+  CODE: "admin.changeRoleOfCreator",
+  PARAM: "admin.changeRoleOfCreator",
+};
+
+export const ADMIN_CANNOT_CHANGE_ITS_ROLE = {
+  MESSAGE: "Error: Current admin cannot change its own role",
+  CODE: "admin.changeOwnRole",
+  PARAM: "admin.changeOwnRole",
 };
 
 export const USER_NOT_AUTHORIZED_TO_PIN = {
@@ -298,6 +318,18 @@ export const USER_NOT_AUTHORIZED_ERROR = {
 };
 export const USER_NOT_FOUND_ERROR = {
   DESC: "User not found",
+  CODE: "user.notFound",
+  MESSAGE: "user.notFound",
+  PARAM: "user",
+};
+export const USER_NOT_MEMBER_FOR_ORGANIZATION = {
+  DESC: "User is not a member of the organization",
+  CODE: "user.notMember",
+  MESSAGE: "user.notMember",
+  PARAM: "user",
+};
+export const USER_TO_BE_REMOVED_NOT_FOUND_ERROR = {
+  DESC: "User to be removed not found",
   CODE: "user.notFound",
   MESSAGE: "user.notFound",
   PARAM: "user",

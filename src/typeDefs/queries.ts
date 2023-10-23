@@ -87,7 +87,14 @@ export const queries = gql`
 
     userLanguage(userId: ID!): String @auth
 
-    users(where: UserWhereInput, orderBy: UserOrderByInput): [User] @auth
+    users(
+      where: UserWhereInput
+      orderBy: UserOrderByInput
+      first: Int
+      skip: Int
+      userType: String
+      adminApproved: Boolean
+    ): [User] @auth
 
     usersConnection(
       where: UserWhereInput
