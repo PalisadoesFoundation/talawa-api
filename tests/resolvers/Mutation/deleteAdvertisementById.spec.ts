@@ -6,7 +6,7 @@ import type {
   InterfaceAdvertisement,
   InterfaceDonation,
 } from "../../../src/models";
-import { Advertisement, Donation } from "../../../src/models";
+import { Advertisement } from "../../../src/models";
 import type { MutationDeleteDonationByIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -20,8 +20,6 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const temp = await createTestUserAndOrganization();
-  const testUser = temp[0];
-
   const testOrganization = temp[1];
   testAdvertisement = await Advertisement.create({
     orgId: testOrganization?._id,
