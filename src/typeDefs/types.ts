@@ -92,6 +92,15 @@ export const types = gql`
     nameOfOrg: String!
     amount: Float!
   }
+  type Advertisement {
+    _id: ID
+    name: String!
+    orgId: ID
+    link: String!
+    type: String!
+    startDate: Date!
+    endDate: Date!
+  }
 
   type ExtendSession {
     accessToken: String!

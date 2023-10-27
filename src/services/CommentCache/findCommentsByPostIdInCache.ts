@@ -6,6 +6,9 @@ import { logger } from "../../libraries";
 export async function findCommentsByPostIdInCache(
   postID: Types.ObjectId
 ): Promise<(InterfaceComment | null)[]> {
+  if (!postID) {
+    return [null];
+  }
   // fetches the comment id for a particular post
   const hashKey = `post_comments:${postID}`;
 
@@ -19,7 +22,7 @@ export async function findCommentsByPostIdInCache(
 
   const commentsFoundInCache = await CommentCache.mget(commentIDs);
 
-  const comments = commentsFoundInCache.map((comment) => {
+  const comments = commentsFoundInCache.map((comment: string | null) => {
     if (comment === null) {
       return null;
     }

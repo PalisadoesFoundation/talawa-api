@@ -2,7 +2,7 @@ import "dotenv/config";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import { LENGTH_VALIDATION_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
+import { LENGTH_VALIDATION_ERROR } from "../../constants";
 import { superAdminCheck } from "../../utilities";
 import { isValidString } from "../../libraries/validators/validateString";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
@@ -18,19 +18,6 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
  */
 export const createOrganization: MutationResolvers["createOrganization"] =
   async (_parent, args, context) => {
-    const currentUserExists = await User.exists({
-      _id: context.userId,
-    });
-
-    // Checks whether currentUser with _id === context.userId exists.
-    if (currentUserExists === false) {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
-      );
-    }
-
     const currentUser = await User.findById({
       _id: context.userId,
     });

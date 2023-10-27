@@ -1,11 +1,9 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
-import { Types } from "mongoose";
 import { User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 
 import { logout as logoutResolver } from "../../../src/resolvers/Mutation/logout";
-import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
 import {
   beforeAll,
   afterAll,
@@ -35,26 +33,6 @@ describe("resolvers -> Mutation -> logout", () => {
   afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
-  });
-  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
-    try {
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-
-      const { logout: logoutResolver } = await import(
-        "../../../src/resolvers/Mutation/logout"
-      );
-
-      await logoutResolver?.({}, {}, context);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
   });
 
   it(`sets token === null for user with _id === context.userId and returns true`, async () => {

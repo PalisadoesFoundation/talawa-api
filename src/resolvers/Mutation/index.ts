@@ -13,6 +13,7 @@ import { assignUserTag } from "./assignUserTag";
 import { blockPluginCreationBySuperadmin } from "./blockPluginCreationBySuperadmin";
 import { blockUser } from "./blockUser";
 import { cancelMembershipRequest } from "./cancelMembershipRequest";
+import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { checkIn } from "./checkIn";
 import { createMember } from "./createMember";
 import { createAdmin } from "./createAdmin";
@@ -25,6 +26,7 @@ import { createGroupChat } from "./createGroupChat";
 import { createMessageChat } from "./createMessageChat";
 import { createOrganization } from "./createOrganization";
 import { createPlugin } from "./createPlugin";
+import { createAdvertisement } from "./createAdvertisement";
 import { createPost } from "./createPost";
 import { createSampleOrganization } from "./createSampleOrganization";
 import { createTask } from "./createTask";
@@ -50,6 +52,7 @@ import { removeEvent } from "./removeEvent";
 import { removeEventAttendee } from "./removeEventAttendee";
 import { removeEventProject } from "./removeEventProject";
 import { removeGroupChat } from "./removeGroupChat";
+import { removeAdvertisement } from "./removeAdvertisement";
 import { removeMember } from "./removeMember";
 import { removeOrganization } from "./removeOrganization";
 import { removeOrganizationImage } from "./removeOrganizationImage";
@@ -99,10 +102,12 @@ export const Mutation: MutationResolvers = {
   blockPluginCreationBySuperadmin,
   blockUser,
   cancelMembershipRequest,
+  updateUserRoleInOrganization,
   checkIn,
   createMember,
   createAdmin,
   createComment,
+  createAdvertisement,
   createDirectChat,
   createDonation,
   createEvent,
@@ -134,6 +139,7 @@ export const Mutation: MutationResolvers = {
   removeDirectChat,
   removeEvent,
   removeEventAttendee,
+  removeAdvertisement,
   removeEventProject,
   removeGroupChat,
   removeMember,

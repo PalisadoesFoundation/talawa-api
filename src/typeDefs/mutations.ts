@@ -76,6 +76,15 @@ export const mutations = gql`
       uninstalledOrgs: [ID!]
     ): Plugin!
 
+    createAdvertisement(
+      orgId: ID!
+      name: String!
+      link: String!
+      type: String!
+      startDate: Date!
+      endDate: Date!
+    ): Advertisement!
+
     createPost(data: PostInput!, file: String): Post @auth
 
     createUserTag(input: CreateUserTagInput!): UserTag @auth
@@ -135,6 +144,8 @@ export const mutations = gql`
     removeOrganizationImage(organizationId: String!): Organization! @auth
 
     removePost(id: ID!): Post @auth
+
+    removeAdvertisement(id: ID!): Advertisement
 
     removeUserTag(id: ID!): UserTag @auth
 
@@ -202,6 +213,12 @@ export const mutations = gql`
     updateUserProfile(data: UpdateUserInput, file: String): User! @auth
 
     updateUserPassword(data: UpdateUserPasswordInput!): User! @auth
+
+    updateUserRoleInOrganization(
+      organizationId: ID!
+      userId: ID!
+      role: String!
+    ): Organization! @auth
 
     updateUserType(data: UpdateUserTypeInput!): Boolean!
       @auth

@@ -38,6 +38,7 @@ export const queries = gql`
     getlanguage(lang_code: String!): [Translation]
 
     getPlugins: [Plugin]
+    getAdvertisements: [Advertisement]
 
     isSampleOrganization(id: ID!): Boolean!
     hasSubmittedFeedback(userId: ID!, eventId: ID!): Boolean
@@ -87,7 +88,14 @@ export const queries = gql`
 
     userLanguage(userId: ID!): String @auth
 
-    users(where: UserWhereInput, orderBy: UserOrderByInput): [User] @auth
+    users(
+      where: UserWhereInput
+      orderBy: UserOrderByInput
+      first: Int
+      skip: Int
+      userType: String
+      adminApproved: Boolean
+    ): [User] @auth
 
     usersConnection(
       where: UserWhereInput

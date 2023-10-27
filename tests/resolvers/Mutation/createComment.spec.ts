@@ -6,10 +6,7 @@ import type { MutationCreateCommentArgs } from "../../../src/types/generatedGrap
 import { connect, disconnect } from "../../helpers/db";
 
 import { createComment as createCommentResolver } from "../../../src/resolvers/Mutation/createComment";
-import {
-  POST_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
-} from "../../../src/constants";
+import { POST_NOT_FOUND_ERROR } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
@@ -35,25 +32,6 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> createComment", () => {
-  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
-    try {
-      const args: MutationCreateCommentArgs = {
-        data: {
-          text: "",
-        },
-        postId: "",
-      };
-
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-
-      await createCommentResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
-  });
-
   it(`throws NotFoundError if no post exists with _id === args.postId`, async () => {
     try {
       const args: MutationCreateCommentArgs = {

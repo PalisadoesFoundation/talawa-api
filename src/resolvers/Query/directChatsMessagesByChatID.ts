@@ -2,6 +2,7 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { errors } from "../../libraries";
 import { DirectChatMessage } from "../../models";
 import { CHAT_NOT_FOUND_ERROR } from "../../constants";
+
 /**
  * This query will fetch all messages for a certain direct chat for the user from database.
  * @param _parent-
@@ -11,6 +12,7 @@ import { CHAT_NOT_FOUND_ERROR } from "../../constants";
  * @remarks You can learn about GraphQL `Resolvers`
  * {@link https://www.apollographql.com/docs/apollo-server/data/resolvers/ | here}.
  */
+
 export const directChatsMessagesByChatID: QueryResolvers["directChatsMessagesByChatID"] =
   async (_parent, args) => {
     const directChatsMessages = await DirectChatMessage.find({

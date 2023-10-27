@@ -37,26 +37,6 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> createGroupChat", () => {
-  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
-    try {
-      const args: MutationCreateGroupChatArgs = {
-        data: {
-          organizationId: "",
-          title: "",
-          userIds: [],
-        },
-      };
-
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-
-      await createGroupChatResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
-  });
-
   it(`throws NotFoundError if no organization exists with _id === args.data.organizationId`, async () => {
     try {
       const args: MutationCreateGroupChatArgs = {

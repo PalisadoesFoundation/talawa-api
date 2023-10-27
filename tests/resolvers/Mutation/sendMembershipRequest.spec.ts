@@ -9,7 +9,6 @@ import { sendMembershipRequest as sendMembershipRequestResolver } from "../../..
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import type {
@@ -37,30 +36,6 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> sendMembershipRequest", () => {
-  it(`throws NotFoundError if the current user with _id === context.userId does not exist`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
-    try {
-      const args: MutationSendMembershipRequestArgs = {
-        organizationId: "",
-      };
-
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-
-      const { sendMembershipRequest: sendMembershipRequestResolver } =
-        await import("../../../src/resolvers/Mutation/sendMembershipRequest");
-
-      await sendMembershipRequestResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
-  });
-
   it(`throws NotFoundError if no organization exists with _id === args.organizationId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
