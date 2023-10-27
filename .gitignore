@@ -2,6 +2,11 @@
 docs/Schema.md
 docs/schema.json
 
+# Ignore redis binary dump (dump.rdb) files
+*.rdb
+
+# Miscellaneous files
+
 node_modules
 .idea
 .env
@@ -18,10 +23,13 @@ coverage
 build
 
 serviceAccountKey.json
-
+cert.pem
+key.pem
+csr.pem
 # Added FNM configuration files
 .node-version
 
 # MacOS
 
 .DS_STORE
+

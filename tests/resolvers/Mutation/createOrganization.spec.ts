@@ -1,6 +1,5 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
-import { Types } from "mongoose";
 import { User } from "../../../src/models";
 import type { MutationCreateOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
@@ -9,7 +8,6 @@ import { createOrganization as createOrganizationResolver } from "../../../src/r
 import {
   LENGTH_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_SUPERADMIN,
-  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import * as uploadImage from "../../../src/utilities/uploadImage";
 import {
@@ -45,36 +43,6 @@ describe("resolvers -> Mutation -> createOrganization", () => {
   afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
-  });
-  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementation((message) => message);
-    try {
-      const args: MutationCreateOrganizationArgs = {
-        data: {
-          description: "description",
-          isPublic: true,
-          name: "name",
-          visibleInSearch: true,
-          apiUrl: "apiUrl",
-          location: "location",
-        },
-      };
-
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-
-      const { createOrganization } = await import(
-        "../../../src/resolvers/Mutation/createOrganization"
-      );
-      await createOrganization?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
   });
 
   it(`throws Not Authorised Error if user is not a super admin`, async () => {

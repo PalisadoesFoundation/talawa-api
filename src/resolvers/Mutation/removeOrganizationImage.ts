@@ -1,11 +1,10 @@
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
   ORGANIZATION_IMAGE_NOT_FOUND_ERROR,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Organization } from "../../models";
+import { Organization } from "../../models";
 import { adminCheck, deleteImage } from "../../utilities";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
@@ -22,19 +21,6 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
  */
 export const removeOrganizationImage: MutationResolvers["removeOrganizationImage"] =
   async (_parent, args, context) => {
-    const currentUserExists = await User.exists({
-      _id: context.userId,
-    });
-
-    // Checks whether currentUser with _id === context.userId exists.
-    if (currentUserExists === false) {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
-      );
-    }
-
     let organization;
 
     const organizationFoundInCache = await findOrganizationsInCache([

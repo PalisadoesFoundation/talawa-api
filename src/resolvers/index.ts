@@ -17,7 +17,8 @@ import { Subscription } from "./Subscription";
 import { Task } from "./Task";
 import { User } from "./User";
 import { UserTag } from "./UserTag";
-//@ts-ignore
+import { composeResolvers } from "@graphql-tools/resolvers-composition";
+import { currentUserExists } from "./middleware/currentUserExists";
 import GraphQLUpload from "graphql-upload/GraphQLUpload.mjs";
 import {
   DateResolver,
@@ -31,7 +32,7 @@ import {
   URLResolver,
 } from "graphql-scalars";
 
-export const resolvers: Resolvers = {
+const resolvers: Resolvers = {
   CheckIn,
   Comment,
   DirectChat,
@@ -65,3 +66,30 @@ export const resolvers: Resolvers = {
   // Graphql Upload
   Upload: GraphQLUpload,
 };
+
+const resolversComposition = {
+  "Mutation.addFeedback": [currentUserExists()],
+  "Mutation.addOrganizationImage": [currentUserExists()],
+  "Mutation.blockPluginCreationBySuperadmin": [currentUserExists()],
+  "Mutation.createComment": [currentUserExists()],
+  "Mutation.createDirectChat": [currentUserExists()],
+  "Mutation.createGroupChat": [currentUserExists()],
+  "Mutation.createOrganization": [currentUserExists()],
+  "Mutation.likeComment": [currentUserExists()],
+  "Mutation.likePost": [currentUserExists()],
+  "Mutation.logout": [currentUserExists()],
+  "Mutation.registerForEvent": [currentUserExists()],
+  "Mutation.removeOrganizationImage": [currentUserExists()],
+  "Mutation.saveFcmToken": [currentUserExists()],
+  "Mutation.sendMembershipRequest": [currentUserExists()],
+  "Mutation.unlikeComment": [currentUserExists()],
+  "Mutation.unlikePost": [currentUserExists()],
+  "Mutation.unregisterForEventByUser": [currentUserExists()],
+  "Mutation.updateLanguage": [currentUserExists()],
+  "Mutation.updatePost": [currentUserExists()],
+};
+
+export const composedResolvers: Resolvers = composeResolvers(
+  resolvers,
+  resolversComposition
+);

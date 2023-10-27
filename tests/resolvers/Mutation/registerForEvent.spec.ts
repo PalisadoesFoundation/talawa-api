@@ -9,7 +9,6 @@ import { registerForEvent as registerForEventResolver } from "../../../src/resol
 import {
   EVENT_NOT_FOUND_ERROR,
   REGISTRANT_ALREADY_EXIST_ERROR,
-  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -41,31 +40,6 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
   afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
-  });
-
-  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
-    try {
-      const args: MutationRegisterForEventArgs = {
-        id: "",
-      };
-
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-
-      const { registerForEvent: registerForEventResolver } = await import(
-        "../../../src/resolvers/Mutation/registerForEvent"
-      );
-
-      await registerForEventResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
   });
 
   it(`throws NotFoundError if no event exists with _id === args.id`, async () => {

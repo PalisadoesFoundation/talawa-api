@@ -1,4 +1,5 @@
 import { getEnvIssues, envSchema } from "./env";
+import crypto from "crypto";
 
 const issues = getEnvIssues();
 let ENV = process.env;
@@ -99,6 +100,13 @@ export const INVALID_FILE_TYPE = {
   PARAM: "internalServerError",
 };
 
+export const INVALID_ROLE_TYPE = {
+  DESC: "Invalid Role Type",
+  MESSAGE: "invalid.roleType",
+  CODE: "internalServerError",
+  PARAM: "internalServerError",
+};
+
 export const SAME_FILE_ERROR = {
   MESSAGE: "The newer image is the same as the previous image in the database",
   CODE: "internalServerError",
@@ -190,6 +198,19 @@ export const ADMIN_REMOVING_CREATOR = {
   PARAM: "admin.removeCreator",
 };
 
+export const ADMIN_CHANGING_ROLE_OF_CREATOR = {
+  MESSAGE:
+    "Error: Current admin cannot change the role of the creator of the Org",
+  CODE: "admin.changeRoleOfCreator",
+  PARAM: "admin.changeRoleOfCreator",
+};
+
+export const ADMIN_CANNOT_CHANGE_ITS_ROLE = {
+  MESSAGE: "Error: Current admin cannot change its own role",
+  CODE: "admin.changeOwnRole",
+  PARAM: "admin.changeOwnRole",
+};
+
 export const USER_NOT_AUTHORIZED_TO_PIN = {
   MESSAGE:
     "The user must be a superadmin or an admin of the organization to pin/unpin posts",
@@ -264,7 +285,12 @@ export const TASK_NOT_FOUND_ERROR = {
   MESSAGE: "task.notFound",
   PARAM: "task",
 };
-
+export const ADVERTISEMENT_NOT_FOUND_ERROR = {
+  DESC: "Advertisement not found",
+  CODE: "advertisement.notFound",
+  MESSAGE: "advertisement.notFound",
+  PARAM: "advertisement",
+};
 export const STATUS_ACTIVE = "ACTIVE";
 
 export const URL =
@@ -292,6 +318,18 @@ export const USER_NOT_AUTHORIZED_ERROR = {
 };
 export const USER_NOT_FOUND_ERROR = {
   DESC: "User not found",
+  CODE: "user.notFound",
+  MESSAGE: "user.notFound",
+  PARAM: "user",
+};
+export const USER_NOT_MEMBER_FOR_ORGANIZATION = {
+  DESC: "User is not a member of the organization",
+  CODE: "user.notMember",
+  MESSAGE: "user.notMember",
+  PARAM: "user",
+};
+export const USER_TO_BE_REMOVED_NOT_FOUND_ERROR = {
+  DESC: "User to be removed not found",
   CODE: "user.notFound",
   MESSAGE: "user.notFound",
   PARAM: "user",
@@ -417,3 +455,6 @@ export const SMTP_OPTIONS = {
 export const REDIS_HOST = process.env.REDIS_HOST!;
 export const REDIS_PORT = Number(process.env.REDIS_PORT);
 export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
+
+export const key = process.env.ENCRYPTION_KEY as string;
+export const iv = crypto.randomBytes(16).toString("hex");

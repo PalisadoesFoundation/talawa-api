@@ -6,13 +6,17 @@ import { logger } from "../../libraries";
 export async function findOrganizationsInCache(
   ids: string[]
 ): Promise<(InterfaceOrganization | null)[]> {
+  if (ids.length === 0) {
+    return [null];
+  }
+
   const keys: string[] = ids.map((id) => {
     return `organization:${id}`;
   });
 
   const organizationFoundInCache = await OrganizationCache.mget(keys);
 
-  const organizations = organizationFoundInCache.map((org) => {
+  const organizations = organizationFoundInCache.map((org: string | null) => {
     if (org === null) {
       return null;
     }

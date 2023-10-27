@@ -9,8 +9,7 @@ export const averageFeedbackScore: EventResolvers["averageFeedbackScore"] =
       .select("rating")
       .lean();
 
-    // Return null if no feedback has been submitted
-    if (feedbacks.length === 0) return null;
+    if (feedbacks.length === 0) return 0;
 
     // Return the average feedback score
     const sum = feedbacks.reduce(

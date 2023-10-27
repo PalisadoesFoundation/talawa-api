@@ -23,6 +23,7 @@ import { registeredEventsByUser } from "./registeredEventsByUser";
 import { user } from "./user";
 import { userLanguage } from "./userLanguage";
 import { users } from "./users";
+import { getAdvertisements } from "./getAdvertisements";
 import { usersConnection } from "./usersConnection";
 
 export const Query: QueryResolvers = {
@@ -33,6 +34,7 @@ export const Query: QueryResolvers = {
   eventsByOrganization,
   eventsByOrganizationConnection,
   getDonationById,
+  getAdvertisements,
   getDonationByOrgId,
   getDonationByOrgIdConnection,
   getlanguage,

@@ -45,33 +45,6 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
     vi.resetModules();
   });
 
-  it(`throws NotFoundError message if no user exists  with _id === context.userId`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
-    try {
-      const args: MutationCreateDirectChatArgs = {
-        data: {
-          organizationId: "",
-          userIds: [],
-        },
-      };
-
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-
-      const { createDirectChat: createDirectChatResolver } = await import(
-        "../../../src/resolvers/Mutation/createDirectChat"
-      );
-      await createDirectChatResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
-  });
-
   it(`throws NotFoundError message if no organization exists  with _id === args.data.organizationId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi

@@ -1,3 +1,4 @@
+export * from "./Advertisement";
 export * from "./CheckIn";
 export * from "./MessageChat";
 export * from "./Comment";

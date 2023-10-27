@@ -19,7 +19,7 @@ const feedbackSchema = new Schema({
     type: Number,
     required: true,
     default: 0,
-    max: 10,
+    max: 5,
   },
   review: {
     type: String,
