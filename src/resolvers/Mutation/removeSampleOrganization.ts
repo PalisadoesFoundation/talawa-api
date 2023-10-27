@@ -47,10 +47,6 @@ export const removeSampleOrganization: MutationResolvers["removeSampleOrganizati
       );
     }
 
-    try {
-      await removeSampleOrgUtil();
-      return true;
-    } catch (error) {
-      return false;
-    }
+    await removeSampleOrgUtil();
+    return true;
   };

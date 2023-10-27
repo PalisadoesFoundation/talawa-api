@@ -51,10 +51,6 @@ export const createSampleOrganization: MutationResolvers["createSampleOrganizati
       );
     }
 
-    try {
-      await createSampleOrgUtil();
-      return true;
-    } catch (error) {
-      return false;
-    }
+    await createSampleOrgUtil();
+    return true;
   };
