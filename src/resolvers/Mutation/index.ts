@@ -84,6 +84,7 @@ import { updateUserProfile } from "./updateUserProfile";
 import { updateUserPassword } from "./updateUserPassword";
 import { updateUserTag } from "./updateUserTag";
 import { updateUserType } from "./updateUserType";
+import { deleteAdvertisementById } from "./deleteAdvertisementById";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,
@@ -118,6 +119,7 @@ export const Mutation: MutationResolvers = {
   createTask,
   createUserTag,
   deleteDonationById,
+  deleteAdvertisementById,
   forgotPassword,
   joinPublicOrganization,
   leaveOrganization,
