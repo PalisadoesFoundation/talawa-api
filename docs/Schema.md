@@ -991,6 +991,16 @@
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>deleteAdvertisementById</strong></td>
+<td valign="top"><a href="#deletepayload">DeletePayload</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">id</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>deleteDonationById</strong></td>
 <td valign="top"><a href="#deletepayload">DeletePayload</a>!</td>
 <td></td>
