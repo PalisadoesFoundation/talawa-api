@@ -570,6 +570,7 @@ export type Mutation = {
   updateTask?: Maybe<Task>;
   updateUserPassword: User;
   updateUserProfile: User;
+  updateUserRoleInOrganization: Organization;
   updateUserTag?: Maybe<UserTag>;
   updateUserType: Scalars['Boolean'];
 };
@@ -1011,6 +1012,13 @@ export type MutationUpdateUserProfileArgs = {
 };
 
 
+export type MutationUpdateUserRoleInOrganizationArgs = {
+  organizationId: Scalars['ID'];
+  role: Scalars['String'];
+  userId: Scalars['ID'];
+};
+
+
 export type MutationUpdateUserTagArgs = {
   input: UpdateUserTagInput;
 };
@@ -1427,7 +1435,11 @@ export type QueryUserLanguageArgs = {
 
 
 export type QueryUsersArgs = {
+  adminApproved?: InputMaybe<Scalars['Boolean']>;
+  first?: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<UserOrderByInput>;
+  skip?: InputMaybe<Scalars['Int']>;
+  userType?: InputMaybe<Scalars['String']>;
   where?: InputMaybe<UserWhereInput>;
 };
 
@@ -2479,6 +2491,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateTask?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<MutationUpdateTaskArgs, 'data' | 'id'>>;
   updateUserPassword?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserPasswordArgs, 'data'>>;
   updateUserProfile?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationUpdateUserProfileArgs>>;
+  updateUserRoleInOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateUserRoleInOrganizationArgs, 'organizationId' | 'role' | 'userId'>>;
   updateUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationUpdateUserTagArgs, 'input'>>;
   updateUserType?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateUserTypeArgs, 'data'>>;
 };

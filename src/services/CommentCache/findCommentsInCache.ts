@@ -6,6 +6,10 @@ import { logger } from "../../libraries";
 export async function findCommentsInCache(
   ids: string[]
 ): Promise<(InterfaceComment | null)[]> {
+  if (ids.length === 0) {
+    return [null];
+  }
+
   const keys: string[] = ids.map((id) => {
     return `comment:${id}`;
   });
