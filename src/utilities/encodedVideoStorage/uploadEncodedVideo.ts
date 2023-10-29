@@ -27,11 +27,11 @@ export const uploadEncodedVideo = async (
     content: encodedVideoURL,
   });
 
-  if (previousVideoPath) {
-    await deletePreviousVideo(previousVideoPath);
-  }
-
   if (encodedVideoAlreadyExist) {
+    if (encodedVideoAlreadyExist?.fileName === previousVideoPath) {
+      return encodedVideoAlreadyExist?.fileName;
+    }
+
     await EncodedVideo.findOneAndUpdate(
       {
         content: encodedVideoURL,
@@ -42,7 +42,16 @@ export const uploadEncodedVideo = async (
         },
       }
     );
+
+    if (previousVideoPath) {
+      await deletePreviousVideo(previousVideoPath);
+    }
+
     return encodedVideoAlreadyExist.fileName;
+  }
+
+  if (previousVideoPath) {
+    await deletePreviousVideo(previousVideoPath);
   }
 
   let id = shortid.generate();
