@@ -13,6 +13,7 @@ This document provides instructions on how to set up and start a running instanc
   - [Install git](#install-git)
   - [Setting up this repository](#setting-up-this-repository)
   - [Install the Required Packages](#install-the-required-packages)
+  - [Installation using Docker](#installation-using-docker)
   - [Install MongoDB](#install-mongodb)
     - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
   - [Install Redis](#install-redis)
