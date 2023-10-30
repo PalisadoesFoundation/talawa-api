@@ -319,7 +319,8 @@ async function main(): Promise<void> {
   const { shouldSetMongoDb } = await inquirer.prompt({
     type: "confirm",
     name: "shouldSetMongoDb",
-    message: "Would you like to set up a MongoDB URL?",
+    message:
+      "(If using Docker dont set up a MongoDB URL)\nWould you like to set up a MongoDB URL?",
     default: true,
   });
 

@@ -20,6 +20,10 @@ services:
     depends_on:
       - mongodb
       - redis-stack-server
+    environment:
+      - MONGO_DB_URL=mongodb://mongodb:27017
+      - REDIS_HOST=redis-stack-server
+      - REDIS_PORT=6379
 
 volumes:
   mongodb-data:
