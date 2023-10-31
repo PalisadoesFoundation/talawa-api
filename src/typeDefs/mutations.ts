@@ -91,6 +91,8 @@ export const mutations = gql`
 
     createTask(data: TaskInput!, eventProjectId: ID!): Task! @auth
 
+    deleteAdvertisementById(id: ID!): DeletePayload!
+
     deleteDonationById(id: ID!): DeletePayload!
 
     forgotPassword(data: ForgotPasswordData!): Boolean!
@@ -209,6 +211,12 @@ export const mutations = gql`
     updateUserProfile(data: UpdateUserInput, file: String): User! @auth
 
     updateUserPassword(data: UpdateUserPasswordInput!): User! @auth
+
+    updateUserRoleInOrganization(
+      organizationId: ID!
+      userId: ID!
+      role: String!
+    ): Organization! @auth
 
     updateUserType(data: UpdateUserTypeInput!): Boolean!
       @auth

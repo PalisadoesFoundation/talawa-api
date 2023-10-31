@@ -2,6 +2,11 @@
 docs/Schema.md
 docs/schema.json
 
+# Ignore redis binary dump (dump.rdb) files
+*.rdb
+
+# Miscellaneous files
+
 node_modules
 .idea
 .env

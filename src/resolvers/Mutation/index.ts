@@ -13,6 +13,7 @@ import { assignUserTag } from "./assignUserTag";
 import { blockPluginCreationBySuperadmin } from "./blockPluginCreationBySuperadmin";
 import { blockUser } from "./blockUser";
 import { cancelMembershipRequest } from "./cancelMembershipRequest";
+import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { checkIn } from "./checkIn";
 import { createMember } from "./createMember";
 import { createAdmin } from "./createAdmin";
@@ -83,6 +84,7 @@ import { updateUserProfile } from "./updateUserProfile";
 import { updateUserPassword } from "./updateUserPassword";
 import { updateUserTag } from "./updateUserTag";
 import { updateUserType } from "./updateUserType";
+import { deleteAdvertisementById } from "./deleteAdvertisementById";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,
@@ -99,6 +101,7 @@ export const Mutation: MutationResolvers = {
   blockPluginCreationBySuperadmin,
   blockUser,
   cancelMembershipRequest,
+  updateUserRoleInOrganization,
   checkIn,
   createMember,
   createAdmin,
@@ -116,6 +119,7 @@ export const Mutation: MutationResolvers = {
   createTask,
   createUserTag,
   deleteDonationById,
+  deleteAdvertisementById,
   forgotPassword,
   joinPublicOrganization,
   leaveOrganization,

@@ -446,6 +446,7 @@ type Mutation {
   createPost(data: PostInput!, file: String): Post
   createTask(data: TaskInput!, eventProjectId: ID!): Task!
   createUserTag(input: CreateUserTagInput!): UserTag
+  deleteAdvertisementById(id: ID!): DeletePayload!
   deleteDonationById(id: ID!): DeletePayload!
   forgotPassword(data: ForgotPasswordData!): Boolean!
   joinPublicOrganization(organizationId: ID!): User!
@@ -498,6 +499,7 @@ type Mutation {
   updateTask(data: UpdateTaskInput!, id: ID!): Task
   updateUserPassword(data: UpdateUserPasswordInput!): User!
   updateUserProfile(data: UpdateUserInput, file: String): User!
+  updateUserRoleInOrganization(organizationId: ID!, role: String!, userId: ID!): Organization!
   updateUserTag(input: UpdateUserTagInput!): UserTag
   updateUserType(data: UpdateUserTypeInput!): Boolean!
 }
@@ -755,7 +757,7 @@ type Query {
   registrantsByEvent(id: ID!): [User]
   user(id: ID!): User!
   userLanguage(userId: ID!): String
-  users(orderBy: UserOrderByInput, where: UserWhereInput): [User]
+  users(adminApproved: Boolean, first: Int, orderBy: UserOrderByInput, skip: Int, userType: String, where: UserWhereInput): [User]
   usersConnection(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [User]!
 }
 
