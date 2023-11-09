@@ -7,6 +7,8 @@ import { connect, disconnect } from "../../helpers/db";
 import path from "path";
 import { INVALID_FILE_TYPE } from "../../../src/constants";
 
+vi.mock("fs");
+
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testPreviousVideoPath: string; // Update variable name for video
 
@@ -73,10 +75,13 @@ describe("src -> utilities -> encodedVideoStorage -> uploadEncodedVideo", () => 
       fileName: testPreviousVideoPath,
     });
     expect(encodedVideoAfter?.numberOfUses).toBe(2);
-
-    fs.unlink(path.join(__dirname, "../../../".concat(fileName)), (err) => {
-      if (err) throw err;
-    });
+    const fs: any = await vi.importActual("fs");
+    fs.unlink(
+      path.join(__dirname, "../../../".concat(fileName)),
+      (err: any) => {
+        if (err) throw err;
+      }
+    );
   });
 
   it("should not create new video but return the pointer to that binary data and increase numberOfUses by 1", async () => {
@@ -107,12 +112,16 @@ describe("src -> utilities -> encodedVideoStorage -> uploadEncodedVideo", () => 
     const fileName = await uploadEncodedVideo(vid, previousVideoPath);
     expect(fileName).equals(previousVideoPath);
 
+    const fs: any = await vi.importActual("fs");
     let prevVideoExists;
     if (fs.existsSync(path.join(__dirname, "../../../".concat(fileName)))) {
       prevVideoExists = true;
-      fs.unlink(path.join(__dirname, "../../../".concat(fileName)), (err) => {
-        if (err) throw err;
-      });
+      fs.unlink(
+        path.join(__dirname, "../../../".concat(fileName)),
+        (err: any) => {
+          if (err) throw err;
+        }
+      );
     }
     expect(prevVideoExists).toBe(true);
   });
@@ -133,12 +142,56 @@ describe("src -> utilities -> encodedVideoStorage -> uploadEncodedVideo", () => 
         fileName: testPreviousVideoPath,
       });
       expect(encodedVideoAfter?.numberOfUses).toBe(2);
-
-      fs.unlink(path.join(__dirname, "../../../".concat(fileName)), (err) => {
-        if (err) throw err;
-      });
+      const fs: any = await vi.importActual("fs");
+      fs.unlink(
+        path.join(__dirname, "../../../".concat(fileName)),
+        (err: any) => {
+          if (err) throw err;
+        }
+      );
     } catch (error: any) {
       console.log(error);
     }
+  });
+
+  it("should create the directory if it does not exist", async () => {
+    const vid = "data:video/mp4;base64,VIDEO_TEMP_DATA_IAAAACCAYAAABytg0kAAA";
+
+    const fsActual: any = await vi.importActual("fs");
+
+    vi.spyOn(fs, "existsSync").mockReturnValue(false);
+    vi.spyOn(fs, "mkdir").mockImplementation((dirPath, callback: any) => {
+      expect(dirPath).toBe(path.join(__dirname, "../../../videos"));
+      callback(null); // Simulate a successful directory creation
+    });
+
+    const fileName = await uploadEncodedVideo(vid, null);
+
+    expect(fs.existsSync).toHaveBeenCalledWith(
+      path.join(__dirname, "../../../videos")
+    );
+    expect(fs.mkdir).toHaveBeenCalledWith(
+      path.join(__dirname, "../../../videos"),
+      expect.any(Function)
+    );
+
+    fsActual.unlink(
+      path.join(__dirname, "../../../".concat(fileName)),
+      (err: any) => {
+        if (err) throw err;
+      }
+    );
+  });
+
+  it("should throw error if failed to make directory", async () => {
+    const vid = "data:video/mp4;base64,VIDEO_TEMP_DATA_IAAAAytg0kgBytg0kAAA";
+
+    vi.spyOn(fs, "existsSync").mockReturnValue(false);
+    vi.spyOn(fs, "mkdir").mockImplementation((dirPath, callback: any) => {
+      expect(dirPath).toBe(path.join(__dirname, "../../../videos"));
+      callback(new Error("Failed to create directory"));
+    });
+
+    await expect(uploadEncodedVideo(vid, null)).rejects.toThrow("Failed");
   });
 });

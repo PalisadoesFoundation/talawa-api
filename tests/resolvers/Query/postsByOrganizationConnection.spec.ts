@@ -32,7 +32,7 @@ beforeAll(async () => {
 
   testPosts = await Post.insertMany([
     {
-      text: `text${nanoid().toLowerCase()}`,
+      text: `testing-text${nanoid().toLowerCase()}`,
       title: `title${nanoid()}`,
       imageUrl: `imageUrl${nanoid()}`,
       videoUrl: `videoUrl${nanoid()}`,
@@ -40,7 +40,7 @@ beforeAll(async () => {
       organization: testOrganization?._id,
     },
     {
-      text: `text${nanoid().toLowerCase()}`,
+      text: `testing-text${nanoid().toLowerCase()}`,
       title: `title${nanoid()}`,
       imageUrl: `imageUrl${nanoid()}`,
       videoUrl: `videoUrl${nanoid()}`,
@@ -48,7 +48,7 @@ beforeAll(async () => {
       organization: testOrganization?._id,
     },
     {
-      text: `text${nanoid().toLowerCase()}`,
+      text: `testing-text${nanoid().toLowerCase()}`,
       title: `title${nanoid()}`,
       imageUrl: `imageUrl${nanoid()}`,
       videoUrl: `videoUrl${nanoid()}`,
@@ -86,6 +86,313 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       },
       edges: [],
       aggregate: { count: 0 },
+    });
+  });
+
+  it(`returns paginated list of posts filtered by
+  args.where === { text: [testPosts[2].text] }`, async () => {
+    const where = {
+      text: testPosts[2].text,
+    };
+    const args: QueryPostsByOrganizationConnectionArgs = {
+      id: testOrganization?._id,
+      first: 1,
+      skip: 1,
+      where: {
+        text: testPosts[2].text,
+      },
+      orderBy: "title_DESC",
+    };
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
+    const postsByOrganizationConnectionPayload =
+      await postsByOrganizationConnectionResolver?.({}, args, context);
+
+    const posts = await Post.find(where)
+      .limit(1)
+      .populate("organization")
+      .lean();
+    const postsWithId = posts.map((post) => {
+      return {
+        ...post,
+        id: String(post._id),
+        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : null,
+        videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : null,
+      };
+    });
+
+    postsByOrganizationConnectionPayload?.edges.map((post) => {
+      return {
+        ...post,
+        organization: post!.organization._id,
+      };
+    });
+    postsByOrganizationConnectionPayload!.edges = postsWithId;
+
+    expect(postsByOrganizationConnectionPayload).toEqual({
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        totalPages: 1,
+        nextPageNo: null,
+        prevPageNo: null,
+        currPageNo: 1,
+      },
+      edges: postsWithId,
+      aggregate: {
+        count: 1,
+      },
+    });
+  });
+
+  it(`returns paginated list of posts filtered by
+  args.where === { id_not: [testPosts[2]._id], title_not: [testPosts[2].title],
+  text_not: [testPosts[2].text] } and
+  sorted by args.orderBy === 'title_DESC'`, async () => {
+    const where = {
+      _id: {
+        $ne: [testPosts[2].id],
+      },
+      title: {
+        $ne: testPosts[2].title,
+      },
+      text: {
+        $ne: testPosts[2].text,
+      },
+    };
+
+    const sort = {
+      title: -1,
+    };
+    const args: QueryPostsByOrganizationConnectionArgs = {
+      id: testOrganization?._id,
+      first: 2,
+      skip: 1,
+      where: {
+        id_not: testPosts[2].id,
+        title_not: testPosts[2].title,
+        text_not: testPosts[2].text,
+      },
+      orderBy: "title_DESC",
+    };
+
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+    const postsByOrganizationConnectionPayload =
+      await postsByOrganizationConnectionResolver?.({}, args, context);
+
+    const posts = await Post.find(where).limit(2).sort(sort).lean();
+    const postsWithId = posts.map((post) => {
+      return {
+        ...post,
+        id: String(post._id),
+        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : null,
+        videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : null,
+      };
+    });
+
+    postsByOrganizationConnectionPayload?.edges.map((post) => {
+      return {
+        ...post,
+        organization: post!.organization._id,
+      };
+    });
+    postsByOrganizationConnectionPayload!.edges = postsWithId;
+
+    expect(postsByOrganizationConnectionPayload).toEqual({
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        totalPages: 1,
+        nextPageNo: null,
+        prevPageNo: null,
+        currPageNo: 1,
+      },
+      edges: postsWithId,
+      aggregate: {
+        count: 2,
+      },
+    });
+  });
+
+  it(`returns paginated list of posts filtered by
+  args.where === { text_in: [testPosts[1].text] }'`, async () => {
+    const where = {
+      text: {
+        $in: [testPosts[1].text],
+      },
+    };
+    const args: QueryPostsByOrganizationConnectionArgs = {
+      id: testOrganization?._id,
+      first: 1,
+      skip: 1,
+      where: {
+        text_in: [testPosts[1].text],
+      },
+    };
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
+    const postsByOrganizationConnectionPayload =
+      await postsByOrganizationConnectionResolver?.({}, args, context);
+
+    const posts = await Post.find(where)
+      .limit(1)
+      .populate("organization")
+      .lean();
+    const postsWithId = posts.map((post) => {
+      return {
+        ...post,
+        id: String(post._id),
+        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : null,
+        videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : null,
+      };
+    });
+
+    postsByOrganizationConnectionPayload?.edges.map((post) => {
+      return {
+        ...post,
+        organization: post!.organization._id,
+      };
+    });
+    postsByOrganizationConnectionPayload!.edges = postsWithId;
+
+    expect(postsByOrganizationConnectionPayload).toEqual({
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        totalPages: 1,
+        nextPageNo: null,
+        prevPageNo: null,
+        currPageNo: 1,
+      },
+      edges: postsWithId,
+      aggregate: {
+        count: 1,
+      },
+    });
+  });
+
+  it(`returns paginated list of posts filtered by
+  args.where === { text_contains: [testPosts[1].text] }'`, async () => {
+    const where = {
+      text: {
+        $regex: testPosts[1]?.text,
+        $options: "i",
+      },
+    };
+    const args: QueryPostsByOrganizationConnectionArgs = {
+      id: testOrganization?._id,
+      first: 1,
+      skip: 1,
+      where: {
+        text_contains: testPosts[1].text,
+      },
+    };
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
+    const postsByOrganizationConnectionPayload =
+      await postsByOrganizationConnectionResolver?.({}, args, context);
+
+    const posts = await Post.find(where)
+      .limit(1)
+      .populate("organization")
+      .lean();
+    const postsWithId = posts.map((post) => {
+      return {
+        ...post,
+        id: String(post._id),
+        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : null,
+        videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : null,
+      };
+    });
+
+    postsByOrganizationConnectionPayload?.edges.map((post) => {
+      return {
+        ...post,
+        organization: post!.organization._id,
+      };
+    });
+    postsByOrganizationConnectionPayload!.edges = postsWithId;
+
+    expect(postsByOrganizationConnectionPayload).toEqual({
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        totalPages: 1,
+        nextPageNo: null,
+        prevPageNo: null,
+        currPageNo: 1,
+      },
+      edges: postsWithId,
+      aggregate: {
+        count: 1,
+      },
+    });
+  });
+
+  it(`returns paginated list of posts filtered by
+  args.where === { text_start_with: text }'`, async () => {
+    const where = {
+      text: {
+        $regex: new RegExp("^testing-text"),
+      },
+    };
+    const args: QueryPostsByOrganizationConnectionArgs = {
+      id: testOrganization?._id,
+      first: 3,
+      skip: 1,
+      where: {
+        text_starts_with: "testing-text",
+      },
+    };
+    const context = {
+      apiRootUrl: BASE_URL,
+    };
+
+    const postsByOrganizationConnectionPayload =
+      await postsByOrganizationConnectionResolver?.({}, args, context);
+
+    const posts = await Post.find(where)
+      .limit(3)
+      .populate("organization")
+      .lean();
+    const postsWithId = posts.map((post) => {
+      return {
+        ...post,
+        id: String(post._id),
+        imageUrl: post.imageUrl ? `${BASE_URL}${post.imageUrl}` : null,
+        videoUrl: post.videoUrl ? `${BASE_URL}${post.videoUrl}` : null,
+      };
+    });
+
+    postsByOrganizationConnectionPayload?.edges.map((post) => {
+      return {
+        ...post,
+        organization: post!.organization._id,
+      };
+    });
+    postsByOrganizationConnectionPayload!.edges = postsWithId;
+
+    expect(postsByOrganizationConnectionPayload).toEqual({
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        totalPages: 1,
+        nextPageNo: null,
+        prevPageNo: null,
+        currPageNo: 1,
+      },
+      edges: postsWithId,
+      aggregate: {
+        count: 3,
+      },
     });
   });
 
@@ -289,6 +596,68 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     });
     postsByOrganizationConnectionPayload!.edges = postsWithId;
 
+    expect(postsByOrganizationConnectionPayload).toEqual({
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        totalPages: 1,
+        nextPageNo: null,
+        prevPageNo: null,
+        currPageNo: 1,
+      },
+      edges: postsWithId,
+      aggregate: {
+        count: 3,
+      },
+    });
+  });
+
+  it(`returns non-paginated list of posts if args.first === undefined and post.videoUrl === undefined`, async () => {
+    await Post.findOneAndUpdate(
+      {
+        creator: testUser?.id,
+      },
+      {
+        $set: {
+          videoUrl: undefined,
+        },
+      }
+    );
+
+    const where = {
+      creator: {
+        $in: testUser?._id,
+      },
+    };
+
+    const args: QueryPostsByOrganizationConnectionArgs = {
+      id: testOrganization?._id,
+      skip: 1,
+      where: {},
+      orderBy: null,
+    };
+
+    const postsByOrganizationConnectionPayload =
+      await postsByOrganizationConnectionResolver?.({}, args, {});
+
+    const postsTestModel = await Post.paginate(where, {
+      pagination: false,
+      sort: {},
+    });
+
+    const postsWithId = postsTestModel.docs.map((post) => {
+      return {
+        ...post,
+        id: String(post._id),
+      };
+    });
+    postsByOrganizationConnectionPayload?.edges.map((post) => {
+      return {
+        ...post,
+        organization: post?.organization._id,
+      };
+    });
+    postsByOrganizationConnectionPayload!.edges = postsWithId;
     expect(postsByOrganizationConnectionPayload).toEqual({
       pageInfo: {
         hasNextPage: false,

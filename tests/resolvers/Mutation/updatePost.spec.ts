@@ -1,24 +1,35 @@
 import "dotenv/config";
 import { Types } from "mongoose";
+import type mongoose from "mongoose";
 import { Post } from "../../../src/models";
 import type { MutationUpdatePostArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../../src/db";
+import { connect, disconnect } from "../../helpers/db";
 import { updatePost as updatePostResolver } from "../../../src/resolvers/Mutation/updatePost";
 import {
   LENGTH_VALIDATION_ERROR,
   POST_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
-import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
+import { beforeEach, describe, it, expect, vi, afterAll } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
+import * as uploadEncodedVideo from "../../../src/utilities/encodedVideoStorage/uploadEncodedVideo";
 
+let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testPost: TestPostType;
 
+vi.mock("../../utilities/uploadEncodedImage", () => ({
+  uploadEncodedImage: vi.fn(),
+}));
+vi.mock("../../utilities/uploadEncodedVideo", () => ({
+  uploadEncodedVideo: vi.fn(),
+}));
+
 beforeEach(async () => {
-  await connect();
+  MONGOOSE_INSTANCE = await connect();
   const temp = await createTestPost();
   testUser = temp[0];
   testPost = temp[2];
@@ -27,8 +38,8 @@ beforeEach(async () => {
     (message) => message
   );
 });
-afterEach(async () => {
-  await disconnect();
+afterAll(async () => {
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 describe("resolvers -> Mutation -> updatePost", () => {
@@ -106,6 +117,10 @@ describe("resolvers -> Mutation -> updatePost", () => {
       userId: testUser?._id,
     };
 
+    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
+      async (encodedImageURL: string) => encodedImageURL
+    );
+
     const updatePostPayload = await updatePostResolver?.({}, args, context);
 
     const testUpdatePostPayload = await Post.findOne({
@@ -127,6 +142,10 @@ describe("resolvers -> Mutation -> updatePost", () => {
     const context = {
       userId: testUser?._id,
     };
+
+    vi.spyOn(uploadEncodedVideo, "uploadEncodedVideo").mockImplementation(
+      async (encodedVideoURL: string) => encodedVideoURL
+    );
 
     const updatePostPayload = await updatePostResolver?.({}, args, context);
 

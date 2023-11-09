@@ -7,6 +7,8 @@ import { connect, disconnect } from "../../helpers/db";
 import path from "path";
 import { INVALID_FILE_TYPE } from "../../../src/constants";
 
+vi.mock("fs");
+
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testPreviousImagePath: string;
 
@@ -84,10 +86,13 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
       fileName: filePath,
     });
     expect(encodedImageAfter?.numberOfUses).toBe(2);
-
-    fs.unlink(path.join(__dirname, "../../../".concat(filePath)), (err) => {
-      if (err) throw err;
-    });
+    const fs: any = await vi.importActual("fs");
+    fs.unlink(
+      path.join(__dirname, "../../../".concat(filePath)),
+      (err: any) => {
+        if (err) throw err;
+      }
+    );
   });
 
   it("should not create new image but return the pointer to that binary data and increase numberOfUses by 1", async () => {
@@ -123,12 +128,17 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
     const fileName = await uploadEncodedImage(img, previousImagePath);
     expect(fileName).equals(previousImagePath);
 
+    const fs: any = await vi.importActual("fs");
+
     let prevImageExists;
     if (fs.existsSync(path.join(__dirname, "../../../".concat(fileName)))) {
       prevImageExists = true;
-      fs.unlink(path.join(__dirname, "../../../".concat(fileName)), (err) => {
-        if (err) throw err;
-      });
+      fs.unlink(
+        path.join(__dirname, "../../../".concat(fileName)),
+        (err: any) => {
+          if (err) throw err;
+        }
+      );
     }
     expect(prevImageExists).toBe(true);
   });
@@ -152,12 +162,56 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
         fileName: testPreviousImagePath,
       });
       expect(encodedImageAfter?.numberOfUses).toBe(2);
-
-      fs.unlink(path.join(__dirname, "../../../".concat(fileName)), (err) => {
-        if (err) throw err;
-      });
+      const fs: any = await vi.importActual("fs");
+      fs.unlink(
+        path.join(__dirname, "../../../".concat(fileName)),
+        (err: any) => {
+          if (err) throw err;
+        }
+      );
     } catch (error: any) {
       console.log(error);
     }
+  });
+
+  it("should create the directory if it does not exist", async () => {
+    const img = "data:image/png;base64,IMAGE_TEMP_DATA_IAAAACCAYAAABytg0kAAA";
+
+    const fsActual: any = await vi.importActual("fs");
+
+    vi.spyOn(fs, "existsSync").mockReturnValue(false);
+    vi.spyOn(fs, "mkdir").mockImplementation((dirPath, callback: any) => {
+      expect(dirPath).toBe(path.join(__dirname, "../../../images"));
+      callback(null); // Simulate a successful directory creation
+    });
+
+    const fileName = await uploadEncodedImage(img, null);
+
+    expect(fs.existsSync).toHaveBeenCalledWith(
+      path.join(__dirname, "../../../images")
+    );
+    expect(fs.mkdir).toHaveBeenCalledWith(
+      path.join(__dirname, "../../../images"),
+      expect.any(Function)
+    );
+
+    fsActual.unlink(
+      path.join(__dirname, "../../../".concat(fileName)),
+      (err: any) => {
+        if (err) throw err;
+      }
+    );
+  });
+
+  it("should throw error if failed to make directory", async () => {
+    const img = "data:image/png;base64,IMAGE_TEMP_DATA_IAAAAytg0kgBytg0kAAA";
+
+    vi.spyOn(fs, "existsSync").mockReturnValue(false);
+    vi.spyOn(fs, "mkdir").mockImplementation((dirPath, callback: any) => {
+      expect(dirPath).toBe(path.join(__dirname, "../../../images"));
+      callback(new Error("Failed to create directory"));
+    });
+
+    await expect(uploadEncodedImage(img, null)).rejects.toThrow("Failed");
   });
 });

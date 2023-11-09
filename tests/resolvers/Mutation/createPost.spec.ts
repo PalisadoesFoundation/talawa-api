@@ -30,6 +30,7 @@ import {
 } from "../../helpers/userAndOrg";
 import { Organization } from "../../../src/models";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
+import * as uploadEncodedVideo from "../../../src/utilities/encodedVideoStorage/uploadEncodedVideo";
 import { createPost as createPostResolverImage } from "../../../src/resolvers/Mutation/createPost";
 
 let testUser: TestUserType;
@@ -39,6 +40,9 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 
 vi.mock("../../utilities/uploadEncodedImage", () => ({
   uploadEncodedImage: vi.fn(),
+}));
+vi.mock("../../utilities/uploadEncodedVideo", () => ({
+  uploadEncodedVideo: vi.fn(),
 }));
 
 beforeAll(async () => {
@@ -261,6 +265,58 @@ describe("resolvers -> Mutation -> createPost", () => {
     await expect(
       createPostResolverImage?.({}, args, context)
     ).rejects.toThrowError("Unsupported file type.");
+  });
+
+  it(`creates the post and returns it when image is provided`, async () => {
+    const args: MutationCreatePostArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        text: "text",
+        title: "title",
+      },
+      file: "data:image/png;base64,encoded_img_base64",
+    };
+    const context = {
+      userId: testUser?.id,
+      apiRootUrl: BASE_URL,
+    };
+    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(
+      async () => "encoded_img_base64.png"
+    );
+    const createPostPayload = await createPostResolverImage?.(
+      {},
+      args,
+      context
+    );
+    expect(createPostPayload).toContain({
+      imageUrl: `${context.apiRootUrl}encoded_img_base64.png`,
+    });
+  });
+
+  it(`creates the post and returns it when video is provided`, async () => {
+    const args: MutationCreatePostArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        text: "text",
+        title: "title",
+      },
+      file: "data:video/mp4;base64,encoded_vid_base64",
+    };
+    const context = {
+      userId: testUser?.id,
+      apiRootUrl: BASE_URL,
+    };
+    vi.spyOn(uploadEncodedVideo, "uploadEncodedVideo").mockImplementation(
+      async () => "encoded_vid_base64.mp4"
+    );
+    const createPostPayload = await createPostResolverImage?.(
+      {},
+      args,
+      context
+    );
+    expect(createPostPayload).toContain({
+      videoUrl: `${context.apiRootUrl}encoded_vid_base64.mp4`,
+    });
   });
 
   it(`throws String Length Validation error if title is greater than 256 characters`, async () => {

@@ -186,6 +186,8 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
     };
 
     const args: QueryEventsByOrganizationConnectionArgs = {
+      first: 2,
+      skip: 1,
       where: {
         id_not_in: [testEvents[0]?._id],
         title_not_in: [testEvents[0]?.title],
@@ -195,7 +197,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       orderBy: "title_DESC",
     };
 
-    const events = await Event.find(where).sort(sort).lean();
+    const events = await Event.find(where).limit(2).skip(1).sort(sort).lean();
 
     let eventsByOrganizationConnectionPayload =
       await eventsByOrganizationConnectionResolver?.({}, args, {});

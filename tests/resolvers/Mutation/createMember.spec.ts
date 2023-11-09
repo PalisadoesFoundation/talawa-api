@@ -17,9 +17,11 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
+let updatedOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
@@ -132,7 +134,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
   it(`throws UnauthorizedError if user with _id === args.input.userId is already an member
   of organzation with _id === args.input.organizationId`, async () => {
     try {
-      await Organization.updateOne(
+      updatedOrganization = await Organization.findOneAndUpdate(
         {
           _id: testOrganization?._id,
         },
@@ -140,8 +142,14 @@ describe("resolvers -> Mutation -> createAdmin", () => {
           $push: {
             members: testUser?._id,
           },
+        },
+        {
+          new: true,
         }
-      );
+      ).lean();
+      if (updatedOrganization !== null) {
+        await cacheOrganizations([updatedOrganization]);
+      }
 
       const args: MutationCreateMemberArgs = {
         input: {
@@ -172,5 +180,36 @@ describe("resolvers -> Mutation -> createAdmin", () => {
     );
 
     expect(updatedOrganizationCheck).toBe(true);
+  });
+
+  it(`creates the member and return the organization`, async () => {
+    const resetOrganization = await Organization.findOneAndUpdate(
+      {
+        _id: testOrganization?._id,
+      },
+      {
+        $set: {
+          members: [],
+        },
+      },
+      {
+        new: true,
+      }
+    );
+    if (resetOrganization !== null) {
+      await cacheOrganizations([resetOrganization]);
+    }
+    const args: MutationCreateMemberArgs = {
+      input: {
+        organizationId: testOrganization?.id,
+        userId: testUser?.id,
+      },
+    };
+    const context = {
+      userId: testUser?.id,
+    };
+
+    const oraginationPayload = await createMemberResolver?.({}, args, context);
+    expect(updatedOrganization).toEqual(oraginationPayload);
   });
 });

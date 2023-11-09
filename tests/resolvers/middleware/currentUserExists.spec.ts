@@ -15,10 +15,11 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
+import { User } from "../../../src/models/User";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
-let composedResolver: (root: any, args: any, context: any, info: any) => any;
+let composedResolver: any;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -29,6 +30,15 @@ beforeAll(async () => {
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
+
+const mockReq: any = () => {
+  const req = {
+    args: {},
+    context: {},
+    info: {},
+  };
+  return req;
+};
 
 describe("resolvers -> Middleware -> currentUserExists", () => {
   afterEach(() => {
@@ -48,8 +58,8 @@ describe("resolvers -> Middleware -> currentUserExists", () => {
       const context = {
         userId: Types.ObjectId().toString(),
       };
-
-      await composedResolver({}, {}, context, {});
+      mockReq.context = context;
+      await composedResolver(mockReq)({}, {}, context, {});
     } catch (error: any) {
       expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
@@ -62,8 +72,10 @@ describe("resolvers -> Middleware -> currentUserExists", () => {
     const context = {
       userId: testUser!.id.toString(),
     };
-
-    const nextResolver = await composedResolver({}, {}, context, {});
+    mockReq.context = context;
+    User.exists = vi.fn().mockResolvedValue(true);
+    const nextResolver = await composedResolver(mockReq)({}, {}, context, {});
+    expect(User.exists).toHaveBeenCalledWith({ _id: context.userId });
     expect(nextResolver).not.toBeNull();
   });
 });
