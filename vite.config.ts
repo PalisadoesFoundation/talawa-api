@@ -51,6 +51,5 @@ export default defineConfig({
 
     // Tells vitest the time limit for an individual test block run.
     testTimeout: 30000,
-    hookTimeout: 30000,
   },
 });
