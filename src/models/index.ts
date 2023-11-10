@@ -22,6 +22,7 @@ export * from "./OrganizationTagUser";
 export * from "./Plugin";
 export * from "./PluginField";
 export * from "./Post";
+export * from "./SampleData";
 export * from "./Task";
 export * from "./TaskVolunteer";
 export * from "./User";

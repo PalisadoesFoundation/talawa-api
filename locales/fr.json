@@ -11,6 +11,7 @@
   "organization.profileImage.notFound": "Image du profil de l'organisation introuvable",
   "organization.member.notFound": "L'utilisateur de l'organisation n'est pas membre",
   "organization.notAuthorized": "L'organisation n'est pas autorisée",
+  "sampleOrganization.duplicate": "Exemple d'organisation déjà généré",
   "membershipRequest.notFound": "Demande d'adhésion introuvable",
   "membershipRequest.alreadyExists": "La demande d'adhésion existe déjà",
   "chat.notFound": "Chat non trouvé",

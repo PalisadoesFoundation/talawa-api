@@ -15,6 +15,7 @@ import { myLanguage } from "./myLanguage";
 import { organizations } from "./organizations";
 import { organizationsConnection } from "./organizationsConnection";
 import { organizationsMemberConnection } from "./organizationsMemberConnection";
+import { isSampleOrganization } from "../Query/organizationIsSample";
 import { post } from "./post";
 import { postsByOrganization } from "./postsByOrganization";
 import { postsByOrganizationConnection } from "./postsByOrganizationConnection";
@@ -38,6 +39,7 @@ export const Query: QueryResolvers = {
   getDonationByOrgIdConnection,
   getlanguage,
   getPlugins,
+  isSampleOrganization,
   me,
   myLanguage,
   organizations,
