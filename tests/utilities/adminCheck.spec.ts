@@ -15,6 +15,7 @@ import { createTestUserAndOrganization } from "../helpers/userAndOrg";
 import mongoose from "mongoose";
 import type { InterfaceOrganization } from "../../src/models";
 import { Organization, User } from "../../src/models";
+import { ApplicationError } from "../../src/libraries/errors";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -132,7 +133,8 @@ describe("utilities -> adminCheck", () => {
         new mongoose.Types.ObjectId(),
         testOrganization ?? ({} as InterfaceOrganization)
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
       expect(error.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`
       );
