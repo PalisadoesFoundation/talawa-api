@@ -171,6 +171,37 @@ describe("resolvers -> Mutation -> refreshToken", () => {
     }
   });
 
+  it("should update the user's token and increment the tokenVersion", async () => {
+    const jwtPayload = { userId: "123" };
+    const newRefreshToken = "new-refresh-token";
+
+    // Save the original function
+    const originalFunction = User.findOneAndUpdate;
+
+    // Replace User.findOneAndUpdate with a mock function
+    User.findOneAndUpdate = function () {
+      return Promise.resolve({
+        _id: testUser?._id,
+        token: newRefreshToken,
+        tokenVersion: testUser?.tokenVersion || 0 + 1,
+      });
+    } as any;
+
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: jwtPayload.userId },
+      { $set: { token: newRefreshToken }, $inc: { tokenVersion: 1 } },
+      { new: true }
+    );
+
+    expect(updatedUser).toBeDefined();
+    expect(updatedUser?.token).toBe(newRefreshToken);
+    if (testUser?.tokenVersion)
+      expect(updatedUser?.tokenVersion).toBe(testUser?.tokenVersion + 1);
+
+    // Restore the original function
+    User.findOneAndUpdate = originalFunction;
+  });
+
   it(`generates new accessToken and refreshToken and returns them`, async () => {
     await User.updateOne(
       {

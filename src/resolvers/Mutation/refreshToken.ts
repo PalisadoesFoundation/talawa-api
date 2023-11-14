@@ -3,7 +3,11 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
 import type { InterfaceJwtTokenPayload } from "../../utilities";
-import { createAccessToken, createRefreshToken } from "../../utilities";
+import {
+  createAccessToken,
+  createRefreshToken,
+  revokeRefreshToken,
+} from "../../utilities";
 import {
   INVALID_REFRESH_TOKEN_ERROR,
   REFRESH_TOKEN_SECRET,
@@ -21,7 +25,7 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
   args
 ) => {
   // This route should not be protected because the access token will be expired.
-  if (!args.refreshToken) {
+  if (!args.refreshToken || typeof args.refreshToken !== "string") {
     throw new errors.ValidationError(
       [
         {
@@ -55,7 +59,11 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
     );
   }
 
-  if (user.tokenVersion !== jwtPayload.tokenVersion) {
+  if (
+    user.tokenVersion !== jwtPayload.tokenVersion &&
+    user.token !== args.refreshToken
+  ) {
+    await revokeRefreshToken(jwtPayload.userId);
     throw new errors.ValidationError(
       [
         {
@@ -73,6 +81,19 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
   // send new access and refresh token to user
   const newAccessToken = await createAccessToken(user);
   const newRefreshToken = await createRefreshToken(user);
+
+  //update the token version for the user
+  const filter = { _id: jwtPayload.userId };
+  const update = {
+    $set: {
+      token: newRefreshToken,
+    },
+    $inc: { tokenVersion: 1 },
+  };
+
+  await User.findOneAndUpdate(filter, update, {
+    new: true,
+  });
 
   return {
     accessToken: newAccessToken,
