@@ -40,6 +40,7 @@ export const queries = gql`
     getPlugins: [Plugin]
     getAdvertisements: [Advertisement]
 
+    isSampleOrganization(id: ID!): Boolean!
     hasSubmittedFeedback(userId: ID!, eventId: ID!): Boolean
 
     joinedOrganizations(id: ID): [Organization]

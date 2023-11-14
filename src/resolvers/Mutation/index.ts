@@ -28,6 +28,7 @@ import { createOrganization } from "./createOrganization";
 import { createPlugin } from "./createPlugin";
 import { createAdvertisement } from "./createAdvertisement";
 import { createPost } from "./createPost";
+import { createSampleOrganization } from "./createSampleOrganization";
 import { createTask } from "./createTask";
 import { createUserTag } from "./createUserTag";
 import { deleteDonationById } from "./deleteDonationById";
@@ -56,6 +57,7 @@ import { removeMember } from "./removeMember";
 import { removeOrganization } from "./removeOrganization";
 import { removeOrganizationImage } from "./removeOrganizationImage";
 import { removePost } from "./removePost";
+import { removeSampleOrganization } from "./removeSampleOrganization";
 import { removeTask } from "./removeTask";
 import { removeUserFromGroupChat } from "./removeUserFromGroupChat";
 import { removeUserImage } from "./removeUserImage";
@@ -116,6 +118,7 @@ export const Mutation: MutationResolvers = {
   createOrganization,
   createPlugin,
   createPost,
+  createSampleOrganization,
   createTask,
   createUserTag,
   deleteDonationById,
@@ -144,6 +147,7 @@ export const Mutation: MutationResolvers = {
   removeMember,
   removeOrganization,
   removeOrganizationImage,
+  removeSampleOrganization,
   removePost,
   removeTask,
   removeUserFromGroupChat,

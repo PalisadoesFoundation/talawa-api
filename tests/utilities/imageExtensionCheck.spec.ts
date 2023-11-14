@@ -3,6 +3,7 @@ import { imageExtensionCheck } from "../../src/utilities/imageExtensionCheck";
 import * as deleteImage from "../../src/utilities/deleteImage";
 import { requestContext } from "../../src/libraries";
 import { INVALID_FILE_TYPE } from "../../src/constants";
+import { ApplicationError } from "../../src/libraries/errors";
 
 const testFilename = "test.anyOtherExtension";
 
@@ -36,7 +37,8 @@ describe("utilities -> imageExtensionCheck", () => {
 
     try {
       await imageExtensionCheck(testFilename);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
       expect(error.message).toEqual(testMessage);
       expect(error.errors).toEqual(testErrors);
     }

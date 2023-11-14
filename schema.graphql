@@ -444,6 +444,7 @@ type Mutation {
   createOrganization(data: OrganizationInput, file: String): Organization!
   createPlugin(pluginCreatedBy: String!, pluginDesc: String!, pluginName: String!, uninstalledOrgs: [ID!]): Plugin!
   createPost(data: PostInput!, file: String): Post
+  createSampleOrganization: Boolean!
   createTask(data: TaskInput!, eventProjectId: ID!): Task!
   createUserTag(input: CreateUserTagInput!): UserTag
   deleteAdvertisementById(id: ID!): DeletePayload!
@@ -473,6 +474,7 @@ type Mutation {
   removeOrganization(id: ID!): User!
   removeOrganizationImage(organizationId: String!): Organization!
   removePost(id: ID!): Post
+  removeSampleOrganization: Boolean!
   removeTask(id: ID!): Task
   removeUserFromGroupChat(chatId: ID!, userId: ID!): GroupChat!
   removeUserImage: User!
@@ -743,6 +745,7 @@ type Query {
   getPlugins: [Plugin]
   getlanguage(lang_code: String!): [Translation]
   hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean
+  isSampleOrganization(id: ID!): Boolean!
   joinedOrganizations(id: ID): [Organization]
   me: User!
   myLanguage: String

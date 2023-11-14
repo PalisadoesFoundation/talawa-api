@@ -12,6 +12,7 @@
   "organization.profileImage.notFound": "Organization profile image not found",
   "organization.member.notFound": "Organization's user is not a member",
   "organization.notAuthorized": "Organization is not authorized",
+  "sampleOrganization.duplicate": "Sample Organization already generated",
   "membershipRequest.notFound": "Membership Request not found",
   "membershipRequest.alreadyExists": "Membership Request already exists",
   "chat.notFound": "Chat not found",
