@@ -393,6 +393,13 @@ export const USER_ALREADY_CHECKED_IN = {
   PARAM: "user.alreadyCheckedIn",
 };
 
+export const SAMPLE_ORGANIZATION_ALREADY_EXISTS = {
+  DESC: "Sample Organization was already generated",
+  CODE: "sampleOrganization.duplicate",
+  MESSAGE: "sampleOrganization.duplicate",
+  PARAM: "sampleOrganization",
+};
+
 export const MAXIMUM_FETCH_LIMIT = 100;
 
 export const BASE_URL = `http://localhost:${process.env.port || 4000}/`;

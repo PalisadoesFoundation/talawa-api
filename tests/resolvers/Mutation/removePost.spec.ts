@@ -22,6 +22,7 @@ import {
   vi,
   afterEach,
 } from "vitest";
+import { Post } from "../../../src/models";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -126,7 +127,7 @@ describe("resolvers -> Mutation -> removePost", () => {
     }
   });
 
-  it(`deletes the post with _id === args.id and returns it`, async () => {
+  it(`deletes the post with no image and video with _id === args.id and returns it`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementationOnce(
       (message) => `Translated ${message}`
@@ -146,5 +147,91 @@ describe("resolvers -> Mutation -> removePost", () => {
 
     const removePostPayload = await removePostResolver?.({}, args, context);
     expect(removePostPayload).toEqual(testPost?.toObject());
+  });
+
+  it(`deletes the post with image with _id === args.id and returns it`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => `Translated ${message}`
+    );
+    const deletePreviousImage = await import(
+      "../../../src/utilities/encodedImageStorage/deletePreviousImage"
+    );
+    const deleteImageSpy = vi
+      .spyOn(deletePreviousImage, "deletePreviousImage")
+      .mockImplementation(() => {
+        return Promise.resolve();
+      });
+
+    const [newTestUser, , newTestPost] = await createTestPost();
+
+    const updatedPost = await Post.findOneAndUpdate(
+      { _id: newTestPost?.id },
+      {
+        $set: {
+          imageUrl: "images/fakeImagePathimage.png",
+        },
+      },
+      { new: true }
+    ).lean();
+
+    const args: MutationRemovePostArgs = {
+      id: newTestPost?.id,
+    };
+
+    const context = {
+      userId: newTestUser?.id,
+    };
+
+    const { removePost: removePostResolver } = await import(
+      "../../../src/resolvers/Mutation/removePost"
+    );
+
+    const removePostPayload = await removePostResolver?.({}, args, context);
+    expect(removePostPayload).toEqual(updatedPost);
+    expect(deleteImageSpy).toBeCalledWith("images/fakeImagePathimage.png");
+  });
+
+  it(`deletes the post with video with _id === args.id and returns it`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => `Translated ${message}`
+    );
+    const deletePreviousVideo = await import(
+      "../../../src/utilities/encodedVideoStorage/deletePreviousVideo"
+    );
+    const deleteVideoSpy = vi
+      .spyOn(deletePreviousVideo, "deletePreviousVideo")
+      .mockImplementation(() => {
+        return Promise.resolve();
+      });
+
+    const [newTestUser, , newTestPost] = await createTestPost();
+
+    const updatedPost = await Post.findOneAndUpdate(
+      { _id: newTestPost?.id },
+      {
+        $set: {
+          videoUrl: "videos/fakeVideoPathvideo.png",
+        },
+      },
+      { new: true }
+    ).lean();
+
+    const args: MutationRemovePostArgs = {
+      id: newTestPost?.id,
+    };
+
+    const context = {
+      userId: newTestUser?.id,
+    };
+
+    const { removePost: removePostResolver } = await import(
+      "../../../src/resolvers/Mutation/removePost"
+    );
+
+    const removePostPayload = await removePostResolver?.({}, args, context);
+    expect(removePostPayload).toEqual(updatedPost);
+    expect(deleteVideoSpy).toBeCalledWith("videos/fakeVideoPathvideo.png");
   });
 });

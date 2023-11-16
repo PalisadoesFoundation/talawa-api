@@ -297,6 +297,16 @@
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>isSampleOrganization</strong></td>
+<td valign="top"><a href="#boolean">Boolean</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">id</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>hasSubmittedFeedback</strong></td>
 <td valign="top"><a href="#boolean">Boolean</a></td>
 <td></td>
@@ -976,6 +986,11 @@
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>createSampleOrganization</strong></td>
+<td valign="top"><a href="#boolean">Boolean</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>createTask</strong></td>
 <td valign="top"><a href="#task">Task</a>!</td>
 <td></td>
@@ -1268,6 +1283,11 @@
 <tr>
 <td colspan="2" align="right" valign="top">id</td>
 <td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>removeSampleOrganization</strong></td>
+<td valign="top"><a href="#boolean">Boolean</a>!</td>
 <td></td>
 </tr>
 <tr>

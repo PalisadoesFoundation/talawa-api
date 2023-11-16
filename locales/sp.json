@@ -11,6 +11,7 @@
   "organization.profileImage.notFound": "No se encontró la imagen del perfil de la organización",
   "organization.member.notFound": "El usuario de la organización no es miembro",
   "organization.notAuthorized": "La organización no está autorizada",
+  "sampleOrganization.duplicate": "Organización de muestra ya generada",
   "membershipRequest.notFound": "Solicitud de membresía no encontrada",
   "membershipRequest.alreadyExists": "La solicitud de membresía ya existe",
   "chat.notFound": "Chat no encontrado",

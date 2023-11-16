@@ -516,6 +516,7 @@ export type Mutation = {
   createOrganization: Organization;
   createPlugin: Plugin;
   createPost?: Maybe<Post>;
+  createSampleOrganization: Scalars['Boolean'];
   createTask: Task;
   createUserTag?: Maybe<UserTag>;
   deleteAdvertisementById: DeletePayload;
@@ -545,6 +546,7 @@ export type Mutation = {
   removeOrganization: User;
   removeOrganizationImage: Organization;
   removePost?: Maybe<Post>;
+  removeSampleOrganization: Scalars['Boolean'];
   removeTask?: Maybe<Task>;
   removeUserFromGroupChat: GroupChat;
   removeUserImage: User;
@@ -1284,6 +1286,7 @@ export type Query = {
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
   hasSubmittedFeedback?: Maybe<Scalars['Boolean']>;
+  isSampleOrganization: Scalars['Boolean'];
   joinedOrganizations?: Maybe<Array<Maybe<Organization>>>;
   me: User;
   myLanguage?: Maybe<Scalars['String']>;
@@ -1363,6 +1366,11 @@ export type QueryGetlanguageArgs = {
 export type QueryHasSubmittedFeedbackArgs = {
   eventId: Scalars['ID'];
   userId: Scalars['ID'];
+};
+
+
+export type QueryIsSampleOrganizationArgs = {
+  id: Scalars['ID'];
 };
 
 
@@ -2443,6 +2451,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, Partial<MutationCreateOrganizationArgs>>;
   createPlugin?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationCreatePluginArgs, 'pluginCreatedBy' | 'pluginDesc' | 'pluginName'>>;
   createPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'data'>>;
+  createSampleOrganization?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   createTask?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationCreateTaskArgs, 'data' | 'eventProjectId'>>;
   createUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationCreateUserTagArgs, 'input'>>;
   deleteAdvertisementById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteAdvertisementByIdArgs, 'id'>>;
@@ -2472,6 +2481,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationArgs, 'id'>>;
   removeOrganizationImage?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationImageArgs, 'organizationId'>>;
   removePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationRemovePostArgs, 'id'>>;
+  removeSampleOrganization?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   removeTask?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<MutationRemoveTaskArgs, 'id'>>;
   removeUserFromGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationRemoveUserFromGroupChatArgs, 'chatId' | 'userId'>>;
   removeUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
@@ -2614,6 +2624,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
   hasSubmittedFeedback?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryHasSubmittedFeedbackArgs, 'eventId' | 'userId'>>;
+  isSampleOrganization?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<QueryIsSampleOrganizationArgs, 'id'>>;
   joinedOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType, Partial<QueryJoinedOrganizationsArgs>>;
   me?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   myLanguage?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

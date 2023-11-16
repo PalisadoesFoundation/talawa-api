@@ -55,7 +55,7 @@ describe("src -> utilities -> encodedVideoStorage -> uploadEncodedVideo", () => 
       const fileName = await uploadEncodedVideo(vid, null);
       expect(fileName).not.toBe(null);
       testPreviousVideoPath = fileName; // Update variable name
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log(error);
     }
   });
@@ -149,7 +149,7 @@ describe("src -> utilities -> encodedVideoStorage -> uploadEncodedVideo", () => 
           if (err) throw err;
         }
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log(error);
     }
   });

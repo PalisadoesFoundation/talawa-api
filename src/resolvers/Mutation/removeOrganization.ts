@@ -15,6 +15,7 @@ import {
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { deleteOrganizationFromCache } from "../../services/OrganizationCache/deleteOrganizationFromCache";
+import { deletePreviousImage as deleteImage } from "../../utilities/encodedImageStorage/deletePreviousImage";
 /**
  * This function enables to remove an organization.
  * @param _parent - parent of current request
@@ -130,6 +131,10 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     });
 
     await deleteOrganizationFromCache(organization);
+
+    if (organization?.image) {
+      await deleteImage(organization?.image);
+    }
 
     // Returns updated currentUser.
     return await User.findOne({
