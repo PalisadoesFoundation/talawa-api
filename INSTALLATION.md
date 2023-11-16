@@ -204,6 +204,7 @@ If you'd rather not deal with the hassle of setting up WSL on your computer, the
 Remember to adjust any paths or details as needed for your specific environment. After following these steps, you will have successfully set up Redis.
 
 # Configuration
+
 It's important to configure Talawa-API to complete it's setup.
 
 You can use our interactive setup script for the configuration. Use the following command for the same.
@@ -226,6 +227,8 @@ This `.env` file must be populated with the following environment variables for 
 
 | Variable                     | Description                                            |
 | ---------------------------- | ------------------------------------------------------ |
+| NODE_ENV                     | Used for providing the environment in which the        |
+|                              | the talawa-api is running                              |
 | ACCESS_TOKEN_SECRET          | Used for signing/verifying JWT tokens                  |
 | REFRESH_TOKEN_SECRET         | Used for signing/verifying JWT tokens                  |
 | MONGO_DB_URL                 | Used for connecting talawa-api to the mongoDB database |
@@ -241,6 +244,14 @@ This `.env` file must be populated with the following environment variables for 
 |                              | a hosted redis-server                                  |
 
 The following sections will show you how to configure each of these parameters.
+
+## Changing the environment of talawa-api
+
+Change the environment from production to development:
+
+```
+NODE_ENV=development
+```
 
 ## Generating Token Secrets
 

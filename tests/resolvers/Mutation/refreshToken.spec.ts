@@ -57,11 +57,13 @@ describe("resolvers -> Mutation -> refreshToken", () => {
       );
 
       await refreshTokenResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(INVALID_REFRESH_TOKEN_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${INVALID_REFRESH_TOKEN_ERROR.MESSAGE}`
-      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(spy).toBeCalledWith(INVALID_REFRESH_TOKEN_ERROR.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${INVALID_REFRESH_TOKEN_ERROR.MESSAGE}`
+        );
+      }
     }
   });
 
@@ -86,13 +88,15 @@ describe("resolvers -> Mutation -> refreshToken", () => {
       );
 
       await refreshTokenResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
-      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        );
 
-      spy.mockRestore();
+        spy.mockRestore();
+      }
     }
   });
 
@@ -127,8 +131,10 @@ describe("resolvers -> Mutation -> refreshToken", () => {
       );
 
       await refreshTokenResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(INVALID_REFRESH_TOKEN_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(error.message).toEqual(INVALID_REFRESH_TOKEN_ERROR.MESSAGE);
+      }
     }
   });
 
@@ -163,11 +169,13 @@ describe("resolvers -> Mutation -> refreshToken", () => {
       );
 
       await refreshTokenResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(INVALID_REFRESH_TOKEN_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${INVALID_REFRESH_TOKEN_ERROR.MESSAGE}`
-      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(spy).toBeCalledWith(INVALID_REFRESH_TOKEN_ERROR.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${INVALID_REFRESH_TOKEN_ERROR.MESSAGE}`
+        );
+      }
     }
   });
 
@@ -179,6 +187,7 @@ describe("resolvers -> Mutation -> refreshToken", () => {
     const originalFunction = User.findOneAndUpdate;
 
     // Replace User.findOneAndUpdate with a mock function
+    /* eslint-disable */
     User.findOneAndUpdate = function () {
       return Promise.resolve({
         _id: testUser?._id,
@@ -186,7 +195,7 @@ describe("resolvers -> Mutation -> refreshToken", () => {
         tokenVersion: testUser?.tokenVersion || 0 + 1,
       });
     } as any;
-
+    /* eslint-enable */
     const updatedUser = await User.findOneAndUpdate(
       { _id: jwtPayload.userId },
       { $set: { token: newRefreshToken }, $inc: { tokenVersion: 1 } },

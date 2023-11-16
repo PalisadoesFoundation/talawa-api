@@ -14,6 +14,13 @@ import { connect, disconnect } from "../helpers/db";
 
 let user: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
+export interface InterfaceJwtTokenPayload {
+  tokenVersion: number;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -35,13 +42,19 @@ describe("createAccessToken", () => {
     const decodedToken = jwt.decode(token);
 
     expect(decodedToken).not.toBeNull();
-    expect((decodedToken as any).tokenVersion).toBe(user?.tokenVersion);
-    expect((decodedToken as any).userId).toBe(
+    expect((decodedToken as InterfaceJwtTokenPayload).tokenVersion).toBe(
+      user?.tokenVersion
+    );
+    expect((decodedToken as InterfaceJwtTokenPayload).userId).toBe(
       user && user._id ? user._id.toString() : undefined
     );
-    expect((decodedToken as any).firstName).toBe(user?.firstName);
-    expect((decodedToken as any).lastName).toBe(user?.lastName);
-    expect((decodedToken as any).email).toBe(user?.email);
+    expect((decodedToken as InterfaceJwtTokenPayload).firstName).toBe(
+      user?.firstName
+    );
+    expect((decodedToken as InterfaceJwtTokenPayload).lastName).toBe(
+      user?.lastName
+    );
+    expect((decodedToken as InterfaceJwtTokenPayload).email).toBe(user?.email);
   });
 });
 
@@ -55,13 +68,19 @@ describe("createRefreshToken", () => {
 
     const decodedToken = jwt.decode(token);
 
-    expect((decodedToken as any).tokenVersion).toBe(user?.tokenVersion);
-    expect((decodedToken as any).userId).toBe(
+    expect((decodedToken as InterfaceJwtTokenPayload).tokenVersion).toBe(
+      user?.tokenVersion
+    );
+    expect((decodedToken as InterfaceJwtTokenPayload).userId).toBe(
       user && user._id ? user._id.toString() : undefined
     );
-    expect((decodedToken as any).firstName).toBe(user?.firstName);
-    expect((decodedToken as any).lastName).toBe(user?.lastName);
-    expect((decodedToken as any).email).toBe(user?.email);
+    expect((decodedToken as InterfaceJwtTokenPayload).firstName).toBe(
+      user?.firstName
+    );
+    expect((decodedToken as InterfaceJwtTokenPayload).lastName).toBe(
+      user?.lastName
+    );
+    expect((decodedToken as InterfaceJwtTokenPayload).email).toBe(user?.email);
   });
 });
 

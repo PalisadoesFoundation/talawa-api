@@ -103,11 +103,13 @@ describe("resolvers -> Mutation -> login", () => {
       );
 
       await loginResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
-      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        );
+      }
     }
   });
 
@@ -132,8 +134,10 @@ email === args.data.email`, async () => {
       );
 
       await loginResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(INVALID_CREDENTIALS_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(spy).toHaveBeenLastCalledWith(INVALID_CREDENTIALS_ERROR.MESSAGE);
+      }
     }
   });
 
@@ -160,8 +164,8 @@ email === args.data.email`, async () => {
 
     const loginPayload = await loginResolver?.({}, args, {});
 
-    // @ts-ignore
-    expect(loginPayload?.user.userType).toEqual("SUPERADMIN");
+    expect(await loginPayload?.user).toBeDefined();
+    expect((await loginPayload?.user)?.userType).toEqual("SUPERADMIN");
   });
 
   it("should update the user's token and increment the tokenVersion", async () => {
