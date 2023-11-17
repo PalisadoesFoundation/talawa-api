@@ -311,22 +311,29 @@ async function main(): Promise<void> {
 
   accessAndRefreshTokens(accessToken, refreshToken);
 
-  if (process.env.MONGO_DB_URL) {
-    console.log(
-      `\nMongoDB URL already exists with the value:\n${process.env.MONGO_DB_URL}`
-    );
-  }
-  const { shouldSetMongoDb } = await inquirer.prompt({
+  const { isDockerInstallation } = await inquirer.prompt({
     type: "confirm",
-    name: "shouldSetMongoDb",
-    message: "Would you like to set up a MongoDB URL?",
-    default: true,
+    name: "isDockerInstallation",
+    message: "Are you setting up this project using Docker?",
+    default: false,
   });
+  if (!isDockerInstallation) {
+    if (process.env.MONGO_DB_URL) {
+      console.log(
+        `\nMongoDB URL already exists with the value:\n${process.env.MONGO_DB_URL}`
+      );
+    }
+    const { shouldSetMongoDb } = await inquirer.prompt({
+      type: "confirm",
+      name: "shouldSetMongoDb",
+      message: "Would you like to set up a MongoDB URL?",
+      default: true,
+    });
 
-  if (shouldSetMongoDb) {
-    await mongoDB();
+    if (shouldSetMongoDb) {
+      await mongoDB();
+    }
   }
-
   if (process.env.RECAPTCHA_SECRET_KEY) {
     console.log(
       `\nreCAPTCHA secret key already exists with the value ${process.env.RECAPTCHA_SECRET_KEY}`
