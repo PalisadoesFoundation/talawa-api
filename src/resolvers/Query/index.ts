@@ -1,5 +1,7 @@
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { checkAuth } from "./checkAuth";
+import { customDataByOrganization } from "./customDataByOrganization";
+import { customFieldsByOrganization } from "./customFieldsByOrganization";
 import { directChatsByUserID } from "./directChatsByUserID";
 import { directChatsMessagesByChatID } from "./directChatsMessagesByChatID";
 import { event } from "./event";
@@ -28,6 +30,8 @@ import { usersConnection } from "./usersConnection";
 
 export const Query: QueryResolvers = {
   checkAuth,
+  customFieldsByOrganization,
+  customDataByOrganization,
   directChatsByUserID,
   directChatsMessagesByChatID,
   event,

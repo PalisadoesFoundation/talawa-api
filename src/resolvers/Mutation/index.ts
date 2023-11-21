@@ -4,7 +4,9 @@ import { acceptMembershipRequest } from "./acceptMembershipRequest";
 import { addEventAttendee } from "./addEventAttendee";
 import { addFeedback } from "./addFeedback";
 import { addLanguageTranslation } from "./addLanguageTranslation";
+import { addOrganizationCustomField } from "./addOrganizationCustomField";
 import { addOrganizationImage } from "./addOrganizationImage";
+import { addUserCustomData } from "./addUserCustomData";
 import { addUserImage } from "./addUserImage";
 import { addUserToGroupChat } from "./addUserToGroupChat";
 import { adminRemoveEvent } from "./adminRemoveEvent";
@@ -55,10 +57,12 @@ import { removeGroupChat } from "./removeGroupChat";
 import { removeAdvertisement } from "./removeAdvertisement";
 import { removeMember } from "./removeMember";
 import { removeOrganization } from "./removeOrganization";
+import { removeOrganizationCustomField } from "./removeOrganizationCustomField";
 import { removeOrganizationImage } from "./removeOrganizationImage";
 import { removePost } from "./removePost";
 import { removeSampleOrganization } from "./removeSampleOrganization";
 import { removeTask } from "./removeTask";
+import { removeUserCustomData } from "./removeUserCustomData";
 import { removeUserFromGroupChat } from "./removeUserFromGroupChat";
 import { removeUserImage } from "./removeUserImage";
 import { removeUserTag } from "./removeUserTag";
@@ -94,7 +98,9 @@ export const Mutation: MutationResolvers = {
   addEventAttendee,
   addFeedback,
   addLanguageTranslation,
+  addOrganizationCustomField,
   addOrganizationImage,
+  addUserCustomData,
   addUserImage,
   addUserToGroupChat,
   adminRemoveEvent,
@@ -146,10 +152,12 @@ export const Mutation: MutationResolvers = {
   removeGroupChat,
   removeMember,
   removeOrganization,
+  removeOrganizationCustomField,
   removeOrganizationImage,
   removeSampleOrganization,
   removePost,
   removeTask,
+  removeUserCustomData,
   removeUserFromGroupChat,
   removeUserImage,
   removeUserTag,

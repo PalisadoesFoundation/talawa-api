@@ -246,6 +246,14 @@ export const types = gql`
       first: PositiveInt
       last: PositiveInt
     ): UserTagsConnection
+    customFields: [OrganizationCustomField!]!
+  }
+
+  type OrganizationCustomField {
+    _id: ID!
+    type: String!
+    name: String!
+    organizationId: String!
   }
 
   type OrganizationInfoNode {
@@ -390,6 +398,13 @@ export const types = gql`
       last: PositiveInt
       organizationId: ID
     ): UserTagsConnection
+  }
+
+  type UserCustomData {
+    _id: ID!
+    organizationId: ID!
+    userId: ID!
+    values: JSON!
   }
 
   type UserConnection {

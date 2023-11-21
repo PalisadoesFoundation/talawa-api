@@ -18,6 +18,7 @@ export * from "./Language";
 export * from "./MembershipRequest";
 export * from "./Message";
 export * from "./Organization";
+export * from "./OrganizationCustomField";
 export * from "./OrganizationTagUser";
 export * from "./Plugin";
 export * from "./PluginField";

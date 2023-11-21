@@ -9,6 +9,10 @@ export const queries = gql`
 
     checkAuth: User! @auth
 
+    customFieldsByOrganization(id: ID!): [OrganizationCustomField]
+
+    customDataByOrganization(organizationId: ID!): [UserCustomData!]!
+
     directChatsByUserID(id: ID!): [DirectChat]
 
     directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
