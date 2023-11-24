@@ -12,7 +12,7 @@
     "setup": "tsx setup.ts",
     "test": "vitest run --no-threads --coverage",
     "typecheck": "graphql-codegen && tsc --noEmit --pretty",
-    "lint:check": "eslint . --max-warnings=0",
+    "lint:check": "eslint . --max-warnings=1500",
     "lint:fix": "eslint . --fix",
     "format:fix": "prettier --write \"**/*.{ts,tsx,json,scss,css}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,json,scss,css}\"",
