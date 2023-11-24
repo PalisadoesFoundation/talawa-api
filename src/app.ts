@@ -14,9 +14,17 @@ import { express as voyagerMiddleware } from "graphql-voyager/middleware";
 import path from "path";
 //@ts-ignore
 import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
-
+import ldapRoute from "../src/ldapAuth/ldapRoute";
 const app = express();
-
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  next();
+});
+app.use("/auth", ldapRoute);
 app.use(requestTracing.middleware());
 
 const apiLimiter = rateLimit({

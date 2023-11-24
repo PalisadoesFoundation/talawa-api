@@ -458,3 +458,10 @@ export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 
 export const key = process.env.ENCRYPTION_KEY as string;
 export const iv = crypto.randomBytes(16).toString("hex");
+
+export const ldapUrl = process.env.ldapUrl as string;
+export const bindDN = process.env.bindDN as string;
+export const bindCredentials = process.env.bindCredentials as string;
+export const userBaseDN = process.env.userBaseDN as string;
+export const domain_comp = process.env.domain_comp as string;
+export const objectClass = process.env.objectClass as string;
