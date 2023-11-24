@@ -6,13 +6,14 @@ This document provides instructions on how to set up and start a running instanc
 
 <!-- TOC -->
 
-- [Talawa-API Installation](#talawa-api-installation)
-- [Table of Contents](#table-of-contents)
-- [Installation](#installation)
-  - [Install node.js](#install-nodejs)
-  - [Install git](#install-git)
-  - [Setting up this repository](#setting-up-this-repository)
+
+- [Prerequisites](#prerequisites)
+  - [Install Node.js](#install-nodejs)
+  - [Install Git](#install-git)
+  - [Setting Up This Repository](#setting-up-this-repository)
   - [Install the Required Packages](#install-the-required-packages)
+- [Installation with Docker](#installation-using-docker)
+- [Installation without Docker](#installation-without-docker)
   - [Install MongoDB](#install-mongodb)
     - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
   - [Install Redis](#install-redis)
@@ -69,7 +70,7 @@ This document provides instructions on how to set up and start a running instanc
 
 <!-- /TOC -->
 
-# Installation
+# Prerequisites
 
 You will need to have copies of your code on your local system. Here's how to do that.
 
@@ -108,6 +109,32 @@ Install the packages required by `talawa-api` using this command:
 ```
 npm install
 ```
+
+# Installation with Docker
+
+> - **Requires Docker and Docker Compose to be installed**
+> - Will start a local mongodb and redis instances
+
+It's important to configure Talawa-API to complete it's setup.
+
+You can use our interactive setup script for the configuration. Use the following command for the same.
+
+```
+npm run setup
+```
+
+It can be done manually as well and here's how to do it. - [The .env Configuration File](#the-env-configuration-file)
+
+Now use the following command to run docker containers -
+
+```sh
+docker compose up
+```
+OR
+```sh
+docker-compose up
+```
+# Installation without Docker
 
 ## Install MongoDB
 
