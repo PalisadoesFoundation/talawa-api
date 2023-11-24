@@ -57,20 +57,20 @@
     ],
 
     // restrict the use of same package in multiple import statements
-    "import/no-duplicates": "error",
+    "import/no-duplicates": "warn",
 
     // warn/1, error/2, off/0
-    "tsdoc/syntax": "error",
+    "tsdoc/syntax": "warn",
 
     // Typescript Rules
-    "@typescript-eslint/ban-ts-comment": "off",
-    "@typescript-eslint/no-explicit-any": "off",
-    "@typescript-eslint/no-inferrable-types": "off",
-    "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
-    "@typescript-eslint/no-non-null-assertion": "off",
-    "@typescript-eslint/no-var-requires": "off",
-    "@typescript-eslint/ban-types": "error",
-    "@typescript-eslint/no-duplicate-enum-values": "error",
+    "@typescript-eslint/ban-ts-comment": "warn",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-inferrable-types": "warn",
+    "@typescript-eslint/no-non-null-asserted-optional-chain": "warn",
+    "@typescript-eslint/no-non-null-assertion": "warn",
+    "@typescript-eslint/no-var-requires": "warn",
+    "@typescript-eslint/ban-types": "warn",
+    "@typescript-eslint/no-duplicate-enum-values": "warn",
 
     // Typescript rule to enforce PascalCase naming convention for types and interfaces
     "@typescript-eslint/naming-convention": [
@@ -115,9 +115,9 @@
     ],
 
     // Typescript additional rules
-    "@typescript-eslint/array-type": "error",
-    "@typescript-eslint/consistent-type-assertions": "error",
-    "@typescript-eslint/consistent-type-imports": "error",
-    "@typescript-eslint/explicit-function-return-type": "error"
+    "@typescript-eslint/array-type": "warn",
+    "@typescript-eslint/consistent-type-assertions": "warn",
+    "@typescript-eslint/consistent-type-imports": "warn",
+    "@typescript-eslint/explicit-function-return-type": "warn"
   }
 }

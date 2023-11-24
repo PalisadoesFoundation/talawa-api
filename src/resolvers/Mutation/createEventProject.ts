@@ -1,5 +1,5 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import type { InterfaceEventProject } from "../../models";
+import type { InterfaceEvent, InterfaceEventProject } from "../../models";
 import { User, EventProject, Event } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
@@ -7,6 +7,9 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   EVENT_NOT_FOUND_ERROR,
 } from "../../constants";
+import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { cacheEvents } from "../../services/EventCache/cacheEvents";
+import { Types } from "mongoose";
 
 /**
  * This function enables to create an event project.
@@ -35,9 +38,21 @@ export const createEventProject: MutationResolvers["createEventProject"] =
       );
     }
 
-    const event = await Event.findOne({
-      _id: args.data.eventId,
-    }).lean();
+    let event: InterfaceEvent | null;
+
+    const eventFoundInCache = await findEventsInCache([args.data.eventId]);
+
+    event = eventFoundInCache[0];
+
+    if (eventFoundInCache[0] === null) {
+      event = await Event.findOne({
+        _id: args.data.eventId,
+      }).lean();
+
+      if (event !== null) {
+        await cacheEvents([event]);
+      }
+    }
 
     // Checks whether event exists.
     if (!event) {
@@ -48,8 +63,9 @@ export const createEventProject: MutationResolvers["createEventProject"] =
       );
     }
 
-    const currentUserIsEventAdmin = event.admins.some((admin) =>
-      admin.equals(context.userId)
+    const currentUserIsEventAdmin = event.admins.some(
+      (admin) =>
+        admin === context.userID || Types.ObjectId(admin).equals(context.userId)
     );
 
     // Checks whether currentUser with _id === context.userId is an admin of event.

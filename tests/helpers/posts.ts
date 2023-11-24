@@ -48,8 +48,8 @@ export const createPostwithComment = async (): Promise<
 
   const testComment = await Comment.create({
     text: `commentName${nanoid().toLowerCase()}`,
-    creator: testUser!._id,
-    postId: testPost!._id,
+    creator: testUser && testUser._id,
+    postId: testPost && testPost._id,
   });
 
   await Post.updateOne(
@@ -73,7 +73,7 @@ export const createPostwithComment = async (): Promise<
     },
     {
       $push: {
-        likedBy: testUser!._id,
+        likedBy: testUser && testUser._id,
       },
       $inc: {
         likeCount: 1,

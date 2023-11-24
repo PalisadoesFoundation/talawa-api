@@ -1,35 +1,37 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Post } from "../../models";
+import type { InterfacePost } from "../../models";
+import { Post } from "../../models";
 import {
-  USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   POST_NOT_FOUND_ERROR,
   LENGTH_VALIDATION_ERROR,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
+import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
+import { cachePosts } from "../../services/PostCache/cachePosts";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
 
 export const updatePost: MutationResolvers["updatePost"] = async (
   _parent,
   args,
   context
 ) => {
-  const currentUserExists = await User.exists({
-    _id: context.userId,
-  });
+  let post: InterfacePost | null;
 
-  // checks if current user exists
-  if (currentUserExists === false) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
+  const postFoundInCache = await findPostsInCache([args.id]);
+
+  post = postFoundInCache[0];
+
+  if (postFoundInCache[0] === null) {
+    post = await Post.findOne({
+      _id: args.id,
+    }).lean();
+    if (post !== null) {
+      await cachePosts([post]);
+    }
   }
-
-  const post = await Post.findOne({
-    _id: args.id,
-  }).lean();
 
   // checks if there exists a post with _id === args.id
   if (!post) {
@@ -48,6 +50,20 @@ export const updatePost: MutationResolvers["updatePost"] = async (
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
       USER_NOT_AUTHORIZED_ERROR.PARAM
+    );
+  }
+
+  if (args.data?.imageUrl && args.data?.imageUrl !== null) {
+    args.data.imageUrl = await uploadEncodedImage(
+      args.data.imageUrl,
+      post.imageUrl
+    );
+  }
+
+  if (args.data?.videoUrl && args.data?.videoUrl !== null) {
+    args.data.videoUrl = await uploadEncodedVideo(
+      args.data.videoUrl,
+      post.videoUrl
     );
   }
 
@@ -71,7 +87,7 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     );
   }
 
-  return await Post.findOneAndUpdate(
+  const updatedPost = await Post.findOneAndUpdate(
     {
       _id: args.id,
     },
@@ -82,4 +98,10 @@ export const updatePost: MutationResolvers["updatePost"] = async (
       new: true,
     }
   ).lean();
+
+  if (updatedPost !== null) {
+    await cachePosts([updatedPost]);
+  }
+
+  return updatedPost!;
 };

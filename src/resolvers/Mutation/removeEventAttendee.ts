@@ -6,7 +6,10 @@ import {
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
+import type { InterfaceEvent } from "../../models";
 import { User, Event, EventAttendee } from "../../models";
+import { findEventsInCache } from "../../services/EventCache/findEventInCache";
+import { cacheEvents } from "../../services/EventCache/cacheEvents";
 
 export const removeEventAttendee: MutationResolvers["removeEventAttendee"] =
   async (_parent, args, context) => {
@@ -22,9 +25,21 @@ export const removeEventAttendee: MutationResolvers["removeEventAttendee"] =
       );
     }
 
-    const currentEvent = await Event.findOne({
-      _id: args.data.eventId,
-    }).lean();
+    let currentEvent: InterfaceEvent | null;
+
+    const eventFoundInCache = await findEventsInCache([args.data.eventId]);
+
+    currentEvent = eventFoundInCache[0];
+
+    if (eventFoundInCache[0] === null) {
+      currentEvent = await Event.findOne({
+        _id: args.data.eventId,
+      }).lean();
+
+      if (currentEvent !== null) {
+        await cacheEvents([currentEvent]);
+      }
+    }
 
     if (currentEvent === null) {
       throw new errors.NotFoundError(

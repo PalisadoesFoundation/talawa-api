@@ -15,6 +15,7 @@ import { myLanguage } from "./myLanguage";
 import { organizations } from "./organizations";
 import { organizationsConnection } from "./organizationsConnection";
 import { organizationsMemberConnection } from "./organizationsMemberConnection";
+import { isSampleOrganization } from "../Query/organizationIsSample";
 import { post } from "./post";
 import { postsByOrganization } from "./postsByOrganization";
 import { postsByOrganizationConnection } from "./postsByOrganizationConnection";
@@ -22,6 +23,7 @@ import { registeredEventsByUser } from "./registeredEventsByUser";
 import { user } from "./user";
 import { userLanguage } from "./userLanguage";
 import { users } from "./users";
+import { getAdvertisements } from "./getAdvertisements";
 import { usersConnection } from "./usersConnection";
 
 export const Query: QueryResolvers = {
@@ -32,10 +34,12 @@ export const Query: QueryResolvers = {
   eventsByOrganization,
   eventsByOrganizationConnection,
   getDonationById,
+  getAdvertisements,
   getDonationByOrgId,
   getDonationByOrgIdConnection,
   getlanguage,
   getPlugins,
+  isSampleOrganization,
   me,
   myLanguage,
   organizations,

@@ -113,6 +113,12 @@ export const inputs = gql`
     eventId: ID!
   }
 
+  input FeedbackInput {
+    eventId: ID!
+    rating: Int!
+    review: String
+  }
+
   input ForgotPasswordData {
     userOtp: String!
     newPassword: String!
@@ -375,7 +381,7 @@ export const inputs = gql`
   input PostUpdateInput {
     text: String
     title: String
-    imageUrl: URL
-    videoUrl: URL
+    imageUrl: String
+    videoUrl: String
   }
 `;

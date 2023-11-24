@@ -25,6 +25,7 @@ export const postsByOrganization: QueryResolvers["postsByOrganization"] =
     const postsWithImageURLResolved = postsInOrg.map((post) => ({
       ...post,
       imageUrl: post.imageUrl ? `${context.apiRootUrl}${post.imageUrl}` : null,
+      videoUrl: post.videoUrl ? `${context.apiRootUrl}${post.videoUrl}` : null,
     }));
 
     return postsWithImageURLResolved;

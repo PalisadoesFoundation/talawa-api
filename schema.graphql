@@ -2,6 +2,16 @@ directive @auth on FIELD_DEFINITION
 
 directive @role(requires: UserType) on FIELD_DEFINITION
 
+type Advertisement {
+  _id: ID
+  endDate: Date!
+  link: String!
+  name: String!
+  orgId: ID
+  startDate: Date!
+  type: String!
+}
+
 type AggregatePost {
   count: Int!
 }
@@ -31,6 +41,7 @@ type CheckIn {
   allotedRoom: String
   allotedSeat: String
   event: Event!
+  feedbackSubmitted: Boolean!
   time: DateTime!
   user: User!
 }
@@ -145,10 +156,12 @@ type Event {
   allDay: Boolean!
   attendees: [User!]!
   attendeesCheckInStatus: [CheckInStatus!]!
+  averageFeedbackScore: Float
   creator: User!
   description: String!
   endDate: Date!
   endTime: Time
+  feedback: [Feedback!]!
   isPublic: Boolean!
   isRegisterable: Boolean!
   latitude: Latitude
@@ -255,6 +268,19 @@ input EventWhereInput {
 type ExtendSession {
   accessToken: String!
   refreshToken: String!
+}
+
+type Feedback {
+  _id: ID!
+  event: Event!
+  rating: Int!
+  review: String
+}
+
+input FeedbackInput {
+  eventId: ID!
+  rating: Int!
+  review: String
 }
 
 interface FieldError {
@@ -393,6 +419,7 @@ type Mutation {
   acceptAdmin(id: ID!): Boolean!
   acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   addEventAttendee(data: EventAttendeeInput!): User!
+  addFeedback(data: FeedbackInput!): Feedback!
   addLanguageTranslation(data: LanguageInput!): Language!
   addOrganizationImage(file: String!, organizationId: String!): Organization!
   addUserImage(file: String!): User!
@@ -405,6 +432,7 @@ type Mutation {
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   checkIn(data: CheckInInput!): CheckIn!
   createAdmin(data: UserAndOrganizationInput!): User!
+  createAdvertisement(endDate: Date!, link: String!, name: String!, orgId: ID!, startDate: Date!, type: String!): Advertisement!
   createComment(data: CommentInput!, postId: ID!): Comment
   createDirectChat(data: createChatInput!): DirectChat!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
@@ -416,8 +444,10 @@ type Mutation {
   createOrganization(data: OrganizationInput, file: String): Organization!
   createPlugin(pluginCreatedBy: String!, pluginDesc: String!, pluginName: String!, uninstalledOrgs: [ID!]): Plugin!
   createPost(data: PostInput!, file: String): Post
+  createSampleOrganization: Boolean!
   createTask(data: TaskInput!, eventProjectId: ID!): Task!
   createUserTag(input: CreateUserTagInput!): UserTag
+  deleteAdvertisementById(id: ID!): DeletePayload!
   deleteDonationById(id: ID!): DeletePayload!
   forgotPassword(data: ForgotPasswordData!): Boolean!
   joinPublicOrganization(organizationId: ID!): User!
@@ -433,6 +463,7 @@ type Mutation {
   rejectAdmin(id: ID!): Boolean!
   rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   removeAdmin(data: UserAndOrganizationInput!): User!
+  removeAdvertisement(id: ID!): Advertisement
   removeComment(id: ID!): Comment
   removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
   removeEvent(id: ID!): Event!
@@ -443,6 +474,7 @@ type Mutation {
   removeOrganization(id: ID!): User!
   removeOrganizationImage(organizationId: String!): Organization!
   removePost(id: ID!): Post
+  removeSampleOrganization: Boolean!
   removeTask(id: ID!): Task
   removeUserFromGroupChat(chatId: ID!, userId: ID!): GroupChat!
   removeUserImage: User!
@@ -469,6 +501,7 @@ type Mutation {
   updateTask(data: UpdateTaskInput!, id: ID!): Task
   updateUserPassword(data: UpdateUserPasswordInput!): User!
   updateUserProfile(data: UpdateUserInput, file: String): User!
+  updateUserRoleInOrganization(organizationId: ID!, role: String!, userId: ID!): Organization!
   updateUserTag(input: UpdateUserTagInput!): UserTag
   updateUserType(data: UpdateUserTypeInput!): Boolean!
 }
@@ -623,6 +656,7 @@ type Post {
   likeCount: Int
   likedBy: [User]
   organization: Organization!
+  pinned: Boolean
   text: String!
   title: String
   videoUrl: URL
@@ -669,10 +703,10 @@ enum PostOrderByInput {
 }
 
 input PostUpdateInput {
-  imageUrl: URL
+  imageUrl: String
   text: String
   title: String
-  videoUrl: URL
+  videoUrl: String
 }
 
 input PostWhereInput {
@@ -704,11 +738,14 @@ type Query {
   event(id: ID!): Event
   eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
   eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, where: EventWhereInput): [Event!]!
+  getAdvertisements: [Advertisement]
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
   getPlugins: [Plugin]
   getlanguage(lang_code: String!): [Translation]
+  hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean
+  isSampleOrganization(id: ID!): Boolean!
   joinedOrganizations(id: ID): [Organization]
   me: User!
   myLanguage: String
@@ -723,7 +760,7 @@ type Query {
   registrantsByEvent(id: ID!): [User]
   user(id: ID!): User!
   userLanguage(userId: ID!): String
-  users(orderBy: UserOrderByInput, where: UserWhereInput): [User]
+  users(adminApproved: Boolean, first: Int, orderBy: UserOrderByInput, skip: Int, userType: String, where: UserWhereInput): [User]
   usersConnection(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [User]!
 }
 

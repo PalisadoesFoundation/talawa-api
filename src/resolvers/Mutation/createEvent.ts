@@ -12,6 +12,7 @@ import { getApps } from "firebase-admin/app";
 import { isValidString } from "../../libraries/validators/validateString";
 import { compareDates } from "../../libraries/validators/compareDates";
 import { EventAttendee } from "../../models/EventAttendee";
+import { cacheEvents } from "../../services/EventCache/cacheEvents";
 
 const applicationDefault = credential.applicationDefault;
 
@@ -132,6 +133,10 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     admins: [currentUser._id],
     organization: organization._id,
   });
+
+  if (createdEvent !== null) {
+    await cacheEvents([createdEvent]);
+  }
 
   await EventAttendee.create({
     userId: currentUser._id.toString(),

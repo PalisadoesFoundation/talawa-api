@@ -5,10 +5,13 @@ import {
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
+import type { InterfacePost } from "../../models";
 import { User, Post, Organization } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { Types } from "mongoose";
+import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
+import { cachePosts } from "../../services/PostCache/cachePosts";
 
 export const togglePostPin: MutationResolvers["togglePostPin"] = async (
   _parent,
@@ -30,9 +33,20 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
   }
 
   // Check if the post object exists
-  const post = await Post.findOne({
-    _id: args.id,
-  }).lean();
+  let post: InterfacePost | null;
+
+  const postFoundInCache = await findPostsInCache([args.id]);
+
+  post = postFoundInCache[0];
+
+  if (postFoundInCache[0] === null) {
+    post = await Post.findOne({
+      _id: args.id,
+    }).lean();
+    if (post !== null) {
+      await cachePosts([post]);
+    }
+  }
 
   if (!post) {
     throw new errors.NotFoundError(
@@ -97,7 +111,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       await cacheOrganizations([updatedOrganization]);
     }
 
-    return await Post.findOneAndUpdate(
+    const updatedPost = await Post.findOneAndUpdate(
       {
         _id: args.id,
       },
@@ -107,6 +121,12 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
         },
       }
     ).lean();
+
+    if (updatedPost !== null) {
+      await cachePosts([updatedPost]);
+    }
+
+    return updatedPost!;
   } else {
     const updatedOrganization = await Organization.findOneAndUpdate(
       {
@@ -125,7 +145,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     if (updatedOrganization !== null) {
       await cacheOrganizations([updatedOrganization]);
     }
-    return await Post.findOneAndUpdate(
+    const updatedPost = await Post.findOneAndUpdate(
       {
         _id: args.id,
       },
@@ -135,5 +155,11 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
         },
       }
     ).lean();
+
+    if (updatedPost !== null) {
+      await cachePosts([updatedPost]);
+    }
+
+    return updatedPost!;
   }
 };

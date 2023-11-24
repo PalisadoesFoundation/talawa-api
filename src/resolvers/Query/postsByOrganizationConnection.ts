@@ -57,6 +57,9 @@ export const postsByOrganizationConnection: QueryResolvers["postsByOrganizationC
         ? `${context.apiRootUrl}${post.imageUrl}`
         : null;
 
+      post.videoUrl = post.videoUrl
+        ? `${context.apiRootUrl}${post.videoUrl}`
+        : null;
       return post;
     });
 

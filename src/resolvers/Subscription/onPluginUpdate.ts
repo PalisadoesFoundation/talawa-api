@@ -1,6 +1,8 @@
 import { withFilter } from "graphql-subscriptions";
 import type { SubscriptionResolvers } from "../../types/generatedGraphQLTypes";
 
+// import { GroupChat } from "../GroupChat";
+
 const TALAWA_PLUGIN_UPDATED = "TALAWA_PLUGIN_UPDATED";
 /**
  * This property included a `subscribe` method, which is used to

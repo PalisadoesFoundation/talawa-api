@@ -8,7 +8,6 @@ import {
   LENGTH_VALIDATION_ERROR,
   POST_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
-  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
@@ -33,22 +32,6 @@ afterEach(async () => {
 });
 
 describe("resolvers -> Mutation -> updatePost", () => {
-  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
-    try {
-      const args: MutationUpdatePostArgs = {
-        id: "",
-      };
-
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-
-      await updatePostResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
-  });
-
   it(`throws NotFoundError if no post exists with _id === args.id`, async () => {
     try {
       const args: MutationUpdatePostArgs = {
@@ -93,6 +76,51 @@ describe("resolvers -> Mutation -> updatePost", () => {
       data: {
         title: "newTitle",
         text: "nextText",
+      },
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    const updatePostPayload = await updatePostResolver?.({}, args, context);
+
+    const testUpdatePostPayload = await Post.findOne({
+      _id: testPost?._id,
+    }).lean();
+
+    expect(updatePostPayload).toEqual(testUpdatePostPayload);
+  });
+  it(`updates the post with imageUrl and returns the updated post`, async () => {
+    const args: MutationUpdatePostArgs = {
+      id: testPost?._id,
+      data: {
+        title: "newTitle",
+        text: "nextText",
+        imageUrl:
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAZSURBVBhXYzxz5sx/BiBgefLkCQMbGxsDAEdkBicg9wbaAAAAAElFTkSuQmCC",
+      },
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    const updatePostPayload = await updatePostResolver?.({}, args, context);
+
+    const testUpdatePostPayload = await Post.findOne({
+      _id: testPost?._id,
+    }).lean();
+
+    expect(updatePostPayload).toEqual(testUpdatePostPayload);
+  });
+  it(`updates the post with videoUrl and returns the updated post`, async () => {
+    const args: MutationUpdatePostArgs = {
+      id: testPost?._id,
+      data: {
+        title: "newTitle",
+        text: "nextText",
+        videoUrl: "data:video/mp4;base64,VIDEO_BASE64_DATA_HERE",
       },
     };
 

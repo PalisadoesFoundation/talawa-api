@@ -1,4 +1,5 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceComment } from "../../models";
 import { User, Post, Comment } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
@@ -6,6 +7,9 @@ import {
   COMMENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
+import { findCommentsInCache } from "../../services/CommentCache/findCommentsInCache";
+import { deleteCommentFromCache } from "../../services/CommentCache/deleteCommentFromCache";
+import { cachePosts } from "../../services/PostCache/cachePosts";
 
 /**
  * This function enables to remove a comment.
@@ -37,11 +41,19 @@ export const removeComment: MutationResolvers["removeComment"] = async (
     );
   }
 
-  const comment = await Comment.findOne({
-    _id: args.id,
-  })
-    .populate("postId")
-    .lean();
+  let comment: InterfaceComment;
+
+  const commentsFoundInCache = await findCommentsInCache([args.id]);
+
+  if (commentsFoundInCache[0] == null) {
+    comment = await Comment.findOne({
+      _id: args.id,
+    })
+      .populate("postId")
+      .lean();
+  } else {
+    comment = commentsFoundInCache[0];
+  }
 
   // Checks whether comment exists.
   if (!comment) {
@@ -70,7 +82,8 @@ export const removeComment: MutationResolvers["removeComment"] = async (
   }
 
   // Reduce the commentCount by 1 of the post with _id === commentPost.postId
-  await Post.updateOne(
+
+  const updatedPost = await Post.findOneAndUpdate(
     {
       _id: comment?.postId._id,
     },
@@ -78,13 +91,22 @@ export const removeComment: MutationResolvers["removeComment"] = async (
       $inc: {
         commentCount: -1,
       },
+    },
+    {
+      new: true,
     }
-  );
+  ).lean();
+
+  if (updatedPost !== null) {
+    await cachePosts([updatedPost]);
+  }
 
   // Deletes the comment
   await Comment.deleteOne({
     _id: comment._id,
   });
+
+  await deleteCommentFromCache(comment);
 
   // Replace the populated postId in comment object with just the id
   comment.postId = comment.postId._id;

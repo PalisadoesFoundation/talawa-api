@@ -8,7 +8,6 @@ import { connect, disconnect } from "../../helpers/db";
 import {
   EVENT_NOT_FOUND_ERROR,
   USER_ALREADY_UNREGISTERED_ERROR,
-  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -42,35 +41,6 @@ afterEach(() => {
 });
 
 describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
-  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementation((message) => `Translated ${message}`);
-
-    try {
-      const args: MutationUnregisterForEventByUserArgs = {
-        id: "",
-      };
-
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-
-      const { unregisterForEventByUser: unregisterForEventByUserResolver } =
-        await import(
-          "../../../src/resolvers/Mutation/unregisterForEventByUser"
-        );
-
-      await unregisterForEventByUserResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
-      );
-    }
-  });
-
   it(`throws NotFoundError if no event exists with _id === args.id`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi

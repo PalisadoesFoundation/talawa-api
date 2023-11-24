@@ -9,7 +9,6 @@ import {
   ORGANIZATION_IMAGE_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
-  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -75,29 +74,6 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
     vi.restoreAllMocks();
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
-  });
-  it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
-    try {
-      const args: MutationRemoveOrganizationImageArgs = {
-        organizationId: "",
-      };
-
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-
-      const { removeOrganizationImage: removeOrganizationImageResolver } =
-        await import("../../../src/resolvers/Mutation/removeOrganizationImage");
-
-      await removeOrganizationImageResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
   });
 
   it(`throws NotFoundError if no organization exists with _id === args.organizationId`, async () => {

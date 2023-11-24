@@ -6,6 +6,7 @@
   * [Query](#query)
   * [Mutation](#mutation)
   * [Objects](#objects)
+    * [Advertisement](#advertisement)
     * [AggregatePost](#aggregatepost)
     * [AggregateUser](#aggregateuser)
     * [AndroidFirebaseOptions](#androidfirebaseoptions)
@@ -21,6 +22,7 @@
     * [Event](#event)
     * [EventProject](#eventproject)
     * [ExtendSession](#extendsession)
+    * [Feedback](#feedback)
     * [Group](#group)
     * [GroupChat](#groupchat)
     * [GroupChatMessage](#groupchatmessage)
@@ -67,6 +69,7 @@
     * [EventInput](#eventinput)
     * [EventProjectInput](#eventprojectinput)
     * [EventWhereInput](#eventwhereinput)
+    * [FeedbackInput](#feedbackinput)
     * [ForgotPasswordData](#forgotpassworddata)
     * [LanguageInput](#languageinput)
     * [LoginInput](#logininput)
@@ -289,6 +292,36 @@
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>getAdvertisements</strong></td>
+<td valign="top">[<a href="#advertisement">Advertisement</a>]</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>isSampleOrganization</strong></td>
+<td valign="top"><a href="#boolean">Boolean</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">id</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>hasSubmittedFeedback</strong></td>
+<td valign="top"><a href="#boolean">Boolean</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">userId</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">eventId</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>joinedOrganizations</strong></td>
 <td valign="top">[<a href="#organization">Organization</a>]</td>
 <td></td>
@@ -504,6 +537,26 @@
 <td></td>
 </tr>
 <tr>
+<td colspan="2" align="right" valign="top">first</td>
+<td valign="top"><a href="#int">Int</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">skip</td>
+<td valign="top"><a href="#int">Int</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">userType</td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">adminApproved</td>
+<td valign="top"><a href="#boolean">Boolean</a></td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>usersConnection</strong></td>
 <td valign="top">[<a href="#user">User</a>]!</td>
 <td></td>
@@ -570,6 +623,16 @@
 <tr>
 <td colspan="2" align="right" valign="top">data</td>
 <td valign="top"><a href="#eventattendeeinput">EventAttendeeInput</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>addFeedback</strong></td>
+<td valign="top"><a href="#feedback">Feedback</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">data</td>
+<td valign="top"><a href="#feedbackinput">FeedbackInput</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -863,6 +926,41 @@
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>createAdvertisement</strong></td>
+<td valign="top"><a href="#advertisement">Advertisement</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">orgId</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">name</td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">link</td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">type</td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">startDate</td>
+<td valign="top"><a href="#date">Date</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">endDate</td>
+<td valign="top"><a href="#date">Date</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>createPost</strong></td>
 <td valign="top"><a href="#post">Post</a></td>
 <td></td>
@@ -888,6 +986,11 @@
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>createSampleOrganization</strong></td>
+<td valign="top"><a href="#boolean">Boolean</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>createTask</strong></td>
 <td valign="top"><a href="#task">Task</a>!</td>
 <td></td>
@@ -899,6 +1002,16 @@
 </tr>
 <tr>
 <td colspan="2" align="right" valign="top">eventProjectId</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>deleteAdvertisementById</strong></td>
+<td valign="top"><a href="#deletepayload">DeletePayload</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">id</td>
 <td valign="top"><a href="#id">ID</a>!</td>
 <td></td>
 </tr>
@@ -1153,6 +1266,16 @@
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>removeAdvertisement</strong></td>
+<td valign="top"><a href="#advertisement">Advertisement</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">id</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>removeUserTag</strong></td>
 <td valign="top"><a href="#usertag">UserTag</a></td>
 <td></td>
@@ -1160,6 +1283,11 @@
 <tr>
 <td colspan="2" align="right" valign="top">id</td>
 <td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>removeSampleOrganization</strong></td>
+<td valign="top"><a href="#boolean">Boolean</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -1488,6 +1616,26 @@
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>updateUserRoleInOrganization</strong></td>
+<td valign="top"><a href="#organization">Organization</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">organizationId</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">userId</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">role</td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>updateUserType</strong></td>
 <td valign="top"><a href="#boolean">Boolean</a>!</td>
 <td></td>
@@ -1501,6 +1649,56 @@
 </table>
 
 ## Objects
+
+### Advertisement
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>_id</strong></td>
+<td valign="top"><a href="#id">ID</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>name</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>orgId</strong></td>
+<td valign="top"><a href="#id">ID</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>link</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>type</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>startDate</strong></td>
+<td valign="top"><a href="#date">Date</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>endDate</strong></td>
+<td valign="top"><a href="#date">Date</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
 
 ### AggregatePost
 
@@ -1662,6 +1860,11 @@
 <tr>
 <td colspan="2" valign="top"><strong>event</strong></td>
 <td valign="top"><a href="#event">Event</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>feedbackSubmitted</strong></td>
+<td valign="top"><a href="#boolean">Boolean</a>!</td>
 <td></td>
 </tr>
 </tbody>
@@ -2064,6 +2267,16 @@
 <td valign="top">[<a href="#eventproject">EventProject</a>]</td>
 <td></td>
 </tr>
+<tr>
+<td colspan="2" valign="top"><strong>feedback</strong></td>
+<td valign="top">[<a href="#feedback">Feedback</a>!]!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>averageFeedbackScore</strong></td>
+<td valign="top"><a href="#float">Float</a></td>
+<td></td>
+</tr>
 </tbody>
 </table>
 
@@ -2127,6 +2340,41 @@
 <tr>
 <td colspan="2" valign="top"><strong>refreshToken</strong></td>
 <td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### Feedback
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>_id</strong></td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>event</strong></td>
+<td valign="top"><a href="#event">Event</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>rating</strong></td>
+<td valign="top"><a href="#int">Int</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>review</strong></td>
+<td valign="top"><a href="#string">String</a></td>
 <td></td>
 </tr>
 </tbody>
@@ -3032,6 +3280,11 @@ When paginating backwards, are there more items?
 <tr>
 <td colspan="2" valign="top"><strong>commentCount</strong></td>
 <td valign="top"><a href="#int">Int</a></td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>pinned</strong></td>
+<td valign="top"><a href="#boolean">Boolean</a></td>
 <td></td>
 </tr>
 </tbody>
@@ -4100,6 +4353,35 @@ A list of edges.
 </tbody>
 </table>
 
+### FeedbackInput
+
+<table>
+<thead>
+<tr>
+<th colspan="2" align="left">Field</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>eventId</strong></td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>rating</strong></td>
+<td valign="top"><a href="#int">Int</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>review</strong></td>
+<td valign="top"><a href="#string">String</a></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
 ### ForgotPasswordData
 
 <table>
@@ -4558,12 +4840,12 @@ A list of edges.
 </tr>
 <tr>
 <td colspan="2" valign="top"><strong>imageUrl</strong></td>
-<td valign="top"><a href="#url">URL</a></td>
+<td valign="top"><a href="#string">String</a></td>
 <td></td>
 </tr>
 <tr>
 <td colspan="2" valign="top"><strong>videoUrl</strong></td>
-<td valign="top"><a href="#url">URL</a></td>
+<td valign="top"><a href="#string">String</a></td>
 <td></td>
 </tr>
 </tbody>

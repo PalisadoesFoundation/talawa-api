@@ -34,6 +34,7 @@ export const types = gql`
     allotedSeat: String
     user: User!
     event: Event!
+    feedbackSubmitted: Boolean!
   }
 
   # Used to show whether an user has checked in for an event
@@ -91,6 +92,15 @@ export const types = gql`
     nameOfOrg: String!
     amount: Float!
   }
+  type Advertisement {
+    _id: ID
+    name: String!
+    orgId: ID
+    link: String!
+    type: String!
+    startDate: Date!
+    endDate: Date!
+  }
 
   type ExtendSession {
     accessToken: String!
@@ -121,6 +131,8 @@ export const types = gql`
     admins(adminId: ID): [User]
     status: Status!
     projects: [EventProject]
+    feedback: [Feedback!]!
+    averageFeedbackScore: Float
   }
 
   type EventProject {
@@ -129,6 +141,13 @@ export const types = gql`
     description: String!
     event: Event!
     tasks: [Task]
+  }
+
+  type Feedback {
+    _id: ID!
+    event: Event!
+    rating: Int!
+    review: String
   }
 
   type Group {
@@ -303,6 +322,7 @@ export const types = gql`
     comments: [Comment]
     likeCount: Int
     commentCount: Int
+    pinned: Boolean
   }
 
   """

@@ -248,7 +248,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     }
   });
 
-  it(`removes the organization and returns the updated user's object with _id === context.userId`, async () => {
+  it(`removes the organization with no image and returns the updated user's object with _id === context.userId`, async () => {
     const updatedOrganization = await Organization.findOneAndUpdate(
       {
         _id: testOrganization._id,
@@ -326,5 +326,54 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     expect(deletedTestPosts).toEqual([]);
 
     expect(deletedTestComments).toEqual([]);
+  });
+
+  it(`removes the organization with image and returns the updated user's object with _id === context.userId`, async () => {
+    const newTestOrganization = await Organization.create({
+      name: "name",
+      description: "description",
+      isPublic: true,
+      creator: testUsers[0]?._id,
+      admins: [testUsers[0]?._id],
+      members: [testUsers[1]?._id],
+      blockedUsers: [testUsers[0]?._id],
+      image: "images/fake-image-path.png",
+    });
+
+    const args: MutationRemoveOrganizationArgs = {
+      id: newTestOrganization._id,
+    };
+
+    const context = {
+      userId: testUsers[0]?._id,
+    };
+
+    const deletePreviousImage = await import(
+      "../../../src/utilities/encodedImageStorage/deletePreviousImage"
+    );
+    const deleteImageSpy = vi
+      .spyOn(deletePreviousImage, "deletePreviousImage")
+      .mockImplementation(() => {
+        return Promise.resolve();
+      });
+
+    const updatedTestUser = await User.findOne({
+      _id: testUsers[0]?._id,
+    })
+      .select(["-password"])
+      .lean();
+
+    const { removeOrganization: removeOrganizationResolver } = await import(
+      "../../../src/resolvers/Mutation/removeOrganization"
+    );
+
+    const removeOrganizationPayload = await removeOrganizationResolver?.(
+      {},
+      args,
+      context
+    );
+
+    expect(removeOrganizationPayload).toEqual(updatedTestUser);
+    expect(deleteImageSpy).toBeCalledWith("images/fake-image-path.png");
   });
 });

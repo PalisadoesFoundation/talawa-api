@@ -2,6 +2,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { acceptAdmin } from "./acceptAdmin";
 import { acceptMembershipRequest } from "./acceptMembershipRequest";
 import { addEventAttendee } from "./addEventAttendee";
+import { addFeedback } from "./addFeedback";
 import { addLanguageTranslation } from "./addLanguageTranslation";
 import { addOrganizationImage } from "./addOrganizationImage";
 import { addUserImage } from "./addUserImage";
@@ -12,6 +13,7 @@ import { assignUserTag } from "./assignUserTag";
 import { blockPluginCreationBySuperadmin } from "./blockPluginCreationBySuperadmin";
 import { blockUser } from "./blockUser";
 import { cancelMembershipRequest } from "./cancelMembershipRequest";
+import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { checkIn } from "./checkIn";
 import { createMember } from "./createMember";
 import { createAdmin } from "./createAdmin";
@@ -24,7 +26,9 @@ import { createGroupChat } from "./createGroupChat";
 import { createMessageChat } from "./createMessageChat";
 import { createOrganization } from "./createOrganization";
 import { createPlugin } from "./createPlugin";
+import { createAdvertisement } from "./createAdvertisement";
 import { createPost } from "./createPost";
+import { createSampleOrganization } from "./createSampleOrganization";
 import { createTask } from "./createTask";
 import { createUserTag } from "./createUserTag";
 import { deleteDonationById } from "./deleteDonationById";
@@ -48,10 +52,12 @@ import { removeEvent } from "./removeEvent";
 import { removeEventAttendee } from "./removeEventAttendee";
 import { removeEventProject } from "./removeEventProject";
 import { removeGroupChat } from "./removeGroupChat";
+import { removeAdvertisement } from "./removeAdvertisement";
 import { removeMember } from "./removeMember";
 import { removeOrganization } from "./removeOrganization";
 import { removeOrganizationImage } from "./removeOrganizationImage";
 import { removePost } from "./removePost";
+import { removeSampleOrganization } from "./removeSampleOrganization";
 import { removeTask } from "./removeTask";
 import { removeUserFromGroupChat } from "./removeUserFromGroupChat";
 import { removeUserImage } from "./removeUserImage";
@@ -80,11 +86,13 @@ import { updateUserProfile } from "./updateUserProfile";
 import { updateUserPassword } from "./updateUserPassword";
 import { updateUserTag } from "./updateUserTag";
 import { updateUserType } from "./updateUserType";
+import { deleteAdvertisementById } from "./deleteAdvertisementById";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,
   acceptMembershipRequest,
   addEventAttendee,
+  addFeedback,
   addLanguageTranslation,
   addOrganizationImage,
   addUserImage,
@@ -95,10 +103,12 @@ export const Mutation: MutationResolvers = {
   blockPluginCreationBySuperadmin,
   blockUser,
   cancelMembershipRequest,
+  updateUserRoleInOrganization,
   checkIn,
   createMember,
   createAdmin,
   createComment,
+  createAdvertisement,
   createDirectChat,
   createDonation,
   createEvent,
@@ -108,9 +118,11 @@ export const Mutation: MutationResolvers = {
   createOrganization,
   createPlugin,
   createPost,
+  createSampleOrganization,
   createTask,
   createUserTag,
   deleteDonationById,
+  deleteAdvertisementById,
   forgotPassword,
   joinPublicOrganization,
   leaveOrganization,
@@ -129,11 +141,13 @@ export const Mutation: MutationResolvers = {
   removeDirectChat,
   removeEvent,
   removeEventAttendee,
+  removeAdvertisement,
   removeEventProject,
   removeGroupChat,
   removeMember,
   removeOrganization,
   removeOrganizationImage,
+  removeSampleOrganization,
   removePost,
   removeTask,
   removeUserFromGroupChat,

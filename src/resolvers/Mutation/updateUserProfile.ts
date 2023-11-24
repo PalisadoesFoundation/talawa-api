@@ -33,12 +33,12 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
     );
   }
 
-  if (args.data?.email !== undefined) {
-    const userWithEmailExists = await User.find({
+  if (args.data?.email && args.data?.email !== currentUser?.email) {
+    const userWithEmailExists = await User.findOne({
       email: args.data?.email,
     });
 
-    if (userWithEmailExists.length > 0) {
+    if (userWithEmailExists) {
       throw new errors.ConflictError(
         requestContext.translate(EMAIL_ALREADY_EXISTS_ERROR.MESSAGE),
         EMAIL_ALREADY_EXISTS_ERROR.MESSAGE,

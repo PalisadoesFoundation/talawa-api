@@ -1,7 +1,9 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, Post } from "../../models";
+import { Post } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import { POST_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
+import { POST_NOT_FOUND_ERROR } from "../../constants";
+import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
+import { cachePosts } from "../../services/PostCache/cachePosts";
 /**
  * This function enables to like a post.
  * @param _parent - parent of current request
@@ -18,22 +20,21 @@ export const likePost: MutationResolvers["likePost"] = async (
   args,
   context
 ) => {
-  const currentUserExists = await User.exists({
-    _id: context.userId,
-  });
+  let post;
 
-  // Checks whether currentUser with _id == context.userId exists.
-  if (currentUserExists === false) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
+  const postFoundInCache = await findPostsInCache([args.id]);
+
+  post = postFoundInCache[0];
+
+  if (postFoundInCache.includes(null)) {
+    post = await Post.findOne({
+      _id: args.id,
+    }).lean();
+
+    if (post !== null) {
+      await cachePosts([post]);
+    }
   }
-
-  const post = await Post.findOne({
-    _id: args.id,
-  }).lean();
 
   // Checks whether post exists.
   if (!post) {
@@ -54,7 +55,7 @@ export const likePost: MutationResolvers["likePost"] = async (
     Adds context.userId to likedBy list and increases likeCount field by 1
     of post's document and returns the updated post.
     */
-    return await Post.findOneAndUpdate(
+    const updatedPost = await Post.findOneAndUpdate(
       {
         _id: args.id,
       },
@@ -70,6 +71,12 @@ export const likePost: MutationResolvers["likePost"] = async (
         new: true,
       }
     ).lean();
+
+    if (updatedPost !== null) {
+      await cachePosts([updatedPost]);
+    }
+
+    return updatedPost;
   }
 
   // Returns the post without liking.
