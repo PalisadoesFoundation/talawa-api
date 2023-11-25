@@ -178,7 +178,7 @@ export const mutations = gql`
 
     removeUserImage: User! @auth
 
-    revokeRefreshTokenForUser(userId: String!): Boolean!
+    revokeRefreshTokenForUser: Boolean! @auth
 
     saveFcmToken(token: String): Boolean! @auth
 

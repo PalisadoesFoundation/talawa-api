@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from "../constants";
 import type { InterfaceUser } from "../models";
+import { User } from "../models";
 
 export interface InterfaceJwtTokenPayload {
   tokenVersion: number;
@@ -45,4 +46,14 @@ export const createRefreshToken = (user: InterfaceUser): string => {
       expiresIn: "30d",
     }
   );
+};
+
+export const revokeRefreshToken = async (userId: string): Promise<void> => {
+  const user = await User.findOne({ _id: userId }).lean();
+
+  if (user) {
+    const filter = { _id: userId };
+    const update = { $unset: { token: "" } };
+    await User.findOneAndUpdate(filter, update);
+  }
 };
