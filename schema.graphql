@@ -479,7 +479,7 @@ type Mutation {
   removeUserFromGroupChat(chatId: ID!, userId: ID!): GroupChat!
   removeUserImage: User!
   removeUserTag(id: ID!): UserTag
-  revokeRefreshTokenForUser(userId: String!): Boolean!
+  revokeRefreshTokenForUser: Boolean!
   saveFcmToken(token: String): Boolean!
   sendMembershipRequest(organizationId: ID!): MembershipRequest!
   sendMessageToDirectChat(chatId: ID!, messageContent: String!): DirectChatMessage!

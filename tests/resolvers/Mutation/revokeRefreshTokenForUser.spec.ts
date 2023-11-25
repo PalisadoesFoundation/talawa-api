@@ -1,6 +1,5 @@
 import "dotenv/config";
 import { User } from "../../../src/models";
-import type { MutationRevokeRefreshTokenForUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { revokeRefreshTokenForUser as revokeRefreshTokenForUserResolver } from "../../../src/resolvers/Mutation/revokeRefreshTokenForUser";
@@ -22,9 +21,7 @@ afterAll(async () => {
 
 describe("resolvers -> Mutation -> revokeRefreshTokenForUser", () => {
   it(`revokes refresh token for the user and returns true`, async () => {
-    const args: MutationRevokeRefreshTokenForUserArgs = {
-      userId: testUser?.id,
-    };
+    const args = {};
 
     const context = {
       userId: testUser?.id,
@@ -38,11 +35,9 @@ describe("resolvers -> Mutation -> revokeRefreshTokenForUser", () => {
     const testSaveFcmTokenPayload = await User.findOne({
       _id: testUser?._id,
     })
-      .select("tokenVersion")
+      .select("token")
       .lean();
 
-    expect(testSaveFcmTokenPayload?.tokenVersion).toEqual(
-      (testUser?.tokenVersion ?? 0) + 1
-    );
+    expect(testSaveFcmTokenPayload?.token).toEqual(undefined);
   });
 });

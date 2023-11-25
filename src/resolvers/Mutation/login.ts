@@ -74,6 +74,11 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     );
   }
 
+  await User.findOneAndUpdate(
+    { _id: user._id },
+    { token: refreshToken, $inc: { tokenVersion: 1 } }
+  );
+
   // Assigns new value with populated fields to user object.
   user = await User.findOne({
     _id: user._id,
