@@ -11,6 +11,7 @@ import {
 import { connect, disconnect } from "../../helpers/db";
 
 import {
+  CUSTOM_FIELD_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -75,6 +76,30 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
       (field) => field._id.toString() === customField?._id.toString()
     );
     expect(removedCustomField).toBeUndefined();
+  });
+
+  it("should fail attempting to remove field", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    const nonExistentCustomFieldId = Types.ObjectId().toString();
+
+    const context = { userId: testUser?._id };
+    const args = {
+      organizationId: testOrganization?._id as string,
+      customFieldId: nonExistentCustomFieldId as string,
+    };
+
+    try {
+      await removeOrganizationCustomField?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenLastCalledWith(CUSTOM_FIELD_NOT_FOUND.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${CUSTOM_FIELD_NOT_FOUND.MESSAGE}`
+      );
+    }
   });
 
   it("should throw an error when user is not found", async () => {

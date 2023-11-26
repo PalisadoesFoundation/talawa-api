@@ -10,6 +10,8 @@ import {
 import { connect, disconnect } from "../../helpers/db";
 
 import {
+  CUSTOM_FIELD_NAME_MISSING,
+  CUSTOM_FIELD_TYPE_MISSING,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -51,6 +53,54 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
     );
   });
 
+  it("should throw error when customfield name is missing", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    const args = {
+      organizationId: testOrganization?._id,
+      name: "",
+      type: "testType",
+    };
+    const context = { userId: testUser?._id };
+
+    try {
+      await addOrganizationCustomField?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenLastCalledWith(CUSTOM_FIELD_NAME_MISSING.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${CUSTOM_FIELD_NAME_MISSING.MESSAGE}`
+      );
+    }
+  });
+
+  it("should throw error when customfield type is missing", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    const args = {
+      organizationId: testOrganization?._id,
+      name: "fieldName",
+      type: "",
+    };
+    const context = { userId: testUser?._id };
+
+    try {
+      await addOrganizationCustomField?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenLastCalledWith(CUSTOM_FIELD_TYPE_MISSING.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${CUSTOM_FIELD_TYPE_MISSING.MESSAGE}`
+      );
+    }
+  });
+
   it("should throw an error if user is not found", async () => {
     const { requestContext } = await import("../../../src/libraries");
 
@@ -78,7 +128,6 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
       );
     }
   });
-
   it("should throw an error if organization is not found", async () => {
     const { requestContext } = await import("../../../src/libraries");
 
