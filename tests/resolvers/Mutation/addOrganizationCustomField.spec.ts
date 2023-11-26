@@ -13,6 +13,7 @@ import {
   CUSTOM_FIELD_NAME_MISSING,
   CUSTOM_FIELD_TYPE_MISSING,
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 
@@ -51,6 +52,31 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
     expect(newCustomField?.organizationId.toString()).toBe(
       testOrganization?._id.toString()
     );
+  });
+
+  it("should throw error when user attempting to add custom field is not an admin", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    const args = {
+      organizationId: testOrganization?._id,
+      name: "testName",
+      type: "testType",
+    };
+
+    const context = { userId: testUser?._id };
+
+    try {
+      await addOrganizationCustomField?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
+    }
   });
 
   it("should throw error when customfield name is missing", async () => {

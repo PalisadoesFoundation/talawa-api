@@ -11,6 +11,7 @@ import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
+  CUSTOM_DATA_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -208,6 +209,28 @@ describe("removeUserCustomData mutation", () => {
       );
       expect(error.message).toEqual(
         `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
+      );
+    }
+  });
+  it("should throw error when there is no custom data to remove", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    const args = {
+      organizationId: testOrganization?._id,
+    };
+    const context = {
+      userId: testUser?._id,
+    };
+
+    try {
+      await removeUserCustomData?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenLastCalledWith(CUSTOM_DATA_NOT_FOUND.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${CUSTOM_DATA_NOT_FOUND.MESSAGE}`
       );
     }
   });
