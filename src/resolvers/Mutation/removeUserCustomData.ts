@@ -14,7 +14,7 @@ export const removeUserCustomData: MutationResolvers["removeUserCustomData"] =
     const { organizationId } = args;
 
     const currentUser = await User.findOne({
-      _id: "64378abd85008f171cf2990d",
+      _id: context.userId,
     }).lean();
 
     if (!currentUser) {
