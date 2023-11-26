@@ -1,10 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 import type {
   TestOrganizationType,
-  TestUserType} from "../../helpers/userAndOrg";
-import {
-  createTestUserAndOrganization,
+  TestUserType,
 } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { Types } from "mongoose";
 import type mongoose from "mongoose";
 import { disconnect, connect } from "../../helpers/db";

@@ -6,8 +6,8 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
- CUSTOM_DATA_NOT_FOUND } from "../../constants";
-
+  CUSTOM_DATA_NOT_FOUND,
+} from "../../constants";
 
 export const removeUserCustomData: MutationResolvers["removeUserCustomData"] =
   async (_parent, args, context) => {

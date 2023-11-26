@@ -5,10 +5,9 @@ import { removeUserCustomData } from "../../../src/resolvers/Mutation/removeUser
 
 import type {
   TestOrganizationType,
-  TestUserType} from "../../helpers/userAndOrg";
-import {
-  createTestUserAndOrganization,
+  TestUserType,
 } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { connect, disconnect } from "../../helpers/db";
 
 import {

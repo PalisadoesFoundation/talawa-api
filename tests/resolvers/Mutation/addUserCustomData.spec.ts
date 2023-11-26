@@ -3,17 +3,15 @@ import type mongoose from "mongoose";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type {
   TestOrganizationType,
-  TestUserType} from "../../helpers/userAndOrg";
-import {
-  createTestUserAndOrganization,
+  TestUserType,
 } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { disconnect, connect } from "../../helpers/db";
 import { addUserCustomData } from "../../../src/resolvers/Mutation/addUserCustomData";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;

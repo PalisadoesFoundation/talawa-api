@@ -3,10 +3,9 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { customDataByOrganization } from "../../../src/resolvers/Query/customDataByOrganization";
 import type {
   TestOrganizationType,
-  TestUserType} from "../../helpers/userAndOrg";
-import {
-  createTestUserAndOrganization,
+  TestUserType,
 } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { connect, disconnect } from "../../helpers/db";
 import { addUserCustomData } from "../../../src/resolvers/Mutation/addUserCustomData";
 
