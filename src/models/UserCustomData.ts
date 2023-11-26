@@ -1,6 +1,5 @@
 import type { Model } from "mongoose";
-import mongoose, { model , models } from "mongoose";
-
+import mongoose, { model, models } from "mongoose";
 
 /**
  * This is an interface representing a document for custom field in the database(MongoDB).
