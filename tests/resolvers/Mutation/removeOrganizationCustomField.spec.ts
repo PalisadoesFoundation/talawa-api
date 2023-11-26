@@ -144,7 +144,7 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
       await removeOrganizationCustomField?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
-        "No associated data between organization and user"
+        `Translated ${ORGANIZATION_NOT_FOUND_ERROR.MESSAGE}`
       );
     }
   });
