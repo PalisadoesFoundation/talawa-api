@@ -71,8 +71,7 @@ Make sure you are following [issue report guidelines](issue-guidelines.md) avail
 For Talawa API, we had employed the following branching strategy to simplify the development process and to ensure that only stable code is pushed to the `main` branch:
 
 - `develop`: For unstable code and bug fixing
-- `alpha-x.x.x`: For stability testing
-- `main`: Where the stable production ready code lies
+- `main`: Where the stable production ready code lies. This is our default branch.
 
 #### Conflict Resolution
 
