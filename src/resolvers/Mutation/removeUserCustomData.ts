@@ -1,4 +1,4 @@
-import UserCustomData from "../../models/UserCustomData";
+import { UserCustomData } from "../../models/UserCustomData";
 import { Organization, User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";

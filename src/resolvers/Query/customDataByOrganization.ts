@@ -1,4 +1,4 @@
-import UserCustomData from "../../models/UserCustomData";
+import { UserCustomData } from "../../models/UserCustomData";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 
 /**

@@ -1,5 +1,6 @@
 import type { Model } from "mongoose";
-import mongoose, { Types, model } from "mongoose";
+import mongoose, { model , models } from "mongoose";
+
 
 /**
  * This is an interface representing a document for custom field in the database(MongoDB).
@@ -36,7 +37,9 @@ const userCustomDataSchema = new mongoose.Schema({
   },
 });
 
-const UserCustomData: Model<InterfaceUserCustomData> =
-  model<InterfaceUserCustomData>("CustomData", userCustomDataSchema);
+const userCustomData = (): Model<InterfaceUserCustomData> =>
+  model<InterfaceUserCustomData>("UserCustomData", userCustomDataSchema);
 
-export default UserCustomData;
+// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
+export const UserCustomData = (models.UserCustomData ||
+  userCustomData()) as ReturnType<typeof userCustomData>;
