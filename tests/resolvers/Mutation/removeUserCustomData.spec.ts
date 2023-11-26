@@ -69,12 +69,6 @@ describe("removeUserCustomData mutation", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
 
-    MONGOOSE_INSTANCE = await connect();
-
-    const resultArray = await createTestUserAndOrganization(true, false, true);
-    testUser = resultArray[0];
-    testOrganization = resultArray[1];
-
     await addUserCustomData?.(
       {},
       {
