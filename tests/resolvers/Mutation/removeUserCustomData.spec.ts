@@ -7,7 +7,10 @@ import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
-import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import {
+  createTestUser,
+  createTestUserAndOrganization,
+} from "../../helpers/userAndOrg";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -69,6 +72,8 @@ describe("removeUserCustomData mutation", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
 
+    const nonAdmin = await createTestUser();
+
     await addUserCustomData?.(
       {},
       {
@@ -85,7 +90,7 @@ describe("removeUserCustomData mutation", () => {
       organizationId: testOrganization?._id,
     };
     const context = {
-      userId: testUser?._id,
+      userId: nonAdmin?._id,
     };
 
     try {

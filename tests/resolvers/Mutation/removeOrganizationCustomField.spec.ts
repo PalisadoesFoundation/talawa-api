@@ -13,8 +13,12 @@ import { connect, disconnect } from "../../helpers/db";
 import {
   CUSTOM_FIELD_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
+
+import { createTestUser } from "../../helpers/userAndOrg";
+
 import { OrganizationCustomField } from "../../../src/models";
 
 let testUser: TestUserType;
@@ -76,6 +80,50 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
       (field) => field._id.toString() === customField?._id.toString()
     );
     expect(removedCustomField).toBeUndefined();
+  });
+
+  it("should not remove field when user is unauthorized", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    const nonAdmin = await createTestUser();
+
+    const customField = await addOrganizationCustomField?.(
+      {},
+      {
+        organizationId: testOrganization?._id,
+        name: "testName",
+        type: "testType",
+      },
+      {
+        userId: testUser?._id,
+      }
+    );
+
+    const initialCustomFields = await OrganizationCustomField.find({
+      organizationId: testOrganization?._id,
+    });
+
+    expect(customField).toBeDefined();
+    expect(customField?.organizationId.toString()).toBe(
+      testOrganization?._id.toString()
+    );
+
+    const context = { userId: nonAdmin?._id };
+    const args = {
+      organizationId: testOrganization?._id as string,
+      customFieldId: customField?._id.toString() as string,
+    };
+    try {
+      await removeOrganizationCustomField?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
+    }
   });
 
   it("should fail attempting to remove field", async () => {

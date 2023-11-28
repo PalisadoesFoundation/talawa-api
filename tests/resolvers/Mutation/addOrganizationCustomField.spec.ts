@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 import type mongoose from "mongoose";
 import { addOrganizationCustomField } from "../../../src/resolvers/Mutation/addOrganizationCustomField";
 import {
+  createTestUser,
   createTestUserAndOrganization,
   type TestOrganizationType,
   type TestUserType,
@@ -61,13 +62,15 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
       .spyOn(requestContext, "translate")
       .mockImplementationOnce((message) => `Translated ${message}`);
 
+    const nonAdmin = await createTestUser();
+
     const args = {
       organizationId: testOrganization?._id,
       name: "testName",
       type: "testType",
     };
 
-    const context = { userId: testUser?._id };
+    const context = { userId: nonAdmin?._id };
 
     try {
       await addOrganizationCustomField?.({}, args, context);
