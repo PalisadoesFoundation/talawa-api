@@ -28,6 +28,8 @@ type AndroidFirebaseOptions {
   storageBucket: String
 }
 
+scalar Any
+
 type AuthData {
   accessToken: String!
   androidFirebaseOptions: AndroidFirebaseOptions!
@@ -334,6 +336,8 @@ type InvalidCursor implements FieldError {
   path: [String!]!
 }
 
+scalar JSON
+
 type Language {
   _id: ID!
   createdAt: String!
@@ -421,7 +425,9 @@ type Mutation {
   addEventAttendee(data: EventAttendeeInput!): User!
   addFeedback(data: FeedbackInput!): Feedback!
   addLanguageTranslation(data: LanguageInput!): Language!
+  addOrganizationCustomField(name: String!, organizationId: ID!, type: String!): OrganizationCustomField!
   addOrganizationImage(file: String!, organizationId: String!): Organization!
+  addUserCustomData(dataName: String!, dataValue: Any!, organizationId: ID!): UserCustomData!
   addUserImage(file: String!): User!
   addUserToGroupChat(chatId: ID!, userId: ID!): GroupChat!
   adminRemoveEvent(eventId: ID!): Event!
@@ -472,10 +478,12 @@ type Mutation {
   removeGroupChat(chatId: ID!): GroupChat!
   removeMember(data: UserAndOrganizationInput!): Organization!
   removeOrganization(id: ID!): User!
+  removeOrganizationCustomField(customFieldId: ID!, organizationId: ID!): OrganizationCustomField!
   removeOrganizationImage(organizationId: String!): Organization!
   removePost(id: ID!): Post
   removeSampleOrganization: Boolean!
   removeTask(id: ID!): Task
+  removeUserCustomData(organizationId: ID!): UserCustomData!
   removeUserFromGroupChat(chatId: ID!, userId: ID!): GroupChat!
   removeUserImage: User!
   removeUserTag(id: ID!): UserTag
@@ -517,6 +525,7 @@ type Organization {
   blockedUsers: [User]
   createdAt: DateTime
   creator: User!
+  customFields: [OrganizationCustomField!]!
   description: String!
   image: String
   isPublic: Boolean!
@@ -527,6 +536,13 @@ type Organization {
   pinnedPosts: [Post]
   userTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
   visibleInSearch: Boolean!
+}
+
+type OrganizationCustomField {
+  _id: ID!
+  name: String!
+  organizationId: String!
+  type: String!
 }
 
 type OrganizationInfoNode {
@@ -733,6 +749,8 @@ input PostWhereInput {
 type Query {
   adminPlugin(orgId: ID!): [Plugin]
   checkAuth: User!
+  customDataByOrganization(organizationId: ID!): [UserCustomData!]!
+  customFieldsByOrganization(id: ID!): [OrganizationCustomField]
   directChatsByUserID(id: ID!): [DirectChat]
   directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
   event(id: ID!): Event
@@ -944,6 +962,13 @@ type UserConnection {
   aggregate: AggregateUser!
   edges: [User]!
   pageInfo: PageInfo!
+}
+
+type UserCustomData {
+  _id: ID!
+  organizationId: ID!
+  userId: ID!
+  values: JSON!
 }
 
 type UserEdge {

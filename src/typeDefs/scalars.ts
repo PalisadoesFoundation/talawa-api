@@ -13,4 +13,6 @@ export const scalars = gql`
   scalar Time
   scalar URL
   scalar Upload
+  scalar JSON
+  scalar Any
 `;

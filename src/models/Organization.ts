@@ -4,6 +4,7 @@ import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceMessage } from "./Message";
 import type { InterfacePost } from "./Post";
 import type { InterfaceUser } from "./User";
+import type { InterfaceOrganizationCustomField } from "./OrganizationCustomField";
 /**
  * This is an interface that represents a database(MongoDB) document for Organization.
  */
@@ -25,6 +26,7 @@ export interface InterfaceOrganization {
   membershipRequests: PopulatedDoc<InterfaceMembershipRequest & Document>[];
   blockedUsers: PopulatedDoc<InterfaceUser & Document>[];
   visibleInSearch: boolean | undefined;
+  customFields: PopulatedDoc<InterfaceOrganizationCustomField & Document>[];
   createdAt: Date;
 }
 /**
@@ -126,6 +128,12 @@ const organizationSchema = new Schema({
   visibleInSearch: {
     type: Boolean,
   },
+  customFields: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "CustomField",
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,
