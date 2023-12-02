@@ -9,6 +9,7 @@ export async function findCommentsByPostIdInCache(
   if (!postID) {
     return [null];
   }
+
   // fetches the comment id for a particular post
   const hashKey = `post_comments:${postID}`;
 

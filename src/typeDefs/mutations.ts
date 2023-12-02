@@ -9,6 +9,12 @@ export const mutations = gql`
 
     acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
 
+    addOrganizationCustomField(
+      organizationId: ID!
+      type: String!
+      name: String!
+    ): OrganizationCustomField! @auth
+
     addEventAttendee(data: EventAttendeeInput!): User! @auth
 
     addFeedback(data: FeedbackInput!): Feedback! @auth
@@ -17,6 +23,12 @@ export const mutations = gql`
 
     addOrganizationImage(file: String!, organizationId: String!): Organization!
       @auth
+
+    addUserCustomData(
+      organizationId: ID!
+      dataName: String!
+      dataValue: Any!
+    ): UserCustomData! @auth
 
     addUserImage(file: String!): User! @auth
 
@@ -127,6 +139,11 @@ export const mutations = gql`
       @auth
       @role(requires: SUPERADMIN)
 
+    removeOrganizationCustomField(
+      organizationId: ID!
+      customFieldId: ID!
+    ): OrganizationCustomField! @auth
+
     removeComment(id: ID!): Comment @auth
 
     removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat! @auth
@@ -146,6 +163,8 @@ export const mutations = gql`
     removeOrganizationImage(organizationId: String!): Organization! @auth
 
     removePost(id: ID!): Post @auth
+
+    removeUserCustomData(organizationId: ID!): UserCustomData! @auth
 
     removeAdvertisement(id: ID!): Advertisement
 

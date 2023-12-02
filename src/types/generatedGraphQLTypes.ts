@@ -36,9 +36,11 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  Any: any;
   Date: any;
   DateTime: any;
   EmailAddress: any;
+  JSON: any;
   Latitude: any;
   Longitude: any;
   PhoneNumber: any;
@@ -493,7 +495,9 @@ export type Mutation = {
   addEventAttendee: User;
   addFeedback: Feedback;
   addLanguageTranslation: Language;
+  addOrganizationCustomField: OrganizationCustomField;
   addOrganizationImage: Organization;
+  addUserCustomData: UserCustomData;
   addUserImage: User;
   addUserToGroupChat: GroupChat;
   adminRemoveEvent: Event;
@@ -544,10 +548,12 @@ export type Mutation = {
   removeGroupChat: GroupChat;
   removeMember: Organization;
   removeOrganization: User;
+  removeOrganizationCustomField: OrganizationCustomField;
   removeOrganizationImage: Organization;
   removePost?: Maybe<Post>;
   removeSampleOrganization: Scalars['Boolean'];
   removeTask?: Maybe<Task>;
+  removeUserCustomData: UserCustomData;
   removeUserFromGroupChat: GroupChat;
   removeUserImage: User;
   removeUserTag?: Maybe<UserTag>;
@@ -604,9 +610,23 @@ export type MutationAddLanguageTranslationArgs = {
 };
 
 
+export type MutationAddOrganizationCustomFieldArgs = {
+  name: Scalars['String'];
+  organizationId: Scalars['ID'];
+  type: Scalars['String'];
+};
+
+
 export type MutationAddOrganizationImageArgs = {
   file: Scalars['String'];
   organizationId: Scalars['String'];
+};
+
+
+export type MutationAddUserCustomDataArgs = {
+  dataName: Scalars['String'];
+  dataValue: Scalars['Any'];
+  organizationId: Scalars['ID'];
 };
 
 
@@ -871,6 +891,12 @@ export type MutationRemoveOrganizationArgs = {
 };
 
 
+export type MutationRemoveOrganizationCustomFieldArgs = {
+  customFieldId: Scalars['ID'];
+  organizationId: Scalars['ID'];
+};
+
+
 export type MutationRemoveOrganizationImageArgs = {
   organizationId: Scalars['String'];
 };
@@ -883,6 +909,11 @@ export type MutationRemovePostArgs = {
 
 export type MutationRemoveTaskArgs = {
   id: Scalars['ID'];
+};
+
+
+export type MutationRemoveUserCustomDataArgs = {
+  organizationId: Scalars['ID'];
 };
 
 
@@ -1043,6 +1074,7 @@ export type Organization = {
   blockedUsers?: Maybe<Array<Maybe<User>>>;
   createdAt?: Maybe<Scalars['DateTime']>;
   creator: User;
+  customFields: Array<OrganizationCustomField>;
   description: Scalars['String'];
   image?: Maybe<Scalars['String']>;
   isPublic: Scalars['Boolean'];
@@ -1066,6 +1098,14 @@ export type OrganizationUserTagsArgs = {
   before?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['PositiveInt']>;
   last?: InputMaybe<Scalars['PositiveInt']>;
+};
+
+export type OrganizationCustomField = {
+  __typename?: 'OrganizationCustomField';
+  _id: Scalars['ID'];
+  name: Scalars['String'];
+  organizationId: Scalars['String'];
+  type: Scalars['String'];
 };
 
 export type OrganizationInfoNode = {
@@ -1269,6 +1309,8 @@ export type Query = {
   __typename?: 'Query';
   adminPlugin?: Maybe<Array<Maybe<Plugin>>>;
   checkAuth: User;
+  customDataByOrganization: Array<UserCustomData>;
+  customFieldsByOrganization?: Maybe<Array<Maybe<OrganizationCustomField>>>;
   directChatsByUserID?: Maybe<Array<Maybe<DirectChat>>>;
   directChatsMessagesByChatID?: Maybe<Array<Maybe<DirectChatMessage>>>;
   event?: Maybe<Event>;
@@ -1303,6 +1345,16 @@ export type Query = {
 
 export type QueryAdminPluginArgs = {
   orgId: Scalars['ID'];
+};
+
+
+export type QueryCustomDataByOrganizationArgs = {
+  organizationId: Scalars['ID'];
+};
+
+
+export type QueryCustomFieldsByOrganizationArgs = {
+  id: Scalars['ID'];
 };
 
 
@@ -1648,6 +1700,14 @@ export type UserConnection = {
   pageInfo: PageInfo;
 };
 
+export type UserCustomData = {
+  __typename?: 'UserCustomData';
+  _id: Scalars['ID'];
+  organizationId: Scalars['ID'];
+  userId: Scalars['ID'];
+  values: Scalars['JSON'];
+};
+
 export type UserEdge = {
   __typename?: 'UserEdge';
   cursor: Scalars['String'];
@@ -1857,6 +1917,7 @@ export type ResolversTypes = {
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
   AndroidFirebaseOptions: ResolverTypeWrapper<AndroidFirebaseOptions>;
+  Any: ResolverTypeWrapper<Scalars['Any']>;
   AuthData: ResolverTypeWrapper<Omit<AuthData, 'user'> & { user: ResolversTypes['User'] }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   CheckIn: ResolverTypeWrapper<InterfaceCheckInModel>;
@@ -1897,6 +1958,7 @@ export type ResolversTypes = {
   IOSFirebaseOptions: ResolverTypeWrapper<IosFirebaseOptions>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   InvalidCursor: ResolverTypeWrapper<InvalidCursor>;
+  JSON: ResolverTypeWrapper<Scalars['JSON']>;
   Language: ResolverTypeWrapper<InterfaceLanguageModel>;
   LanguageInput: LanguageInput;
   LanguageModel: ResolverTypeWrapper<LanguageModel>;
@@ -1914,6 +1976,7 @@ export type ResolversTypes = {
   Mutation: ResolverTypeWrapper<{}>;
   OTPInput: OtpInput;
   Organization: ResolverTypeWrapper<InterfaceOrganizationModel>;
+  OrganizationCustomField: ResolverTypeWrapper<OrganizationCustomField>;
   OrganizationInfoNode: ResolverTypeWrapper<Omit<OrganizationInfoNode, 'creator'> & { creator: ResolversTypes['User'] }>;
   OrganizationInput: OrganizationInput;
   OrganizationOrderByInput: OrganizationOrderByInput;
@@ -1961,6 +2024,7 @@ export type ResolversTypes = {
   User: ResolverTypeWrapper<InterfaceUserModel>;
   UserAndOrganizationInput: UserAndOrganizationInput;
   UserConnection: ResolverTypeWrapper<Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['User']>> }>;
+  UserCustomData: ResolverTypeWrapper<UserCustomData>;
   UserEdge: ResolverTypeWrapper<Omit<UserEdge, 'node'> & { node: ResolversTypes['User'] }>;
   UserInput: UserInput;
   UserOrderByInput: UserOrderByInput;
@@ -1984,6 +2048,7 @@ export type ResolversParentTypes = {
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
   AndroidFirebaseOptions: AndroidFirebaseOptions;
+  Any: Scalars['Any'];
   AuthData: Omit<AuthData, 'user'> & { user: ResolversParentTypes['User'] };
   Boolean: Scalars['Boolean'];
   CheckIn: InterfaceCheckInModel;
@@ -2023,6 +2088,7 @@ export type ResolversParentTypes = {
   IOSFirebaseOptions: IosFirebaseOptions;
   Int: Scalars['Int'];
   InvalidCursor: InvalidCursor;
+  JSON: Scalars['JSON'];
   Language: InterfaceLanguageModel;
   LanguageInput: LanguageInput;
   LanguageModel: LanguageModel;
@@ -2040,6 +2106,7 @@ export type ResolversParentTypes = {
   Mutation: {};
   OTPInput: OtpInput;
   Organization: InterfaceOrganizationModel;
+  OrganizationCustomField: OrganizationCustomField;
   OrganizationInfoNode: Omit<OrganizationInfoNode, 'creator'> & { creator: ResolversParentTypes['User'] };
   OrganizationInput: OrganizationInput;
   OrganizationWhereInput: OrganizationWhereInput;
@@ -2080,6 +2147,7 @@ export type ResolversParentTypes = {
   User: InterfaceUserModel;
   UserAndOrganizationInput: UserAndOrganizationInput;
   UserConnection: Omit<UserConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['User']>> };
+  UserCustomData: UserCustomData;
   UserEdge: Omit<UserEdge, 'node'> & { node: ResolversParentTypes['User'] };
   UserInput: UserInput;
   UserTag: InterfaceOrganizationTagUserModel;
@@ -2134,6 +2202,10 @@ export type AndroidFirebaseOptionsResolvers<ContextType = any, ParentType extend
   storageBucket?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
+
+export interface AnyScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Any'], any> {
+  name: 'Any';
+}
 
 export type AuthDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthData'] = ResolversParentTypes['AuthData']> = {
   accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -2339,6 +2411,10 @@ export type InvalidCursorResolvers<ContextType = any, ParentType extends Resolve
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['JSON'], any> {
+  name: 'JSON';
+}
+
 export type LanguageResolvers<ContextType = any, ParentType extends ResolversParentTypes['Language'] = ResolversParentTypes['Language']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -2423,7 +2499,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addEventAttendee?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddEventAttendeeArgs, 'data'>>;
   addFeedback?: Resolver<ResolversTypes['Feedback'], ParentType, ContextType, RequireFields<MutationAddFeedbackArgs, 'data'>>;
   addLanguageTranslation?: Resolver<ResolversTypes['Language'], ParentType, ContextType, RequireFields<MutationAddLanguageTranslationArgs, 'data'>>;
+  addOrganizationCustomField?: Resolver<ResolversTypes['OrganizationCustomField'], ParentType, ContextType, RequireFields<MutationAddOrganizationCustomFieldArgs, 'name' | 'organizationId' | 'type'>>;
   addOrganizationImage?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationAddOrganizationImageArgs, 'file' | 'organizationId'>>;
+  addUserCustomData?: Resolver<ResolversTypes['UserCustomData'], ParentType, ContextType, RequireFields<MutationAddUserCustomDataArgs, 'dataName' | 'dataValue' | 'organizationId'>>;
   addUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddUserImageArgs, 'file'>>;
   addUserToGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationAddUserToGroupChatArgs, 'chatId' | 'userId'>>;
   adminRemoveEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationAdminRemoveEventArgs, 'eventId'>>;
@@ -2474,10 +2552,12 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   removeGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationRemoveGroupChatArgs, 'chatId'>>;
   removeMember?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationRemoveMemberArgs, 'data'>>;
   removeOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationArgs, 'id'>>;
+  removeOrganizationCustomField?: Resolver<ResolversTypes['OrganizationCustomField'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationCustomFieldArgs, 'customFieldId' | 'organizationId'>>;
   removeOrganizationImage?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationRemoveOrganizationImageArgs, 'organizationId'>>;
   removePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationRemovePostArgs, 'id'>>;
   removeSampleOrganization?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   removeTask?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<MutationRemoveTaskArgs, 'id'>>;
+  removeUserCustomData?: Resolver<ResolversTypes['UserCustomData'], ParentType, ContextType, RequireFields<MutationRemoveUserCustomDataArgs, 'organizationId'>>;
   removeUserFromGroupChat?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType, RequireFields<MutationRemoveUserFromGroupChatArgs, 'chatId' | 'userId'>>;
   removeUserImage?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   removeUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationRemoveUserTagArgs, 'id'>>;
@@ -2515,6 +2595,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   blockedUsers?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  customFields?: Resolver<Array<ResolversTypes['OrganizationCustomField']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -2525,6 +2606,14 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   pinnedPosts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType>;
   userTags?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<OrganizationUserTagsArgs>>;
   visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type OrganizationCustomFieldResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrganizationCustomField'] = ResolversParentTypes['OrganizationCustomField']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  organizationId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2607,6 +2696,8 @@ export type PostConnectionResolvers<ContextType = any, ParentType extends Resolv
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   adminPlugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryAdminPluginArgs, 'orgId'>>;
   checkAuth?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  customDataByOrganization?: Resolver<Array<ResolversTypes['UserCustomData']>, ParentType, ContextType, RequireFields<QueryCustomDataByOrganizationArgs, 'organizationId'>>;
+  customFieldsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['OrganizationCustomField']>>>, ParentType, ContextType, RequireFields<QueryCustomFieldsByOrganizationArgs, 'id'>>;
   directChatsByUserID?: Resolver<Maybe<Array<Maybe<ResolversTypes['DirectChat']>>>, ParentType, ContextType, RequireFields<QueryDirectChatsByUserIdArgs, 'id'>>;
   directChatsMessagesByChatID?: Resolver<Maybe<Array<Maybe<ResolversTypes['DirectChatMessage']>>>, ParentType, ContextType, RequireFields<QueryDirectChatsMessagesByChatIdArgs, 'id'>>;
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<QueryEventArgs, 'id'>>;
@@ -2721,6 +2812,14 @@ export type UserConnectionResolvers<ContextType = any, ParentType extends Resolv
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type UserCustomDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserCustomData'] = ResolversParentTypes['UserCustomData']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  organizationId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  userId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  values?: Resolver<ResolversTypes['JSON'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type UserEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserEdge'] = ResolversParentTypes['UserEdge']> = {
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
@@ -2772,6 +2871,7 @@ export type Resolvers<ContextType = any> = {
   AggregatePost?: AggregatePostResolvers<ContextType>;
   AggregateUser?: AggregateUserResolvers<ContextType>;
   AndroidFirebaseOptions?: AndroidFirebaseOptionsResolvers<ContextType>;
+  Any?: GraphQLScalarType;
   AuthData?: AuthDataResolvers<ContextType>;
   CheckIn?: CheckInResolvers<ContextType>;
   CheckInStatus?: CheckInStatusResolvers<ContextType>;
@@ -2796,6 +2896,7 @@ export type Resolvers<ContextType = any> = {
   GroupChatMessage?: GroupChatMessageResolvers<ContextType>;
   IOSFirebaseOptions?: IosFirebaseOptionsResolvers<ContextType>;
   InvalidCursor?: InvalidCursorResolvers<ContextType>;
+  JSON?: GraphQLScalarType;
   Language?: LanguageResolvers<ContextType>;
   LanguageModel?: LanguageModelResolvers<ContextType>;
   Latitude?: GraphQLScalarType;
@@ -2809,6 +2910,7 @@ export type Resolvers<ContextType = any> = {
   MinimumValueError?: MinimumValueErrorResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Organization?: OrganizationResolvers<ContextType>;
+  OrganizationCustomField?: OrganizationCustomFieldResolvers<ContextType>;
   OrganizationInfoNode?: OrganizationInfoNodeResolvers<ContextType>;
   OtpData?: OtpDataResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
@@ -2829,6 +2931,7 @@ export type Resolvers<ContextType = any> = {
   Upload?: GraphQLScalarType;
   User?: UserResolvers<ContextType>;
   UserConnection?: UserConnectionResolvers<ContextType>;
+  UserCustomData?: UserCustomDataResolvers<ContextType>;
   UserEdge?: UserEdgeResolvers<ContextType>;
   UserTag?: UserTagResolvers<ContextType>;
   UserTagEdge?: UserTagEdgeResolvers<ContextType>;
