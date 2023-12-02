@@ -214,7 +214,7 @@ jobs:
 
       - name: Execute GraphQL query
         run: |
-          GRAPHQL_ENDPOINT="http://localhost:your_port_here/graphql?query=%7B__typename%7D"
+          GRAPHQL_ENDPOINT="http://localhost:4000/graphql?query=%7B__typename%7D"
           GRAPHQL_OUTPUT=$(curl -s $GRAPHQL_ENDPOINT)
           echo "GraphQL Output: $GRAPHQL_OUTPUT"
         
