@@ -33,3 +33,6 @@ csr.pem
 
 .DS_STORE
 
+# Ensuring Images are not uploaded in ./image , ./video path 
+.image
+.video
