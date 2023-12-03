@@ -197,36 +197,7 @@ jobs:
         run: npm run dev 
 
       - name: Check health endpoint
-        run: |
-          HEALTH_CHECK_OUTPUT=$(curl -s http://localhost:4000/)
-          echo "Health Check Output: $HEALTH_CHECK_OUTPUT"
-        
-          # Check if the status is "healthy" in the JSON response
-          echo $HEALTH_CHECK_OUTPUT | jq '.status' | grep -q "healthy"
-
-          # Exit with a non-zero status if the health check fails
-          if [ $? -eq 0 ]; then
-            echo "Health Check Passed!"
-          else
-            echo "Health Check Failed!"
-            exit 1
-          fi
-
-      - name: Execute GraphQL query
-        run: |
-          GRAPHQL_ENDPOINT="http://localhost:4000/graphql?query=%7B__typename%7D"
-          GRAPHQL_OUTPUT=$(curl -s $GRAPHQL_ENDPOINT)
-          echo "GraphQL Output: $GRAPHQL_OUTPUT"
-        
-          # Check if the output contains the expected typename
-          echo $GRAPHQL_OUTPUT | jq '.data.__typename' | grep -q "Query"
-
-          # Exit with a non-zero status if the check fails
-          if [ $? -eq 0 ]; then
-            echo "GraphQL Query Passed!"
-          else
-            echo "GraphQL Query Failed!"
-            exit 1
-          fi
-
-        
+        run: bash ${GITHUB_WORKSPACE}/scripts/endpoint_health.sh
+          
+      - name: Check graphql engine execution
+        run: bash ${GITHUB_WORKSPACE}/scripts/graphql_endpoint_health.sh
