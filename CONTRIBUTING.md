@@ -169,7 +169,7 @@ Now you can pull in changes from `PalisadoesFoundation/talawa-api` by running `g
 
 We have established a clean setup now. We can make any changes we like and push it to this forked repository, and then make a pull request for getting the changes merged into the original repository. Here's a nice picture explaining the process ([image source](https://github.com/Rafase282/My-FreeCodeCamp-Code/wiki/Lesson-Save-your-Code-Revisions-Forever-with-Git)).
 
-![Diagram of the fork-and-clone workflow](./image/install3.png)
+![Diagram of the fork-and-clone workflow](./src/assets/image/install3.png)
 
 #### Creating a Pull Request - Process Overview
 
@@ -271,7 +271,7 @@ We use the open source project [GraphQL Voyager](https://github.com/IvanGoncharo
 
 Go to `http://localhost:4000/voyager` after running the development server to explore the same!
 
-![Voyager Demo for User Model](./image/GraphQL_Voyager.png)
+![Voyager Demo for User Model](./src/assets/image/GraphQL_Voyager.png)
 
 ### GraphQL Markdown
 

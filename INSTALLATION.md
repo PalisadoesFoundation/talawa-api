@@ -89,9 +89,9 @@ First you need a local copy of talawa-api. Run the following command in the dire
 1. Navigate to the folder where you want to setup the repository. Here, I will set it up in a folder called `talawa`.
 1. Navigate to the folder and open a terminal in this folder (you can right-click and choose appropiate option based onn your OS). Next, we'll fork and clone the `talawa-api` repository.
 1. Navigate to [https://github.com/PalisadoesFoundation/talawa-api/](hhttps://github.com/PalisadoesFoundation/talawa-api/) and click on the `fork` button. It is placed on the right corner opposite the repository name `PalisadoesFoundation/talawa-api`.
-   ![Image with fork](./image/install1.png)
+   ![Image with fork](./src/assets/image/install1.png)
 1. You should now see `talawa-api` under your repositories. It will be marked as forked from `PalisadoesFoundation/talawa-api`
-   ![Image of user's clone](./image/install2.png)
+   ![Image of user's clone](./src/assets/image/install2.png)
 1. Clone the repository to your local computer (replacing the values in `{{}}`):
 
 ```
@@ -437,11 +437,11 @@ We use `reCAPTCHA` for two factor authentication (2FA). Follow these steps:
 
 1. Visit the [reCAPTCHA Key Generation](https://www.google.com/recaptcha/admin/create) URL.
 1. Fill in the input blocks as shown in the screenshot:
-   ![Set up recaptcha page](./image/recaptcha_set_up.webp)
+   ![Set up recaptcha page](./src/assets/image/recaptcha_set_up.webp)
 1. Click on `Submit` button.
 1. Copy the generated `Secret Key` to variable named `RECAPTCHA_SECRET_KEY` in `.env` file.
 
-   ![Set up recaptcha page](./image/recaptcha_site_and_secret_key.webp)
+   ![Set up recaptcha page](./src/assets/image/recaptcha_site_and_secret_key.webp)
 
 1. **NOTE**: Save the generated `Site key` as it will be used in `talawa-admin`.
 
@@ -501,7 +501,7 @@ COLORIZE_LOGS = false
 
 If the parameter value is set to `true`, you should be able to see colorized logs in console, or else logs will display in the console's default simple format.
 
-![Colorized logs in console](./image/colorize-logs.jpg)
+![Colorized logs in console](./src/assets/image/colorize-logs.jpg)
 
 ### Setting up LOG_LEVEL in .env file
 
@@ -742,13 +742,13 @@ This guide is for `VSCode` users to easily manage their `MongoDB` databases:
 
 1.  Install the offical `MongoDB` extension for `VSCode` named `MongoDB for VS Code`.
 
-    ![Install official mongoDB vscode extension](./image/install_mongodb_vscode_extension.webp)
+    ![Install official mongoDB vscode extension](./src/assets/image/install_mongodb_vscode_extension.webp)
 
 2.  Connect your `MongoDB` database to the extension.
 
-    ![Connect your mongoDB database to the extension](./image/connect_extension_to_mongodb_step_1.webp)
+    ![Connect your mongoDB database to the extension](./src/assets/image/connect_extension_to_mongodb_step_1.webp)
 
-    ![Connect your mongoDB database to the extension](./image/connect_extension_to_mongodb_step_2.webp)
+    ![Connect your mongoDB database to the extension](./src/assets/image/connect_extension_to_mongodb_step_2.webp)
 
 3.  Now you can manage the database you are using for `talawa-api` through this extension within `VSCode`.
 
@@ -773,7 +773,7 @@ You can skip these instructions for now if you don't have running instance of Ta
 2. Select `user` collections and edit the data. Change:
    1. `userType` from `USER` to `SUPERADMIN`
    2. `adminApproved` from `false` to `true`
-   - ![Illustration for user edit ](./image/mongodb_compass_user_edit.png)
+   - ![Illustration for user edit ](./src/assets/image/mongodb_compass_user_edit.png)
 
 ## Using Mongo Shell
 
