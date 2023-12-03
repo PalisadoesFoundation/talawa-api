@@ -110,7 +110,7 @@ Install the packages required by `talawa-api` using this command:
 npm install
 ```
 
-# Installation with Docker
+# Installation Using Docker
 
 > - **Requires Docker and Docker Compose to be installed**
 > - Will start a local mongodb and redis instances
@@ -123,7 +123,7 @@ You can use our interactive setup script for the configuration. Use the followin
 npm run setup
 ```
 
-It can be done manually as well and here's how to do it. - [The .env Configuration File](#the-env-configuration-file)
+All the options in "setup" can be done manually as well and here's how to do it. - [The .env Configuration File](#the-env-configuration-file)
 
 Now use the following command to run docker containers -
 
@@ -134,6 +134,7 @@ OR
 ```sh
 docker-compose up
 ```
+**Note: If you're using Docker, you'll need to manually import the sample data after the Docker Compose has started the MongoDB container. For instructions on how to do this, refer to [Importing Sample Database](#importing-sample-database)**
 # Installation without Docker
 
 ## Install MongoDB
