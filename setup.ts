@@ -366,21 +366,24 @@ async function main(): Promise<void> {
     await twoFactorAuth();
   }
 
-  const { shouldRunDataImport } = await inquirer.prompt([
-    {
-      type: "confirm",
-      name: "shouldRunDataImport",
-      message: "Do you want to import sample data?",
-      default: true,
-    },
-  ]);
-  if (shouldRunDataImport) {
-    await importData();
-  } else {
-    console.log(
-      "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
-    );
+  if (!isDockerInstallation) {
+    const { shouldRunDataImport } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "shouldRunDataImport",
+        message: "Do you want to import sample data?",
+        default: true,
+      },
+    ]);
+
+    if (shouldRunDataImport) {
+      await importData();
+    }
   }
+
+  console.log(
+    "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
+  );
 }
 
 main();
