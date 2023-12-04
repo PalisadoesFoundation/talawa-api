@@ -175,7 +175,7 @@ jobs:
         run: npm ci
 
       - name: Run dev server
-        run: npm run dev
+        run: npm run dev &
       
       - name: Check health endpoint
         run: bash ${GITHUB_WORKSPACE}/scripts/endpoint_health.sh
