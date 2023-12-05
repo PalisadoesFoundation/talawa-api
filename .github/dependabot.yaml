@@ -13,11 +13,6 @@ updates:
       - "dependencies"
     # Specify the target branch for PRs
     target-branch: "develop"
-    # Include all minor updates in a single PR
-    grouping:
-      minor:
-        include:
-          - "*"
     # Customize commit message prefix
     commit-message:
       prefix: "chore(deps):"
