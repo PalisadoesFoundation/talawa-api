@@ -1,0 +1,30 @@
+# Configuration for automated dependency updates using Dependabot
+version: 2
+updates:
+  # Define the target package ecosystem
+  - package-ecosystem: "npm"
+    # Specify the root directory
+    directory: "/"
+    # Schedule automated updates to run weekly
+    schedule:
+      interval: "weekly"
+    # Labels to apply to Dependabot PRs
+    labels:
+      - "dependencies"
+    # Specify the target branch for PRs
+    target-branch: "develop"
+    # Include all minor updates in a single PR
+    grouping:
+      minor:
+        include:
+          - "*"
+    # Customize commit message prefix
+    commit-message:
+      prefix: "chore(deps):"
+    # Optional parameters
+    # # List of GitHub usernames to assign the PR to
+    # assignees:
+    #   - "username1"
+    #   - "username2"
+    # # Limit the number of open pull requests Dependabot will create
+    # open-pull-requests-limit: 10
