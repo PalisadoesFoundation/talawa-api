@@ -33,6 +33,29 @@ csr.pem
 
 .DS_STORE
 
-# Ensuring Images are not uploaded in ./image , ./video path 
-.image
-.video
+# # Ensuring no images and video are commited in ./video and ./image directories
+# video/*
+
+# image/*
+# !colorize-logs.jpg
+# !colorize-logs.jpg
+# colorize-logs.jpg
+# connect_extension_to_mongodb_step_1.webp
+# connect_extension_to_mongodb_step_2.webp
+# docker_1.jpg
+# docker_2.jpg
+# docker_3.jpeg
+# GraphQL_Voyager.png
+# install1.png
+# install2.png
+# install3.png
+# install_mongodb_vscode_extension.webp
+# ip-address.png
+# mongodb_compass_user_edit.png
+# recaptcha_set_up.webp
+# recaptcha_site_and_secret_key.webp
+# talawa-logo-dark-200x200.png
+# talawa-logo-dark-600x600.png
+# talawa-logo-lite-200x200.png
+# talawa-logo-lite-600x600.png
+# talawa-rtd.png
