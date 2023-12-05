@@ -708,7 +708,7 @@ The Organization URL for Talawa mobile app developers will depend upon the devic
   - Enter `ipconfig` (For Windows Users) or `ifconfig` (For Linux/OSX Users)
   - Your Mobile and Computer (On which API server is running) must be on same Wifi Network. Use Mobile Hotspot to connect your computer to internet in case you don't have access to a Wifi Router.
   - Search for the `Wireless LAN adapter Wi-Fi:` and then copy `IPv4 Address`, like in image below:
-  - ![image](https://github.com/anshgoyalevil/talawa-api/blob/docs/image/ip-address.png)
+  - ![image](./public/image/ip-address.png)
   - Now, use this IP address (`192.168.0.105` in our case) to access the API instance using the following URL pattern:
 
 ```
