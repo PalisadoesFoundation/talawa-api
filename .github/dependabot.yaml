@@ -21,10 +21,3 @@ updates:
     # Customize commit message prefix
     commit-message:
       prefix: "chore(deps):"
-    # Optional parameters
-    # # List of GitHub usernames to assign the PR to
-    # assignees:
-    #   - "username1"
-    #   - "username2"
-    # # Limit the number of open pull requests Dependabot will create
-    # open-pull-requests-limit: 10
