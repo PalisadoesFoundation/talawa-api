@@ -39,24 +39,5 @@ csr.pem
 image/*
 video/*
 
-# Exception: Include specific files
-!image/colorize-logs.jpg
-!image/connect_extension_to_mongodb_step_1.webp
-!image/connect_extension_to_mongodb_step_2.webp
-!image/docker_1.jpg
-!image/docker_2.jpg
-!image/docker_3.jpeg
-!image/GraphQL_Voyager.png
-!image/install1.png
-!image/install2.png
-!image/install3.png
-!image/install_mongodb_vscode_extension.webp
-!image/ip-address.png
-!image/mongodb_compass_user_edit.png
-!image/recaptcha_set_up.webp
-!image/recaptcha_site_and_secret_key.webp
-!image/talawa-logo-dark-200x200.png
-!image/talawa-logo-dark-600x600.png
-!image/talawa-logo-lite-200x200.png
-!image/talawa-logo-lite-600x600.png
-!image/talawa-rtd.png
+
+markdown/*
