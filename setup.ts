@@ -232,17 +232,6 @@ async function shouldWipeExistingData(url: string): Promise<boolean> {
   return shouldImport;
 }
 
-async function setNodeEnv(): Promise<void> {
-  const config = dotenv.parse(fs.readFileSync(".env"));
-
-  config.NODE_ENV = "development";
-  const updatedConfigString = Object.keys(config)
-    .map((key) => `${key}=${config[key]}`)
-    .join("\n");
-
-  fs.writeFileSync(".env", updatedConfigString);
-}
-
 //Import sample data
 async function importData(): Promise<void> {
   if (!process.env.MONGO_DB_URL) {
@@ -321,20 +310,6 @@ async function main(): Promise<void> {
   }
 
   accessAndRefreshTokens(accessToken, refreshToken);
-
-  console.log("For local development purposes, choose 'Yes'");
-
-  const { setEnv } = await inquirer.prompt({
-    type: "confirm",
-    name: "setEnv",
-    message:
-      "The Node Env is set to production do you want to change it to development",
-    default: true,
-  });
-
-  if (setEnv) {
-    await setNodeEnv();
-  }
 
   const { isDockerInstallation } = await inquirer.prompt({
     type: "confirm",
