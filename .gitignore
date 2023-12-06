@@ -35,9 +35,5 @@ csr.pem
 
 # Ensuring no images and video are commited in ./video and ./image directories
 
-# Ignore all files in the image and video directory
-image/*
-video/*
-
 
 markdown/*
