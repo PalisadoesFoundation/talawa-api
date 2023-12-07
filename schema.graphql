@@ -749,6 +749,7 @@ input PostWhereInput {
 type Query {
   adminPlugin(orgId: ID!): [Plugin]
   checkAuth: User!
+  commentsByPost(id: ID!): [Comment]
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
   directChatsByUserID(id: ID!): [DirectChat]

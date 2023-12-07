@@ -1309,6 +1309,7 @@ export type Query = {
   __typename?: 'Query';
   adminPlugin?: Maybe<Array<Maybe<Plugin>>>;
   checkAuth: User;
+  commentsByPost?: Maybe<Array<Maybe<Comment>>>;
   customDataByOrganization: Array<UserCustomData>;
   customFieldsByOrganization?: Maybe<Array<Maybe<OrganizationCustomField>>>;
   directChatsByUserID?: Maybe<Array<Maybe<DirectChat>>>;
@@ -1345,6 +1346,11 @@ export type Query = {
 
 export type QueryAdminPluginArgs = {
   orgId: Scalars['ID'];
+};
+
+
+export type QueryCommentsByPostArgs = {
+  id: Scalars['ID'];
 };
 
 
@@ -2696,6 +2702,7 @@ export type PostConnectionResolvers<ContextType = any, ParentType extends Resolv
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   adminPlugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryAdminPluginArgs, 'orgId'>>;
   checkAuth?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  commentsByPost?: Resolver<Maybe<Array<Maybe<ResolversTypes['Comment']>>>, ParentType, ContextType, RequireFields<QueryCommentsByPostArgs, 'id'>>;
   customDataByOrganization?: Resolver<Array<ResolversTypes['UserCustomData']>, ParentType, ContextType, RequireFields<QueryCustomDataByOrganizationArgs, 'organizationId'>>;
   customFieldsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['OrganizationCustomField']>>>, ParentType, ContextType, RequireFields<QueryCustomFieldsByOrganizationArgs, 'id'>>;
   directChatsByUserID?: Resolver<Maybe<Array<Maybe<ResolversTypes['DirectChat']>>>, ParentType, ContextType, RequireFields<QueryDirectChatsByUserIdArgs, 'id'>>;

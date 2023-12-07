@@ -1,5 +1,6 @@
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { checkAuth } from "./checkAuth";
+import { commentsByPost } from "./commentsByPost";
 import { customDataByOrganization } from "./customDataByOrganization";
 import { customFieldsByOrganization } from "./customFieldsByOrganization";
 import { directChatsByUserID } from "./directChatsByUserID";
@@ -30,6 +31,7 @@ import { usersConnection } from "./usersConnection";
 
 export const Query: QueryResolvers = {
   checkAuth,
+  commentsByPost,
   customFieldsByOrganization,
   customDataByOrganization,
   directChatsByUserID,

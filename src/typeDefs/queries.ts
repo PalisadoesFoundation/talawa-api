@@ -9,6 +9,8 @@ export const queries = gql`
 
     checkAuth: User! @auth
 
+    commentsByPost(id: ID!): [Comment]
+
     customFieldsByOrganization(id: ID!): [OrganizationCustomField]
 
     customDataByOrganization(organizationId: ID!): [UserCustomData!]!
