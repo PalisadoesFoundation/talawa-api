@@ -33,7 +33,7 @@ jobs:
         run: npm run lint:check
           
       - name: Check for formatting errors
-        run: npm run format check
+        run: npm run format:check
           
       - name: Run Typescript Type-Checker
         run: npm run typecheck
