@@ -145,7 +145,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     }
   ).lean();
 
-  if (organization) await cacheOrganizations([organization]);
+  await cacheOrganizations([organization]);
 
   // Remove organization's id from joinedOrganizations list on user.
   await User.updateOne(

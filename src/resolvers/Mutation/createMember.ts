@@ -54,7 +54,7 @@ export const createMember: MutationResolvers["createMember"] = async (
       _id: args.input.organizationId,
     }).lean();
 
-    if (organization) await cacheOrganizations([organization]);
+    await cacheOrganizations([organization]);
   }
 
   if (!organization) {

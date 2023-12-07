@@ -35,7 +35,7 @@ export const createGroupChat: MutationResolvers["createGroupChat"] = async (
       _id: args.data.organizationId,
     }).lean();
 
-    if (organization) await cacheOrganizations([organization]);
+    await cacheOrganizations([organization]);
   }
 
   // Checks whether organization with _id === args.data.organizationId exists.

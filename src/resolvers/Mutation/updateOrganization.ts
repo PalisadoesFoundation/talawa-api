@@ -31,7 +31,7 @@ export const updateOrganization: MutationResolvers["updateOrganization"] =
         _id: args.id,
       }).lean();
 
-      if (organization) await cacheOrganizations([organization]);
+      await cacheOrganizations([organization]);
     }
 
     // Checks if organization with _id === args.id exists.
