@@ -6,3 +6,4 @@ node_modules
 src/types
 docs/Schema.md
 .eslintignore
+schema.graphql
