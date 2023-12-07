@@ -23,6 +23,15 @@
       }
     },
     {
+      // graphql in root folder parses the schema.graphql file
+      "files": ["./schema.graphql"],
+      "parser": "@graphql-eslint/eslint-plugin",
+      "plugins": ["@graphql-eslint"],
+      "rules": {
+        "@typescript-eslint/naming-convention": "off"
+      }
+    },
+    {
       "files": ["tests/**/*"],
       "rules": {
         "no-restricted-imports": "off"
