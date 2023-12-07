@@ -35,7 +35,7 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
       _id: args.data.organizationId,
     }).lean();
 
-    cacheOrganizations([organization]);
+    cacheOrganizations([organization!]);
   }
 
   // Checks whether organization with _id === args.data.organizationId exists.

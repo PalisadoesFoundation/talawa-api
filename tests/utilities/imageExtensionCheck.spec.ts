@@ -3,7 +3,7 @@ import { imageExtensionCheck } from "../../src/utilities/imageExtensionCheck";
 import * as deleteImage from "../../src/utilities/deleteImage";
 import { requestContext } from "../../src/libraries";
 import { INVALID_FILE_TYPE } from "../../src/constants";
-import { ApplicationError } from "../../src/libraries/errors";
+import { InvalidFileTypeError } from "../../src/libraries/errors";
 
 const testFilename = "test.anyOtherExtension";
 
@@ -38,9 +38,10 @@ describe("utilities -> imageExtensionCheck", () => {
     try {
       await imageExtensionCheck(testFilename);
     } catch (error: unknown) {
-      if (!(error instanceof ApplicationError)) return;
-      expect(error.message).toEqual(testMessage);
-      expect(error.errors).toEqual(testErrors);
+      expect(error).toBeInstanceOf(InvalidFileTypeError);
+      const e = error as InvalidFileTypeError;
+      expect(e.message).toEqual(testMessage);
+      expect(e.errors).toEqual(testErrors);
     }
 
     expect(mockedDeleteImage).toHaveBeenCalledOnce();

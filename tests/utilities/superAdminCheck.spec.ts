@@ -12,6 +12,7 @@ import { connect, disconnect } from "../../src/db";
 import { USER_NOT_AUTHORIZED_SUPERADMIN } from "../../src/constants";
 import type { TestUserType } from "../helpers/userAndOrg";
 import { createTestUserFunc } from "../helpers/user";
+import { UnauthorizedError } from "../../src/libraries/errors";
 
 let testUser: TestUserType;
 
@@ -43,8 +44,9 @@ describe("utilities -> superAdminCheck", () => {
         superAdminCheck(testUser);
       }
     } catch (error: unknown) {
-      if (!(error instanceof Error)) return;
-      expect(error.message).toEqual(
+      expect(error).toBeInstanceOf(UnauthorizedError);
+      const e = error as UnauthorizedError;
+      expect(e.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE}`
       );
       expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_SUPERADMIN.MESSAGE);

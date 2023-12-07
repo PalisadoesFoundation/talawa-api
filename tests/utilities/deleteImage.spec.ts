@@ -173,8 +173,9 @@ describe("utilities -> deleteImage.ts", () => {
       );
       expect(logSpy).not.toBeCalled();
     } catch (error: unknown) {
-      if (!(error instanceof Error)) return;
-      expect(error).not.toBe(null);
+      expect(error).toBeInstanceOf(Error);
+      const e = error as Error;
+      expect(e).not.toBe(null);
     }
   });
 });

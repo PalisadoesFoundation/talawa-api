@@ -8,7 +8,7 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_BLOCKING_SELF,
 } from "../../constants";
-import { Organization, User } from "../../models";
+import { InterfaceOrganization, Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { Types } from "mongoose";
@@ -42,7 +42,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
       _id: args.organizationId,
     }).lean();
 
-    await cacheOrganizations([organization]);
+    await cacheOrganizations([organization!]);
   }
 
   // Checks whether organization exists.

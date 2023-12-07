@@ -49,7 +49,7 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
         _id: membershipRequest.organization,
       }).lean();
 
-      await cacheOrganizations([organization]);
+      await cacheOrganizations([organization!]);
     }
 
     // Checks whether organization exists.

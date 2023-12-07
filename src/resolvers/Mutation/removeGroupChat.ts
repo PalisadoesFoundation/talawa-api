@@ -50,7 +50,7 @@ export const removeGroupChat: MutationResolvers["removeGroupChat"] = async (
       _id: groupChat.organization,
     }).lean();
 
-    await cacheOrganizations([organization]);
+    await cacheOrganizations([organization!]);
   }
 
   // Checks if an organization with _id === groupChat.organization exists.

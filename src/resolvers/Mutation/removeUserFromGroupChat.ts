@@ -49,7 +49,7 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
         _id: groupChat.organization,
       }).lean();
 
-      await cacheOrganizations([organization]);
+      await cacheOrganizations([organization!]);
     }
 
     // Checks whether organization exists.
