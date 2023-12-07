@@ -22,7 +22,7 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> commentsByPost", () => {
-  it(`returns a list of all comments with postId === args.id`, async () => {
+  it(`returns a list of all comments for a post with postId === args.id`, async () => {
     const args: QueryCommentsByPostArgs = {
       id: testPost?._id,
     };
