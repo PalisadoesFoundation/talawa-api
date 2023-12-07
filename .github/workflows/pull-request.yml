@@ -20,7 +20,7 @@ env:
           
 jobs:
   Code-Quality-Checks:
-    name: Check for linting, formatting and type errors
+    name: Check for linting, formatting, and type errors
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository content
@@ -28,34 +28,15 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci
-          
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v40
-
-      - name: List all changed files
-        run: |
-          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            echo "${file} was changed"
-          done
-          
+            
       - name: Run ESLint to check for linting errors
-        run: |
-          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            npm run lint:check "${file}"
-          done
-
-      - name: Check for fomatting errors
-        run: |
-          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            npm run format:check "${file}"
-          done
+        run: npm run lint:check
+          
+      - name: Check for formatting errors
+        run: npm run format check
           
       - name: Run Typescript Type-Checker
-        run: |
-          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            npm run typecheck "${file}"
-          done
+        run: npm run typecheck
   
   Test-Application:
     name: Testing Application
