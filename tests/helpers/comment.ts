@@ -3,7 +3,7 @@ import type { InterfaceComment } from "../../src/models";
 import { Comment } from "../../src/models";
 import type { Document } from "mongoose";
 import { nanoid } from "nanoid";
-import type { TestPostType} from "./posts";
+import type { TestPostType } from "./posts";
 import { createTestPost } from "./posts";
 
 export type TestCommentType =
