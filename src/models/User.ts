@@ -17,6 +17,15 @@ export interface InterfaceUser {
   lastName: string;
   email: string;
   password: string;
+  gender: string;
+  age: number;
+  address: string;
+  maritalStatus: string;
+  contactMobile: string;
+  contactHome: string;
+  contactWork: string;
+  educationDegree: string;
+  employmentStatus: string;
   appLanguageCode: string;
   createdOrganizations: PopulatedDoc<InterfaceOrganization & Document>[];
   createdEvents: PopulatedDoc<InterfaceEvent & Document>[];
@@ -42,6 +51,15 @@ export interface InterfaceUser {
  * @param firstName - User First Name.
  * @param token - Access token.
  * @param lastName - User Last Name.
+ * @param gender - User gender
+ * @param age - User age
+ * @param maritalStatus - User marital status
+ * @param address - User address
+ * @param educationDegree - User highest education degree
+ * @param employmentStatus - User employment status
+ * @param contactMobile - User mobile contact number
+ * @param contactHome - User home contact number
+ * @param contactWork - User work contact number
  * @param email - User email id.
  * @param password - User hashed password.
  * @param appLanguageCode - User's app language code.
@@ -79,6 +97,36 @@ const userSchema = new Schema({
   lastName: {
     type: String,
     required: true,
+  },
+  gender: {
+    type: String,
+    enum: ["MALE", "FEMALE", "OTHERS", null],
+  },
+  age: {
+    type: Number,
+  },
+  address: {
+    type: String,
+  },
+  maritalStatus: {
+    type: String,
+    enum: ["MARRIED", "UNMARRIED", null],
+  },
+  educationDegree: {
+    type: String,
+  },
+  employmentStatus: {
+    type: String,
+    enum: ["EMPLOYED", "UNEMPLOYED", null],
+  },
+  contactMobile: {
+    type: String,
+  },
+  contactHome: {
+    type: String,
+  },
+  contactWork: {
+    type: String,
   },
   email: {
     type: String,

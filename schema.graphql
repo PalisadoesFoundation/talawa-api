@@ -905,9 +905,18 @@ input UpdateTaskInput {
 }
 
 input UpdateUserInput {
+  address: String
+  age: Int
+  contactHome: String
+  contactMobile: String
+  contactWork: String
+  educationDegree: String
   email: EmailAddress
+  employmentStatus: String
   firstName: String
+  gender: String
   lastName: String
+  maritalStatus: String
 }
 
 input UpdateUserPasswordInput {
@@ -930,19 +939,28 @@ scalar Upload
 
 type User {
   _id: ID!
+  address: String
   adminApproved: Boolean
   adminFor: [Organization]
+  age: Int
   appLanguageCode: String!
   assignedTasks: [Task]
+  contactHome: String
+  contactMobile: String
+  contactWork: String
   createdAt: DateTime
   createdEvents: [Event]
   createdOrganizations: [Organization]
+  educationDegree: String
   email: EmailAddress!
+  employmentStatus: String
   eventAdmin: [Event]
   firstName: String!
+  gender: String
   image: String
   joinedOrganizations: [Organization]
   lastName: String!
+  maritalStatus: String
   membershipRequests: [MembershipRequest]
   organizationUserBelongsTo: Organization
   organizationsBlockedBy: [Organization]

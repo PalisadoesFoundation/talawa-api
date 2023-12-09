@@ -311,6 +311,15 @@ export const inputs = gql`
     firstName: String
     lastName: String
     email: EmailAddress
+    gender: String
+    age: Int
+    address: String
+    maritalStatus: String
+    educationDegree: String
+    employmentStatus: String
+    contactMobile: String
+    contactHome: String
+    contactWork: String
   }
 
   input UpdateUserPasswordInput {

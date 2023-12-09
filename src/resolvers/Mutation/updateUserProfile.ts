@@ -70,11 +70,33 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
         lastName: args.data?.lastName
           ? args.data.lastName
           : currentUser?.lastName,
+        gender: args.data?.gender ? args.data.gender : currentUser?.gender,
+        age: args.data?.age ? args.data.age : currentUser?.age,
+        maritalStatus: args.data?.maritalStatus
+          ? args.data.maritalStatus
+          : currentUser?.maritalStatus,
+        educationDegree: args.data?.educationDegree
+          ? args.data.educationDegree
+          : currentUser?.educationDegree,
+        address: args.data?.address ? args.data.address : currentUser?.address,
+        contactMobile: args.data?.contactMobile
+          ? args.data.contactMobile
+          : currentUser?.contactMobile,
+        contactHome: args.data?.contactHome
+          ? args.data.contactHome
+          : currentUser?.contactHome,
+        contactWork: args.data?.contactWork
+          ? args.data.contactWork
+          : currentUser?.contactWork,
+        employmentStatus: args.data?.employmentStatus
+          ? args.data.employmentStatus
+          : currentUser?.employmentStatus,
         image: args.file ? uploadImageFileName : currentUser.image,
       },
     },
     {
       new: true,
+      runValidators: true,
     }
   ).lean();
   updatedUser!.image = updatedUser?.image

@@ -1632,9 +1632,18 @@ export type UpdateTaskInput = {
 };
 
 export type UpdateUserInput = {
+  address?: InputMaybe<Scalars['String']>;
+  age?: InputMaybe<Scalars['Int']>;
+  contactHome?: InputMaybe<Scalars['String']>;
+  contactMobile?: InputMaybe<Scalars['String']>;
+  contactWork?: InputMaybe<Scalars['String']>;
+  educationDegree?: InputMaybe<Scalars['String']>;
   email?: InputMaybe<Scalars['EmailAddress']>;
+  employmentStatus?: InputMaybe<Scalars['String']>;
   firstName?: InputMaybe<Scalars['String']>;
+  gender?: InputMaybe<Scalars['String']>;
   lastName?: InputMaybe<Scalars['String']>;
+  maritalStatus?: InputMaybe<Scalars['String']>;
 };
 
 export type UpdateUserPasswordInput = {
@@ -1656,19 +1665,28 @@ export type UpdateUserTypeInput = {
 export type User = {
   __typename?: 'User';
   _id: Scalars['ID'];
+  address?: Maybe<Scalars['String']>;
   adminApproved?: Maybe<Scalars['Boolean']>;
   adminFor?: Maybe<Array<Maybe<Organization>>>;
+  age?: Maybe<Scalars['Int']>;
   appLanguageCode: Scalars['String'];
   assignedTasks?: Maybe<Array<Maybe<Task>>>;
+  contactHome?: Maybe<Scalars['String']>;
+  contactMobile?: Maybe<Scalars['String']>;
+  contactWork?: Maybe<Scalars['String']>;
   createdAt?: Maybe<Scalars['DateTime']>;
   createdEvents?: Maybe<Array<Maybe<Event>>>;
   createdOrganizations?: Maybe<Array<Maybe<Organization>>>;
+  educationDegree?: Maybe<Scalars['String']>;
   email: Scalars['EmailAddress'];
+  employmentStatus?: Maybe<Scalars['String']>;
   eventAdmin?: Maybe<Array<Maybe<Event>>>;
   firstName: Scalars['String'];
+  gender?: Maybe<Scalars['String']>;
   image?: Maybe<Scalars['String']>;
   joinedOrganizations?: Maybe<Array<Maybe<Organization>>>;
   lastName: Scalars['String'];
+  maritalStatus?: Maybe<Scalars['String']>;
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
   organizationUserBelongsTo?: Maybe<Organization>;
   organizationsBlockedBy?: Maybe<Array<Maybe<Organization>>>;
@@ -2781,19 +2799,28 @@ export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTyp
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  address?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   adminApproved?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   adminFor?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
+  age?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   appLanguageCode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   assignedTasks?: Resolver<Maybe<Array<Maybe<ResolversTypes['Task']>>>, ParentType, ContextType>;
+  contactHome?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  contactMobile?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  contactWork?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   createdOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
+  educationDegree?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   email?: Resolver<ResolversTypes['EmailAddress'], ParentType, ContextType>;
+  employmentStatus?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   eventAdmin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   firstName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  gender?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   joinedOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   lastName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  maritalStatus?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
   organizationUserBelongsTo?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   organizationsBlockedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
