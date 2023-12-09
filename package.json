@@ -76,7 +76,7 @@
     "install": "^0.13.0",
     "ioredis": "^5.3.2",
     "jsonwebtoken": "^9.0.0",
-    "jwt-decode": "^3.1.2",
+    "jwt-decode": "^4.0.0",
     "lodash": "^4.17.21",
     "mongoose": "^5.13.21",
     "mongoose-paginate-v2": "^1.7.0",
