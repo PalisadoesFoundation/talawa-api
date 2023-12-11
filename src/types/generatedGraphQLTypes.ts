@@ -50,17 +50,6 @@ export type Scalars = {
   Upload: any;
 };
 
-export type Advertisement = {
-  __typename?: 'Advertisement';
-  _id?: Maybe<Scalars['ID']>;
-  endDate: Scalars['Date'];
-  link: Scalars['String'];
-  name: Scalars['String'];
-  orgId?: Maybe<Scalars['ID']>;
-  startDate: Scalars['Date'];
-  type: Scalars['String'];
-};
-
 export type Address = {
   __typename?: 'Address';
   line1?: Maybe<Scalars['String']>;
@@ -74,6 +63,17 @@ export type AddressInput = {
   line2?: InputMaybe<Scalars['String']>;
   line3?: InputMaybe<Scalars['String']>;
   line4?: InputMaybe<Scalars['String']>;
+};
+
+export type Advertisement = {
+  __typename?: 'Advertisement';
+  _id?: Maybe<Scalars['ID']>;
+  endDate: Scalars['Date'];
+  link: Scalars['String'];
+  name: Scalars['String'];
+  orgId?: Maybe<Scalars['ID']>;
+  startDate: Scalars['Date'];
+  type: Scalars['String'];
 };
 
 export type AggregatePost = {
@@ -1946,6 +1946,9 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  Address: ResolverTypeWrapper<Address>;
+  AddressInput: AddressInput;
+  Advertisement: ResolverTypeWrapper<Advertisement>;
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
   AndroidFirebaseOptions: ResolverTypeWrapper<AndroidFirebaseOptions>;
@@ -2076,6 +2079,9 @@ export type ResolversTypes = {
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  Address: Address;
+  AddressInput: AddressInput;
+  Advertisement: Advertisement;
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
   AndroidFirebaseOptions: AndroidFirebaseOptions;
@@ -2203,6 +2209,25 @@ export type RoleDirectiveArgs = {
 };
 
 export type RoleDirectiveResolver<Result, Parent, ContextType = any, Args = RoleDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
+export type AddressResolvers<ContextType = any, ParentType extends ResolversParentTypes['Address'] = ResolversParentTypes['Address']> = {
+  line1?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  line2?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  line3?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  line4?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type AdvertisementResolvers<ContextType = any, ParentType extends ResolversParentTypes['Advertisement'] = ResolversParentTypes['Advertisement']> = {
+  _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  link?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  orgId?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
 
 export type AggregatePostResolvers<ContextType = any, ParentType extends ResolversParentTypes['AggregatePost'] = ResolversParentTypes['AggregatePost']> = {
   count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -2896,6 +2921,8 @@ export type UsersConnectionResultResolvers<ContextType = any, ParentType extends
 };
 
 export type Resolvers<ContextType = any> = {
+  Address?: AddressResolvers<ContextType>;
+  Advertisement?: AdvertisementResolvers<ContextType>;
   AggregatePost?: AggregatePostResolvers<ContextType>;
   AggregateUser?: AggregateUserResolvers<ContextType>;
   AndroidFirebaseOptions?: AndroidFirebaseOptionsResolvers<ContextType>;
