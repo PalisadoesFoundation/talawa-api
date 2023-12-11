@@ -61,6 +61,21 @@ export type Advertisement = {
   type: Scalars['String'];
 };
 
+export type Address = {
+  __typename?: 'Address';
+  line1?: Maybe<Scalars['String']>;
+  line2?: Maybe<Scalars['String']>;
+  line3?: Maybe<Scalars['String']>;
+  line4?: Maybe<Scalars['String']>;
+};
+
+export type AddressInput = {
+  line1?: InputMaybe<Scalars['String']>;
+  line2?: InputMaybe<Scalars['String']>;
+  line3?: InputMaybe<Scalars['String']>;
+  line4?: InputMaybe<Scalars['String']>;
+};
+
 export type AggregatePost = {
   __typename?: 'AggregatePost';
   count: Scalars['Int'];
@@ -1632,18 +1647,18 @@ export type UpdateTaskInput = {
 };
 
 export type UpdateUserInput = {
-  address?: InputMaybe<Scalars['String']>;
-  age?: InputMaybe<Scalars['Int']>;
-  contactHome?: InputMaybe<Scalars['String']>;
-  contactMobile?: InputMaybe<Scalars['String']>;
-  contactWork?: InputMaybe<Scalars['String']>;
-  educationDegree?: InputMaybe<Scalars['String']>;
+  address?: InputMaybe<AddressInput>;
+  birthDate?: InputMaybe<Scalars['Date']>;
+  educationGrade?: InputMaybe<Scalars['String']>;
   email?: InputMaybe<Scalars['EmailAddress']>;
   employmentStatus?: InputMaybe<Scalars['String']>;
   firstName?: InputMaybe<Scalars['String']>;
   gender?: InputMaybe<Scalars['String']>;
   lastName?: InputMaybe<Scalars['String']>;
   maritalStatus?: InputMaybe<Scalars['String']>;
+  phoneHome?: InputMaybe<Scalars['String']>;
+  phoneMobile?: InputMaybe<Scalars['String']>;
+  phoneWork?: InputMaybe<Scalars['String']>;
 };
 
 export type UpdateUserPasswordInput = {
@@ -1665,19 +1680,16 @@ export type UpdateUserTypeInput = {
 export type User = {
   __typename?: 'User';
   _id: Scalars['ID'];
-  address?: Maybe<Scalars['String']>;
+  address?: Maybe<Address>;
   adminApproved?: Maybe<Scalars['Boolean']>;
   adminFor?: Maybe<Array<Maybe<Organization>>>;
-  age?: Maybe<Scalars['Int']>;
   appLanguageCode: Scalars['String'];
   assignedTasks?: Maybe<Array<Maybe<Task>>>;
-  contactHome?: Maybe<Scalars['String']>;
-  contactMobile?: Maybe<Scalars['String']>;
-  contactWork?: Maybe<Scalars['String']>;
+  birthDate?: Maybe<Scalars['Date']>;
   createdAt?: Maybe<Scalars['DateTime']>;
   createdEvents?: Maybe<Array<Maybe<Event>>>;
   createdOrganizations?: Maybe<Array<Maybe<Organization>>>;
-  educationDegree?: Maybe<Scalars['String']>;
+  educationGrade?: Maybe<Scalars['String']>;
   email: Scalars['EmailAddress'];
   employmentStatus?: Maybe<Scalars['String']>;
   eventAdmin?: Maybe<Array<Maybe<Event>>>;
@@ -1690,6 +1702,9 @@ export type User = {
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
   organizationUserBelongsTo?: Maybe<Organization>;
   organizationsBlockedBy?: Maybe<Array<Maybe<Organization>>>;
+  phoneHome?: Maybe<Scalars['String']>;
+  phoneMobile?: Maybe<Scalars['String']>;
+  phoneWork?: Maybe<Scalars['String']>;
   pluginCreationAllowed?: Maybe<Scalars['Boolean']>;
   registeredEvents?: Maybe<Array<Maybe<Event>>>;
   tagsAssignedWith?: Maybe<UserTagsConnection>;
@@ -1931,7 +1946,6 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
-  Advertisement: ResolverTypeWrapper<Advertisement>;
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
   AndroidFirebaseOptions: ResolverTypeWrapper<AndroidFirebaseOptions>;
@@ -2062,7 +2076,6 @@ export type ResolversTypes = {
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
-  Advertisement: Advertisement;
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
   AndroidFirebaseOptions: AndroidFirebaseOptions;
@@ -2190,17 +2203,6 @@ export type RoleDirectiveArgs = {
 };
 
 export type RoleDirectiveResolver<Result, Parent, ContextType = any, Args = RoleDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
-
-export type AdvertisementResolvers<ContextType = any, ParentType extends ResolversParentTypes['Advertisement'] = ResolversParentTypes['Advertisement']> = {
-  _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
-  endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  link?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  orgId?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
-  startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
 
 export type AggregatePostResolvers<ContextType = any, ParentType extends ResolversParentTypes['AggregatePost'] = ResolversParentTypes['AggregatePost']> = {
   count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -2799,19 +2801,16 @@ export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTyp
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  address?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  address?: Resolver<Maybe<ResolversTypes['Address']>, ParentType, ContextType>;
   adminApproved?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   adminFor?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
-  age?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   appLanguageCode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   assignedTasks?: Resolver<Maybe<Array<Maybe<ResolversTypes['Task']>>>, ParentType, ContextType>;
-  contactHome?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  contactMobile?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  contactWork?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  birthDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   createdOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
-  educationDegree?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  educationGrade?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   email?: Resolver<ResolversTypes['EmailAddress'], ParentType, ContextType>;
   employmentStatus?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   eventAdmin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
@@ -2824,6 +2823,9 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
   organizationUserBelongsTo?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   organizationsBlockedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
+  phoneHome?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  phoneMobile?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  phoneWork?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   pluginCreationAllowed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   registeredEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   tagsAssignedWith?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<UserTagsAssignedWithArgs>>;
@@ -2894,7 +2896,6 @@ export type UsersConnectionResultResolvers<ContextType = any, ParentType extends
 };
 
 export type Resolvers<ContextType = any> = {
-  Advertisement?: AdvertisementResolvers<ContextType>;
   AggregatePost?: AggregatePostResolvers<ContextType>;
   AggregateUser?: AggregateUserResolvers<ContextType>;
   AndroidFirebaseOptions?: AndroidFirebaseOptionsResolvers<ContextType>;

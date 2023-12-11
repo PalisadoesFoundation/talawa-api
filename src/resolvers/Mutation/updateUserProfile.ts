@@ -71,23 +71,38 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
           ? args.data.lastName
           : currentUser?.lastName,
         gender: args.data?.gender ? args.data.gender : currentUser?.gender,
-        age: args.data?.age ? args.data.age : currentUser?.age,
+        birthDate: args.data?.birthDate
+          ? args.data.birthDate
+          : currentUser?.birthDate,
         maritalStatus: args.data?.maritalStatus
           ? args.data.maritalStatus
           : currentUser?.maritalStatus,
-        educationDegree: args.data?.educationDegree
-          ? args.data.educationDegree
-          : currentUser?.educationDegree,
-        address: args.data?.address ? args.data.address : currentUser?.address,
-        contactMobile: args.data?.contactMobile
-          ? args.data.contactMobile
-          : currentUser?.contactMobile,
-        contactHome: args.data?.contactHome
-          ? args.data.contactHome
-          : currentUser?.contactHome,
-        contactWork: args.data?.contactWork
-          ? args.data.contactWork
-          : currentUser?.contactWork,
+        educationGrade: args.data?.educationGrade
+          ? args.data.educationGrade
+          : currentUser?.educationGrade,
+        address: {
+          line1: args.data?.address?.line1
+            ? args.data.address.line1
+            : currentUser?.address?.line1,
+          line2: args.data?.address?.line2
+            ? args.data.address.line2
+            : currentUser?.address?.line2,
+          line3: args.data?.address?.line3
+            ? args.data.address.line3
+            : currentUser?.address?.line3,
+          line4: args.data?.address?.line4
+            ? args.data.address.line4
+            : currentUser?.address?.line4,
+        },
+        phoneMobile: args.data?.phoneMobile
+          ? args.data.phoneMobile
+          : currentUser?.phoneMobile,
+        phoneHome: args.data?.phoneHome
+          ? args.data.phoneHome
+          : currentUser?.phoneHome,
+        phoneWork: args.data?.phoneWork
+          ? args.data.phoneWork
+          : currentUser?.phoneWork,
         employmentStatus: args.data?.employmentStatus
           ? args.data.employmentStatus
           : currentUser?.employmentStatus,

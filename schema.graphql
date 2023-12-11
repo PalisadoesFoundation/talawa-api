@@ -2,6 +2,20 @@ directive @auth on FIELD_DEFINITION
 
 directive @role(requires: UserType) on FIELD_DEFINITION
 
+type Address {
+  line1: String
+  line2: String
+  line3: String
+  line4: String
+}
+
+input AddressInput {
+  line1: String
+  line2: String
+  line3: String
+  line4: String
+}
+
 type Advertisement {
   _id: ID
   endDate: Date!
@@ -905,18 +919,18 @@ input UpdateTaskInput {
 }
 
 input UpdateUserInput {
-  address: String
-  age: Int
-  contactHome: String
-  contactMobile: String
-  contactWork: String
-  educationDegree: String
+  address: AddressInput
+  birthDate: Date
+  educationGrade: String
   email: EmailAddress
   employmentStatus: String
   firstName: String
   gender: String
   lastName: String
   maritalStatus: String
+  phoneHome: String
+  phoneMobile: String
+  phoneWork: String
 }
 
 input UpdateUserPasswordInput {
@@ -939,19 +953,16 @@ scalar Upload
 
 type User {
   _id: ID!
-  address: String
+  address: Address
   adminApproved: Boolean
   adminFor: [Organization]
-  age: Int
   appLanguageCode: String!
   assignedTasks: [Task]
-  contactHome: String
-  contactMobile: String
-  contactWork: String
+  birthDate: Date
   createdAt: DateTime
   createdEvents: [Event]
   createdOrganizations: [Organization]
-  educationDegree: String
+  educationGrade: String
   email: EmailAddress!
   employmentStatus: String
   eventAdmin: [Event]
@@ -964,6 +975,9 @@ type User {
   membershipRequests: [MembershipRequest]
   organizationUserBelongsTo: Organization
   organizationsBlockedBy: [Organization]
+  phoneHome: String
+  phoneMobile: String
+  phoneWork: String
   pluginCreationAllowed: Boolean
   registeredEvents: [Event]
   tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection

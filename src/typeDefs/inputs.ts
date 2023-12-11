@@ -307,19 +307,26 @@ export const inputs = gql`
     completed: Boolean
   }
 
+  input AddressInput {
+    line1: String
+    line2: String
+    line3: String
+    line4: String
+  }
+
   input UpdateUserInput {
-    firstName: String
-    lastName: String
+    address: AddressInput
+    birthDate: Date
+    educationGrade: String
     email: EmailAddress
-    gender: String
-    age: Int
-    address: String
-    maritalStatus: String
-    educationDegree: String
     employmentStatus: String
-    contactMobile: String
-    contactHome: String
-    contactWork: String
+    firstName: String
+    gender: String
+    lastName: String
+    maritalStatus: String
+    phoneMobile: String
+    phoneHome: String
+    phoneWork: String
   }
 
   input UpdateUserPasswordInput {

@@ -369,6 +369,13 @@ export const types = gql`
     verified: Boolean
   }
 
+  type Address {
+    line1: String
+    line2: String
+    line3: String
+    line4: String
+  }
+
   type User {
     tokenVersion: Int!
     _id: ID!
@@ -376,14 +383,14 @@ export const types = gql`
     lastName: String!
     email: EmailAddress!
     gender: String
-    age: Int
-    address: String
+    birthDate: Date
+    address: Address
     maritalStatus: String
-    educationDegree: String
+    educationGrade: String
     employmentStatus: String
-    contactMobile: String
-    contactHome: String
-    contactWork: String
+    phoneMobile: String
+    phoneHome: String
+    phoneWork: String
     userType: String
     appLanguageCode: String!
     createdOrganizations: [Organization]

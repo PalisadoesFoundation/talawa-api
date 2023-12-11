@@ -18,13 +18,18 @@ export interface InterfaceUser {
   email: string;
   password: string;
   gender: string;
-  age: number;
-  address: string;
+  birthDate: Date;
+  address: {
+    line1: string;
+    line2: string;
+    line3: string;
+    line4: string;
+  };
   maritalStatus: string;
-  contactMobile: string;
-  contactHome: string;
-  contactWork: string;
-  educationDegree: string;
+  phoneMobile: string;
+  phoneHome: string;
+  phoneWork: string;
+  educationGrade: string;
   employmentStatus: string;
   appLanguageCode: string;
   createdOrganizations: PopulatedDoc<InterfaceOrganization & Document>[];
@@ -52,14 +57,14 @@ export interface InterfaceUser {
  * @param token - Access token.
  * @param lastName - User Last Name.
  * @param gender - User gender
- * @param age - User age
+ * @param birthDate - User Date of birth
  * @param maritalStatus - User marital status
  * @param address - User address
- * @param educationDegree - User highest education degree
+ * @param educationGrade - User highest education degree
  * @param employmentStatus - User employment status
- * @param contactMobile - User mobile contact number
- * @param contactHome - User home contact number
- * @param contactWork - User work contact number
+ * @param phoneMobile - User mobile contact number
+ * @param phoneHome - User home contact number
+ * @param phoneWork - User work contact number
  * @param email - User email id.
  * @param password - User hashed password.
  * @param appLanguageCode - User's app language code.
@@ -98,34 +103,72 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
+  address: {
+    line1: {
+      type: String,
+    },
+    line2: {
+      type: String,
+    },
+    line3: {
+      type: String,
+    },
+    line4: {
+      type: String,
+    },
+  },
+  birthDate: {
+    type: Date,
+  },
   gender: {
     type: String,
-    enum: ["MALE", "FEMALE", "OTHERS", null],
-  },
-  age: {
-    type: Number,
-  },
-  address: {
-    type: String,
+    enum: ["MALE", "FEMALE", "OTHER", null],
   },
   maritalStatus: {
     type: String,
-    enum: ["MARRIED", "UNMARRIED", null],
+    enum: [
+      "SINGLE",
+      "ENGAGED",
+      "MARRIED",
+      "DIVORCED",
+      "WIDOWED",
+      "SEPERATED",
+      null,
+    ],
   },
-  educationDegree: {
+  educationGrade: {
     type: String,
+    enum: [
+      "NO_GRADE",
+      "PRE_KG",
+      "KG",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "12",
+      "GRADUATE",
+      null,
+    ],
   },
   employmentStatus: {
     type: String,
-    enum: ["EMPLOYED", "UNEMPLOYED", null],
+    enum: ["FULL_TIME", "PART_TIME", "UNEMPLOYED", null],
   },
-  contactMobile: {
+  phoneMobile: {
     type: String,
   },
-  contactHome: {
+  phoneHome: {
     type: String,
   },
-  contactWork: {
+  phoneWork: {
     type: String,
   },
   email: {
