@@ -42,6 +42,20 @@ beforeAll(async () => {
     firstName: "firstName",
     lastName: "lastName",
     appLanguageCode: "en",
+    gender: null,
+    birthDate: null,
+    educationGrade: null,
+    employmentStatus: null,
+    address: {
+      line1: null,
+      line2: null,
+      line3: null,
+      line4: null,
+    },
+    maritalStatus: null,
+    phoneHome: null,
+    phoneMobile: null,
+    phoneWork: null,
   });
 
   testUser2 = await User.create({
