@@ -69,7 +69,7 @@
     "graphql-tag": "^2.12.6",
     "graphql-upload": "^16.0.2",
     "graphql-voyager": "^1.0.1",
-    "graphql-ws": "^5.14.0",
+    "graphql-ws": "^5.14.2",
     "helmet": "^4.6.0",
     "i18n": "^0.15.1",
     "image-hash": "^5.3.1",
