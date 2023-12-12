@@ -3,8 +3,8 @@ name: Deploy to AWS EC2
 on:
   push:
     branches:
-      - main
-
+      - deploy
+      - deployment
 jobs:
   deploy:
     runs-on: ubuntu-latest
