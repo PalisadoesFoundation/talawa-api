@@ -18,6 +18,7 @@ jobs:
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.PORT }}
+        command_timeout: 200m
         script: |
           cd talawa-api
           git pull origin
