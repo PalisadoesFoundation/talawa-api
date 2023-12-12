@@ -160,7 +160,32 @@ input DonationWhereInput {
   name_of_user_starts_with: String
 }
 
+enum EducationGrade {
+  GRADE_1
+  GRADE_2
+  GRADE_3
+  GRADE_4
+  GRADE_5
+  GRADE_6
+  GRADE_7
+  GRADE_8
+  GRADE_9
+  GRADE_10
+  GRADE_11
+  GRADE_12
+  GRADUATE
+  KG
+  NO_GRADE
+  PRE_KG
+}
+
 scalar EmailAddress
+
+enum EmploymentStatus {
+  FULL_TIME
+  PART_TIME
+  UNEMPLOYED
+}
 
 interface Error {
   message: String!
@@ -310,6 +335,12 @@ input ForgotPasswordData {
   userOtp: String!
 }
 
+enum Gender {
+  FEMALE
+  MALE
+  OTHER
+}
+
 type Group {
   _id: ID
   admins: [User]
@@ -381,6 +412,15 @@ input LoginInput {
 }
 
 scalar Longitude
+
+enum MaritalStatus {
+  DIVORCED
+  ENGAGED
+  MARRIED
+  SEPERATED
+  SINGLE
+  WIDOWED
+}
 
 type MaximumLengthError implements FieldError {
   message: String!
@@ -921,16 +961,14 @@ input UpdateTaskInput {
 input UpdateUserInput {
   address: AddressInput
   birthDate: Date
-  educationGrade: String
+  educationGrade: EducationGrade
   email: EmailAddress
-  employmentStatus: String
+  employmentStatus: EmploymentStatus
   firstName: String
-  gender: String
+  gender: Gender
   lastName: String
-  maritalStatus: String
-  phoneHome: String
-  phoneMobile: String
-  phoneWork: String
+  maritalStatus: MaritalStatus
+  phone: UserPhoneInput
 }
 
 input UpdateUserPasswordInput {
@@ -962,22 +1000,20 @@ type User {
   createdAt: DateTime
   createdEvents: [Event]
   createdOrganizations: [Organization]
-  educationGrade: String
+  educationGrade: EducationGrade
   email: EmailAddress!
-  employmentStatus: String
+  employmentStatus: EmploymentStatus
   eventAdmin: [Event]
   firstName: String!
-  gender: String
+  gender: Gender
   image: String
   joinedOrganizations: [Organization]
   lastName: String!
-  maritalStatus: String
+  maritalStatus: MaritalStatus
   membershipRequests: [MembershipRequest]
   organizationUserBelongsTo: Organization
   organizationsBlockedBy: [Organization]
-  phoneHome: String
-  phoneMobile: String
-  phoneWork: String
+  phone: UserPhone
   pluginCreationAllowed: Boolean
   registeredEvents: [Event]
   tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection
@@ -1028,6 +1064,18 @@ enum UserOrderByInput {
   id_DESC
   lastName_ASC
   lastName_DESC
+}
+
+type UserPhone {
+  home: String
+  mobile: String
+  work: String
+}
+
+input UserPhoneInput {
+  home: String
+  mobile: String
+  work: String
 }
 
 type UserTag {

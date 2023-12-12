@@ -26,9 +26,11 @@ export interface InterfaceUser {
     line4: string;
   };
   maritalStatus: string;
-  phoneMobile: string;
-  phoneHome: string;
-  phoneWork: string;
+  phone: {
+    home: string;
+    mobile: string;
+    work: string;
+  };
   educationGrade: string;
   employmentStatus: string;
   appLanguageCode: string;
@@ -59,12 +61,10 @@ export interface InterfaceUser {
  * @param gender - User gender
  * @param birthDate - User Date of birth
  * @param maritalStatus - User marital status
- * @param address - User address
+ * @param address - User address, divided in four lines
  * @param educationGrade - User highest education degree
  * @param employmentStatus - User employment status
- * @param phoneMobile - User mobile contact number
- * @param phoneHome - User home contact number
- * @param phoneWork - User work contact number
+ * @param phone - User contact numbers, for mobile, home and work
  * @param email - User email id.
  * @param password - User hashed password.
  * @param appLanguageCode - User's app language code.
@@ -142,18 +142,18 @@ const userSchema = new Schema({
       "NO_GRADE",
       "PRE_KG",
       "KG",
-      "1",
-      "2",
-      "3",
-      "4",
-      "5",
-      "6",
-      "7",
-      "8",
-      "9",
-      "10",
-      "11",
-      "12",
+      "GRADE_1",
+      "GRADE_2",
+      "GRADE_3",
+      "GRADE_4",
+      "GRADE_5",
+      "GRADE_6",
+      "GRADE_7",
+      "GRADE_8",
+      "GRADE_9",
+      "GRADE_10",
+      "GRADE_11",
+      "GRADE_12",
       "GRADUATE",
       null,
     ],
@@ -162,14 +162,16 @@ const userSchema = new Schema({
     type: String,
     enum: ["FULL_TIME", "PART_TIME", "UNEMPLOYED", null],
   },
-  phoneMobile: {
-    type: String,
-  },
-  phoneHome: {
-    type: String,
-  },
-  phoneWork: {
-    type: String,
+  phone: {
+    home: {
+      type: String,
+    },
+    mobile: {
+      type: String,
+    },
+    work: {
+      type: String,
+    },
   },
   email: {
     type: String,

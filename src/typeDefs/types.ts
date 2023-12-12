@@ -376,21 +376,25 @@ export const types = gql`
     line4: String
   }
 
+  type UserPhone {
+    home: String
+    mobile: String
+    work: String
+  }
+
   type User {
     tokenVersion: Int!
     _id: ID!
     firstName: String!
     lastName: String!
     email: EmailAddress!
-    gender: String
+    gender: Gender
     birthDate: Date
     address: Address
-    maritalStatus: String
-    educationGrade: String
-    employmentStatus: String
-    phoneMobile: String
-    phoneHome: String
-    phoneWork: String
+    maritalStatus: MaritalStatus
+    educationGrade: EducationGrade
+    employmentStatus: EmploymentStatus
+    phone: UserPhone
     userType: String
     appLanguageCode: String!
     createdOrganizations: [Organization]

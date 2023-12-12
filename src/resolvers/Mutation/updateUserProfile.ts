@@ -94,15 +94,17 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
             ? args.data.address.line4
             : currentUser?.address?.line4,
         },
-        phoneMobile: args.data?.phoneMobile
-          ? args.data.phoneMobile
-          : currentUser?.phoneMobile,
-        phoneHome: args.data?.phoneHome
-          ? args.data.phoneHome
-          : currentUser?.phoneHome,
-        phoneWork: args.data?.phoneWork
-          ? args.data.phoneWork
-          : currentUser?.phoneWork,
+        phone: {
+          home: args.data?.phone?.home
+            ? args.data?.phone?.home
+            : currentUser?.phone?.home,
+          mobile: args.data?.phone?.mobile
+            ? args.data?.phone?.mobile
+            : currentUser?.phone?.mobile,
+          work: args.data?.phone?.work
+            ? args.data?.phone?.work
+            : currentUser?.phone?.work,
+        },
         employmentStatus: args.data?.employmentStatus
           ? args.data.employmentStatus
           : currentUser?.employmentStatus,

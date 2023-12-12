@@ -314,19 +314,23 @@ export const inputs = gql`
     line4: String
   }
 
+  input UserPhoneInput {
+    home: String
+    mobile: String
+    work: String
+  }
+
   input UpdateUserInput {
     address: AddressInput
     birthDate: Date
-    educationGrade: String
+    educationGrade: EducationGrade
     email: EmailAddress
-    employmentStatus: String
+    employmentStatus: EmploymentStatus
     firstName: String
-    gender: String
+    gender: Gender
     lastName: String
-    maritalStatus: String
-    phoneMobile: String
-    phoneHome: String
-    phoneWork: String
+    maritalStatus: MaritalStatus
+    phone: UserPhoneInput
   }
 
   input UpdateUserPasswordInput {

@@ -53,9 +53,11 @@ beforeAll(async () => {
       line4: null,
     },
     maritalStatus: null,
-    phoneHome: null,
-    phoneMobile: null,
-    phoneWork: null,
+    phone: {
+      home: null,
+      mobile: null,
+      work: null,
+    },
   });
 
   testUser2 = await User.create({
