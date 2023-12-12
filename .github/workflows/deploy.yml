@@ -8,11 +8,12 @@ jobs:
 
     steps:
     - name: Execute remote ssh commands using password
-      uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.PORT }}
         script: |
           git clone https://github.com/PalisadoesFoundation/talawa-api.git
           cd your-repo
