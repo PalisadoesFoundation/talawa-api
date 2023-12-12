@@ -19,4 +19,3 @@ jobs:
           sudo apt-get update
           docker system prune -a -f
           docker-compose up --build -d
-          
