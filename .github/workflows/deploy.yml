@@ -18,8 +18,8 @@ jobs:
           git clone https://github.com/PalisadoesFoundation/talawa-api.git
           cd talawa-api
           sudo apt-get update
-          docker system prune -a -f
-          docker-compose up --build -d
+          sudo docker system prune -a -f
+          sudo docker-compose up --build -d
           cd ..
           sudo rm -fr talawa-api/
 
