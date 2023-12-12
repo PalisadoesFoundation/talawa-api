@@ -1,6 +1,10 @@
 name: Deploy to AWS EC2
 
-on: [push]
+on:
+  push:
+    branches:
+      - deployment
+      - develop
 
 jobs:
   deploy:
@@ -15,11 +19,8 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.PORT }}
         script: |
-          git clone https://github.com/PalisadoesFoundation/talawa-api.git
           cd talawa-api
-          sudo apt-get update
+          git pull origin
           sudo docker system prune -a -f
-          sudo docker-compose up --build -d
-          cd ..
-          sudo rm -fr talawa-api/
+          sudo docker-compose up -d
 
