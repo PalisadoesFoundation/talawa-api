@@ -16,8 +16,7 @@ jobs:
         port: ${{ secrets.PORT }}
         script: |
           git clone https://github.com/PalisadoesFoundation/talawa-api.git
-          cd your-repo
+          cd talawa-api
           sudo apt-get update
           docker system prune -a -f
           docker-compose up --build -d
-          
