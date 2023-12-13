@@ -34,6 +34,8 @@ export const enums = gql`
     description_DESC
     apiUrl_ASC
     apiUrl_DESC
+    createdAt_ASC
+    createdAt_DESC
   }
 
   enum PaginationDirection {

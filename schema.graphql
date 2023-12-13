@@ -576,6 +576,8 @@ enum OrganizationOrderByInput {
   id_DESC
   name_ASC
   name_DESC
+  createdAt_ASC
+  createdAt_DESC
 }
 
 input OrganizationWhereInput {
