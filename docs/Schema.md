@@ -38,6 +38,7 @@
     * [MinimumLengthError](#minimumlengtherror)
     * [MinimumValueError](#minimumvalueerror)
     * [Organization](#organization)
+    * [OrganizationCustomField](#organizationcustomfield)
     * [OrganizationInfoNode](#organizationinfonode)
     * [OtpData](#otpdata)
     * [PageInfo](#pageinfo)
@@ -52,6 +53,7 @@
     * [UnauthorizedError](#unauthorizederror)
     * [User](#user)
     * [UserConnection](#userconnection)
+    * [UserCustomData](#usercustomdata)
     * [UserEdge](#useredge)
     * [UserTag](#usertag)
     * [UserTagEdge](#usertagedge)
@@ -112,6 +114,7 @@
     * [UserOrderByInput](#userorderbyinput)
     * [UserType](#usertype)
   * [Scalars](#scalars)
+    * [Any](#any)
     * [Boolean](#boolean)
     * [Date](#date)
     * [DateTime](#datetime)
@@ -119,6 +122,7 @@
     * [Float](#float)
     * [ID](#id)
     * [Int](#int)
+    * [JSON](#json)
     * [Latitude](#latitude)
     * [Longitude](#longitude)
     * [PhoneNumber](#phonenumber)
@@ -159,6 +163,26 @@
 <tr>
 <td colspan="2" valign="top"><strong>checkAuth</strong></td>
 <td valign="top"><a href="#user">User</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>customFieldsByOrganization</strong></td>
+<td valign="top">[<a href="#organizationcustomfield">OrganizationCustomField</a>]</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">id</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>customDataByOrganization</strong></td>
+<td valign="top">[<a href="#usercustomdata">UserCustomData</a>!]!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">organizationId</td>
+<td valign="top"><a href="#id">ID</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -616,6 +640,26 @@
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>addOrganizationCustomField</strong></td>
+<td valign="top"><a href="#organizationcustomfield">OrganizationCustomField</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">organizationId</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">type</td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">name</td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>addEventAttendee</strong></td>
 <td valign="top"><a href="#user">User</a>!</td>
 <td></td>
@@ -658,6 +702,26 @@
 <tr>
 <td colspan="2" align="right" valign="top">organizationId</td>
 <td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>addUserCustomData</strong></td>
+<td valign="top"><a href="#usercustomdata">UserCustomData</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">organizationId</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">dataName</td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">dataValue</td>
+<td valign="top"><a href="#any">Any</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -1161,6 +1225,21 @@
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>removeOrganizationCustomField</strong></td>
+<td valign="top"><a href="#organizationcustomfield">OrganizationCustomField</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">organizationId</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">customFieldId</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>removeComment</strong></td>
 <td valign="top"><a href="#comment">Comment</a></td>
 <td></td>
@@ -1266,6 +1345,16 @@
 <td></td>
 </tr>
 <tr>
+<td colspan="2" valign="top"><strong>removeUserCustomData</strong></td>
+<td valign="top"><a href="#usercustomdata">UserCustomData</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" align="right" valign="top">organizationId</td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
 <td colspan="2" valign="top"><strong>removeAdvertisement</strong></td>
 <td valign="top"><a href="#advertisement">Advertisement</a></td>
 <td></td>
@@ -1323,11 +1412,6 @@
 <tr>
 <td colspan="2" valign="top"><strong>revokeRefreshTokenForUser</strong></td>
 <td valign="top"><a href="#boolean">Boolean</a>!</td>
-<td></td>
-</tr>
-<tr>
-<td colspan="2" align="right" valign="top">userId</td>
-<td valign="top"><a href="#string">String</a>!</td>
 <td></td>
 </tr>
 <tr>
@@ -3002,6 +3086,46 @@
 <td valign="top"><a href="#positiveint">PositiveInt</a></td>
 <td></td>
 </tr>
+<tr>
+<td colspan="2" valign="top"><strong>customFields</strong></td>
+<td valign="top">[<a href="#organizationcustomfield">OrganizationCustomField</a>!]!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### OrganizationCustomField
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>_id</strong></td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>type</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>name</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>organizationId</strong></td>
+<td valign="top"><a href="#string">String</a>!</td>
+<td></td>
+</tr>
 </tbody>
 </table>
 
@@ -3675,6 +3799,41 @@ A list of edges.
 <tr>
 <td colspan="2" valign="top"><strong>aggregate</strong></td>
 <td valign="top"><a href="#aggregateuser">AggregateUser</a>!</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+### UserCustomData
+
+<table>
+<thead>
+<tr>
+<th align="left">Field</th>
+<th align="right">Argument</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="2" valign="top"><strong>_id</strong></td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>organizationId</strong></td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>userId</strong></td>
+<td valign="top"><a href="#id">ID</a>!</td>
+<td></td>
+</tr>
+<tr>
+<td colspan="2" valign="top"><strong>values</strong></td>
+<td valign="top"><a href="#json">JSON</a>!</td>
 <td></td>
 </tr>
 </tbody>
@@ -6097,6 +6256,8 @@ A list of edges.
 
 ## Scalars
 
+### Any
+
 ### Boolean
 
 The `Boolean` scalar type represents `true` or `false`.
@@ -6124,6 +6285,8 @@ The `ID` scalar type represents a unique identifier, often used to refetch an ob
 ### Int
 
 The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.
+
+### JSON
 
 ### Latitude
 

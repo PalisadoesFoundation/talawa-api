@@ -138,6 +138,37 @@ async function recaptcha(): Promise<void> {
     fs.appendFileSync(".env", `${key}=${config[key]}\n`);
   }
 }
+async function recaptchaSiteKey(): Promise<void> {
+  console.log(
+    "\nPlease visit this URL to set up reCAPTCHA:\n\nhttps://www.google.com/recaptcha/admin/create"
+  );
+  console.log(
+    '\nSelect reCAPTCHA v2 and the "I`m not a robot" checkbox option'
+  );
+  console.log(
+    '\nAdd "localhost" in domains and accept the terms, then press submit'
+  );
+
+  const { recaptchaSiteKey } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "recaptchaSiteKey",
+      message: "Enter your reCAPTCHA site key:",
+      validate: async (input: string): Promise<boolean | string> => {
+        if (validateRecaptcha(input)) {
+          return true;
+        }
+        return "Invalid reCAPTCHA site key. Please try again.";
+      },
+    },
+  ]);
+  const config = dotenv.parse(fs.readFileSync(".env"));
+  config.RECAPTCHA_SITE_KEY = recaptchaSiteKey;
+  fs.writeFileSync(".env", "");
+  for (const key in config) {
+    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+  }
+}
 
 function isValidEmail(email: string): boolean {
   const pattern = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
@@ -350,6 +381,17 @@ async function main(): Promise<void> {
     await recaptcha();
   }
 
+  const { shouldSetRecaptchaSiteKey } = await inquirer.prompt({
+    type: "confirm",
+    name: "shouldSetRecaptchaSiteKey",
+    message: "Would you like to set up a reCAPTCHA site key?",
+    default: true,
+  });
+
+  if (shouldSetRecaptchaSiteKey) {
+    await recaptchaSiteKey();
+  }
+
   if (process.env.MAIL_USERNAME) {
     console.log(
       `\nMail username already exists with the value ${process.env.MAIL_USERNAME}`
@@ -366,21 +408,24 @@ async function main(): Promise<void> {
     await twoFactorAuth();
   }
 
-  const { shouldRunDataImport } = await inquirer.prompt([
-    {
-      type: "confirm",
-      name: "shouldRunDataImport",
-      message: "Do you want to import sample data?",
-      default: true,
-    },
-  ]);
-  if (shouldRunDataImport) {
-    await importData();
-  } else {
-    console.log(
-      "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
-    );
+  if (!isDockerInstallation) {
+    const { shouldRunDataImport } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "shouldRunDataImport",
+        message: "Do you want to import sample data?",
+        default: true,
+      },
+    ]);
+
+    if (shouldRunDataImport) {
+      await importData();
+    }
   }
+
+  console.log(
+    "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
+  );
 }
 
 main();

@@ -6,7 +6,6 @@ This document provides instructions on how to set up and start a running instanc
 
 <!-- TOC -->
 
-
 - [Prerequisites](#prerequisites)
   - [Install Node.js](#install-nodejs)
   - [Install Git](#install-git)
@@ -110,30 +109,36 @@ Install the packages required by `talawa-api` using this command:
 npm install
 ```
 
-# Installation with Docker
-
-> - **Requires Docker and Docker Compose to be installed**
-> - Will start a local mongodb and redis instances
+# Setting up .env file
 
 It's important to configure Talawa-API to complete it's setup.
-
 You can use our interactive setup script for the configuration. Use the following command for the same.
 
 ```
 npm run setup
 ```
 
-It can be done manually as well and here's how to do it. - [The .env Configuration File](#the-env-configuration-file)
+All the options in "setup" can be done manually as well and here's how to do it. - [The .env Configuration File](#the-env-configuration-file)
+
+# Installation Using Docker
+
+> - **Requires Docker and Docker Compose to be installed**
+> - Will start a local mongodb and redis instances
 
 Now use the following command to run docker containers -
 
 ```sh
 docker compose up
 ```
+
 OR
+
 ```sh
 docker-compose up
 ```
+
+**Note: If you're using Docker, you'll need to manually import the sample data after the Docker Compose has started the MongoDB container. For instructions on how to do this, refer to [Importing Sample Database](#importing-sample-database)**
+
 # Installation without Docker
 
 ## Install MongoDB
@@ -231,6 +236,7 @@ If you'd rather not deal with the hassle of setting up WSL on your computer, the
 Remember to adjust any paths or details as needed for your specific environment. After following these steps, you will have successfully set up Redis.
 
 # Configuration
+
 It's important to configure Talawa-API to complete it's setup.
 
 You can use our interactive setup script for the configuration. Use the following command for the same.
@@ -253,10 +259,13 @@ This `.env` file must be populated with the following environment variables for 
 
 | Variable                     | Description                                            |
 | ---------------------------- | ------------------------------------------------------ |
+| NODE_ENV                     | Used for providing the environment in which the        |
+|                              | the talawa-api is running                              |
 | ACCESS_TOKEN_SECRET          | Used for signing/verifying JWT tokens                  |
 | REFRESH_TOKEN_SECRET         | Used for signing/verifying JWT tokens                  |
 | MONGO_DB_URL                 | Used for connecting talawa-api to the mongoDB database |
 | RECAPTCHA_SECRET_KEY         | Used for authentication using reCAPTCHA                |
+| RECAPTCHA_SITE_KEY         | Used for authentication using reCAPTCHA                |
 | MAIL_USERNAME                | Used for mailing service                               |
 | MAIL_PASSWORD                | Used for mailing service                               |
 | LAST_RESORT_SUPERADMIN_EMAIL | Used for promoting the default super admin             |
@@ -268,6 +277,14 @@ This `.env` file must be populated with the following environment variables for 
 |                              | a hosted redis-server                                  |
 
 The following sections will show you how to configure each of these parameters.
+
+## Changing the environment of talawa-api
+
+Change the environment from production to development:
+
+```
+NODE_ENV=development
+```
 
 ## Generating Token Secrets
 

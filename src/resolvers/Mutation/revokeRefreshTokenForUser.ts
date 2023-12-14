@@ -7,15 +7,13 @@ import { User } from "../../models";
  * @returns True is operation successful.
  */
 export const revokeRefreshTokenForUser: MutationResolvers["revokeRefreshTokenForUser"] =
-  async (_parent, args) => {
+  async (_parent, args, context) => {
     await User.updateOne(
       {
-        _id: args.userId,
+        _id: context.userId,
       },
       {
-        $inc: {
-          tokenVersion: 1,
-        },
+        $unset: { token: 1 },
       }
     );
 
