@@ -315,9 +315,9 @@ export const inputs = gql`
   }
 
   input UserPhoneInput {
-    home: String
-    mobile: String
-    work: String
+    home: PhoneNumber
+    mobile: PhoneNumber
+    work: PhoneNumber
   }
 
   input UpdateUserInput {

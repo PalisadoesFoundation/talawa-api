@@ -1802,15 +1802,15 @@ export type UserOrderByInput =
 
 export type UserPhone = {
   __typename?: 'UserPhone';
-  home?: Maybe<Scalars['String']>;
-  mobile?: Maybe<Scalars['String']>;
-  work?: Maybe<Scalars['String']>;
+  home?: Maybe<Scalars['PhoneNumber']>;
+  mobile?: Maybe<Scalars['PhoneNumber']>;
+  work?: Maybe<Scalars['PhoneNumber']>;
 };
 
 export type UserPhoneInput = {
-  home?: InputMaybe<Scalars['String']>;
-  mobile?: InputMaybe<Scalars['String']>;
-  work?: InputMaybe<Scalars['String']>;
+  home?: InputMaybe<Scalars['PhoneNumber']>;
+  mobile?: InputMaybe<Scalars['PhoneNumber']>;
+  work?: InputMaybe<Scalars['PhoneNumber']>;
 };
 
 export type UserTag = {
@@ -2932,9 +2932,9 @@ export type UserEdgeResolvers<ContextType = any, ParentType extends ResolversPar
 };
 
 export type UserPhoneResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserPhone'] = ResolversParentTypes['UserPhone']> = {
-  home?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  mobile?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  work?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  home?: Resolver<Maybe<ResolversTypes['PhoneNumber']>, ParentType, ContextType>;
+  mobile?: Resolver<Maybe<ResolversTypes['PhoneNumber']>, ParentType, ContextType>;
+  work?: Resolver<Maybe<ResolversTypes['PhoneNumber']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

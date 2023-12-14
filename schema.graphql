@@ -16,7 +16,6 @@ input AddressInput {
   line4: String
 }
 
-<<<<<<< HEAD
 type Advertisement {
   _id: ID
   endDate: Date!
@@ -27,8 +26,6 @@ type Advertisement {
   type: String!
 }
 
-=======
->>>>>>> 435168f (Requested changes in model and fields)
 type AggregatePost {
   count: Int!
 }
@@ -964,25 +961,14 @@ input UpdateTaskInput {
 input UpdateUserInput {
   address: AddressInput
   birthDate: Date
-<<<<<<< HEAD
   educationGrade: EducationGrade
-=======
-  educationGrade: String
->>>>>>> 435168f (Requested changes in model and fields)
   email: EmailAddress
   employmentStatus: EmploymentStatus
   firstName: String
   gender: Gender
   lastName: String
-<<<<<<< HEAD
   maritalStatus: MaritalStatus
   phone: UserPhoneInput
-=======
-  maritalStatus: String
-  phoneHome: String
-  phoneMobile: String
-  phoneWork: String
->>>>>>> 435168f (Requested changes in model and fields)
 }
 
 input UpdateUserPasswordInput {
@@ -1014,11 +1000,7 @@ type User {
   createdAt: DateTime
   createdEvents: [Event]
   createdOrganizations: [Organization]
-<<<<<<< HEAD
   educationGrade: EducationGrade
-=======
-  educationGrade: String
->>>>>>> 435168f (Requested changes in model and fields)
   email: EmailAddress!
   employmentStatus: EmploymentStatus
   eventAdmin: [Event]
@@ -1031,13 +1013,7 @@ type User {
   membershipRequests: [MembershipRequest]
   organizationUserBelongsTo: Organization
   organizationsBlockedBy: [Organization]
-<<<<<<< HEAD
   phone: UserPhone
-=======
-  phoneHome: String
-  phoneMobile: String
-  phoneWork: String
->>>>>>> 435168f (Requested changes in model and fields)
   pluginCreationAllowed: Boolean
   registeredEvents: [Event]
   tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection
@@ -1091,15 +1067,15 @@ enum UserOrderByInput {
 }
 
 type UserPhone {
-  home: String
-  mobile: String
-  work: String
+  home: PhoneNumber
+  mobile: PhoneNumber
+  work: PhoneNumber
 }
 
 input UserPhoneInput {
-  home: String
-  mobile: String
-  work: String
+  home: PhoneNumber
+  mobile: PhoneNumber
+  work: PhoneNumber
 }
 
 type UserTag {

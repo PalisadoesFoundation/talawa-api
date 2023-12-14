@@ -377,9 +377,9 @@ export const types = gql`
   }
 
   type UserPhone {
-    home: String
-    mobile: String
-    work: String
+    home: PhoneNumber
+    mobile: PhoneNumber
+    work: PhoneNumber
   }
 
   type User {
