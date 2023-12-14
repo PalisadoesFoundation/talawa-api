@@ -1,0 +1,29 @@
+[talawa-api](../README.md) / [Exports](../modules.md) / services/PostCache/cachePosts
+
+# Module: services/PostCache/cachePosts
+
+## Table of contents
+
+### Functions
+
+- [cachePosts](services_PostCache_cachePosts.md#cacheposts)
+
+## Functions
+
+### cachePosts
+
+▸ **cachePosts**(`posts`): `Promise`\<`void`\>
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `posts` | [`InterfacePost`](../interfaces/models_Post.InterfacePost.md)[] |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Defined in
+
+[src/services/PostCache/cachePosts.ts:6](https://github.com/Veer0x1/talawa-api/blob/4ede423/src/services/PostCache/cachePosts.ts#L6)
