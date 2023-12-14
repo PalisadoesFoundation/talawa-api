@@ -383,34 +383,32 @@ export const types = gql`
   }
 
   type User {
-    tokenVersion: Int!
     _id: ID!
-    firstName: String!
-    lastName: String!
-    email: EmailAddress!
-    gender: Gender
-    birthDate: Date
     address: Address
-    maritalStatus: MaritalStatus
-    educationGrade: EducationGrade
-    employmentStatus: EmploymentStatus
-    phone: UserPhone
-    userType: String
-    appLanguageCode: String!
-    createdOrganizations: [Organization]
-    joinedOrganizations: [Organization]
-    createdEvents: [Event]
-    registeredEvents: [Event]
-    eventAdmin: [Event]
-    adminFor: [Organization]
-    membershipRequests: [MembershipRequest]
-    organizationsBlockedBy: [Organization]
-    image: String
-    organizationUserBelongsTo: Organization
-    pluginCreationAllowed: Boolean
     adminApproved: Boolean
+    adminFor: [Organization]
+    appLanguageCode: String!
     assignedTasks: [Task]
+    birthDate: Date
     createdAt: DateTime
+    createdEvents: [Event]
+    createdOrganizations: [Organization]
+    educationGrade: EducationGrade
+    email: EmailAddress!
+    employmentStatus: EmploymentStatus
+    eventAdmin: [Event]
+    firstName: String!
+    gender: Gender
+    image: String
+    joinedOrganizations: [Organization]
+    lastName: String!
+    maritalStatus: MaritalStatus
+    membershipRequests: [MembershipRequest]
+    organizationUserBelongsTo: Organization
+    organizationsBlockedBy: [Organization]
+    phone: UserPhone
+    pluginCreationAllowed: Boolean
+    registeredEvents: [Event]
     tagsAssignedWith(
       after: String
       before: String
@@ -418,6 +416,8 @@ export const types = gql`
       last: PositiveInt
       organizationId: ID
     ): UserTagsConnection
+    tokenVersion: Int!
+    userType: String
   }
 
   type UserCustomData {

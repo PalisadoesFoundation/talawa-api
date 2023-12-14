@@ -63,23 +63,6 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
     },
     {
       $set: {
-        email: args.data?.email ? args.data.email : currentUser?.email,
-        firstName: args.data?.firstName
-          ? args.data.firstName
-          : currentUser?.firstName,
-        lastName: args.data?.lastName
-          ? args.data.lastName
-          : currentUser?.lastName,
-        gender: args.data?.gender ? args.data.gender : currentUser?.gender,
-        birthDate: args.data?.birthDate
-          ? args.data.birthDate
-          : currentUser?.birthDate,
-        maritalStatus: args.data?.maritalStatus
-          ? args.data.maritalStatus
-          : currentUser?.maritalStatus,
-        educationGrade: args.data?.educationGrade
-          ? args.data.educationGrade
-          : currentUser?.educationGrade,
         address: {
           line1: args.data?.address?.line1
             ? args.data.address.line1
@@ -94,6 +77,27 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
             ? args.data.address.line4
             : currentUser?.address?.line4,
         },
+        birthDate: args.data?.birthDate
+          ? args.data.birthDate
+          : currentUser?.birthDate,
+        educationGrade: args.data?.educationGrade
+          ? args.data.educationGrade
+          : currentUser?.educationGrade,
+        email: args.data?.email ? args.data.email : currentUser?.email,
+        employmentStatus: args.data?.employmentStatus
+          ? args.data.employmentStatus
+          : currentUser?.employmentStatus,
+        firstName: args.data?.firstName
+          ? args.data.firstName
+          : currentUser?.firstName,
+        gender: args.data?.gender ? args.data.gender : currentUser?.gender,
+        image: args.file ? uploadImageFileName : currentUser.image,
+        lastName: args.data?.lastName
+          ? args.data.lastName
+          : currentUser?.lastName,
+        maritalStatus: args.data?.maritalStatus
+          ? args.data.maritalStatus
+          : currentUser?.maritalStatus,
         phone: {
           home: args.data?.phone?.home
             ? args.data?.phone?.home
@@ -105,10 +109,6 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
             ? args.data?.phone?.work
             : currentUser?.phone?.work,
         },
-        employmentStatus: args.data?.employmentStatus
-          ? args.data.employmentStatus
-          : currentUser?.employmentStatus,
-        image: args.file ? uploadImageFileName : currentUser.image,
       },
     },
     {
