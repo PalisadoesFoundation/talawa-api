@@ -32,6 +32,8 @@ export const enums = gql`
     name_DESC
     description_ASC
     description_DESC
+    createdAt_ASC
+    createdAt_DESC
     apiUrl_ASC
     apiUrl_DESC
   }

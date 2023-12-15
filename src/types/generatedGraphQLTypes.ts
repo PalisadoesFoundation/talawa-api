@@ -1134,6 +1134,8 @@ export type OrganizationInput = {
 export type OrganizationOrderByInput =
   | 'apiUrl_ASC'
   | 'apiUrl_DESC'
+  | 'createdAt_ASC'
+  | 'createdAt_DESC'
   | 'description_ASC'
   | 'description_DESC'
   | 'id_ASC'
