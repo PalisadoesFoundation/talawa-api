@@ -11,10 +11,12 @@ import type { InterfaceOrganization } from "./Organization";
 export interface InterfaceUser {
   _id: Types.ObjectId;
   address: {
+    city: string;
+    country: string;
     line1: string;
     line2: string;
-    line3: string;
-    line4: string;
+    state: string;
+    postalCode: string;
   };
   adminApproved: boolean;
   adminFor: PopulatedDoc<InterfaceOrganization & Document>[];
@@ -85,16 +87,19 @@ export interface InterfaceUser {
  */
 const userSchema = new Schema({
   address: {
+    city: {
+      type: String,
+    },
+    country: {
+      type: String,
+    },
     line1: {
       type: String,
     },
     line2: {
       type: String,
     },
-    line3: {
-      type: String,
-    },
-    line4: {
+    postalCode: {
       type: String,
     },
   },

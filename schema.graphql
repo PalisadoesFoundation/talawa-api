@@ -3,17 +3,21 @@ directive @auth on FIELD_DEFINITION
 directive @role(requires: UserType) on FIELD_DEFINITION
 
 type Address {
+  city: String
+  country: String
   line1: String
   line2: String
-  line3: String
-  line4: String
+  postalCode: String
+  state: String
 }
 
 input AddressInput {
+  city: String
+  country: String
   line1: String
   line2: String
-  line3: String
-  line4: String
+  postalCode: String
+  state: String
 }
 
 type Advertisement {

@@ -64,18 +64,24 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
     {
       $set: {
         address: {
+          city: args.data?.address?.city
+            ? args.data.address.city
+            : currentUser?.address?.city,
+          country: args.data?.address?.country
+            ? args.data.address.country
+            : currentUser?.address?.country,
           line1: args.data?.address?.line1
             ? args.data.address.line1
             : currentUser?.address?.line1,
           line2: args.data?.address?.line2
             ? args.data.address.line2
             : currentUser?.address?.line2,
-          line3: args.data?.address?.line3
-            ? args.data.address.line3
-            : currentUser?.address?.line3,
-          line4: args.data?.address?.line4
-            ? args.data.address.line4
-            : currentUser?.address?.line4,
+          state: args.data?.address?.state
+            ? args.data.address.state
+            : currentUser?.address?.state,
+          postalCode: args.data?.address?.postalCode
+            ? args.data.address.postalCode
+            : currentUser?.address?.postalCode,
         },
         birthDate: args.data?.birthDate
           ? args.data.birthDate

@@ -52,17 +52,21 @@ export type Scalars = {
 
 export type Address = {
   __typename?: 'Address';
+  city?: Maybe<Scalars['String']>;
+  country?: Maybe<Scalars['String']>;
   line1?: Maybe<Scalars['String']>;
   line2?: Maybe<Scalars['String']>;
-  line3?: Maybe<Scalars['String']>;
-  line4?: Maybe<Scalars['String']>;
+  postalCode?: Maybe<Scalars['String']>;
+  state?: Maybe<Scalars['String']>;
 };
 
 export type AddressInput = {
+  city?: InputMaybe<Scalars['String']>;
+  country?: InputMaybe<Scalars['String']>;
   line1?: InputMaybe<Scalars['String']>;
   line2?: InputMaybe<Scalars['String']>;
-  line3?: InputMaybe<Scalars['String']>;
-  line4?: InputMaybe<Scalars['String']>;
+  postalCode?: InputMaybe<Scalars['String']>;
+  state?: InputMaybe<Scalars['String']>;
 };
 
 export type Advertisement = {
@@ -2264,10 +2268,12 @@ export type RoleDirectiveArgs = {
 export type RoleDirectiveResolver<Result, Parent, ContextType = any, Args = RoleDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
 export type AddressResolvers<ContextType = any, ParentType extends ResolversParentTypes['Address'] = ResolversParentTypes['Address']> = {
+  city?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  country?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   line1?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   line2?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  line3?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  line4?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  postalCode?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

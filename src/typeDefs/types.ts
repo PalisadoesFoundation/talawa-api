@@ -370,10 +370,12 @@ export const types = gql`
   }
 
   type Address {
+    city: String
+    country: String
     line1: String
     line2: String
-    line3: String
-    line4: String
+    state: String
+    postalCode: String
   }
 
   type UserPhone {
