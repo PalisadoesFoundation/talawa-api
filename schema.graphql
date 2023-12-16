@@ -4,19 +4,23 @@ directive @role(requires: UserType) on FIELD_DEFINITION
 
 type Address {
   city: String
-  country: String
+  countryCode: CountryCode
+  dependentLocality: String
   line1: String
   line2: String
   postalCode: String
+  sortingCode: String
   state: String
 }
 
 input AddressInput {
   city: String
-  country: String
+  countryCode: CountryCode
+  dependentLocality: String
   line1: String
   line2: String
   postalCode: String
+  sortingCode: String
   state: String
 }
 
@@ -101,6 +105,8 @@ type ConnectionPageInfo {
   hasPreviousPage: Boolean!
   startCursor: String
 }
+
+scalar CountryCode
 
 input CreateUserTagInput {
   name: String!

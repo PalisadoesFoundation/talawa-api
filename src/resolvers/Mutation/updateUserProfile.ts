@@ -67,21 +67,27 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
           city: args.data?.address?.city
             ? args.data.address.city
             : currentUser?.address?.city,
-          country: args.data?.address?.country
-            ? args.data.address.country
-            : currentUser?.address?.country,
+          countryCode: args.data?.address?.countryCode
+            ? args.data.address.countryCode
+            : currentUser?.address?.countryCode,
+          dependentLocality: args.data?.address?.dependentLocality
+            ? args.data.address.dependentLocality
+            : currentUser?.address?.dependentLocality,
           line1: args.data?.address?.line1
             ? args.data.address.line1
             : currentUser?.address?.line1,
           line2: args.data?.address?.line2
             ? args.data.address.line2
             : currentUser?.address?.line2,
-          state: args.data?.address?.state
-            ? args.data.address.state
-            : currentUser?.address?.state,
           postalCode: args.data?.address?.postalCode
             ? args.data.address.postalCode
             : currentUser?.address?.postalCode,
+          sortingCode: args.data?.address?.sortingCode
+            ? args.data.address.sortingCode
+            : currentUser?.address?.sortingCode,
+          state: args.data?.address?.state
+            ? args.data.address.state
+            : currentUser?.address?.state,
         },
         birthDate: args.data?.birthDate
           ? args.data.birthDate

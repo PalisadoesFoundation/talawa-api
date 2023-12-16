@@ -48,11 +48,13 @@ beforeAll(async () => {
     employmentStatus: null,
     address: {
       city: null,
-      country: null,
+      countryCode: null,
+      dependentLocality: null,
       line1: null,
       line2: null,
-      state: null,
       postalCode: null,
+      sortingCode: null,
+      state: null,
     },
     maritalStatus: null,
     phone: {

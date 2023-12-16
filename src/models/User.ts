@@ -12,11 +12,13 @@ export interface InterfaceUser {
   _id: Types.ObjectId;
   address: {
     city: string;
-    country: string;
+    countryCode: string;
+    dependentLocality: string;
     line1: string;
     line2: string;
-    state: string;
     postalCode: string;
+    sortingCode: string;
+    state: string;
   };
   adminApproved: boolean;
   adminFor: PopulatedDoc<InterfaceOrganization & Document>[];
@@ -55,7 +57,7 @@ export interface InterfaceUser {
 }
 /**
  * This describes the schema for a `User` that corresponds to `InterfaceUser` document.
- * @param address - User address, divided in four lines
+ * @param address - User address
  * @param adminApproved - Wheather user is admin approved.
  * @param adminFor - Collection of organization where user is admin, each object refer to `Organization` model.
  * @param appLanguageCode - User's app language code.
@@ -90,7 +92,10 @@ const userSchema = new Schema({
     city: {
       type: String,
     },
-    country: {
+    countryCode: {
+      type: String,
+    },
+    dependentLocality: {
       type: String,
     },
     line1: {
@@ -100,6 +105,12 @@ const userSchema = new Schema({
       type: String,
     },
     postalCode: {
+      type: String,
+    },
+    sortingCode: {
+      type: String,
+    },
+    state: {
       type: String,
     },
   },

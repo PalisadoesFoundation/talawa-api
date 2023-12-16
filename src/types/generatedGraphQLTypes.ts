@@ -37,6 +37,7 @@ export type Scalars = {
   Int: number;
   Float: number;
   Any: any;
+  CountryCode: any;
   Date: any;
   DateTime: any;
   EmailAddress: any;
@@ -53,19 +54,23 @@ export type Scalars = {
 export type Address = {
   __typename?: 'Address';
   city?: Maybe<Scalars['String']>;
-  country?: Maybe<Scalars['String']>;
+  countryCode?: Maybe<Scalars['CountryCode']>;
+  dependentLocality?: Maybe<Scalars['String']>;
   line1?: Maybe<Scalars['String']>;
   line2?: Maybe<Scalars['String']>;
   postalCode?: Maybe<Scalars['String']>;
+  sortingCode?: Maybe<Scalars['String']>;
   state?: Maybe<Scalars['String']>;
 };
 
 export type AddressInput = {
   city?: InputMaybe<Scalars['String']>;
-  country?: InputMaybe<Scalars['String']>;
+  countryCode?: InputMaybe<Scalars['CountryCode']>;
+  dependentLocality?: InputMaybe<Scalars['String']>;
   line1?: InputMaybe<Scalars['String']>;
   line2?: InputMaybe<Scalars['String']>;
   postalCode?: InputMaybe<Scalars['String']>;
+  sortingCode?: InputMaybe<Scalars['String']>;
   state?: InputMaybe<Scalars['String']>;
 };
 
@@ -2011,6 +2016,7 @@ export type ResolversTypes = {
   CommentInput: CommentInput;
   ConnectionError: ResolversTypes['InvalidCursor'] | ResolversTypes['MaximumValueError'];
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
+  CountryCode: ResolverTypeWrapper<Scalars['CountryCode']>;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: ResolverTypeWrapper<Scalars['Date']>;
@@ -2150,6 +2156,7 @@ export type ResolversParentTypes = {
   CommentInput: CommentInput;
   ConnectionError: ResolversParentTypes['InvalidCursor'] | ResolversParentTypes['MaximumValueError'];
   ConnectionPageInfo: ConnectionPageInfo;
+  CountryCode: Scalars['CountryCode'];
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date'];
@@ -2269,10 +2276,12 @@ export type RoleDirectiveResolver<Result, Parent, ContextType = any, Args = Role
 
 export type AddressResolvers<ContextType = any, ParentType extends ResolversParentTypes['Address'] = ResolversParentTypes['Address']> = {
   city?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  country?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  countryCode?: Resolver<Maybe<ResolversTypes['CountryCode']>, ParentType, ContextType>;
+  dependentLocality?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   line1?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   line2?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   postalCode?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sortingCode?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2360,6 +2369,10 @@ export type ConnectionPageInfoResolvers<ContextType = any, ParentType extends Re
   startCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
+
+export interface CountryCodeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['CountryCode'], any> {
+  name: 'CountryCode';
+}
 
 export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Date'], any> {
   name: 'Date';
@@ -2997,6 +3010,7 @@ export type Resolvers<ContextType = any> = {
   Comment?: CommentResolvers<ContextType>;
   ConnectionError?: ConnectionErrorResolvers<ContextType>;
   ConnectionPageInfo?: ConnectionPageInfoResolvers<ContextType>;
+  CountryCode?: GraphQLScalarType;
   Date?: GraphQLScalarType;
   DateTime?: GraphQLScalarType;
   DeletePayload?: DeletePayloadResolvers<ContextType>;

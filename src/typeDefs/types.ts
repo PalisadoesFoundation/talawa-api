@@ -371,11 +371,13 @@ export const types = gql`
 
   type Address {
     city: String
-    country: String
+    countryCode: CountryCode
+    dependentLocality: String
     line1: String
     line2: String
-    state: String
     postalCode: String
+    sortingCode: String
+    state: String
   }
 
   type UserPhone {
