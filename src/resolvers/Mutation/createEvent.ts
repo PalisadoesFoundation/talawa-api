@@ -160,11 +160,15 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     }
   );
 
-  for (let i = 0; i < organization.members.length; i++) {
+  /* Commenting out this notification code coz we don't use firebase anymore.
+
+    for (let i = 0; i < organization.members.length; i++) {
     const user = await User.findOne({
       _id: organization.members[i],
     }).lean();
 
+  
+    
     // Checks whether both user and user.token exist.
     if (user && user.token) {
       await admin.messaging().send({
@@ -176,6 +180,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       });
     }
   }
+     */
 
   // Returns the createdEvent.
   return createdEvent.toObject();
