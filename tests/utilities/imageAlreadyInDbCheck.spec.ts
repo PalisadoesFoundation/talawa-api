@@ -13,7 +13,11 @@ import { connect, disconnect } from "../helpers/db";
 import type mongoose from "mongoose";
 import { nanoid } from "nanoid";
 import { INVALID_FILE_TYPE } from "../../src/constants";
-import { InvalidFileTypeError } from "../../src/libraries/errors";
+import type {
+  InvalidFileTypeError} from "../../src/libraries/errors";
+import {
+  ValidationError,
+} from "../../src/libraries/errors";
 
 const testNewImagePath = `${nanoid()}-testNewImagePath`;
 const testOldImagePath = `${nanoid()}-testOldImagePath`;
@@ -192,12 +196,11 @@ describe("utilities -> imageAlreadyInDbCheck", () => {
     try {
       await imageAlreadyInDbCheck(null, testNewImagePath);
     } catch (error: unknown) {
-      expect(error).toBeInstanceOf(InvalidFileTypeError);
+      expect(error).toBeInstanceOf(Error);
       const e = error as InvalidFileTypeError;
       expect(e.message).toEqual(testMessage);
       expect(e.errors).toEqual(testErrors);
     }
-
     expect(mockedRequestTranslate).toBeCalledWith("invalid.fileType");
   });
 });

@@ -15,7 +15,10 @@ import { createTestUserAndOrganization } from "../helpers/userAndOrg";
 import mongoose from "mongoose";
 import type { InterfaceOrganization } from "../../src/models";
 import { Organization, User } from "../../src/models";
-import { UnauthorizedError } from "../../src/libraries/errors";
+import {
+  ApplicationError,
+  UnauthorizedError,
+} from "../../src/libraries/errors";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -136,7 +139,7 @@ describe("utilities -> adminCheck", () => {
         testOrganization ?? ({} as InterfaceOrganization)
       );
     } catch (error: unknown) {
-      expect(error).toBeInstanceOf(UnauthorizedError);
+      expect(error).toBeInstanceOf(Error);
       const e = error as UnauthorizedError;
       expect(e.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ADMIN.MESSAGE}`

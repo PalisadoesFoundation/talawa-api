@@ -3,7 +3,7 @@ import { imageExtensionCheck } from "../../src/utilities/imageExtensionCheck";
 import * as deleteImage from "../../src/utilities/deleteImage";
 import { requestContext } from "../../src/libraries";
 import { INVALID_FILE_TYPE } from "../../src/constants";
-import { InvalidFileTypeError } from "../../src/libraries/errors";
+import { ValidationError } from "../../src/libraries/errors";
 
 const testFilename = "test.anyOtherExtension";
 
@@ -38,8 +38,8 @@ describe("utilities -> imageExtensionCheck", () => {
     try {
       await imageExtensionCheck(testFilename);
     } catch (error: unknown) {
-      expect(error).toBeInstanceOf(InvalidFileTypeError);
-      const e = error as InvalidFileTypeError;
+      expect(error).toBeInstanceOf(ValidationError);
+      const e = error as ValidationError;
       expect(e.message).toEqual(testMessage);
       expect(e.errors).toEqual(testErrors);
     }
