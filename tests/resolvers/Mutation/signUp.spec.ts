@@ -4,11 +4,6 @@ import { Types } from "mongoose";
 import { User } from "../../../src/models";
 import type { MutationSignUpArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-
-import {
-  androidFirebaseOptions,
-  iosFirebaseOptions,
-} from "../../../src/config";
 import {
   LAST_RESORT_SUPERADMIN_EMAIL,
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -93,12 +88,8 @@ describe("resolvers -> Mutation -> signUp", () => {
 
     expect({
       user: signUpPayload?.user,
-      androidFirebaseOptions: signUpPayload?.androidFirebaseOptions,
-      iosFirebaseOptions: signUpPayload?.iosFirebaseOptions,
     }).toEqual({
       user: createdUser,
-      androidFirebaseOptions,
-      iosFirebaseOptions,
     });
 
     expect(typeof signUpPayload?.accessToken).toEqual("string");
@@ -137,12 +128,8 @@ describe("resolvers -> Mutation -> signUp", () => {
 
     expect({
       user: signUpPayload?.user,
-      androidFirebaseOptions: signUpPayload?.androidFirebaseOptions,
-      iosFirebaseOptions: signUpPayload?.iosFirebaseOptions,
     }).toEqual({
       user: createdUser,
-      androidFirebaseOptions,
-      iosFirebaseOptions,
     });
 
     expect(typeof signUpPayload?.accessToken).toEqual("string");

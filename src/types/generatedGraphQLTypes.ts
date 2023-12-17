@@ -71,20 +71,10 @@ export type AggregateUser = {
   count: Scalars['Int'];
 };
 
-export type AndroidFirebaseOptions = {
-  __typename?: 'AndroidFirebaseOptions';
-  apiKey?: Maybe<Scalars['String']>;
-  appId?: Maybe<Scalars['String']>;
-  messagingSenderId?: Maybe<Scalars['String']>;
-  projectId?: Maybe<Scalars['String']>;
-  storageBucket?: Maybe<Scalars['String']>;
-};
 
 export type AuthData = {
   __typename?: 'AuthData';
   accessToken: Scalars['String'];
-  androidFirebaseOptions: AndroidFirebaseOptions;
-  iosFirebaseOptions: IosFirebaseOptions;
   refreshToken: Scalars['String'];
   user: User;
 };
@@ -385,16 +375,6 @@ export type GroupChatMessage = {
   sender: User;
 };
 
-export type IosFirebaseOptions = {
-  __typename?: 'IOSFirebaseOptions';
-  apiKey?: Maybe<Scalars['String']>;
-  appId?: Maybe<Scalars['String']>;
-  iosBundleId?: Maybe<Scalars['String']>;
-  iosClientId?: Maybe<Scalars['String']>;
-  messagingSenderId?: Maybe<Scalars['String']>;
-  projectId?: Maybe<Scalars['String']>;
-  storageBucket?: Maybe<Scalars['String']>;
-};
 
 export type InvalidCursor = FieldError & {
   __typename?: 'InvalidCursor';
@@ -1918,7 +1898,6 @@ export type ResolversTypes = {
   Advertisement: ResolverTypeWrapper<Advertisement>;
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
-  AndroidFirebaseOptions: ResolverTypeWrapper<AndroidFirebaseOptions>;
   Any: ResolverTypeWrapper<Scalars['Any']>;
   AuthData: ResolverTypeWrapper<Omit<AuthData, 'user'> & { user: ResolversTypes['User'] }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
@@ -1957,7 +1936,6 @@ export type ResolversTypes = {
   GroupChat: ResolverTypeWrapper<InterfaceGroupChatModel>;
   GroupChatMessage: ResolverTypeWrapper<InterfaceGroupChatMessageModel>;
   ID: ResolverTypeWrapper<Scalars['ID']>;
-  IOSFirebaseOptions: ResolverTypeWrapper<IosFirebaseOptions>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   InvalidCursor: ResolverTypeWrapper<InvalidCursor>;
   JSON: ResolverTypeWrapper<Scalars['JSON']>;
@@ -2049,7 +2027,6 @@ export type ResolversParentTypes = {
   Advertisement: Advertisement;
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
-  AndroidFirebaseOptions: AndroidFirebaseOptions;
   Any: Scalars['Any'];
   AuthData: Omit<AuthData, 'user'> & { user: ResolversParentTypes['User'] };
   Boolean: Scalars['Boolean'];
@@ -2087,7 +2064,6 @@ export type ResolversParentTypes = {
   GroupChat: InterfaceGroupChatModel;
   GroupChatMessage: InterfaceGroupChatMessageModel;
   ID: Scalars['ID'];
-  IOSFirebaseOptions: IosFirebaseOptions;
   Int: Scalars['Int'];
   InvalidCursor: InvalidCursor;
   JSON: Scalars['JSON'];
@@ -2196,14 +2172,6 @@ export type AggregateUserResolvers<ContextType = any, ParentType extends Resolve
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type AndroidFirebaseOptionsResolvers<ContextType = any, ParentType extends ResolversParentTypes['AndroidFirebaseOptions'] = ResolversParentTypes['AndroidFirebaseOptions']> = {
-  apiKey?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  appId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  messagingSenderId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  projectId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  storageBucket?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
 
 export interface AnyScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Any'], any> {
   name: 'Any';
@@ -2211,8 +2179,6 @@ export interface AnyScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes[
 
 export type AuthDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthData'] = ResolversParentTypes['AuthData']> = {
   accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  androidFirebaseOptions?: Resolver<ResolversTypes['AndroidFirebaseOptions'], ParentType, ContextType>;
-  iosFirebaseOptions?: Resolver<ResolversTypes['IOSFirebaseOptions'], ParentType, ContextType>;
   refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -2396,16 +2362,6 @@ export type GroupChatMessageResolvers<ContextType = any, ParentType extends Reso
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type IosFirebaseOptionsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IOSFirebaseOptions'] = ResolversParentTypes['IOSFirebaseOptions']> = {
-  apiKey?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  appId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  iosBundleId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  iosClientId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  messagingSenderId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  projectId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  storageBucket?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
 
 export type InvalidCursorResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvalidCursor'] = ResolversParentTypes['InvalidCursor']> = {
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -2872,7 +2828,6 @@ export type Resolvers<ContextType = any> = {
   Advertisement?: AdvertisementResolvers<ContextType>;
   AggregatePost?: AggregatePostResolvers<ContextType>;
   AggregateUser?: AggregateUserResolvers<ContextType>;
-  AndroidFirebaseOptions?: AndroidFirebaseOptionsResolvers<ContextType>;
   Any?: GraphQLScalarType;
   AuthData?: AuthDataResolvers<ContextType>;
   CheckIn?: CheckInResolvers<ContextType>;
@@ -2896,7 +2851,6 @@ export type Resolvers<ContextType = any> = {
   Group?: GroupResolvers<ContextType>;
   GroupChat?: GroupChatResolvers<ContextType>;
   GroupChatMessage?: GroupChatMessageResolvers<ContextType>;
-  IOSFirebaseOptions?: IosFirebaseOptionsResolvers<ContextType>;
   InvalidCursor?: InvalidCursorResolvers<ContextType>;
   JSON?: GraphQLScalarType;
   Language?: LanguageResolvers<ContextType>;
