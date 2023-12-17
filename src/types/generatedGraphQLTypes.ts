@@ -95,7 +95,6 @@ export type AggregateUser = {
   count: Scalars['Int'];
 };
 
-
 export type AuthData = {
   __typename?: 'AuthData';
   accessToken: Scalars['String'];
@@ -426,7 +425,6 @@ export type GroupChatMessage = {
   messageContent: Scalars['String'];
   sender: User;
 };
-
 
 export type InvalidCursor = FieldError & {
   __typename?: 'InvalidCursor';
@@ -2285,7 +2283,6 @@ export type AggregateUserResolvers<ContextType = any, ParentType extends Resolve
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-
 export interface AnyScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Any'], any> {
   name: 'Any';
 }
@@ -2478,7 +2475,6 @@ export type GroupChatMessageResolvers<ContextType = any, ParentType extends Reso
   sender?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
-
 
 export type InvalidCursorResolvers<ContextType = any, ParentType extends ResolversParentTypes['InvalidCursor'] = ResolversParentTypes['InvalidCursor']> = {
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

@@ -60,8 +60,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     vi.restoreAllMocks();
   });
 
-  it(`creates the user and returns the created user with accessToken, refreshToken,
-  androidFirebaseOptions, iosFirebaseOptions`, async () => {
+  it(`creates the user and returns the created user with accessToken, refreshToken`, async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
 
     const args: MutationSignUpArgs = {
@@ -100,8 +99,7 @@ describe("resolvers -> Mutation -> signUp", () => {
   });
 
   it(`creates the user with provided organizationUserBelongsToId and returns the
-  created user  with accessToken, refreshToken, androidFirebaseOptions,
-  iosFirebaseOptions`, async () => {
+  created user  with accessToken, refreshToken`, async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
 
     const args: MutationSignUpArgs = {

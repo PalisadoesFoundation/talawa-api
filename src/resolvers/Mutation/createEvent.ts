@@ -7,18 +7,11 @@ import {
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
   LENGTH_VALIDATION_ERROR,
 } from "../../constants";
-import admin, { credential } from "firebase-admin";
-import { getApps } from "firebase-admin/app";
 import { isValidString } from "../../libraries/validators/validateString";
 import { compareDates } from "../../libraries/validators/compareDates";
 import { EventAttendee } from "../../models/EventAttendee";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 
-const applicationDefault = credential.applicationDefault;
-
-getApps().length === 0
-  ? admin.initializeApp({ credential: applicationDefault() })
-  : getApps();
 /**
  * This function enables to create an event.
  * @param _parent - parent of current request
