@@ -262,7 +262,7 @@ This `.env` file must be populated with the following environment variables for 
 | REFRESH_TOKEN_SECRET         | Used for signing/verifying JWT tokens                  |
 | MONGO_DB_URL                 | Used for connecting talawa-api to the mongoDB database |
 | RECAPTCHA_SECRET_KEY         | Used for authentication using reCAPTCHA                |
-| RECAPTCHA_SITE_KEY         | Used for authentication using reCAPTCHA                |
+| RECAPTCHA_SITE_KEY           | Used for authentication using reCAPTCHA                |
 | MAIL_USERNAME                | Used for mailing service                               |
 | MAIL_PASSWORD                | Used for mailing service                               |
 | LAST_RESORT_SUPERADMIN_EMAIL | Used for promoting the default super admin             |
