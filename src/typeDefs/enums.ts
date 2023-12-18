@@ -32,6 +32,8 @@ export const enums = gql`
     name_DESC
     description_ASC
     description_DESC
+    createdAt_ASC
+    createdAt_DESC
     apiUrl_ASC
     apiUrl_DESC
   }
@@ -109,5 +111,45 @@ export const enums = gql`
     USER
     ADMIN
     SUPERADMIN
+  }
+
+  enum EducationGrade {
+    NO_GRADE
+    PRE_KG
+    KG
+    GRADE_1
+    GRADE_2
+    GRADE_3
+    GRADE_4
+    GRADE_5
+    GRADE_6
+    GRADE_7
+    GRADE_8
+    GRADE_9
+    GRADE_10
+    GRADE_11
+    GRADE_12
+    GRADUATE
+  }
+
+  enum EmploymentStatus {
+    FULL_TIME
+    PART_TIME
+    UNEMPLOYED
+  }
+
+  enum Gender {
+    MALE
+    FEMALE
+    OTHER
+  }
+
+  enum MaritalStatus {
+    SINGLE
+    ENGAGED
+    MARRIED
+    DIVORCED
+    WIDOWED
+    SEPERATED
   }
 `;
