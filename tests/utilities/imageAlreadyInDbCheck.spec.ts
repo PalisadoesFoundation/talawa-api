@@ -13,11 +13,7 @@ import { connect, disconnect } from "../helpers/db";
 import type mongoose from "mongoose";
 import { nanoid } from "nanoid";
 import { INVALID_FILE_TYPE } from "../../src/constants";
-import type {
-  InvalidFileTypeError} from "../../src/libraries/errors";
-import {
-  ValidationError,
-} from "../../src/libraries/errors";
+import type { InvalidFileTypeError } from "../../src/libraries/errors";
 
 const testNewImagePath = `${nanoid()}-testNewImagePath`;
 const testOldImagePath = `${nanoid()}-testOldImagePath`;

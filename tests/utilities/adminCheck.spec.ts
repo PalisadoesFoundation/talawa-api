@@ -15,10 +15,7 @@ import { createTestUserAndOrganization } from "../helpers/userAndOrg";
 import mongoose from "mongoose";
 import type { InterfaceOrganization } from "../../src/models";
 import { Organization, User } from "../../src/models";
-import {
-  ApplicationError,
-  UnauthorizedError,
-} from "../../src/libraries/errors";
+import { UnauthorizedError } from "../../src/libraries/errors";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
