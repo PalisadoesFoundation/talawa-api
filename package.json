@@ -46,7 +46,7 @@
     "@graphql-inspector/cli": "^3.4.19",
     "@graphql-tools/resolvers-composition": "^7.0.0",
     "@graphql-tools/schema": "^10.0.0",
-    "@graphql-tools/utils": "^10.0.1",
+    "@graphql-tools/utils": "^10.0.11",
     "@types/graphql-upload": "^16.0.5",
     "@types/yargs": "^17.0.24",
     "axios": "^1.6.0",
