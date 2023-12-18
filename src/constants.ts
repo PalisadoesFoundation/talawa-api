@@ -440,30 +440,6 @@ export const MAIL_USERNAME = ENV.MAIL_USERNAME;
 
 export const MAIL_PASSWORD = ENV.MAIL_PASSWORD;
 
-export const apiKey = ENV.apiKey;
-
-export const appId = ENV.appId;
-
-export const messagingSenderId = ENV.messagingSenderId;
-
-export const projectId = ENV.projectId;
-
-export const storageBucket = ENV.storageBucket;
-
-export const iOSapiKey = ENV.iOSapiKey;
-
-export const iOSappId = ENV.iOSappId;
-
-export const iOSmessagingSenderId = ENV.iOSmessagingSenderId;
-
-export const iOSprojectId = ENV.iOSprojectId;
-
-export const iOSstorageBucket = ENV.iOSstorageBucket;
-
-export const iosClientId = ENV.iosClientId;
-
-export const iosBundleId = ENV.iosBundleId;
-
 export const LAST_RESORT_SUPERADMIN_EMAIL =
   process.env.LAST_RESORT_SUPERADMIN_EMAIL;
 

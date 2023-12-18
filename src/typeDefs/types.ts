@@ -10,20 +10,10 @@ export const types = gql`
     count: Int!
   }
 
-  type AndroidFirebaseOptions {
-    apiKey: String
-    appId: String
-    messagingSenderId: String
-    projectId: String
-    storageBucket: String
-  }
-
   type AuthData {
     user: User!
     accessToken: String!
     refreshToken: String!
-    androidFirebaseOptions: AndroidFirebaseOptions!
-    iosFirebaseOptions: IOSFirebaseOptions!
   }
 
   # Stores the detail of an check in of an user in an event
@@ -173,16 +163,6 @@ export const types = gql`
     sender: User!
     createdAt: DateTime!
     messageContent: String!
-  }
-
-  type IOSFirebaseOptions {
-    apiKey: String
-    appId: String
-    messagingSenderId: String
-    projectId: String
-    storageBucket: String
-    iosClientId: String
-    iosBundleId: String
   }
 
   type Language {

@@ -14,7 +14,6 @@ import {
   createRefreshToken,
   copyToClipboard,
 } from "../../utilities";
-import { androidFirebaseOptions, iosFirebaseOptions } from "../../config";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
@@ -147,7 +146,5 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     user: filteredCreatedUser,
     accessToken,
     refreshToken,
-    androidFirebaseOptions,
-    iosFirebaseOptions,
   };
 };
