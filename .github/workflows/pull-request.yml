@@ -14,10 +14,10 @@ on:
   pull_request:
     branches:
       - '**'
-      
+
 env:
-    CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }}
-          
+  CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }}
+
 jobs:
   Code-Quality-Checks:
     name: Check for linting, formatting, and type errors
@@ -26,18 +26,33 @@ jobs:
       - name: Checkout repository content
         uses: actions/checkout@v3
 
+      - name: Restore node_modules from cache
+        id: cache-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-code-quality-checks-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-code-quality-checks-${{ env.cache-name }}-
+            ${{ runner.os }}-code-quality-checks-
+            ${{ runner.os }}-
+
       - name: Install Dependencies
         run: npm ci
-            
+
       - name: Run ESLint to check for linting errors
         run: npm run lint:check
-          
+
       - name: Check for formatting errors
         run: npm run format:check
-          
+
       - name: Run Typescript Type-Checker
         run: npm run typecheck
-  
+
   Test-Application:
     name: Testing Application
     runs-on: ubuntu-latest
@@ -68,16 +83,16 @@ jobs:
       MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
       REDIS_HOST: localhost
       REDIS_PORT: 6379
-#       ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-#       REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
+    #       ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
+    #       REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        
+
       - name: Generate Access Token Secret
         run: echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
-        
+
       - name: Generate Refresh Token Secret
         run: echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
 
@@ -100,7 +115,7 @@ jobs:
         with:
           verbose: true
           fail_ci_if_error: false
-          name: '${{env.CODECOV_UNIQUE_NAME}}'  
+          name: '${{env.CODECOV_UNIQUE_NAME}}'
 
       - name: Test acceptable level of code coverage
         uses: VeryGoodOpenSource/very_good_coverage@v2
@@ -123,4 +138,3 @@ jobs:
         if: env.RUN_JSDOCS == 'True'
         run: echo "Run JSdocs :${{ env.RUN_JSDOCS }}"
 
-          
