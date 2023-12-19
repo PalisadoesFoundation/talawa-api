@@ -43,7 +43,7 @@
   "dependencies": {
     "@apollo/server": "^4.9.3",
     "@faker-js/faker": "^8.2.0",
-    "@graphql-inspector/cli": "^3.4.19",
+    "@graphql-inspector/cli": "^4.0.3",
     "@graphql-tools/resolvers-composition": "^7.0.0",
     "@graphql-tools/schema": "^10.0.0",
     "@graphql-tools/utils": "^10.0.11",
