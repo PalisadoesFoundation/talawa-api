@@ -42,20 +42,10 @@ type AggregateUser {
   count: Int!
 }
 
-type AndroidFirebaseOptions {
-  apiKey: String
-  appId: String
-  messagingSenderId: String
-  projectId: String
-  storageBucket: String
-}
-
 scalar Any
 
 type AuthData {
   accessToken: String!
-  androidFirebaseOptions: AndroidFirebaseOptions!
-  iosFirebaseOptions: IOSFirebaseOptions!
   refreshToken: String!
   user: User!
 }
@@ -374,16 +364,6 @@ type GroupChatMessage {
   groupChatMessageBelongsTo: GroupChat!
   messageContent: String!
   sender: User!
-}
-
-type IOSFirebaseOptions {
-  apiKey: String
-  appId: String
-  iosBundleId: String
-  iosClientId: String
-  messagingSenderId: String
-  projectId: String
-  storageBucket: String
 }
 
 type InvalidCursor implements FieldError {
