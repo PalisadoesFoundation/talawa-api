@@ -122,6 +122,99 @@ jobs:
         with:
           path: './coverage/lcov.info'
           min_coverage: 95.0
+  
+  Health-Check:
+    name: Server health check
+    runs-on: ubuntu-latest
+    needs: Test-Application
+    strategy:
+      matrix:
+        node-version: [14.x]
+    services:
+      mongo:
+        image: mongo:4.4
+        options: >-
+          --health-cmd mongo
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 27017:27017
+    env:
+      MONGO_DB_URL: "mongodb://localhost:27017/talawa"
+      RECAPTCHA_SITE_KEY: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      RECAPTCHA_SECRET_KEY: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      MAIL_USERNAME: "abc@gmail.com"
+      MAIL_PASSWORD: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      IS_SMTP: ""
+      SMTP_HOST: ""
+      SMTP_PASSWORD: ""
+      SMTP_USERNAME: ""
+      SMTP_PORT: ""
+      SMTP_SSL_TLS: ""
+      apiKey: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      appId: "1:XXXXXXXXXXXX:android:XXXXXXXXXXXXXXXXXXXXXX"
+      messagingSenderId: "XXXXXXXXXXXX"
+      projectId: "appname-XXXXXX"
+      storageBucket: "appname-XXXXXX.appspot.com"
+      iOSapiKey: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      iOSappId: "1:XXXXXXXXXXXX:ios:XXXXXXXXXXXXXXXXXXXXXX"
+      iOSmessagingSenderId: "XXXXXXXXXXXX"
+      iOSprojectId: "appame-XXXXXX"
+      iOSstorageBucket: "appame-XXXXXX.appspot.com"
+      iosClientId: "XXXXXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.apps.googleusercontent.com"
+      iosBundleId: "com.appname.app"
+      LAST_RESORT_SUPERADMIN_EMAIL: "abc@gmail.com"
+      COLORIZE_LOGS: "true"
+      LOG_LEVEL: "info"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Generate Access Token Secret
+        run: echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
+        
+      - name: Generate Refresh Token Secret
+        run: echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start the development server 
+        run: |
+          npm run dev &
+          echo "Development server started..."
+
+      # Sleep for 10 s
+      - name: Sleep for 10s
+        uses: juliangruber/sleep-action@v1
+        with:
+          time: 10s
+
+      #check http server status
+      - name: Check server status
+        run: |
+          if curl -f 'http://localhost:4000' | jq -e '. == {"talawa-version":"v1","status":"healthy"}' > /dev/null; then
+            echo "Server is up and healthy"
+          else
+            echo "Server is down"
+            exit 1 
+          fi
+
+      #Check apollo server status
+      - name: Check Apollo Server status
+        run: |
+          if curl -f 'http://localhost:4000/graphql?query=%7B__typename%7D' \
+          -H 'Apollo-Require-Preflight: true' | jq -e '. == {"data":{"__typename":"Query"}}' > /dev/null; then
+            echo "Apollo Server is up"
+          else
+            echo "Server is down"
+            exit 1 
+          fi
 
   JSDocs:
     name: 'JSDocs comments and pipeline'
