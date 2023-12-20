@@ -10,89 +10,131 @@ import type { InterfaceOrganization } from "./Organization";
  */
 export interface InterfaceUser {
   _id: Types.ObjectId;
-  image: string | undefined | null;
-  token: string | undefined;
-  tokenVersion: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  appLanguageCode: string;
-  createdOrganizations: PopulatedDoc<InterfaceOrganization & Document>[];
-  createdEvents: PopulatedDoc<InterfaceEvent & Document>[];
-  userType: string;
-  joinedOrganizations: PopulatedDoc<InterfaceOrganization & Document>[];
-  registeredEvents: PopulatedDoc<InterfaceEvent & Document>[];
-  eventAdmin: PopulatedDoc<InterfaceEvent & Document>[];
+  address: {
+    city: string;
+    countryCode: string;
+    dependentLocality: string;
+    line1: string;
+    line2: string;
+    postalCode: string;
+    sortingCode: string;
+    state: string;
+  };
+  adminApproved: boolean;
   adminFor: PopulatedDoc<InterfaceOrganization & Document>[];
+  appLanguageCode: string;
+  birthDate: Date;
+  createdAt: Date;
+  createdEvents: PopulatedDoc<InterfaceEvent & Document>[];
+  createdOrganizations: PopulatedDoc<InterfaceOrganization & Document>[];
+  educationGrade: string;
+  email: string;
+  employmentStatus: string;
+  eventAdmin: PopulatedDoc<InterfaceEvent & Document>[];
+  firstName: string;
+  gender: string;
+  image: string | undefined | null;
+  joinedOrganizations: PopulatedDoc<InterfaceOrganization & Document>[];
+  lastName: string;
+  maritalStatus: string;
   membershipRequests: PopulatedDoc<InterfaceMembershipRequest & Document>[];
   organizationsBlockedBy: PopulatedDoc<InterfaceOrganization & Document>[];
-  status: string;
   organizationUserBelongsTo:
     | PopulatedDoc<InterfaceOrganization & Document>
     | undefined;
+  password: string;
+  phone: {
+    home: string;
+    mobile: string;
+    work: string;
+  };
   pluginCreationAllowed: boolean;
-  adminApproved: boolean;
-  createdAt: Date;
+  registeredEvents: PopulatedDoc<InterfaceEvent & Document>[];
+  status: string;
+  token: string | undefined;
+  tokenVersion: number;
+  userType: string;
 }
 /**
  * This describes the schema for a `User` that corresponds to `InterfaceUser` document.
- * @param image - User Image URL.
- * @param tokenVersion - Token version.
- * @param firstName - User First Name.
- * @param token - Access token.
- * @param lastName - User Last Name.
- * @param email - User email id.
- * @param password - User hashed password.
- * @param appLanguageCode - User's app language code.
- * @param createdOrganizations - Collection of all organization created by the user, each object refer to `Organization` model.
- * @param createdEvents - Collection of all events created by the user, each object refer to `Event` model.
- * @param userType - User type.
- * @param joinedOrganizations - Collection of the organization where user is the member, each object refer to `Organization` model.
- * @param registeredEvents - Collection of user registered Events, each object refer to `Event` model.
- * @param eventAdmin - Collection of the event admins, each object refer to `Event` model.
+ * @param address - User address
+ * @param adminApproved - Wheather user is admin approved.
  * @param adminFor - Collection of organization where user is admin, each object refer to `Organization` model.
+ * @param appLanguageCode - User's app language code.
+ * @param birthDate - User Date of birth
+ * @param createdAt - Time stamp of data creation.
+ * @param createdEvents - Collection of all events created by the user, each object refer to `Event` model.
+ * @param createdOrganizations - Collection of all organization created by the user, each object refer to `Organization` model.
+ * @param educationGrade - User highest education degree
+ * @param email - User email id.
+ * @param employmentStatus - User employment status
+ * @param eventAdmin - Collection of the event admins, each object refer to `Event` model.
+ * @param firstName - User First Name.
+ * @param gender - User gender
+ * @param image - User Image URL.
+ * @param joinedOrganizations - Collection of the organization where user is the member, each object refer to `Organization` model.
+ * @param lastName - User Last Name.
+ * @param maritalStatus - User marital status
  * @param membershipRequests - Collections of the membership request, each object refer to `MembershipRequest` model.
  * @param organizationsBlockedBy - Collections of organizations where user is blocked, each object refer to `Organization` model.
- * @param status - Status
  * @param organizationUserBelongsTo - Organization where user belongs to currently.
+ * @param password - User hashed password.
+ * @param phone - User contact numbers, for mobile, home and work
  * @param pluginCreationAllowed - Wheather user is allowed to create plugins.
- * @param adminApproved - Wheather user is admin approved.
- * @param createdAt - Time stamp of data creation.
+ * @param registeredEvents - Collection of user registered Events, each object refer to `Event` model.
+ * @param status - Status
+ * @param token - Access token.
+ * @param tokenVersion - Token version.
+ * @param userType - User type.
  */
 const userSchema = new Schema({
-  image: {
-    type: String,
+  address: {
+    city: {
+      type: String,
+    },
+    countryCode: {
+      type: String,
+    },
+    dependentLocality: {
+      type: String,
+    },
+    line1: {
+      type: String,
+    },
+    line2: {
+      type: String,
+    },
+    postalCode: {
+      type: String,
+    },
+    sortingCode: {
+      type: String,
+    },
+    state: {
+      type: String,
+    },
   },
-  token: {
-    type: String,
-    required: false,
+  adminApproved: {
+    type: Boolean,
+    default: false,
   },
-  tokenVersion: {
-    type: Number,
-    default: 0,
-  },
-  firstName: {
-    type: String,
-    required: true,
-  },
-  lastName: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    validate: [validator.isEmail, "invalid email"],
-  },
-  password: {
-    type: String,
-    required: true,
-  },
+  adminFor: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Organization",
+    },
+  ],
   appLanguageCode: {
     type: String,
     required: true,
     default: "en",
+  },
+  birthDate: {
+    type: Date,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
   createdOrganizations: [
     {
@@ -106,11 +148,53 @@ const userSchema = new Schema({
       ref: "Event",
     },
   ],
-  userType: {
+  educationGrade: {
+    type: String,
+    enum: [
+      "NO_GRADE",
+      "PRE_KG",
+      "KG",
+      "GRADE_1",
+      "GRADE_2",
+      "GRADE_3",
+      "GRADE_4",
+      "GRADE_5",
+      "GRADE_6",
+      "GRADE_7",
+      "GRADE_8",
+      "GRADE_9",
+      "GRADE_10",
+      "GRADE_11",
+      "GRADE_12",
+      "GRADUATE",
+      null,
+    ],
+  },
+  email: {
     type: String,
     required: true,
-    enum: ["USER", "ADMIN", "SUPERADMIN"],
-    default: "USER",
+    validate: [validator.isEmail, "invalid email"],
+  },
+  employmentStatus: {
+    type: String,
+    enum: ["FULL_TIME", "PART_TIME", "UNEMPLOYED", null],
+  },
+  eventAdmin: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Event",
+    },
+  ],
+  firstName: {
+    type: String,
+    required: true,
+  },
+  gender: {
+    type: String,
+    enum: ["MALE", "FEMALE", "OTHER", null],
+  },
+  image: {
+    type: String,
   },
   joinedOrganizations: [
     {
@@ -118,24 +202,22 @@ const userSchema = new Schema({
       ref: "Organization",
     },
   ],
-  registeredEvents: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Event",
-    },
-  ],
-  eventAdmin: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Event",
-    },
-  ],
-  adminFor: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Organization",
-    },
-  ],
+  lastName: {
+    type: String,
+    required: true,
+  },
+  maritalStatus: {
+    type: String,
+    enum: [
+      "SINGLE",
+      "ENGAGED",
+      "MARRIED",
+      "DIVORCED",
+      "WIDOWED",
+      "SEPERATED",
+      null,
+    ],
+  },
   membershipRequests: [
     {
       type: Schema.Types.ObjectId,
@@ -148,28 +230,55 @@ const userSchema = new Schema({
       ref: "Organization",
     },
   ],
-  status: {
-    type: String,
-    required: true,
-    enum: ["ACTIVE", "BLOCKED", "DELETED"],
-    default: "ACTIVE",
-  },
   organizationUserBelongsTo: {
     type: Schema.Types.ObjectId,
     ref: "Organization",
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  phone: {
+    home: {
+      type: String,
+    },
+    mobile: {
+      type: String,
+    },
+    work: {
+      type: String,
+    },
   },
   pluginCreationAllowed: {
     type: Boolean,
     required: true,
     default: true,
   },
-  adminApproved: {
-    type: Boolean,
-    default: false,
+  registeredEvents: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Event",
+    },
+  ],
+  status: {
+    type: String,
+    required: true,
+    enum: ["ACTIVE", "BLOCKED", "DELETED"],
+    default: "ACTIVE",
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
+  token: {
+    type: String,
+    required: false,
+  },
+  tokenVersion: {
+    type: Number,
+    default: 0,
+  },
+  userType: {
+    type: String,
+    required: true,
+    enum: ["USER", "ADMIN", "SUPERADMIN"],
+    default: "USER",
   },
 });
 
