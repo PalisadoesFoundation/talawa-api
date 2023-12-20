@@ -98,6 +98,9 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
         _id: post.organization,
       },
       {
+        $set: {
+          updatedBy: context.userId,
+        },
         $pull: {
           pinnedPosts: args.id,
         },
@@ -118,6 +121,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       {
         $set: {
           pinned: false,
+          updatedBy: context.userId,
         },
       }
     ).lean();
@@ -133,6 +137,9 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
         _id: post.organization,
       },
       {
+        $set: {
+          updatedBy: context.userId,
+        },
         $push: {
           pinnedPosts: args.id,
         },
@@ -152,6 +159,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
       {
         $set: {
           pinned: true,
+          updatedBy: context.userId,
         },
       }
     ).lean();

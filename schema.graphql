@@ -26,12 +26,16 @@ input AddressInput {
 
 type Advertisement {
   _id: ID
+  createdAt: Date
+  createdBy: User
   endDate: Date!
   link: String!
   name: String!
   orgId: ID
   startDate: Date!
   type: String!
+  updatedAt: Date
+  updatedBy: User
 }
 
 type AggregatePost {
@@ -54,9 +58,11 @@ type CheckIn {
   _id: ID!
   allotedRoom: String
   allotedSeat: String
+  createdAt: DateTime
   event: Event!
   feedbackSubmitted: Boolean!
   time: DateTime!
+  updatedAt: DateTime
   user: User!
 }
 
@@ -76,11 +82,14 @@ type CheckInStatus {
 type Comment {
   _id: ID
   createdAt: DateTime
+  createdBy: User
   creator: User!
   likeCount: Int
   likedBy: [User]
   post: Post!
   text: String!
+  updatedAt: DateTime
+  updatedBy: User
 }
 
 input CommentInput {
@@ -568,7 +577,7 @@ type Organization {
   apiUrl: URL!
   blockedUsers: [User]
   createdAt: DateTime
-  creator: User!
+  createdBy: User!
   customFields: [OrganizationCustomField!]!
   description: String!
   image: String
@@ -578,6 +587,8 @@ type Organization {
   membershipRequests: [MembershipRequest]
   name: String!
   pinnedPosts: [Post]
+  updatedAt: DateTime
+  updatedBy: User
   userTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
   visibleInSearch: Boolean!
 }
@@ -713,7 +724,7 @@ type Post {
   commentCount: Int
   comments: [Comment]
   createdAt: DateTime
-  creator: User!
+  createdBy: User
   imageUrl: URL
   likeCount: Int
   likedBy: [User]
@@ -721,6 +732,8 @@ type Post {
   pinned: Boolean
   text: String!
   title: String
+  updatedAt: DateTime
+  updatedBy: User
   videoUrl: URL
 }
 
@@ -857,11 +870,13 @@ type Task {
   _id: ID!
   completed: Boolean
   createdAt: DateTime!
-  creator: User!
+  createdBy: User!
   deadline: DateTime
   description: String
   event: Event!
   title: String!
+  updatedAt: DateTime
+  updatedBy: User
   volunteers: [User]
 }
 
@@ -1010,6 +1025,7 @@ type User {
   registeredEvents: [Event]
   tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection
   tokenVersion: Int!
+  updatedAt: DateTime
   userType: String
 }
 

@@ -25,6 +25,8 @@ export const types = gql`
     user: User!
     event: Event!
     feedbackSubmitted: Boolean!
+    createdAt: DateTime
+    updatedAt: DateTime
   }
 
   # Used to show whether an user has checked in for an event
@@ -37,11 +39,14 @@ export const types = gql`
   type Comment {
     _id: ID
     text: String!
-    createdAt: DateTime
     creator: User!
     post: Post!
     likedBy: [User]
     likeCount: Int
+    createdAt: DateTime
+    createdBy: User
+    updatedAt: DateTime
+    updatedBy: User
   }
 
   # A page info type adhering to Relay Specification for both cursor based pagination
@@ -90,6 +95,10 @@ export const types = gql`
     type: String!
     startDate: Date!
     endDate: Date!
+    createdAt: Date
+    createdBy: User
+    updatedAt: Date
+    updatedBy: User
   }
 
   type ExtendSession {
@@ -211,14 +220,16 @@ export const types = gql`
     description: String!
     location: String
     isPublic: Boolean!
-    creator: User!
+    createdBy: User!
+    createdAt: DateTime
+    updatedAt: DateTime
+    updatedBy: User
     members: [User]
     admins(adminId: ID): [User]
     membershipRequests: [MembershipRequest]
     blockedUsers: [User]
     visibleInSearch: Boolean!
     apiUrl: URL!
-    createdAt: DateTime
     pinnedPosts: [Post]
     userTags(
       after: String
@@ -302,9 +313,11 @@ export const types = gql`
     text: String!
     title: String
     createdAt: DateTime
+    createdBy: User
+    updatedAt: DateTime
+    updatedBy: User
     imageUrl: URL
     videoUrl: URL
-    creator: User!
     organization: Organization!
     likedBy: [User]
     comments: [Comment]
@@ -335,8 +348,10 @@ export const types = gql`
     title: String!
     description: String
     event: Event!
-    creator: User!
     createdAt: DateTime!
+    createdBy: User!
+    updatedAt: DateTime
+    updatedBy: User
     completed: Boolean
     deadline: DateTime
     volunteers: [User]
@@ -401,6 +416,7 @@ export const types = gql`
       organizationId: ID
     ): UserTagsConnection
     tokenVersion: Int!
+    updatedAt: DateTime
     userType: String
   }
 

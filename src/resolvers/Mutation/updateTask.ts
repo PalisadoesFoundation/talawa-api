@@ -46,7 +46,7 @@ export const updateTask: MutationResolvers["updateTask"] = async (
   }
 
   if (
-    task.creator.toString() !== context.userId.toString() &&
+    task.createdBy.toString() !== context.userId.toString() &&
     currentUser.userType !== "SUPERADMIN"
   ) {
     throw new errors.UnauthorizedError(
@@ -62,6 +62,7 @@ export const updateTask: MutationResolvers["updateTask"] = async (
     },
     {
       ...(args.data as any),
+      updatedBy: context.userId,
     },
     {
       new: true,

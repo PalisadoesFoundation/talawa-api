@@ -649,6 +649,7 @@ describe("resolvers -> Query -> posts", () => {
       {
         $set: {
           imageUrl: undefined,
+          updatedBy: testUser?._id,
         },
       }
     );

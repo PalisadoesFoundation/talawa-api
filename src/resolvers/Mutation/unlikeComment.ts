@@ -53,6 +53,9 @@ export const unlikeComment: MutationResolvers["unlikeComment"] = async (
         _id: args.id,
       },
       {
+        $set: {
+          updatedBy: context.userId,
+        },
         $pull: {
           likedBy: context.userId,
         },

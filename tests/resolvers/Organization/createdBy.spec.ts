@@ -41,7 +41,7 @@ describe("resolvers -> Organization -> creator", () => {
     vi.resetModules();
   });
 
-  it(`throws NotFoundError if no user exists with _id === parent.creator`, async () => {
+  it(`throws NotFoundError if no user exists with _id === parent.createdBy`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -64,8 +64,8 @@ describe("resolvers -> Organization -> creator", () => {
 
       const parent = testOrganization?.toObject();
 
-      const { creator: creatorResolver } = await import(
-        "../../../src/resolvers/Organization/creator"
+      const { createdBy: creatorResolver } = await import(
+        "../../../src/resolvers/Organization/createdBy"
       );
       if (parent) {
         await creatorResolver?.(parent, {}, {});
@@ -78,7 +78,7 @@ describe("resolvers -> Organization -> creator", () => {
     }
   });
 
-  it(`returns user object for parent.creator`, async () => {
+  it(`returns user object for parent.createdBy`, async () => {
     testOrganization = await Organization.findOneAndUpdate(
       {
         _id: testOrganization?._id,
@@ -95,13 +95,13 @@ describe("resolvers -> Organization -> creator", () => {
 
     const parent = testOrganization?.toObject();
 
-    const { creator: creatorResolver } = await import(
-      "../../../src/resolvers/Organization/creator"
+    const { createdBy: creatorResolver } = await import(
+      "../../../src/resolvers/Organization/createdBy"
     );
     if (parent) {
       const creatorPayload = await creatorResolver?.(parent, {}, {});
       const creator = await User.findOne({
-        _id: testOrganization?.creator,
+        _id: testOrganization?.createdBy,
       }).lean();
 
       expect(creatorPayload).toEqual(creator);

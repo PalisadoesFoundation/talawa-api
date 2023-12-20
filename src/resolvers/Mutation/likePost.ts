@@ -60,6 +60,9 @@ export const likePost: MutationResolvers["likePost"] = async (
         _id: args.id,
       },
       {
+        $set: {
+          updatedBy: context.userId,
+        },
         $push: {
           likedBy: context.userId,
         },

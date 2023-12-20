@@ -91,6 +91,7 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
         blockedUsers: organization.blockedUsers.filter(
           (blockedUser) => !user._id.equals(blockedUser)
         ),
+        updatedBy: context.userId,
       },
     },
     {

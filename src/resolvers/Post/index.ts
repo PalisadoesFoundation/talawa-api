@@ -1,8 +1,8 @@
 import type { PostResolvers } from "../../types/generatedGraphQLTypes";
 import { comments } from "./comments";
-import { creator } from "./creator";
+import { createdBy } from "./createdBy";
 
 export const Post: PostResolvers = {
   comments,
-  creator,
+  createdBy,
 };

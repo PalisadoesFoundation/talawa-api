@@ -35,7 +35,7 @@ export const createComment: MutationResolvers["createComment"] = async (
   // Creates the new comment
   const createdComment = await Comment.create({
     ...args.data,
-    creator: context.userId,
+    createdBy: context.userId,
     postId: args.postId,
   });
 
@@ -47,6 +47,9 @@ export const createComment: MutationResolvers["createComment"] = async (
       _id: args.postId,
     },
     {
+      $set: {
+        updatedBy: context.userId,
+      },
       $inc: {
         commentCount: 1,
       },

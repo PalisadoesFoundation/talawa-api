@@ -120,7 +120,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
     of organization. If match is true assigns error message to errors list
     and breaks out of loop.
     */
-  if (Types.ObjectId(organization?.creator).equals(user._id)) {
+  if (Types.ObjectId(organization?.createdBy).equals(user._id)) {
     throw new errors.UnauthorizedError(
       requestContext.translate(ADMIN_REMOVING_CREATOR.MESSAGE),
       ADMIN_REMOVING_CREATOR.CODE,
@@ -138,6 +138,7 @@ export const removeMember: MutationResolvers["removeMember"] = async (
         members: organization?.members.filter(
           (member) => member.toString() !== user._id.toString()
         ),
+        updatedBy: context.userId,
       },
     },
     {

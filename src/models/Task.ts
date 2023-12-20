@@ -9,64 +9,79 @@ import type { InterfaceEventProject } from "./EventProject";
 
 export interface InterfaceTask {
   _id: Types.ObjectId;
-  title: string;
-  description: string | undefined;
-  status: string;
-  createdAt: Date;
-  deadline: Date | undefined;
-  eventProjectId: PopulatedDoc<InterfaceEventProject & Document>;
-  creator: PopulatedDoc<InterfaceUser & Document>;
   completed: boolean;
+  createdAt: Date;
+  createdBy: PopulatedDoc<InterfaceUser & Document>;
+  deadline: Date | undefined;
+  description: string | undefined;
+  eventProjectId: PopulatedDoc<InterfaceEventProject & Document>;
+  status: string;
+  title: string;
+  updatedAt: Date;
+  updatedBy: PopulatedDoc<InterfaceUser & Document>;
 }
 
 /**
  * This describes the schema for a `Task` that corresponds to `InterfaceTask` document.
- * @param title - Task title.
- * @param description - Task description.
- * @param status - Status.
- * @param createdAt - Time stamp of data creation.
- * @param deadline - Task deadline.
- * @param eventProjectId - Event Project object for which task is added.
- * @param creator - Task creator, refer to `User` model.
  * @param completed - Has the task been completed
+ * @param createdAt - Time stamp of data creation.
+ * @param createdBy - Task creator, refer to `User` model.
+ * @param deadline - Task deadline.
+ * @param description - Task description.
+ * @param eventProjectId - Event Project object for which task is added.
+ * @param status - Status.
+ * @param title - Task title.
+ * @param updatedAt - Time stamp of data updation.
+ * @param updatedBy - Task updator, refer to `User` model
  */
 
-const taskSchema = new Schema({
-  title: {
-    type: String,
-    required: true,
+const taskSchema = new Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+    },
+    status: {
+      type: String,
+      required: true,
+      enum: ["ACTIVE", "BLOCKED", "DELETED"],
+      default: "ACTIVE",
+    },
+    deadline: {
+      type: Date,
+    },
+    eventProjectId: {
+      type: Schema.Types.ObjectId,
+      ref: "EventProject",
+      required: true,
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+    updatedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+    completed: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
   },
-  description: {
-    type: String,
-  },
-  status: {
-    type: String,
-    required: true,
-    enum: ["ACTIVE", "BLOCKED", "DELETED"],
-    default: "ACTIVE",
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  deadline: {
-    type: Date,
-  },
-  eventProjectId: {
-    type: Schema.Types.ObjectId,
-    ref: "EventProject",
-    required: true,
-  },
-  creator: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  completed: {
-    type: Boolean,
-    default: false,
-    required: true,
-  },
+  {
+    timestamps: true,
+  }
+);
+
+taskSchema.pre<InterfaceTask>("save", function (next) {
+  if (!this.updatedBy) {
+    this.updatedBy = this.createdBy;
+  }
+  next();
 });
 
 const taskModel = (): Model<InterfaceTask> =>

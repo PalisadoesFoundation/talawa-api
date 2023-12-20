@@ -1,8 +1,8 @@
 import type { CommentResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 
-export const creator: CommentResolvers["creator"] = async (parent) => {
+export const createdBy: CommentResolvers["createdBy"] = async (parent) => {
   return await User.findOne({
-    _id: parent.creator,
+    _id: parent.createdBy,
   }).lean();
 };

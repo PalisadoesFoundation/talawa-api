@@ -115,7 +115,7 @@ describe("generatePostData function", () => {
     expect(post.pinned).toEqual(false);
     expect(post.text).toEqual(expect.any(String));
     expect(post.title).toEqual(expect.any(String));
-    expect(post.creator).toEqual(expect.any(Object));
+    expect(post.createdBy).toEqual(expect.any(Object));
     expect(post.organization).toEqual(expect.any(Object));
     expect(post.imageUrl).toEqual(expect.any(String));
     expect(post.createdAt).toEqual(expect.any(Date));

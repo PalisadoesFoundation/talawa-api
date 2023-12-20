@@ -70,6 +70,9 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
         _id: membershipRequest.organization._id,
       },
       {
+        $set: {
+          updatedBy: context.userId,
+        },
         $pull: {
           membershipRequests: membershipRequest._id,
         },

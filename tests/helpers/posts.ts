@@ -22,7 +22,7 @@ export const createTestPost = async (
 
   const testPost = await Post.create({
     text: `text${nanoid().toLowerCase()}`,
-    creator: testUser?._id,
+    createdBy: testUser?._id,
     organization: testOrganization?._id,
     pinned,
   });
@@ -48,7 +48,7 @@ export const createPostwithComment = async (): Promise<
 
   const testComment = await Comment.create({
     text: `commentName${nanoid().toLowerCase()}`,
-    creator: testUser && testUser._id,
+    createdBy: testUser && testUser._id,
     postId: testPost && testPost._id,
   });
 
@@ -92,13 +92,13 @@ export const createSinglePostwithComment = async (
     title: `title${nanoid()}`,
     imageUrl: `imageUrl${nanoid()}`,
     videoUrl: `videoUrl${nanoid()}`,
-    creator: userId,
+    createdBy: userId,
     organization: organizationId,
   });
 
   const testComment = await Comment.create({
     text: `commentName${nanoid().toLowerCase()}`,
-    creator: userId,
+    createdBy: userId,
     postId: testPost._id,
   });
 
@@ -129,7 +129,7 @@ export const createTestSinglePost = async (
     title: `title${nanoid()}`,
     imageUrl: `imageUrl${nanoid()}`,
     videoUrl: `videoUrl${nanoid()}`,
-    creator: userId,
+    createdBy: userId,
     organization: organizationId,
     pinned,
   });

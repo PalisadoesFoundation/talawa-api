@@ -16,7 +16,8 @@ export interface InterfaceOrganization {
   description: string;
   location: string | undefined;
   isPublic: boolean;
-  creator: PopulatedDoc<InterfaceUser & Document>;
+  createdBy: PopulatedDoc<InterfaceUser & Document>;
+  updatedBy: PopulatedDoc<InterfaceUser & Document>;
   status: string;
   members: PopulatedDoc<InterfaceUser & Document>[];
   admins: PopulatedDoc<InterfaceUser & Document>[];
@@ -28,6 +29,7 @@ export interface InterfaceOrganization {
   visibleInSearch: boolean | undefined;
   customFields: PopulatedDoc<InterfaceOrganizationCustomField & Document>[];
   createdAt: Date;
+  updatedAt: Date;
 }
 /**
  * This describes the schema for a `Organization` that corresponds to `InterfaceOrganization` document.
@@ -37,7 +39,8 @@ export interface InterfaceOrganization {
  * @param description - Organization description.
  * @param location - Organization location.
  * @param isPublic - Organization visibility.
- * @param creator - Organization creator, referring to `User` model.
+ * @param createdBy - Organization creator, referring to `User` model.
+ * @param updatedBy - Organization updator, referring to `User` model.
  * @param status - Status.
  * @param members - Collection of members, each object refer to `User` model.
  * @param admins - Collection of organization admins, each object refer to `User` model.
@@ -47,97 +50,110 @@ export interface InterfaceOrganization {
  * @param blockedUsers - Collection of Blocked User in the Organization, each object refer to `User` model.
  * @param tags - Collection of tags.
  * @param createdAt - Time stamp of data creation.
+ * @param updatedAt - Time stamp of data updation.
  */
-const organizationSchema = new Schema({
-  apiUrl: {
-    type: String,
-  },
-  image: {
-    type: String,
-  },
-  name: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
-    required: true,
-  },
-  location: {
-    type: String,
-  },
-  isPublic: {
-    type: Boolean,
-    required: true,
-  },
-  creator: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  status: {
-    type: String,
-    required: true,
-    enum: ["ACTIVE", "BLOCKED", "DELETED"],
-    default: "ACTIVE",
-  },
-  members: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "User",
+const organizationSchema = new Schema(
+  {
+    apiUrl: {
+      type: String,
     },
-  ],
-  admins: [
-    {
+    image: {
+      type: String,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    location: {
+      type: String,
+    },
+    isPublic: {
+      type: Boolean,
+      required: true,
+    },
+    createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-  ],
-  groupChats: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Message",
-    },
-  ],
-  posts: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Post",
-    },
-  ],
-  pinnedPosts: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Post",
-      default: [],
-    },
-  ],
-  membershipRequests: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "MembershipRequest",
-    },
-  ],
-  blockedUsers: [
-    {
+    updatedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },
-  ],
-  visibleInSearch: {
-    type: Boolean,
-  },
-  customFields: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "CustomField",
+    status: {
+      type: String,
+      required: true,
+      enum: ["ACTIVE", "BLOCKED", "DELETED"],
+      default: "ACTIVE",
     },
-  ],
-  createdAt: {
-    type: Date,
-    default: Date.now,
+    members: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    admins: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+    ],
+    groupChats: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Message",
+      },
+    ],
+    posts: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Post",
+      },
+    ],
+    pinnedPosts: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Post",
+        default: [],
+      },
+    ],
+    membershipRequests: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "MembershipRequest",
+      },
+    ],
+    blockedUsers: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    visibleInSearch: {
+      type: Boolean,
+    },
+    customFields: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "CustomField",
+      },
+    ],
   },
+  {
+    timestamps: true,
+  }
+);
+
+organizationSchema.pre<InterfaceOrganization>("save", function (next) {
+  if (!this.updatedBy) {
+    this.updatedBy = this.createdBy;
+  }
+  next();
 });
 
 const organizationModel = (): Model<InterfaceOrganization> =>

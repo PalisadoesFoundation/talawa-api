@@ -20,7 +20,7 @@ export const createTestMembershipRequest = async (): Promise<
       name: `name${nanoid().toLowerCase()}`,
       description: `desc${nanoid().toLowerCase()}`,
       isPublic: true,
-      creator: testUser._id,
+      createdBy: testUser._id,
       admins: [testUser._id],
       visibleInSearch: true,
     });
@@ -48,6 +48,9 @@ export const createTestMembershipRequest = async (): Promise<
         _id: testOrganization._id,
       },
       {
+        $set: {
+          updatedBy: testUser?._id,
+        },
         $push: {
           membershipRequests: testMembershipRequest._id,
         },

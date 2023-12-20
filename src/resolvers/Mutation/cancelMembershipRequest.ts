@@ -98,6 +98,9 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
         _id: organization._id,
       },
       {
+        $set: {
+          updatedBy: context.userId,
+        },
         $pull: {
           membershipRequests: membershipRequest._id,
         },

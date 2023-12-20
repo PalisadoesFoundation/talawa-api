@@ -70,6 +70,9 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
         _id: organization._id,
       },
       {
+        $set: {
+          updatedBy: context.userId,
+        },
         $push: {
           membershipRequests: createdMembershipRequest._id,
         },

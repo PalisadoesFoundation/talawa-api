@@ -69,7 +69,7 @@ export const removePost: MutationResolvers["removePost"] = async (
   }
 
   // Checks whether currentUser is allowed to delete the post or not.
-  const isCreator = post.creator.equals(context.userId);
+  const isCreator = post.createdBy.equals(context.userId);
   const isSuperAdmin = currentUser?.userType === "SUPERADMIN";
   const isAdminOfPostOrganization = currentUser?.adminFor.some((orgID) =>
     orgID.equals(post?.organization)
@@ -106,6 +106,9 @@ export const removePost: MutationResolvers["removePost"] = async (
       _id: post.organization,
     },
     {
+      $set: {
+        updatedBy: context.userId,
+      },
       $pull: {
         pinnedPosts: args.id,
       },

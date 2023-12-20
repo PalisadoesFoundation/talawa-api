@@ -53,7 +53,7 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    creator: testUsers[0]?._id,
+    createdBy: testUsers[0]?._id,
     admins: [testUsers[0]?._id],
     members: [testUsers[1]?._id],
     blockedUsers: [testUsers[0]?._id],
@@ -102,7 +102,7 @@ beforeAll(async () => {
 
   testPost = await Post.create({
     text: "text",
-    creator: testUsers[0]?._id,
+    createdBy: testUsers[0]?._id,
     organization: testOrganization._id,
   });
 
@@ -120,7 +120,7 @@ beforeAll(async () => {
 
   testComment = await Comment.create({
     text: "text",
-    creator: testUsers[0]?._id,
+    createdBy: testUsers[0]?._id,
     postId: testPost._id,
   });
 
@@ -129,6 +129,9 @@ beforeAll(async () => {
       _id: testPost._id,
     },
     {
+      $set: {
+        updatedBy: testUsers[0]?._id,
+      },
       $inc: {
         commentCount: 1,
       },
@@ -255,7 +258,8 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       },
       {
         $set: {
-          creator: testUsers[0]?._id,
+          createdBy: testUsers[0]?._id,
+          updatedBy: testUsers[0]?._id,
         },
       },
       {
@@ -333,7 +337,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       name: "name",
       description: "description",
       isPublic: true,
-      creator: testUsers[0]?._id,
+      createdBy: testUsers[0]?._id,
       admins: [testUsers[0]?._id],
       members: [testUsers[1]?._id],
       blockedUsers: [testUsers[0]?._id],
@@ -373,7 +377,10 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       context
     );
 
-    expect(removeOrganizationPayload).toEqual(updatedTestUser);
+    expect(removeOrganizationPayload).toEqual({
+      ...updatedTestUser,
+      updatedAt: expect.anything(),
+    });
     expect(deleteImageSpy).toBeCalledWith("images/fake-image-path.png");
   });
 });

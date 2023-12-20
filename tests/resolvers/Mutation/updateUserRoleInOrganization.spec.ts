@@ -89,7 +89,7 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    creator: testUserSuperAdmin?._id,
+    createdBy: testUserSuperAdmin?._id,
     admins: [testUserSuperAdmin?._id, testAdminUser?._id],
     members: [testUserSuperAdmin?._id, testAdminUser?._id, testMemberUser?._id],
     blockedUsers: [testBlockedMemberUser?._id],

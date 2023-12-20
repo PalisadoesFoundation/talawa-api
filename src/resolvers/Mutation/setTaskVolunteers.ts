@@ -79,7 +79,7 @@ export const setTaskVolunteers: MutationResolvers["setTaskVolunteers"] = async (
   }
 
   if (
-    task.creator.toString() !== context.userId.toString() &&
+    task.createdBy.toString() !== context.userId.toString() &&
     currentUser.userType !== "SUPERADMIN"
   ) {
     throw new errors.UnauthorizedError(

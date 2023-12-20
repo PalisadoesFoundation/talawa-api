@@ -17,7 +17,7 @@ beforeAll(async () => {
   [testUser, , testPost] = await createTestPost();
   await Comment.create({
     text: "test comment",
-    creator: testUser!._id,
+    createdBy: testUser!._id,
     postId: testPost!._id,
   });
 
@@ -26,6 +26,9 @@ beforeAll(async () => {
       _id: testPost?._id,
     },
     {
+      $set: {
+        updatedBy: testUser?._id,
+      },
       $inc: {
         commentCount: 1,
       },

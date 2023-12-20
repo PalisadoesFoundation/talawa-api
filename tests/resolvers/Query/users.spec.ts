@@ -126,7 +126,7 @@ describe("resolvers -> Query -> users", () => {
         name: "name1",
         description: "description1",
         isPublic: true,
-        creator: testUsers[0]._id,
+        createdBy: testUsers[0]._id,
         admins: [testUsers[0]._id],
         members: [testUsers[0]._id, testUsers[1]._id],
         apiUrl: "apiUrl1",

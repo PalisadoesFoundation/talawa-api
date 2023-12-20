@@ -50,7 +50,7 @@ export const createAndAssignTestTask = async (): Promise<
   const testTask = await Task.create({
     title: `test${nanoid()}`,
     description: `testDesc${nanoid()}`,
-    creator: testUser && testUser._id,
+    createdBy: testUser && testUser._id,
     eventProjectId: testEventProject && testEventProject._id,
   });
 
@@ -77,7 +77,7 @@ export const createTestTask = async (
   const testTask = await Task.create({
     title: `test${nanoid()}`,
     description: `testDesc${nanoid()}`,
-    creator: userID,
+    createdBy: userID,
     eventProjectId: testEventProject!._id,
   });
 

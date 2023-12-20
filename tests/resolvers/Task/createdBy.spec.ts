@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { creator as creatorResolver } from "../../../src/resolvers/Task/creator";
+import { createdBy as creatorResolver } from "../../../src/resolvers/Task/createdBy";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";

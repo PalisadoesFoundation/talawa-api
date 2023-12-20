@@ -72,7 +72,7 @@ export const removeComment: MutationResolvers["removeComment"] = async (
   if (
     currentUser.userType !== "SUPERADMIN" &&
     !isCurrentUserAdminOfOrganization &&
-    comment.creator.toString() !== context.userId
+    comment.createdBy.toString() !== context.userId
   ) {
     throw new errors.UnauthorizedError(
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
@@ -88,6 +88,9 @@ export const removeComment: MutationResolvers["removeComment"] = async (
       _id: comment!.postId._id,
     },
     {
+      $set: {
+        updatedBy: context.userId,
+      },
       $inc: {
         commentCount: -1,
       },

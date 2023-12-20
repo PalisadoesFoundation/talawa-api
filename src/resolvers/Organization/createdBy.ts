@@ -7,9 +7,9 @@ import { USER_NOT_FOUND_ERROR } from "../../constants";
  * @param parent - An object that is the return value of the resolver for this field's parent.
  * @returns An object that contains the creator data. If the creator not exists then throws an `NotFoundError` error.
  */
-export const creator: OrganizationResolvers["creator"] = async (parent) => {
+export const createdBy: OrganizationResolvers["createdBy"] = async (parent) => {
   const user = await User.findOne({
-    _id: parent.creator,
+    _id: parent.createdBy,
   }).lean();
 
   if (!user) {

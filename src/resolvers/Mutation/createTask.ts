@@ -62,7 +62,7 @@ export const createTask: MutationResolvers["createTask"] = async (
   const createdTask = await Task.create({
     ...args.data,
     eventProjectId: args.eventProjectId,
-    creator: context.userId,
+    createdBy: context.userId,
   });
 
   // Returns createdTask.
