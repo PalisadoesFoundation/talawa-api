@@ -83,7 +83,7 @@ Follow the setup guide for `git` on official [git docs](https://git-scm.com/down
 First you need a local copy of talawa-api. Run the following command in the directory of choice on your local system.
 
 1. Navigate to the folder where you want to setup the repository. Here, I will set it up in a folder called `talawa`.
-1. Navigate to the folder and open a terminal in this folder (you can right-click and choose appropiate option based onn your OS). Next, we'll fork and clone the `talawa-api` repository.
+1. Navigate to the folder and open a terminal in this folder (you can right-click and choose appropiate option based on your OS). Next, we'll fork and clone the `talawa-api` repository.
 1. Navigate to [https://github.com/PalisadoesFoundation/talawa-api/](hhttps://github.com/PalisadoesFoundation/talawa-api/) and click on the `fork` button. It is placed on the right corner opposite the repository name `PalisadoesFoundation/talawa-api`.
    ![Image with fork](./image/install1.png)
 1. You should now see `talawa-api` under your repositories. It will be marked as forked from `PalisadoesFoundation/talawa-api`
