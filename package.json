@@ -116,7 +116,7 @@
     "@types/nodemailer": "^6.4.5",
     "@types/shortid": "^0.0.29",
     "@types/uuid": "^9.0.2",
-    "@types/validator": "^13.7.3",
+    "@types/validator": "^13.11.7",
     "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.42.0",
     "@vitest/coverage-c8": "^0.24.3",
