@@ -1,9 +1,9 @@
-name: Deploy to AWS EC2
+name: Deploy to Cloud VPS
 
 on:
   push:
     branches:
-      - deployment
+      - main
       - develop
 
 jobs:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Execute remote ssh commands using password
+    - name: Execute remote ssh commands 
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.HOST }}
@@ -20,6 +20,7 @@ jobs:
         port: ${{ secrets.PORT }}
         command_timeout: 200m
         script: |
+          cd develop 
           cd talawa-api
           git pull origin
           docker-compose down
