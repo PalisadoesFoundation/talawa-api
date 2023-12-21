@@ -22,6 +22,7 @@ jobs:
         script: |
           cd develop 
           cd talawa-api
+          git checkout develop
           git pull origin
           docker-compose down
           docker-compose up -d --build
