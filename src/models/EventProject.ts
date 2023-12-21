@@ -10,10 +10,12 @@ export interface InterfaceEventProject {
   _id: Types.ObjectId;
   title: string;
   description: string;
-  createdAt: Date;
   event: PopulatedDoc<InterfaceEvent & Document>;
-  creator: PopulatedDoc<InterfaceUser & Document>;
+  createdBy: PopulatedDoc<InterfaceUser & Document>;
+  updatedBy: PopulatedDoc<InterfaceUser & Document>;
   status: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
@@ -26,35 +28,47 @@ export interface InterfaceEventProject {
  * @param tasks - Tasks
  * @param status - Status
  */
-const eventProjectSchema = new Schema({
-  title: {
-    type: String,
-    required: true,
+const eventProjectSchema = new Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    event: {
+      type: Schema.Types.ObjectId,
+      ref: "Event",
+      required: true,
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    updatedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+    status: {
+      type: String,
+      required: true,
+      enum: ["ACTIVE", "BLOCKED", "DELETED"],
+      default: "ACTIVE",
+    },
   },
-  description: {
-    type: String,
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  event: {
-    type: Schema.Types.ObjectId,
-    ref: "Event",
-    required: true,
-  },
-  creator: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  status: {
-    type: String,
-    required: true,
-    enum: ["ACTIVE", "BLOCKED", "DELETED"],
-    default: "ACTIVE",
-  },
+  {
+    timestamps: true,
+  }
+);
+
+eventProjectSchema.pre<InterfaceEventProject>("save", function (next) {
+  if (!this.updatedBy) {
+    this.updatedBy = this.createdBy;
+  }
+  next();
 });
 
 const eventProjectModel = (): Model<InterfaceEventProject> =>

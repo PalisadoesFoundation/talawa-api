@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { creator as creatorResolver } from "../../../src/resolvers/DirectChat/creator";
+import { createdBy as creatorResolver } from "../../../src/resolvers/DirectChat/createdBy";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { User } from "../../../src/models";
@@ -27,7 +27,7 @@ describe("resolvers -> DirectChat -> creator", () => {
     const creatorPayload = await creatorResolver?.(parent, {}, {});
 
     const creator = await User.findOne({
-      _id: testDirectChat!.creator,
+      _id: testDirectChat!.createdBy,
     }).lean();
 
     expect(creatorPayload).toEqual(creator);

@@ -47,7 +47,6 @@ export const sendMessageToDirectChat: MutationResolvers["sendMessageToDirectChat
       directChatMessageBelongsTo: directChat._id,
       sender: context.userId,
       receiver: directChat.users[receiverIndex],
-      createdAt: new Date(),
       messageContent: args.messageContent,
     });
 
@@ -57,6 +56,9 @@ export const sendMessageToDirectChat: MutationResolvers["sendMessageToDirectChat
         _id: directChat._id,
       },
       {
+        $set: {
+          updatedBy: context.userId,
+        },
         $push: {
           messages: createdDirectChatMessage._id,
         },

@@ -1,11 +1,11 @@
 import type { DirectChatResolvers } from "../../types/generatedGraphQLTypes";
-import { creator } from "./creator";
+import { createdBy } from "./createdBy";
 import { messages } from "./messages";
 import { organization } from "./organization";
 import { users } from "./users";
 
 export const DirectChat: DirectChatResolvers = {
-  creator,
+  createdBy,
   messages,
   organization,
   users,

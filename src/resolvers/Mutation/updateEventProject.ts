@@ -48,7 +48,7 @@ export const updateEventProject: MutationResolvers["updateEventProject"] =
 
     // toString() method converts mongodb's objectId to a javascript string for comparision
     if (
-      eventProject.creator.toString() !== context.userId.toString() &&
+      eventProject.createdBy.toString() !== context.userId.toString() &&
       currentUser.userType !== "SUPERADMIN"
     ) {
       throw new errors.UnauthorizedError(
@@ -64,6 +64,7 @@ export const updateEventProject: MutationResolvers["updateEventProject"] =
       },
       {
         ...(args.data as any),
+        updatedBy: context.userId,
       },
       {
         new: true,

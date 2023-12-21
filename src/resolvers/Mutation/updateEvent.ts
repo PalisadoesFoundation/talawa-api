@@ -121,6 +121,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     },
     {
       ...(args.data as any),
+      updatedBy: context.userId,
     },
     {
       new: true,

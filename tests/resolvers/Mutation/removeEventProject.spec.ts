@@ -48,7 +48,7 @@ beforeAll(async () => {
   testEventProject = await EventProject.create({
     title: "title",
     description: "description",
-    creator: testUser?._id,
+    createdBy: testUser?._id,
     admins: [testUser?._id],
     members: [testUser?._id],
     event: testEvent?._id,

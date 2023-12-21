@@ -29,7 +29,7 @@ export const createTestEventProject = async (): Promise<
     title: `test${nanoid()}`,
     description: `testDesc${nanoid()}`,
     event: testEvent && testEvent._id,
-    creator: testUser && testUser._id,
+    createdBy: testUser && testUser._id,
   });
 
   return [testUser, testOrg, testEvent, testEventProject];

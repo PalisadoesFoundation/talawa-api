@@ -26,7 +26,7 @@ input AddressInput {
 
 type Advertisement {
   _id: ID
-  createdAt: Date
+  createdAt: DateTime
   createdBy: User
   endDate: Date!
   link: String!
@@ -34,7 +34,7 @@ type Advertisement {
   orgId: ID
   startDate: Date!
   type: String!
-  updatedAt: Date
+  updatedAt: DateTime
   updatedBy: User
 }
 
@@ -129,28 +129,34 @@ type DeletePayload {
 
 type DirectChat {
   _id: ID!
-  creator: User!
+  createdAt: DateTime
+  createdBy: User
   messages: [DirectChatMessage]
   organization: Organization!
+  updatedAt: DateTime
+  updatedBy: User
   users: [User!]!
 }
 
 type DirectChatMessage {
   _id: ID!
-  createdAt: DateTime!
+  createdAt: DateTime
   directChatMessageBelongsTo: DirectChat!
   messageContent: String!
   receiver: User!
   sender: User!
+  updatedAt: DateTime
 }
 
 type Donation {
   _id: ID!
   amount: Float!
+  createdAt: DateTime
   nameOfOrg: String!
   nameOfUser: String!
   orgId: ID!
   payPalId: String!
+  updatedAt: DateTime
   userId: ID!
 }
 
@@ -207,7 +213,8 @@ type Event {
   attendees: [User!]!
   attendeesCheckInStatus: [CheckInStatus!]!
   averageFeedbackScore: Float
-  creator: User!
+  createdAt: DateTime
+  createdBy: User
   description: String!
   endDate: Date!
   endTime: Time
@@ -225,6 +232,8 @@ type Event {
   startTime: Time
   status: Status!
   title: String!
+  updatedAt: DateTime
+  updatedBy: User
 }
 
 input EventAttendeeInput {
@@ -275,10 +284,14 @@ enum EventOrderByInput {
 
 type EventProject {
   _id: ID!
+  createdAt: DateTime
+  createdBy: User
   description: String!
   event: Event!
   tasks: [Task]
   title: String!
+  updatedAt: DateTime
+  updatedBy: User
 }
 
 input EventProjectInput {
@@ -322,9 +335,11 @@ type ExtendSession {
 
 type Feedback {
   _id: ID!
+  createdAt: DateTime
   event: Event!
   rating: Int!
   review: String
+  updatedAt: DateTime
 }
 
 input FeedbackInput {

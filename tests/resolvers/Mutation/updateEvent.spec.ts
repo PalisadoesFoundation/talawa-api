@@ -35,7 +35,7 @@ beforeAll(async () => {
   testUser = temp[0];
   const testOrganization = temp[1];
   testEvent = await Event.create({
-    creator: testUser?._id,
+    createdBy: testUser?._id,
     registrants: [{ userId: testUser?._id, user: testUser?._id }],
     organization: testOrganization?._id,
     isRegisterable: true,
@@ -162,6 +162,9 @@ describe("resolvers -> Mutation -> updateEvent", () => {
       {
         $push: {
           admins: testUser?._id,
+        },
+        $set: {
+          updatedBy: testUser?._id,
         },
       },
       {

@@ -50,7 +50,7 @@ export const removeEventProject: MutationResolvers["removeEventProject"] =
 
     // Checks whether currentUser with _id === context.userId is not the creator of eventProject.
     if (
-      !eventProject.creator.equals(context.userId) &&
+      !eventProject.createdBy.equals(context.userId) &&
       currentUser.userType !== "SUPERADMIN"
     ) {
       throw new errors.UnauthorizedError(

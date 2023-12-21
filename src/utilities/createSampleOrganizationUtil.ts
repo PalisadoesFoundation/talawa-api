@@ -113,7 +113,7 @@ export const generateEventData = async (
 
   await sampleModel.save();
 
-  const creatorId = event.creator.toString();
+  const creatorId = event.createdBy.toString();
   await User.findByIdAndUpdate(
     creatorId,
     { $push: { eventsCreated: event._id } },

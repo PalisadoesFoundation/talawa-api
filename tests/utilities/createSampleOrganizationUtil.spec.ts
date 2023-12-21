@@ -91,7 +91,7 @@ describe("generateUserData function", () => {
     );
     expect(event.isPublic).toEqual(expect.any(Boolean));
     expect(event.isRegisterable).toEqual(expect.any(Boolean));
-    expect(event.creator.toString()).toEqual(expect.any(String));
+    expect(event.createdBy.toString()).toEqual(expect.any(String));
     expect(event.admins).toEqual(expect.any(Array));
     expect(event.organization.toString()).toEqual(expect.any(String));
     expect(event.status).toEqual(expect.any(String));

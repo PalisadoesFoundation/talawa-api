@@ -44,7 +44,7 @@ beforeAll(async () => {
 
   testDirectChat = await DirectChat.create({
     users: [testUser?._id],
-    creator: testUser?._id,
+    createdBy: testUser?._id,
     organization: testOrganization?._id,
   });
 
@@ -55,6 +55,9 @@ beforeAll(async () => {
       _id: testDirectChat._id,
     },
     {
+      $set: {
+        updatedBy: testUser?._id,
+      },
       $push: {
         messages: testDirectChatMessage?._id,
       },

@@ -65,7 +65,10 @@ export const types = gql`
     _id: ID!
     users: [User!]!
     messages: [DirectChatMessage]
-    creator: User!
+    createdBy: User
+    updatedBy: User
+    createdAt: DateTime
+    updatedAt: DateTime
     organization: Organization!
   }
 
@@ -74,7 +77,8 @@ export const types = gql`
     directChatMessageBelongsTo: DirectChat!
     sender: User!
     receiver: User!
-    createdAt: DateTime!
+    createdAt: DateTime
+    updatedAt: DateTime
     messageContent: String!
   }
 
@@ -86,6 +90,8 @@ export const types = gql`
     nameOfUser: String!
     nameOfOrg: String!
     amount: Float!
+    createdAt: DateTime
+    updatedAt: DateTime
   }
   type Advertisement {
     _id: ID
@@ -95,9 +101,9 @@ export const types = gql`
     type: String!
     startDate: Date!
     endDate: Date!
-    createdAt: Date
+    createdAt: DateTime
     createdBy: User
-    updatedAt: Date
+    updatedAt: DateTime
     updatedBy: User
   }
 
@@ -123,7 +129,10 @@ export const types = gql`
     latitude: Latitude
     longitude: Longitude
     organization: Organization
-    creator: User!
+    createdBy: User
+    updatedBy: User
+    createdAt: DateTime
+    updatedAt: DateTime
     attendees: [User!]!
     # For each attendee, gives information about whether he/she has checked in yet or not
     attendeesCheckInStatus: [CheckInStatus!]!
@@ -140,6 +149,10 @@ export const types = gql`
     description: String!
     event: Event!
     tasks: [Task]
+    createdBy: User
+    updatedBy: User
+    createdAt: DateTime
+    updatedAt: DateTime
   }
 
   type Feedback {
@@ -147,6 +160,8 @@ export const types = gql`
     event: Event!
     rating: Int!
     review: String
+    createdAt: DateTime
+    updatedAt: DateTime
   }
 
   type Group {

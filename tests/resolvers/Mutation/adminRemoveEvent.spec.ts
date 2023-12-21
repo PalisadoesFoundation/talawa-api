@@ -75,6 +75,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
         {
           $set: {
             organization: Types.ObjectId().toString(),
+            updatedBy: testUser?._id,
           },
         },
         {
@@ -105,6 +106,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
         {
           $set: {
             organization: testOrganization?._id,
+            updatedBy: testUser?._id,
           },
         },
         {

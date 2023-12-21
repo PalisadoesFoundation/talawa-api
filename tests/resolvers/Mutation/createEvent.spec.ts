@@ -201,7 +201,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         recurring: false,
         title: "newTitle",
         recurrance: "DAILY",
-        creator: testUser?._id,
+        createdBy: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
       })

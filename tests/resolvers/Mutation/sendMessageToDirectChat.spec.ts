@@ -63,7 +63,7 @@ beforeAll(async () => {
 
   testDirectChat = await DirectChat.create({
     title: "title",
-    creator: testUsers[0]?._id,
+    createdBy: testUsers[0]?._id,
     organization: testOrganization._id,
     users: [testUsers[0]?._id, testUsers[1]?._id],
   });
@@ -133,6 +133,9 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         _id: testDirectChat._id,
       },
       {
+        $set: {
+          updatedBy: testUsers[0]?._id,
+        },
         $push: {
           users: testUsers[0]?._id,
         },

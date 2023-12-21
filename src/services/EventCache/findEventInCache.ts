@@ -54,7 +54,13 @@ export async function findEventsInCache(
 
         ...(eventObj?.endTime ? { endTime: new Date(eventObj.endTime) } : {}), // Conditional removal of endTime field
 
-        creator: Types.ObjectId(eventObj.creator),
+        createdBy: Types.ObjectId(eventObj.createdBy),
+
+        updatedBy: Types.ObjectId(eventObj.updatedBy),
+
+        createdAt: new Date(eventObj.createdAt),
+
+        updatedAt: new Date(eventObj.updatedAt),
       };
     } catch (parseError) {
       logger.info(`Error parsing JSON:${parseError}`);

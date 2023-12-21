@@ -49,7 +49,7 @@ export const createTask: MutationResolvers["createTask"] = async (
   }
 
   if (
-    eventProject.creator.toString() != currentUser._id.toString() &&
+    eventProject.createdBy.toString() != currentUser._id.toString() &&
     currentUser.userType !== "SUPERADMIN"
   ) {
     throw new errors.NotFoundError(

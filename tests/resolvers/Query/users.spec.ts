@@ -140,7 +140,7 @@ describe("resolvers -> Query -> users", () => {
         startDate: new Date().toString(),
         isPublic: true,
         isRegisterable: true,
-        creator: testUsers[0]._id,
+        createdBy: testUsers[0]._id,
         registrants: [
           {
             userId: testUsers[0]._id,
