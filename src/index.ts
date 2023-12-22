@@ -1,5 +1,6 @@
 import "dotenv/config"; // Pull all the environment variables from .env file
 import { typeDefs } from "./typeDefs";
+import Redis from "ioredis";
 import { composedResolvers } from "./resolvers";
 import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/lib/use/ws";
@@ -29,7 +30,19 @@ let schema = makeExecutableSchema({
   typeDefs,
   resolvers: composedResolvers,
 });
+// Checks the connection of Redis server
+const redisClient = new Redis();
+redisClient.ping((err, result) => {
+  if (err) {
+    logger.error("Error connecting to Redis:", err);
+  } else {
+    logger.info("Connected to Redis. Ping result:", result);
 
+    // Continue with server startup
+    startServer();
+    loadPlugins();
+  }
+});
 // Defines directives
 schema = authDirectiveTransformer(schema, "auth");
 schema = roleDirectiveTransformer(schema, "role");
@@ -135,6 +148,3 @@ async function startServer(): Promise<void> {
   );
   logger.info(`🚀 Subscription endpoint ready at ws://localhost:4000/graphql`);
 }
-
-startServer();
-loadPlugins();
