@@ -3,6 +3,7 @@ const fs = require("fs");
 const cryptolib = require("crypto");
 const inquirer = require("inquirer");
 const mongodb = require("mongodb");
+const redis = require("redis");
 const { exec } = require("child_process");
 
 dotenv.config();
@@ -41,6 +42,79 @@ async function accessAndRefreshTokens(
     for (const key in config) {
       fs.appendFileSync(".env", `${key}=${config[key]}\n`);
     }
+  }
+}
+
+// Check connection to Redis with the specified URL.
+async function checkRedisConnection(url: string): Promise<boolean> {
+  let response = false;
+  const client = redis.createClient(url);
+
+  console.log("\nChecking Redis connection....");
+
+  try {
+    await client.connect();
+    console.log("\nConnection to Redis successful! 🎉");
+    response = true;
+  } catch (error) {
+    console.log(`\nConnection to Redis failed. Please try again.\n`);
+  }
+  client.quit();
+  return response;
+}
+
+// Redis url prompt
+async function askForRedisUrl(): Promise<{
+  host: string;
+  port: number;
+  password: string;
+}> {
+  const { host, port, password } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "host",
+      message: "Enter Redis hostname (default: localhost):",
+      default: "localhost",
+    },
+    {
+      type: "input",
+      name: "port",
+      message: "Enter Redis port (default: 6379):",
+      default: 6379,
+    },
+    {
+      type: "password",
+      name: "password",
+      message:
+        "Enter Redis password (optional : Leave empty for local connections) :",
+    },
+  ]);
+
+  return { host, port, password };
+}
+
+// get the redis url
+async function redisConfiguration(): Promise<void> {
+  const REDIS_URL = process.env.REDIS_URL;
+
+  try {
+    let isConnected = false,
+      url = "";
+    while (!isConnected) {
+      const { host, port, password } = await askForRedisUrl();
+      url = `redis://${password ? password + "@" : ""}${host}:${port}`;
+      isConnected = await checkRedisConnection(url);
+    }
+
+    const config = dotenv.parse(fs.readFileSync(".env"));
+    config.REDIS_URL = url;
+    fs.writeFileSync(".env", "");
+    for (const key in config) {
+      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+    }
+  } catch (err) {
+    console.error(err);
+    abort();
   }
 }
 
@@ -349,6 +423,23 @@ async function main(): Promise<void> {
     default: false,
   });
   if (!isDockerInstallation) {
+    // Redis configuration
+    if (process.env.REDIS_URL) {
+      console.log(
+        `\nRedis URL already exists with the value:\n${process.env.REDIS_URL}`
+      );
+    }
+    const { shouldSetRedis } = await inquirer.prompt({
+      type: "confirm",
+      name: "shouldSetRedis",
+      message: "Would you like to set up a Redis URL?",
+      default: true,
+    });
+    if (shouldSetRedis) {
+      await redisConfiguration();
+    }
+
+    // MongoDB configuration
     if (process.env.MONGO_DB_URL) {
       console.log(
         `\nMongoDB URL already exists with the value:\n${process.env.MONGO_DB_URL}`
