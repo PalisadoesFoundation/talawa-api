@@ -87,6 +87,7 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
           users: groupChat.users.filter(
             (user) => user.toString() !== args.userId.toString()
           ),
+          updatedBy: context.userId,
         },
       },
       {

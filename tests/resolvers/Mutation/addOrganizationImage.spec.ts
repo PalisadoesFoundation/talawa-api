@@ -81,6 +81,7 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
       {
         $set: {
           image: testImagePath,
+          updatedBy: testUser?._id,
         },
       }
     );

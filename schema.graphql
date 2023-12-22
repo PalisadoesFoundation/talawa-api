@@ -372,22 +372,27 @@ type Group {
   description: String
   organization: Organization!
   title: String
+  updatedAt: DateTime
 }
 
 type GroupChat {
   _id: ID!
-  creator: User!
+  createdAt: DateTime
+  createdBy: User!
   messages: [GroupChatMessage]
   organization: Organization!
+  updatedAt: DateTime
+  updatedBy: User
   users: [User!]!
 }
 
 type GroupChatMessage {
   _id: ID!
-  createdAt: DateTime!
+  createdAt: DateTime
   groupChatMessageBelongsTo: GroupChat!
   messageContent: String!
   sender: User!
+  updatedAt: DateTime
 }
 
 type InvalidCursor implements FieldError {
@@ -456,9 +461,11 @@ type MembershipRequest {
 type Message {
   _id: ID!
   createdAt: DateTime
-  creator: User
+  createdBy: User
   imageUrl: URL
   text: String
+  updatedAt: DateTime
+  updatedBy: User
   videoUrl: URL
 }
 
@@ -469,6 +476,7 @@ type MessageChat {
   message: String!
   receiver: User!
   sender: User!
+  updatedAt: DateTime
 }
 
 input MessageChatInput {

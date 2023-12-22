@@ -104,6 +104,9 @@ describe("utilities -> adminCheck", () => {
         $push: {
           admins: testUser?._id,
         },
+        $set: {
+          updatedBy: testUser?._id,
+        },
       },
       {
         new: true,

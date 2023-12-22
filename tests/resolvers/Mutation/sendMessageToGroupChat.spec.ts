@@ -33,7 +33,7 @@ beforeAll(async () => {
 
   testGroupChat = await GroupChat.create({
     title: "title",
-    creator: testUser?._id,
+    createdBy: testUser?._id,
     organization: testOrganization?._id,
   });
 });
@@ -125,6 +125,9 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
       {
         $push: {
           users: testUser?._id,
+        },
+        $set: {
+          updatedBy: testUser?._id,
         },
       }
     );

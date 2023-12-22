@@ -70,6 +70,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
         {
           $set: {
             organization: Types.ObjectId().toString(),
+            updatedBy: testUser?._id,
           },
         }
       );
@@ -97,6 +98,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
         {
           $set: {
             organization: testOrganization?._id,
+            updatedBy: testUser?._id,
           },
         }
       );
@@ -125,6 +127,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
         {
           $set: {
             organization: testOrganization?._id,
+            updatedBy: testUser?._id,
           },
         }
       );
@@ -136,6 +139,7 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
         {
           $set: {
             admins: [],
+            updatedBy: testUser?._id,
           },
         },
         {
@@ -165,6 +169,9 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
         _id: testOrganization?._id,
       },
       {
+        $set: {
+          updatedBy: testUser?._id,
+        },
         $push: {
           admins: testUser?._id,
         },

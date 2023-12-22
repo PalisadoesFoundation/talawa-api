@@ -77,6 +77,7 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
         {
           $set: {
             organization: testOrganization?._id,
+            updatedBy: testUser?._id,
           },
         }
       );
@@ -114,6 +115,9 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
         {
           $push: {
             admins: testUser?._id,
+          },
+          $set: {
+            updatedBy: testUser?._id,
           },
         }
       );
@@ -162,6 +166,9 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
       {
         $push: {
           users: testUser?._id,
+        },
+        $set: {
+          updatedBy: testUser?._id,
         },
       }
     );

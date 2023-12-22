@@ -75,6 +75,9 @@ export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"]
         $push: {
           messages: createdGroupChatMessage._id,
         },
+        $set: {
+          updatedBy: context.userId,
+        },
       }
     );
 

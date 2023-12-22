@@ -115,6 +115,9 @@ beforeAll(async () => {
         membershipRequests: testMembershipRequest._id,
         posts: testPost._id,
       },
+      $set: {
+        updatedBy: testUsers[0]?._id,
+      },
     }
   );
 
@@ -219,7 +222,8 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
         },
         {
           $set: {
-            creator: Types.ObjectId().toString(),
+            createdBy: Types.ObjectId().toString(),
+            updatedBy: testUsers[0]?._id,
           },
         },
         {

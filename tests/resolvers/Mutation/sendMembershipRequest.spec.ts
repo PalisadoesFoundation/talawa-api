@@ -97,6 +97,7 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
       {
         $set: {
           membershipRequests: [],
+          updatedBy: testUser?._id,
         },
       }
     );

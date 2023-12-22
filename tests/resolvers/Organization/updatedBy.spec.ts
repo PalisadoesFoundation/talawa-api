@@ -26,22 +26,20 @@ let testOrganization: TestOrganizationType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  const userAndOrg = await createTestUserAndOrganization();
-  testUser = userAndOrg[0];
-  testOrganization = userAndOrg[1];
+  const [testUser, testOrganization] = await createTestUserAndOrganization();
 });
 
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Organization -> createdBy", () => {
+describe("resolvers -> Organization -> updatedBy", () => {
   afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
 
-  it(`throws NotFoundError if no user exists with _id === parent.createdBy`, async () => {
+  it(`throws NotFoundError if no user exists with _id === parent.updatedBy`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -54,8 +52,7 @@ describe("resolvers -> Organization -> createdBy", () => {
         },
         {
           $set: {
-            createdBy: Types.ObjectId().toString(),
-            updatedBy: testUser?._id,
+            updatedBy: Types.ObjectId().toString(),
           },
         },
         {
@@ -65,11 +62,11 @@ describe("resolvers -> Organization -> createdBy", () => {
 
       const parent = testOrganization?.toObject();
 
-      const { createdBy: creatorResolver } = await import(
-        "../../../src/resolvers/Organization/createdBy"
+      const { updatedBy: updatedByResolver } = await import(
+        "../../../src/resolvers/Organization/updatedBy"
       );
       if (parent) {
-        await creatorResolver?.(parent, {}, {});
+        await updatedByResolver?.(parent, {}, {});
       }
     } catch (error: any) {
       expect(spy).toHaveBeenCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
@@ -79,14 +76,13 @@ describe("resolvers -> Organization -> createdBy", () => {
     }
   });
 
-  it(`returns user object for parent.createdBy`, async () => {
+  it(`returns user object for parent.updatedBy`, async () => {
     testOrganization = await Organization.findOneAndUpdate(
       {
         _id: testOrganization?._id,
       },
       {
         $set: {
-          createdBy: testUser?._id,
           updatedBy: testUser?._id,
         },
       },
@@ -97,16 +93,16 @@ describe("resolvers -> Organization -> createdBy", () => {
 
     const parent = testOrganization?.toObject();
 
-    const { createdBy: creatorResolver } = await import(
-      "../../../src/resolvers/Organization/createdBy"
+    const { updatedBy: updatedByResolver } = await import(
+      "../../../src/resolvers/Organization/updatedBy"
     );
     if (parent) {
-      const creatorPayload = await creatorResolver?.(parent, {}, {});
-      const creator = await User.findOne({
-        _id: testOrganization?.createdBy,
+      const updatedByPayload = await updatedByResolver?.(parent, {}, {});
+      const updator = await User.findOne({
+        _id: testOrganization?.updatedBy,
       }).lean();
 
-      expect(creatorPayload).toEqual(creator);
+      expect(updatedByPayload).toEqual(updator);
     }
   });
 });

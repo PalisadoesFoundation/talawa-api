@@ -141,6 +141,7 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
         {
           $set: {
             admins: [],
+            updatedBy: testUser?._id,
           },
         },
         {
@@ -172,6 +173,9 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
         _id: testOrganization?._id,
       },
       {
+        $set: {
+          updatedBy: testUser?._id,
+        },
         $push: {
           admins: testUser?._id,
         },

@@ -11,7 +11,10 @@ export interface InterfaceGroupChat {
   title: string;
   users: PopulatedDoc<InterfaceUser & Document>[];
   messages: PopulatedDoc<InterfaceGroupChatMessage & Document>[];
-  creator: PopulatedDoc<InterfaceUser & Document>;
+  createdBy: PopulatedDoc<InterfaceUser & Document>;
+  updatedBy: PopulatedDoc<InterfaceUser & Document>;
+  createdAt: Date;
+  updatedAt: Date;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   status: string;
 }
@@ -20,44 +23,63 @@ export interface InterfaceGroupChat {
  * @param title - Title
  * @param users - Users of the chat
  * @param messages - Message of the chat
- * @param creator - Creator of the chat
+ * @param createdBy - Creator of the chat
+ * @param updatedBy - Updator of the chat
+ * @param createdAt - Timestamp of creation
+ * @param updatedAt - Timestamp of updation
  * @param organization - Organization
  * @param status - Status
  */
-const groupChatSchema = new Schema({
-  title: {
-    type: String,
-    required: true,
-  },
-  users: [
-    {
+const groupChatSchema = new Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+    },
+    users: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+    ],
+    messages: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "GroupChatMessage",
+      },
+    ],
+    createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-  ],
-  messages: [
-    {
+    updatedBy: {
       type: Schema.Types.ObjectId,
-      ref: "GroupChatMessage",
+      ref: "User",
     },
-  ],
-  creator: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
+    organization: {
+      type: Schema.Types.ObjectId,
+      ref: "Organization",
+      required: true,
+    },
+    status: {
+      type: String,
+      required: true,
+      enum: ["ACTIVE", "BLOCKED", "DELETED"],
+      default: "ACTIVE",
+    },
   },
-  organization: {
-    type: Schema.Types.ObjectId,
-    ref: "Organization",
-    required: true,
-  },
-  status: {
-    type: String,
-    required: true,
-    enum: ["ACTIVE", "BLOCKED", "DELETED"],
-    default: "ACTIVE",
-  },
+  {
+    timestamps: true,
+  }
+);
+
+groupChatSchema.pre<InterfaceGroupChat>("save", function (next) {
+  if (!this.updatedBy) {
+    this.updatedBy = this.createdBy;
+  }
+  next();
 });
 
 const groupChatModel = (): Model<InterfaceGroupChat> =>

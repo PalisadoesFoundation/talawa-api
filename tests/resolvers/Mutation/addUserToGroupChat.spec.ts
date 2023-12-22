@@ -91,6 +91,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
         {
           $set: {
             organization: Types.ObjectId().toString(),
+            updatedBy: testUser?._id,
           },
         }
       );
@@ -131,6 +132,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
         {
           $set: {
             organization: testOrganization?._id,
+            updatedBy: testUser?._id,
           },
         }
       );
@@ -244,6 +246,7 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
       {
         $set: {
           users: [],
+          updatedBy: testUser?._id,
         },
       }
     );

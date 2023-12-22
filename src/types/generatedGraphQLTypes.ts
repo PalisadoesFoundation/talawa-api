@@ -430,24 +430,29 @@ export type Group = {
   description?: Maybe<Scalars['String']>;
   organization: Organization;
   title?: Maybe<Scalars['String']>;
+  updatedAt?: Maybe<Scalars['DateTime']>;
 };
 
 export type GroupChat = {
   __typename?: 'GroupChat';
   _id: Scalars['ID'];
-  creator: User;
+  createdAt?: Maybe<Scalars['DateTime']>;
+  createdBy: User;
   messages?: Maybe<Array<Maybe<GroupChatMessage>>>;
   organization: Organization;
+  updatedAt?: Maybe<Scalars['DateTime']>;
+  updatedBy?: Maybe<User>;
   users: Array<User>;
 };
 
 export type GroupChatMessage = {
   __typename?: 'GroupChatMessage';
   _id: Scalars['ID'];
-  createdAt: Scalars['DateTime'];
+  createdAt?: Maybe<Scalars['DateTime']>;
   groupChatMessageBelongsTo: GroupChat;
   messageContent: Scalars['String'];
   sender: User;
+  updatedAt?: Maybe<Scalars['DateTime']>;
 };
 
 export type InvalidCursor = FieldError & {
@@ -516,9 +521,11 @@ export type Message = {
   __typename?: 'Message';
   _id: Scalars['ID'];
   createdAt?: Maybe<Scalars['DateTime']>;
-  creator?: Maybe<User>;
+  createdBy?: Maybe<User>;
   imageUrl?: Maybe<Scalars['URL']>;
   text?: Maybe<Scalars['String']>;
+  updatedAt?: Maybe<Scalars['DateTime']>;
+  updatedBy?: Maybe<User>;
   videoUrl?: Maybe<Scalars['URL']>;
 };
 
@@ -530,6 +537,7 @@ export type MessageChat = {
   message: Scalars['String'];
   receiver: User;
   sender: User;
+  updatedAt?: Maybe<Scalars['DateTime']>;
 };
 
 export type MessageChatInput = {
@@ -2510,24 +2518,29 @@ export type GroupResolvers<ContextType = any, ParentType extends ResolversParent
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type GroupChatResolvers<ContextType = any, ParentType extends ResolversParentTypes['GroupChat'] = ResolversParentTypes['GroupChat']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  createdBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['GroupChatMessage']>>>, ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
+  updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  updatedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type GroupChatMessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['GroupChatMessage'] = ResolversParentTypes['GroupChatMessage']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupChatMessageBelongsTo?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType>;
   messageContent?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   sender?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2589,9 +2602,11 @@ export type MembershipRequestResolvers<ContextType = any, ParentType extends Res
 export type MessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['Message'] = ResolversParentTypes['Message']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  createdBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   imageUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
   text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  updatedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   videoUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2603,6 +2618,7 @@ export type MessageChatResolvers<ContextType = any, ParentType extends Resolvers
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   receiver?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   sender?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

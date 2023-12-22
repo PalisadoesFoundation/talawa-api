@@ -11,7 +11,9 @@ export interface InterfaceMessage {
   imageUrl: string | undefined;
   videoUrl: string | undefined;
   createdAt: Date;
-  creator: PopulatedDoc<InterfaceUser & Document>;
+  updatedAt: Date;
+  createdBy: PopulatedDoc<InterfaceUser & Document>;
+  updatedBy: PopulatedDoc<InterfaceUser & Document>;
   group: PopulatedDoc<InterfaceGroup & Document>;
   status: string;
 }
@@ -20,8 +22,10 @@ export interface InterfaceMessage {
  * @param text - Message content.
  * @param imageUrl - Image URL attached in the message.
  * @param videoUrl - Video URL attached in the message.
- * @param createdAt - Time stamp of data creation.
- * @param creator - Message Sender(User), referring to `User` model.
+ * @param createdAt - Timestamp of data creation.
+ * @param createdBy - Message Sender(User), referring to `User` model.
+ * @param updatedAt - Timestamp of data updation
+ * @param updatedBy - Message Sender(User), referring to `User` model.
  * @param group - group data, referring to `Group` model.
  * @param status - Status.
  */
@@ -58,6 +62,13 @@ const messageSchema = new Schema({
     enum: ["ACTIVE", "BLOCKED", "DELETED"],
     default: "ACTIVE",
   },
+});
+
+messageSchema.pre<InterfaceMessage>("save", function (next) {
+  if (!this.updatedBy) {
+    this.updatedBy = this.createdBy;
+  }
+  next();
 });
 
 const messageModel = (): Model<InterfaceMessage> =>

@@ -169,6 +169,7 @@ export const types = gql`
     title: String
     description: String
     createdAt: DateTime
+    updatedAt: DateTime
     organization: Organization!
     admins: [User]
   }
@@ -177,7 +178,10 @@ export const types = gql`
     _id: ID!
     users: [User!]!
     messages: [GroupChatMessage]
-    creator: User!
+    createdBy: User!
+    updatedBy: User
+    createdAt: DateTime
+    updatedAt: DateTime
     organization: Organization!
   }
 
@@ -185,7 +189,8 @@ export const types = gql`
     _id: ID!
     groupChatMessageBelongsTo: GroupChat!
     sender: User!
-    createdAt: DateTime!
+    createdAt: DateTime
+    updatedAt: DateTime
     messageContent: String!
   }
 
@@ -214,9 +219,11 @@ export const types = gql`
     _id: ID!
     text: String
     createdAt: DateTime
+    updatedAt: DateTime
     imageUrl: URL
     videoUrl: URL
-    creator: User
+    createdBy: User
+    updatedBy: User
   }
 
   type MessageChat {
@@ -226,6 +233,7 @@ export const types = gql`
     message: String!
     languageBarrier: Boolean
     createdAt: DateTime!
+    updatedAt: DateTime
   }
 
   type Organization {

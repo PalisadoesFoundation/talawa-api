@@ -184,6 +184,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
       {
         $set: {
           image: testImage,
+          updatedBy: testUser?._id,
         },
       },
       {
