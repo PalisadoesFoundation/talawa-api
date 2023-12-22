@@ -4,7 +4,10 @@ import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import type { InterfaceUser } from "../../../src/models";
 import { User } from "../../../src/models";
-import type { MutationUpdateUserProfileArgs } from "../../../src/types/generatedGraphQLTypes";
+import type {
+  MutationUpdateUserProfileArgs,
+  UpdateUserInput,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
@@ -310,11 +313,34 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
   });
 
   it(`updates current user's user object and returns the object`, async () => {
+    const changedParams: UpdateUserInput = {
+      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      firstName: "newFirstName",
+      lastName: "newLastName",
+      gender: "MALE",
+      birthDate: new Date(),
+      educationGrade: "GRADUATE",
+      employmentStatus: "FULL_TIME",
+      address: {
+        city: `${nanoid()}`,
+        countryCode: `${nanoid()}`,
+        dependentLocality: `${nanoid()}`,
+        line1: `${nanoid()}`,
+        line2: `${nanoid()}`,
+        postalCode: `${nanoid()}`,
+        sortingCode: `${nanoid()}`,
+        state: `${nanoid()}`,
+      },
+      maritalStatus: "SINGLE",
+      phone: {
+        home: `${nanoid()}`,
+        mobile: `${nanoid()}`,
+        work: `${nanoid()}`,
+      },
+    };
     const args: MutationUpdateUserProfileArgs = {
       data: {
-        email: `email${nanoid().toLowerCase()}@gmail.com`,
-        firstName: "newFirstName",
-        lastName: "newLastName",
+        ...changedParams,
       },
     };
 
@@ -330,10 +356,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
 
     expect(updateUserProfilePayload).toEqual({
       ...testUser.toObject(),
-      email: args.data?.email,
-      firstName: "newFirstName",
-      lastName: "newLastName",
-      image: null,
+      ...changedParams,
     });
   });
 
@@ -370,6 +393,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       image: BASE_URL + "newImageFile.png",
     });
   });
+
   it("When Image is give updates the current user's object with the uploaded image and returns it", async () => {
     const args: MutationUpdateUserProfileArgs = {
       data: {},
@@ -399,4 +423,6 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       image: BASE_URL + "newImageFile.png",
     });
   });
+
+  it(`returns {} when `);
 });
