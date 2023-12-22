@@ -66,6 +66,39 @@ async function checkConnection(url: string): Promise<boolean> {
   return response;
 }
 
+//LAST_RESORT_SUPERADMIN_EMAIL prompt
+async function askForSuperAdminEmail(): Promise<string> {
+  const { email } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "email",
+      message: "Enter the email which you wish to assign as the superuser:",
+      validate: (input: string) =>
+        isValidEmail(input) || "Invalid email. Please try again.",
+    },
+  ]);
+
+  return email;
+}
+
+// Get the super admin email
+async function superAdmin(): Promise<void> {
+  try {
+    const email = await askForSuperAdminEmail();
+
+    const config = dotenv.parse(fs.readFileSync(".env"));
+
+    config.LAST_RESORT_SUPERADMIN_EMAIL = email;
+    fs.writeFileSync(".env", "");
+    for (const key in config) {
+      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+    }
+  } catch (err) {
+    console.log(err);
+    abort();
+  }
+}
+
 //Mongodb url prompt
 async function askForMongoDBUrl(): Promise<string> {
   const { url } = await inquirer.prompt([
@@ -397,6 +430,7 @@ async function main(): Promise<void> {
       `\nMail username already exists with the value ${process.env.MAIL_USERNAME}`
     );
   }
+
   const { shouldSetMail } = await inquirer.prompt([
     {
       type: "confirm",
@@ -406,6 +440,18 @@ async function main(): Promise<void> {
   ]);
   if (shouldSetMail) {
     await twoFactorAuth();
+  }
+
+  const { shouldSetSuperUserEmail } = await inquirer.prompt([
+    {
+      type: "confirm",
+      name: "shouldSetSuperUserEmail",
+      message: "Would you like to set up a super user email",
+      default: true,
+    },
+  ]);
+  if (shouldSetSuperUserEmail) {
+    await superAdmin();
   }
 
   if (!isDockerInstallation) {
