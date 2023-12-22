@@ -442,6 +442,12 @@ async function main(): Promise<void> {
     await twoFactorAuth();
   }
 
+  if (process.env.LAST_RESORT_SUPERADMIN_EMAIL) {
+    console.log(
+      `\nSuper User email already exists with the value ${process.env.LAST_RESORT_SUPERADMIN_EMAIL}`
+    );
+  }
+
   const { shouldSetSuperUserEmail } = await inquirer.prompt([
     {
       type: "confirm",
