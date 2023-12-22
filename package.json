@@ -74,7 +74,6 @@
     "image-hash": "^5.3.1",
     "install": "^0.13.0",
     "ioredis": "^5.3.2",
-    "isolated-vm": "^4.6.0",
     "jsonwebtoken": "^9.0.0",
     "jwt-decode": "^4.0.0",
     "lodash": "^4.17.21",
