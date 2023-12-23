@@ -342,6 +342,7 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       data: {
         ...changedParams,
       },
+      file: `data:image/${nanoid()}.png`,
     };
 
     const context = {
