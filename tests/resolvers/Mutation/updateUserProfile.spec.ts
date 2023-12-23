@@ -312,55 +312,6 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     });
   });
 
-  it(`updates current user's user object and returns the object`, async () => {
-    const changedParams: UpdateUserInput = {
-      email: `email${nanoid().toLowerCase()}@gmail.com`,
-      firstName: "newFirstName",
-      lastName: "newLastName",
-      gender: "MALE",
-      birthDate: new Date(),
-      educationGrade: "GRADUATE",
-      employmentStatus: "FULL_TIME",
-      address: {
-        city: `${nanoid()}`,
-        countryCode: `${nanoid()}`,
-        dependentLocality: `${nanoid()}`,
-        line1: `${nanoid()}`,
-        line2: `${nanoid()}`,
-        postalCode: `${nanoid()}`,
-        sortingCode: `${nanoid()}`,
-        state: `${nanoid()}`,
-      },
-      maritalStatus: "SINGLE",
-      phone: {
-        home: `${nanoid()}`,
-        mobile: `${nanoid()}`,
-        work: `${nanoid()}`,
-      },
-    };
-    const args: MutationUpdateUserProfileArgs = {
-      data: {
-        ...changedParams,
-      },
-      file: `data:image/${nanoid()}.png`,
-    };
-
-    const context = {
-      userId: testUser._id,
-    };
-
-    const updateUserProfilePayload = await updateUserProfileResolver?.(
-      {},
-      args,
-      context
-    );
-
-    expect(updateUserProfilePayload).toEqual({
-      ...testUser.toObject(),
-      ...changedParams,
-    });
-  });
-
   it("When Image is give updates the current user's object with the uploaded image and returns it", async () => {
     const args: MutationUpdateUserProfileArgs = {
       data: {
@@ -425,5 +376,53 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     });
   });
 
-  it(`returns {} when `);
+  it(`updates current user's user object and returns the object`, async () => {
+    const changedParams: UpdateUserInput = {
+      email: `email${nanoid().toLowerCase()}@gmail.com`,
+      firstName: "newFirstName",
+      lastName: "newLastName",
+      gender: "MALE",
+      birthDate: new Date(),
+      educationGrade: "GRADUATE",
+      employmentStatus: "FULL_TIME",
+      address: {
+        city: `${nanoid()}`,
+        countryCode: `${nanoid()}`,
+        dependentLocality: `${nanoid()}`,
+        line1: `${nanoid()}`,
+        line2: `${nanoid()}`,
+        postalCode: `${nanoid()}`,
+        sortingCode: `${nanoid()}`,
+        state: `${nanoid()}`,
+      },
+      maritalStatus: "SINGLE",
+      phone: {
+        home: `${nanoid()}`,
+        mobile: `${nanoid()}`,
+        work: `${nanoid()}`,
+      },
+    };
+    const args: MutationUpdateUserProfileArgs = {
+      data: {
+        ...changedParams,
+      },
+    };
+
+    const context = {
+      userId: testUser._id,
+      apiRootUrl: BASE_URL,
+    };
+
+    const updateUserProfilePayload = await updateUserProfileResolver?.(
+      {},
+      args,
+      context
+    );
+
+    expect(updateUserProfilePayload).toEqual({
+      ...testUser.toObject(),
+      ...changedParams,
+      image: BASE_URL + "newImageFile.png", // From previous test
+    });
+  });
 });
