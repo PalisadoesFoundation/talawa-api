@@ -118,6 +118,40 @@ async function redisConfiguration(): Promise<void> {
   }
 }
 
+//LAST_RESORT_SUPERADMIN_EMAIL prompt
+async function askForSuperAdminEmail(): Promise<string> {
+  const { email } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "email",
+      message:
+        "Enter the email which you wish to assign as the Super Admin of last resort:",
+      validate: (input: string) =>
+        isValidEmail(input) || "Invalid email. Please try again.",
+    },
+  ]);
+
+  return email;
+}
+
+// Get the super admin email
+async function superAdmin(): Promise<void> {
+  try {
+    const email = await askForSuperAdminEmail();
+
+    const config = dotenv.parse(fs.readFileSync(".env"));
+
+    config.LAST_RESORT_SUPERADMIN_EMAIL = email;
+    fs.writeFileSync(".env", "");
+    for (const key in config) {
+      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+    }
+  } catch (err) {
+    console.log(err);
+    abort();
+  }
+}
+
 // Check the connection to MongoDB with the specified URL.
 async function checkConnection(url: string): Promise<boolean> {
   let response = false;
@@ -497,6 +531,24 @@ async function main(): Promise<void> {
   ]);
   if (shouldSetMail) {
     await twoFactorAuth();
+  }
+
+  if (process.env.LAST_RESORT_SUPERADMIN_EMAIL) {
+    console.log(
+      `\nSuper Admin of last resort already exists with the value ${process.env.LAST_RESORT_SUPERADMIN_EMAIL}`
+    );
+  }
+
+  const { shouldSetSuperUserEmail } = await inquirer.prompt([
+    {
+      type: "confirm",
+      name: "shouldSetSuperUserEmail",
+      message: "Would you like to setup a Super Admin email of last resort?",
+      default: true,
+    },
+  ]);
+  if (shouldSetSuperUserEmail) {
+    await superAdmin();
   }
 
   if (!isDockerInstallation) {
