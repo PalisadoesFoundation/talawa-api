@@ -124,7 +124,8 @@ async function askForSuperAdminEmail(): Promise<string> {
     {
       type: "input",
       name: "email",
-      message: "Enter the email which you wish to assign as the superuser:",
+      message:
+        "Enter the email which you wish to assign as the super admin of last resort:",
       validate: (input: string) =>
         isValidEmail(input) || "Invalid email. Please try again.",
     },
@@ -534,7 +535,7 @@ async function main(): Promise<void> {
 
   if (process.env.LAST_RESORT_SUPERADMIN_EMAIL) {
     console.log(
-      `\nSuper User email already exists with the value ${process.env.LAST_RESORT_SUPERADMIN_EMAIL}`
+      `\nSuper admin of last resort already exists with the value ${process.env.LAST_RESORT_SUPERADMIN_EMAIL}`
     );
   }
 
@@ -542,7 +543,7 @@ async function main(): Promise<void> {
     {
       type: "confirm",
       name: "shouldSetSuperUserEmail",
-      message: "would you like to setup a Super Admin email of last resort?",
+      message: "Would you like to setup a Super Admin email of last resort?",
       default: true,
     },
   ]);
