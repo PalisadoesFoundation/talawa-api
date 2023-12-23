@@ -136,7 +136,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
         },
         {
           $set: {
-            creator: Types.ObjectId().toString(),
+            createdBy: Types.ObjectId().toString(),
           },
         },
         {
@@ -187,7 +187,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
       },
       {
         $set: {
-          creator: testUser!._id,
+          createdBy: testUser!._id,
         },
       },
       {

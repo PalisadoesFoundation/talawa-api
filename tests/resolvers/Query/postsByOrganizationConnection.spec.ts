@@ -36,7 +36,7 @@ beforeAll(async () => {
       title: `title${nanoid()}`,
       imageUrl: `imageUrl${nanoid()}`,
       videoUrl: `videoUrl${nanoid()}`,
-      creator: testUser?._id,
+      createdBy: testUser?._id,
       organization: testOrganization?._id,
     },
     {
@@ -44,7 +44,7 @@ beforeAll(async () => {
       title: `title${nanoid()}`,
       imageUrl: `imageUrl${nanoid()}`,
       videoUrl: `videoUrl${nanoid()}`,
-      creator: testUser?._id,
+      createdBy: testUser?._id,
       organization: testOrganization?._id,
     },
     {
@@ -52,7 +52,7 @@ beforeAll(async () => {
       title: `title${nanoid()}`,
       imageUrl: `imageUrl${nanoid()}`,
       videoUrl: `videoUrl${nanoid()}`,
-      creator: testUser?._id,
+      createdBy: testUser?._id,
       organization: testOrganization?._id,
     },
   ]);
@@ -193,7 +193,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
 
   it(`returns non-paginated list of posts if args.first === undefined`, async () => {
     const where = {
-      creator: {
+      createdBy: {
         $in: testUser?._id,
       },
     };
@@ -245,7 +245,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
   it(`returns non-paginated list of posts if args.first === undefined and post.imageUrl === undefined`, async () => {
     await Post.findOneAndUpdate(
       {
-        creator: testUser?.id,
+        createdBy: testUser?.id,
       },
       {
         $set: {
@@ -256,7 +256,7 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
     );
 
     const where = {
-      creator: {
+      createdBy: {
         $in: testUser?._id,
       },
     };

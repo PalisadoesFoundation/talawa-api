@@ -185,7 +185,7 @@ describe("resolvers -> Mutation -> createEventProject", () => {
         title: "title",
         description: "description",
         event: testEvent?._id,
-        creator: context.userId,
+        createdBy: context.userId,
       },
     };
 

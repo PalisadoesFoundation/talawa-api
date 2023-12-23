@@ -71,7 +71,7 @@ export const createTestTask = async (
     title: `test${nanoid()}`,
     description: `testDesc${nanoid()}`,
     event: eventID,
-    creator: userID,
+    createdBy: userID,
   });
 
   const testTask = await Task.create({

@@ -5,11 +5,8 @@ import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { User } from "../../../src/models";
 import { type TestUserType } from "../../helpers/userAndOrg";
-import type {
-  TestEventProjectType} from "../../helpers/task";
-import {
-  createAndAssignTestTask,
-} from "../../helpers/task";
+import type { TestEventProjectType } from "../../helpers/task";
+import { createAndAssignTestTask } from "../../helpers/task";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
