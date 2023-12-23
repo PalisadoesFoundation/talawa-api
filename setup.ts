@@ -542,7 +542,7 @@ async function main(): Promise<void> {
     {
       type: "confirm",
       name: "shouldSetSuperUserEmail",
-      message: "Would you like to set up a super user email",
+      message: "would you like to setup a Super Admin email of last resort?",
       default: true,
     },
   ]);
