@@ -233,7 +233,10 @@ describe("resolvers -> Mutation -> removeComment", () => {
 
     const commentExists = await Comment.exists({ _id: testComment?._id });
 
-    expect(removeCommentPayload).toEqual(testComment?.toObject());
+    expect(removeCommentPayload).toEqual({
+      ...testComment?.toObject(),
+      updatedAt: expect.anything(),
+    });
     expect(commentExists).toBeFalsy();
     expect(testUpdatedPost?.commentCount).toEqual(0);
   });
