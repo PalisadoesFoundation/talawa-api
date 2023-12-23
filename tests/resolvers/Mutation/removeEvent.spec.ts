@@ -157,6 +157,8 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       {
         $push: {
           admins: testUser?._id,
+        },
+        $set: {
           updatedBy: testUser?._id,
         },
       },
@@ -179,7 +181,10 @@ describe("resolvers -> Mutation -> removeEvent", () => {
 
     const removeEventPayload = await removeEventResolver?.({}, args, context);
 
-    expect(removeEventPayload).toEqual(testEvent?.toObject());
+    expect(removeEventPayload).toEqual({
+      ...testEvent?.toObject(),
+      updatedAt: expect.anything(),
+    });
 
     const updatedTestUser = await User.findOne({
       _id: testUser?._id,

@@ -185,6 +185,7 @@ describe("resolvers -> Mutation -> createEventProject", () => {
       ...testEventProject.toObject(),
       title: "New Event Project title",
       description: "New Event Project Description",
+      updatedAt: expect.anything(),
     });
   });
 });

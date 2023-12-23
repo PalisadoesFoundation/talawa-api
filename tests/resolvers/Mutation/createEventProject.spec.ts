@@ -199,6 +199,6 @@ describe("resolvers -> Mutation -> createEventProject", () => {
     expect(result).toHaveProperty("title", args.data.title);
     expect(result).toHaveProperty("description", args.data.description);
     expect(result).toHaveProperty("event", testEvent?._id);
-    expect(result).toHaveProperty("creator", context.userId);
+    expect(result).toHaveProperty("createdBy", context.userId);
   });
 });
