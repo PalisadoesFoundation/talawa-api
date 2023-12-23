@@ -138,7 +138,6 @@ export type Comment = {
   _id?: Maybe<Scalars['ID']>;
   createdAt?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<User>;
-  creator: User;
   likeCount?: Maybe<Scalars['Int']>;
   likedBy?: Maybe<Array<Maybe<User>>>;
   post: Post;
@@ -2361,7 +2360,6 @@ export type CommentResolvers<ContextType = any, ParentType extends ResolversPare
   _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   likeCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   likedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   post?: Resolver<ResolversTypes['Post'], ParentType, ContextType>;

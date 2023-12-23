@@ -15,7 +15,7 @@
     "isPublic": true,
     "visibleInSearch": true,
     "image": null,
-    "creator": "64378abd85008f171cf2990d",
+    "createdBy": "64378abd85008f171cf2990d",
     "createdAt": "2023-04-13T05:16:52.827Z",
     "__v": 0
   },
@@ -40,7 +40,9 @@
     "isPublic": true,
     "visibleInSearch": true,
     "image": null,
-    "creator": "64378abd85008f171cf2990d",
+    "createdBy": "64378abd85008f171cf2990d",
+    "updatedBy": "64378abd85008f171cf2990d",
+    "updatedAt": "2023-04-13T05:16:52.827Z",
     "createdAt": "2023-04-13T05:16:52.827Z",
     "__v": 0
   },
@@ -60,7 +62,9 @@
     "isPublic": true,
     "visibleInSearch": true,
     "image": null,
-    "creator": "64378abd85008f171cf2990d",
+    "createdBy": "64378abd85008f171cf2990d",
+    "updatedBy": "64378abd85008f171cf2990d",
+    "updatedAt": "2023-04-13T05:16:52.827Z",
     "createdAt": "2023-04-13T05:16:52.827Z",
     "__v": 0
   },
@@ -80,7 +84,9 @@
     "isPublic": true,
     "visibleInSearch": true,
     "image": null,
-    "creator": "64378abd85008f171cf2990d",
+    "createdBy": "64378abd85008f171cf2990d",
+    "updatedBy": "64378abd85008f171cf2990d",
+    "updatedAt": "2023-04-13T05:16:52.827Z",
     "createdAt": "2023-04-13T05:16:52.827Z",
     "__v": 0
   }

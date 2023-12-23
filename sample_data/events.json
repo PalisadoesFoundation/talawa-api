@@ -16,7 +16,10 @@
     "isPublic": true,
     "isRegisterable": true,
     "location": "Port Antonio",
-    "creator": "64378abd85008f171cf2990d",
+    "createdBy": "64378abd85008f171cf2990d",
+    "updatedBy": "64378abd85008f171cf2990d",
+    "createdAt": "2023-04-13T05:17:41.327Z",
+    "updatedAt": "2023-04-13T05:17:41.327Z",
     "registrants": [
       {
         "status": "ACTIVE",

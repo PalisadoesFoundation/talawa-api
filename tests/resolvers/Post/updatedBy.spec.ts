@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { createdBy as createdByResolver } from "../../../src/resolvers/Post/createdBy";
+import { updatedBy as updatedByResolver } from "../../../src/resolvers/Post/updatedBy";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { Comment, User } from "../../../src/models";
@@ -26,16 +26,16 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Post -> createdBy", () => {
-  it(`returns the createdBy object for parent post`, async () => {
+describe("resolvers -> Post -> updatedBy", () => {
+  it(`returns the updatedBy object for parent post`, async () => {
     const parent = testPost!.toObject();
 
-    const createdByPayload = await createdByResolver?.(parent, {}, {});
+    const updatedByPayload = await updatedByResolver?.(parent, {}, {});
 
-    const createdByObject = await User.findOne({
+    const updatedByObject = await User.findOne({
       _id: testPost!.createdBy,
     }).lean();
 
-    expect(createdByPayload).toEqual(createdByObject);
+    expect(updatedByPayload).toEqual(updatedByObject);
   });
 });

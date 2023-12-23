@@ -9,10 +9,12 @@
     "pinned": false,
     "text": "Test Information for Test Post",
     "title": "Test Post",
-    "creator": "64378abd85008f171cf2990d",
+    "createdBy": "64378abd85008f171cf2990d",
+    "updatedBy": "64378abd85008f171cf2990d",
     "organization": "6437904485008f171cf29924",
     "imageUrl": null,
     "createdAt": "2023-04-13T05:17:14.396Z",
+    "updatedAt": "2023-04-13T05:17:14.396Z",
     "__v": 0
   }
 ]

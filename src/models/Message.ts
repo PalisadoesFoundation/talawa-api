@@ -29,40 +29,45 @@ export interface InterfaceMessage {
  * @param group - group data, referring to `Group` model.
  * @param status - Status.
  */
-const messageSchema = new Schema({
-  text: {
-    type: String,
-    required: true,
+const messageSchema = new Schema(
+  {
+    text: {
+      type: String,
+      required: true,
+    },
+    imageUrl: {
+      type: String,
+      required: false,
+    },
+    videoUrl: {
+      type: String,
+      required: false,
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    updatedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+    group: {
+      type: Schema.Types.ObjectId,
+      ref: "Group",
+      required: true,
+    },
+    status: {
+      type: String,
+      required: true,
+      enum: ["ACTIVE", "BLOCKED", "DELETED"],
+      default: "ACTIVE",
+    },
   },
-  imageUrl: {
-    type: String,
-    required: false,
-  },
-  videoUrl: {
-    type: String,
-    required: false,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  creator: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  group: {
-    type: Schema.Types.ObjectId,
-    ref: "Group",
-    required: true,
-  },
-  status: {
-    type: String,
-    required: true,
-    enum: ["ACTIVE", "BLOCKED", "DELETED"],
-    default: "ACTIVE",
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 messageSchema.pre<InterfaceMessage>("save", function (next) {
   if (!this.updatedBy) {

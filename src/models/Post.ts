@@ -37,7 +37,7 @@ export interface InterfacePost {
  * @param text - Post description.
  * @param title - Post title.
  * @param updatedAt - Time stamp of post updation
- * @param updatedBy - Post creator, refer to `User` model.
+ * @param updatedBy - Post updator, refer to `User` model.
  * @param videoUrl - Post attached video URL(if attached).
  */
 const postSchema = new Schema(

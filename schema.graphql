@@ -83,7 +83,6 @@ type Comment {
   _id: ID
   createdAt: DateTime
   createdBy: User
-  creator: User!
   likeCount: Int
   likedBy: [User]
   post: Post!

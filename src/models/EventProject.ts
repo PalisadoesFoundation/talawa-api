@@ -23,8 +23,10 @@ export interface InterfaceEventProject {
  * @param title - Title
  * @param description - description
  * @param createdAt - Created at Date
+ * @param updatedAt - Updated At Date
  * @param event - Event
- * @param creator - Creator
+ * @param createdBy - Event creator, ref to `User` model
+ * @param updatedBy - Event updator, ref to `User` model
  * @param tasks - Tasks
  * @param status - Status
  */

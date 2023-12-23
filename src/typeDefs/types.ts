@@ -39,7 +39,6 @@ export const types = gql`
   type Comment {
     _id: ID
     text: String!
-    creator: User!
     post: Post!
     likedBy: [User]
     likeCount: Int

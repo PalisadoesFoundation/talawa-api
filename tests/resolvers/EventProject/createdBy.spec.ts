@@ -1,28 +1,32 @@
 import "dotenv/config";
-import { createdBy as createdByResolver } from "../../../src/resolvers/Task/createdBy";
+import { createdBy as createdByResolver } from "../../../src/resolvers/EventProject/createdBy";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createAndAssignTestTask, type TestTaskType } from "../../helpers/task";
-import type { TestUserType } from "../../helpers/userAndOrg";
 import { User } from "../../../src/models";
+import { type TestUserType } from "../../helpers/userAndOrg";
+import type {
+  TestEventProjectType} from "../../helpers/task";
+import {
+  createAndAssignTestTask,
+} from "../../helpers/task";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
-let testTask: TestTaskType;
+let testEventProject: TestEventProjectType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  [testUser, , , , testTask] = await createAndAssignTestTask();
+  [testUser, , , testEventProject] = await createAndAssignTestTask();
 });
 
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Task -> Creator", () => {
-  it(`returns the createdBy user object for parent task`, async () => {
-    const parent = testTask!.toObject();
+describe("resolvers -> Event -> organization", () => {
+  it(`returns the creator user object for parent event project`, async () => {
+    const parent = testEventProject!.toObject();
 
     const createdByPayload = await createdByResolver?.(parent, {}, {});
 
