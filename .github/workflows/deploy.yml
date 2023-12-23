@@ -3,9 +3,7 @@ name: Deploy to Cloud VPS
 on:
   push:
     branches:
-      - main
       - develop
-      - deployment
 
 jobs:
   deploy:
