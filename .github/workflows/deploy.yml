@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - develop
+      - deployment
 
 jobs:
   deploy:
@@ -14,11 +15,11 @@ jobs:
     - name: Execute remote ssh commands 
       uses: appleboy/ssh-action@v1.0.0
       with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.SSH_KEY }}
-        port: ${{ secrets.PORT }}
-        command_timeout: 200m
+        host: ${{ secrets.API_DEMO_HOST }}
+        username: ${{ secrets.API_DEMO_USERNAME }}
+        key: ${{ secrets.API_DEMO_SSH_KEY }}
+        port: ${{ secrets.API_DEMO_PORT }}
+        command_timeout: 30m
         script: |
           cd develop 
           cd talawa-api
