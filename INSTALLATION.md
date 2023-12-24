@@ -72,7 +72,9 @@ You will need to have copies of your code on your local system. Here's how to do
 
 ## Install node.js
 
-Best way to install and manage `node.js` is making use of node version managers. Two most popular node version managers right now are [fnm](https://github.com/Schniz/fnm) and [nvm](https://github.com/nvm-sh/nvm). We'd recommend `fnm` because it's written in `rust` and is much faster than `nvm`. Install whichever one you want and follow their guide to set up `node.js` on your system.
+Best way to install and manage `node.js` is making use of node version managers. Two most popular node version managers right now are [fnm](https://github.com/Schniz/fnm) and [nvm](https://github.com/nvm-sh/nvm). We'd recommend `fnm` because it's written in `rust` and is much faster than `nvm`. Install whichever one you want and follow their guide to set up `node.js` on your system. It is advised to use Node.js version `v18` or later.
+
+> Note: If you encounter a warning about the deprecated punycode module and are using Node.js version 20 or above, please be aware that this warning is expected and can be safely ignored. This will be fixed automatically in a future release of graphql-tools.
 
 ## Install git
 
