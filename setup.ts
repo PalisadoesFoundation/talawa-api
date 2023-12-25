@@ -551,6 +551,19 @@ async function main(): Promise<void> {
     await superAdmin();
   }
 
+  // get mail_username from .env
+  if (!process.env.LAST_RESORT_SUPERADMIN_EMAIL) {
+    console.log(
+      'No "MAIL_USERNAME" configured, setting it to "LAST_RESORT_SUPERADMIN_EMAIL"\'s value.'
+    );
+    const config = dotenv.parse(fs.readFileSync(".env"));
+    config.LAST_RESORT_SUPERADMIN_EMAIL = config.MAIL_USERNAME;
+    fs.writeFileSync(".env", "");
+    for (const key in config) {
+      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+    }
+  }
+
   if (!isDockerInstallation) {
     const { shouldRunDataImport } = await inquirer.prompt([
       {
