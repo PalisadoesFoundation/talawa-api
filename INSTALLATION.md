@@ -234,6 +234,13 @@ Remember to adjust any paths or details as needed for your specific environment.
 
 # Configuration
 
+## The .env Configuration File
+
+A file named `.env` is required in the root directory of talawa-api for storing environment variables used at runtime. It is not a part of the repo and you will have to create it. For a sample of `.env` file there is a file named `.env.sample` in the root directory. Create a new `.env` file by copying the contents of the `.env.sample` into `.env` file.
+
+```
+cp .env.sample .env
+```
 It's important to configure Talawa-API to complete it's setup.
 
 You can use our interactive setup script for the configuration. Use the following command for the same.
@@ -243,14 +250,6 @@ npm run setup
 ```
 
 It can be done manually as well and here's how to do it.
-
-## The .env Configuration File
-
-A file named `.env` is required in the root directory of talawa-api for storing environment variables used at runtime. It is not a part of the repo and you will have to create it. For a sample of `.env` file there is a file named `.env.sample` in the root directory. Create a new `.env` file by copying the contents of the `.env.sample` into `.env` file.
-
-```
-cp .env.sample .env
-```
 
 This `.env` file must be populated with the following environment variables for talawa-api to work:
 

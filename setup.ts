@@ -301,7 +301,8 @@ async function main(): Promise<void> {
   console.log("Welcome to the Talawa API setup! 🚀");
 
   if (!fs.existsSync(".env")) {
-    fs.copyFileSync(".env.sample", ".env");
+    console.log("Please copy the contents of .env.sample to .env file");
+    abort();
   } else {
     checkEnvFile();
   }
