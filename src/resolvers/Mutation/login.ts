@@ -8,7 +8,6 @@ import {
   copyToClipboard,
 } from "../../utilities";
 import { errors, requestContext } from "../../libraries";
-import { androidFirebaseOptions, iosFirebaseOptions } from "../../config";
 import {
   INVALID_CREDENTIALS_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -74,6 +73,11 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     );
   }
 
+  await User.findOneAndUpdate(
+    { _id: user._id },
+    { token: refreshToken, $inc: { tokenVersion: 1 } }
+  );
+
   // Assigns new value with populated fields to user object.
   user = await User.findOne({
     _id: user._id,
@@ -94,7 +98,5 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     user: user ?? ({} as InterfaceUser),
     accessToken,
     refreshToken,
-    androidFirebaseOptions,
-    iosFirebaseOptions,
   };
 };

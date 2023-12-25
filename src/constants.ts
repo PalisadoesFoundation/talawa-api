@@ -400,6 +400,30 @@ export const SAMPLE_ORGANIZATION_ALREADY_EXISTS = {
   PARAM: "sampleOrganization",
 };
 
+export const CUSTOM_DATA_NOT_FOUND = {
+  MESSAGE: "Unable to remove non-existent custom data",
+  CODE: "customData.notFound",
+  PARAM: "customData.notFound",
+};
+
+export const CUSTOM_FIELD_NOT_FOUND = {
+  MESSAGE: "Unable to remove non-existent custom field",
+  CODE: "customField.notFound",
+  PARAM: "customField.notFound",
+};
+
+export const CUSTOM_FIELD_NAME_MISSING = {
+  MESSAGE: "The name of the custom field is missing",
+  CODE: "customField.isMissing",
+  PARAM: "customField.isMissing",
+};
+
+export const CUSTOM_FIELD_TYPE_MISSING = {
+  MESSAGE: "The type of the custom field is missing",
+  CODE: "customField.isMissing",
+  PARAM: "customField.isMissing",
+};
+
 export const MAXIMUM_FETCH_LIMIT = 100;
 
 export const BASE_URL = `http://localhost:${process.env.port || 4000}/`;
@@ -415,30 +439,6 @@ export const RECAPTCHA_SECRET_KEY = ENV.RECAPTCHA_SECRET_KEY;
 export const MAIL_USERNAME = ENV.MAIL_USERNAME;
 
 export const MAIL_PASSWORD = ENV.MAIL_PASSWORD;
-
-export const apiKey = ENV.apiKey;
-
-export const appId = ENV.appId;
-
-export const messagingSenderId = ENV.messagingSenderId;
-
-export const projectId = ENV.projectId;
-
-export const storageBucket = ENV.storageBucket;
-
-export const iOSapiKey = ENV.iOSapiKey;
-
-export const iOSappId = ENV.iOSappId;
-
-export const iOSmessagingSenderId = ENV.iOSmessagingSenderId;
-
-export const iOSprojectId = ENV.iOSprojectId;
-
-export const iOSstorageBucket = ENV.iOSstorageBucket;
-
-export const iosClientId = ENV.iosClientId;
-
-export const iosBundleId = ENV.iosBundleId;
 
 export const LAST_RESORT_SUPERADMIN_EMAIL =
   process.env.LAST_RESORT_SUPERADMIN_EMAIL;

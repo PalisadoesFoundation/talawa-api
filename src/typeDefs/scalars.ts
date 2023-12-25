@@ -2,6 +2,7 @@ import { gql } from "graphql-tag";
 
 // Place fields alphabetically to ensure easier lookup and navigation.
 export const scalars = gql`
+  scalar CountryCode
   scalar Date
   scalar DateTime
   scalar EmailAddress
@@ -13,4 +14,6 @@ export const scalars = gql`
   scalar Time
   scalar URL
   scalar Upload
+  scalar JSON
+  scalar Any
 `;

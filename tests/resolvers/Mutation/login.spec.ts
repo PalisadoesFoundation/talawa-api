@@ -5,10 +5,6 @@ import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { login as loginResolver } from "../../../src/resolvers/Mutation/login";
 import {
-  androidFirebaseOptions,
-  iosFirebaseOptions,
-} from "../../../src/config";
-import {
   INVALID_CREDENTIALS_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -103,11 +99,13 @@ describe("resolvers -> Mutation -> login", () => {
       );
 
       await loginResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
-      expect(error.message).toEqual(
-        `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
-      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(spy).toHaveBeenLastCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+        expect(error.message).toEqual(
+          `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
+        );
+      }
     }
   });
 
@@ -132,8 +130,10 @@ email === args.data.email`, async () => {
       );
 
       await loginResolver?.({}, args, {});
-    } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(INVALID_CREDENTIALS_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        expect(spy).toHaveBeenLastCalledWith(INVALID_CREDENTIALS_ERROR.MESSAGE);
+      }
     }
   });
 
@@ -160,8 +160,29 @@ email === args.data.email`, async () => {
 
     const loginPayload = await loginResolver?.({}, args, {});
 
-    // @ts-ignore
-    expect(loginPayload?.user.userType).toEqual("SUPERADMIN");
+    expect(await loginPayload?.user).toBeDefined();
+    expect((await loginPayload?.user)?.userType).toEqual("SUPERADMIN");
+  });
+
+  it("should update the user's token and increment the tokenVersion", async () => {
+    const newToken = "new-token";
+
+    const mockUser = await User.findOne({
+      _id: testUser?._id,
+    }).lean();
+
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: testUser?._id },
+      { token: newToken, $inc: { tokenVersion: 1 } },
+      { new: true }
+    );
+
+    expect(updatedUser).toBeDefined();
+    expect(updatedUser?.token).toBe(newToken);
+
+    if (mockUser?.tokenVersion !== undefined) {
+      expect(updatedUser?.tokenVersion).toBe(mockUser?.tokenVersion + 1);
+    }
   });
 
   it(`returns the user object with populated fields joinedOrganizations, createdOrganizations,
@@ -194,10 +215,9 @@ email === args.data.email`, async () => {
     expect(loginPayload).toEqual(
       expect.objectContaining({
         user: testUser,
-        androidFirebaseOptions,
-        iosFirebaseOptions,
       })
     );
+    expect(loginPayload?.user).toBeDefined();
     expect(typeof loginPayload?.accessToken).toBe("string");
     expect(loginPayload?.accessToken.length).toBeGreaterThan(1);
 

@@ -3,6 +3,7 @@ const fs = require("fs");
 const cryptolib = require("crypto");
 const inquirer = require("inquirer");
 const mongodb = require("mongodb");
+const redis = require("redis");
 const { exec } = require("child_process");
 
 dotenv.config();
@@ -41,6 +42,113 @@ async function accessAndRefreshTokens(
     for (const key in config) {
       fs.appendFileSync(".env", `${key}=${config[key]}\n`);
     }
+  }
+}
+
+// Check connection to Redis with the specified URL.
+async function checkRedisConnection(url: string): Promise<boolean> {
+  let response = false;
+  const client = redis.createClient(url);
+
+  console.log("\nChecking Redis connection....");
+
+  try {
+    await client.connect();
+    console.log("\nConnection to Redis successful! 🎉");
+    response = true;
+  } catch (error) {
+    console.log(`\nConnection to Redis failed. Please try again.\n`);
+  }
+  client.quit();
+  return response;
+}
+
+// Redis url prompt
+async function askForRedisUrl(): Promise<{
+  host: string;
+  port: number;
+  password: string;
+}> {
+  const { host, port, password } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "host",
+      message: "Enter Redis hostname (default: localhost):",
+      default: "localhost",
+    },
+    {
+      type: "input",
+      name: "port",
+      message: "Enter Redis port (default: 6379):",
+      default: 6379,
+    },
+    {
+      type: "password",
+      name: "password",
+      message:
+        "Enter Redis password (optional : Leave empty for local connections) :",
+    },
+  ]);
+
+  return { host, port, password };
+}
+
+// get the redis url
+async function redisConfiguration(): Promise<void> {
+  const REDIS_URL = process.env.REDIS_URL;
+
+  try {
+    let isConnected = false,
+      url = "";
+    while (!isConnected) {
+      const { host, port, password } = await askForRedisUrl();
+      url = `redis://${password ? password + "@" : ""}${host}:${port}`;
+      isConnected = await checkRedisConnection(url);
+    }
+
+    const config = dotenv.parse(fs.readFileSync(".env"));
+    config.REDIS_URL = url;
+    fs.writeFileSync(".env", "");
+    for (const key in config) {
+      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+    }
+  } catch (err) {
+    console.error(err);
+    abort();
+  }
+}
+
+//LAST_RESORT_SUPERADMIN_EMAIL prompt
+async function askForSuperAdminEmail(): Promise<string> {
+  const { email } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "email",
+      message:
+        "Enter the email which you wish to assign as the Super Admin of last resort:",
+      validate: (input: string) =>
+        isValidEmail(input) || "Invalid email. Please try again.",
+    },
+  ]);
+
+  return email;
+}
+
+// Get the super admin email
+async function superAdmin(): Promise<void> {
+  try {
+    const email = await askForSuperAdminEmail();
+
+    const config = dotenv.parse(fs.readFileSync(".env"));
+
+    config.LAST_RESORT_SUPERADMIN_EMAIL = email;
+    fs.writeFileSync(".env", "");
+    for (const key in config) {
+      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+    }
+  } catch (err) {
+    console.log(err);
+    abort();
   }
 }
 
@@ -133,6 +241,37 @@ async function recaptcha(): Promise<void> {
   ]);
   const config = dotenv.parse(fs.readFileSync(".env"));
   config.RECAPTCHA_SECRET_KEY = recaptchaSecretKey;
+  fs.writeFileSync(".env", "");
+  for (const key in config) {
+    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+  }
+}
+async function recaptchaSiteKey(): Promise<void> {
+  console.log(
+    "\nPlease visit this URL to set up reCAPTCHA:\n\nhttps://www.google.com/recaptcha/admin/create"
+  );
+  console.log(
+    '\nSelect reCAPTCHA v2 and the "I`m not a robot" checkbox option'
+  );
+  console.log(
+    '\nAdd "localhost" in domains and accept the terms, then press submit'
+  );
+
+  const { recaptchaSiteKey } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "recaptchaSiteKey",
+      message: "Enter your reCAPTCHA site key:",
+      validate: async (input: string): Promise<boolean | string> => {
+        if (validateRecaptcha(input)) {
+          return true;
+        }
+        return "Invalid reCAPTCHA site key. Please try again.";
+      },
+    },
+  ]);
+  const config = dotenv.parse(fs.readFileSync(".env"));
+  config.RECAPTCHA_SITE_KEY = recaptchaSiteKey;
   fs.writeFileSync(".env", "");
   for (const key in config) {
     fs.appendFileSync(".env", `${key}=${config[key]}\n`);
@@ -318,6 +457,23 @@ async function main(): Promise<void> {
     default: false,
   });
   if (!isDockerInstallation) {
+    // Redis configuration
+    if (process.env.REDIS_URL) {
+      console.log(
+        `\nRedis URL already exists with the value:\n${process.env.REDIS_URL}`
+      );
+    }
+    const { shouldSetRedis } = await inquirer.prompt({
+      type: "confirm",
+      name: "shouldSetRedis",
+      message: "Would you like to set up a Redis URL?",
+      default: true,
+    });
+    if (shouldSetRedis) {
+      await redisConfiguration();
+    }
+
+    // MongoDB configuration
     if (process.env.MONGO_DB_URL) {
       console.log(
         `\nMongoDB URL already exists with the value:\n${process.env.MONGO_DB_URL}`
@@ -350,6 +506,17 @@ async function main(): Promise<void> {
     await recaptcha();
   }
 
+  const { shouldSetRecaptchaSiteKey } = await inquirer.prompt({
+    type: "confirm",
+    name: "shouldSetRecaptchaSiteKey",
+    message: "Would you like to set up a reCAPTCHA site key?",
+    default: true,
+  });
+
+  if (shouldSetRecaptchaSiteKey) {
+    await recaptchaSiteKey();
+  }
+
   if (process.env.MAIL_USERNAME) {
     console.log(
       `\nMail username already exists with the value ${process.env.MAIL_USERNAME}`
@@ -366,21 +533,42 @@ async function main(): Promise<void> {
     await twoFactorAuth();
   }
 
-  const { shouldRunDataImport } = await inquirer.prompt([
+  if (process.env.LAST_RESORT_SUPERADMIN_EMAIL) {
+    console.log(
+      `\nSuper Admin of last resort already exists with the value ${process.env.LAST_RESORT_SUPERADMIN_EMAIL}`
+    );
+  }
+
+  const { shouldSetSuperUserEmail } = await inquirer.prompt([
     {
       type: "confirm",
-      name: "shouldRunDataImport",
-      message: "Do you want to import sample data?",
+      name: "shouldSetSuperUserEmail",
+      message: "Would you like to setup a Super Admin email of last resort?",
       default: true,
     },
   ]);
-  if (shouldRunDataImport) {
-    await importData();
-  } else {
-    console.log(
-      "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
-    );
+  if (shouldSetSuperUserEmail) {
+    await superAdmin();
   }
+
+  if (!isDockerInstallation) {
+    const { shouldRunDataImport } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "shouldRunDataImport",
+        message: "Do you want to import sample data?",
+        default: true,
+      },
+    ]);
+
+    if (shouldRunDataImport) {
+      await importData();
+    }
+  }
+
+  console.log(
+    "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
+  );
 }
 
 main();

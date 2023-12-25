@@ -2,6 +2,28 @@ directive @auth on FIELD_DEFINITION
 
 directive @role(requires: UserType) on FIELD_DEFINITION
 
+type Address {
+  city: String
+  countryCode: CountryCode
+  dependentLocality: String
+  line1: String
+  line2: String
+  postalCode: String
+  sortingCode: String
+  state: String
+}
+
+input AddressInput {
+  city: String
+  countryCode: CountryCode
+  dependentLocality: String
+  line1: String
+  line2: String
+  postalCode: String
+  sortingCode: String
+  state: String
+}
+
 type Advertisement {
   _id: ID
   endDate: Date!
@@ -20,18 +42,10 @@ type AggregateUser {
   count: Int!
 }
 
-type AndroidFirebaseOptions {
-  apiKey: String
-  appId: String
-  messagingSenderId: String
-  projectId: String
-  storageBucket: String
-}
+scalar Any
 
 type AuthData {
   accessToken: String!
-  androidFirebaseOptions: AndroidFirebaseOptions!
-  iosFirebaseOptions: IOSFirebaseOptions!
   refreshToken: String!
   user: User!
 }
@@ -81,6 +95,8 @@ type ConnectionPageInfo {
   hasPreviousPage: Boolean!
   startCursor: String
 }
+
+scalar CountryCode
 
 input CreateUserTagInput {
   name: String!
@@ -144,7 +160,32 @@ input DonationWhereInput {
   name_of_user_starts_with: String
 }
 
+enum EducationGrade {
+  GRADE_1
+  GRADE_2
+  GRADE_3
+  GRADE_4
+  GRADE_5
+  GRADE_6
+  GRADE_7
+  GRADE_8
+  GRADE_9
+  GRADE_10
+  GRADE_11
+  GRADE_12
+  GRADUATE
+  KG
+  NO_GRADE
+  PRE_KG
+}
+
 scalar EmailAddress
+
+enum EmploymentStatus {
+  FULL_TIME
+  PART_TIME
+  UNEMPLOYED
+}
 
 interface Error {
   message: String!
@@ -294,6 +335,12 @@ input ForgotPasswordData {
   userOtp: String!
 }
 
+enum Gender {
+  FEMALE
+  MALE
+  OTHER
+}
+
 type Group {
   _id: ID
   admins: [User]
@@ -319,20 +366,12 @@ type GroupChatMessage {
   sender: User!
 }
 
-type IOSFirebaseOptions {
-  apiKey: String
-  appId: String
-  iosBundleId: String
-  iosClientId: String
-  messagingSenderId: String
-  projectId: String
-  storageBucket: String
-}
-
 type InvalidCursor implements FieldError {
   message: String!
   path: [String!]!
 }
+
+scalar JSON
 
 type Language {
   _id: ID!
@@ -363,6 +402,15 @@ input LoginInput {
 }
 
 scalar Longitude
+
+enum MaritalStatus {
+  DIVORCED
+  ENGAGED
+  MARRIED
+  SEPERATED
+  SINGLE
+  WIDOWED
+}
 
 type MaximumLengthError implements FieldError {
   message: String!
@@ -421,7 +469,9 @@ type Mutation {
   addEventAttendee(data: EventAttendeeInput!): User!
   addFeedback(data: FeedbackInput!): Feedback!
   addLanguageTranslation(data: LanguageInput!): Language!
+  addOrganizationCustomField(name: String!, organizationId: ID!, type: String!): OrganizationCustomField!
   addOrganizationImage(file: String!, organizationId: String!): Organization!
+  addUserCustomData(dataName: String!, dataValue: Any!, organizationId: ID!): UserCustomData!
   addUserImage(file: String!): User!
   addUserToGroupChat(chatId: ID!, userId: ID!): GroupChat!
   adminRemoveEvent(eventId: ID!): Event!
@@ -472,14 +522,16 @@ type Mutation {
   removeGroupChat(chatId: ID!): GroupChat!
   removeMember(data: UserAndOrganizationInput!): Organization!
   removeOrganization(id: ID!): User!
+  removeOrganizationCustomField(customFieldId: ID!, organizationId: ID!): OrganizationCustomField!
   removeOrganizationImage(organizationId: String!): Organization!
   removePost(id: ID!): Post
   removeSampleOrganization: Boolean!
   removeTask(id: ID!): Task
+  removeUserCustomData(organizationId: ID!): UserCustomData!
   removeUserFromGroupChat(chatId: ID!, userId: ID!): GroupChat!
   removeUserImage: User!
   removeUserTag(id: ID!): UserTag
-  revokeRefreshTokenForUser(userId: String!): Boolean!
+  revokeRefreshTokenForUser: Boolean!
   saveFcmToken(token: String): Boolean!
   sendMembershipRequest(organizationId: ID!): MembershipRequest!
   sendMessageToDirectChat(chatId: ID!, messageContent: String!): DirectChatMessage!
@@ -517,6 +569,7 @@ type Organization {
   blockedUsers: [User]
   createdAt: DateTime
   creator: User!
+  customFields: [OrganizationCustomField!]!
   description: String!
   image: String
   isPublic: Boolean!
@@ -527,6 +580,13 @@ type Organization {
   pinnedPosts: [Post]
   userTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
   visibleInSearch: Boolean!
+}
+
+type OrganizationCustomField {
+  _id: ID!
+  name: String!
+  organizationId: String!
+  type: String!
 }
 
 type OrganizationInfoNode {
@@ -554,6 +614,8 @@ input OrganizationInput {
 enum OrganizationOrderByInput {
   apiUrl_ASC
   apiUrl_DESC
+  createdAt_ASC
+  createdAt_DESC
   description_ASC
   description_DESC
   id_ASC
@@ -733,6 +795,8 @@ input PostWhereInput {
 type Query {
   adminPlugin(orgId: ID!): [Plugin]
   checkAuth: User!
+  customDataByOrganization(organizationId: ID!): [UserCustomData!]!
+  customFieldsByOrganization(id: ID!): [OrganizationCustomField]
   directChatsByUserID(id: ID!): [DirectChat]
   directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
   event(id: ID!): Event
@@ -887,9 +951,16 @@ input UpdateTaskInput {
 }
 
 input UpdateUserInput {
+  address: AddressInput
+  birthDate: Date
+  educationGrade: EducationGrade
   email: EmailAddress
+  employmentStatus: EmploymentStatus
   firstName: String
+  gender: Gender
   lastName: String
+  maritalStatus: MaritalStatus
+  phone: UserPhoneInput
 }
 
 input UpdateUserPasswordInput {
@@ -912,22 +983,29 @@ scalar Upload
 
 type User {
   _id: ID!
+  address: Address
   adminApproved: Boolean
   adminFor: [Organization]
   appLanguageCode: String!
   assignedTasks: [Task]
+  birthDate: Date
   createdAt: DateTime
   createdEvents: [Event]
   createdOrganizations: [Organization]
+  educationGrade: EducationGrade
   email: EmailAddress!
+  employmentStatus: EmploymentStatus
   eventAdmin: [Event]
   firstName: String!
+  gender: Gender
   image: String
   joinedOrganizations: [Organization]
   lastName: String!
+  maritalStatus: MaritalStatus
   membershipRequests: [MembershipRequest]
   organizationUserBelongsTo: Organization
   organizationsBlockedBy: [Organization]
+  phone: UserPhone
   pluginCreationAllowed: Boolean
   registeredEvents: [Event]
   tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection
@@ -944,6 +1022,13 @@ type UserConnection {
   aggregate: AggregateUser!
   edges: [User]!
   pageInfo: PageInfo!
+}
+
+type UserCustomData {
+  _id: ID!
+  organizationId: ID!
+  userId: ID!
+  values: JSON!
 }
 
 type UserEdge {
@@ -971,6 +1056,18 @@ enum UserOrderByInput {
   id_DESC
   lastName_ASC
   lastName_DESC
+}
+
+type UserPhone {
+  home: PhoneNumber
+  mobile: PhoneNumber
+  work: PhoneNumber
+}
+
+input UserPhoneInput {
+  home: PhoneNumber
+  mobile: PhoneNumber
+  work: PhoneNumber
 }
 
 type UserTag {

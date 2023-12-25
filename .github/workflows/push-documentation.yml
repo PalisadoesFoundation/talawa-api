@@ -13,8 +13,8 @@ name: Push Documentation Workflow
 
 on:
   push:
-    branches:
-      - 'develop'
+    branches-ignore:
+      - '*'
       
 jobs:
   ##############################################################################
