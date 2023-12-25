@@ -1,3 +1,16 @@
+## Table of Contents
+
+<!-- toc -->
+
+- [Talawa GitHub Workflows Guidelines](#talawa-github-workflows-guidelines)
+  * [General](#general)
+  * [YAML Workflow Files](#yaml-workflow-files)
+    + [File Roles](#file-roles)
+      - [File Role Exceptions](#file-role-exceptions)
+  * [Scripts](#scripts)
+
+<!-- tocstop -->
+
 # Talawa GitHub Workflows Guidelines
 
 Follow these guidelines when contributing to this directory.

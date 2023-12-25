@@ -4,9 +4,7 @@ about: Suggest an idea for this project
 title: Feature Request
 labels: feature request
 assignees: ''
-
 ---
-
 **Is your feature request related to a problem? Please describe.**
 A clear and concise description of what the problem is.
 
@@ -24,3 +22,10 @@ Add any other context or screenshots about the feature request here.
 
 **Potential internship candidates**
 Please read this if you are planning to apply for a Palisadoes Foundation internship https://github.com/PalisadoesFoundation/talawa/issues/359
+
+
+
+
+
+
+
