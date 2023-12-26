@@ -553,12 +553,14 @@ async function main(): Promise<void> {
   // check if mail_username is set, if not, set it to mail_username's value
   else if (
     !shouldSetSuperUserEmail &&
-    !process.env.LAST_RESORT_SUPERADMIN_EMAIL &&
-    process.env.MAIL_USERNAME
+    !process.env.LAST_RESORT_SUPERADMIN_EMAIL
+    // process.env.MAIL_USERNAME
   ) {
-    console.log(
-      "No super admin email configured, setting it to mail username's value."
-    );
+    if (process.env.MAIL_USERNAME) {
+      console.log(
+        "No super admin email configured, setting it to mail username's value."
+      );
+    }
     const config = dotenv.parse(fs.readFileSync(".env"));
     config.LAST_RESORT_SUPERADMIN_EMAIL = config.MAIL_USERNAME;
     fs.writeFileSync(".env", "");
