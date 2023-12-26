@@ -21,7 +21,7 @@ app.use(requestTracing.middleware());
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 50000,
+  limit: 50000,
   message: "Too many requests from this IP, please try again after 15 minutes",
 });
 
