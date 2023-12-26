@@ -500,6 +500,7 @@ type Mutation {
   unlikeComment(id: ID!): Comment
   unlikePost(id: ID!): Post
   unregisterForEventByUser(id: ID!): Event!
+  updateAdvertisement(data: UpdateAdvertisementData!, id: ID!): Advertisement
   updateEvent(data: UpdateEventInput, id: ID!): Event!
   updateEventProject(data: UpdateEventProjectInput!, id: ID!): EventProject!
   updateLanguage(languageCode: String!): User!
@@ -865,6 +866,14 @@ type UnauthenticatedError implements Error {
 
 type UnauthorizedError implements Error {
   message: String!
+}
+
+input UpdateAdvertisementData {
+  endDate: String
+  link: String
+  name: String
+  startDate: String
+  type: String
 }
 
 input UpdateEventInput {

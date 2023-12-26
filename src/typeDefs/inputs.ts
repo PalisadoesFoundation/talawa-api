@@ -282,6 +282,14 @@ export const inputs = gql`
     limit: PositiveInt!
   }
 
+  input UpdateAdvertisementData {
+    name: String
+    link: String
+    type: String
+    startDate: String
+    endDate: String
+  }
+
   input UpdateEventProjectInput {
     title: String
     description: String
