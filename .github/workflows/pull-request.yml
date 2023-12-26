@@ -26,7 +26,7 @@ jobs:
       - name: Checkout repository content
         uses: actions/checkout@v3
 
-      - name: Count number of lines
+      - name: Count number of lines 
         run: |
           chmod +x ./.github/workflows/countline.py
           ./.github/workflows/countline.py --lines 600 --exclude_files src/types/generatedGraphQLTypes.ts tests
