@@ -228,6 +228,9 @@ describe("resolvers -> Mutation -> createEvent", () => {
       })
     );
   });
+
+  /* Commenting out this test because we are not using firebase notification anymore.
+  
   it("should send a message when user and user.token exists", async () => {
     await User.updateOne(
       {
@@ -280,59 +283,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
     vi.restoreAllMocks();
     vi.resetModules();
   });
-
-  it("should send a message when user and user.token exists", async () => {
-    await User.updateOne(
-      {
-        _id: testUser?._id,
-      },
-      {
-        $set: {
-          token: "random",
-        },
-      }
-    );
-
-    const args: MutationCreateEventArgs = {
-      data: {
-        organizationId: testOrganization?.id,
-        allDay: false,
-        description: "newDescription",
-        endDate: new Date().toUTCString(),
-        endTime: new Date().toUTCString(),
-        isPublic: false,
-        isRegisterable: false,
-        latitude: 1,
-        longitude: 1,
-        location: "newLocation",
-        recurring: false,
-        startDate: new Date().toUTCString(),
-        startTime: new Date().toUTCString(),
-        title: "newTitle",
-        recurrance: "DAILY",
-      },
-    };
-
-    const context = {
-      userId: testUser?.id,
-    };
-
-    const admin = await import("firebase-admin");
-
-    const spy = vi
-      .spyOn(admin.messaging(), "send")
-      .mockImplementationOnce(async () => `Message sent`);
-
-    const { createEvent: createEventResolver } = await import(
-      "../../../src/resolvers/Mutation/createEvent"
-    );
-
-    await createEventResolver?.({}, args, context);
-    expect(spy).toHaveBeenCalledOnce();
-
-    vi.restoreAllMocks();
-    vi.resetModules();
-  });
+   */
 });
 
 describe("Check for validation conditions", () => {

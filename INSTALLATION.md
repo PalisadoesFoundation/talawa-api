@@ -6,9 +6,10 @@ This document provides instructions on how to set up and start a running instanc
 
 <!-- TOC -->
 
-
 - [Prerequisites](#prerequisites)
   - [Install Node.js](#install-nodejs)
+  - [Install npm](#install-npm)
+  - [Install TypeScript](#install-typescript)
   - [Install Git](#install-git)
   - [Setting Up This Repository](#setting-up-this-repository)
   - [Install the Required Packages](#install-the-required-packages)
@@ -41,9 +42,6 @@ This document provides instructions on how to set up and start a running instanc
   - [Setting up Logger configurations _(optional)_](#setting-up-logger-configurations-optional)
     - [Setting up COLORIZE_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
     - [Setting up LOG_LEVEL in .env file](#setting-up-log_level-in-env-file)
-  - [Configuring Google Firebase](#configuring-google-firebase)
-    - [Generate Firebase Keys for the Talawa Notification Service](#generate-firebase-keys-for-the-talawa-notification-service)
-    - [(Mobile Developers Only) Applying the Firebase Keys to the Talawa Mobile App](#mobile-developers-only-applying-the-firebase-keys-to-the-talawa-mobile-app)
 - [Importing Sample Database](#importing-sample-database)
   - [Syntax:](#syntax)
   - [Examples:](#examples)
@@ -78,6 +76,25 @@ You will need to have copies of your code on your local system. Here's how to do
 
 Best way to install and manage `node.js` is making use of node version managers. Two most popular node version managers right now are [fnm](https://github.com/Schniz/fnm) and [nvm](https://github.com/nvm-sh/nvm). We'd recommend `fnm` because it's written in `rust` and is much faster than `nvm`. Install whichever one you want and follow their guide to set up `node.js` on your system.
 
+## Install npm
+
+npm is a package manager for Node.js and is installed with Node.js. npm is used to install, share, and distribute code as well as to manage dependencies in your projects. To check if you have npm installed you can run this command in your terminal:
+```
+npm -v
+```
+If you have it installed then you should see the version that's installed. If not, you can download Node.js and npm from the official [Node.js website](https://nodejs.org/en/download/).
+
+## Install TypeScript
+
+TypeScript is a typed superset of JavaScript that compiles to plain JavaScript. It adds optional types, classes, and modules to JavaScript, and supports tools for large-scale JavaScript applications.
+
+To install TypeScript, you can use npm:
+
+```bash
+npm install -g typescript
+```
+This command installs TypeScript globally on your system so that it can be accessed from any project.
+
 ## Install git
 
 Follow the setup guide for `git` on official [git docs](https://git-scm.com/downloads). Basic `git` knowledge is required for open source contribution so make sure you're comfortable with it. [Here's](https://youtu.be/apGV9Kg7ics) a good tutorial to get started with `git` and `github`.
@@ -110,13 +127,9 @@ Install the packages required by `talawa-api` using this command:
 npm install
 ```
 
-# Installation Using Docker
-
-> - **Requires Docker and Docker Compose to be installed**
-> - Will start a local mongodb and redis instances
+# Setting up .env file
 
 It's important to configure Talawa-API to complete it's setup.
-
 You can use our interactive setup script for the configuration. Use the following command for the same.
 
 ```
@@ -125,16 +138,25 @@ npm run setup
 
 All the options in "setup" can be done manually as well and here's how to do it. - [The .env Configuration File](#the-env-configuration-file)
 
+# Installation Using Docker
+
+> - **Requires Docker and Docker Compose to be installed**
+> - Will start a local mongodb and redis instances
+
 Now use the following command to run docker containers -
 
 ```sh
 docker compose up
 ```
+
 OR
+
 ```sh
 docker-compose up
 ```
+
 **Note: If you're using Docker, you'll need to manually import the sample data after the Docker Compose has started the MongoDB container. For instructions on how to do this, refer to [Importing Sample Database](#importing-sample-database)**
+
 # Installation without Docker
 
 ## Install MongoDB
@@ -261,6 +283,7 @@ This `.env` file must be populated with the following environment variables for 
 | REFRESH_TOKEN_SECRET         | Used for signing/verifying JWT tokens                  |
 | MONGO_DB_URL                 | Used for connecting talawa-api to the mongoDB database |
 | RECAPTCHA_SECRET_KEY         | Used for authentication using reCAPTCHA                |
+| RECAPTCHA_SITE_KEY           | Used for authentication using reCAPTCHA                |
 | MAIL_USERNAME                | Used for mailing service                               |
 | MAIL_PASSWORD                | Used for mailing service                               |
 | LAST_RESORT_SUPERADMIN_EMAIL | Used for promoting the default super admin             |
@@ -523,88 +546,6 @@ There are different logging levels that can be configured by setting this parame
 <br>On setting this parameter value, log messages are displayed in the console only if the `message.level` is less than or equal to setted `LOG_LEVEL`
 <br><br>
 For our application, the most appropriate setting is `LOG_LEVEL = info` since most of information logged on the console are error messages, warnings or info texts.
-
-## Configuring Google Firebase
-
-You need to have a `google` account to follow the following steps.
-
-<br/>
-
-### Generate Firebase Keys for the Talawa Notification Service
-
-We use firebase for mobile app notifications. To configure the notification service create a new firebase project and follow these steps:-
-
-1. Create a new Firebase project for Talawa-API
-1. When created you will automatically enter the project's console area
-1. Click on the settings icon beside the `Project Overview` heading
-1. Click on `Project Settings`
-1. Click on the `Service Accounts` tab
-1. Click on the `Node.js` radio button
-1. Click on `Generate New Private Key` button
-1. Confirm by clicking on `Generate Key`. This will automatically download the private keys in your browser.
-1. Securely store the `JSON` file containing the private key. These will be used in the next section.
-
-### (Mobile Developers Only) Applying the Firebase Keys to the Talawa Mobile App
-
-The key generated in the previous step is in a format suitable for use in a mobile app. We need to convert it for use by the API. This will require you to do some work in the talawa repository to do the necessary conversion. The resulting output will be stored in a `lib/firebase_options.dart` file. Some of the contents of this file will then need to be added to the API's `.env` file. Here we go.
-
-1.  Clone the talawa mobile app in a separate directory that is not under your Talawa-API directory.
-1.  Enter that directory as you will need to edit files there
-1.  Run the following commands to set the key in the environment variable for your respective operating system:
-
-    1.  `Linux/macOS:`
-
-            export GOOGLE_APPLICATION_CREDENTIALS="/PATH/TO/JSON/FILE/filename.json"
-
-    1.  `Windows:`
-
-            $env:GOOGLE_APPLICATION_CREDENTIALS="C:\PATH\TO\JSON\FILE\filename.json"
-
-1.  Install the [Firebase CLI](https://firebase.google.com/docs/cli#install_the_firebase_cli).
-1.  Save the original copy the `lib/firebase_options.dart` file as it will be modified.
-1.  Run the following commands in the project directory of talawa mobile app:
-
-        firebase login
-
-        dart pub global activate flutterfire_cli
-
-1.  Run any commands about exporting variables from the previous `dart` command.
-1.  Run the following command to configure the application for Firebase
-    `flutterfire configure`
-1.  Select the project you created in the firebase console.
-1.  Add `iOS` and `android` platforms to the project.
-1.  Overwrite the `firebase_options.dart` file if asked so.
-1.  The command will generate keys for the `iOS` and `android` platforms respectively and place them in the `firebase_options.dart` file.
-1.  Edit the `firebase_options.dart` file.
-1.  Add the parameters in the `static const FirebaseOptions android = FirebaseOptions` section of the `firebase_options.dart` file to the Talawa API `.env` file under the `androidFirebaseOptions` heading.
-
-    1.  Replace any parameters that are already there in that section.
-    1.  Remove any trailing commas on the lines you have added.
-    1.  Remove any leading spaces on the lines you have added.
-    1.  The final result in the `.env` file should look like this
-
-                 apiKey: '9f6297b283db701dab7766c993c48b',
-                 appId: '1:261699118608:android:366ff7dbdfba5c5a9e8392',
-                 messagingSenderId: '261699118608',
-                 projectId: 'talawa-thingy',
-                 storageBucket: 'talawa-thingy.appspot.com',
-
-1.  Add the parameters in the `static const FirebaseOptions ios = FirebaseOptions` section of the `firebase_options.dart` file to the Talawa API `.env` file under the `iosFirebaseOptions` heading. Replace any paramters that are already there.
-
-    1.  Replace any parameters that are already there in that section.
-    1.  Remove any trailing commas on the lines you have added.
-    1.  Remove any leading spaces on the lines you have added.
-    1.  The final result in the `.env` file should look like this
-
-                 apiKey: 'c2d283aa45f4e858c9cbfe32c58c67',
-                 appId: '1:261699118608:ios:1babbb3c07b8461ebdcb2',
-                 messagingSenderId: '261699118608',
-                 projectId: 'talawa-thingy',
-                 storageBucket: 'talawa-thingy.appspot.com',
-                 iosClientId: '261699118608-d519b739e43c6214374c0da62feaef.apps.googleusercontent.com',
-                 iosBundleId: 'com.example.talawa',
-
-1.  Undo the changes made to the `firebase_options.dart` file by overwriting it with the version you saved at the beginning of this section.
 
 # Importing Sample Database
 

@@ -7,18 +7,11 @@ import {
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
   LENGTH_VALIDATION_ERROR,
 } from "../../constants";
-import admin, { credential } from "firebase-admin";
-import { getApps } from "firebase-admin/app";
 import { isValidString } from "../../libraries/validators/validateString";
 import { compareDates } from "../../libraries/validators/compareDates";
 import { EventAttendee } from "../../models/EventAttendee";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 
-const applicationDefault = credential.applicationDefault;
-
-getApps().length === 0
-  ? admin.initializeApp({ credential: applicationDefault() })
-  : getApps();
 /**
  * This function enables to create an event.
  * @param _parent - parent of current request
@@ -160,11 +153,15 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     }
   );
 
-  for (let i = 0; i < organization.members.length; i++) {
+  /* Commenting out this notification code coz we don't use firebase anymore.
+
+    for (let i = 0; i < organization.members.length; i++) {
     const user = await User.findOne({
       _id: organization.members[i],
     }).lean();
 
+  
+    
     // Checks whether both user and user.token exist.
     if (user && user.token) {
       await admin.messaging().send({
@@ -176,6 +173,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       });
     }
   }
+     */
 
   // Returns the createdEvent.
   return createdEvent.toObject();
