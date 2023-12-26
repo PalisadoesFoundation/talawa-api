@@ -317,7 +317,19 @@ async function main(): Promise<void> {
     message: "Are you setting up this project using Docker?",
     default: false,
   });
-  if (!isDockerInstallation) {
+
+  if (isDockerInstallation) {
+    const DB_URL = "mongodb://localhost:27017/talawa-api";
+    const config = dotenv.parse(fs.readFileSync(".env"));
+    config.MONGO_DB_URL = DB_URL;
+    process.env.MONGO_DB_URL = DB_URL;
+
+    fs.writeFileSync(".env", "");
+    for (const key in config) {
+      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+    }
+    console.log(`Your MongoDB URL is:\n${process.env.MONGO_DB_URL}`);
+  } else {
     if (process.env.MONGO_DB_URL) {
       console.log(
         `\nMongoDB URL already exists with the value:\n${process.env.MONGO_DB_URL}`
@@ -334,6 +346,7 @@ async function main(): Promise<void> {
       await mongoDB();
     }
   }
+
   if (process.env.RECAPTCHA_SECRET_KEY) {
     console.log(
       `\nreCAPTCHA secret key already exists with the value ${process.env.RECAPTCHA_SECRET_KEY}`
@@ -366,16 +379,18 @@ async function main(): Promise<void> {
     await twoFactorAuth();
   }
 
-  const { shouldRunDataImport } = await inquirer.prompt([
-    {
-      type: "confirm",
-      name: "shouldRunDataImport",
-      message: "Do you want to import sample data?",
-      default: true,
-    },
-  ]);
-  if (shouldRunDataImport) {
-    await importData();
+  if (!isDockerInstallation) {
+    const { shouldRunDataImport } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "shouldRunDataImport",
+        message: "Do you want to import sample data?",
+        default: true,
+      },
+    ]);
+    if (shouldRunDataImport) {
+      await importData();
+    }
   } else {
     console.log(
       "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
