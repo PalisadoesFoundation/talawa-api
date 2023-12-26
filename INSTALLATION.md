@@ -20,6 +20,7 @@ This document provides instructions on how to set up and start a running instanc
     - [Benchmark For Performance Benefits](#performance-benefits)
 - [Configuration](#configuration)
   - [The .env Configuration File](#the-env-configuration-file)
+  - [Interactive Setup](#interactive-setup)
   - [Generating Token Secrets](#generating-token-secrets)
     - [Setting up ACCESS_TOKEN_SECRET in .env file](#setting-up-access_token_secret-in-env-file)
       - [Linux](#linux)
@@ -233,26 +234,22 @@ If you'd rather not deal with the hassle of setting up WSL on your computer, the
 Remember to adjust any paths or details as needed for your specific environment. After following these steps, you will have successfully set up Redis.
 
 # Configuration
+To set up Talawa-API, follow the steps below. You can either use our interactive setup script or configure it manually.
 
-It's important to configure Talawa-API to complete it's setup.
-
-You can use our interactive setup script for the configuration. Use the following command for the same.
-
-```
-npm run setup
-```
-
-It can be done manually as well and here's how to do it.
 
 ## The .env Configuration File
 
+If you prefer manual configuration, follow these steps:
+
+### 1. Create the .env File
 A file named `.env` is required in the root directory of talawa-api for storing environment variables used at runtime. It is not a part of the repo and you will have to create it. For a sample of `.env` file there is a file named `.env.sample` in the root directory. Create a new `.env` file by copying the contents of the `.env.sample` into `.env` file.
 
 ```
 cp .env.sample .env
 ```
+### 2. Configure .env Variables
 
-This `.env` file must be populated with the following environment variables for talawa-api to work:
+Populate the .env file with the following environment variables necessary for Talawa-API to function:
 
 | Variable                     | Description                                            |
 | ---------------------------- | ------------------------------------------------------ |
@@ -273,7 +270,11 @@ This `.env` file must be populated with the following environment variables for 
 | REDIS_PASSWORD(optional)     | Used for authenticating the connection request to      |
 |                              | a hosted redis-server                                  |
 
-The following sections will show you how to configure each of these parameters.
+## Interactive Setup
+Run the following command to use the interactive setup script:
+```
+npm run setup
+```
 
 ## Changing the environment of talawa-api
 
