@@ -18,7 +18,7 @@ npm run lint:fix
 
 npm run gen:schema
 
-# Generate table of contents for all markdown files
+# Generate table of contents for markdown files in root level.
 npm run generate:toc
 
 # Add the changes made to the stage

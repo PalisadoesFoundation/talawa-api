@@ -23,7 +23,7 @@
     "import:sample-data": "ts-node ./src/utilities/loadSampleData.ts",
     "import:sample-data:prod": "node ./build/utilities/loadSampleData.js",
     "gen:schema": "graphql-inspector introspect ./src/typeDefs/**/**/*.ts --write ./schema.graphql ",
-    "generate:toc": "find . -path ./node_modules -prune -o -path ./.github -prune -o -name '*.md' -exec markdown-toc -i {} \\;"
+    "generate:toc": "find . -maxdepth 1 -name '*.md' -exec markdown-toc -i {} \\;"
   },
   "repository": {
     "type": "git",
