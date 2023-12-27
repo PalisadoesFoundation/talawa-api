@@ -6,40 +6,44 @@ This document provides instructions on how to set up and start a running instanc
 
 <!-- TOC -->
 
+- [Talawa-API Installation](#talawa-api-installation)
+- [Table of Contents](#table-of-contents)
 - [Prerequisites](#prerequisites)
-  - [Install Node.js](#install-nodejs)
-  - [Install Git](#install-git)
-  - [Setting Up This Repository](#setting-up-this-repository)
+  - [Install node.js](#install-nodejs)
+  - [Install git](#install-git)
+  - [Setting up this repository](#setting-up-this-repository)
   - [Install the Required Packages](#install-the-required-packages)
-- [Installation with Docker](#installation-using-docker)
+- [Setting up .env file](#setting-up-env-file)
+- [Installation Using Docker](#installation-using-docker)
 - [Installation without Docker](#installation-without-docker)
   - [Install MongoDB](#install-mongodb)
     - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
   - [Install Redis](#install-redis)
+    - [Performance Benefits](#performance-benefits)
     - [Setting Up Redis](#setting-up-redis)
-    - [Benchmark For Performance Benefits](#performance-benefits)
 - [Configuration](#configuration)
   - [The .env Configuration File](#the-env-configuration-file)
+  - [Changing the environment of talawa-api](#changing-the-environment-of-talawa-api)
   - [Generating Token Secrets](#generating-token-secrets)
-    - [Setting up ACCESS_TOKEN_SECRET in .env file](#setting-up-access_token_secret-in-env-file)
+    - [Setting up ACCESS\_TOKEN\_SECRET in .env file](#setting-up-access_token_secret-in-env-file)
       - [Linux](#linux)
       - [Windows](#windows)
-    - [Setting up REFRESH_TOKEN_SECRET in .env file](#setting-up-refresh_token_secret-in-env-file)
+    - [Setting up REFRESH\_TOKEN\_SECRET in .env file](#setting-up-refresh_token_secret-in-env-file)
   - [Configuring MongoDB](#configuring-mongodb)
-    - [Setting up the MONGODB_URL in .env file](#setting-up-the-mongodb_url-in-env-file)
-    - [Using the CLI to get the MONGODB_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
-    - [Using Microsoft Windows to get the MONGODB_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
+    - [Setting up the MONGODB\_URL in .env file](#setting-up-the-mongodb_url-in-env-file)
+    - [Using the CLI to get the MONGODB\_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
+    - [Using Microsoft Windows to get the MONGODB\_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
   - [Configuring Redis](#configuring-redis)
     - [For Local Setup (Linux and WSL)](#for-local-setup-linux-and-wsl)
     - [For Remote Setup (Redis Cloud)](#for-remote-setup-redis-cloud)
-  - [Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter](#setting-up-env-last_resort_superadmin_email-parameter)
+  - [Setting up .env LAST\_RESORT\_SUPERADMIN\_EMAIL parameter](#setting-up-env-last_resort_superadmin_email-parameter)
   - [Configuring Google ReCAPTCHA](#configuring-google-recaptcha)
-    - [Setting up RECAPTCHA_SECRET_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
-    - [Setting up .env MAIL_USERNAME and MAIL_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
+    - [Setting up RECAPTCHA\_SECRET\_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
+    - [Setting up .env MAIL\_USERNAME and MAIL\_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
     - [Setting up .env SMTP Variables](#setting-up-env-smtp-variables)
   - [Setting up Logger configurations _(optional)_](#setting-up-logger-configurations-optional)
-    - [Setting up COLORIZE_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
-    - [Setting up LOG_LEVEL in .env file](#setting-up-log_level-in-env-file)
+    - [Setting up COLORIZE\_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
+    - [Setting up LOG\_LEVEL in .env file](#setting-up-log_level-in-env-file)
 - [Importing Sample Database](#importing-sample-database)
   - [Syntax:](#syntax)
   - [Examples:](#examples)
@@ -508,7 +512,7 @@ If the parameter value is set to `true`, you should be able to see colorized log
 
 ### Setting up LOG_LEVEL in .env file
 
-There are different logging levels that can be configured by setting this parameter. The severity order of levels are displayed numerically ascending from most important to least important.<br>
+There are different logging levels that can be configured by setting this parameter. The severity order of levels are displayed numerically ascending from most important to least important.<br></br>
 
 ```
  levels = {
@@ -522,8 +526,8 @@ There are different logging levels that can be configured by setting this parame
   }
 ```
 
-<br>On setting this parameter value, log messages are displayed in the console only if the `message.level` is less than or equal to setted `LOG_LEVEL`
-<br><br>
+<br>On setting this parameter value, log messages are displayed in the console only if the `message.level` is less than or equal to setted `LOG_LEVEL`</br>
+<br></br>
 For our application, the most appropriate setting is `LOG_LEVEL = info` since most of information logged on the console are error messages, warnings or info texts.
 
 # Importing Sample Database
@@ -599,7 +603,7 @@ By default talawa-api runs on `port 4000` on your system's localhost. It is avai
 
 If you navigate to the endpoint you and see a `JSON` response like this it means talawa-api is running successfully:
 
-        {"talawa-version":"v1","status":"healthy"}
+        \{"talawa-version":"v1","status":"healthy"\}
 
 GraphQL endpoint for handling `queries` and `mutations` is this:
 
@@ -724,11 +728,14 @@ These are some other factors to consider
 
 If port `4000` is not free on your system you can pass a custom environment variable named `PORT` to the script to make it use a different port on your system's localhost. Here's the syntax for it:
 
-        PORT=<CUSTOM_PORT_VALUE> npm run dev
+      ```
+      PORT=<CUSTOM_PORT_VALUE> npm run dev
+      ```
 
 where `<CUSTOM_PORT_VALUE>` is whatever value you want the `PORT` to be. Whatever you pass will be substituted as the value for port and talawa-api development server on that port. Syntax wise it looks like-
-
+      ```
         http://localhost:<CUSTOM_PORT_VALUE>/
+      ```
 
 For example:
 
