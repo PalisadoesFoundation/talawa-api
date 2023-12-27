@@ -210,7 +210,7 @@ export const mutations = gql`
 
     unregisterForEventByUser(id: ID!): Event! @auth
 
-    updateAdvertisement(input: UpdateAdvertisementData!): Advertisement @auth
+    updateAdvertisement(input: UpdateAdvertisementInput!): Advertisement @auth
 
     updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
 

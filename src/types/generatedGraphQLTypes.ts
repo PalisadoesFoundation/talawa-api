@@ -1033,7 +1033,7 @@ export type MutationUnregisterForEventByUserArgs = {
 
 
 export type MutationUpdateAdvertisementArgs = {
-  input: UpdateAdvertisementData;
+  input: UpdateAdvertisementInput;
 };
 
 
@@ -1640,7 +1640,7 @@ export type UnauthorizedError = Error & {
   message: Scalars['String'];
 };
 
-export type UpdateAdvertisementData = {
+export type UpdateAdvertisementInput = {
   endDate?: InputMaybe<Scalars['String']>;
   id: Scalars['ID'];
   link?: InputMaybe<Scalars['String']>;
@@ -2099,7 +2099,7 @@ export type ResolversTypes = {
   URL: ResolverTypeWrapper<Scalars['URL']>;
   UnauthenticatedError: ResolverTypeWrapper<UnauthenticatedError>;
   UnauthorizedError: ResolverTypeWrapper<UnauthorizedError>;
-  UpdateAdvertisementData: UpdateAdvertisementData;
+  UpdateAdvertisementInput: UpdateAdvertisementInput;
   UpdateEventInput: UpdateEventInput;
   UpdateEventProjectInput: UpdateEventProjectInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
@@ -2226,7 +2226,7 @@ export type ResolversParentTypes = {
   URL: Scalars['URL'];
   UnauthenticatedError: UnauthenticatedError;
   UnauthorizedError: UnauthorizedError;
-  UpdateAdvertisementData: UpdateAdvertisementData;
+  UpdateAdvertisementInput: UpdateAdvertisementInput;
   UpdateEventInput: UpdateEventInput;
   UpdateEventProjectInput: UpdateEventProjectInput;
   UpdateOrganizationInput: UpdateOrganizationInput;

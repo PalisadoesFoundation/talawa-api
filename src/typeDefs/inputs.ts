@@ -282,7 +282,7 @@ export const inputs = gql`
     limit: PositiveInt!
   }
 
-  input UpdateAdvertisementData {
+  input UpdateAdvertisementInput {
     id: ID!
     name: String
     link: String

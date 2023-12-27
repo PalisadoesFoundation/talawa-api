@@ -544,7 +544,7 @@ type Mutation {
   unlikeComment(id: ID!): Comment
   unlikePost(id: ID!): Post
   unregisterForEventByUser(id: ID!): Event!
-  updateAdvertisement(input: UpdateAdvertisementData!): Advertisement
+  updateAdvertisement(input: UpdateAdvertisementInput!): Advertisement
   updateEvent(data: UpdateEventInput, id: ID!): Event!
   updateEventProject(data: UpdateEventProjectInput!, id: ID!): EventProject!
   updateLanguage(languageCode: String!): User!
@@ -914,7 +914,7 @@ type UnauthorizedError implements Error {
   message: String!
 }
 
-input UpdateAdvertisementData {
+input UpdateAdvertisementInput {
   endDate: String
   id: ID!
   link: String
