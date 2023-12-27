@@ -91,7 +91,7 @@ export const mutations = gql`
     createAdvertisement(
       orgId: ID!
       name: String!
-      link: String!
+      mediaUrl: String!
       type: String!
       startDate: Date!
       endDate: Date!

@@ -5,7 +5,7 @@ directive @role(requires: UserType) on FIELD_DEFINITION
 type Advertisement {
   _id: ID
   endDate: Date!
-  link: String!
+  mediaUrl: String!
   name: String!
   orgId: ID
   startDate: Date!
@@ -438,7 +438,7 @@ type Mutation {
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   checkIn(data: CheckInInput!): CheckIn!
   createAdmin(data: UserAndOrganizationInput!): User!
-  createAdvertisement(endDate: Date!, link: String!, name: String!, orgId: ID!, startDate: Date!, type: String!): Advertisement!
+  createAdvertisement(endDate: Date!, mediaUrl: String!, name: String!, orgId: ID!, startDate: Date!, type: String!): Advertisement!
   createComment(data: CommentInput!, postId: ID!): Comment
   createDirectChat(data: createChatInput!): DirectChat!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!

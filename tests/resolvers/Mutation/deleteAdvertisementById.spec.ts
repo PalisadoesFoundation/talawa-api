@@ -24,7 +24,7 @@ beforeAll(async () => {
   testAdvertisement = await Advertisement.create({
     orgId: testOrganization?._id,
     endDate: new Date(),
-    link: "http://example.com",
+    mediaUrl: "data:image/png;base64,bWVkaWEgY29udGVudA==",
     startDate: new Date(),
     type: "POPUP",
     name: "Cookies at just $5 for a packet",

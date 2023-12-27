@@ -11,7 +11,7 @@ export interface InterfaceAdvertisement {
   _id: Types.ObjectId;
   orgId: string;
   name: string;
-  link: string;
+  mediaUrl: string;
   type: AdvertisementTypes;
   startDate: string;
   endDate: string;
@@ -28,8 +28,8 @@ export interface InterfaceAdvertisement {
  */
 
 /**
- * @param  link - Link associated with the advertisement (type: String)
- * Description: Link associated with the advertisement.
+ * @param  mediaUrl - media associated with the advertisement (type: String)
+ * Description: media associated with the advertisement.
  */
 
 /**
@@ -54,7 +54,7 @@ const advertisementSchema = new Schema({
   orgId: {
     type: String,
   },
-  link: {
+  mediaUrl: {
     type: String,
     required: true,
   },

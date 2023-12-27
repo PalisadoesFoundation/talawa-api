@@ -55,7 +55,7 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
       name: "myad",
       orgId: "64d1f8cb77a4b61004f824b8",
       type: "POPUP",
-      link: "https://www.example.com",
+      mediaUrl: "data:image/png;base64,bWVkaWEgY29udGVudA==",
       startDate: "2023-10-08T13:02:29.000Z",
       endDate: "2023-10-08T13:02:29.000Z",
     };
@@ -77,8 +77,8 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     expect(createdAdvertisementPayload).toHaveProperty("name", "myad");
 
     expect(createdAdvertisementPayload).toHaveProperty(
-      "link",
-      "https://www.example.com"
+      "mediaUrl",
+      "data:image/png;base64,bWVkaWEgY29udGVudA=="
     );
 
     expect(createdAdvertisementPayload).toHaveProperty("type", "POPUP");
