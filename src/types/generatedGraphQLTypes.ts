@@ -1033,8 +1033,7 @@ export type MutationUnregisterForEventByUserArgs = {
 
 
 export type MutationUpdateAdvertisementArgs = {
-  data: UpdateAdvertisementData;
-  id: Scalars['ID'];
+  input: UpdateAdvertisementData;
 };
 
 
@@ -1643,6 +1642,7 @@ export type UnauthorizedError = Error & {
 
 export type UpdateAdvertisementData = {
   endDate?: InputMaybe<Scalars['String']>;
+  id: Scalars['ID'];
   link?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   startDate?: InputMaybe<Scalars['String']>;
@@ -2662,7 +2662,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   unlikeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationUnlikeCommentArgs, 'id'>>;
   unlikePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUnlikePostArgs, 'id'>>;
   unregisterForEventByUser?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUnregisterForEventByUserArgs, 'id'>>;
-  updateAdvertisement?: Resolver<Maybe<ResolversTypes['Advertisement']>, ParentType, ContextType, RequireFields<MutationUpdateAdvertisementArgs, 'data' | 'id'>>;
+  updateAdvertisement?: Resolver<Maybe<ResolversTypes['Advertisement']>, ParentType, ContextType, RequireFields<MutationUpdateAdvertisementArgs, 'input'>>;
   updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'id'>>;
   updateEventProject?: Resolver<ResolversTypes['EventProject'], ParentType, ContextType, RequireFields<MutationUpdateEventProjectArgs, 'data' | 'id'>>;
   updateLanguage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateLanguageArgs, 'languageCode'>>;

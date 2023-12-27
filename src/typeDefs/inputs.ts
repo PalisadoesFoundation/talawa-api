@@ -283,6 +283,7 @@ export const inputs = gql`
   }
 
   input UpdateAdvertisementData {
+    id: ID!
     name: String
     link: String
     type: String

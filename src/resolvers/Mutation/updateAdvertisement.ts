@@ -12,8 +12,6 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       _id: _context.userId,
     });
 
-    console.log(currentUser);
-
     if (currentUser === null) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
@@ -23,7 +21,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
     }
 
     const add = await Advertisement.findOne({
-      _id: args.id,
+      _id: args.input.id,
     }).lean();
 
     if (!add) {
@@ -36,10 +34,10 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
 
     return await Advertisement.findOneAndUpdate(
       {
-        _id: args.id,
+        _id: args.input.id,
       },
       {
-        ...(args.data as any),
+        ...(args.input as any),
       },
       {
         new: true,

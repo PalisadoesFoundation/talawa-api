@@ -78,8 +78,9 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
 
     try {
       const args: MutationUpdateAdvertisementArgs = {
-        id: testAdvertisement?._id,
-        data: {},
+        input: {
+          id: testAdvertisement?._id,
+        },
       };
 
       const context = { userId: Types.ObjectId().toString() };
@@ -105,8 +106,9 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
 
     try {
       const args: MutationUpdateAdvertisementArgs = {
-        id: Types.ObjectId().toString(),
-        data: {},
+        input: {
+          id: Types.ObjectId().toString(),
+        },
       };
 
       const context = {
@@ -129,8 +131,8 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
 
   it(`updates the advertisement with _id === args.id and returns it`, async () => {
     const args: MutationUpdateAdvertisementArgs = {
-      id: testAdvertisement!._id,
-      data: {
+      input: {
+        id: testAdvertisement!._id,
         name: "New Advertisement Name",
         link: "Updated Advertisement Link",
         type: "POPUP",
