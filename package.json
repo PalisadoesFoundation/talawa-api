@@ -48,6 +48,7 @@
     "@graphql-tools/schema": "^10.0.0",
     "@graphql-tools/utils": "^10.0.11",
     "@types/graphql-upload": "^16.0.5",
+    "@types/jwt-decode": "^3.1.0",
     "@types/yargs": "^17.0.32",
     "axios": "^1.6.0",
     "bcryptjs": "^2.4.3",
@@ -135,5 +136,8 @@
     "graphql-voyager": {
       "graphql": "^16.6.0"
     }
+  },
+  "engines": {
+    "node": ">=20.x"
   }
 }

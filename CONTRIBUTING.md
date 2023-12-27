@@ -174,7 +174,7 @@ We have established a clean setup now. We can make any changes we like and push 
 #### Creating a Pull Request - Process Overview
 
 For making any changes to original repository, we first sync our cloned repository with original repository. We merge `develop` with `upstream/develop` to do this.
-This make sometimes require a hard reset, and can be done with the following commands:
+This may sometimes require a hard reset, and can be done with the following commands:
 
 ```
 git fetch upstream

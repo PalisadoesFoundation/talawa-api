@@ -26,6 +26,11 @@ jobs:
       - name: Checkout repository content
         uses: actions/checkout@v3
 
+      - name: Count number of lines
+        run: |
+          chmod +x ./.github/workflows/countline.py
+          ./.github/workflows/countline.py --lines 600 --exclude_files src/types/generatedGraphQLTypes.ts tests
+
       - name: Restore node_modules from cache
         id: cache-npm
         uses: actions/cache@v3
@@ -59,7 +64,7 @@ jobs:
     needs: [Code-Quality-Checks]
     strategy:
       matrix:
-        node-version: [14.x]
+        node-version: [20.x]
     services:
       mongo:
         image: mongo:4.4
