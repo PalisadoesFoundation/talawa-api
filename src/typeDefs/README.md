@@ -14,51 +14,53 @@ Try to use alphabetical structuring whereever possible. This saves the mental ov
 
 # Documentation
 
-GraphQL allows developers to document their whole graphQL api within the schema. This is done using of a pair of `"""` symbols. Any text enclosed within these symbols becomes a description for the field it precedes.
+GraphQL allows developers to document their whole GraphQL API within the schema. This is done using a pair of `"""` symbols. Any text enclosed within these symbols becomes a description for the field it precedes.
 
-Here's a good example:-
+Here's a good example:
+
+```graphql
+"""
+This is the GraphQL object type of a user.
+"""
+type User {
+    """
+    This is the unique id of the user.
+    """
+    id: String
+
+    """
+    This is the userName of the user.
+    """
+    userName: String
+}
+
+"""
+This is the GraphQL input type of the input required for updating a user.
+"""
+input UpdateUserInput{
+    """
+    This is the new userName the user wants to update their previous userName with.
+    Constraints:-
+    1. Should be at least 1 character long.
+    2. Should be at most 30 characters long.
+    """
+    userName: String
+}
+
+type Mutation{
+    updateUser(
+        """
+        This is the unique id of the user to update.
+        """
+        id: String!
 
         """
-        This is the graphQL object type of a user.
+        This is the input argument which contains data to update the user with.
         """
-        type User {
-            """
-            This is the unique id of the user.
-            """
-            id
+        input: UpdateUserInput!
+    ): User!
+}
 
-            """
-            This is userName of the user.
-            """
-            userName
-        }
-
-        """
-        This is the graphQL input type of the input required for updating a user.
-        """
-        input UpdateUserInput{
-            """
-            This is the new userName the user wants to update their previous userName with.
-            Constraints:-
-            1. Should be at least 1 character long.
-            2. Should be at most 30 characters long.
-            """
-            userName: String
-        }
-
-        type Mutation{
-            updateUser(
-                """
-                This is the unique id of the user to update.
-                """
-                id: String!
-
-                """
-                This is the input argument which contains data to update the user with.
-                """
-                input: UpdateUserInput!
-            ): User!
-        }
 
 There are other types in graphQL SDL but they will also follow the same syntax for documentation. Try to document every bit of schema that you can while writing the schema itself. This will save you time later on.
 
@@ -79,3 +81,4 @@ You can use `#` symbol to comment out stuff in the graphQL schema as shown for t
 # Schema represents a contract
 
 A graphQL schema represents a contract between the server and the clients. Be very careful when editing the schema as you can unknowingly edit stuff which breaks functionality for all clients relying on the schema. Read the [graphQL spec](https://spec.graphql.org/October2021/) for more information.
+```
