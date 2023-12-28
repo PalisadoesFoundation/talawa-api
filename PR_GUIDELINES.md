@@ -1,15 +1,3 @@
-## Table of Contents
-
-<!-- toc -->
-
-- [Pull Request Guidelines](#pull-request-guidelines)
-  * [Pull Requests and Issues](#pull-requests-and-issues)
-  * [Testing](#testing)
-  * [Pull Request Processing](#pull-request-processing)
-    + [Only submit PRs against our `develop` branch, not the default `main` branch](#only-submit-prs-against-our-develop-branch-not-the-default-main-branch)
-
-<!-- tocstop -->
-
 # Pull Request Guidelines
 
 :+1::tada: First off, thanks for taking the time to contribute! :tada::+1:
