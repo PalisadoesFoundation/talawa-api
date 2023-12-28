@@ -1,7 +1,11 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { Language } from "../../models";
-import { TRANSLATION_ALREADY_PRESENT_ERROR } from "../../constants";
+import {
+  TRANSACTION_LOG_TYPES,
+  TRANSLATION_ALREADY_PRESENT_ERROR,
+} from "../../constants";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function adds language translation.
  * @param _parent - parent of current request
@@ -12,7 +16,7 @@ import { TRANSLATION_ALREADY_PRESENT_ERROR } from "../../constants";
  * @returns Updated langauge
  */
 export const addLanguageTranslation: MutationResolvers["addLanguageTranslation"] =
-  async (_parent, args) => {
+  async (_parent, args, context) => {
     const language = await Language.findOne({
       en: args.data.en_value,
     }).lean();
@@ -48,6 +52,12 @@ export const addLanguageTranslation: MutationResolvers["addLanguageTranslation"]
         }
       ).lean();
     }
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "Language",
+      `Language:${args.data.en_value} updated translation`
+    );
 
     // Creates new language.
     const createdLanguage = await Language.create({
@@ -59,6 +69,12 @@ export const addLanguageTranslation: MutationResolvers["addLanguageTranslation"]
         },
       ],
     });
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.CREATE,
+      "Language",
+      `Language:${createdLanguage._id} created`
+    );
 
     return createdLanguage.toObject();
   };

@@ -3,10 +3,12 @@ import {
   USER_NOT_CHECKED_IN,
   USER_NOT_REGISTERED_FOR_EVENT,
   FEEDBACK_ALREADY_SUBMITTED,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { Event, EventAttendee, CheckIn, Feedback } from "../../models";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 export const addFeedback: MutationResolvers["addFeedback"] = async (
   _parent,
@@ -59,8 +61,20 @@ export const addFeedback: MutationResolvers["addFeedback"] = async (
   await CheckIn.findByIdAndUpdate(eventAttendeeObject.checkInId, {
     feedbackSubmitted: true,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "CheckIn",
+    `CheckIn:${eventAttendeeObject.checkInId} updated feedbackSubmitted`
+  );
 
   const feedback = await Feedback.create({ ...args.data });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.CREATE,
+    "Feedback",
+    `Feedback:${feedback._id} created`
+  );
 
   return feedback;
 };

@@ -8,8 +8,10 @@ import {
   USER_ALREADY_MEMBER_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function accepts the membership request sent by a user.
  * @param _parent - parent of current request
@@ -81,6 +83,12 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
     await MembershipRequest.deleteOne({
       _id: membershipRequest._id,
     });
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.DELETE,
+      "MembershipRequest",
+      `${membershipRequest._id} deleted`
+    );
 
     // Update the organization
     const updatedOrganization = await Organization.findOneAndUpdate(
@@ -98,6 +106,12 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
       {
         new: true,
       }
+    );
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "Organization",
+      `Organization:${organization._id} updated members, membershipRequests`
     );
 
     if (updatedOrganization !== null) {
@@ -117,6 +131,12 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
           membershipRequests: membershipRequest._id,
         },
       }
+    );
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "User",
+      `User:${user._id} updated joinedOrganizations, membershipRequests`
     );
 
     return membershipRequest;

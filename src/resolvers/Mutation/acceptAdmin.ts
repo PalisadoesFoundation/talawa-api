@@ -1,8 +1,9 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { USER_NOT_FOUND_ERROR } from "../../constants";
+import { TRANSACTION_LOG_TYPES, USER_NOT_FOUND_ERROR } from "../../constants";
 import { User } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import { superAdminCheck } from "../../utilities/superAdminCheck";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function accepts the admin request sent by a user.
  * @param _parent - parent of current request
@@ -54,5 +55,11 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
     }
   );
 
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${args.id} accepted as admin`
+  );
   return true;
 };

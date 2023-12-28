@@ -424,6 +424,12 @@ export const CUSTOM_FIELD_TYPE_MISSING = {
   PARAM: "customField.isMissing",
 };
 
+export const TRANSACTION_LOG_TYPES = {
+  CREATE: "CREATE",
+  UPDATE: "UPDATE",
+  DELETE: "DELETE",
+};
+
 export const MAXIMUM_FETCH_LIMIT = 100;
 
 export const BASE_URL = `http://localhost:${process.env.port || 4000}/`;

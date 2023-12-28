@@ -3,6 +3,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_ALREADY_REGISTERED_FOR_EVENT,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
@@ -11,6 +12,7 @@ import { User, Event, EventAttendee } from "../../models";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { Types } from "mongoose";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
   _parent,
@@ -90,7 +92,13 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
     );
   }
 
-  await EventAttendee.create({ ...args.data });
+  const eventAttendee = await EventAttendee.create({ ...args.data });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.CREATE,
+    "EventAttendee",
+    `EventAttendee:${eventAttendee._id} created`
+  );
 
   return requestUser;
 };

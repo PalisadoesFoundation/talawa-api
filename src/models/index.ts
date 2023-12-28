@@ -28,3 +28,4 @@ export * from "./Task";
 export * from "./TaskVolunteer";
 export * from "./User";
 export * from "./TagUser";
+export * from "./TransactionLog";
