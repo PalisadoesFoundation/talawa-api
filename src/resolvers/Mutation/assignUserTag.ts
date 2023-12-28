@@ -7,7 +7,9 @@ import {
   TAG_NOT_FOUND,
   USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION,
   USER_ALREADY_HAS_TAG,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 export const assignUserTag: MutationResolvers["assignUserTag"] = async (
   _parent,
@@ -103,6 +105,13 @@ export const assignUserTag: MutationResolvers["assignUserTag"] = async (
   await TagUser.create({
     ...args.input,
   });
+
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.CREATE,
+    "TagUser",
+    `TagUser:${requestUser._id} created`
+  );
 
   return requestUser;
 };

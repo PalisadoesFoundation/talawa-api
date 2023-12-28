@@ -3,10 +3,14 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { adminCheck } from "../../utilities";
 import { Organization } from "../../models";
-import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
+import {
+  ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
+} from "../../constants";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function adds Organization Image.
  * @param _parent - parent of current request
@@ -51,6 +55,7 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
       args.file,
       organization.image
     );
+
     // Updates the organization with new image and returns the updated organization.
     const updatedOrganization = await Organization.findOneAndUpdate(
       {
@@ -65,6 +70,12 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
         new: true,
       }
     ).lean();
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "Organization",
+      `Organization:${organization._id} updated image`
+    );
 
     if (updatedOrganization !== null) {
       await cacheOrganizations([updatedOrganization]);

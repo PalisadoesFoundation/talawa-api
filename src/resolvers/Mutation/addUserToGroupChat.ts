@@ -8,9 +8,11 @@ import {
   USER_ALREADY_MEMBER_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function adds user to group chat.
  * @param _parent - parent of current request
@@ -93,7 +95,7 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
     }
 
     // Adds args.userId to users list on groupChat's document and returns the updated groupChat.
-    return await GroupChat.findOneAndUpdate(
+    const updatedChat = await GroupChat.findOneAndUpdate(
       {
         _id: args.chatId,
       },
@@ -106,4 +108,13 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
         new: true,
       }
     ).lean();
+
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "GroupChat",
+      `GroupChat:${args.chatId} updated users`
+    );
+
+    return updatedChat!;
   };

@@ -3,9 +3,11 @@ import { addLanguageTranslation as addLanguageTranslationResolver } from "../../
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import type { MutationAddLanguageTranslationArgs } from "../../../src/types/generatedGraphQLTypes";
-import { Language } from "../../../src/models";
+import { Language, TransactionLog } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import { wait } from "./acceptAdmin.spec";
+import { TRANSACTION_LOG_TYPES } from "../../../src/constants";
 
 const randomValue = nanoid().toLowerCase();
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -95,5 +97,22 @@ describe("resolvers -> Mutation -> addLanguageTranslation", () => {
         ]),
       })
     );
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(2);
+    expect(mostRecentTransactions[0]).toMatchObject({
+      type: TRANSACTION_LOG_TYPES.CREATE,
+      modelName: "Language",
+    });
+
+    expect(mostRecentTransactions[1]).toMatchObject({
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "Language",
+    });
   });
 });

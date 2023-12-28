@@ -1,13 +1,16 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Organization } from "../../../src/models";
+import { Organization, TransactionLog } from "../../../src/models";
 import type { MutationAddOrganizationImageArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { addOrganizationImage as addOrganizationImageResolver } from "../../../src/resolvers/Mutation/addOrganizationImage";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
-import { ORGANIZATION_NOT_FOUND_ERROR } from "../../../src/constants";
+import {
+  ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
+} from "../../../src/constants";
 import { nanoid } from "nanoid";
 import {
   beforeAll,
@@ -23,6 +26,7 @@ import type {
   TestOrganizationType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { wait } from "./acceptAdmin.spec";
 
 const testImagePath = `${nanoid().toLowerCase()}test.png`;
 let testUser: TestUserType;
@@ -104,5 +108,17 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
     }).lean();
     expect(addOrganizationImagePayload).toEqual(updatedTestOrganization);
     expect(addOrganizationImagePayload?.image).toEqual(testImagePath);
+
+    await wait();
+
+    const mostRecentTransaction = await TransactionLog.findOne().sort({
+      createdAt: -1,
+    });
+
+    expect(mostRecentTransaction).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "Organization",
+    });
   });
 });

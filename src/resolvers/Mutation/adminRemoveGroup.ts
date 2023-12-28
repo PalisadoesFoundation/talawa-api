@@ -6,9 +6,11 @@ import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   CHAT_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables an admin to remove a group.
  * @param _parent - parent of current request
@@ -99,6 +101,12 @@ export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
   await GroupChat.deleteOne({
     _id: groupChat._id,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.DELETE,
+    "GroupChat",
+    `GroupChat:${groupChat._id} deleted`
+  );
 
   // Returns the deleted groupChat.
   return groupChat;

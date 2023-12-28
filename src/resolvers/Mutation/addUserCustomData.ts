@@ -4,8 +4,11 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { wait } from "../../../tests/resolvers/Mutation/acceptAdmin.spec";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 /**
  * This function enables a user to add data for a custom field for a joined organization.
@@ -63,6 +66,13 @@ export const addUserCustomData: MutationResolvers["addUserCustomData"] = async (
   }
 
   await userCustomData.save();
+
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.CREATE,
+    "UserCustomData",
+    `UserCustomData:${userCustomData._id} created`
+  );
 
   return userCustomData;
 };

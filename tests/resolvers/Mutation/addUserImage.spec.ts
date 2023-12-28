@@ -4,7 +4,10 @@ import { Types } from "mongoose";
 import { connect, disconnect } from "../../helpers/db";
 
 import type { MutationAddUserImageArgs } from "../../../src/types/generatedGraphQLTypes";
-import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
+import {
+  TRANSACTION_LOG_TYPES,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
 import {
   beforeAll,
   afterAll,
@@ -18,6 +21,8 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { addUserImage as addUserImageResolverUserImage } from "../../../src/resolvers/Mutation/addUserImage";
+import { wait } from "./acceptAdmin.spec";
+import { TransactionLog } from "../../../src/models";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -91,6 +96,18 @@ describe("resolvers -> Mutation -> addUserImage", () => {
       ...testUser?.toObject(),
 
       image: "newImageFile.png",
+    });
+
+    await wait();
+
+    const mostRecentTransaction = await TransactionLog.findOne().sort({
+      createdAt: -1,
+    });
+
+    expect(mostRecentTransaction).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
     });
   });
 });

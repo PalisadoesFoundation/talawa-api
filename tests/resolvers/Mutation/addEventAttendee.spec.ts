@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { EventAttendee, User } from "../../../src/models";
+import { EventAttendee, TransactionLog, User } from "../../../src/models";
 import type { MutationAddEventAttendeeArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import {
@@ -9,10 +9,12 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_ALREADY_REGISTERED_FOR_EVENT,
+  TRANSACTION_LOG_TYPES,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
 import { createTestEvent, type TestEventType } from "../../helpers/events";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -176,6 +178,16 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
 
     expect(payload).toEqual(requestUser);
     expect(isUserRegistered).toBeTruthy();
+
+    await wait();
+    const mostRecentTransaction = await TransactionLog.findOne().sort({
+      createdAt: -1,
+    });
+    expect(mostRecentTransaction).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.CREATE,
+      modelName: "EventAttendee",
+    });
   });
 
   it(`throws error if the request user with _id = args.data.userId is already registered for the event`, async () => {

@@ -43,6 +43,10 @@ afterEach(() => {
   vi.resetModules();
 });
 
+export function wait(milliseconds = 1000): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
 describe("resolvers -> Mutation -> acceptAdmin", () => {
   it(`throws not found error when user with _id === context.userId is null`, async () => {
     const { requestContext } = await import("../../../src/libraries");
@@ -175,7 +179,3 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     }
   });
 });
-
-function wait(milliseconds = 1000): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, milliseconds));
-}

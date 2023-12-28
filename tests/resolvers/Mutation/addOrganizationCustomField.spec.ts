@@ -14,9 +14,12 @@ import {
   CUSTOM_FIELD_NAME_MISSING,
   CUSTOM_FIELD_TYPE_MISSING,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
+import { wait } from "./acceptAdmin.spec";
+import { TransactionLog } from "../../../src/models";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -53,6 +56,24 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
     expect(newCustomField?.organizationId.toString()).toBe(
       testOrganization?._id.toString()
     );
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(2);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "Organization",
+    });
+
+    expect(mostRecentTransactions[1]).toMatchObject({
+      type: TRANSACTION_LOG_TYPES.CREATE,
+      modelName: "OrganizationCustomField",
+    });
   });
 
   it("should throw error when user attempting to add custom field is not an admin", async () => {

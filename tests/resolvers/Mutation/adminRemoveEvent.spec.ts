@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization, Event } from "../../../src/models";
+import { User, Organization, Event, TransactionLog } from "../../../src/models";
 import type { MutationAdminRemoveEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -9,6 +9,7 @@ import { adminRemoveEvent as adminRemoveEventResolver } from "../../../src/resol
 import {
   EVENT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -21,6 +22,7 @@ import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
 import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 import { cacheEvents } from "../../../src/services/EventCache/cacheEvents";
+import { wait } from "./acceptAdmin.spec";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -212,5 +214,22 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
         registeredEvents: expect.arrayContaining([]),
       })
     );
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find().sort({
+      createdAt: -1,
+    });
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "Event",
+    });
+
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
   });
 });

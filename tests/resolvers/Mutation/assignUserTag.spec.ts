@@ -10,6 +10,7 @@ import {
   TAG_NOT_FOUND,
   USER_DOES_NOT_BELONG_TO_TAGS_ORGANIZATION,
   USER_ALREADY_HAS_TAG,
+  TRANSACTION_LOG_TYPES,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -24,7 +25,8 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
 import type { TestUserTagType } from "../../helpers/tags";
 import { createRootTagWithOrg } from "../../helpers/tags";
-import { TagUser } from "../../../src/models";
+import { TagUser, TransactionLog } from "../../../src/models";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -231,6 +233,18 @@ describe("resolvers -> Mutation -> assignUserTag", () => {
     });
 
     expect(tagAssigned).toBeTruthy();
+
+    await wait();
+
+    const mostRecentTransaction = await TransactionLog.findOne().sort({
+      createdAt: -1,
+    });
+
+    expect(mostRecentTransaction).toMatchObject({
+      createdBy: adminUser?._id,
+      type: TRANSACTION_LOG_TYPES.CREATE,
+      modelName: "TagUser",
+    });
   });
 
   it(`Throws USER_ALREADY_HAS_TAG error if tag with _id === args.input.tagId is already assigned to user with _id === args.input.userId`, async () => {

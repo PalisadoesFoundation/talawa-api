@@ -9,10 +9,12 @@ import {
   USER_NOT_CHECKED_IN,
   FEEDBACK_ALREADY_SUBMITTED,
   USER_NOT_REGISTERED_FOR_EVENT,
+  TRANSACTION_LOG_TYPES,
 } from "./../../../src/constants";
 import { type TestUserType, createTestUser } from "./../../helpers/userAndOrg";
 import { createTestEvent, type TestEventType } from "../../helpers/events";
-import { CheckIn, EventAttendee } from "../../../src/models";
+import { CheckIn, EventAttendee, TransactionLog } from "../../../src/models";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let randomTestUser: TestUserType;
@@ -168,6 +170,26 @@ describe("resolvers -> Query -> addFeedback", () => {
       eventId: testEvent!._id,
       rating: 4,
       review: "Test Review",
+    });
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(2);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.CREATE,
+      modelName: "Feedback",
+    });
+
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "CheckIn",
     });
   });
 

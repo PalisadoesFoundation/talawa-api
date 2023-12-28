@@ -2,12 +2,14 @@ import {
   CUSTOM_FIELD_NAME_MISSING,
   CUSTOM_FIELD_TYPE_MISSING,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { OrganizationCustomField, Organization, User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 /**
  * This function enables an admin to add an organization colleciton field.
@@ -86,10 +88,23 @@ export const addOrganizationCustomField: MutationResolvers["addOrganizationCusto
 
     await newCollectionField.save();
 
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.CREATE,
+      "OrganizationCustomField",
+      `OrganizationCustomField:${newCollectionField._id} created`
+    );
+
     await Organization.findOneAndUpdate(
       { _id: organization._id },
       { $push: { collectionFields: newCollectionField._id } }
     ).lean();
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "Organization",
+      `Organization:${newCollectionField._id} updated collectionFields`
+    );
 
     return newCollectionField;
   };

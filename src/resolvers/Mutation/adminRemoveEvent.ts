@@ -6,12 +6,14 @@ import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { deleteEventFromCache } from "../../services/EventCache/deleteEventFromCache";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables an admin to remove a event
  * @param _parent - parent of current request
@@ -110,11 +112,23 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
       },
     }
   );
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${currentUser._id} updated eventAdmin, createdEvents, registeredEvents`
+  );
 
   // Deletes the event.
   await Event.deleteOne({
     _id: event._id,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.DELETE,
+    "Event",
+    `Event:${event._id} deleted`
+  );
 
   await deleteEventFromCache(event._id);
 

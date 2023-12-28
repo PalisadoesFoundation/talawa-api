@@ -10,8 +10,11 @@ import { disconnect, connect } from "../../helpers/db";
 import { addUserCustomData } from "../../../src/resolvers/Mutation/addUserCustomData";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
+import { TransactionLog } from "../../../src/models";
+import { wait } from "./acceptAdmin.spec";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -45,6 +48,18 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
       testOrganization?._id.toString()
     );
     expect(customDataDoc?.userId.toString()).toBe(testUser?._id.toString());
+
+    await wait();
+
+    const mostRecentTransaction = await TransactionLog.findOne().sort({
+      createdAt: -1,
+    });
+
+    expect(mostRecentTransaction).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.CREATE,
+      modelName: "UserCustomData",
+    });
   });
 
   it("should throw an error if the current user is not found", async () => {
