@@ -6,6 +6,7 @@ import { connect, disconnect } from "../../helpers/db";
 
 import { acceptAdmin as acceptAdminResolver } from "../../../src/resolvers/Mutation/acceptAdmin";
 import {
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -20,7 +21,7 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-import { User } from "../../../src/models";
+import { User, TransactionLog } from "../../../src/models";
 
 let testUserSuperAdmin: TestUserType;
 let testUserAdmin: TestUserType;
@@ -129,6 +130,22 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
       .lean();
 
     expect(updatedTestUser?.adminApproved).toEqual(true);
+
+    const transactionObject = {
+      createdBy: testUserSuperAdmin?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    };
+    await wait();
+    const mostRecentTransaction = await TransactionLog.findOne().sort({
+      createdAt: -1,
+    });
+    expect(mostRecentTransaction).toMatchObject({
+      ...transactionObject,
+      createdAt: expect.anything(),
+      updatedAt: expect.anything(),
+      message: expect.anything(),
+    });
   });
 
   it(`throws not found error when user with _id === args._id is null`, async () => {
@@ -158,3 +175,7 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     }
   });
 });
+
+function wait(milliseconds = 1000): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
