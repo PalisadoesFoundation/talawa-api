@@ -10,10 +10,10 @@ ___
 <!-- toc -->
 
 - [Issue Management](#issue-management)
-  - [New Issues](#new-issues)
-  - [Existing Issues](#existing-issues)
-  - [Feature Request Issues](#feature-request-issues)
-  - [Monitoring the Creation of New Issues](#monitoring-the-creation-of-new-issues)
+  * [New Issues](#new-issues)
+  * [Existing Issues](#existing-issues)
+  * [Feature Request Issues](#feature-request-issues)
+  * [Monitoring the Creation of New Issues](#monitoring-the-creation-of-new-issues)
 - [General Guidelines](#general-guidelines)
 
 <!-- tocstop -->
