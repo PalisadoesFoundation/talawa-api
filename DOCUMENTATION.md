@@ -1,16 +1,5 @@
 # Documentation
 Welcome to our documentation guide. Here are some useful tips you need to know!
-
-## Table of Contents
-
-<!-- toc -->
-
-- [Where to find our documentation](#where-to-find-our-documentation)
-- [How to use Docusaurus](#how-to-use-docusaurus)
-- [Other information](#other-information)
-
-<!-- tocstop -->
-
 ## Where to find our documentation
 
 Our documentation can be found in ONLY TWO PLACES:
