@@ -1,3 +1,15 @@
+
+
+<!-- toc -->
+
+- [Talawa API](#talawa-api)
+  * [Talawa Components](#talawa-components)
+  * [Documentation](#documentation)
+  * [Installation](#installation)
+  * [Image Upload](#image-upload)
+
+<!-- tocstop -->
+
 # Talawa API
 💬 Join the community on Slack. The link can be found in the `Talawa` [README.md](https://github.com/PalisadoesFoundation/talawa) file.
 
