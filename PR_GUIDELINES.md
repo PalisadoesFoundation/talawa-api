@@ -3,10 +3,10 @@
 <!-- toc -->
 
 - [Pull Request Guidelines](#pull-request-guidelines)
-  - [Pull Requests and Issues](#pull-requests-and-issues)
-  - [Testing](#testing)
-  - [Pull Request Processing](#pull-request-processing)
-    - [Only submit PRs against our `develop` branch, not the default `main` branch](#only-submit-prs-against-our-develop-branch-not-the-default-main-branch)
+  * [Pull Requests and Issues](#pull-requests-and-issues)
+  * [Testing](#testing)
+  * [Pull Request Processing](#pull-request-processing)
+    + [Only submit PRs against our `develop` branch, not the default `main` branch](#only-submit-prs-against-our-develop-branch-not-the-default-main-branch)
 
 <!-- tocstop -->
 
