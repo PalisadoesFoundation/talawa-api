@@ -18,8 +18,12 @@ npm run lint:fix
 
 npm run gen:schema
 
-# Generate table of contents for markdown files in root directory
-npm run update:toc
+# Check if any markdown files have been changed
+if git diff --cached --name-only | grep -E '\.md$'
+then
+  # Generate table of contents for markdown files in root directory
+  npm run generate:toc
+fi
 
 # Add the changes made to the stage
 git add .
