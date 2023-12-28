@@ -54,7 +54,7 @@ export type Advertisement = {
   __typename?: 'Advertisement';
   _id?: Maybe<Scalars['ID']>;
   endDate: Scalars['Date'];
-  mediaUrl: Scalars['String'];
+  mediaUrl?: Maybe<Scalars['URL']>;
   name: Scalars['String'];
   orgId?: Maybe<Scalars['ID']>;
   startDate: Scalars['Date'];
@@ -685,7 +685,7 @@ export type MutationCreateAdminArgs = {
 
 export type MutationCreateAdvertisementArgs = {
   endDate: Scalars['Date'];
-  mediaUrl: Scalars['String'];
+  mediaUrl?: InputMaybe<Scalars['URL']>;
   name: Scalars['String'];
   orgId: Scalars['ID'];
   startDate: Scalars['Date'];
@@ -2178,7 +2178,7 @@ export type RoleDirectiveResolver<Result, Parent, ContextType = any, Args = Role
 export type AdvertisementResolvers<ContextType = any, ParentType extends ResolversParentTypes['Advertisement'] = ResolversParentTypes['Advertisement']> = {
   _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  mediaUrl?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  mediaUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   orgId?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
@@ -2514,7 +2514,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   cancelMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationCancelMembershipRequestArgs, 'membershipRequestId'>>;
   checkIn?: Resolver<ResolversTypes['CheckIn'], ParentType, ContextType, RequireFields<MutationCheckInArgs, 'data'>>;
   createAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
-  createAdvertisement?: Resolver<ResolversTypes['Advertisement'], ParentType, ContextType, RequireFields<MutationCreateAdvertisementArgs, 'endDate' | 'mediaUrl' | 'name' | 'orgId' | 'startDate' | 'type'>>;
+  createAdvertisement?: Resolver<ResolversTypes['Advertisement'], ParentType, ContextType, RequireFields<MutationCreateAdvertisementArgs, 'endDate' | 'name' | 'orgId' | 'startDate' | 'type'>>;
   createComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'data' | 'postId'>>;
   createDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationCreateDirectChatArgs, 'data'>>;
   createDonation?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<MutationCreateDonationArgs, 'amount' | 'nameOfOrg' | 'nameOfUser' | 'orgId' | 'payPalId' | 'userId'>>;
