@@ -7,11 +7,13 @@ import {
   MEMBER_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_BLOCKING_SELF,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { Types } from "mongoose";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables blocking a user.
  * @param _parent - parent of current request
@@ -119,6 +121,12 @@ export const blockUser: MutationResolvers["blockUser"] = async (
       new: true,
     }
   );
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "Organization",
+    `Organization:${organization._id} updated blockedUsers`
+  );
 
   if (updatedOrganization !== null) {
     await cacheOrganizations([updatedOrganization]);
@@ -128,7 +136,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   Adds organization._id to organizationsBlockedBy list on user's document
   with _id === args.userId and returns the updated user.
   */
-  return await User.findOneAndUpdate(
+  const updatedUser = await User.findOneAndUpdate(
     {
       _id: args.userId,
     },
@@ -143,4 +151,13 @@ export const blockUser: MutationResolvers["blockUser"] = async (
   )
     .select(["-password"])
     .lean();
+
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${args.userId} updated organizationsBlockedBy`
+  );
+
+  return updatedUser!;
 };

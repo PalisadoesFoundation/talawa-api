@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { User } from "../../../src/models";
+import { TransactionLog, User } from "../../../src/models";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import type { MutationBlockPluginCreationBySuperadminArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -7,6 +7,7 @@ import { connect, disconnect } from "../../helpers/db";
 
 import { blockPluginCreationBySuperadmin as blockPluginCreationBySuperadminResolver } from "../../../src/resolvers/Mutation/blockPluginCreationBySuperadmin";
 import {
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -21,6 +22,7 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
+import { wait } from "./acceptAdmin.spec";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -121,5 +123,17 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
     }).lean();
 
     expect(blockPluginCreationBySuperadminPayload).toEqual(testUpdatedTestUser);
+
+    await wait();
+
+    const mostRecentTransaction = await TransactionLog.findOne().sort({
+      createdAt: -1,
+    });
+
+    expect(mostRecentTransaction).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
   });
 });

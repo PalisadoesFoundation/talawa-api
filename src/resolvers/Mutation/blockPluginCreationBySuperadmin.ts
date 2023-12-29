@@ -1,8 +1,9 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
-import { USER_NOT_FOUND_ERROR } from "../../constants";
+import { TRANSACTION_LOG_TYPES, USER_NOT_FOUND_ERROR } from "../../constants";
 import { superAdminCheck } from "../../utilities";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables an admin to create block plugin.
  * @param _parent - parent of current request
@@ -35,7 +36,7 @@ export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCrea
     Sets pluginCreationAllowed field on document of user with _id === args.userId
     to !args.blockUser and returns the updated user.
     */
-    return await User.findOneAndUpdate(
+    const updatedUser = await User.findOneAndUpdate(
       {
         _id: args.userId,
       },
@@ -48,4 +49,11 @@ export const blockPluginCreationBySuperadmin: MutationResolvers["blockPluginCrea
         new: true,
       }
     ).lean();
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "User",
+      `User:${args.userId} updated pluginCreationAllowed`
+    );
+    return updatedUser!;
   };

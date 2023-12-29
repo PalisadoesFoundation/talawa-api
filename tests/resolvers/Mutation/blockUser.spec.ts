@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization } from "../../../src/models";
+import { User, Organization, TransactionLog } from "../../../src/models";
 import type { MutationBlockUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -9,6 +9,7 @@ import { blockUser as blockUserResolver } from "../../../src/resolvers/Mutation/
 import {
   MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_BLOCKING_SELF,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_AUTHORIZED_ERROR,
@@ -30,6 +31,7 @@ import type {
 } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
 import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
+import { wait } from "./acceptAdmin.spec";
 
 let testUser: TestUserType;
 let testUser2: TestUserType;
@@ -292,5 +294,23 @@ describe("resolvers -> Mutation -> blockUser", () => {
       .lean();
 
     expect(testUpdatedOrganization?.blockedUsers).toEqual([testUser2?._id]);
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find().sort({
+      createdAt: -1,
+    });
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
+
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "Organization",
+    });
   });
 });
