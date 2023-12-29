@@ -2,12 +2,8 @@ import "dotenv/config";
 import type { Document } from "mongoose";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type {
-  InterfaceUser,
-  InterfaceMessageChat} from "../../../src/models";
-import {
-  TransactionLog,
- User } from "../../../src/models";
+import type { InterfaceUser, InterfaceMessageChat } from "../../../src/models";
+import { TransactionLog, User } from "../../../src/models";
 import type { MutationCreateMessageChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 

@@ -2,22 +2,29 @@ import "dotenv/config";
 import type { Document } from "mongoose";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceDonation } from "../../../src/models";
-import { Donation } from "../../../src/models";
+import type { InterfaceDonation} from "../../../src/models";
+import { TransactionLog , Donation } from "../../../src/models";
 import type { MutationDeleteDonationByIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { deleteDonationById as deleteDonationByIdResolver } from "../../../src/resolvers/Mutation/deleteDonationById";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import type {
+  TestUserType} from "../../helpers/userAndOrg";
+import {
+  createTestUserAndOrganization,
+} from "../../helpers/userAndOrg";
+import { TRANSACTION_LOG_TYPES } from "../../../src/constants";
+import { wait } from "./acceptAdmin.spec";
 
 let testDonation: InterfaceDonation & Document<any, any, InterfaceDonation>;
+let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   const temp = await createTestUserAndOrganization();
-  const testUser = temp[0];
+  testUser = temp[0];
 
   const testOrganization = temp[1];
 
@@ -40,11 +47,14 @@ describe("resolvers -> Mutation -> deleteDonationById", () => {
     const args: MutationDeleteDonationByIdArgs = {
       id: Types.ObjectId().toString(),
     };
+    const context = {
+      userId: testUser?._id,
+    };
 
     const deleteDonationByIdPayload = await deleteDonationByIdResolver?.(
       {},
       args,
-      {}
+      context
     );
 
     expect(deleteDonationByIdPayload).toEqual({
@@ -56,15 +66,30 @@ describe("resolvers -> Mutation -> deleteDonationById", () => {
     const args: MutationDeleteDonationByIdArgs = {
       id: testDonation._id,
     };
-
+    const context = {
+      userId: testUser?._id,
+    };
     const deleteDonationByIdPayload = await deleteDonationByIdResolver?.(
       {},
       args,
-      {}
+      context
     );
 
     expect(deleteDonationByIdPayload).toEqual({
       success: true,
+    });
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "Donation",
     });
   });
 });
