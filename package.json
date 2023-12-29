@@ -41,7 +41,7 @@
   },
   "homepage": "https://github.com/PalisadoesFoundation/talawa-api#readme",
   "dependencies": {
-    "@apollo/server": "^4.9.3",
+    "@apollo/server": "4.9.5",
     "@faker-js/faker": "^8.2.0",
     "@graphql-inspector/cli": "^4.0.3",
     "@graphql-tools/resolvers-composition": "^7.0.0",
