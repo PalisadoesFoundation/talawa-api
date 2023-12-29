@@ -1,6 +1,6 @@
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Advertisement, User } from "../../../src/models";
+import { Advertisement } from "../../../src/models";
 import type { MutationUpdateAdvertisementArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { updateAdvertisement as updateAdvertisementResolver } from "../../../src/resolvers/Mutation/updateAdvertisement";
@@ -10,49 +10,10 @@ import {
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
-
-type AdvertisementTypes = {
-  type: "POPUP" | "MENU" | "BANNER";
-  // Other properties specific to each type
-};
-
-// Define TestAdvertisementType
-type TestAdvertisementType = {
-  _id: string;
-  name: string;
-  link: string;
-  type: AdvertisementTypes;
-  startDate: string;
-  endDate: string;
-  // Add other fields based on your Advertisement model
-};
-
-// Function to create test advertisement
-const createTestAdvertisement = async (): Promise<TestAdvertisementType> => {
-  const testAdvertisementData = {
-    name: "Test Advertisement",
-    link: "https://example.com",
-    type: "POPUP",
-    startDate: "2023-01-01",
-    endDate: "2023-01-31",
-    // Add other fields based on your Advertisement model
-  };
-
-  // Create test advertisement in the database (assuming Advertisement model has create method)
-  const createdAdvertisement = await Advertisement.create(
-    testAdvertisementData
-  );
-
-  return {
-    _id: createdAdvertisement._id.toString(),
-    name: createdAdvertisement.name,
-    link: createdAdvertisement.link,
-    type: createdAdvertisement.type,
-    startDate: createdAdvertisement.startDate,
-    endDate: createdAdvertisement.endDate,
-    // Map other fields as needed
-  };
-};
+import {
+  createTestAdvertisement,
+  type TestAdvertisementType,
+} from "../../helpers/advertisement";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -138,7 +99,6 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         type: "POPUP",
         startDate: "2023-12-26",
         endDate: "2023-12-31",
-        // Include other fields you want to update
       },
     };
 

@@ -20,11 +20,11 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       );
     }
 
-    const add = await Advertisement.findOne({
+    const advertisement = await Advertisement.findOne({
       _id: args.input.id,
     }).lean();
 
-    if (!add) {
+    if (!advertisement) {
       throw new errors.NotFoundError(
         requestContext.translate(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE),
         ADVERTISEMENT_NOT_FOUND_ERROR.CODE,
