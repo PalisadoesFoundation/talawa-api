@@ -14,24 +14,25 @@ Try to use alphabetical structuring whereever possible. This saves the mental ov
 
 # Documentation
 
-GraphQL allows developers to document their whole graphQL api within the schema. This is done using of a pair of `"""` symbols. Any text enclosed within these symbols becomes a description for the field it precedes.
+GraphQL allows developers to document their whole GraphQL API within the schema. This is done using a pair of `"""` symbols. Any text enclosed within these symbols becomes a description for the field it precedes.
 
-Here's a good example:-
+    Here's a good example:-
+
+    ```graphql
+    """
+    This is the GraphQL object type of a user.
+    """
+    type User {
+        """
+        This is the unique id of the user.
+        """
+        id: String
 
         """
-        This is the graphQL object type of a user.
+        This is userName of the user.
         """
-        type User {
-            """
-            This is the unique id of the user.
-            """
-            id
-
-            """
-            This is userName of the user.
-            """
-            userName
-        }
+        userName: String  # Add the type for userName
+    }
 
         """
         This is the graphQL input type of the input required for updating a user.
