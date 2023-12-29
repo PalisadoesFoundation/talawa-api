@@ -8,7 +8,9 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   TAG_NOT_FOUND,
   TAG_ALREADY_EXISTS,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 export const createUserTag: MutationResolvers["createUserTag"] = async (
   _parent,
@@ -103,6 +105,12 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
   const newTag = await OrganizationTagUser.create({
     ...args.input,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.CREATE,
+    "OrganizationTagUser",
+    `OrganizationTagUser:${newTag._id} created`
+  );
 
   return newTag.toObject();
 };

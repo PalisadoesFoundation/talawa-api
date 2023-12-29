@@ -1,9 +1,10 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { Post, Comment } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import { POST_NOT_FOUND_ERROR } from "../../constants";
+import { POST_NOT_FOUND_ERROR, TRANSACTION_LOG_TYPES } from "../../constants";
 import { cacheComments } from "../../services/CommentCache/cacheComments";
 import { cachePosts } from "../../services/PostCache/cachePosts";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 /**
  * This function enables to create comment.
@@ -38,6 +39,12 @@ export const createComment: MutationResolvers["createComment"] = async (
     creator: context.userId,
     postId: args.postId,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.CREATE,
+    "Comment",
+    `Comment:${createdComment._id} created`
+  );
 
   await cacheComments([createdComment]);
 
@@ -54,6 +61,12 @@ export const createComment: MutationResolvers["createComment"] = async (
     {
       new: true,
     }
+  );
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "Post",
+    `Post:${args.postId} updated commentCount`
   );
 
   if (updatedPost !== null) {

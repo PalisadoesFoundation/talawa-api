@@ -7,10 +7,12 @@ import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_MEMBER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { Types } from "mongoose";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to create an admin for an organization.
  * @param _parent - parent of current request
@@ -119,6 +121,12 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
       new: true,
     }
   );
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "Organization",
+    `Organization:${organization._id} updated admins`
+  );
 
   if (updatedOrganization !== null) {
     await cacheOrganizations([updatedOrganization]);
@@ -128,7 +136,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   Adds organization._id to adminFor list on user's document with _id === args.data.userId
   and returns the updated user.
   */
-  return await User.findOneAndUpdate(
+  const updatedUser = await User.findOneAndUpdate(
     {
       _id: args.data.userId,
     },
@@ -143,4 +151,12 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   )
     .select(["-password"])
     .lean();
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${args.data.userId} updated adminFor`
+  );
+
+  return updatedUser!;
 };

@@ -6,9 +6,11 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
   MEMBER_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to add a member.
  * @param _parent - parent of current request
@@ -105,6 +107,12 @@ export const createMember: MutationResolvers["createMember"] = async (
       new: true,
     }
   );
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${args.input.userId} updated joinedOrganizations`
+  );
 
   // add user's id to members list on organization and return it.
   const updatedOrganization = await Organization.findOneAndUpdate(
@@ -120,6 +128,12 @@ export const createMember: MutationResolvers["createMember"] = async (
       new: true,
     }
   ).lean();
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "Organization",
+    `Organization:${organization._id} updated members`
+  );
 
   if (updatedOrganization !== null) {
     await cacheOrganizations([updatedOrganization]);

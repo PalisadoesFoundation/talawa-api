@@ -297,9 +297,11 @@ describe("resolvers -> Mutation -> blockUser", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find().sort({
-      createdAt: -1,
-    });
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(2);
 
     expect(mostRecentTransactions[0]).toMatchObject({
       createdBy: testUser?._id,

@@ -1,5 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { Plugin } from "../../models";
+import { storeTransaction } from "../../utilities/storeTransaction";
+import { TRANSACTION_LOG_TYPES } from "../../constants";
 
 /**
  * This function enables to create a plugin.
@@ -19,6 +21,13 @@ export const createPlugin: MutationResolvers["createPlugin"] = async (
     ...args,
     uninstalledOrgs: [],
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "Plugin",
+    `Plugin:${createdPlugin._id} created`
+  );
+
   // calls subscription
   context.pubsub.publish("TALAWA_PLUGIN_UPDATED", {
     Plugin: createdPlugin.toObject(),

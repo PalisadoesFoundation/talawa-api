@@ -1,5 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { Advertisement } from "../../models";
+import { storeTransaction } from "../../utilities/storeTransaction";
+import { TRANSACTION_LOG_TYPES } from "../../constants";
 // @ts-ignore
 export const createAdvertisement: MutationResolvers["createAdvertisement"] =
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -8,6 +10,12 @@ export const createAdvertisement: MutationResolvers["createAdvertisement"] =
     const createdAd = await Advertisement.create({
       ...args,
     });
+    storeTransaction(
+      _context.userId,
+      TRANSACTION_LOG_TYPES.CREATE,
+      "Advertisement",
+      `Advertisement:${createdAd._id} created`
+    );
     // Returns createdAd.
     return createdAd.toObject();
   };

@@ -4,6 +4,7 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_REGISTERED_FOR_EVENT,
   USER_ALREADY_CHECKED_IN,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
@@ -12,6 +13,7 @@ import { User, Event, EventAttendee, CheckIn } from "../../models";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { Types } from "mongoose";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 export const checkIn: MutationResolvers["checkIn"] = async (
   _parent,
@@ -105,15 +107,30 @@ export const checkIn: MutationResolvers["checkIn"] = async (
     allotedSeat: args.data.allotedSeat,
     allotedRoom: args.data.allotedRoom,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.CREATE,
+    "CheckIn",
+    `CheckIn:${checkIn._id} created`
+  );
 
-  await EventAttendee.updateOne(
+  const updatedEventAttendee = await EventAttendee.findOneAndUpdate(
     {
       eventId: args.data.eventId,
       userId: args.data.userId,
     },
     {
       checkInId: checkIn._id,
+    },
+    {
+      new: true,
     }
+  );
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "EventAttendee",
+    `EventAttendee:${updatedEventAttendee?._id} updated checkInId`
   );
 
   return checkIn.toObject();

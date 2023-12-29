@@ -5,7 +5,9 @@ import {
   USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to create a task.
  * @param _parent - parent of current request
@@ -64,6 +66,12 @@ export const createTask: MutationResolvers["createTask"] = async (
     eventProjectId: args.eventProjectId,
     creator: context.userId,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.CREATE,
+    "Task",
+    `Task:${createdTask._id} created`
+  );
 
   // Returns createdTask.
   return createdTask.toObject();

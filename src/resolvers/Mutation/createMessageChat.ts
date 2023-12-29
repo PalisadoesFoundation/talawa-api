@@ -1,7 +1,8 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, MessageChat } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import { USER_NOT_FOUND_ERROR } from "../../constants";
+import { TRANSACTION_LOG_TYPES, USER_NOT_FOUND_ERROR } from "../../constants";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to create a chat.
  * @param _parent - parent of current request
@@ -45,6 +46,12 @@ export const createMessageChat: MutationResolvers["createMessageChat"] = async (
     message: args.data.message,
     languageBarrier: !isSenderReceiverLanguageSame,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.CREATE,
+    "MessageChat",
+    `MessageChat:${createdMessageChat._id} created`
+  );
 
   context.pubsub.publish("CHAT_CHANNEL", {
     directMessageChat: {

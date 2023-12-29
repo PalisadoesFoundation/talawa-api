@@ -6,10 +6,12 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   EVENT_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { Types } from "mongoose";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 /**
  * This function enables to create an event project.
@@ -87,6 +89,12 @@ export const createEventProject: MutationResolvers["createEventProject"] =
       event: args.data.eventId,
       creator: context.userId,
     });
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.CREATE,
+      "EventProject",
+      `EventProject:${createdEventProject._id} created`
+    );
 
     // Returns createdEventProject.
     return createdEventProject.toObject();

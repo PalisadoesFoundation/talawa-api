@@ -4,9 +4,11 @@ import { errors, requestContext } from "../../libraries";
 import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to create a group chat.
  * @param _parent - parent of current request
@@ -75,6 +77,12 @@ export const createGroupChat: MutationResolvers["createGroupChat"] = async (
     organization: args.data?.organizationId,
     title: args.data?.title,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.CREATE,
+    "GroupChat",
+    `GroupChat:${createdGroupChat._id} created`
+  );
 
   // Returns createdGroupChat.
   return createdGroupChat.toObject();

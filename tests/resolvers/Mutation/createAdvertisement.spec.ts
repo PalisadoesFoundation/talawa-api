@@ -20,6 +20,9 @@ import {
   createTestUserAndOrganization,
   createTestUser,
 } from "../../helpers/userAndOrg";
+import { TransactionLog } from "../../../src/models";
+import { wait } from "./acceptAdmin.spec";
+import { TRANSACTION_LOG_TYPES } from "../../../src/constants";
 let testUser: TestUserType;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let randomUser: TestUserType;
@@ -82,5 +85,17 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     );
 
     expect(createdAdvertisementPayload).toHaveProperty("type", "POPUP");
+
+    await wait();
+
+    const mostRecentTransaction = await TransactionLog.findOne().sort({
+      createdAt: -1,
+    });
+
+    expect(mostRecentTransaction).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.CREATE,
+      modelName: "Advertisement",
+    });
   });
 });

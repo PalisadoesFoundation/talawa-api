@@ -8,11 +8,14 @@ import {
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
 import { createAndAssignTestTask } from "../../helpers/task";
 import type { TestEventProjectType } from "../../helpers/task";
+import { TransactionLog } from "../../../src/models";
+import { wait } from "./acceptAdmin.spec";
 
 let randomUser: TestUserType;
 let testUser: TestUserType;
@@ -121,5 +124,19 @@ describe("resolvers -> Mutation -> createTask", () => {
       })
     );
     expect(createTaskPayload?.deadline).toBeInstanceOf(Date);
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(2);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.CREATE,
+      modelName: "Task",
+    });
   });
 });

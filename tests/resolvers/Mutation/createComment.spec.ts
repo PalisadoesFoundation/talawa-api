@@ -1,16 +1,20 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Post } from "../../../src/models";
+import { Post, TransactionLog } from "../../../src/models";
 import type { MutationCreateCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { createComment as createCommentResolver } from "../../../src/resolvers/Mutation/createComment";
-import { POST_NOT_FOUND_ERROR } from "../../../src/constants";
+import {
+  POST_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
+} from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
 import type { TestUserType } from "../../helpers/userAndOrg";
+import { wait } from "./acceptAdmin.spec";
 
 let testUser: TestUserType;
 let testPost: TestPostType;
@@ -85,5 +89,24 @@ describe("resolvers -> Mutation -> createComment", () => {
     expect(createCommentPayload?.postId.toString()).toEqual(
       testPost?._id.toString()
     );
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(2);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "Post",
+    });
+
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.CREATE,
+      modelName: "Comment",
+    });
   });
 });

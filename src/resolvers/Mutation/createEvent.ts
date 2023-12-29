@@ -6,11 +6,13 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
   LENGTH_VALIDATION_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 import { compareDates } from "../../libraries/validators/compareDates";
 import { EventAttendee } from "../../models/EventAttendee";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 /**
  * This function enables to create an event.
@@ -126,15 +128,27 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     admins: [currentUser._id],
     organization: organization._id,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.CREATE,
+    "Event",
+    `Event:${createdEvent._id} created`
+  );
 
   if (createdEvent !== null) {
     await cacheEvents([createdEvent]);
   }
 
-  await EventAttendee.create({
+  const createdEventAttendee = await EventAttendee.create({
     userId: currentUser._id.toString(),
     eventId: createdEvent._id,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.CREATE,
+    "EventAttendee",
+    `EventAttendee:${createdEventAttendee._id} created`
+  );
 
   /*
   Adds createdEvent._id to eventAdmin, createdEvents and registeredEvents lists
@@ -151,6 +165,12 @@ export const createEvent: MutationResolvers["createEvent"] = async (
         registeredEvents: createdEvent._id,
       },
     }
+  );
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${currentUser._id} updated eventAdmin, createdEvents, registeredEvents`
   );
 
   /* Commenting out this notification code coz we don't use firebase anymore.

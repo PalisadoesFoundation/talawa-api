@@ -4,9 +4,11 @@ import { errors, requestContext } from "../../libraries";
 import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to create direct chat.
  * @param _parent - parent of current request
@@ -74,6 +76,12 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
     users: usersInDirectChat,
     organization: args.data.organizationId,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.CREATE,
+    "DirectChat",
+    `DirectChat:${createdDirectChat._id} created`
+  );
 
   // Returns createdDirectChat.
   return createdDirectChat.toObject();

@@ -6,6 +6,7 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
@@ -13,6 +14,7 @@ import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEn
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { cachePosts } from "../../services/PostCache/cachePosts";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to create a post.
  * @param _parent - parent of current request
@@ -131,6 +133,12 @@ export const createPost: MutationResolvers["createPost"] = async (
     imageUrl: uploadImageFileName,
     videoUrl: uploadVideoFileName,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.CREATE,
+    "Post",
+    `Post:${createdPost._id} created`
+  );
 
   if (createdPost !== null) {
     await cachePosts([createdPost]);
@@ -148,6 +156,12 @@ export const createPost: MutationResolvers["createPost"] = async (
       {
         new: true,
       }
+    );
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "Organization",
+      `Organization:${args.data.organizationId} updated pinnedPosts`
     );
 
     await cacheOrganizations([updatedOrganizaiton!]);

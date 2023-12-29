@@ -1,12 +1,13 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
-import { User } from "../../../src/models";
+import { TransactionLog, User } from "../../../src/models";
 import type { MutationCreateOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { createOrganization as createOrganizationResolver } from "../../../src/resolvers/Mutation/createOrganization";
 import {
   LENGTH_VALIDATION_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_SUPERADMIN,
 } from "../../../src/constants";
 import * as uploadImage from "../../../src/utilities/uploadImage";
@@ -22,6 +23,7 @@ import {
 import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
+import { wait } from "./acceptAdmin.spec";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -151,6 +153,24 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         adminFor: [createOrganizationPayload?._id],
       })
     );
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(2);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.CREATE,
+      modelName: "Organization",
+    });
   });
   it(`creates the organization without image and returns it`, async () => {
     vi.spyOn(uploadImage, "uploadImage").mockImplementation(
@@ -193,6 +213,25 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       })
     );
     expect(createOrganizationPayload?.image).toBe(null);
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(2);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.CREATE,
+      modelName: "Organization",
+    });
   });
 
   it(`throws String Length Validation error if name is greater than 256 characters`, async () => {

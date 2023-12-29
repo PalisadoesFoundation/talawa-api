@@ -2,12 +2,19 @@ import "dotenv/config";
 import type { Document } from "mongoose";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceUser, InterfaceMessageChat } from "../../../src/models";
-import { User } from "../../../src/models";
+import type {
+  InterfaceUser,
+  InterfaceMessageChat} from "../../../src/models";
+import {
+  TransactionLog,
+ User } from "../../../src/models";
 import type { MutationCreateMessageChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { USER_NOT_FOUND_ERROR } from "../../../src/constants";
+import {
+  TRANSACTION_LOG_TYPES,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
 import { nanoid } from "nanoid";
 import {
   beforeAll,
@@ -18,6 +25,7 @@ import {
   vi,
   afterEach,
 } from "vitest";
+import { wait } from "./acceptAdmin.spec";
 
 let testUsers: (InterfaceUser & Document<any, any, InterfaceUser>)[];
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -127,5 +135,19 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
         languageBarrier: false,
       })
     );
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUsers[0]?._id,
+      type: TRANSACTION_LOG_TYPES.CREATE,
+      modelName: "MessageChat",
+    });
   });
 });

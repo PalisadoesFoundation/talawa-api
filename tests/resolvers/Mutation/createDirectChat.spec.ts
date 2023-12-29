@@ -6,6 +6,7 @@ import { connect, disconnect } from "../../helpers/db";
 
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
@@ -22,6 +23,8 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { wait } from "./acceptAdmin.spec";
+import { TransactionLog } from "../../../src/models";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -125,5 +128,19 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
         organization: testOrganization?._id,
       })
     );
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.CREATE,
+      modelName: "DirectChat",
+    });
   });
 });

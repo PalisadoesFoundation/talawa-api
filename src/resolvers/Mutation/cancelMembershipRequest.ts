@@ -6,9 +6,11 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to cancel membership request.
  * @param _parent - parent of current request
@@ -91,6 +93,12 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
     await MembershipRequest.deleteOne({
       _id: membershipRequest._id,
     });
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.DELETE,
+      "MembershipRequest",
+      `MembershipRequest:${membershipRequest._id} deleted`
+    );
 
     // Removes membershipRequest._id from membershipRequests list on organization's document.
     const updatedOrganization = await Organization.findOneAndUpdate(
@@ -105,6 +113,12 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
       {
         new: true,
       }
+    );
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "Organization",
+      `Organization:${organization._id} updated membershipRequests`
     );
 
     if (updatedOrganization !== null) {
@@ -121,6 +135,12 @@ export const cancelMembershipRequest: MutationResolvers["cancelMembershipRequest
           membershipRequests: membershipRequest._id,
         },
       }
+    );
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "User",
+      `User:${currentUser._id} updated membershipRequests`
     );
 
     // Returns the deleted membershipRequest.

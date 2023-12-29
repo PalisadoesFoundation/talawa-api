@@ -10,6 +10,7 @@ import {
   LENGTH_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
   BASE_URL,
+  TRANSACTION_LOG_TYPES,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -28,9 +29,10 @@ import {
   createTestUserAndOrganization,
   createTestUser,
 } from "../../helpers/userAndOrg";
-import { Organization } from "../../../src/models";
+import { Organization, TransactionLog } from "../../../src/models";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { createPost as createPostResolverImage } from "../../../src/resolvers/Mutation/createPost";
+import { wait } from "./acceptAdmin.spec";
 
 let testUser: TestUserType;
 let randomUser: TestUserType;
@@ -201,6 +203,25 @@ describe("resolvers -> Mutation -> createPost", () => {
         .map((id) => id.toString())
         .includes(createdPost?._id.toString())
     ).toBeTruthy();
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(2);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "Organization",
+    });
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.CREATE,
+      modelName: "Post",
+    });
   });
 
   it(`creates the post and returns it when image is not provided`, async () => {
@@ -232,6 +253,19 @@ describe("resolvers -> Mutation -> createPost", () => {
         imageUrl: null,
       })
     );
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.CREATE,
+      modelName: "Post",
+    });
   });
 
   it(`creates the post and throws an error for unsupported file type`, async () => {

@@ -2,11 +2,15 @@ import "dotenv/config";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import { LENGTH_VALIDATION_ERROR } from "../../constants";
+import {
+  LENGTH_VALIDATION_ERROR,
+  TRANSACTION_LOG_TYPES,
+} from "../../constants";
 import { superAdminCheck } from "../../utilities";
 import { isValidString } from "../../libraries/validators/validateString";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to create an organization.
  * @param _parent - parent of current request
@@ -82,6 +86,12 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       admins: [context.userId],
       members: [context.userId],
     });
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.CREATE,
+      "Organization",
+      `Organization:${createdOrganization._id} created`
+    );
 
     await cacheOrganizations([createdOrganization.toObject()!]);
 
@@ -100,6 +110,12 @@ export const createOrganization: MutationResolvers["createOrganization"] =
           adminFor: createdOrganization._id,
         },
       }
+    );
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "User",
+      `User:${context.userId} updated joinedOrganizations, createdOrganizations, adminFor`
     );
 
     // Returns createdOrganization.
