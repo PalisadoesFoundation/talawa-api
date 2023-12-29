@@ -1,11 +1,17 @@
 import "dotenv/config";
-import { User, Organization, MembershipRequest } from "../../../src/models";
+import {
+  User,
+  Organization,
+  MembershipRequest,
+  TransactionLog,
+} from "../../../src/models";
 import type { MutationLoginArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { login as loginResolver } from "../../../src/resolvers/Mutation/login";
 import {
   INVALID_CREDENTIALS_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import bcrypt from "bcryptjs";
@@ -21,6 +27,7 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
+import { wait } from "./acceptAdmin.spec";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -183,6 +190,20 @@ email === args.data.email`, async () => {
     if (mockUser?.tokenVersion !== undefined) {
       expect(updatedUser?.tokenVersion).toBe(mockUser?.tokenVersion + 1);
     }
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
   });
 
   it(`returns the user object with populated fields joinedOrganizations, createdOrganizations,

@@ -12,7 +12,9 @@ import {
   INVALID_CREDENTIALS_ERROR,
   USER_NOT_FOUND_ERROR,
   LAST_RESORT_SUPERADMIN_EMAIL,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables login.
  * @param _parent - parent of current request
@@ -76,6 +78,12 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
   await User.findOneAndUpdate(
     { _id: user._id },
     { token: refreshToken, $inc: { tokenVersion: 1 } }
+  );
+  storeTransaction(
+    user._id,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${user._id} updated token, tokenVersion`
   );
 
   // Assigns new value with populated fields to user object.

@@ -5,10 +5,12 @@ import {
   USER_NOT_FOUND_ERROR,
   MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { Types } from "mongoose";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to leave an organization.
  * @param _parent - parent of current request
@@ -92,6 +94,12 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
       new: true,
     }
   );
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "Organization",
+    `Organization:${organization._id} updated admins, members`
+  );
 
   if (updatedOrganization !== null) {
     await cacheOrganizations([updatedOrganization]);
@@ -100,7 +108,7 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   Removes organization._id from joinedOrganizations list of currentUser's document
   and returns the updated currentUser.
   */
-  return await User.findOneAndUpdate(
+  const updatedUser = await User.findOneAndUpdate(
     {
       _id: currentUser._id,
     },
@@ -116,4 +124,11 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
   )
     .select(["-password"])
     .lean();
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${currentUser._id} updated joinedOrganizations, adminFor`
+  );
+  return updatedUser!;
 };

@@ -1,9 +1,13 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { Comment } from "../../models";
 import { errors, requestContext } from "../../libraries";
-import { COMMENT_NOT_FOUND_ERROR } from "../../constants";
+import {
+  COMMENT_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
+} from "../../constants";
 import { findCommentsInCache } from "../../services/CommentCache/findCommentsInCache";
 import { cacheComments } from "../../services/CommentCache/cacheComments";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to like a post.
  * @param _parent - parent of current request
@@ -71,6 +75,13 @@ export const likeComment: MutationResolvers["likeComment"] = async (
         new: true,
       }
     ).lean();
+
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "Comment",
+      `Comment:${comment._id} updated likedBy, likeCount`
+    );
 
     if (updatedComment !== null) {
       await cacheComments([updatedComment]);

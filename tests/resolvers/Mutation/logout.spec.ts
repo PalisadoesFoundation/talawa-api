@@ -1,6 +1,6 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
-import { User } from "../../../src/models";
+import { TransactionLog, User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 
 import { logout as logoutResolver } from "../../../src/resolvers/Mutation/logout";
@@ -15,6 +15,8 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
+import { wait } from "./acceptAdmin.spec";
+import { TRANSACTION_LOG_TYPES } from "../../../src/constants";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -51,5 +53,19 @@ describe("resolvers -> Mutation -> logout", () => {
       .lean();
 
     expect(updatedTestUser?.token).toEqual(null);
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
   });
 });

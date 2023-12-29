@@ -2,13 +2,16 @@ import "dotenv/config";
 import type { Document } from "mongoose";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceComment } from "../../../src/models";
-import { Post, Comment } from "../../../src/models";
+import type { InterfaceComment} from "../../../src/models";
+import { TransactionLog , Post, Comment } from "../../../src/models";
 import type { MutationLikeCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { likeComment as likeCommentResolver } from "../../../src/resolvers/Mutation/likeComment";
-import { COMMENT_NOT_FOUND_ERROR } from "../../../src/constants";
+import {
+  COMMENT_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
+} from "../../../src/constants";
 import {
   beforeAll,
   afterAll,
@@ -20,6 +23,7 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestPost } from "../../helpers/posts";
+import { wait } from "./acceptAdmin.spec";
 
 let testUser: TestUserType;
 let testComment: InterfaceComment & Document<any, any, InterfaceComment>;
@@ -102,6 +106,19 @@ describe("resolvers -> Mutation -> likeComment", () => {
 
     expect(likeCommentPayload?.likedBy).toEqual([testUser?._id]);
     expect(likeCommentPayload?.likeCount).toEqual(1);
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "Comment",
+    });
   });
 
   it(`returns comment object with _id === args.id without liking the comment if user with

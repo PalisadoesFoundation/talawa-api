@@ -5,7 +5,10 @@ import type { MutationLikePostArgs } from "../../../src/types/generatedGraphQLTy
 import { connect, disconnect } from "../../helpers/db";
 
 import { likePost as likePostResolver } from "../../../src/resolvers/Mutation/likePost";
-import { POST_NOT_FOUND_ERROR } from "../../../src/constants";
+import {
+  POST_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
+} from "../../../src/constants";
 import {
   beforeAll,
   afterAll,
@@ -18,6 +21,8 @@ import {
 import type { TestUserType } from "../../helpers/userAndOrg";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
+import { TransactionLog } from "../../../src/models";
+import { wait } from "./acceptAdmin.spec";
 
 let testUser: TestUserType;
 let testPost: TestPostType;
@@ -79,6 +84,20 @@ describe("resolvers -> Mutation -> likePost", () => {
 
     expect(likePostPayload?.likedBy).toEqual([testUser?._id]);
     expect(likePostPayload?.likeCount).toEqual(1);
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "Post",
+    });
   });
 
   it(`returns post object with _id === args.id without liking the post if user with

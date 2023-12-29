@@ -1,5 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
+import { TRANSACTION_LOG_TYPES } from "../../constants";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 /**
  * This function enables logout.
@@ -25,6 +27,12 @@ export const logout: MutationResolvers["logout"] = async (
         token: null,
       },
     }
+  );
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${context.userId} updated token`
   );
 
   // Returns true if the operation is successful.

@@ -1,13 +1,14 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceUser } from "../../../src/models";
-import { User } from "../../../src/models";
+import type { InterfaceUser} from "../../../src/models";
+import { TransactionLog , User } from "../../../src/models";
 import type { MutationRefreshTokenArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
   INVALID_REFRESH_TOKEN_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { createRefreshToken } from "../../../src/utilities";
@@ -22,6 +23,7 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
+import { wait } from "./acceptAdmin.spec";
 
 let testUser: TestUserType;
 let refreshToken: string;
@@ -242,5 +244,19 @@ describe("resolvers -> Mutation -> refreshToken", () => {
 
     expect(typeof refreshTokenPayload?.refreshToken).toEqual("string");
     expect(refreshTokenPayload?.refreshToken.length).toBeGreaterThan(1);
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
   });
 });

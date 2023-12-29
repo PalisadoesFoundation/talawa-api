@@ -11,8 +11,10 @@ import {
 import {
   INVALID_REFRESH_TOKEN_ERROR,
   REFRESH_TOKEN_SECRET,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 /**
  * This function creates a new access and refresh token.
@@ -94,6 +96,13 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
   await User.findOneAndUpdate(filter, update, {
     new: true,
   });
+
+  storeTransaction(
+    jwtPayload.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${jwtPayload.userId} updated token, tokenVersion`
+  );
 
   return {
     accessToken: newAccessToken,
