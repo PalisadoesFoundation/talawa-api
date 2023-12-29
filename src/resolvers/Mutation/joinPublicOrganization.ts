@@ -3,6 +3,7 @@ import { User, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_ALREADY_MEMBER_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -10,6 +11,7 @@ import {
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { Types } from "mongoose";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to join a public organization.
  * @param _parent - parent of current request
@@ -98,6 +100,12 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
         new: true,
       }
     );
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "Organization",
+      `Organization:${organization._id} updated members`
+    );
 
     if (updatedOrganization !== null) {
       await cacheOrganizations([updatedOrganization]);
@@ -107,7 +115,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
     Adds organization._id to joinedOrganizations list of currentUser's document
     with _id === context.userId and returns the updated currentUser.
     */
-    return await User.findOneAndUpdate(
+    const updatedUser = await User.findOneAndUpdate(
       {
         _id: context.userId,
       },
@@ -123,4 +131,12 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
       .select(["-password"])
       .populate("joinedOrganizations")
       .lean();
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "User",
+      `User:${context.userId} updated joinedOrganizations`
+    );
+
+    return updatedUser!;
   };

@@ -3,13 +3,14 @@ import type { MutationForgotPasswordArgs } from "../../../src/types/generatedGra
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { forgotPassword as forgotPasswordResolver } from "../../../src/resolvers/Mutation/forgotPassword";
-import { INVALID_OTP } from "../../../src/constants";
+import { INVALID_OTP, TRANSACTION_LOG_TYPES } from "../../../src/constants";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserFunc } from "../../helpers/user";
-import { User } from "../../../src/models";
+import { TransactionLog, User } from "../../../src/models";
+import { wait } from "./acceptAdmin.spec";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -87,5 +88,19 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
       .lean();
 
     expect(updatedTestUser?.password).not.toEqual(testUser!.password);
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
   });
 });

@@ -4,18 +4,14 @@ import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import type {
   InterfaceAdvertisement,
-  InterfaceDonation} from "../../../src/models";
-import {
-  TransactionLog,
- Advertisement } from "../../../src/models";
+  InterfaceDonation,
+} from "../../../src/models";
+import { TransactionLog, Advertisement } from "../../../src/models";
 import type { MutationDeleteDonationByIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import type {
-  TestUserType} from "../../helpers/userAndOrg";
-import {
-  createTestUserAndOrganization,
-} from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { deleteAdvertisementById } from "../../../src/resolvers/Mutation/deleteAdvertisementById";
 import { wait } from "./acceptAdmin.spec";
 import { TRANSACTION_LOG_TYPES } from "../../../src/constants";

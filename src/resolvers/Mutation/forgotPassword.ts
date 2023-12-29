@@ -1,8 +1,15 @@
 import bcrypt from "bcryptjs";
 import { jwtDecode } from "jwt-decode";
+<<<<<<< HEAD
 import { INVALID_OTP } from "../../constants";
 import { User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+=======
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { User } from "../../models";
+import { INVALID_OTP, TRANSACTION_LOG_TYPES } from "../../constants";
+import { storeTransaction } from "../../utilities/storeTransaction";
+>>>>>>> 2aee982 (Transaction logs added for forgotPassword and joinPublicOrganization mutation)
 /**
  * This function enables a user to restore password.
  * @param _parent - parent of current request
@@ -37,13 +44,19 @@ export const forgotPassword: MutationResolvers["forgotPassword"] = async (
   const hashedPassword = await bcrypt.hash(newPassword, 12);
 
   // Updates password field for user's document with email === email.
-  await User.updateOne(
+  const updatedUser = await User.findOneAndUpdate(
     {
       email,
     },
     {
       password: hashedPassword,
     }
+  );
+  storeTransaction(
+    updatedUser?._id,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${updatedUser?._id} updated password`
   );
 
   // Returns true if operation is successful.

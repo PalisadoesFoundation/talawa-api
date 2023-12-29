@@ -2,18 +2,15 @@ import "dotenv/config";
 import type { Document } from "mongoose";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceDonation} from "../../../src/models";
-import { TransactionLog , Donation } from "../../../src/models";
+import type { InterfaceDonation } from "../../../src/models";
+import { TransactionLog, Donation } from "../../../src/models";
 import type { MutationDeleteDonationByIdArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { deleteDonationById as deleteDonationByIdResolver } from "../../../src/resolvers/Mutation/deleteDonationById";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import type {
-  TestUserType} from "../../helpers/userAndOrg";
-import {
-  createTestUserAndOrganization,
-} from "../../helpers/userAndOrg";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { TRANSACTION_LOG_TYPES } from "../../../src/constants";
 import { wait } from "./acceptAdmin.spec";
 
