@@ -5,7 +5,9 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   CHAT_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to send message to group chat.
  * @param _parent - parent of current request
@@ -65,6 +67,12 @@ export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"]
       createdAt: new Date(),
       messageContent: args.messageContent,
     });
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.CREATE,
+      "GroupChatMessage",
+      `GroupChatMessage:${createdGroupChatMessage._id} created`
+    );
 
     // add createdGroupChatMessage to groupChat
     await GroupChat.updateOne(
@@ -76,6 +84,12 @@ export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"]
           messages: createdGroupChatMessage._id,
         },
       }
+    );
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "GroupChat",
+      `GroupChat:${args.chatId} updated messages`
     );
 
     // calls subscription

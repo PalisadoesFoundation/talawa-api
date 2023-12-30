@@ -4,15 +4,17 @@ import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import type {
   InterfaceDirectChat,
-  InterfaceDirectChatMessage,
-} from "../../../src/models";
-import { User, Organization, DirectChat } from "../../../src/models";
+  InterfaceDirectChatMessage} from "../../../src/models";
+import {
+  TransactionLog,
+ User, Organization, DirectChat } from "../../../src/models";
 import type { MutationSendMessageToDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { sendMessageToDirectChat as sendMessageToDirectChatResolver } from "../../../src/resolvers/Mutation/sendMessageToDirectChat";
 import {
   CHAT_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import {
@@ -26,6 +28,7 @@ import {
 } from "vitest";
 import { createTestUserFunc } from "../../helpers/user";
 import type { TestUserType } from "../../helpers/userAndOrg";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -174,5 +177,24 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         messageContent: "messageContent",
       })
     );
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(2);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUsers[0]?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "DirectChat",
+    });
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: testUsers[0]?._id,
+      type: TRANSACTION_LOG_TYPES.CREATE,
+      modelName: "DirectChatMessage",
+    });
   });
 });

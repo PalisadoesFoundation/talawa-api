@@ -1,12 +1,13 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User } from "../../../src/models";
+import { TransactionLog, User } from "../../../src/models";
 import type { MutationSignUpArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import {
   LAST_RESORT_SUPERADMIN_EMAIL,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../../src/constants";
 import { nanoid } from "nanoid";
 import {
@@ -25,6 +26,7 @@ import type {
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { signUp as signUpResolverImage } from "../../../src/resolvers/Mutation/signUp";
+import { wait } from "./acceptAdmin.spec";
 
 const testImagePath = `${nanoid().toLowerCase()}test.png`;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -135,6 +137,20 @@ describe("resolvers -> Mutation -> signUp", () => {
 
     expect(typeof signUpPayload?.refreshToken).toEqual("string");
     expect(signUpPayload?.refreshToken.length).toBeGreaterThan(1);
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: createdUser,
+      type: TRANSACTION_LOG_TYPES.CREATE,
+      modelName: "User",
+    });
   });
   it(`when uploadImage is called with newFile `, async () => {
     vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockImplementation(

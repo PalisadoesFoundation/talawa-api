@@ -1,8 +1,14 @@
 import "dotenv/config";
 import type { Document } from "mongoose";
 import type mongoose from "mongoose";
-import type { InterfaceEventProject} from "../../../src/models";
-import { TransactionLog , User, Organization, Event, EventProject } from "../../../src/models";
+import type { InterfaceEventProject } from "../../../src/models";
+import {
+  TransactionLog,
+  User,
+  Organization,
+  Event,
+  EventProject,
+} from "../../../src/models";
 import { nanoid } from "nanoid";
 import { connect, disconnect } from "../../helpers/db";
 

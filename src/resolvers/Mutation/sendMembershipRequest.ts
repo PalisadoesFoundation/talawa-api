@@ -1,12 +1,14 @@
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, MembershipRequest, Organization } from "../../models";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to send membership request.
  * @param _parent - parent of current request
@@ -63,6 +65,12 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
       user: context.userId,
       organization: organization._id,
     });
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.CREATE,
+      "MembershipRequest",
+      `MembershipRequest:${createdMembershipRequest._id} created`
+    );
 
     // add membership request to organization
     const updatedOrganization = await Organization.findOneAndUpdate(
@@ -78,6 +86,12 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
         new: true,
       }
     ).lean();
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "Organization",
+      `Organization:${organization._id} updated membershipRequests`
+    );
 
     if (updatedOrganization !== null) {
       await cacheOrganizations([updatedOrganization]);
@@ -93,6 +107,12 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
           membershipRequests: createdMembershipRequest._id,
         },
       }
+    );
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "User",
+      `User:${context.userId} updated membershipRequests`
     );
 
     return createdMembershipRequest.toObject();

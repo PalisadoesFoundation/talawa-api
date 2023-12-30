@@ -1,12 +1,13 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { TaskVolunteer } from "../../../src/models";
+import { TaskVolunteer, TransactionLog } from "../../../src/models";
 import type { MutationSetTaskVolunteersArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { setTaskVolunteers as setTaskVolunteersResolver } from "../../../src/resolvers/Mutation/setTaskVolunteers";
 import {
   TASK_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
   VOLUNTEER_NOT_FOUND_ERROR,
@@ -15,6 +16,7 @@ import {
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
 import { createAndAssignTestTask, type TestTaskType } from "../../helpers/task";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;

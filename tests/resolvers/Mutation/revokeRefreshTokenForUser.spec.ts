@@ -48,7 +48,7 @@ describe("resolvers -> Mutation -> revokeRefreshTokenForUser", () => {
       .sort({
         createdAt: -1,
       })
-      .limit(0);
+      .limit(1);
 
     expect(mostRecentTransactions[0]).toMatchObject({
       createdBy: testUser?._id,

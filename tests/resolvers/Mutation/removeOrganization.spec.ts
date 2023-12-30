@@ -5,15 +5,16 @@ import { Types } from "mongoose";
 import type {
   InterfaceOrganization,
   InterfaceComment,
-  InterfacePost} from "../../../src/models";
+  InterfacePost,
+} from "../../../src/models";
 import {
   TransactionLog,
-
   User,
   Organization,
   Post,
   Comment,
-  MembershipRequest} from "../../../src/models";
+  MembershipRequest,
+} from "../../../src/models";
 import type { MutationRemoveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 

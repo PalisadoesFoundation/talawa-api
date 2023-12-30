@@ -1,7 +1,12 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { DirectChat, DirectChatMessage, User } from "../../models";
-import { CHAT_NOT_FOUND_ERROR, USER_NOT_FOUND_ERROR } from "../../constants";
+import {
+  CHAT_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
+  USER_NOT_FOUND_ERROR,
+} from "../../constants";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to send message to direct chat.
  * @param _parent - parent of current request
@@ -50,6 +55,12 @@ export const sendMessageToDirectChat: MutationResolvers["sendMessageToDirectChat
       createdAt: new Date(),
       messageContent: args.messageContent,
     });
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.CREATE,
+      "DirectChatMessage",
+      `DirectChatMessage:${createdDirectChatMessage._id} created`
+    );
 
     // add createdDirectChatMessage to directChat
     await DirectChat.updateOne(
@@ -61,6 +72,12 @@ export const sendMessageToDirectChat: MutationResolvers["sendMessageToDirectChat
           messages: createdDirectChatMessage._id,
         },
       }
+    );
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "DirectChat",
+      `DirectChat:${directChat._id} updated messages`
     );
 
     // calls subscription

@@ -1,5 +1,6 @@
 import {
   TASK_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
   VOLUNTEER_NOT_FOUND_ERROR,
@@ -9,6 +10,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Task, TaskVolunteer } from "../../models";
 import { type ObjectId } from "mongoose";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 const verifyUser = async (
   userId: string,
@@ -104,14 +106,28 @@ export const setTaskVolunteers: MutationResolvers["setTaskVolunteers"] = async (
   await TaskVolunteer.deleteMany({
     taskId: args.id,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.DELETE,
+    "TaskVolunteer",
+    `TaskVolunteer with taskId equal to ${args.id} are deleted`
+  );
 
   // Add the new volunteers
-  await TaskVolunteer.create(
+  const createdTaskVolunteers = await TaskVolunteer.create(
     volunteerIds.map((volunteerId) => ({
       taskId: args.id,
       userId: volunteerId,
     }))
   );
+  createdTaskVolunteers.forEach((createdVolunteer) => {
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.CREATE,
+      "TaskVolunteer",
+      `TaskVolunteer:${createdVolunteer.id} created`
+    );
+  });
 
   return task;
 };

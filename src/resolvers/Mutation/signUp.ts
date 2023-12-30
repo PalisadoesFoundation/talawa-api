@@ -4,6 +4,7 @@ import {
   //LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   EMAIL_ALREADY_EXISTS_ERROR,
+  TRANSACTION_LOG_TYPES,
   //REGEX_VALIDATION_ERROR,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
@@ -17,6 +18,7 @@ import {
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { storeTransaction } from "../../utilities/storeTransaction";
 //import { isValidString } from "../../libraries/validators/validateString";
 //import { validatePassword } from "../../libraries/validators/validatePassword";
 /**
@@ -129,6 +131,12 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",
     adminApproved: isLastResortSuperAdmin,
   });
+  storeTransaction(
+    createdUser._id,
+    TRANSACTION_LOG_TYPES.CREATE,
+    "User",
+    `User:${createdUser._id} created`
+  );
 
   const accessToken = await createAccessToken(createdUser);
   const refreshToken = await createRefreshToken(createdUser);

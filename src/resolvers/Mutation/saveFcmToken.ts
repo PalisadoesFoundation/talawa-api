@@ -1,5 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
+import { storeTransaction } from "../../utilities/storeTransaction";
+import { TRANSACTION_LOG_TYPES } from "../../constants";
 /**
  * This function enables to save Fcm Token.
  * @param _parent - parent of current request
@@ -23,6 +25,12 @@ export const saveFcmToken: MutationResolvers["saveFcmToken"] = async (
         token: args.token,
       },
     }
+  );
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${context.userId} updated token`
   );
 
   return true;
