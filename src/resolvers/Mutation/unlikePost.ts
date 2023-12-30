@@ -1,10 +1,11 @@
-import { POST_NOT_FOUND_ERROR } from "../../constants";
+import { POST_NOT_FOUND_ERROR, TRANSACTION_LOG_TYPES } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfacePost } from "../../models";
 import { Post } from "../../models";
 import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
 import { cachePosts } from "../../services/PostCache/cachePosts";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to unlike a post.
  * @param _parent - parent of current request
@@ -64,6 +65,12 @@ export const unlikePost: MutationResolvers["unlikePost"] = async (
         new: true,
       }
     ).lean();
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "Post",
+      `Post:${post._id} updated likedBy, likeCount`
+    );
 
     if (updatedPost !== null) {
       await cachePosts([updatedPost]);

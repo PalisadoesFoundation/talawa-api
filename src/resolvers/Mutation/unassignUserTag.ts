@@ -6,7 +6,9 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   TAG_NOT_FOUND,
   USER_DOES_NOT_HAVE_THE_TAG,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
   _parent,
@@ -70,7 +72,7 @@ export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
   }
 
   // Check if the user already has been assigned the tag
-  const userAlreadyHasTag = await TagUser.exists({
+  const userAlreadyHasTag = await TagUser.findOne({
     ...args.input,
   });
 
@@ -86,6 +88,12 @@ export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
   await TagUser.deleteOne({
     ...args.input,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.DELETE,
+    "TagUser",
+    `TagUser:${userAlreadyHasTag?._id} deleted`
+  );
 
   return requestUser;
 };

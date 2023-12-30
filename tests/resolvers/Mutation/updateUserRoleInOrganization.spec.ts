@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Organization, User } from "../../../src/models";
+import { Organization, TransactionLog, User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 
 import bcrypt from "bcryptjs";
@@ -19,6 +19,7 @@ import {
   ADMIN_CANNOT_CHANGE_ITS_ROLE,
   ADMIN_CHANGING_ROLE_OF_CREATOR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_ERROR,
   USER_NOT_MEMBER_FOR_ORGANIZATION,
@@ -26,6 +27,7 @@ import {
 import type { MutationUpdateUserRoleInOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import type { TestUserType } from "../../helpers/user";
 import type { TestOrganizationType } from "../../helpers/userAndOrg";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUserSuperAdmin: TestUserType;
@@ -398,6 +400,26 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     );
     expect(updatedOrganizationCheck).toBe(true);
     expect(updatedUserCheck).toBe(true);
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(2);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: context.userId,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
+
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: context.userId,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "Organization",
+    });
   });
   it(`Check when SUPERUSER is changing the role of a ADMIN member to USER`, async () => {
     const { requestContext } = await import("../../../src/libraries");
@@ -435,5 +457,25 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
 
     expect(updatedOrgCheck).toBe(false);
     expect(updatedUserCheck).toBe(false);
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(2);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: context.userId,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
+
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: context.userId,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "Organization",
+    });
   });
 });

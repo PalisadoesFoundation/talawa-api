@@ -1,9 +1,13 @@
-import { COMMENT_NOT_FOUND_ERROR } from "../../constants";
+import {
+  COMMENT_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
+} from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { Comment } from "../../models";
 import { findCommentsInCache } from "../../services/CommentCache/findCommentsInCache";
 import { cacheComments } from "../../services/CommentCache/cacheComments";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to unlike a comment.
  * @param _parent - parent of current request
@@ -64,6 +68,12 @@ export const unlikeComment: MutationResolvers["unlikeComment"] = async (
         new: true,
       }
     ).lean();
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "Comment",
+      `Comment:${args.id} updated likedBy, likeCount`
+    );
 
     if (updatedComment !== null) {
       await cacheComments([updatedComment]);

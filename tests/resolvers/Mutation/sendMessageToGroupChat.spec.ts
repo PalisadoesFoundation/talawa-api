@@ -4,10 +4,9 @@ import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import type {
   InterfaceGroupChat,
-  InterfaceGroupChatMessage} from "../../../src/models";
-import {
-  TransactionLog,
- GroupChat } from "../../../src/models";
+  InterfaceGroupChatMessage,
+} from "../../../src/models";
+import { TransactionLog, GroupChat } from "../../../src/models";
 import type { MutationSendMessageToGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 

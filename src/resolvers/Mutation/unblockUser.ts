@@ -5,12 +5,15 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import type { InterfaceOrganization } from "../../models";
 import { Organization, User } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { Types } from "mongoose";
+import { storeTransaction } from "../../utilities/storeTransaction";
+import { originAgentCluster } from "helmet";
 /**
  * This function enables to unblock user.
  * @param _parent - parent of current request
@@ -97,12 +100,18 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
       new: true,
     }
   ).lean();
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "Organization",
+    `Organization:${organization?._id} updated blockedUsers`
+  );
 
   if (updatedOrganization !== null) {
     await cacheOrganizations([updatedOrganization]);
   }
   // remove the organization from the organizationsBlockedBy array inside the user record
-  return await User.findOneAndUpdate(
+  const updatedUser = await User.findOneAndUpdate(
     {
       _id: user._id,
     },
@@ -122,4 +131,13 @@ export const unblockUser: MutationResolvers["unblockUser"] = async (
   )
     .select(["-password"])
     .lean();
+
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${user._id} updated organizationsBlockedBy`
+  );
+
+  return updatedUser!;
 };

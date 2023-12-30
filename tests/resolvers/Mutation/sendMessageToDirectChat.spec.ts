@@ -4,10 +4,14 @@ import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import type {
   InterfaceDirectChat,
-  InterfaceDirectChatMessage} from "../../../src/models";
+  InterfaceDirectChatMessage,
+} from "../../../src/models";
 import {
   TransactionLog,
- User, Organization, DirectChat } from "../../../src/models";
+  User,
+  Organization,
+  DirectChat,
+} from "../../../src/models";
 import type { MutationSendMessageToDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 

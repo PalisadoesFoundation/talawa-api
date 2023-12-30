@@ -5,9 +5,11 @@ import { errors, requestContext } from "../../libraries";
 import {
   EVENT_NOT_FOUND_ERROR,
   EVENT_PROJECT_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 /**
  * This function enables to update an event project.
@@ -58,7 +60,7 @@ export const updateEventProject: MutationResolvers["updateEventProject"] =
       );
     }
 
-    return await EventProject.findOneAndUpdate(
+    const updatedProject = await EventProject.findOneAndUpdate(
       {
         _id: args.id,
       },
@@ -69,4 +71,11 @@ export const updateEventProject: MutationResolvers["updateEventProject"] =
         new: true,
       }
     ).lean();
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "EventProject",
+      `EventProject:${updatedProject?._id} updated`
+    );
+    return updatedProject!;
   };

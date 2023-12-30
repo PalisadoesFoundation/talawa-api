@@ -9,6 +9,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   TAG_NOT_FOUND,
   USER_DOES_NOT_HAVE_THE_TAG,
+  TRANSACTION_LOG_TYPES,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -23,7 +24,8 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
 import type { TestUserTagType } from "../../helpers/tags";
 import { createRootTagWithOrg } from "../../helpers/tags";
-import { TagUser } from "../../../src/models";
+import { TagUser, TransactionLog } from "../../../src/models";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -241,5 +243,19 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
     });
 
     expect(tagAssigned).toBeFalsy();
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: context.userId,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "TagUser",
+    });
   });
 });

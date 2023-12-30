@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Organization, User, Post } from "../../../src/models";
+import { Organization, User, Post, TransactionLog } from "../../../src/models";
 import type { MutationTogglePostPinArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -9,6 +9,7 @@ import {
   POST_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
+  TRANSACTION_LOG_TYPES,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -23,6 +24,7 @@ import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -198,5 +200,25 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
 
     expect(currentPostIsPinned).toBeFalsy();
     expect(updatedPost?.pinned).toBeFalsy();
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(2);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: context.userId,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "Post",
+    });
+
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: context.userId,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "Organization",
+    });
   });
 });

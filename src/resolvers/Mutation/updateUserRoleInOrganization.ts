@@ -3,6 +3,7 @@ import {
   ADMIN_CANNOT_CHANGE_ITS_ROLE,
   ADMIN_CHANGING_ROLE_OF_CREATOR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_ERROR,
   USER_NOT_MEMBER_FOR_ORGANIZATION,
@@ -10,6 +11,7 @@ import {
 import { errors, requestContext } from "../../libraries";
 import { Organization, User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 /**
  * This function enables a SUPERADMIN to change the role of a user in an organization.
@@ -127,15 +129,39 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
         { _id: args.userId },
         { $push: { adminFor: args.organizationId } }
       );
+      storeTransaction(
+        context.userId,
+        TRANSACTION_LOG_TYPES.UPDATE,
+        "Organization",
+        `Organization:${args.organizationId} updated admins`
+      );
+      storeTransaction(
+        context.userId,
+        TRANSACTION_LOG_TYPES.UPDATE,
+        "User",
+        `User:${args.userId} updated adminFor`
+      );
       return { ...organization, ...updatedOrg };
     } else {
       const updatedOrg = await Organization.updateOne(
         { _id: args.organizationId },
         { $pull: { admins: args.userId } }
       ).lean();
+      storeTransaction(
+        context.userId,
+        TRANSACTION_LOG_TYPES.UPDATE,
+        "Organization",
+        `Organization:${args.organizationId} updated admins`
+      );
       await User.updateOne(
         { _id: args.userId },
         { $pull: { adminFor: args.organizationId } }
+      );
+      storeTransaction(
+        context.userId,
+        TRANSACTION_LOG_TYPES.UPDATE,
+        "User",
+        `User:${args.userId} updated adminFor`
       );
       return { ...organization, ...updatedOrg };
     }

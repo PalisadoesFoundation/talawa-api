@@ -7,7 +7,9 @@ import {
   TAG_NOT_FOUND,
   NO_CHANGE_IN_TAG_NAME,
   TAG_ALREADY_EXISTS,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 export const updateUserTag: MutationResolvers["updateUserTag"] = async (
   _parent,
@@ -82,7 +84,7 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
   }
 
   // Update the title of the tag and return it
-  return await OrganizationTagUser.findOneAndUpdate(
+  const updatedOrgTagUser = await OrganizationTagUser.findOneAndUpdate(
     {
       _id: args.input._id,
     },
@@ -93,4 +95,13 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
       new: true,
     }
   ).lean();
+
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "OrganizationTagUser",
+    `OrganizationTagUser:${args.input._id} updated name`
+  );
+
+  return updatedOrgTagUser!;
 };

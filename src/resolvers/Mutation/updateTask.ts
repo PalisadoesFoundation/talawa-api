@@ -1,11 +1,13 @@
 import {
   TASK_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Task } from "../../models";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to update a task.
  * @param _parent - parent of current request
@@ -67,6 +69,12 @@ export const updateTask: MutationResolvers["updateTask"] = async (
       new: true,
     }
   ).lean();
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "Task",
+    `Task:${args.id} updated`
+  );
 
   return updatedTask;
 };

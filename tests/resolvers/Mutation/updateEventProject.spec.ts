@@ -2,8 +2,8 @@ import "dotenv/config";
 import type { Document } from "mongoose";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceEventProject } from "../../../src/models";
-import { User, Organization, Event, EventProject } from "../../../src/models";
+import type { InterfaceEventProject} from "../../../src/models";
+import { TransactionLog , User, Organization, Event, EventProject } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -19,11 +19,13 @@ import {
   EVENT_PROJECT_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../../src/constants";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
 import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -185,6 +187,19 @@ describe("resolvers -> Mutation -> createEventProject", () => {
       ...testEventProject.toObject(),
       title: "New Event Project title",
       description: "New Event Project Description",
+    });
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: context.userId,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "EventProject",
     });
   });
 });

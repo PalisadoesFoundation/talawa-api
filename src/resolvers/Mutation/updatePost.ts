@@ -6,12 +6,14 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   POST_NOT_FOUND_ERROR,
   LENGTH_VALIDATION_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
 import { cachePosts } from "../../services/PostCache/cachePosts";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 export const updatePost: MutationResolvers["updatePost"] = async (
   _parent,
@@ -98,6 +100,12 @@ export const updatePost: MutationResolvers["updatePost"] = async (
       new: true,
     }
   ).lean();
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "Post",
+    `Post:${args.id} updated`
+  );
 
   if (updatedPost !== null) {
     await cachePosts([updatedPost]);

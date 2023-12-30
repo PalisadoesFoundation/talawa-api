@@ -1,6 +1,8 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { Plugin } from "../../models";
 import mongoose from "mongoose";
+import { TRANSACTION_LOG_TYPES } from "../../constants";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 /**
  * This function enables to update plugin install status.
@@ -48,7 +50,12 @@ export const updatePluginStatus: MutationResolvers["updatePluginStatus"] =
         new: true,
       }
     ).lean();
-
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "Plugin",
+      `Plugin:${args.id} updated`
+    );
     // calls subscription
     context.pubsub.publish("TALAWA_PLUGIN_UPDATED", {
       Plugin: res,

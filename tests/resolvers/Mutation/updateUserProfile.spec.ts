@@ -2,8 +2,8 @@ import "dotenv/config";
 import type { Document } from "mongoose";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceUser } from "../../../src/models";
-import { User } from "../../../src/models";
+import type { InterfaceUser} from "../../../src/models";
+import { TransactionLog , User } from "../../../src/models";
 import type { MutationUpdateUserProfileArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -12,6 +12,7 @@ import { updateUserProfile as updateUserProfileResolver } from "../../../src/res
 import {
   BASE_URL,
   EMAIL_ALREADY_EXISTS_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { nanoid } from "nanoid";
@@ -24,6 +25,7 @@ import {
   vi,
   afterEach,
 } from "vitest";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: InterfaceUser & Document<any, any, InterfaceUser>;
@@ -334,6 +336,20 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       firstName: "newFirstName",
       lastName: "newLastName",
       image: null,
+    });
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: context.userId,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
     });
   });
 

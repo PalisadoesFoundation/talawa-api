@@ -2,6 +2,7 @@ import {
   POST_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
@@ -12,6 +13,7 @@ import { findOrganizationsInCache } from "../../services/OrganizationCache/findO
 import { Types } from "mongoose";
 import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
 import { cachePosts } from "../../services/PostCache/cachePosts";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 export const togglePostPin: MutationResolvers["togglePostPin"] = async (
   _parent,
@@ -106,6 +108,12 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
         new: true,
       }
     );
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "Organization",
+      `Organization:${args.id} updated pinnedPosts`
+    );
 
     if (updatedOrganization !== null) {
       await cacheOrganizations([updatedOrganization]);
@@ -121,6 +129,12 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
         },
       }
     ).lean();
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "Post",
+      `Post:${args.id} updated pinned`
+    );
 
     if (updatedPost !== null) {
       await cachePosts([updatedPost]);
@@ -141,6 +155,12 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
         new: true,
       }
     );
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "Organization",
+      `Organization:${args.id} updated pinnedPosts`
+    );
 
     if (updatedOrganization !== null) {
       await cacheOrganizations([updatedOrganization]);
@@ -155,6 +175,12 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
         },
       }
     ).lean();
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "Post",
+      `Post:${args.id} updated pinned`
+    );
 
     if (updatedPost !== null) {
       await cachePosts([updatedPost]);

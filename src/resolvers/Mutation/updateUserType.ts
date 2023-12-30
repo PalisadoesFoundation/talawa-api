@@ -3,9 +3,11 @@ import { User } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   SUPERADMIN_CANT_CHANGE_OWN_ROLE,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { superAdminCheck } from "../../utilities";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to update user type.
  * @param _parent - parent of current request
@@ -63,6 +65,12 @@ export const updateUserType: MutationResolvers["updateUserType"] = async (
       userType: args.data.userType!,
       adminApproved: true,
     }
+  );
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${args.data.id} updated userType, adminApproved`
   );
 
   return true;

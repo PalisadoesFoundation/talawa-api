@@ -1,5 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
+import { storeTransaction } from "../../utilities/storeTransaction";
+import { TRANSACTION_LOG_TYPES } from "../../constants";
 /**
  * This function enables to update language.
  * @param _parent - parent of current request
@@ -14,7 +16,7 @@ export const updateLanguage: MutationResolvers["updateLanguage"] = async (
   args,
   context
 ) => {
-  return await User.findOneAndUpdate(
+  const updatedUser = await User.findOneAndUpdate(
     {
       _id: context.userId,
     },
@@ -27,4 +29,11 @@ export const updateLanguage: MutationResolvers["updateLanguage"] = async (
       new: true,
     }
   ).lean();
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${updatedUser?._id} updated appLanguageCode`
+  );
+  return updatedUser!;
 };

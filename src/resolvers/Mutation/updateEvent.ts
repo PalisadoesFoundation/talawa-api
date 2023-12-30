@@ -7,11 +7,13 @@ import {
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   LENGTH_VALIDATION_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { Types } from "mongoose";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to update an event.
  * @param _parent - parent of current request
@@ -126,6 +128,12 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
       new: true,
     }
   ).lean();
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "Event",
+    `Event:${updatedEvent?._id} updated`
+  );
 
   if (updatedEvent !== null) {
     await cacheEvents([updatedEvent]);

@@ -4,10 +4,12 @@ import type { InterfaceEvent } from "../../models";
 import { Event, EventAttendee } from "../../models";
 import {
   EVENT_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_ALREADY_UNREGISTERED_ERROR,
 } from "../../constants";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 /**
  * This function enables a user to unregister from an event.
@@ -47,7 +49,7 @@ export const unregisterForEventByUser: MutationResolvers["unregisterForEventByUs
       );
     }
 
-    const userRegisteredForEvent = await EventAttendee.exists({
+    const userRegisteredForEvent = await EventAttendee.findOne({
       userId: context.userId,
       eventId: args.id,
     });
@@ -64,6 +66,12 @@ export const unregisterForEventByUser: MutationResolvers["unregisterForEventByUs
       userId: context.userId,
       eventId: args.id,
     });
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.DELETE,
+      "EventAttendee",
+      `EventAttendee:${userRegisteredForEvent._id} deleted`
+    );
 
     return event;
   };

@@ -10,6 +10,7 @@ import {
   TAG_NOT_FOUND,
   NO_CHANGE_IN_TAG_NAME,
   TAG_ALREADY_EXISTS,
+  TRANSACTION_LOG_TYPES,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -24,7 +25,8 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
 import type { TestUserTagType } from "../../helpers/tags";
 import { createRootTagsWithOrg } from "../../helpers/tags";
-import { OrganizationTagUser } from "../../../src/models";
+import { OrganizationTagUser, TransactionLog } from "../../../src/models";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -227,5 +229,19 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     }).lean();
 
     expect(updatedTag!.name).toEqual("NewName");
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: context.userId,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "OrganizationTagUser",
+    });
   });
 });

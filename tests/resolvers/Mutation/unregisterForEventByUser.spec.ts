@@ -1,12 +1,13 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, EventAttendee } from "../../../src/models";
+import { User, EventAttendee, TransactionLog } from "../../../src/models";
 import type { MutationUnregisterForEventByUserArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
   EVENT_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_ALREADY_UNREGISTERED_ERROR,
 } from "../../../src/constants";
 import {
@@ -21,6 +22,7 @@ import {
 import type { TestUserType } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -136,5 +138,19 @@ describe("resolvers -> Mutation -> unregisterForEventByUser", () => {
     });
 
     expect(isUserRegistered).toBeFalsy();
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: context.userId,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "EventAttendee",
+    });
   });
 });

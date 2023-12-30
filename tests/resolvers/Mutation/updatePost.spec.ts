@@ -1,18 +1,20 @@
 import "dotenv/config";
 import { Types } from "mongoose";
-import { Post } from "../../../src/models";
+import { Post, TransactionLog } from "../../../src/models";
 import type { MutationUpdatePostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { updatePost as updatePostResolver } from "../../../src/resolvers/Mutation/updatePost";
 import {
   LENGTH_VALIDATION_ERROR,
   POST_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
+import { wait } from "./acceptAdmin.spec";
 
 let testUser: TestUserType;
 let testPost: TestPostType;
@@ -135,6 +137,19 @@ describe("resolvers -> Mutation -> updatePost", () => {
     }).lean();
 
     expect(updatePostPayload).toEqual(testUpdatePostPayload);
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: context.userId,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "Post",
+    });
   });
   it(`throws String Length Validation error if title is greater than 256 characters`, async () => {
     const { requestContext } = await import("../../../src/libraries");

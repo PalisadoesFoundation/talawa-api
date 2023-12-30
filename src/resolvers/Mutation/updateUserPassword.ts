@@ -1,11 +1,13 @@
 import {
   INVALID_CREDENTIALS_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
 import bcrypt from "bcryptjs";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 export const updateUserPassword: MutationResolvers["updateUserPassword"] =
   async (_parent, args, context) => {
@@ -59,7 +61,7 @@ export const updateUserPassword: MutationResolvers["updateUserPassword"] =
 
     const hashedPassword = await bcrypt.hash(args.data.newPassword, 12);
 
-    return await User.findOneAndUpdate(
+    const updatedUser = await User.findOneAndUpdate(
       {
         _id: context.userId,
       },
@@ -73,4 +75,12 @@ export const updateUserPassword: MutationResolvers["updateUserPassword"] =
         new: true,
       }
     ).lean();
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "User",
+      `User:${context.userId} updated password, token`
+    );
+
+    return updatedUser!;
   };

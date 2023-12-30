@@ -1,16 +1,20 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Post } from "../../../src/models";
+import { Post, TransactionLog } from "../../../src/models";
 import type { MutationUnlikePostArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { unlikePost as unlikePostResolver } from "../../../src/resolvers/Mutation/unlikePost";
-import { POST_NOT_FOUND_ERROR } from "../../../src/constants";
+import {
+  POST_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
+} from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import type { TestPostType } from "../../helpers/posts";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -97,5 +101,19 @@ describe("resolvers -> Mutation -> unlikePost", () => {
     }).lean();
 
     expect(unlikePostPayload).toEqual(testUnlikePostPayload);
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: context.userId,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "Post",
+    });
   });
 });

@@ -1,5 +1,6 @@
 import {
   EMAIL_ALREADY_EXISTS_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
@@ -7,6 +8,7 @@ import { errors, requestContext } from "../../libraries";
 import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to update user profile.
  * @param _parent - parent of current request
@@ -128,6 +130,13 @@ export const updateUserProfile: MutationResolvers["updateUserProfile"] = async (
       runValidators: true,
     }
   ).lean();
+
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${context.userId} updated`
+  );
   updatedUser!.image = updatedUser?.image
     ? `${context.apiRootUrl}${updatedUser?.image}`
     : null;

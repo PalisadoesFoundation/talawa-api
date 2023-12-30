@@ -1,12 +1,16 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { Organization } from "../../models";
-import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
+import {
+  ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
+} from "../../constants";
 import { adminCheck } from "../../utilities";
 
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to update an organization.
  * @param _parent - parent of current request
@@ -68,6 +72,12 @@ export const updateOrganization: MutationResolvers["updateOrganization"] =
         new: true,
       }
     ).lean();
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "Organization",
+      `Organization:${organization?._id} updated`
+    );
 
     if (updatedOrganization !== null) {
       await cacheOrganizations([updatedOrganization]);
