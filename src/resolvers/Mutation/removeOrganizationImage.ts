@@ -1,6 +1,7 @@
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   ORGANIZATION_IMAGE_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
@@ -8,6 +9,7 @@ import { Organization } from "../../models";
 import { adminCheck, deleteImage } from "../../utilities";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to remove an organization's image.
  * @param _parent - parent of current request
@@ -74,6 +76,12 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
         new: true,
       }
     ).lean();
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.DELETE,
+      "Organization",
+      `Organization:${organization._id} updated image`
+    );
 
     if (updatedOrganization !== null) {
       await cacheOrganizations([updatedOrganization]);

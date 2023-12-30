@@ -1,7 +1,12 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Event, EventAttendee } from "../../../src/models";
+import {
+  User,
+  Event,
+  EventAttendee,
+  TransactionLog,
+} from "../../../src/models";
 import type { MutationRegisterForEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -9,6 +14,7 @@ import { registerForEvent as registerForEventResolver } from "../../../src/resol
 import {
   EVENT_NOT_FOUND_ERROR,
   REGISTRANT_ALREADY_EXIST_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -22,6 +28,7 @@ import {
 import type { TestUserType } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
+import { wait } from "./acceptAdmin.spec";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -138,5 +145,24 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
       .lean();
 
     expect(updatedTestUser?.registeredEvents).toEqual([testEvent?._id]);
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(2);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.CREATE,
+      modelName: "EventAttendee",
+    });
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
   });
 });

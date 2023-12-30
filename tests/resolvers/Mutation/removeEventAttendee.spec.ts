@@ -1,11 +1,12 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { EventAttendee, User } from "../../../src/models";
+import { EventAttendee, TransactionLog, User } from "../../../src/models";
 import type { MutationRemoveEventAttendeeArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import {
   EVENT_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_REGISTERED_FOR_EVENT,
@@ -13,6 +14,7 @@ import {
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
 import { createTestEvent, type TestEventType } from "../../helpers/events";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -210,5 +212,19 @@ describe("resolvers -> Mutation -> removeEventAttendee", () => {
 
     expect(payload).toEqual(requestUser);
     expect(isUserRegistered).toBeFalsy();
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "EventAttendee",
+    });
   });
 });

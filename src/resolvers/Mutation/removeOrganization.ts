@@ -11,11 +11,13 @@ import { superAdminCheck } from "../../utilities";
 import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { deleteOrganizationFromCache } from "../../services/OrganizationCache/deleteOrganizationFromCache";
 import { deletePreviousImage as deleteImage } from "../../utilities/encodedImageStorage/deletePreviousImage";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to remove an organization.
  * @param _parent - parent of current request
@@ -69,7 +71,19 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
 
     // Remove each post and comments associated to it for organization.posts list.
     await Post.deleteMany({ _id: { $in: organization.posts } });
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.DELETE,
+      "Post",
+      `Post with _id in ${organization.posts} are deleted`
+    );
     await Comment.deleteMany({ postId: { $in: organization.posts } });
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.DELETE,
+      "Comment",
+      `Comment with postId in ${organization.posts} are deleted`
+    );
 
     // Remove organization._id from createdOrganizations list of currentUser.
     await User.updateOne(
@@ -82,17 +96,35 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
         },
       }
     );
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "User",
+      `User:${currentUser._id} updated createdOrganizations`
+    );
 
     // Remove organization._id from each member's joinedOrganizations field for organization.members list.
     await User.updateMany(
       { _id: { $in: organization.members } },
       { $pull: { joinedOrganizations: organization._id } }
     );
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "User",
+      `User with _id in ${organization.members} are updated`
+    );
 
     // Remove organization._id from each admin's joinedOrganizations field for organization.admins list.
     await User.updateMany(
       { _id: { $in: organization.admins } },
       { $pull: { joinedOrganizations: organization._id } }
+    );
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "User",
+      `User with _id in ${organization.admins} are updated`
     );
 
     /*
@@ -106,6 +138,12 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     await MembershipRequest.deleteMany({
       _id: { $in: organization.membershipRequests },
     });
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.DELETE,
+      "MembershipRequest",
+      `MembershipRequest with _id in ${organization.membershipRequests} are deleted`
+    );
 
     await User.updateMany(
       { _id: { $in: membershipRequests.map((r) => r.user._id) } },
@@ -114,6 +152,14 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
           membershipRequests: { $in: organization.membershipRequests },
         },
       }
+    );
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "User",
+      `User with _id in ${membershipRequests.map(
+        (r) => r.user._id
+      )} are updated`
     );
 
     /* 
@@ -124,11 +170,25 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
       { _id: { $in: organization.blockedUsers } },
       { $pull: { organizationsBlockedBy: organization._id } }
     );
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "User",
+      `User with _id in ${membershipRequests.map(
+        (r) => r.user._id
+      )} are updated`
+    );
 
     // Deletes the organzation.
     await Organization.deleteOne({
       _id: organization._id,
     });
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.DELETE,
+      "Organization",
+      `Organization:${organization._id} deleted`
+    );
 
     await deleteOrganizationFromCache(organization);
 

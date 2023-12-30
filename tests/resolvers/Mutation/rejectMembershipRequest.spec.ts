@@ -1,7 +1,12 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization, MembershipRequest } from "../../../src/models";
+import {
+  User,
+  Organization,
+  MembershipRequest,
+  TransactionLog,
+} from "../../../src/models";
 import type { MutationRejectMembershipRequestArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -9,6 +14,7 @@ import { rejectMembershipRequest as rejectMembershipRequestResolver } from "../.
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -27,6 +33,7 @@ import type {
 } from "../../helpers/userAndOrg";
 import type { TestMembershipRequestType } from "../../helpers/membershipRequests";
 import { createTestMembershipRequest } from "../../helpers/membershipRequests";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -265,5 +272,29 @@ describe("resolvers -> Mutation -> rejectMembershipRequest", () => {
       .lean();
 
     expect(testUpdatedOrganization?.membershipRequests).toEqual([]);
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(3);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "Organization",
+    });
+    expect(mostRecentTransactions[2]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "MembershipRequest",
+    });
   });
 });

@@ -2,13 +2,14 @@ import "dotenv/config";
 import type { Document } from "mongoose";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceComment } from "../../../src/models";
-import { Comment, Post, User } from "../../../src/models";
+import type { InterfaceComment} from "../../../src/models";
+import { TransactionLog , Comment, Post, User } from "../../../src/models";
 import type { MutationRemoveCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { removeComment as removeCommentResolver } from "../../../src/resolvers/Mutation/removeComment";
 import {
   COMMENT_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -25,6 +26,7 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
 import { cacheComments } from "../../../src/services/CommentCache/cacheComments";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -233,5 +235,24 @@ describe("resolvers -> Mutation -> removeComment", () => {
     expect(removeCommentPayload).toEqual(testComment?.toObject());
     expect(commentExists).toBeFalsy();
     expect(testUpdatedPost?.commentCount).toEqual(0);
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(2);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "Comment",
+    });
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "Post",
+    });
   });
 });

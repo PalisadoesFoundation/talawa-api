@@ -20,7 +20,12 @@ import {
   createTestUserAndOrganization,
   createTestUser,
 } from "../../helpers/userAndOrg";
-import { ADVERTISEMENT_NOT_FOUND_ERROR } from "../../../src/constants";
+import {
+  ADVERTISEMENT_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
+} from "../../../src/constants";
+import { wait } from "./acceptAdmin.spec";
+import { TransactionLog } from "../../../src/models";
 
 let testUser: TestUserType;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -101,6 +106,20 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
     );
 
     expect(removeAdvertisementPayload).toHaveProperty("type", "POPUP");
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "Advertisement",
+    });
   });
   it("should throw NOT_FOUND_ERROR on wrong advertisement", async () => {
     // deleting

@@ -1,7 +1,12 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization, GroupChat } from "../../../src/models";
+import {
+  User,
+  Organization,
+  GroupChat,
+  TransactionLog,
+} from "../../../src/models";
 import type { MutationRemoveUserFromGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -9,6 +14,7 @@ import { removeUserFromGroupChat as removeUserFromGroupChatResolver } from "../.
 import {
   CHAT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
@@ -19,6 +25,7 @@ import type {
 import type { TestGroupChatType } from "../../helpers/groupChat";
 import { createTestGroupChatMessage } from "../../helpers/groupChat";
 import { deleteOrganizationFromCache } from "../../../src/services/OrganizationCache/deleteOrganizationFromCache";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -185,6 +192,20 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
     expect(removeUserFromGroupChatPayload).toEqual(
       testRemoveUserFromGroupChatPayload
     );
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "GroupChat",
+    });
   });
 
   it(`throws NotFoundError if no organization exists for groupChat with _id === args.chatId`, async () => {

@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization } from "../../../src/models";
+import { User, Organization, TransactionLog } from "../../../src/models";
 import type { MutationRemoveMemberArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -10,6 +10,7 @@ import {
   ADMIN_REMOVING_CREATOR,
   MEMBER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ADMIN,
   USER_NOT_FOUND_ERROR,
   USER_REMOVING_SELF,
@@ -28,6 +29,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserFunc } from "../../helpers/user";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -350,5 +352,24 @@ describe("resolvers -> Mutation -> removeMember", () => {
     expect(removedUser?.joinedOrganizations).not.toContain(
       testOrganization?._id
     );
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(2);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUsers[1]?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: testUsers[1]?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "Organization",
+    });
   });
 });

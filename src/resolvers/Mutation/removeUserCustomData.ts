@@ -7,7 +7,9 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
   CUSTOM_DATA_NOT_FOUND,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 export const removeUserCustomData: MutationResolvers["removeUserCustomData"] =
   async (_parent, args, context) => {
@@ -55,6 +57,12 @@ export const removeUserCustomData: MutationResolvers["removeUserCustomData"] =
       userId: context.userId,
       organizationId,
     }).lean();
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.DELETE,
+      "UserCustomData",
+      `UserCustomData:${userCustomData?._id} deleted`
+    );
 
     if (!userCustomData) {
       throw new errors.NotFoundError(

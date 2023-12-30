@@ -16,9 +16,12 @@ import { connect, disconnect } from "../../helpers/db";
 import {
   CUSTOM_DATA_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
+import { TransactionLog } from "../../../src/models";
+import { wait } from "./acceptAdmin.spec";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -64,6 +67,20 @@ describe("removeUserCustomData mutation", () => {
     expect(removeCustomData?.userId).toBe(addedCustomData?.userId);
     expect(removeCustomData?.values).toStrictEqual(addedCustomData?.values);
     expect(removeCustomData?._id).toStrictEqual(addedCustomData?._id);
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "UserCustomData",
+    });
   });
 
   it("should disallowing removing user custom data when user is not superadmin or admin for the organization", async () => {

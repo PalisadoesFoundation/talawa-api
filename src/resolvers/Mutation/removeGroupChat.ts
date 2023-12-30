@@ -2,12 +2,14 @@ import { adminCheck } from "../../utilities";
 import {
   CHAT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { GroupChat, GroupChatMessage, Organization } from "../../models";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to remove an graoup chat.
  * @param _parent - parent of current request
@@ -71,11 +73,23 @@ export const removeGroupChat: MutationResolvers["removeGroupChat"] = async (
       $in: groupChat.messages,
     },
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.DELETE,
+    "GroupChatMessage",
+    `GroupChatMessage with _id in ${groupChat.messages} are deleted`
+  );
 
   // Delete the groupChat
   await GroupChat.deleteOne({
     _id: groupChat._id,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.DELETE,
+    "GroupChat",
+    `GroupChat:${groupChat._id} deleted`
+  );
 
   return groupChat;
 };

@@ -1,12 +1,14 @@
 import {
   CUSTOM_FIELD_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { OrganizationCustomField, Organization, User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 /**
  * This function enables an admin to remove an organization colleciton field.
@@ -68,9 +70,21 @@ export const removeOrganizationCustomField: MutationResolvers["removeOrganizatio
     );
 
     await organization.save();
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "Organization",
+      `Organization:${customFieldId} updated customFields`
+    );
 
     const removedCustomField = await OrganizationCustomField.findByIdAndDelete(
       customFieldId
+    );
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.DELETE,
+      "OrganizationCustomField",
+      `OrganizationCustomField:${customFieldId} deleted`
     );
 
     if (!removedCustomField) {

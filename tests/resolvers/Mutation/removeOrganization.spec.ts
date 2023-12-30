@@ -5,21 +5,22 @@ import { Types } from "mongoose";
 import type {
   InterfaceOrganization,
   InterfaceComment,
-  InterfacePost,
-} from "../../../src/models";
+  InterfacePost} from "../../../src/models";
 import {
+  TransactionLog,
+
   User,
   Organization,
   Post,
   Comment,
-  MembershipRequest,
-} from "../../../src/models";
+  MembershipRequest} from "../../../src/models";
 import type { MutationRemoveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { removeOrganization as removeOrganizationResolver } from "../../../src/resolvers/Mutation/removeOrganization";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -35,6 +36,7 @@ import {
 import { createTestUserFunc } from "../../helpers/user";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -326,6 +328,61 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     expect(deletedTestPosts).toEqual([]);
 
     expect(deletedTestComments).toEqual([]);
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(9);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUsers[0]?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "Organization",
+    });
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: testUsers[0]?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
+    expect(mostRecentTransactions[2]).toMatchObject({
+      createdBy: testUsers[0]?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
+    expect(mostRecentTransactions[3]).toMatchObject({
+      createdBy: testUsers[0]?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "MembershipRequest",
+    });
+    expect(mostRecentTransactions[4]).toMatchObject({
+      createdBy: testUsers[0]?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
+    expect(mostRecentTransactions[5]).toMatchObject({
+      createdBy: testUsers[0]?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
+
+    expect(mostRecentTransactions[6]).toMatchObject({
+      createdBy: testUsers[0]?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
+    expect(mostRecentTransactions[7]).toMatchObject({
+      createdBy: testUsers[0]?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "Comment",
+    });
+    expect(mostRecentTransactions[8]).toMatchObject({
+      createdBy: testUsers[0]?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "Post",
+    });
   });
 
   it(`removes the organization with image and returns the updated user's object with _id === context.userId`, async () => {

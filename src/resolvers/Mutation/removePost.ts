@@ -6,6 +6,7 @@ import {
   USER_NOT_FOUND_ERROR,
   POST_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { deletePostFromCache } from "../../services/PostCache/deletePostFromCache";
@@ -13,6 +14,7 @@ import { findPostsInCache } from "../../services/PostCache/findPostsInCache";
 import { cachePosts } from "../../services/PostCache/cachePosts";
 import { deletePreviousImage as deleteImage } from "../../utilities/encodedImageStorage/deletePreviousImage";
 import { deletePreviousVideo as deleteVideo } from "../../utilities/encodedVideoStorage/deletePreviousVideo";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to remove a post.
  * @param _parent - parent of current request
@@ -87,6 +89,12 @@ export const removePost: MutationResolvers["removePost"] = async (
   const deletedPost = await Post.findOneAndDelete({
     _id: args.id,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.DELETE,
+    "Post",
+    `Post:${args.id} deleted`
+  );
 
   await deletePostFromCache(args.id);
 
@@ -114,6 +122,12 @@ export const removePost: MutationResolvers["removePost"] = async (
       new: true,
     }
   ).lean();
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "Organization",
+    `Organization:${post.organization} updated pinnedPosts`
+  );
 
   if (updatedOrganization !== null) {
     await cacheOrganizations([updatedOrganization]);

@@ -1,8 +1,8 @@
 import "dotenv/config";
 import type { Document } from "mongoose";
 import type mongoose from "mongoose";
-import type { InterfaceEventProject } from "../../../src/models";
-import { User, Organization, Event, EventProject } from "../../../src/models";
+import type { InterfaceEventProject} from "../../../src/models";
+import { TransactionLog , User, Organization, Event, EventProject } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -19,11 +19,13 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
   EVENT_PROJECT_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../../src/constants";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
 import { Types } from "mongoose";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -169,5 +171,29 @@ describe("resolvers -> Mutation -> removeEventProject", () => {
     const eventProject = await EventProject.findOne(testEventProject._id);
 
     expect(eventProject).toBeNull();
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(3);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "TaskVolunteer",
+    });
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "Task",
+    });
+    expect(mostRecentTransactions[2]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "EventProject",
+    });
   });
 });

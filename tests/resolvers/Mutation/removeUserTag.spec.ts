@@ -8,6 +8,7 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   TAG_NOT_FOUND,
+  TRANSACTION_LOG_TYPES,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -20,9 +21,14 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-import { OrganizationTagUser, TagUser } from "../../../src/models";
+import {
+  OrganizationTagUser,
+  TagUser,
+  TransactionLog,
+} from "../../../src/models";
 import type { TestUserTagType } from "../../helpers/tags";
 import { createTwoLevelTagsWithOrg } from "../../helpers/tags";
+import { wait } from "./acceptAdmin.spec";
 
 let testUser: TestUserType;
 let randomUser: TestUserType;
@@ -191,5 +197,25 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
     });
 
     expect(userTagExists).toBeFalsy();
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(2);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "TagUser",
+    });
+
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "OrganizationTagUser",
+    });
   });
 });

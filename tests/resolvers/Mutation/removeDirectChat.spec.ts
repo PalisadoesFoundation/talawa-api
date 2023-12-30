@@ -5,6 +5,7 @@ import {
   Organization,
   DirectChat,
   DirectChatMessage,
+  TransactionLog,
 } from "../../../src/models";
 import type { MutationRemoveDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
@@ -13,6 +14,7 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   CHAT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
+  TRANSACTION_LOG_TYPES,
 } from "../../../src/constants";
 import {
   beforeAll,
@@ -30,6 +32,7 @@ import type {
 import type { TestDirectChatType } from "../../helpers/directChat";
 import { createTestDirectChat } from "../../helpers/directChat";
 import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -224,5 +227,24 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
     }).lean();
 
     expect(testDeletedDirectChatMessages).toEqual([]);
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(2);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "DirectChat",
+    });
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "DirectChatMessage",
+    });
   });
 });

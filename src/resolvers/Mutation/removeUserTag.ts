@@ -5,7 +5,9 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   TAG_NOT_FOUND,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 export const removeUserTag: MutationResolvers["removeUserTag"] = async (
   _parent,
@@ -85,6 +87,12 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
       $in: allTagIds,
     },
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.DELETE,
+    "OrganizationTagUser",
+    `OrganizationTagUser with _id in ${allTagIds} are deleted`
+  );
 
   // Delete all the tag entries in the TagUser model
   await TagUser.deleteMany({
@@ -92,6 +100,12 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
       $in: allTagIds,
     },
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.DELETE,
+    "TagUser",
+    `TagUser with tagId in ${allTagIds} are deleted`
+  );
 
   return tag;
 };

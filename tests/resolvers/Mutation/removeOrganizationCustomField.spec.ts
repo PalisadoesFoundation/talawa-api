@@ -13,13 +13,15 @@ import { connect, disconnect } from "../../helpers/db";
 import {
   CUSTOM_FIELD_NOT_FOUND,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 
 import { createTestUser } from "../../helpers/userAndOrg";
 
-import { OrganizationCustomField } from "../../../src/models";
+import { OrganizationCustomField, TransactionLog } from "../../../src/models";
+import { wait } from "./acceptAdmin.spec";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -80,6 +82,25 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
       (field) => field._id.toString() === customField?._id.toString()
     );
     expect(removedCustomField).toBeUndefined();
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(2);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "OrganizationCustomField",
+    });
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "Organization",
+    });
   });
 
   it("should not remove field when user is unauthorized", async () => {

@@ -1,10 +1,11 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User } from "../../../src/models";
+import { TransactionLog, User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
+  TRANSACTION_LOG_TYPES,
   USER_NOT_FOUND_ERROR,
   USER_PROFILE_IMAGE_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -19,6 +20,7 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -130,5 +132,19 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
     expect(removeUserImagePayload).toEqual(updatedTestUser);
     expect(deleteImageSpy).toBeCalledWith(testImage);
     expect(removeUserImagePayload?.image).toEqual(null);
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
   });
 });

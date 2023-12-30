@@ -1,12 +1,13 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User } from "../../../src/models";
+import { TransactionLog, User } from "../../../src/models";
 import type { MutationRejectAdminArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { rejectAdmin as rejectAdminResolver } from "../../../src/resolvers/Mutation/rejectAdmin";
 import {
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_SUPERADMIN,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -21,6 +22,7 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser1: TestUserType;
@@ -134,7 +136,7 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
     }
   });
 
-  it("should  not delete the user with _id === args.id but set its adminApproved property to false", async () => {
+  it("should not delete the user with _id === args.id but set its adminApproved property to false", async () => {
     const args: MutationRejectAdminArgs = {
       id: testUser2?.id,
     };
@@ -150,5 +152,19 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
     const flag = await rejectAdminResolver?.({}, args, context);
 
     expect(flag).toBe(true);
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(1);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser1?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
   });
 });

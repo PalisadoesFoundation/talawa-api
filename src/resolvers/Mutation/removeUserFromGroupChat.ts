@@ -1,6 +1,7 @@
 import {
   CHAT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
@@ -9,6 +10,7 @@ import { GroupChat, Organization } from "../../models";
 import { adminCheck } from "../../utilities";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to remove a user from group chat.
  * @param _parent - parent of current request
@@ -78,7 +80,7 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
     }
 
     // Removes args.userId from users list of groupChat and returns the updated groupChat.
-    return await GroupChat.findOneAndUpdate(
+    const chat = await GroupChat.findOneAndUpdate(
       {
         _id: args.chatId,
       },
@@ -93,4 +95,11 @@ export const removeUserFromGroupChat: MutationResolvers["removeUserFromGroupChat
         new: true,
       }
     ).lean();
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "GroupChat",
+      `GroupChat:${chat?._id} updated users`
+    );
+    return chat!;
   };

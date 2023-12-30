@@ -1,13 +1,14 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Event } from "../../../src/models";
+import { User, Event, TransactionLog } from "../../../src/models";
 import type { MutationRemoveEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { removeEvent as removeEventResolver } from "../../../src/resolvers/Mutation/removeEvent";
 import {
   EVENT_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -19,6 +20,7 @@ import type {
 import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
 import { cacheEvents } from "../../../src/services/EventCache/cacheEvents";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -195,5 +197,39 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       .lean();
 
     expect(updatedTestEvent?.status).toEqual("DELETED");
+
+    await wait();
+
+    const mostRecentTransactions = await TransactionLog.find()
+      .sort({
+        createdAt: -1,
+      })
+      .limit(5);
+
+    expect(mostRecentTransactions[0]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "TaskVolunteer",
+    });
+    expect(mostRecentTransactions[1]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "Task",
+    });
+    expect(mostRecentTransactions[2]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.DELETE,
+      modelName: "EventProject",
+    });
+    expect(mostRecentTransactions[3]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "Event",
+    });
+    expect(mostRecentTransactions[4]).toMatchObject({
+      createdBy: testUser?._id,
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      modelName: "User",
+    });
   });
 });

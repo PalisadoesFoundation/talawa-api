@@ -1,4 +1,5 @@
 import {
+  TRANSACTION_LOG_TYPES,
   USER_NOT_FOUND_ERROR,
   USER_PROFILE_IMAGE_NOT_FOUND_ERROR,
 } from "../../constants";
@@ -6,6 +7,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User } from "../../models";
 import { deleteImage } from "../../utilities";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to remove user image.
  * @param _parent - parent of current request
@@ -46,7 +48,7 @@ export const removeUserImage: MutationResolvers["removeUserImage"] = async (
   await deleteImage(currentUser.image);
 
   // Sets image field to null for currentUser and returns the updated currentUser.
-  return await User.findOneAndUpdate(
+  const updatedUser = await User.findOneAndUpdate(
     {
       _id: currentUser._id,
     },
@@ -59,4 +61,12 @@ export const removeUserImage: MutationResolvers["removeUserImage"] = async (
       new: true,
     }
   ).lean();
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${updatedUser?._id} updated image`
+  );
+
+  return updatedUser!;
 };

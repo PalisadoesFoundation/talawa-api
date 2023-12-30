@@ -10,10 +10,12 @@ import {
   USER_REMOVING_SELF,
   ADMIN_REMOVING_ADMIN,
   ADMIN_REMOVING_CREATOR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { Types } from "mongoose";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to remove a member.
  * @param _parent - parent of current request
@@ -144,6 +146,12 @@ export const removeMember: MutationResolvers["removeMember"] = async (
       new: true,
     }
   ).lean();
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "Organization",
+    `Organization:${organization?._id} updated members`
+  );
 
   await cacheOrganizations([organization!]);
 
@@ -160,6 +168,12 @@ export const removeMember: MutationResolvers["removeMember"] = async (
         ),
       },
     }
+  );
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${user?._id} updated joinedOrganizations`
   );
 
   return organization ?? ({} as InterfaceOrganization);

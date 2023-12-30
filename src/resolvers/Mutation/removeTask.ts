@@ -2,10 +2,12 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   TASK_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Task, TaskVolunteer } from "../../models";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to remove a task.
  * @param _parent - parent of current request
@@ -64,10 +66,22 @@ export const removeTask: MutationResolvers["removeTask"] = async (
   await Task.deleteOne({
     _id: task._id,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.DELETE,
+    "Task",
+    `Task:${task._id} deleted`
+  );
 
   await TaskVolunteer.deleteMany({
     taskId: task._id,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.DELETE,
+    "TaskVolunteer",
+    `TaskVolunteer with taskId in ${task._id} are deleted`
+  );
 
   // Returns deleted task.
   return task;

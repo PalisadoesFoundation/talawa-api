@@ -6,6 +6,7 @@ import { connect, disconnect } from "../../helpers/db";
 
 import {
   POST_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -22,7 +23,8 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { Post } from "../../../src/models";
+import { Post, TransactionLog } from "../../../src/models";
+import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
