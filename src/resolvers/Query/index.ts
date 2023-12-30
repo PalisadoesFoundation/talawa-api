@@ -27,6 +27,7 @@ import { userLanguage } from "./userLanguage";
 import { users } from "./users";
 import { getAdvertisements } from "./getAdvertisements";
 import { usersConnection } from "./usersConnection";
+import { getTransactionLogs } from "./getTransactionLogs";
 
 export const Query: QueryResolvers = {
   checkAuth,
@@ -43,6 +44,7 @@ export const Query: QueryResolvers = {
   getDonationByOrgIdConnection,
   getlanguage,
   getPlugins,
+  getTransactionLogs,
   isSampleOrganization,
   me,
   myLanguage,

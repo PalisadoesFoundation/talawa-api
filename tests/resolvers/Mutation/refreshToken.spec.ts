@@ -1,8 +1,8 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceUser} from "../../../src/models";
-import { TransactionLog , User } from "../../../src/models";
+import type { InterfaceUser } from "../../../src/models";
+import { TransactionLog, User } from "../../../src/models";
 import type { MutationRefreshTokenArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 

@@ -5,9 +5,11 @@ import { errors, requestContext } from "../../libraries";
 import {
   CHAT_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to remove direct chat.
  * @param _parent - parent of current request
@@ -66,16 +68,28 @@ export const removeDirectChat: MutationResolvers["removeDirectChat"] = async (
   await adminCheck(context.userId, organization);
 
   // Deletes all directChatMessages with _id as one of the ids in directChat.messages list.
-  await DirectChatMessage.deleteMany({
+  const deletedMessages = await DirectChatMessage.deleteMany({
     _id: {
       $in: directChat.messages,
     },
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.DELETE,
+    "DirectChatMessage",
+    `DirectChatMessage with _id in ${directChat.messages} are deleted`
+  );
 
   // Deletes the directChat.
   await DirectChat.deleteOne({
     _id: args.chatId,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.DELETE,
+    "DirectChat",
+    `DirectChat:${args.chatId} deleted`
+  );
 
   // Returns deleted directChat.
   return directChat;

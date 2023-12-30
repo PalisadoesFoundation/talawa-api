@@ -2,8 +2,8 @@ import "dotenv/config";
 import type { Document } from "mongoose";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceComment} from "../../../src/models";
-import { TransactionLog , Post, Comment } from "../../../src/models";
+import type { InterfaceComment } from "../../../src/models";
+import { TransactionLog, Post, Comment } from "../../../src/models";
 import type { MutationLikeCommentArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 

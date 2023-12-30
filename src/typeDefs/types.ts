@@ -366,6 +366,16 @@ export const types = gql`
     work: PhoneNumber
   }
 
+  type TransactionLog {
+    _id: ID!
+    createdAt: DateTime
+    createdBy: User!
+    message: String
+    modelName: String
+    type: String
+    updatedAt: DateTime
+  }
+
   type User {
     _id: ID!
     address: Address

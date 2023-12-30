@@ -1361,6 +1361,7 @@ export type Query = {
   getDonationByOrgId?: Maybe<Array<Maybe<Donation>>>;
   getDonationByOrgIdConnection: Array<Donation>;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
+  getTransactionLogs?: Maybe<Array<Maybe<TransactionLog>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
   hasSubmittedFeedback?: Maybe<Scalars['Boolean']>;
   isSampleOrganization: Scalars['Boolean'];
@@ -1610,6 +1611,17 @@ export type TaskOrderByInput =
 export type ToggleUserTagAssignInput = {
   tagId: Scalars['ID'];
   userId: Scalars['ID'];
+};
+
+export type TransactionLog = {
+  __typename?: 'TransactionLog';
+  _id: Scalars['ID'];
+  createdAt?: Maybe<Scalars['DateTime']>;
+  createdBy: User;
+  message?: Maybe<Scalars['String']>;
+  modelName?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']>;
+  updatedAt?: Maybe<Scalars['DateTime']>;
 };
 
 export type Translation = {
@@ -2079,6 +2091,7 @@ export type ResolversTypes = {
   TaskOrderByInput: TaskOrderByInput;
   Time: ResolverTypeWrapper<Scalars['Time']>;
   ToggleUserTagAssignInput: ToggleUserTagAssignInput;
+  TransactionLog: ResolverTypeWrapper<Omit<TransactionLog, 'createdBy'> & { createdBy: ResolversTypes['User'] }>;
   Translation: ResolverTypeWrapper<Translation>;
   Type: Type;
   URL: ResolverTypeWrapper<Scalars['URL']>;
@@ -2206,6 +2219,7 @@ export type ResolversParentTypes = {
   TaskInput: TaskInput;
   Time: Scalars['Time'];
   ToggleUserTagAssignInput: ToggleUserTagAssignInput;
+  TransactionLog: Omit<TransactionLog, 'createdBy'> & { createdBy: ResolversParentTypes['User'] };
   Translation: Translation;
   URL: Scalars['URL'];
   UnauthenticatedError: UnauthenticatedError;
@@ -2779,6 +2793,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getDonationByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Donation']>>>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdArgs, 'orgId'>>;
   getDonationByOrgIdConnection?: Resolver<Array<ResolversTypes['Donation']>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdConnectionArgs, 'orgId'>>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
+  getTransactionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['TransactionLog']>>>, ParentType, ContextType>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
   hasSubmittedFeedback?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryHasSubmittedFeedbackArgs, 'eventId' | 'userId'>>;
   isSampleOrganization?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<QueryIsSampleOrganizationArgs, 'id'>>;
@@ -2823,6 +2838,17 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
 export interface TimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Time'], any> {
   name: 'Time';
 }
+
+export type TransactionLogResolvers<ContextType = any, ParentType extends ResolversParentTypes['TransactionLog'] = ResolversParentTypes['TransactionLog']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  createdBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  modelName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
 
 export type TranslationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Translation'] = ResolversParentTypes['Translation']> = {
   en_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -3009,6 +3035,7 @@ export type Resolvers<ContextType = any> = {
   Subscription?: SubscriptionResolvers<ContextType>;
   Task?: TaskResolvers<ContextType>;
   Time?: GraphQLScalarType;
+  TransactionLog?: TransactionLogResolvers<ContextType>;
   Translation?: TranslationResolvers<ContextType>;
   URL?: GraphQLScalarType;
   UnauthenticatedError?: UnauthenticatedErrorResolvers<ContextType>;

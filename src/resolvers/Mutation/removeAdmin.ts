@@ -5,12 +5,14 @@ import { User, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_FOUND_ERROR,
   USER_NOT_ORGANIZATION_ADMIN,
 } from "../../constants";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 import { Types } from "mongoose";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to remove an admin.
  * @param _parent - parent of current request
@@ -102,13 +104,19 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
       new: true,
     }
   );
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "Organization",
+    `Organization:${organization._id} updated admins`
+  );
 
   if (updatedOrganization !== null) {
     await cacheOrganizations([updatedOrganization]);
   }
 
   // Removes organization._id from adminFor list of the user and returns the updated user.
-  return await User.findOneAndUpdate(
+  const updatedUser = await User.findOneAndUpdate(
     {
       _id: user._id,
     },
@@ -126,4 +134,13 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
   )
     .select(["-password"])
     .lean();
+
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${user._id} updated adminFor`
+  );
+
+  return updatedUser!;
 };

@@ -6,9 +6,11 @@ import {
   USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to remove an event.
  * @param _parent - parent of current request
@@ -99,6 +101,12 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
       },
     }
   );
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User with createdEvents equal to _id of Event:${event._id} are updated`
+  );
 
   await User.updateMany(
     {
@@ -109,6 +117,12 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
         eventAdmin: event._id,
       },
     }
+  );
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User with eventAdmin equal to _id of Event:${event._id} are updated`
   );
 
   const updatedEvent = await Event.findOneAndUpdate(
@@ -121,6 +135,12 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
     {
       new: true,
     }
+  );
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "Event",
+    `Event:${event._id} updated status`
   );
 
   if (updatedEvent !== null) {
@@ -140,6 +160,12 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
   await EventProject.deleteMany({
     event: event._id,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.DELETE,
+    "EventProject",
+    `EventProject with event equal to _id of Event:${event._id} are deleted`
+  );
 
   // Fetch and delete all the event tasks indirectly under the particular event
   const eventTasks = await Task.find(
@@ -158,6 +184,12 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
       $in: eventProjectIds,
     },
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.DELETE,
+    "Task",
+    `Task with eventProjectId in ${eventProjectIds} are deleted`
+  );
 
   // Delete all the task volunteer entries indirectly under the particular event
   await TaskVolunteer.deleteMany({
@@ -165,5 +197,11 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
       $in: taskIds,
     },
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.DELETE,
+    "TaskVolunteer",
+    `TaskVolunteer with taskId in ${taskIds} are deleted`
+  );
   return event;
 };

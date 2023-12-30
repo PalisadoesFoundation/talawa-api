@@ -1,8 +1,9 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
-import { USER_NOT_FOUND_ERROR } from "../../constants";
+import { TRANSACTION_LOG_TYPES, USER_NOT_FOUND_ERROR } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { superAdminCheck } from "../../utilities";
+import { storeTransaction } from "../../utilities/storeTransaction";
 /**
  * This function enables to reject an admin.
  * @param _parent - parent of current request
@@ -58,6 +59,12 @@ export const rejectAdmin: MutationResolvers["rejectAdmin"] = async (
         adminApproved: false,
       },
     }
+  );
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${args.id} updated adminApproved`
   );
 
   // Returns true if operation is successful.

@@ -5,9 +5,12 @@ import { adminCheck } from "../../utilities";
 import {
   MEMBERSHIP_REQUEST_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { storeTransaction } from "../../utilities/storeTransaction";
+import { organization } from "../DirectChat/organization";
 /**
  * This function enables to reject membership request.
  * @param _parent - parent of current request
@@ -63,6 +66,12 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
     await MembershipRequest.deleteOne({
       _id: membershipRequest._id,
     });
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.DELETE,
+      "MembershipRequest",
+      `MembershipRequest:${membershipRequest._id} deleted`
+    );
 
     // Removes membershipRequest._id from membershipRequests list of organization.
     const updatedOrganization = await Organization.findOneAndUpdate(
@@ -77,6 +86,12 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
       {
         new: true,
       }
+    );
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "Organization",
+      `Organization:${membershipRequest.organization._id} updated membershipRequests`
     );
 
     if (updatedOrganization !== null) {
@@ -93,6 +108,12 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
           membershipRequests: membershipRequest._id,
         },
       }
+    );
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.UPDATE,
+      "User",
+      `User:${membershipRequest.organization._id} updated membershipRequests`
     );
 
     // Returns deleted membershipRequest.

@@ -6,7 +6,9 @@ import {
   USER_NOT_FOUND_ERROR,
   EVENT_PROJECT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 /**
  * This function enables to remove an event project.
@@ -63,6 +65,12 @@ export const removeEventProject: MutationResolvers["removeEventProject"] =
     await EventProject.deleteOne({
       _id: args.id,
     });
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.DELETE,
+      "EventProject",
+      `EventProject:${args.id} deleted`
+    );
 
     // Fetch all the tasks associated with the project
     const tasks = await Task.find(
@@ -78,11 +86,23 @@ export const removeEventProject: MutationResolvers["removeEventProject"] =
     await Task.deleteMany({
       eventProjectId: args.id,
     });
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.DELETE,
+      "Task",
+      `Task with eventProjectId equal to ${args.id} are deleted`
+    );
 
     await TaskVolunteer.deleteMany({
       taskId: {
         $in: taskIds,
       },
     });
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.DELETE,
+      "TaskVolunteer",
+      `TaskVolunteer with taskId in ${taskIds} are deleted`
+    );
     return eventProject;
   };

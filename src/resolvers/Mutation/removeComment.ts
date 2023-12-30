@@ -6,10 +6,12 @@ import {
   USER_NOT_FOUND_ERROR,
   COMMENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { findCommentsInCache } from "../../services/CommentCache/findCommentsInCache";
 import { deleteCommentFromCache } from "../../services/CommentCache/deleteCommentFromCache";
 import { cachePosts } from "../../services/PostCache/cachePosts";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 /**
  * This function enables to remove a comment.
@@ -96,6 +98,12 @@ export const removeComment: MutationResolvers["removeComment"] = async (
       new: true,
     }
   ).lean();
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "Post",
+    `Post:${comment!.postId._id} updated commentCount`
+  );
 
   if (updatedPost !== null) {
     await cachePosts([updatedPost]);
@@ -105,6 +113,12 @@ export const removeComment: MutationResolvers["removeComment"] = async (
   await Comment.deleteOne({
     _id: comment._id,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.DELETE,
+    "Comment",
+    `Comment:${comment._id} deleted`
+  );
 
   await deleteCommentFromCache(comment);
 

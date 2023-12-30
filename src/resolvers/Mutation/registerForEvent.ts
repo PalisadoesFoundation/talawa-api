@@ -5,9 +5,11 @@ import { User, Event, EventAttendee } from "../../models";
 import {
   EVENT_NOT_FOUND_ERROR,
   REGISTRANT_ALREADY_EXIST_ERROR,
+  TRANSACTION_LOG_TYPES,
 } from "../../constants";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 /**
  * This function enables to register for event.
@@ -75,11 +77,23 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
       },
     }
   );
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.UPDATE,
+    "User",
+    `User:${context.userId} updated registeredEvents`
+  );
 
-  await EventAttendee.create({
+  const createdAttendee = await EventAttendee.create({
     userId: context.userId,
     eventId: args.id,
   });
+  storeTransaction(
+    context.userId,
+    TRANSACTION_LOG_TYPES.CREATE,
+    "EventAttendee",
+    `EventAttendee:${createdAttendee._id} created`
+  );
 
   return event;
 };

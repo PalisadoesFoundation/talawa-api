@@ -1,5 +1,6 @@
 import {
   EVENT_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_REGISTERED_FOR_EVENT,
@@ -10,6 +11,7 @@ import type { InterfaceEvent } from "../../models";
 import { User, Event, EventAttendee } from "../../models";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 export const removeEventAttendee: MutationResolvers["removeEventAttendee"] =
   async (_parent, args, context) => {
@@ -84,8 +86,14 @@ export const removeEventAttendee: MutationResolvers["removeEventAttendee"] =
         USER_NOT_REGISTERED_FOR_EVENT.PARAM
       );
     }
-
+    const deletedEventAttendee = await EventAttendee.findOne({ ...args.data });
     await EventAttendee.deleteOne({ ...args.data });
+    storeTransaction(
+      context.userId,
+      TRANSACTION_LOG_TYPES.DELETE,
+      "EventAttendee",
+      `EventAttendee:${deletedEventAttendee?._id} deleted`
+    );
 
     return requestUser;
   };

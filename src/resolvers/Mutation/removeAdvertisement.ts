@@ -1,7 +1,11 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { Advertisement } from "../../models";
-import { ADVERTISEMENT_NOT_FOUND_ERROR } from "../../constants";
+import {
+  ADVERTISEMENT_NOT_FOUND_ERROR,
+  TRANSACTION_LOG_TYPES,
+} from "../../constants";
+import { storeTransaction } from "../../utilities/storeTransaction";
 
 // @ts-ignore
 export const removeAdvertisement: MutationResolvers["removeAdvertisement"] =
@@ -23,6 +27,12 @@ export const removeAdvertisement: MutationResolvers["removeAdvertisement"] =
     await Advertisement.deleteOne({
       _id: args.id ? args.id : "",
     });
+    storeTransaction(
+      _context.userId,
+      TRANSACTION_LOG_TYPES.DELETE,
+      "Advertisement",
+      `Advertisement:${args.id} deleted`
+    );
     // Returns deleted ad.
     return currentAd;
   };
