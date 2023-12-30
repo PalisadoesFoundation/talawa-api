@@ -54,12 +54,14 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
 
   it(`creates the ad and then deleting the ad`, async () => {
     const args: MutationCreateAdvertisementArgs = {
-      name: "myad",
-      orgId: "64d1f8cb77a4b61004f824b8",
-      type: "POPUP",
-      mediaUrl: "data:image/png;base64,bWVkaWEgY29udGVudA==",
-      startDate: "2023-10-08T13:02:29.000Z",
-      endDate: "2023-10-08T13:02:29.000Z",
+      data: {
+        name: "myad",
+        orgId: "64d1f8cb77a4b61004f824b8",
+        type: "POPUP",
+        mediaUrl: "data:image/png;base64,bWVkaWEgY29udGVudA==",
+        startDate: "2023-10-08T13:02:29.000Z",
+        endDate: "2023-10-08T13:02:29.000Z",
+      },
     };
 
     const context = {

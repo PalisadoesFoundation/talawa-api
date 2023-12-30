@@ -6,7 +6,7 @@ export const createAdvertisement: MutationResolvers["createAdvertisement"] =
   async (_parent, args, _context) => {
     // Creates new Ad.
     const createdAd = await Advertisement.create({
-      ...args,
+      ...args.data,
     });
     // Returns createdAd.
     return createdAd.toObject();

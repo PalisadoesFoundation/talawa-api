@@ -384,4 +384,13 @@ export const inputs = gql`
     imageUrl: String
     videoUrl: String
   }
+
+  input createAdvertisementInput {
+    endDate: Date!
+    mediaUrl: URL!
+    name: String!
+    orgId: ID!
+    startDate: Date!
+    type: String!
+  }
 `;

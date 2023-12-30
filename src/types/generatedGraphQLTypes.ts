@@ -684,12 +684,7 @@ export type MutationCreateAdminArgs = {
 
 
 export type MutationCreateAdvertisementArgs = {
-  endDate: Scalars['Date'];
-  mediaUrl?: InputMaybe<Scalars['URL']>;
-  name: Scalars['String'];
-  orgId: Scalars['ID'];
-  startDate: Scalars['Date'];
-  type: Scalars['String'];
+  data: CreateAdvertisementInput;
 };
 
 
@@ -1839,6 +1834,15 @@ export type UsersConnectionResult = {
   errors: Array<ConnectionError>;
 };
 
+export type CreateAdvertisementInput = {
+  endDate: Scalars['Date'];
+  mediaUrl: Scalars['URL'];
+  name: Scalars['String'];
+  orgId: Scalars['ID'];
+  startDate: Scalars['Date'];
+  type: Scalars['String'];
+};
+
 export type CreateChatInput = {
   organizationId: Scalars['ID'];
   userIds: Array<Scalars['ID']>;
@@ -2040,6 +2044,7 @@ export type ResolversTypes = {
   UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges: Array<ResolversTypes['UserEdge']> }>;
   UsersConnectionInput: UsersConnectionInput;
   UsersConnectionResult: ResolverTypeWrapper<Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UsersConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
+  createAdvertisementInput: CreateAdvertisementInput;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
 };
@@ -2161,6 +2166,7 @@ export type ResolversParentTypes = {
   UsersConnection: Omit<UsersConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserEdge']> };
   UsersConnectionInput: UsersConnectionInput;
   UsersConnectionResult: Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversParentTypes['UsersConnection']>, errors: Array<ResolversParentTypes['ConnectionError']> };
+  createAdvertisementInput: CreateAdvertisementInput;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
 };
@@ -2514,7 +2520,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   cancelMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationCancelMembershipRequestArgs, 'membershipRequestId'>>;
   checkIn?: Resolver<ResolversTypes['CheckIn'], ParentType, ContextType, RequireFields<MutationCheckInArgs, 'data'>>;
   createAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
-  createAdvertisement?: Resolver<ResolversTypes['Advertisement'], ParentType, ContextType, RequireFields<MutationCreateAdvertisementArgs, 'endDate' | 'name' | 'orgId' | 'startDate' | 'type'>>;
+  createAdvertisement?: Resolver<ResolversTypes['Advertisement'], ParentType, ContextType, RequireFields<MutationCreateAdvertisementArgs, 'data'>>;
   createComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'data' | 'postId'>>;
   createDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationCreateDirectChatArgs, 'data'>>;
   createDonation?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<MutationCreateDonationArgs, 'amount' | 'nameOfOrg' | 'nameOfUser' | 'orgId' | 'payPalId' | 'userId'>>;

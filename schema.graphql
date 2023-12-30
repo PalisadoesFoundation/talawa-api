@@ -438,7 +438,7 @@ type Mutation {
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   checkIn(data: CheckInInput!): CheckIn!
   createAdmin(data: UserAndOrganizationInput!): User!
-  createAdvertisement(endDate: Date!, mediaUrl: URL, name: String!, orgId: ID!, startDate: Date!, type: String!): Advertisement!
+  createAdvertisement(data: createAdvertisementInput!): Advertisement!
   createComment(data: CommentInput!, postId: ID!): Comment
   createDirectChat(data: createChatInput!): DirectChat!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
@@ -1085,6 +1085,15 @@ input UsersConnectionInput {
 type UsersConnectionResult {
   data: UsersConnection
   errors: [ConnectionError!]!
+}
+
+input createAdvertisementInput {
+  endDate: Date!
+  mediaUrl: URL!
+  name: String!
+  orgId: ID!
+  startDate: Date!
+  type: String!
 }
 
 input createChatInput {
