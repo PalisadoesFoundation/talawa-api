@@ -10,10 +10,10 @@
 - [Scope](#scope)
 - [Enforcement](#enforcement)
 - [Enforcement Guidelines](#enforcement-guidelines)
-  * [1. Correction](#1-correction)
-  * [2. Warning](#2-warning)
-  * [3. Temporary Ban](#3-temporary-ban)
-  * [4. Permanent Ban](#4-permanent-ban)
+  - [1. Correction](#1-correction)
+  - [2. Warning](#2-warning)
+  - [3. Temporary Ban](#3-temporary-ban)
+  - [4. Permanent Ban](#4-permanent-ban)
 - [Attribution](#attribution)
 
 <!-- tocstop -->
