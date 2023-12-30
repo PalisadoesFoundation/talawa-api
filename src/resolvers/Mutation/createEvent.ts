@@ -131,6 +131,10 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     await cacheEvents([createdEvent]);
   }
 
+  if (args.data?.recurring) {
+    generateRecurringInstances(args, currentUser, organization);
+  }
+
   await EventAttendee.create({
     userId: currentUser._id.toString(),
     eventId: createdEvent._id,
@@ -178,3 +182,37 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   // Returns the createdEvent.
   return createdEvent.toObject();
 };
+
+export async function generateRecurringInstances(
+  args: any,
+  currentUser: any,
+  organization: any
+) {
+  const { data } = args;
+  const startDateObject = new Date(data?.startDate);
+  const endDateObject = new Date(data?.endDate);
+
+  const startDates = startDateObject.toISOString().split("T")[0];
+
+  const startDate = new Date(startDates);
+  startDate.setDate(startDate.getDate() + 7);
+
+  while (startDate <= endDateObject) {
+    const recurringEventData = {
+      ...data,
+      startDate,
+    };
+
+    const createdEvent = await Event.create({
+      ...recurringEventData,
+      creator: currentUser._id,
+      admins: [currentUser._id],
+      organization: organization._id,
+    });
+
+    if (createdEvent !== null) {
+      await cacheEvents([createdEvent]);
+    }
+    startDate.setDate(startDate.getDate() + 7);
+  }
+}
