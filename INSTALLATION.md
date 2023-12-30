@@ -4,24 +4,26 @@ This document provides instructions on how to set up and start a running instanc
 
 # Table of Contents
 
-<!-- TOC -->
+<!-- toc -->
 
 - [Prerequisites](#prerequisites)
-  - [Install Node.js](#install-nodejs)
+  - [Install node.js](#install-nodejs)
   - [Install npm](#install-npm)
   - [Install TypeScript](#install-typescript)
-  - [Install Git](#install-git)
-  - [Setting Up This Repository](#setting-up-this-repository)
+  - [Install git](#install-git)
+  - [Setting up this repository](#setting-up-this-repository)
   - [Install the Required Packages](#install-the-required-packages)
-- [Installation with Docker](#installation-using-docker)
+- [Setting up .env file](#setting-up-env-file)
+- [Installation Using Docker](#installation-using-docker)
 - [Installation without Docker](#installation-without-docker)
   - [Install MongoDB](#install-mongodb)
     - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
   - [Install Redis](#install-redis)
+    - [Performance Benefits](#performance-benefits)
     - [Setting Up Redis](#setting-up-redis)
-    - [Benchmark For Performance Benefits](#performance-benefits)
 - [Configuration](#configuration)
   - [The .env Configuration File](#the-env-configuration-file)
+  - [Changing the environment of talawa-api](#changing-the-environment-of-talawa-api)
   - [Generating Token Secrets](#generating-token-secrets)
     - [Setting up ACCESS_TOKEN_SECRET in .env file](#setting-up-access_token_secret-in-env-file)
       - [Linux](#linux)
@@ -39,7 +41,7 @@ This document provides instructions on how to set up and start a running instanc
     - [Setting up RECAPTCHA_SECRET_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
     - [Setting up .env MAIL_USERNAME and MAIL_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
     - [Setting up .env SMTP Variables](#setting-up-env-smtp-variables)
-  - [Setting up Logger configurations _(optional)_](#setting-up-logger-configurations-optional)
+  - [Setting up Logger configurations _(optional)_](#setting-up-logger-configurations-_optional_)
     - [Setting up COLORIZE_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
     - [Setting up LOG_LEVEL in .env file](#setting-up-log_level-in-env-file)
 - [Importing Sample Database](#importing-sample-database)
@@ -66,7 +68,7 @@ This document provides instructions on how to set up and start a running instanc
   - [Changing default talawa-api port](#changing-default-talawa-api-port)
 - [Testing](#testing)
 
-<!-- /TOC -->
+<!-- tocstop -->
 
 # Prerequisites
 
