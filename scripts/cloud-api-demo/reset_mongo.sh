@@ -9,4 +9,8 @@ docker exec -it "$MONGO_CONTAINER_NAME" mongosh --eval "db.getSiblingDB('$MONGO_
 
 npm run import:sample-data
 
-chmod +x "$0"
+# Set permissions to 700 for the script
+chmod 700 "$0"
+
+# Set ownership to talawa-api user
+chown talawa-api "$0"
