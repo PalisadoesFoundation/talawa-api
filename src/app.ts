@@ -12,6 +12,7 @@ import { appConfig } from "./config";
 import { requestContext, requestTracing, stream } from "./libraries";
 import { express as voyagerMiddleware } from "graphql-voyager/middleware";
 import path from "path";
+import Redis from "ioredis";
 //@ts-ignore
 import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
 
@@ -92,11 +93,23 @@ app.use(requestContext.middleware());
 if (process.env.NODE_ENV !== "production")
   app.use("/voyager", voyagerMiddleware({ endpointUrl: "/graphql" }));
 
-app.get("/", (req, res) =>
-  res.json({
-    "talawa-version": "v1",
-    status: "healthy",
-  })
-);
+const redisClient = new Redis();
+app.get("/", (req, res) => {
+  // Check if Redis is connected before responding
+
+  if (redisClient.status == "ready") {
+    res.json({
+      "talawa-version": "v1",
+      status: "healthy",
+      redisStatus: "connected",
+    });
+  } else {
+    res.json({
+      "talawa-version": "v1",
+      status: "unhealthy",
+      redisStatus: "disconnected",
+    });
+  }
+});
 
 export default app;
