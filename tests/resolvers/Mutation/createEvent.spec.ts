@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization, EventAttendee } from "../../../src/models";
+import { User, Organization, EventAttendee, Event } from "../../../src/models";
 import type { MutationCreateEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -17,6 +17,7 @@ import type {
   TestOrganizationType,
 } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
+import { generateRecurringInstances } from "../../../src/resolvers/Mutation/createEvent";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -450,5 +451,50 @@ describe("Check for validation conditions", () => {
     } catch (error: any) {
       expect(error.message).toEqual(`start date must be earlier than end date`);
     }
+  });
+});
+
+describe("generateRecurringInstances", () => {
+  it("should create recurring instances of events", async () => {
+    const args = {
+      data: {
+        organizationId: testOrganization?.id,
+        allDay: true,
+        description: "newDescription",
+        endDate: new Date().toUTCString(),
+        endTime: new Date().toUTCString(),
+        isPublic: false,
+        isRegisterable: false,
+        latitude: 1,
+        longitude: 1,
+        location: "newLocation",
+        recurring: true,
+        startDate: new Date().toUTCString(),
+        startTime: new Date().toUTCString(),
+        title: "newTitle",
+        recurrance: "WEEKLY",
+      },
+    };
+
+    const currentUser = testUser;
+    const organization = testOrganization;
+
+    const startDate = new Date("2023-01-01T00:00:00Z");
+    const endDate = new Date("2023-01-29T00:00:00Z");
+    args.data.startDate = startDate.toISOString();
+    args.data.endDate = endDate.toISOString();
+
+    await generateRecurringInstances(args, currentUser, organization);
+
+    const recurringEvents = await Event.find({
+      recurring: true,
+    }).lean();
+
+    expect(recurringEvents).toBeDefined();
+    expect(recurringEvents).toHaveLength(5);
+
+    recurringEvents.forEach((event) => {
+      expect(event).toBeDefined();
+    });
   });
 });
