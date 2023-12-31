@@ -61,7 +61,7 @@ const server = new ApolloServer({
     const message = error.message ?? "Something went wrong !";
     const data = error.originalError.errors ?? [];
     const code = error.originalError.code ?? 422;
-    logger.error(message, error);
+    console.error(message, error);
     return {
       message,
       status: code,
@@ -128,12 +128,12 @@ async function startServer(): Promise<void> {
   // Log all the configuration related issues
   await logIssues();
 
-  logger.info(
+  console.log(
     `🚀 Server ready at ${
       process.env.NODE_ENV === "production" ? "https" : "http"
     }://localhost:4000/graphql`
   );
-  logger.info(`🚀 Subscription endpoint ready at ws://localhost:4000/graphql`);
+  console.log(`🚀 Subscription endpoint ready at ws://localhost:4000/graphql`);
 }
 
 startServer();
