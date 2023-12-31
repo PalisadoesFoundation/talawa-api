@@ -4,46 +4,46 @@ This document provides instructions on how to set up and start a running instanc
 
 # Table of Contents
 
-<!-- TOC -->
-
+<!-- toc -->
 
 - [Prerequisites](#prerequisites)
-  - [Install Node.js](#install-nodejs)
-  - [Install Git](#install-git)
-  - [Setting Up This Repository](#setting-up-this-repository)
+  - [Install node.js](#install-nodejs)
+  - [Install npm](#install-npm)
+  - [Install TypeScript](#install-typescript)
+  - [Install git](#install-git)
+  - [Setting up this repository](#setting-up-this-repository)
   - [Install the Required Packages](#install-the-required-packages)
-- [Installation with Docker](#installation-using-docker)
+- [Installation Using Docker](#installation-using-docker)
 - [Installation without Docker](#installation-without-docker)
   - [Install MongoDB](#install-mongodb)
     - [Setting up the mongoDB database](#setting-up-the-mongodb-database)
   - [Install Redis](#install-redis)
+    - [Performance Benefits](#performance-benefits)
     - [Setting Up Redis](#setting-up-redis)
-    - [Benchmark For Performance Benefits](#performance-benefits)
 - [Configuration](#configuration)
-  - [The .env Configuration File](#the-env-configuration-file)
-  - [Generating Token Secrets](#generating-token-secrets)
-    - [Setting up ACCESS_TOKEN_SECRET in .env file](#setting-up-access_token_secret-in-env-file)
-      - [Linux](#linux)
-      - [Windows](#windows)
-    - [Setting up REFRESH_TOKEN_SECRET in .env file](#setting-up-refresh_token_secret-in-env-file)
-  - [Configuring MongoDB](#configuring-mongodb)
-    - [Setting up the MONGODB_URL in .env file](#setting-up-the-mongodb_url-in-env-file)
-    - [Using the CLI to get the MONGODB_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
-    - [Using Microsoft Windows to get the MONGODB_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
-  - [Configuring Redis](#configuring-redis)
-    - [For Local Setup (Linux and WSL)](#for-local-setup-linux-and-wsl)
-    - [For Remote Setup (Redis Cloud)](#for-remote-setup-redis-cloud)
-  - [Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter](#setting-up-env-last_resort_superadmin_email-parameter)
-  - [Configuring Google ReCAPTCHA](#configuring-google-recaptcha)
-    - [Setting up RECAPTCHA_SECRET_KEY in .env file](#setting-up-recaptcha_secret_key-in-env-file)
-    - [Setting up .env MAIL_USERNAME and MAIL_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
-    - [Setting up .env SMTP Variables](#setting-up-env-smtp-variables)
-  - [Setting up Logger configurations _(optional)_](#setting-up-logger-configurations-optional)
-    - [Setting up COLORIZE_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
-    - [Setting up LOG_LEVEL in .env file](#setting-up-log_level-in-env-file)
-  - [Configuring Google Firebase](#configuring-google-firebase)
-    - [Generate Firebase Keys for the Talawa Notification Service](#generate-firebase-keys-for-the-talawa-notification-service)
-    - [(Mobile Developers Only) Applying the Firebase Keys to the Talawa Mobile App](#mobile-developers-only-applying-the-firebase-keys-to-the-talawa-mobile-app)
+  - [Automated Configuration of `.env`](#automated-configuration-of-env)
+  - [Manual Configuration of `.env`](#manual-configuration-of-env)
+    - [The Environment Variables in `.env`](#the-environment-variables-in-env)
+    - [Changing the Development Environment in the .env file](#changing-the-development-environment-in-the-env-file)
+    - [Generating Token Secrets](#generating-token-secrets)
+      - [Setting up ACCESS_TOKEN_SECRET in the .env file](#setting-up-access_token_secret-in-the-env-file)
+        - [Linux](#linux)
+        - [Windows](#windows)
+    - [Setting up REFRESH_TOKEN_SECRET in the .env file](#setting-up-refresh_token_secret-in-the-env-file)
+    - [Configuring MongoDB in the .env file](#configuring-mongodb-in-the-env-file)
+      - [Using the CLI to get the MONGODB_URL Connection String](#using-the-cli-to-get-the-mongodb_url-connection-string)
+      - [Using Microsoft Windows to get the MONGODB_URL Connection String](#using-microsoft-windows-to-get-the-mongodb_url-connection-string)
+    - [Configuring Redis in .env file](#configuring-redis-in-env-file)
+      - [For Local Setup (Linux and WSL)](#for-local-setup-linux-and-wsl)
+      - [For Remote Setup (Redis Cloud)](#for-remote-setup-redis-cloud)
+    - [Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter in the .env file](#setting-up-env-last_resort_superadmin_email-parameter-in-the-env-file)
+    - [Configuring Google ReCAPTCHA in the .env file](#configuring-google-recaptcha-in-the-env-file)
+      - [Setting up the RECAPTCHA_SECRET_KEY](#setting-up-the-recaptcha_secret_key)
+      - [Setting up .env MAIL_USERNAME and MAIL_PASSWORD ReCAPTCHA Parameters](#setting-up-env-mail_username-and-mail_password-recaptcha-parameters)
+    - [Setting up SMTP Email Variables in the .env File](#setting-up-smtp-email-variables-in-the-env-file)
+    - [Setting up Logger configurations _(optional)_](#setting-up-logger-configurations-_optional_)
+      - [Setting up COLORIZE_LOGS in .env file](#setting-up-colorize_logs-in-env-file)
+      - [Setting up LOG_LEVEL in .env file](#setting-up-log_level-in-env-file)
 - [Importing Sample Database](#importing-sample-database)
   - [Syntax:](#syntax)
   - [Examples:](#examples)
@@ -68,7 +68,7 @@ This document provides instructions on how to set up and start a running instanc
   - [Changing default talawa-api port](#changing-default-talawa-api-port)
 - [Testing](#testing)
 
-<!-- /TOC -->
+<!-- tocstop -->
 
 # Prerequisites
 
@@ -76,7 +76,26 @@ You will need to have copies of your code on your local system. Here's how to do
 
 ## Install node.js
 
-Best way to install and manage `node.js` is making use of node version managers. Two most popular node version managers right now are [fnm](https://github.com/Schniz/fnm) and [nvm](https://github.com/nvm-sh/nvm). We'd recommend `fnm` because it's written in `rust` and is much faster than `nvm`. Install whichever one you want and follow their guide to set up `node.js` on your system.
+Best way to install and manage `node.js` is making use of node version managers. Two most popular node version managers right now are [fnm](https://github.com/Schniz/fnm) and [nvm](https://github.com/nvm-sh/nvm). We'd recommend `fnm` because it's written in `rust` and is much faster than `nvm`. Install whichever one you want and follow their guide to set up `node.js` on your system ensure the installation of Node.js version 20 LTS. 
+
+## Install npm
+
+npm is a package manager for Node.js and is installed with Node.js. npm is used to install, share, and distribute code as well as to manage dependencies in your projects. To check if you have npm installed you can run this command in your terminal:
+```
+npm -v
+```
+If you have it installed then you should see the version that's installed. If not, you can download Node.js and npm from the official [Node.js website](https://nodejs.org/en/download/).
+
+## Install TypeScript
+
+TypeScript is a typed superset of JavaScript that compiles to plain JavaScript. It adds optional types, classes, and modules to JavaScript, and supports tools for large-scale JavaScript applications.
+
+To install TypeScript, you can use npm:
+
+```bash
+npm install -g typescript
+```
+This command installs TypeScript globally on your system so that it can be accessed from any project.
 
 ## Install git
 
@@ -110,31 +129,28 @@ Install the packages required by `talawa-api` using this command:
 npm install
 ```
 
-# Installation with Docker
+# Installation Using Docker
 
 > - **Requires Docker and Docker Compose to be installed**
 > - Will start a local mongodb and redis instances
-
-It's important to configure Talawa-API to complete it's setup.
-
-You can use our interactive setup script for the configuration. Use the following command for the same.
-
-```
-npm run setup
-```
-
-It can be done manually as well and here's how to do it. - [The .env Configuration File](#the-env-configuration-file)
 
 Now use the following command to run docker containers -
 
 ```sh
 docker compose up
 ```
+
 OR
+
 ```sh
 docker-compose up
 ```
+
+**Note: If you're using Docker, you'll need to manually import the sample data after the Docker Compose has started the MongoDB container. For instructions on how to do this, refer to [Importing Sample Database](#importing-sample-database)**
+
 # Installation without Docker
+
+There are more steps, but the outcome is the same. A working Talawa-API instance.
 
 ## Install MongoDB
 
@@ -234,7 +250,13 @@ Remember to adjust any paths or details as needed for your specific environment.
 
 It's important to configure Talawa-API to complete it's setup.
 
-You can use our interactive setup script for the configuration. Use the following command for the same.
+A configuration file named `.env` is required in the root directory of `Talawa-API` for storing environment variables used at runtime. It is not a part of the repo and you will have to create it. 
+
+## Automated Configuration of `.env`
+
+You can use our interactive setup script to populate the `.env` file using the command below.
+
+This will create a new `.env` file for you, and if one already exists, it will make the updates you require.
 
 ```
 npm run setup
@@ -242,24 +264,29 @@ npm run setup
 
 It can be done manually as well and here's how to do it.
 
-## The .env Configuration File
+## Manual Configuration of `.env`
 
-A file named `.env` is required in the root directory of talawa-api for storing environment variables used at runtime. It is not a part of the repo and you will have to create it. For a sample of `.env` file there is a file named `.env.sample` in the root directory. Create a new `.env` file by copying the contents of the `.env.sample` into `.env` file.
+**NOTE:** Use the steps below if you decided not to use the automated configuration approach.
+
+With a fresh installation, you will not see a `.env` file present. To manually create one, you will need to copy the contents of the `.env.sample` file provided to `.env`.
+
+Use this command to do this
 
 ```
 cp .env.sample .env
 ```
+### The Environment Variables in `.env`
 
 This `.env` file must be populated with the following environment variables for talawa-api to work:
 
 | Variable                     | Description                                            |
 | ---------------------------- | ------------------------------------------------------ |
-| NODE_ENV                     | Used for providing the environment in which the        |
-|                              | the talawa-api is running                              |
+| NODE_ENV                     | Used for providing the environment in which the the talawa-api is running                              |
 | ACCESS_TOKEN_SECRET          | Used for signing/verifying JWT tokens                  |
 | REFRESH_TOKEN_SECRET         | Used for signing/verifying JWT tokens                  |
 | MONGO_DB_URL                 | Used for connecting talawa-api to the mongoDB database |
 | RECAPTCHA_SECRET_KEY         | Used for authentication using reCAPTCHA                |
+| RECAPTCHA_SITE_KEY           | Used for authentication using reCAPTCHA                |
 | MAIL_USERNAME                | Used for mailing service                               |
 | MAIL_PASSWORD                | Used for mailing service                               |
 | LAST_RESORT_SUPERADMIN_EMAIL | Used for promoting the default super admin             |
@@ -272,23 +299,23 @@ This `.env` file must be populated with the following environment variables for 
 
 The following sections will show you how to configure each of these parameters.
 
-## Changing the environment of talawa-api
+### Changing the Development Environment in the .env file
 
-Change the environment from production to development:
+Change the `NODE_ENV` environment variable in the `.env` file from `production` to `development`:
 
 ```
 NODE_ENV=development
 ```
 
-## Generating Token Secrets
+### Generating Token Secrets
 
 Access and refresh token secrets are used for authentication purposes.
 
-### Setting up ACCESS_TOKEN_SECRET in .env file
+#### Setting up ACCESS_TOKEN_SECRET in the .env file
 
 Run the following command and copy/paste the result to the variable named `ACCESS_TOKEN_SECRET` in `.env` file.
 
-#### Linux
+##### Linux
 
 The command to use is:
 
@@ -296,7 +323,7 @@ The command to use is:
 openssl rand -hex 32
 ```
 
-#### Windows
+##### Windows
 
 This command is available if you have [Git for Windows](https://gitforwindows.org/) installed. Follow these steps:
 
@@ -308,7 +335,7 @@ This command is available if you have [Git for Windows](https://gitforwindows.or
 openssl rand -hex 32
 ```
 
-### Setting up REFRESH_TOKEN_SECRET in .env file
+### Setting up REFRESH_TOKEN_SECRET in the .env file
 
 Run the following command and copy/paste the result to the variable named `REFRESH_TOKEN_SECRET` in `.env` file.
 
@@ -316,7 +343,7 @@ Run the following command and copy/paste the result to the variable named `REFRE
 openssl rand -hex 32
 ```
 
-## Configuring MongoDB
+### Configuring MongoDB in the .env file
 
 Here's how you will configure MongoDB.
 
@@ -325,14 +352,12 @@ Here's how you will configure MongoDB.
 1. You only have to setup one database and provide it's URL in the `.env` file. This is the`primary database` and is used to store all your data.
 1. We automatically create a new database with the name `TALAWA_API_TEST_DATABASE`. This is exclusively used for storing all the test data generated during the testing process so that it does not bloat the main database with unnecessary data.
 
-### Setting up the MONGODB_URL in .env file
-
 A `Connection String` is the URL that applications use to access a MongoDB database. Talawa-API will need to know the correct connection string to use to perform correctly.
 
 1. The `Connection String` is the `.env` variable named `MONGO_DB_URL` in the `.env` file.
-1. The `Connection String` can differ depending on the approach you used to set up your database instance. Please read the official [mongodb docs](https://www.mongodb.com/docs/manual/reference/connection-string/) on `connection string`.
+2. The `Connection String` can differ depending on the approach you used to set up your database instance. Please read the official [mongodb docs](https://www.mongodb.com/docs/manual/reference/connection-string/) on `connection string`.
 
-### Using the CLI to get the MONGODB_URL Connection String
+#### Using the CLI to get the MONGODB_URL Connection String
 
 Your MongoDB installation may include either the `mongo` or `mongosh` command line utility. An easy way of determining the `connection string` is to:
 
@@ -357,7 +382,7 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 
 ```
 
-### Using Microsoft Windows to get the MONGODB_URL Connection String
+#### Using Microsoft Windows to get the MONGODB_URL Connection String
 
 There are a few more steps that need to be done in a Windows environment.
 
@@ -387,13 +412,13 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 
 ```
 
-## Configuring Redis
+### Configuring Redis in .env file
 
 Here's the procedure to set up Redis.
 
 In the `.env` file, you should find three variables: `REDIS_HOST`, `REDIS_PORT`, and `REDIS_PASSWORD`. These environment variables will contain the necessary information for your codebase to connect to a running `redis-server`.
 
-### For Local Setup (Linux and WSL)
+#### For Local Setup (Linux and WSL)
 
 In both scenarios (Linux or WSL post-installation), the variable values should be configured as follows:
 
@@ -401,7 +426,7 @@ In both scenarios (Linux or WSL post-installation), the variable values should b
 2. `REDIS_PORT` = 6379 **Note**: This default port is used by the `redis-server`. However, if your `redis-server` operates on a different port, you must provide that port number.
 3. `REDIS_PASSWORD` should be left empty, as passwords are unnecessary for local connections.
 
-### For Remote Setup (Redis Cloud)
+#### For Remote Setup (Redis Cloud)
 
 To begin, you must register for a free account on Redis Cloud. Following this step, you can proceed by selecting a database from the free tier, which comes with a 30MB data storage limit. Once completed, you can then access your Database by navigating to the `Databases` section. Here, you will find the option to view the overall settings of your free instance.
 
@@ -413,7 +438,7 @@ Here are the configuration details:
 2. `REDIS_PORT` = The number provided in the `Public Endpoint` after the colon (`:`), for instance: `13354`.
 3. `REDIS_PASSWORD` = The `Default user password` located in the Security Section.
 
-## Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter
+### Setting up .env LAST_RESORT_SUPERADMIN_EMAIL parameter in the .env file
 
 The user with the email address set with this parameter will automatically be elevated to Super Admin status on registration.
 
@@ -427,11 +452,11 @@ Set this value in the event that you need to elevate any of your users to be a S
 
 **NOTE** It is STRONGLY advised that you remove the email address once the initial installation and setup has been done.
 
-## Configuring Google ReCAPTCHA
+### Configuring Google ReCAPTCHA in the .env file
 
 You need to have a `google` account to follow the following steps.
 
-### Setting up RECAPTCHA_SECRET_KEY in .env file
+#### Setting up the RECAPTCHA_SECRET_KEY
 
 We use `reCAPTCHA` for two factor authentication (2FA). Follow these steps:
 
@@ -445,7 +470,7 @@ We use `reCAPTCHA` for two factor authentication (2FA). Follow these steps:
 
 1. **NOTE**: Save the generated `Site key` as it will be used in `talawa-admin`.
 
-### Setting up .env MAIL_USERNAME and MAIL_PASSWORD ReCAPTCHA Parameters
+#### Setting up .env MAIL_USERNAME and MAIL_PASSWORD ReCAPTCHA Parameters
 
 **NOTE:** ReCAPTCHA is a type of 2FA, so your Google account needs to have two factor authentication set up for the following steps to work. Make sure this is done before proceeding
 
@@ -460,7 +485,7 @@ The MAIL_USERNAME and MAIL_PASSWORD parameters are required to enable an app to 
 
 For more info refer to this [Google Answer](https://support.google.com/accounts/answer/185833).
 
-### Setting up .env SMTP Variables
+### Setting up SMTP Email Variables in the .env File
 
 For using SMTP server instead of Gmail, following steps need to be followed:
 
@@ -487,11 +512,11 @@ SMTP_SSL_TLS=true
 
 For more information on setting up a smtp server, here's a [useful article](https://sendgrid.com/blog/what-is-an-smtp-server/)
 
-## Setting up Logger configurations _(optional)_
+### Setting up Logger configurations _(optional)_
 
 You can set up and customize logs by configuring the following parameters
 
-### Setting up COLORIZE_LOGS in .env file
+#### Setting up COLORIZE_LOGS in .env file
 
 The parameter `COLORIZE_LOGS` is a boolean field and can be set to true or false. It customizes the log colorization formats displayed in console. You can set the value in `.env` file as
 
@@ -503,9 +528,10 @@ If the parameter value is set to `true`, you should be able to see colorized log
 
 ![Colorized logs in console](./image/colorize-logs.jpg)
 
-### Setting up LOG_LEVEL in .env file
+#### Setting up LOG_LEVEL in .env file
 
-There are different logging levels that can be configured by setting this parameter. The severity order of levels are displayed numerically ascending from most important to least important.<br>
+There are different logging levels that can be configured by setting this parameter. The severity order of levels are displayed numerically ascending from most important to least important.
+
 
 ```
  levels = {
@@ -519,91 +545,9 @@ There are different logging levels that can be configured by setting this parame
   }
 ```
 
-<br>On setting this parameter value, log messages are displayed in the console only if the `message.level` is less than or equal to setted `LOG_LEVEL`
-<br><br>
+On setting this parameter value, log messages are displayed in the console only if the `message.level` is less than or equal to the `LOG_LEVEL` set.
+
 For our application, the most appropriate setting is `LOG_LEVEL = info` since most of information logged on the console are error messages, warnings or info texts.
-
-## Configuring Google Firebase
-
-You need to have a `google` account to follow the following steps.
-
-<br/>
-
-### Generate Firebase Keys for the Talawa Notification Service
-
-We use firebase for mobile app notifications. To configure the notification service create a new firebase project and follow these steps:-
-
-1. Create a new Firebase project for Talawa-API
-1. When created you will automatically enter the project's console area
-1. Click on the settings icon beside the `Project Overview` heading
-1. Click on `Project Settings`
-1. Click on the `Service Accounts` tab
-1. Click on the `Node.js` radio button
-1. Click on `Generate New Private Key` button
-1. Confirm by clicking on `Generate Key`. This will automatically download the private keys in your browser.
-1. Securely store the `JSON` file containing the private key. These will be used in the next section.
-
-### (Mobile Developers Only) Applying the Firebase Keys to the Talawa Mobile App
-
-The key generated in the previous step is in a format suitable for use in a mobile app. We need to convert it for use by the API. This will require you to do some work in the talawa repository to do the necessary conversion. The resulting output will be stored in a `lib/firebase_options.dart` file. Some of the contents of this file will then need to be added to the API's `.env` file. Here we go.
-
-1.  Clone the talawa mobile app in a separate directory that is not under your Talawa-API directory.
-1.  Enter that directory as you will need to edit files there
-1.  Run the following commands to set the key in the environment variable for your respective operating system:
-
-    1.  `Linux/macOS:`
-
-            export GOOGLE_APPLICATION_CREDENTIALS="/PATH/TO/JSON/FILE/filename.json"
-
-    1.  `Windows:`
-
-            $env:GOOGLE_APPLICATION_CREDENTIALS="C:\PATH\TO\JSON\FILE\filename.json"
-
-1.  Install the [Firebase CLI](https://firebase.google.com/docs/cli#install_the_firebase_cli).
-1.  Save the original copy the `lib/firebase_options.dart` file as it will be modified.
-1.  Run the following commands in the project directory of talawa mobile app:
-
-        firebase login
-
-        dart pub global activate flutterfire_cli
-
-1.  Run any commands about exporting variables from the previous `dart` command.
-1.  Run the following command to configure the application for Firebase
-    `flutterfire configure`
-1.  Select the project you created in the firebase console.
-1.  Add `iOS` and `android` platforms to the project.
-1.  Overwrite the `firebase_options.dart` file if asked so.
-1.  The command will generate keys for the `iOS` and `android` platforms respectively and place them in the `firebase_options.dart` file.
-1.  Edit the `firebase_options.dart` file.
-1.  Add the parameters in the `static const FirebaseOptions android = FirebaseOptions` section of the `firebase_options.dart` file to the Talawa API `.env` file under the `androidFirebaseOptions` heading.
-
-    1.  Replace any parameters that are already there in that section.
-    1.  Remove any trailing commas on the lines you have added.
-    1.  Remove any leading spaces on the lines you have added.
-    1.  The final result in the `.env` file should look like this
-
-                 apiKey: '9f6297b283db701dab7766c993c48b',
-                 appId: '1:261699118608:android:366ff7dbdfba5c5a9e8392',
-                 messagingSenderId: '261699118608',
-                 projectId: 'talawa-thingy',
-                 storageBucket: 'talawa-thingy.appspot.com',
-
-1.  Add the parameters in the `static const FirebaseOptions ios = FirebaseOptions` section of the `firebase_options.dart` file to the Talawa API `.env` file under the `iosFirebaseOptions` heading. Replace any paramters that are already there.
-
-    1.  Replace any parameters that are already there in that section.
-    1.  Remove any trailing commas on the lines you have added.
-    1.  Remove any leading spaces on the lines you have added.
-    1.  The final result in the `.env` file should look like this
-
-                 apiKey: 'c2d283aa45f4e858c9cbfe32c58c67',
-                 appId: '1:261699118608:ios:1babbb3c07b8461ebdcb2',
-                 messagingSenderId: '261699118608',
-                 projectId: 'talawa-thingy',
-                 storageBucket: 'talawa-thingy.appspot.com',
-                 iosClientId: '261699118608-d519b739e43c6214374c0da62feaef.apps.googleusercontent.com',
-                 iosBundleId: 'com.example.talawa',
-
-1.  Undo the changes made to the `firebase_options.dart` file by overwriting it with the version you saved at the beginning of this section.
 
 # Importing Sample Database
 
@@ -664,7 +608,9 @@ Talawa-api development server runs two processes simultaneously in the backgroun
 
 Run the following command to start talawa-api development server:
 
-        npm run dev
+```
+npm run dev
+```
 
 # How to Access the Talawa-API URL
 

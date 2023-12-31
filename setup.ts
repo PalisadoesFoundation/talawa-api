@@ -456,7 +456,7 @@ async function main(): Promise<void> {
     message: "Are you setting up this project using Docker?",
     default: false,
   });
-
+  
   if (isDockerInstallation) {
     const DB_URL = "mongodb://localhost:27017/talawa-api";
     const config = dotenv.parse(fs.readFileSync(".env"));
@@ -508,16 +508,6 @@ async function main(): Promise<void> {
       `\nreCAPTCHA secret key already exists with the value ${process.env.RECAPTCHA_SECRET_KEY}`
     );
   }
-  const { shouldSetRecaptcha } = await inquirer.prompt({
-    type: "confirm",
-    name: "shouldSetRecaptcha",
-    message: "Would you like to set up a reCAPTCHA secret key?",
-    default: true,
-  });
-
-  if (shouldSetRecaptcha) {
-    await recaptcha();
-  }
 
   const { shouldSetRecaptchaSiteKey } = await inquirer.prompt({
     type: "confirm",
@@ -562,6 +552,7 @@ async function main(): Promise<void> {
   ]);
   if (shouldSetSuperUserEmail) {
     await superAdmin();
+
   }
   // check if mail_username is set, if not, set it to mail_username's value
   else if (
@@ -596,6 +587,7 @@ async function main(): Promise<void> {
       await importData();
     }
   }
+
 
   console.log(
     "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"

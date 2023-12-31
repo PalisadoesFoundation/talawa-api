@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [14.x]
+        node-version: [20.x]
     services:
       redis:
         image: redis:6.0
@@ -96,7 +96,7 @@ jobs:
   Generate-Documentation:
     name: Generate Documentation
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/automated-docs'
+    if: github.ref == 'refs/heads/develop'
     needs: Push-Workflow
     steps:
       - name: Checkout repository
@@ -136,8 +136,10 @@ jobs:
           git config --global user.email "${{env.email}}"
           git add .
           git commit -m "Update documentation"
-          git push
+          git push -f https://$GH_TOKEN@github.com/PalisadoesFoundation/talawa-api.git HEAD:develop
           echo -e "🚀${Green} Hurrah! doc updated${NoColor}"
+        env:
+          ACCESS_TOKEN: ${{ secrets.GH_TOKEN }}
       
       - name: Create Documentation Artifact
         uses: actions/upload-artifact@v2
@@ -147,13 +149,13 @@ jobs:
   
   Copy-docs-to-talawa-docs:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/automated-docs'
+    if: github.ref == 'refs/heads/develop'
     needs: Generate-Documentation
     steps:
     - uses: actions/checkout@v3
     - uses: dmnemec/copy_file_to_another_repo_action@v1.1.1
       env:
-        API_TOKEN_GITHUB: ${{ secrets.TALAWA_DOCS_SYNC }}    
+        API_TOKEN_GITHUB: ${{ secrets.GH_TOKEN }}    
       with:
         source_file: 'talawa-api-docs/'
         destination_repo: 'PalisadoesFoundation/talawa-docs'

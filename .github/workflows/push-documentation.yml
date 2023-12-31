@@ -13,8 +13,8 @@ name: Push Documentation Workflow
 
 on:
   push:
-    branches:
-      - 'develop'
+    branches-ignore:
+      - '*'
       
 jobs:
   ##############################################################################
@@ -28,7 +28,7 @@ jobs:
     environment: TALAWA_ENVIRONMENT
     strategy:
       matrix:
-        node-version: [14.x]
+        node-version: [20.x]
     services:
       mongo:
         image: mongo:4.4
