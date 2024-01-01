@@ -12,13 +12,13 @@ const loadPlugins = async (): Promise<void> => {
     pluginData.forEach(async (plugin: any) => {
       await Plugin.create(plugin);
     });
-    logger.info(
+    console.log(
       "\x1b[1m\x1b[32m%s\x1b[0m",
       `Uploaded Plugins in ${databaseTitle} `
     );
   } else {
     //plugin data already present
-    logger.info(
+    console.log(
       "\x1b[1m\x1b[32m%s\x1b[0m",
       `Plugin data already present at ${databaseTitle}`
     );
