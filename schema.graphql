@@ -841,6 +841,8 @@ enum Recurrance {
   YEARLY
 }
 
+scalar StartDate
+
 enum Status {
   ACTIVE
   BLOCKED
@@ -915,11 +917,11 @@ type UnauthorizedError implements Error {
 }
 
 input UpdateAdvertisementInput {
-  endDate: String
-  id: ID!
+  _id: ID!
+  endDate: Date
   link: String
   name: String
-  startDate: String
+  startDate: StartDate
   type: String
 }
 

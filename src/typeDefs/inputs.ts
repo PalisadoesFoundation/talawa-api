@@ -283,12 +283,12 @@ export const inputs = gql`
   }
 
   input UpdateAdvertisementInput {
-    id: ID!
+    _id: ID!
     name: String
     link: String
     type: String
-    startDate: String
-    endDate: String
+    startDate: StartDate
+    endDate: Date
   }
 
   input UpdateEventProjectInput {
