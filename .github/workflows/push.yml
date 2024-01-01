@@ -110,8 +110,8 @@ jobs:
           npx typedoc --entryPoints src --out talawa-api-docs --plugin typedoc-plugin-markdown --theme markdown --entryPointStrategy expand
 
       - name: Make Markdown Files MPX Compatible
-        run: python ./md_mpx_format_adjuster.py --directory talawa-admin-docs   
-
+        run: python ./.github/workflows/md_mpx_format_adjuster.py --directory talawa-admin-docs
+        
       - name: Checking doc updated
         id: DocUpdated
         run: |
