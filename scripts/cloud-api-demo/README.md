@@ -6,6 +6,33 @@ This guide provides step-by-step instructions for setting up a cloud instance of
 - You have sudo privileges. 
 - You are executing all commands under the home directory of the 'talawa-api' user.
 
+# Table Of Contents
+- [Talawa API Cloud Instance Setup Guide](#talawa-api-cloud-instance-setup-guide)
+  - [1. Virtual Private Server (VPS) Setup](#1-virtual-private-server-vps-setup)
+  - [2. Repository Setup](#2-repository-setup)
+  - [3. Docker Configuration](#3-docker-configuration)
+  - [4. Running the Containers](#4-running-the-containers)
+  - [5. Firewall Setup](#5-firewall-setup)
+  - [6. NGINX Installation and Configuration](#6-nginx-installation-and-configuration)
+    - [6.1 Install NGINX and configure it](#61-install-nginx-and-configure-it)
+    - [6.2 Add the following to the location part of the server block](#62-add-the-following-to-the-location-part-of-the-server-block)
+    - [6.3 Check the NGINX configuration and restart it](#63-check-the-nginx-configuration-and-restart-it)
+  - [7. SSL Configuration with LetsEncrypt](#7-ssl-configuration-with-letsencrypt)
+  - [8. SSH Keys for GitHub Actions](#8-ssh-keys-for-github-actions)
+  - [9. GitHub Action Setup](#9-github-action-setup)
+  - [10. Cron Jobs](#10-cron-jobs)
+    - [10.1 Setting up Scripts](#101-setting-up-scripts)
+      - [10.1.1 Setting Permissions and Owner for check_permissions.sh](#1011-setting-permissions-and-owner-for-check_permissionssh)
+      - [10.1.2 Modify sudoers file to allow talawa-api to run chmod and chown without password prompt](#1012-modify-sudoers-file-to-allow-talawa-api-to-run-chmod-and-chown-without-password-prompt)
+      - [10.1.3 Run check_permissions.sh once to correct permissions for other scripts](#1013-run-check_permissionssh-once-to-correct-permissions-for-other-scripts)
+    - [10.2 Setting up Cronjobs](#102-setting-up-cronjobs)
+      - [10.2.1 Cron job to run check_permissions.sh](#1021-cron-job-to-run-check_permissionssh)
+      - [10.2.2 Cron job to run cert_renew.sh](#1022-cron-job-to-run-cert_renewsh)
+      - [10.2.3 Cron job to run reset_mongo.sh](#1023-cron-job-to-run-reset_mongosh)
+    - [10.3 Logging for cron jobs](#103-logging-for-cron-jobs)
+
+
+
 ## 1. Virtual Private Server (VPS) Setup
 
 First, update your package lists and upgrade the system:
@@ -90,14 +117,14 @@ sudo ufw status
 
 ## 6. NGINX Installation and Configuration
 
-Install NGINX and configure it:
+### 6.1 Install NGINX and configure it:
 
 ```bash
 sudo apt install nginx
 sudo vi /etc/nginx/sites-available/default
 ```
 
-Add the following to the location part of the server block:
+### 6.2 Add the following to the location part of the server block:
 ```bash
 server_name yourdomain.com www.yourdomain.com;
 
@@ -111,7 +138,7 @@ location / {
 }
 ```
 
-Check the NGINX configuration and restart it:
+### 6.3 Check the NGINX configuration and restart it:
 ```bash
 sudo nginx -t
 sudo nginx -s reload
@@ -182,3 +209,96 @@ To enable continuous integration with GitHub Actions, you need to set up the nec
 
 These secrets are crucial for the GitHub Actions workflow to connect securely to your VPS and deploy the Talawa API.
 
+## 10. Cron Jobs
+
+### 10.1 Setting up Scripts:
+Copy the following scripts from **/home/talawa-api/develop/talawa-api/scripts/cloud-api-demo** to **/usr/local/bin**:
+`cert_renew.sh`
+`check_permissions.sh`
+`deploy.sh`
+`reset_mongo.sh`
+
+#### 10.1.1 Setting Permissions and Owner for check_permissions.sh:
+
+```bash
+sudo chmod 700 /usr/local/bin/check_permissions.sh
+sudo chown talawa-api /usr/local/bin/check_permissions.sh
+```
+
+#### 10.1.2 Modify sudoers file to allow talawa-api to run chmod and chown without password prompt:
+- Open sudoers file with sudo visudo.
+- Add the following line:
+```bash
+talawa-api ALL=(ALL) NOPASSWD: /bin/chmod, /bin/chown
+```
+- Save and exit the editor
+
+#### 10.1.3 Run check_permissions.sh once to correct permissions for other scripts:
+```bash
+/usr/local/bin/check_permissions.sh
+```
+Executing check_permissions.sh once will ensure that the correct permissions are applied to the other scripts in the specified directory.
+
+### 10.2 Setting up Cronjobs:
+
+#### 10.2.1 Cron job to run check_permissions.sh 
+This cron job will execute check_permissions.sh every midnight, ensuring that the correct permissions are maintained for the scripts : 
+```bash
+echo "0 0 * * * talawa-api /usr/local/bin/check_permissions.sh" | sudo tee /etc/cron.d/check_permissions
+```
+#### 10.2.2 Cron job to run cert_renew.sh
+This cron job will execute `cert_renew.sh` every 90 days, ensuring that the certificates are renewed in a timely manner:
+```bash
+echo "0 0 */90 * * talawa-api /usr/local/bin/cert_renew.sh" | sudo tee /etc/cron.d/cert_renew
+```
+#### 10.2.3 Cron job to run reset_mongo.sh
+This cron job will execute `reset_mongo.sh` every 24 hours, ensuring that the MongoDB is reset on a daily basis:
+```bash
+echo "0 0 * * * talawa-api /usr/local/bin/reset_mongo.sh" | sudo tee /etc/cron.d/reset_mongo
+```
+#### 10.3 Logging for cron jobs
+
+1. **Create the logrotate configuration file:**
+
+```bash
+sudo nano /etc/logrotate.d/talawa-api-cron
+```
+2. **Add the following content to the file:**
+```log
+/var/log/talawa-api/cron.log {
+    rotate 7
+    daily
+    missingok
+    notifempty
+    compress
+    delaycompress
+    create 640 talawa-api talawa-api
+    sharedscripts
+    postrotate
+        systemctl restart cron
+    endscript
+}
+```
+
+**Explanation:**
+- `rotate 7`: Retains the last 7 rotated log files.
+- `daily`: Rotates the log file daily.
+- `missingok`: Ignores errors if the log file is missing.
+- `notifempty`: Does not rotate the log file if it is empty.
+- `compress`: Compresses rotated log files.
+- `delaycompress`: Delays compression until the next rotation cycle.
+- `create 640 talawa-api talawa-api`: Creates new log files with the specified permissions and ownership. In this case, both the owner and group are set to talawa-api.
+- `sharedscripts`: Runs the `postrotate` script only once even if multiple log files are rotated.
+- `postrotate` ... endscript: Defines the actions to be taken after log rotation, in this case, restarting the cron service.
+
+3. **Save and exit the text editor (Ctrl + X, then Y, then Enter in nano).**
+
+4. **Restart Cron Service:**
+Apply the logrotate changes by restarting the cron service:
+```bash
+sudo systemctl restart cron
+```
+
+Now, the cron job output will be logged to `/var/log/talawa-api/cron.log`, and log rotation will be managed by logrotate according to the specified configuration. Adjust the log rotation parameters in the logrotate configuration file as needed.
+
+This will set up logging for the cron jobs and manage log rotation using logrotate.
