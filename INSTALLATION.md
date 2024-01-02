@@ -6,7 +6,6 @@ This document provides instructions on how to set up and start a running instanc
 
 <!-- TOC -->
 
-- [Talawa-API Installation](#talawa-api-installation)
 - [Table of Contents](#table-of-contents)
 - [Prerequisites](#prerequisites)
   - [Install node.js](#install-nodejs)
