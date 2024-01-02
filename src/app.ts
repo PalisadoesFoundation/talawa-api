@@ -1,5 +1,8 @@
 import express from "express";
 import { rateLimit } from "express-rate-limit";
+// No type defintions available for package 'xss-clean'
+// @ts-ignore
+import xss from "xss-clean";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
 import cors from "cors";
