@@ -18,4 +18,3 @@ cd /home/talawa-api/develop/talawa-api
 
 # Run a command to import sample data using npm
 npm run import:sample-data
-

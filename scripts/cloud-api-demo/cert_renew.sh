@@ -5,5 +5,5 @@
 # This script will be used to create a cronjob for automatic renewal.
 
 # Renew the certificates
-certbot renew
-
+certbot renew --config-dir ~/.certbot/config --logs-dir ~/.certbot/logs --work-dir ~/.certbot/work
+                         
