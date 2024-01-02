@@ -17,9 +17,3 @@ docker-compose down
 
 # Build and launch containers in the background
 docker-compose up -d --build
-
-# Set permissions to 700 for the script
-chmod 700 "$0"
-
-# Set ownership to talawa-api user
-chown talawa-api "$0"

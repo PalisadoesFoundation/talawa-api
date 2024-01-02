@@ -169,7 +169,7 @@ To enable continuous integration with GitHub Actions, you need to set up the nec
     - For the first secret:
         
         - Name: `API_DEMO_HOST`
-        - Value: `api-demo.talawa.io`
+        - Value: `api-demo.talawa.io` (Replace with your hostname)
     - For the second secret:
         - Name: `API_DEMO_USERNAME`
         - Value: `talawa-api`
