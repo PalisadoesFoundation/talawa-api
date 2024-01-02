@@ -820,6 +820,7 @@ type Query {
   post(id: ID!): Post
   postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
   postsByOrganizationConnection(first: Int, id: ID!, orderBy: PostOrderByInput, skip: Int, where: PostWhereInput): PostConnection
+  postsByUser(id: ID!, orderBy: PostOrderByInput): [Post]
   registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
   registrantsByEvent(id: ID!): [User]
   user(id: ID!): User!

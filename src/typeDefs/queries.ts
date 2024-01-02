@@ -76,6 +76,8 @@ export const queries = gql`
 
     postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
 
+    postsByUser(id: ID!, orderBy: PostOrderByInput): [Post]
+
     postsByOrganizationConnection(
       id: ID!
       where: PostWhereInput

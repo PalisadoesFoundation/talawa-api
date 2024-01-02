@@ -20,6 +20,7 @@ import { organizationsMemberConnection } from "./organizationsMemberConnection";
 import { isSampleOrganization } from "../Query/organizationIsSample";
 import { post } from "./post";
 import { postsByOrganization } from "./postsByOrganization";
+import { postsByUser } from "./postsByUser";
 import { postsByOrganizationConnection } from "./postsByOrganizationConnection";
 import { registeredEventsByUser } from "./registeredEventsByUser";
 import { user } from "./user";
@@ -51,6 +52,7 @@ export const Query: QueryResolvers = {
   organizationsMemberConnection,
   post,
   postsByOrganization,
+  postsByUser,
   postsByOrganizationConnection,
   registeredEventsByUser,
   user,
