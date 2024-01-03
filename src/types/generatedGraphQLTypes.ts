@@ -37,6 +37,7 @@ export type Scalars = {
   Int: number;
   Float: number;
   Any: any;
+  CountryCode: any;
   Date: any;
   DateTime: any;
   EmailAddress: any;
@@ -48,6 +49,29 @@ export type Scalars = {
   Time: any;
   URL: any;
   Upload: any;
+};
+
+export type Address = {
+  __typename?: 'Address';
+  city?: Maybe<Scalars['String']>;
+  countryCode?: Maybe<Scalars['CountryCode']>;
+  dependentLocality?: Maybe<Scalars['String']>;
+  line1?: Maybe<Scalars['String']>;
+  line2?: Maybe<Scalars['String']>;
+  postalCode?: Maybe<Scalars['String']>;
+  sortingCode?: Maybe<Scalars['String']>;
+  state?: Maybe<Scalars['String']>;
+};
+
+export type AddressInput = {
+  city?: InputMaybe<Scalars['String']>;
+  countryCode?: InputMaybe<Scalars['CountryCode']>;
+  dependentLocality?: InputMaybe<Scalars['String']>;
+  line1?: InputMaybe<Scalars['String']>;
+  line2?: InputMaybe<Scalars['String']>;
+  postalCode?: InputMaybe<Scalars['String']>;
+  sortingCode?: InputMaybe<Scalars['String']>;
+  state?: InputMaybe<Scalars['String']>;
 };
 
 export type Advertisement = {
@@ -71,20 +95,9 @@ export type AggregateUser = {
   count: Scalars['Int'];
 };
 
-export type AndroidFirebaseOptions = {
-  __typename?: 'AndroidFirebaseOptions';
-  apiKey?: Maybe<Scalars['String']>;
-  appId?: Maybe<Scalars['String']>;
-  messagingSenderId?: Maybe<Scalars['String']>;
-  projectId?: Maybe<Scalars['String']>;
-  storageBucket?: Maybe<Scalars['String']>;
-};
-
 export type AuthData = {
   __typename?: 'AuthData';
   accessToken: Scalars['String'];
-  androidFirebaseOptions: AndroidFirebaseOptions;
-  iosFirebaseOptions: IosFirebaseOptions;
   refreshToken: Scalars['String'];
   user: User;
 };
@@ -209,6 +222,29 @@ export type DonationWhereInput = {
   name_of_user_not_in?: InputMaybe<Array<Scalars['String']>>;
   name_of_user_starts_with?: InputMaybe<Scalars['String']>;
 };
+
+export type EducationGrade =
+  | 'GRADE_1'
+  | 'GRADE_2'
+  | 'GRADE_3'
+  | 'GRADE_4'
+  | 'GRADE_5'
+  | 'GRADE_6'
+  | 'GRADE_7'
+  | 'GRADE_8'
+  | 'GRADE_9'
+  | 'GRADE_10'
+  | 'GRADE_11'
+  | 'GRADE_12'
+  | 'GRADUATE'
+  | 'KG'
+  | 'NO_GRADE'
+  | 'PRE_KG';
+
+export type EmploymentStatus =
+  | 'FULL_TIME'
+  | 'PART_TIME'
+  | 'UNEMPLOYED';
 
 export type Error = {
   message: Scalars['String'];
@@ -366,6 +402,11 @@ export type ForgotPasswordData = {
   userOtp: Scalars['String'];
 };
 
+export type Gender =
+  | 'FEMALE'
+  | 'MALE'
+  | 'OTHER';
+
 export type Group = {
   __typename?: 'Group';
   _id?: Maybe<Scalars['ID']>;
@@ -392,17 +433,6 @@ export type GroupChatMessage = {
   groupChatMessageBelongsTo: GroupChat;
   messageContent: Scalars['String'];
   sender: User;
-};
-
-export type IosFirebaseOptions = {
-  __typename?: 'IOSFirebaseOptions';
-  apiKey?: Maybe<Scalars['String']>;
-  appId?: Maybe<Scalars['String']>;
-  iosBundleId?: Maybe<Scalars['String']>;
-  iosClientId?: Maybe<Scalars['String']>;
-  messagingSenderId?: Maybe<Scalars['String']>;
-  projectId?: Maybe<Scalars['String']>;
-  storageBucket?: Maybe<Scalars['String']>;
 };
 
 export type InvalidCursor = FieldError & {
@@ -438,6 +468,14 @@ export type LoginInput = {
   email: Scalars['EmailAddress'];
   password: Scalars['String'];
 };
+
+export type MaritalStatus =
+  | 'DIVORCED'
+  | 'ENGAGED'
+  | 'MARRIED'
+  | 'SEPERATED'
+  | 'SINGLE'
+  | 'WIDOWED';
 
 export type MaximumLengthError = FieldError & {
   __typename?: 'MaximumLengthError';
@@ -1638,9 +1676,16 @@ export type UpdateTaskInput = {
 };
 
 export type UpdateUserInput = {
+  address?: InputMaybe<AddressInput>;
+  birthDate?: InputMaybe<Scalars['Date']>;
+  educationGrade?: InputMaybe<EducationGrade>;
   email?: InputMaybe<Scalars['EmailAddress']>;
+  employmentStatus?: InputMaybe<EmploymentStatus>;
   firstName?: InputMaybe<Scalars['String']>;
+  gender?: InputMaybe<Gender>;
   lastName?: InputMaybe<Scalars['String']>;
+  maritalStatus?: InputMaybe<MaritalStatus>;
+  phone?: InputMaybe<UserPhoneInput>;
 };
 
 export type UpdateUserPasswordInput = {
@@ -1662,22 +1707,29 @@ export type UpdateUserTypeInput = {
 export type User = {
   __typename?: 'User';
   _id: Scalars['ID'];
+  address?: Maybe<Address>;
   adminApproved?: Maybe<Scalars['Boolean']>;
   adminFor?: Maybe<Array<Maybe<Organization>>>;
   appLanguageCode: Scalars['String'];
   assignedTasks?: Maybe<Array<Maybe<Task>>>;
+  birthDate?: Maybe<Scalars['Date']>;
   createdAt?: Maybe<Scalars['DateTime']>;
   createdEvents?: Maybe<Array<Maybe<Event>>>;
   createdOrganizations?: Maybe<Array<Maybe<Organization>>>;
+  educationGrade?: Maybe<EducationGrade>;
   email: Scalars['EmailAddress'];
+  employmentStatus?: Maybe<EmploymentStatus>;
   eventAdmin?: Maybe<Array<Maybe<Event>>>;
   firstName: Scalars['String'];
+  gender?: Maybe<Gender>;
   image?: Maybe<Scalars['String']>;
   joinedOrganizations?: Maybe<Array<Maybe<Organization>>>;
   lastName: Scalars['String'];
+  maritalStatus?: Maybe<MaritalStatus>;
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
   organizationUserBelongsTo?: Maybe<Organization>;
   organizationsBlockedBy?: Maybe<Array<Maybe<Organization>>>;
+  phone?: Maybe<UserPhone>;
   pluginCreationAllowed?: Maybe<Scalars['Boolean']>;
   registeredEvents?: Maybe<Array<Maybe<Event>>>;
   tagsAssignedWith?: Maybe<UserTagsConnection>;
@@ -1740,6 +1792,19 @@ export type UserOrderByInput =
   | 'id_DESC'
   | 'lastName_ASC'
   | 'lastName_DESC';
+
+export type UserPhone = {
+  __typename?: 'UserPhone';
+  home?: Maybe<Scalars['PhoneNumber']>;
+  mobile?: Maybe<Scalars['PhoneNumber']>;
+  work?: Maybe<Scalars['PhoneNumber']>;
+};
+
+export type UserPhoneInput = {
+  home?: InputMaybe<Scalars['PhoneNumber']>;
+  mobile?: InputMaybe<Scalars['PhoneNumber']>;
+  work?: InputMaybe<Scalars['PhoneNumber']>;
+};
 
 export type UserTag = {
   __typename?: 'UserTag';
@@ -1919,10 +1984,11 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  Address: ResolverTypeWrapper<Address>;
+  AddressInput: AddressInput;
   Advertisement: ResolverTypeWrapper<Advertisement>;
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
-  AndroidFirebaseOptions: ResolverTypeWrapper<AndroidFirebaseOptions>;
   Any: ResolverTypeWrapper<Scalars['Any']>;
   AuthData: ResolverTypeWrapper<Omit<AuthData, 'user'> & { user: ResolversTypes['User'] }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
@@ -1934,6 +2000,7 @@ export type ResolversTypes = {
   ConnectionError: ResolversTypes['InvalidCursor'] | ResolversTypes['MaximumValueError'];
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
   CreateAdvertisementInput: CreateAdvertisementInput;
+  CountryCode: ResolverTypeWrapper<Scalars['CountryCode']>;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: ResolverTypeWrapper<Scalars['Date']>;
@@ -1943,7 +2010,9 @@ export type ResolversTypes = {
   DirectChatMessage: ResolverTypeWrapper<InterfaceDirectChatMessageModel>;
   Donation: ResolverTypeWrapper<InterfaceDonationModel>;
   DonationWhereInput: DonationWhereInput;
+  EducationGrade: EducationGrade;
   EmailAddress: ResolverTypeWrapper<Scalars['EmailAddress']>;
+  EmploymentStatus: EmploymentStatus;
   Error: ResolversTypes['UnauthenticatedError'] | ResolversTypes['UnauthorizedError'];
   Event: ResolverTypeWrapper<InterfaceEventModel>;
   EventAttendeeInput: EventAttendeeInput;
@@ -1958,11 +2027,11 @@ export type ResolversTypes = {
   FieldError: ResolversTypes['InvalidCursor'] | ResolversTypes['MaximumLengthError'] | ResolversTypes['MaximumValueError'] | ResolversTypes['MinimumLengthError'] | ResolversTypes['MinimumValueError'];
   Float: ResolverTypeWrapper<Scalars['Float']>;
   ForgotPasswordData: ForgotPasswordData;
+  Gender: Gender;
   Group: ResolverTypeWrapper<InterfaceGroupModel>;
   GroupChat: ResolverTypeWrapper<InterfaceGroupChatModel>;
   GroupChatMessage: ResolverTypeWrapper<InterfaceGroupChatMessageModel>;
   ID: ResolverTypeWrapper<Scalars['ID']>;
-  IOSFirebaseOptions: ResolverTypeWrapper<IosFirebaseOptions>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   InvalidCursor: ResolverTypeWrapper<InvalidCursor>;
   JSON: ResolverTypeWrapper<Scalars['JSON']>;
@@ -1972,6 +2041,7 @@ export type ResolversTypes = {
   Latitude: ResolverTypeWrapper<Scalars['Latitude']>;
   LoginInput: LoginInput;
   Longitude: ResolverTypeWrapper<Scalars['Longitude']>;
+  MaritalStatus: MaritalStatus;
   MaximumLengthError: ResolverTypeWrapper<MaximumLengthError>;
   MaximumValueError: ResolverTypeWrapper<MaximumValueError>;
   MembershipRequest: ResolverTypeWrapper<InterfaceMembershipRequestModel>;
@@ -2035,6 +2105,8 @@ export type ResolversTypes = {
   UserEdge: ResolverTypeWrapper<Omit<UserEdge, 'node'> & { node: ResolversTypes['User'] }>;
   UserInput: UserInput;
   UserOrderByInput: UserOrderByInput;
+  UserPhone: ResolverTypeWrapper<UserPhone>;
+  UserPhoneInput: UserPhoneInput;
   UserTag: ResolverTypeWrapper<InterfaceOrganizationTagUserModel>;
   UserTagEdge: ResolverTypeWrapper<Omit<UserTagEdge, 'node'> & { node: ResolversTypes['UserTag'] }>;
   UserTagsConnection: ResolverTypeWrapper<Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversTypes['UserTagEdge']> }>;
@@ -2051,10 +2123,11 @@ export type ResolversTypes = {
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  Address: Address;
+  AddressInput: AddressInput;
   Advertisement: Advertisement;
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
-  AndroidFirebaseOptions: AndroidFirebaseOptions;
   Any: Scalars['Any'];
   AuthData: Omit<AuthData, 'user'> & { user: ResolversParentTypes['User'] };
   Boolean: Scalars['Boolean'];
@@ -2066,6 +2139,7 @@ export type ResolversParentTypes = {
   ConnectionError: ResolversParentTypes['InvalidCursor'] | ResolversParentTypes['MaximumValueError'];
   ConnectionPageInfo: ConnectionPageInfo;
   CreateAdvertisementInput: CreateAdvertisementInput;
+  CountryCode: Scalars['CountryCode'];
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date'];
@@ -2093,7 +2167,6 @@ export type ResolversParentTypes = {
   GroupChat: InterfaceGroupChatModel;
   GroupChatMessage: InterfaceGroupChatMessageModel;
   ID: Scalars['ID'];
-  IOSFirebaseOptions: IosFirebaseOptions;
   Int: Scalars['Int'];
   InvalidCursor: InvalidCursor;
   JSON: Scalars['JSON'];
@@ -2158,6 +2231,8 @@ export type ResolversParentTypes = {
   UserCustomData: UserCustomData;
   UserEdge: Omit<UserEdge, 'node'> & { node: ResolversParentTypes['User'] };
   UserInput: UserInput;
+  UserPhone: UserPhone;
+  UserPhoneInput: UserPhoneInput;
   UserTag: InterfaceOrganizationTagUserModel;
   UserTagEdge: Omit<UserTagEdge, 'node'> & { node: ResolversParentTypes['UserTag'] };
   UserTagsConnection: Omit<UserTagsConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserTagEdge']> };
@@ -2181,6 +2256,18 @@ export type RoleDirectiveArgs = {
 
 export type RoleDirectiveResolver<Result, Parent, ContextType = any, Args = RoleDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
+export type AddressResolvers<ContextType = any, ParentType extends ResolversParentTypes['Address'] = ResolversParentTypes['Address']> = {
+  city?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  countryCode?: Resolver<Maybe<ResolversTypes['CountryCode']>, ParentType, ContextType>;
+  dependentLocality?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  line1?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  line2?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  postalCode?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sortingCode?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type AdvertisementResolvers<ContextType = any, ParentType extends ResolversParentTypes['Advertisement'] = ResolversParentTypes['Advertisement']> = {
   _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
@@ -2202,23 +2289,12 @@ export type AggregateUserResolvers<ContextType = any, ParentType extends Resolve
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type AndroidFirebaseOptionsResolvers<ContextType = any, ParentType extends ResolversParentTypes['AndroidFirebaseOptions'] = ResolversParentTypes['AndroidFirebaseOptions']> = {
-  apiKey?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  appId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  messagingSenderId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  projectId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  storageBucket?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export interface AnyScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Any'], any> {
   name: 'Any';
 }
 
 export type AuthDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthData'] = ResolversParentTypes['AuthData']> = {
   accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  androidFirebaseOptions?: Resolver<ResolversTypes['AndroidFirebaseOptions'], ParentType, ContextType>;
-  iosFirebaseOptions?: Resolver<ResolversTypes['IOSFirebaseOptions'], ParentType, ContextType>;
   refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -2264,6 +2340,10 @@ export type ConnectionPageInfoResolvers<ContextType = any, ParentType extends Re
   startCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
+
+export interface CountryCodeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['CountryCode'], any> {
+  name: 'CountryCode';
+}
 
 export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Date'], any> {
   name: 'Date';
@@ -2399,17 +2479,6 @@ export type GroupChatMessageResolvers<ContextType = any, ParentType extends Reso
   groupChatMessageBelongsTo?: Resolver<ResolversTypes['GroupChat'], ParentType, ContextType>;
   messageContent?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   sender?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type IosFirebaseOptionsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IOSFirebaseOptions'] = ResolversParentTypes['IOSFirebaseOptions']> = {
-  apiKey?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  appId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  iosBundleId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  iosClientId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  messagingSenderId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  projectId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  storageBucket?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2789,22 +2858,29 @@ export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTyp
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  address?: Resolver<Maybe<ResolversTypes['Address']>, ParentType, ContextType>;
   adminApproved?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   adminFor?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   appLanguageCode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   assignedTasks?: Resolver<Maybe<Array<Maybe<ResolversTypes['Task']>>>, ParentType, ContextType>;
+  birthDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   createdOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
+  educationGrade?: Resolver<Maybe<ResolversTypes['EducationGrade']>, ParentType, ContextType>;
   email?: Resolver<ResolversTypes['EmailAddress'], ParentType, ContextType>;
+  employmentStatus?: Resolver<Maybe<ResolversTypes['EmploymentStatus']>, ParentType, ContextType>;
   eventAdmin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   firstName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  gender?: Resolver<Maybe<ResolversTypes['Gender']>, ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   joinedOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   lastName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  maritalStatus?: Resolver<Maybe<ResolversTypes['MaritalStatus']>, ParentType, ContextType>;
   membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
   organizationUserBelongsTo?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   organizationsBlockedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
+  phone?: Resolver<Maybe<ResolversTypes['UserPhone']>, ParentType, ContextType>;
   pluginCreationAllowed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   registeredEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   tagsAssignedWith?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<UserTagsAssignedWithArgs>>;
@@ -2831,6 +2907,13 @@ export type UserCustomDataResolvers<ContextType = any, ParentType extends Resolv
 export type UserEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserEdge'] = ResolversParentTypes['UserEdge']> = {
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UserPhoneResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserPhone'] = ResolversParentTypes['UserPhone']> = {
+  home?: Resolver<Maybe<ResolversTypes['PhoneNumber']>, ParentType, ContextType>;
+  mobile?: Resolver<Maybe<ResolversTypes['PhoneNumber']>, ParentType, ContextType>;
+  work?: Resolver<Maybe<ResolversTypes['PhoneNumber']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2875,10 +2958,10 @@ export type UsersConnectionResultResolvers<ContextType = any, ParentType extends
 };
 
 export type Resolvers<ContextType = any> = {
+  Address?: AddressResolvers<ContextType>;
   Advertisement?: AdvertisementResolvers<ContextType>;
   AggregatePost?: AggregatePostResolvers<ContextType>;
   AggregateUser?: AggregateUserResolvers<ContextType>;
-  AndroidFirebaseOptions?: AndroidFirebaseOptionsResolvers<ContextType>;
   Any?: GraphQLScalarType;
   AuthData?: AuthDataResolvers<ContextType>;
   CheckIn?: CheckInResolvers<ContextType>;
@@ -2886,6 +2969,7 @@ export type Resolvers<ContextType = any> = {
   Comment?: CommentResolvers<ContextType>;
   ConnectionError?: ConnectionErrorResolvers<ContextType>;
   ConnectionPageInfo?: ConnectionPageInfoResolvers<ContextType>;
+  CountryCode?: GraphQLScalarType;
   Date?: GraphQLScalarType;
   DateTime?: GraphQLScalarType;
   DeletePayload?: DeletePayloadResolvers<ContextType>;
@@ -2902,7 +2986,6 @@ export type Resolvers<ContextType = any> = {
   Group?: GroupResolvers<ContextType>;
   GroupChat?: GroupChatResolvers<ContextType>;
   GroupChatMessage?: GroupChatMessageResolvers<ContextType>;
-  IOSFirebaseOptions?: IosFirebaseOptionsResolvers<ContextType>;
   InvalidCursor?: InvalidCursorResolvers<ContextType>;
   JSON?: GraphQLScalarType;
   Language?: LanguageResolvers<ContextType>;
@@ -2941,6 +3024,7 @@ export type Resolvers<ContextType = any> = {
   UserConnection?: UserConnectionResolvers<ContextType>;
   UserCustomData?: UserCustomDataResolvers<ContextType>;
   UserEdge?: UserEdgeResolvers<ContextType>;
+  UserPhone?: UserPhoneResolvers<ContextType>;
   UserTag?: UserTagResolvers<ContextType>;
   UserTagEdge?: UserTagEdgeResolvers<ContextType>;
   UserTagsConnection?: UserTagsConnectionResolvers<ContextType>;
