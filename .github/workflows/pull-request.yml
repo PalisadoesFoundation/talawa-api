@@ -76,18 +76,12 @@ jobs:
         with:
           python-version: '3.11.6'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install black pydocstyle
-        
       - name: Get changed files in base branch, compare difference, and execute python script
         id: changed-files-base
         run: |
           git fetch origin $BASE_BRANCH
-          git diff --name-only origin/$BASE_BRANCH...pr-branch > changed_files_base.txt
-          sed -i '/^$/d' changed_files_base.txt || true
-          python .github/workflows/check_files_submitted.py changed_files_base.txt
+          git checkout $BASE_BRANCH
+          python .github/workflows/check_files_submitted.py $BASE_BRANCH pr-branch
 
   Test-Application:
     name: Testing Application
