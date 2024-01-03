@@ -120,17 +120,9 @@ export const types = gql`
     attendeesCheckInStatus: [CheckInStatus!]!
     admins(adminId: ID): [User]
     status: Status!
-    projects: [EventProject]
+    #projects: [EventProject]
     feedback: [Feedback!]!
     averageFeedbackScore: Float
-  }
-
-  type EventProject {
-    _id: ID!
-    title: String!
-    description: String!
-    event: Event!
-    tasks: [Task]
   }
 
   type Feedback {
@@ -280,16 +272,6 @@ export const types = gql`
     uninstalledOrgs: [ID!]!
   }
 
-  # type Plugin {
-  #   orgId: Organization!
-  #   pluginName: String!
-  #   pluginKey: String
-  #   pluginStatus: Status!
-  #   pluginType: Type!
-  #   additionalInfo: [PluginField!]
-  #   createdAt: String
-  # }
-
   type PluginField {
     key: String!
     value: String!
@@ -330,18 +312,6 @@ export const types = gql`
     aggregate: AggregatePost!
   }
 
-  type Task {
-    _id: ID!
-    title: String!
-    description: String
-    event: Event!
-    creator: User!
-    createdAt: DateTime!
-    completed: Boolean
-    deadline: DateTime
-    volunteers: [User]
-  }
-
   type Translation {
     lang_code: String
     en_value: String
@@ -372,7 +342,7 @@ export const types = gql`
     adminApproved: Boolean
     adminFor: [Organization]
     appLanguageCode: String!
-    assignedTasks: [Task]
+    # assignedTasks: [Task]
     birthDate: Date
     createdAt: DateTime
     createdEvents: [Event]

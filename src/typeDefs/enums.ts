@@ -76,19 +76,6 @@ export const enums = gql`
     DELETED
   }
 
-  enum TaskOrderByInput {
-    id_ASC
-    id_DESC
-    title_ASC
-    title_DESC
-    description_ASC
-    description_DESC
-    createdAt_ASC
-    createdAt_DESC
-    deadline_ASC
-    deadline_DESC
-  }
-
   enum Type {
     UNIVERSAL
     PRIVATE

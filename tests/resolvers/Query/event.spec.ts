@@ -11,7 +11,6 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
-import { createTestTask } from "../../helpers/task";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;
@@ -22,7 +21,6 @@ beforeAll(async () => {
   const resultArray = await createTestEvent();
   testUser = resultArray[0];
   testEvent = resultArray[2];
-  createTestTask(testEvent?._id, testUser?._id);
 });
 
 afterAll(async () => {
