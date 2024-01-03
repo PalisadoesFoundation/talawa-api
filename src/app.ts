@@ -1,5 +1,5 @@
 import express from "express";
-import rateLimit from "express-rate-limit";
+import { rateLimit } from "express-rate-limit";
 // No type defintions available for package 'xss-clean'
 // @ts-ignore
 import xss from "xss-clean";
