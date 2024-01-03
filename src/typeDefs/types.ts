@@ -16,6 +16,25 @@ export const types = gql`
     refreshToken: String!
   }
 
+  # Action Item for a Category
+  type ActionItem {
+    _id: ID!
+    assignedTo: User!
+    assignedBy: User!
+    category: Category!
+    preCompletionNotes: String
+    postCompletionNotes: String
+    assignmentDate: Date!
+    dueDate: Date!
+    completionDate: Date!
+    completed: Boolean!
+    eventId: Event
+    createdBy: User!
+    updatedBy: User!
+    createdAt: Date!
+    updatedAt: Date!
+  }
+
   # Stores the detail of an check in of an user in an event
   type CheckIn {
     _id: ID!
@@ -340,6 +359,17 @@ export const types = gql`
     completed: Boolean
     deadline: DateTime
     volunteers: [User]
+  }
+
+  type Category {
+    _id: ID!
+    category: String!
+    org: Organization!
+    disabled: Boolean!
+    createdBy: User!
+    updatedBy: User!
+    createdAt: Date!
+    updatedAt: Date!
   }
 
   type Translation {

@@ -7,6 +7,10 @@ export const queries = gql`
   type Query {
     adminPlugin(orgId: ID!): [Plugin]
 
+    category(id: ID!): Category @auth
+
+    categoriesByOrganization(orgId: ID!): [Category] @auth
+
     checkAuth: User! @auth
 
     customFieldsByOrganization(id: ID!): [OrganizationCustomField]

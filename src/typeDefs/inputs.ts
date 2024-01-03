@@ -307,6 +307,11 @@ export const inputs = gql`
     completed: Boolean
   }
 
+  input UpdateCategoryInput {
+    category: String
+    disabled: Boolean
+  }
+
   input AddressInput {
     city: String
     countryCode: CountryCode

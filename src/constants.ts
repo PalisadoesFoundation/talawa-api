@@ -7,6 +7,13 @@ if (!issues) {
   ENV = envSchema.parse(process.env);
 }
 
+export const CATEGORY_NOT_FOUND_ERROR = {
+  DESC: "Category not found",
+  CODE: "category.notFound",
+  MESSAGE: "category.notFound",
+  PARAM: "category",
+};
+
 export const CHAT_NOT_FOUND_ERROR = {
   DESC: "Chat not found",
   CODE: "chat.notFound",

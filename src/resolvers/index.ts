@@ -1,4 +1,5 @@
 import type { Resolvers } from "../types/generatedGraphQLTypes";
+import { Category } from "./Category";
 import { CheckIn } from "./CheckIn";
 import { Comment } from "./Comment";
 import { DirectChat } from "./DirectChat";
@@ -49,6 +50,7 @@ const resolvers: Resolvers = {
   Query,
   Subscription,
   Task,
+  Category,
   User,
   UserTag,
 

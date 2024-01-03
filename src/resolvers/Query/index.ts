@@ -1,4 +1,6 @@
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import { category } from "./category";
+import { categoriesByOrganization } from "./categoriesByOrganization";
 import { checkAuth } from "./checkAuth";
 import { customDataByOrganization } from "./customDataByOrganization";
 import { customFieldsByOrganization } from "./customFieldsByOrganization";
@@ -29,6 +31,8 @@ import { getAdvertisements } from "./getAdvertisements";
 import { usersConnection } from "./usersConnection";
 
 export const Query: QueryResolvers = {
+  category,
+  categoriesByOrganization,
   checkAuth,
   customFieldsByOrganization,
   customDataByOrganization,

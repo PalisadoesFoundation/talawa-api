@@ -105,6 +105,8 @@ export const mutations = gql`
 
     createTask(data: TaskInput!, eventProjectId: ID!): Task! @auth
 
+    createCategory(category: String!, orgId: ID!): Category! @auth
+
     deleteAdvertisementById(id: ID!): DeletePayload!
 
     deleteDonationById(id: ID!): DeletePayload!
@@ -230,6 +232,8 @@ export const mutations = gql`
     updateUserTag(input: UpdateUserTagInput!): UserTag @auth
 
     updateTask(id: ID!, data: UpdateTaskInput!): Task @auth
+
+    updateCategory(id: ID!, data: UpdateCategoryInput!): Category @auth
 
     updateUserProfile(data: UpdateUserInput, file: String): User! @auth
 
