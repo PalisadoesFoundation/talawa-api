@@ -14,7 +14,7 @@
     "typecheck": "graphql-codegen && tsc --noEmit --pretty",
     "lint:check": "eslint . --max-warnings=1500",
     "lint:fix": "eslint . --fix",
-    "format:fix": "prettier --write \"**/*.{ts,tsx,json,scss,css}\"",
+    "format:fix": "prettier --write",
     "format:check": "prettier --check \"**/*.{ts,tsx,json,scss,css}\"",
     "prepare": "husky install",
     "generate:graphql-markdown": "graphql-markdown http://localhost:4000/graphql > docs/Schema.md",
@@ -127,6 +127,7 @@
     "get-graphql-schema": "^2.1.2",
     "graphql-markdown": "^7.0.0",
     "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
     "prettier": "^2.7.1",
     "rimraf": "^3.0.2",
     "tsx": "^3.11.0",
@@ -137,5 +138,11 @@
     "graphql-voyager": {
       "graphql": "^16.6.0"
     }
+  },
+  "lint-staged": {
+    "**/*.{ts,json}": [
+      "prettier --write"
+    ],
+    "**/*.ts": "eslint --fix"
   }
 }
