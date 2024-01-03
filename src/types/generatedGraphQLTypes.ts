@@ -54,7 +54,7 @@ export type Advertisement = {
   __typename?: 'Advertisement';
   _id?: Maybe<Scalars['ID']>;
   endDate: Scalars['Date'];
-  mediaUrl?: Maybe<Scalars['URL']>;
+  mediaUrl: Scalars['URL'];
   name: Scalars['String'];
   orgId?: Maybe<Scalars['ID']>;
   startDate: Scalars['Date'];
@@ -2184,7 +2184,7 @@ export type RoleDirectiveResolver<Result, Parent, ContextType = any, Args = Role
 export type AdvertisementResolvers<ContextType = any, ParentType extends ResolversParentTypes['Advertisement'] = ResolversParentTypes['Advertisement']> = {
   _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  mediaUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
+  mediaUrl?: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   orgId?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;

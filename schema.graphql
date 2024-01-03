@@ -5,7 +5,7 @@ directive @role(requires: UserType) on FIELD_DEFINITION
 type Advertisement {
   _id: ID
   endDate: Date!
-  mediaUrl: URL
+  mediaUrl: URL!
   name: String!
   orgId: ID
   startDate: Date!
