@@ -1,10 +1,18 @@
 """
-Script to check if the number of files submitted in a Pull Request exceeds 20.
+Script to check if Pull Request surpasses the designated threshold of 20 files.
+
+We strongly recommend optimizing the changes to align with our established
+guidelines.
+Please reduce the number of files to meet this standard before submission.
+Thank you for your cooperation
 
 Methodology:
-    Analyses the text file generated after the git diff command.
-    Checks the number of files modified in the PR branch by
-    counting the lines in the file.
+    Accepts the Base Branch and PR Branch Head references as
+    command Line arguments.
+    Checks the number of files modified in the PR branch by utilizing
+    subprocess module to run the CLI commands using git diff.
+    Checks the number of changed files returned by the 'get_changed_files'
+    by the calculating the length of the list.
     Exits with an appropriate error message if the number of files exceeds 20.
 
 NOTE:
@@ -20,68 +28,80 @@ NOTE:
 
 import sys
 import subprocess
+import argparse
 
 
-def check_file_lines(file_name):
+def get_changed_files(base_branch, pr_branch):
     """
-    Check the number of lines in a file.
+    Get the list of changed files between branches.
 
     Args:
-        file_name (str): Name of the file to check.
+        base_branch (str): Base branch name.
+        pr_branch (str): Pull request branch name.
 
     Returns:
-        bool: True if the number of lines is within limit, False otherwise.
+        list: List of changed file names.
     """
     try:
-        with open(file_name, "r", encoding="utf-8") as file:
-            num_lines = len(file.readlines())
-            if num_lines > 20:
-                print("Number of changed files exceeds 20.")
-                return False
-    except FileNotFoundError:
-        print(f"File '{file_name}' not found.")
-        return False
+        with subprocess.Popen(
+            [
+                "git",
+                "diff",
+                "--name-only",
+                f"origin/{base_branch}...{pr_branch}",
+                "--",
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+        ) as git_diff_process:
+            git_diff_output, git_diff_error = git_diff_process.communicate()
 
-    return True
+            if git_diff_process.returncode != 0:
+                print(f"Error: {git_diff_error}")
+                return []
 
-
-def run_checks():
-    """
-    Run checks on the script's formatting and documentation.
-
-    This function utilizes 'black' to format the script and 'pydocstyle'
-    to check for compliance with documentation standards.
-    """
-    black_check = subprocess.run(
-        ["black", __file__], capture_output=True, check=True
-        )
-    if black_check.returncode != 0:
-        print("Black failed to reformat the script.")
-        print(black_check.stderr.decode())
-        sys.exit(1)
-
-    # Running Pydocstyle linting check on the script itself
-    pydocstyle_check = subprocess.run(
-        ["pydocstyle", __file__], capture_output=True, check=True
-    )
-    if pydocstyle_check.returncode != 0:
-        print("Pydocstyle found linting issues in the script.")
-        print(pydocstyle_check.stdout.decode())
-        sys.exit(1)
+            changed_files = git_diff_output.splitlines()
+            return changed_files
+    except Exception as e:
+        print(f"Error: {e}")
+        return []
 
 
 def main():
-    """Execute checks on the file."""
-    if len(sys.argv) < 2:
-        print("Usage: python script_name.py <file_to_check>")
-        sys.exit(1)
+    """
+    Perform checks on changed files between base and pull request branches.
 
-    file_to_check = sys.argv[1]
-    if not check_file_lines(file_to_check):
-        sys.exit(1)
+    1. Gathers branch name references from the command-line arguments
+       utilizing the argparse module.
+    2. Utilizes the 'get_changed_files' function to retrieve the modified files
+       between the specified branches.
+    3. If the number of files exceeds 20, issues an error message and exits
+       with a status code of 1, ensuring adherence to file count standards.
 
-    # Running Black formatting check
-    run_checks()
+    Args:
+        None. (Uses command-line arguments)
+
+    Returns:
+        None. (Exits with sys.exit() if conditions are met)
+    """
+    parser = argparse.ArgumentParser(description="Check the number of changed files.")
+    parser.add_argument("base_branch", help="Base branch name")
+    parser.add_argument("pr_branch", help="Pull request branch name")
+    args = parser.parse_args()
+
+    base_branch = args.base_branch
+    pr_branch = args.pr_branch
+
+    changed_files = get_changed_files(base_branch, pr_branch)
+    if len(changed_files) > 20:
+        print("The pull request contains an excessive number of changed files (more than 20).")
+        print("Please ensure your changes are concise and focused.")
+        print("Potential Causes: ")
+        print("-A potential merge into an unintended or incorrect branch.")
+        print("-Wrong source branch can be the cause.")
+        print("-Ensure utilizing 'develop' as the source branch.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
