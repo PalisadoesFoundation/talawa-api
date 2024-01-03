@@ -10,7 +10,8 @@ docs/schema.json
 node_modules
 .idea
 .env
-images
+image/*
+videos/*
 .vscode
 
 # Added as the documentation only refers to npm, not yarn and pnpm. 
