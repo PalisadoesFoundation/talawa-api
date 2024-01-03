@@ -139,6 +139,15 @@ export type ConnectionPageInfo = {
   startCursor?: Maybe<Scalars['String']>;
 };
 
+export type CreateAdvertisementInput = {
+  endDate: Scalars['Date'];
+  mediaUrl: Scalars['URL'];
+  name: Scalars['String'];
+  orgId: Scalars['ID'];
+  startDate: Scalars['Date'];
+  type: Scalars['String'];
+};
+
 export type CreateUserTagInput = {
   name: Scalars['String'];
   organizationId: Scalars['ID'];
@@ -1834,15 +1843,6 @@ export type UsersConnectionResult = {
   errors: Array<ConnectionError>;
 };
 
-export type CreateAdvertisementInput = {
-  endDate: Scalars['Date'];
-  mediaUrl: Scalars['URL'];
-  name: Scalars['String'];
-  orgId: Scalars['ID'];
-  startDate: Scalars['Date'];
-  type: Scalars['String'];
-};
-
 export type CreateChatInput = {
   organizationId: Scalars['ID'];
   userIds: Array<Scalars['ID']>;
@@ -1933,6 +1933,7 @@ export type ResolversTypes = {
   CommentInput: CommentInput;
   ConnectionError: ResolversTypes['InvalidCursor'] | ResolversTypes['MaximumValueError'];
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
+  CreateAdvertisementInput: CreateAdvertisementInput;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: ResolverTypeWrapper<Scalars['Date']>;
@@ -2044,7 +2045,6 @@ export type ResolversTypes = {
   UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges: Array<ResolversTypes['UserEdge']> }>;
   UsersConnectionInput: UsersConnectionInput;
   UsersConnectionResult: ResolverTypeWrapper<Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UsersConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
-  createAdvertisementInput: CreateAdvertisementInput;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
 };
@@ -2065,6 +2065,7 @@ export type ResolversParentTypes = {
   CommentInput: CommentInput;
   ConnectionError: ResolversParentTypes['InvalidCursor'] | ResolversParentTypes['MaximumValueError'];
   ConnectionPageInfo: ConnectionPageInfo;
+  CreateAdvertisementInput: CreateAdvertisementInput;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date'];
@@ -2166,7 +2167,6 @@ export type ResolversParentTypes = {
   UsersConnection: Omit<UsersConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserEdge']> };
   UsersConnectionInput: UsersConnectionInput;
   UsersConnectionResult: Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversParentTypes['UsersConnection']>, errors: Array<ResolversParentTypes['ConnectionError']> };
-  createAdvertisementInput: CreateAdvertisementInput;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
 };

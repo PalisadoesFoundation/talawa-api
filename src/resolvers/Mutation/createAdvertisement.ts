@@ -5,9 +5,9 @@ export const createAdvertisement: MutationResolvers["createAdvertisement"] =
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async (_parent, args, _context) => {
     // Creates new Ad.
-    const createdAd = await Advertisement.create({
+    const createdAdvertisement = await Advertisement.create({
       ...args.data,
     });
     // Returns createdAd.
-    return createdAd.toObject();
+    return createdAdvertisement.toObject();
   };

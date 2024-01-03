@@ -11,7 +11,7 @@ export interface InterfaceAdvertisement {
   _id: Types.ObjectId;
   orgId: string;
   name: string;
-  mediaUrl: string | undefined | null;
+  mediaUrl: string;
   type: AdvertisementTypes;
   startDate: string;
   endDate: string;

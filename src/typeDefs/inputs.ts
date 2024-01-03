@@ -385,7 +385,7 @@ export const inputs = gql`
     videoUrl: String
   }
 
-  input createAdvertisementInput {
+  input CreateAdvertisementInput {
     endDate: Date!
     mediaUrl: URL!
     name: String!

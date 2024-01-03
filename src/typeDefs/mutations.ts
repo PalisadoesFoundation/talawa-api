@@ -88,7 +88,7 @@ export const mutations = gql`
       uninstalledOrgs: [ID!]
     ): Plugin!
 
-    createAdvertisement(data: createAdvertisementInput!): Advertisement!
+    createAdvertisement(data: CreateAdvertisementInput!): Advertisement!
 
     createPost(data: PostInput!, file: String): Post @auth
 
