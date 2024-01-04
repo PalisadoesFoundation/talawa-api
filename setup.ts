@@ -247,9 +247,9 @@ async function recaptcha(): Promise<void> {
   }
 }
 async function recaptchaSiteKey(): Promise<void> {
-  if (process.env.RECAPTCHA_SECRET_KEY) {
+  if (process.env.RECAPTCHA_SITE_KEY) {
     console.log(
-      ` \nreCAPTCHA secret key already exists with the value ${process.env.RECAPTCHA_SECRET_KEY}`
+      ` \nreCAPTCHA site key already exists with the value ${process.env.RECAPTCHA_SITE_KEY}`
     );
   }
 
