@@ -10,8 +10,8 @@ docs/schema.json
 node_modules
 .idea
 .env
-image/*
-videos/*
+image/**
+videos/**
 public/markdown/*
 .vscode
 
