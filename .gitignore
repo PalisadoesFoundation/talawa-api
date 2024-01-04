@@ -12,7 +12,6 @@ node_modules
 .env
 image/**
 videos/**
-public/markdown/*
 .vscode
 
 # Added as the documentation only refers to npm, not yarn and pnpm. 
