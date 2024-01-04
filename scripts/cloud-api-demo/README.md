@@ -76,12 +76,14 @@ Create a new directory and clone the Talawa API repository:
 
 ```bash
 mkdir develop
-cd develop
+cd developus
 git clone https://github.com/PalisadoesFoundation/talawa-api.git
 cd talawa-api
 npm install
 npm run setup
 ```
+**Important Note:** After running `npm run setup`, you need to edit the `.env` file and change `TALAWA_ADMIN_URL=api-demo.talawa.io` (replace with your hostname) and `NODE_ENV = production`.
+
 
 ## 3. Docker Configuration
 
