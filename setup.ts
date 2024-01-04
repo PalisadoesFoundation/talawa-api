@@ -15,7 +15,6 @@ function checkEnvFile(): void {
   const env = dotenv.parse(fs.readFileSync(".env"));
   const envSample = dotenv.parse(fs.readFileSync(".env.sample"));
   const misplaced = Object.keys(envSample).filter((key) => !(key in env));
-  console.log(misplaced);
   if (misplaced.length > 0) {
     console.log("Please copy the contents of .env.sample to .env file");
     abort();
