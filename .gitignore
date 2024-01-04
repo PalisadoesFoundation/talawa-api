@@ -13,6 +13,8 @@ node_modules
 images
 logs
 *.log
+image/**
+videos/**
 .vscode
 
 # Added as the documentation only refers to npm, not yarn and pnpm. 
