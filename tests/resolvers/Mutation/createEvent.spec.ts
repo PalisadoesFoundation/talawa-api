@@ -17,8 +17,7 @@ import type {
   TestOrganizationType,
 } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-import { generateRecurringInstances } from "../../../src/resolvers/Mutation/createEvent";
-
+import { generateWeeklyRecurringInstances } from "../../../src/resolvers/Mutation/createEvent";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -130,7 +129,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
           startDate: "",
           startTime: "",
           title: "",
-          recurrance: "DAILY",
+          recurrance: "ONCE",
         },
       };
 
@@ -177,7 +176,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         startDate: new Date().toUTCString(),
         startTime: new Date().toUTCString(),
         title: "newTitle",
-        recurrance: "DAILY",
+        recurrance: "ONCE",
       },
     };
 
@@ -201,7 +200,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         location: "newLocation",
         recurring: false,
         title: "newTitle",
-        recurrance: "DAILY",
+        recurrance: "ONCE",
         creator: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
@@ -455,7 +454,7 @@ describe("Check for validation conditions", () => {
 });
 
 describe("generateRecurringInstances", () => {
-  it("should create recurring instances of events", async () => {
+  it("should create weekly recurring instances of events", async () => {
     const args = {
       data: {
         organizationId: testOrganization?.id,
@@ -484,10 +483,15 @@ describe("generateRecurringInstances", () => {
     args.data.startDate = startDate.toISOString();
     args.data.endDate = endDate.toISOString();
 
-    await generateRecurringInstances(args, currentUser, organization);
+    const createdEvent = await generateWeeklyRecurringInstances(
+      args,
+      currentUser,
+      organization
+    );
 
     const recurringEvents = await Event.find({
       recurring: true,
+      recurrance: "WEEKLY",
     }).lean();
 
     expect(recurringEvents).toBeDefined();
@@ -496,5 +500,27 @@ describe("generateRecurringInstances", () => {
     recurringEvents.forEach((event) => {
       expect(event).toBeDefined();
     });
+
+    for (const event of createdEvent) {
+      const attendeeExists = await EventAttendee.exists({
+        userId: testUser!._id,
+        eventId: event!._id,
+      });
+      expect(attendeeExists).toBeTruthy();
+
+      const updatedTestUser = await User.findOne({
+        _id: testUser?._id,
+      })
+        .select(["eventAdmin", "createdEvents", "registeredEvents"])
+        .lean();
+
+      expect(updatedTestUser).toEqual(
+        expect.objectContaining({
+          eventAdmin: expect.arrayContaining([event?._id]),
+          createdEvents: expect.arrayContaining([event?._id]),
+          registeredEvents: expect.arrayContaining([event?._id]),
+        })
+      );
+    }
   });
 });

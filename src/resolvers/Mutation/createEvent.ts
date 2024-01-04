@@ -119,43 +119,35 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     );
   }
 
-  // Creates new event.
-  const createdEvent = await Event.create({
-    ...args.data,
-    creator: currentUser._id,
-    admins: [currentUser._id],
-    organization: organization._id,
-  });
+  let createdEvent;
 
-  if (createdEvent !== null) {
-    await cacheEvents([createdEvent]);
-  }
+  if (
+    !args.data?.recurring ||
+    (args.data?.recurring && args.data?.recurrance == "ONCE")
+  ) {
+    createdEvent = await Event.create({
+      ...args.data,
+      creator: currentUser._id,
+      admins: [currentUser._id],
+      organization: organization._id,
+    });
 
-  if (args.data?.recurring) {
-    generateRecurringInstances(args, currentUser, organization);
-  }
-
-  await EventAttendee.create({
-    userId: currentUser._id.toString(),
-    eventId: createdEvent._id,
-  });
-
-  /*
-  Adds createdEvent._id to eventAdmin, createdEvents and registeredEvents lists
-  on currentUser's document.
-  */
-  await User.updateOne(
-    {
-      _id: currentUser._id,
-    },
-    {
-      $push: {
-        eventAdmin: createdEvent._id,
-        createdEvents: createdEvent._id,
-        registeredEvents: createdEvent._id,
-      },
+    if (createdEvent !== null) {
+      await cacheEvents([createdEvent]);
     }
-  );
+
+    await associateEventWithUser(currentUser, createdEvent);
+
+    return createdEvent.toObject();
+  }
+
+  if (args.data?.recurring && args.data?.recurrance == "WEEKLY") {
+    createdEvent = await generateWeeklyRecurringInstances(
+      args,
+      currentUser,
+      organization
+    );
+  }
 
   /* Commenting out this notification code coz we don't use firebase anymore.
 
@@ -178,26 +170,49 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     }
   }
      */
+  if (!createdEvent) {
+    throw new Error(requestContext.translate("Failed to create event!")); // Adjust the error message accordingly
+  }
 
   // Returns the createdEvent.
-  return createdEvent.toObject();
+  return createdEvent[0].toObject();
 };
 
-export async function generateRecurringInstances(
+export async function associateEventWithUser(
+  currentUser: any,
+  createdEvent: any
+) {
+  await EventAttendee.create({
+    userId: currentUser._id.toString(),
+    eventId: createdEvent._id,
+  });
+
+  await User.updateOne(
+    {
+      _id: currentUser._id,
+    },
+    {
+      $push: {
+        eventAdmin: createdEvent._id,
+        createdEvents: createdEvent._id,
+        registeredEvents: createdEvent._id,
+      },
+    }
+  );
+}
+
+export async function generateWeeklyRecurringInstances(
   args: any,
   currentUser: any,
   organization: any
 ) {
+  const createdEvents = [];
   const { data } = args;
-  const startDateObject = new Date(data?.startDate);
-  const endDateObject = new Date(data?.endDate);
 
-  const startDates = startDateObject.toISOString().split("T")[0];
+  const startDate = new Date(data?.startDate);
+  const endDate = new Date(data?.endDate);
 
-  const startDate = new Date(startDates);
-  startDate.setDate(startDate.getDate() + 7);
-
-  while (startDate <= endDateObject) {
+  while (startDate <= endDate) {
     const recurringEventData = {
       ...data,
       startDate,
@@ -210,9 +225,16 @@ export async function generateRecurringInstances(
       organization: organization._id,
     });
 
+    createdEvents.push(createdEvent);
+
+    await associateEventWithUser(currentUser, createdEvent);
+
     if (createdEvent !== null) {
       await cacheEvents([createdEvent]);
     }
+
     startDate.setDate(startDate.getDate() + 7);
   }
+
+  return createdEvents;
 }
