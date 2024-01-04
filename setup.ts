@@ -31,7 +31,7 @@ async function accessAndRefreshTokens(
     config.ACCESS_TOKEN_SECRET = accessTokenSecret;
     fs.writeFileSync(".env", "");
     for (const key in config) {
-      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+      fs.appendFileSync(".env", `${key} = ${config[key]}\n`);
     }
   }
 
@@ -247,15 +247,11 @@ async function recaptcha(): Promise<void> {
   }
 }
 async function recaptchaSiteKey(): Promise<void> {
-  console.log(
-    "\nPlease visit this URL to set up reCAPTCHA:\n\nhttps://www.google.com/recaptcha/admin/create"
-  );
-  console.log(
-    '\nSelect reCAPTCHA v2 and the "I`m not a robot" checkbox option'
-  );
-  console.log(
-    '\nAdd "localhost" in domains and accept the terms, then press submit'
-  );
+  if (process.env.RECAPTCHA_SECRET_KEY) {
+    console.log(
+      ` \nreCAPTCHA secret key already exists with the value ${process.env.RECAPTCHA_SECRET_KEY}`
+    );
+  }
 
   const { recaptchaSiteKey } = await inquirer.prompt([
     {
@@ -386,21 +382,16 @@ async function importData(): Promise<void> {
       (error: { message: string }, stdout: string, stderr: string) => {
         if (error) {
           console.error(`Error: ${error.message}`);
+          console.log("Could not import sample data.\n");
           abort();
         }
         if (stderr) {
           console.error(`Error: ${stderr}`);
+          console.log("Could not import sample data.\n");
           abort();
         }
         console.log(`Output: ${stdout}`);
-        console.log(
-          "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
-        );
       }
-    );
-  } else {
-    console.log(
-      "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
     );
   }
 }
@@ -418,7 +409,7 @@ async function main(): Promise<void> {
     refreshToken: string | null = "";
   if (process.env.ACCESS_TOKEN_SECRET) {
     console.log(
-      `\nAccess token secret already exists with the value:\n${process.env.ACCESS_TOKEN_SECRET}`
+      `\nAccess token secret already exists with the value: \n${process.env.ACCESS_TOKEN_SECRET}`
     );
   }
   const { shouldGenerateAccessToken } = await inquirer.prompt({
@@ -434,7 +425,7 @@ async function main(): Promise<void> {
 
   if (process.env.REFRESH_TOKEN_SECRET) {
     console.log(
-      `\nRefresh token secret already exists with the value:\n${process.env.REFRESH_TOKEN_SECRET}`
+      `\nRefresh token secret already exists with the value: \n${process.env.REFRESH_TOKEN_SECRET}`
     );
   }
   const { shouldGenerateRefreshToken } = await inquirer.prompt({
@@ -460,7 +451,7 @@ async function main(): Promise<void> {
     // Redis configuration
     if (process.env.REDIS_URL) {
       console.log(
-        `\nRedis URL already exists with the value:\n${process.env.REDIS_URL}`
+        ` \nRedis URL already exists with the value: \n${process.env.REDIS_URL}`
       );
     }
     const { shouldSetRedis } = await inquirer.prompt({
@@ -476,7 +467,7 @@ async function main(): Promise<void> {
     // MongoDB configuration
     if (process.env.MONGO_DB_URL) {
       console.log(
-        `\nMongoDB URL already exists with the value:\n${process.env.MONGO_DB_URL}`
+        ` \nMongoDB URL already exists with the value: \n${process.env.MONGO_DB_URL}`
       );
     }
     const { shouldSetMongoDb } = await inquirer.prompt({
@@ -504,16 +495,6 @@ async function main(): Promise<void> {
 
   if (shouldSetRecaptcha) {
     await recaptcha();
-  }
-
-  const { shouldSetRecaptchaSiteKey } = await inquirer.prompt({
-    type: "confirm",
-    name: "shouldSetRecaptchaSiteKey",
-    message: "Would you like to set up a reCAPTCHA site key?",
-    default: true,
-  });
-
-  if (shouldSetRecaptchaSiteKey) {
     await recaptchaSiteKey();
   }
 
@@ -585,7 +566,7 @@ async function main(): Promise<void> {
   }
 
   console.log(
-    "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
+    "\nCongratulations! Talawa API has been successfully setup! 🥂🎉\n"
   );
 }
 
