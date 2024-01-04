@@ -1,14 +1,10 @@
 import { Advertisement } from "../../src/models";
 
-type AdvertisementTypes = {
-  type: "POPUP" | "MENU" | "BANNER";
-};
-
 export type TestAdvertisementType = {
   _id: string;
   name: string;
   link: string;
-  type: AdvertisementTypes;
+  type: string;
   startDate: string;
   endDate: string;
 };

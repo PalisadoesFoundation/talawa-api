@@ -12,7 +12,7 @@ export interface InterfaceAdvertisement {
   orgId: string;
   name: string;
   link: string;
-  type: AdvertisementTypes;
+  type: string;
   startDate: string;
   endDate: string;
 }
