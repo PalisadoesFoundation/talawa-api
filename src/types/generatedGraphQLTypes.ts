@@ -46,7 +46,6 @@ export type Scalars = {
   Longitude: any;
   PhoneNumber: any;
   PositiveInt: any;
-  StartDate: any;
   Time: any;
   URL: any;
   Upload: any;
@@ -1646,7 +1645,7 @@ export type UpdateAdvertisementInput = {
   endDate?: InputMaybe<Scalars['Date']>;
   link?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
-  startDate?: InputMaybe<Scalars['StartDate']>;
+  startDate?: InputMaybe<Scalars['Date']>;
   type?: InputMaybe<Scalars['String']>;
 };
 
@@ -2087,7 +2086,6 @@ export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>;
   RecaptchaVerification: RecaptchaVerification;
   Recurrance: Recurrance;
-  StartDate: ResolverTypeWrapper<Scalars['StartDate']>;
   Status: Status;
   String: ResolverTypeWrapper<Scalars['String']>;
   Subscription: ResolverTypeWrapper<{}>;
@@ -2218,7 +2216,6 @@ export type ResolversParentTypes = {
   PostWhereInput: PostWhereInput;
   Query: {};
   RecaptchaVerification: RecaptchaVerification;
-  StartDate: Scalars['StartDate'];
   String: Scalars['String'];
   Subscription: {};
   Task: InterfaceTaskModel;
@@ -2821,10 +2818,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   usersConnection?: Resolver<Array<Maybe<ResolversTypes['User']>>, ParentType, ContextType, Partial<QueryUsersConnectionArgs>>;
 };
 
-export interface StartDateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['StartDate'], any> {
-  name: 'StartDate';
-}
-
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
   directMessageChat?: SubscriptionResolver<Maybe<ResolversTypes['MessageChat']>, "directMessageChat", ParentType, ContextType>;
   messageSentToDirectChat?: SubscriptionResolver<Maybe<ResolversTypes['DirectChatMessage']>, "messageSentToDirectChat", ParentType, ContextType>;
@@ -3031,7 +3024,6 @@ export type Resolvers<ContextType = any> = {
   Post?: PostResolvers<ContextType>;
   PostConnection?: PostConnectionResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
-  StartDate?: GraphQLScalarType;
   Subscription?: SubscriptionResolvers<ContextType>;
   Task?: TaskResolvers<ContextType>;
   Time?: GraphQLScalarType;

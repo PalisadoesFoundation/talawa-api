@@ -20,7 +20,6 @@ import { UserTag } from "./UserTag";
 import { composeResolvers } from "@graphql-tools/resolvers-composition";
 import { currentUserExists } from "./middleware/currentUserExists";
 import GraphQLUpload from "graphql-upload/GraphQLUpload.mjs";
-import { StartDateResolver } from "../typeDefs/scalars";
 import {
   DateResolver,
   DateTimeResolver,
@@ -61,7 +60,6 @@ const resolvers: Resolvers = {
   Longitude: LongitudeResolver,
   PhoneNumber: PhoneNumberResolver,
   PositiveInt: PositiveIntResolver,
-  StartDate: StartDateResolver,
   Time: TimeResolver,
   URL: URLResolver,
 

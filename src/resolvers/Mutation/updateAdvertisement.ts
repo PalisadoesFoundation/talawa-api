@@ -6,12 +6,14 @@ import {
   USER_NOT_FOUND_ERROR,
   INPUT_NOT_FOUND_ERROR,
   END_DATE_VALIDATION_ERROR,
+  START_DATE_VALIDATION_ERROR,
 } from "../../constants";
 
 export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
   async (_parent, args, _context) => {
     const { _id, ...otherFields } = args.input;
 
+    //If there is no input
     if (Object.keys(otherFields).length === 0) {
       throw new errors.InputValidationError(
         requestContext.translate(INPUT_NOT_FOUND_ERROR.MESSAGE),
@@ -46,6 +48,19 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
 
     const { startDate, endDate } = args.input;
 
+    //If startDate is less than current date
+    if (
+      startDate &&
+      new Date(startDate) <= new Date(new Date().toDateString())
+    ) {
+      throw new errors.InputValidationError(
+        requestContext.translate(START_DATE_VALIDATION_ERROR.MESSAGE),
+        START_DATE_VALIDATION_ERROR.CODE,
+        START_DATE_VALIDATION_ERROR.PARAM
+      );
+    }
+
+    //If endDate is less than startDate
     if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
       throw new errors.InputValidationError(
         requestContext.translate(END_DATE_VALIDATION_ERROR.MESSAGE),

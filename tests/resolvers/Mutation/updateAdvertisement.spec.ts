@@ -9,6 +9,7 @@ import {
   USER_NOT_FOUND_ERROR,
   END_DATE_VALIDATION_ERROR,
   INPUT_NOT_FOUND_ERROR,
+  START_DATE_VALIDATION_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
@@ -101,8 +102,10 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         name: "New Advertisement Name",
         link: "Updated Advertisement Link",
         type: "POPUP",
-        startDate: "2023-12-26",
-        endDate: "2023-12-31",
+        startDate: new Date().toISOString().split("T")[0],
+        endDate: new Date(new Date().getFullYear() + 1, 11, 31)
+          .toISOString()
+          .split("T")[0],
       },
     };
 
@@ -135,11 +138,11 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
           name: "New Advertisement Name",
           link: "Updated Advertisement Link",
           type: "POPUP",
-          startDate: "2023-12-31", // Future date
+          startDate: new Date().toISOString().split("T")[0], // Current date
           endDate: "2023-12-26", // Past date
         },
       };
-
+      console.log(args.input.startDate);
       const context = { userId: testUser?._id };
 
       const {
@@ -151,6 +154,35 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       expect(spy).toHaveBeenLastCalledWith(END_DATE_VALIDATION_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${END_DATE_VALIDATION_ERROR.MESSAGE}`
+      );
+    }
+  });
+  it(`throws ValidationError if startDate is before current Date`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationUpdateAdvertisementArgs = {
+        input: {
+          _id: testAdvertisement!._id,
+          startDate: "2023-12-26",
+        },
+      };
+      console.log(args.input.startDate);
+      const context = { userId: testUser?._id };
+
+      const {
+        updateAdvertisement: updateAdvertisementResolverValidationError,
+      } = await import("../../../src/resolvers/Mutation/updateAdvertisement");
+
+      await updateAdvertisementResolverValidationError?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenLastCalledWith(START_DATE_VALIDATION_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${START_DATE_VALIDATION_ERROR.MESSAGE}`
       );
     }
   });

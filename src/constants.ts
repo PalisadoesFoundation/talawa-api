@@ -131,6 +131,12 @@ export const END_DATE_VALIDATION_ERROR = {
   PARAM: "dateValidation",
 };
 
+export const START_DATE_VALIDATION_ERROR = {
+  MESSAGE: "Error: Start date must be greater than or equal to current date.",
+  CODE: "startdate.notvalid",
+  PARAM: "dateValidation",
+};
+
 export const LENGTH_VALIDATION_ERROR = {
   MESSAGE: "Error: Length must be greater than 0 and less than",
   CODE: "string.notValid",

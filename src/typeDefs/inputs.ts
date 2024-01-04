@@ -287,7 +287,7 @@ export const inputs = gql`
     name: String
     link: String
     type: String
-    startDate: StartDate
+    startDate: Date
     endDate: Date
   }
 

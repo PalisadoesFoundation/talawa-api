@@ -841,8 +841,6 @@ enum Recurrance {
   YEARLY
 }
 
-scalar StartDate
-
 enum Status {
   ACTIVE
   BLOCKED
@@ -921,7 +919,7 @@ input UpdateAdvertisementInput {
   endDate: Date
   link: String
   name: String
-  startDate: StartDate
+  startDate: Date
   type: String
 }
 
