@@ -56,6 +56,11 @@ export const mutations = gql`
       @auth
       @role(requires: SUPERADMIN)
 
+    createActionItem(
+      data: CreateActionItemInput!
+      categoryId: ID!
+    ): ActionItem! @auth
+
     createComment(postId: ID!, data: CommentInput!): Comment @auth
 
     createDirectChat(data: createChatInput!): DirectChat! @auth
@@ -141,6 +146,8 @@ export const mutations = gql`
       @auth
       @role(requires: SUPERADMIN)
 
+    removeActionItem(id: ID!): ActionItem! @auth
+
     removeOrganizationCustomField(
       organizationId: ID!
       customFieldId: ID!
@@ -211,6 +218,8 @@ export const mutations = gql`
     unlikePost(id: ID!): Post @auth
 
     unregisterForEventByUser(id: ID!): Event! @auth
+
+    updateActionItem(id: ID!, data: UpdateActionItemInput!): ActionItem @auth
 
     updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
 

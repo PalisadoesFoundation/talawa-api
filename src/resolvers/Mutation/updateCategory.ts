@@ -18,6 +18,12 @@ import { Types } from "mongoose";
  * 3. If the user is authorized.
  * @returns Updated category.
  */
+
+type UpdateCategoryInputType = {
+  category: string;
+  disabled: boolean;
+};
+
 export const updateCategory: MutationResolvers["updateCategory"] = async (
   _parent,
   args,
@@ -72,7 +78,7 @@ export const updateCategory: MutationResolvers["updateCategory"] = async (
       _id: args.id,
     },
     {
-      ...(args.data as any),
+      ...(args.data as UpdateCategoryInputType),
       updatedBy: context.userId,
     },
     {

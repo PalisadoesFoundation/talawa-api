@@ -24,11 +24,11 @@ export const types = gql`
     category: Category!
     preCompletionNotes: String
     postCompletionNotes: String
-    assignmentDate: Date!
-    dueDate: Date!
-    completionDate: Date!
-    completed: Boolean!
-    eventId: Event
+    assignmentDate: Date
+    dueDate: Date
+    completionDate: Date
+    completed: Boolean
+    event: Event
     createdBy: User!
     updatedBy: User!
     createdAt: Date!

@@ -7,6 +7,13 @@ if (!issues) {
   ENV = envSchema.parse(process.env);
 }
 
+export const ACTION_ITEM_NOT_FOUND_ERROR = {
+  DESC: "ActionItem not found",
+  CODE: "actionItem.notFound",
+  MESSAGE: "actionItem.notFound",
+  PARAM: "actionItem",
+};
+
 export const CATEGORY_NOT_FOUND_ERROR = {
   DESC: "Category not found",
   CODE: "category.notFound",

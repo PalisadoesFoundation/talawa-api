@@ -18,6 +18,7 @@ import { cancelMembershipRequest } from "./cancelMembershipRequest";
 import { updateUserRoleInOrganization } from "./updateUserRoleInOrganization";
 import { checkIn } from "./checkIn";
 import { createMember } from "./createMember";
+import { createActionItem } from "./createActionItem";
 import { createAdmin } from "./createAdmin";
 import { createComment } from "./createComment";
 import { createDirectChat } from "./createDirectChat";
@@ -49,6 +50,7 @@ import { registerForEvent } from "./registerForEvent";
 import { rejectAdmin } from "./rejectAdmin";
 import { rejectMembershipRequest } from "./rejectMembershipRequest";
 import { removeAdmin } from "./removeAdmin";
+import { removeActionItem } from "./removeActionItem";
 import { removeComment } from "./removeComment";
 import { removeDirectChat } from "./removeDirectChat";
 import { removeEvent } from "./removeEvent";
@@ -80,6 +82,7 @@ import { unblockUser } from "./unblockUser";
 import { unlikeComment } from "./unlikeComment";
 import { unlikePost } from "./unlikePost";
 import { unregisterForEventByUser } from "./unregisterForEventByUser";
+import { updateActionItem } from "./updateActionItem";
 import { updateCategory } from "./updateCategory";
 import { updateEvent } from "./updateEvent";
 import { updateEventProject } from "./updateEventProject";
@@ -115,6 +118,7 @@ export const Mutation: MutationResolvers = {
   checkIn,
   createMember,
   createAdmin,
+  createActionItem,
   createComment,
   createAdvertisement,
   createDirectChat,
@@ -146,6 +150,7 @@ export const Mutation: MutationResolvers = {
   rejectAdmin,
   rejectMembershipRequest,
   removeAdmin,
+  removeActionItem,
   removeComment,
   removeDirectChat,
   removeEvent,
@@ -177,6 +182,7 @@ export const Mutation: MutationResolvers = {
   unlikeComment,
   unlikePost,
   unregisterForEventByUser,
+  updateActionItem,
   updateCategory,
   updateEvent,
   updateEventProject,

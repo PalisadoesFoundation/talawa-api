@@ -58,14 +58,14 @@ export type ActionItem = {
   _id: Scalars['ID'];
   assignedBy: User;
   assignedTo: User;
-  assignmentDate: Scalars['Date'];
+  assignmentDate?: Maybe<Scalars['Date']>;
   category: Category;
-  completed: Scalars['Boolean'];
-  completionDate: Scalars['Date'];
+  completed?: Maybe<Scalars['Boolean']>;
+  completionDate?: Maybe<Scalars['Date']>;
   createdAt: Scalars['Date'];
   createdBy: User;
-  dueDate: Scalars['Date'];
-  eventId?: Maybe<Event>;
+  dueDate?: Maybe<Scalars['Date']>;
+  event?: Maybe<Event>;
   postCompletionNotes?: Maybe<Scalars['String']>;
   preCompletionNotes?: Maybe<Scalars['String']>;
   updatedAt: Scalars['Date'];
@@ -183,6 +183,17 @@ export type ConnectionPageInfo = {
   hasNextPage: Scalars['Boolean'];
   hasPreviousPage: Scalars['Boolean'];
   startCursor?: Maybe<Scalars['String']>;
+};
+
+export type CreateActionItemInput = {
+  assignedTo: Scalars['ID'];
+  assignmentDate?: InputMaybe<Scalars['Date']>;
+  completed?: InputMaybe<Scalars['Boolean']>;
+  completionDate?: InputMaybe<Scalars['Date']>;
+  dueDate?: InputMaybe<Scalars['Date']>;
+  event?: InputMaybe<Scalars['ID']>;
+  postCompletionNotes?: InputMaybe<Scalars['String']>;
+  preCompletionNotes?: InputMaybe<Scalars['String']>;
 };
 
 export type CreateUserTagInput = {
@@ -578,6 +589,7 @@ export type Mutation = {
   blockUser: User;
   cancelMembershipRequest: MembershipRequest;
   checkIn: CheckIn;
+  createActionItem: ActionItem;
   createAdmin: User;
   createAdvertisement: Advertisement;
   createCategory: Category;
@@ -610,6 +622,7 @@ export type Mutation = {
   registerForEvent: Event;
   rejectAdmin: Scalars['Boolean'];
   rejectMembershipRequest: MembershipRequest;
+  removeActionItem: ActionItem;
   removeAdmin: User;
   removeAdvertisement?: Maybe<Advertisement>;
   removeComment?: Maybe<Comment>;
@@ -642,6 +655,7 @@ export type Mutation = {
   unlikeComment?: Maybe<Comment>;
   unlikePost?: Maybe<Post>;
   unregisterForEventByUser: Event;
+  updateActionItem?: Maybe<ActionItem>;
   updateCategory?: Maybe<Category>;
   updateEvent: Event;
   updateEventProject: EventProject;
@@ -748,6 +762,12 @@ export type MutationCancelMembershipRequestArgs = {
 
 export type MutationCheckInArgs = {
   data: CheckInInput;
+};
+
+
+export type MutationCreateActionItemArgs = {
+  categoryId: Scalars['ID'];
+  data: CreateActionItemInput;
 };
 
 
@@ -919,6 +939,11 @@ export type MutationRejectMembershipRequestArgs = {
 };
 
 
+export type MutationRemoveActionItemArgs = {
+  id: Scalars['ID'];
+};
+
+
 export type MutationRemoveAdminArgs = {
   data: UserAndOrganizationInput;
 };
@@ -1068,6 +1093,12 @@ export type MutationUnlikePostArgs = {
 
 
 export type MutationUnregisterForEventByUserArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type MutationUpdateActionItemArgs = {
+  data: UpdateActionItemInput;
   id: Scalars['ID'];
 };
 
@@ -1394,6 +1425,8 @@ export type PostWhereInput = {
 
 export type Query = {
   __typename?: 'Query';
+  actionItem?: Maybe<ActionItem>;
+  actionItemsByEvents?: Maybe<Array<Maybe<ActionItem>>>;
   adminPlugin?: Maybe<Array<Maybe<Plugin>>>;
   categoriesByOrganization?: Maybe<Array<Maybe<Category>>>;
   category?: Maybe<Category>;
@@ -1429,6 +1462,16 @@ export type Query = {
   userLanguage?: Maybe<Scalars['String']>;
   users?: Maybe<Array<Maybe<User>>>;
   usersConnection: Array<Maybe<User>>;
+};
+
+
+export type QueryActionItemArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type QueryActionItemsByEventsArgs = {
+  eventId: Scalars['ID'];
 };
 
 
@@ -1691,6 +1734,14 @@ export type UnauthenticatedError = Error & {
 export type UnauthorizedError = Error & {
   __typename?: 'UnauthorizedError';
   message: Scalars['String'];
+};
+
+export type UpdateActionItemInput = {
+  assignedTo?: InputMaybe<Scalars['ID']>;
+  completed?: InputMaybe<Scalars['Boolean']>;
+  dueDate?: InputMaybe<Scalars['Date']>;
+  postCompletionNotes?: InputMaybe<Scalars['String']>;
+  preCompletionNotes?: InputMaybe<Scalars['String']>;
 };
 
 export type UpdateCategoryInput = {
@@ -2062,6 +2113,7 @@ export type ResolversTypes = {
   ConnectionError: ResolversTypes['InvalidCursor'] | ResolversTypes['MaximumValueError'];
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
   CountryCode: ResolverTypeWrapper<Scalars['CountryCode']>;
+  CreateActionItemInput: CreateActionItemInput;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: ResolverTypeWrapper<Scalars['Date']>;
@@ -2150,6 +2202,7 @@ export type ResolversTypes = {
   URL: ResolverTypeWrapper<Scalars['URL']>;
   UnauthenticatedError: ResolverTypeWrapper<UnauthenticatedError>;
   UnauthorizedError: ResolverTypeWrapper<UnauthorizedError>;
+  UpdateActionItemInput: UpdateActionItemInput;
   UpdateCategoryInput: UpdateCategoryInput;
   UpdateEventInput: UpdateEventInput;
   UpdateEventProjectInput: UpdateEventProjectInput;
@@ -2203,6 +2256,7 @@ export type ResolversParentTypes = {
   ConnectionError: ResolversParentTypes['InvalidCursor'] | ResolversParentTypes['MaximumValueError'];
   ConnectionPageInfo: ConnectionPageInfo;
   CountryCode: Scalars['CountryCode'];
+  CreateActionItemInput: CreateActionItemInput;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date'];
@@ -2279,6 +2333,7 @@ export type ResolversParentTypes = {
   URL: Scalars['URL'];
   UnauthenticatedError: UnauthenticatedError;
   UnauthorizedError: UnauthorizedError;
+  UpdateActionItemInput: UpdateActionItemInput;
   UpdateCategoryInput: UpdateCategoryInput;
   UpdateEventInput: UpdateEventInput;
   UpdateEventProjectInput: UpdateEventProjectInput;
@@ -2324,14 +2379,14 @@ export type ActionItemResolvers<ContextType = any, ParentType extends ResolversP
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   assignedBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   assignedTo?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  assignmentDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  assignmentDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   category?: Resolver<ResolversTypes['Category'], ParentType, ContextType>;
-  completed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  completionDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  completed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  completionDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   createdBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  dueDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  eventId?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
+  dueDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
   postCompletionNotes?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   preCompletionNotes?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
@@ -2683,6 +2738,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   blockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockUserArgs, 'organizationId' | 'userId'>>;
   cancelMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationCancelMembershipRequestArgs, 'membershipRequestId'>>;
   checkIn?: Resolver<ResolversTypes['CheckIn'], ParentType, ContextType, RequireFields<MutationCheckInArgs, 'data'>>;
+  createActionItem?: Resolver<ResolversTypes['ActionItem'], ParentType, ContextType, RequireFields<MutationCreateActionItemArgs, 'categoryId' | 'data'>>;
   createAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
   createAdvertisement?: Resolver<ResolversTypes['Advertisement'], ParentType, ContextType, RequireFields<MutationCreateAdvertisementArgs, 'endDate' | 'link' | 'name' | 'orgId' | 'startDate' | 'type'>>;
   createCategory?: Resolver<ResolversTypes['Category'], ParentType, ContextType, RequireFields<MutationCreateCategoryArgs, 'category' | 'orgId'>>;
@@ -2715,6 +2771,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   registerForEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationRegisterForEventArgs, 'id'>>;
   rejectAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRejectAdminArgs, 'id'>>;
   rejectMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationRejectMembershipRequestArgs, 'membershipRequestId'>>;
+  removeActionItem?: Resolver<ResolversTypes['ActionItem'], ParentType, ContextType, RequireFields<MutationRemoveActionItemArgs, 'id'>>;
   removeAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveAdminArgs, 'data'>>;
   removeAdvertisement?: Resolver<Maybe<ResolversTypes['Advertisement']>, ParentType, ContextType, RequireFields<MutationRemoveAdvertisementArgs, 'id'>>;
   removeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationRemoveCommentArgs, 'id'>>;
@@ -2747,6 +2804,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   unlikeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationUnlikeCommentArgs, 'id'>>;
   unlikePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUnlikePostArgs, 'id'>>;
   unregisterForEventByUser?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUnregisterForEventByUserArgs, 'id'>>;
+  updateActionItem?: Resolver<Maybe<ResolversTypes['ActionItem']>, ParentType, ContextType, RequireFields<MutationUpdateActionItemArgs, 'data' | 'id'>>;
   updateCategory?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<MutationUpdateCategoryArgs, 'data' | 'id'>>;
   updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'id'>>;
   updateEventProject?: Resolver<ResolversTypes['EventProject'], ParentType, ContextType, RequireFields<MutationUpdateEventProjectArgs, 'data' | 'id'>>;
@@ -2868,6 +2926,8 @@ export type PostConnectionResolvers<ContextType = any, ParentType extends Resolv
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
+  actionItem?: Resolver<Maybe<ResolversTypes['ActionItem']>, ParentType, ContextType, RequireFields<QueryActionItemArgs, 'id'>>;
+  actionItemsByEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType, RequireFields<QueryActionItemsByEventsArgs, 'eventId'>>;
   adminPlugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryAdminPluginArgs, 'orgId'>>;
   categoriesByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Category']>>>, ParentType, ContextType, RequireFields<QueryCategoriesByOrganizationArgs, 'orgId'>>;
   category?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryCategoryArgs, 'id'>>;

@@ -35,6 +35,17 @@ export const inputs = gql`
     organizationId: ID!
   }
 
+  input CreateActionItemInput {
+    assignedTo: ID!
+    preCompletionNotes: String
+    postCompletionNotes: String
+    assignmentDate: Date
+    dueDate: Date
+    completionDate: Date
+    completed: Boolean
+    event: ID
+  }
+
   input CursorPaginationInput {
     cursor: String
     direction: PaginationDirection!
@@ -249,6 +260,14 @@ export const inputs = gql`
   input ToggleUserTagAssignInput {
     userId: ID!
     tagId: ID!
+  }
+
+  input UpdateActionItemInput {
+    assignedTo: ID
+    preCompletionNotes: String
+    postCompletionNotes: String
+    dueDate: Date
+    completed: Boolean
   }
 
   input UpdateEventInput {

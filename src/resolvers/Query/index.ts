@@ -1,4 +1,6 @@
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import { actionItem } from "./actionItem";
+import { actionItemsByEvents } from "./actionItemsByEvents";
 import { category } from "./category";
 import { categoriesByOrganization } from "./categoriesByOrganization";
 import { checkAuth } from "./checkAuth";
@@ -31,6 +33,8 @@ import { getAdvertisements } from "./getAdvertisements";
 import { usersConnection } from "./usersConnection";
 
 export const Query: QueryResolvers = {
+  actionItem,
+  actionItemsByEvents,
   category,
   categoriesByOrganization,
   checkAuth,
