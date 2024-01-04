@@ -39,7 +39,7 @@ describe("createAccessToken", () => {
 
     expect(token).toBeDefined();
 
-    const decodedToken = jwt.decode(token);
+    const decodedToken = jwt.decode(await token) as unknown;
 
     expect(decodedToken).not.toBeNull();
     expect((decodedToken as InterfaceJwtTokenPayload).tokenVersion).toBe(

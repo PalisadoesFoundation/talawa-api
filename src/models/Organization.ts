@@ -28,6 +28,7 @@ export interface InterfaceOrganization {
   visibleInSearch: boolean | undefined;
   customFields: PopulatedDoc<InterfaceOrganizationCustomField & Document>[];
   createdAt: Date;
+  timeout: number | undefined | null;
 }
 /**
  * This describes the schema for a `Organization` that corresponds to `InterfaceOrganization` document.
@@ -47,6 +48,7 @@ export interface InterfaceOrganization {
  * @param blockedUsers - Collection of Blocked User in the Organization, each object refer to `User` model.
  * @param tags - Collection of tags.
  * @param createdAt - Time stamp of data creation.
+ * @param timeout - Timeout duration in minutes (default is 30 minutes).
  */
 const organizationSchema = new Schema({
   apiUrl: {
@@ -137,6 +139,10 @@ const organizationSchema = new Schema({
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  timeout: {
+    type: Number,
+    default: 30,
   },
 });
 

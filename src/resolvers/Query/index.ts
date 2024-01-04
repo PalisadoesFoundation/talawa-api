@@ -11,6 +11,7 @@ import { getDonationById } from "./getDonationById";
 import { getDonationByOrgId } from "./getDonationByOrgId";
 import { getDonationByOrgIdConnection } from "./getDonationByOrgIdConnection";
 import { getlanguage } from "./getlanguage";
+import { getOrganizationTimeout } from "./getOrganizationTimeout";
 import { getPlugins } from "./getPlugins";
 import { me } from "./me";
 import { myLanguage } from "./myLanguage";
@@ -42,6 +43,7 @@ export const Query: QueryResolvers = {
   getDonationByOrgId,
   getDonationByOrgIdConnection,
   getlanguage,
+  getOrganizationTimeout,
   getPlugins,
   isSampleOrganization,
   me,

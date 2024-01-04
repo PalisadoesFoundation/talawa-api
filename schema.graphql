@@ -548,6 +548,7 @@ type Mutation {
   updateEventProject(data: UpdateEventProjectInput!, id: ID!): EventProject!
   updateLanguage(languageCode: String!): User!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
+  updateOrganizationTimeout(organizationId: ID!, timeout: Int!): Boolean!
   updatePluginStatus(id: ID!, orgId: ID!): Plugin!
   updatePost(data: PostUpdateInput, id: ID!): Post!
   updateTask(data: UpdateTaskInput!, id: ID!): Task
@@ -806,6 +807,7 @@ type Query {
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
+  getOrganizationTimeout(id: ID!): Int!
   getPlugins: [Plugin]
   getlanguage(lang_code: String!): [Translation]
   hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean

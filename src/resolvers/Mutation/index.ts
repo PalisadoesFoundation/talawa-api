@@ -83,6 +83,7 @@ import { updateEvent } from "./updateEvent";
 import { updateEventProject } from "./updateEventProject";
 import { updateLanguage } from "./updateLanguage";
 import { updateOrganization } from "./updateOrganization";
+import { updateOrganizationTimeout } from "./updateOrganizationTimeout";
 import { updatePluginStatus } from "./updatePluginStatus";
 import { updatePost } from "./updatePost";
 import { updateTask } from "./updateTask";
@@ -178,6 +179,7 @@ export const Mutation: MutationResolvers = {
   updateEventProject,
   updateLanguage,
   updateOrganization,
+  updateOrganizationTimeout,
   updatePluginStatus,
   updateTask,
   updateUserProfile,

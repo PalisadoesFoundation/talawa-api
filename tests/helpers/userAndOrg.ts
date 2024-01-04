@@ -100,3 +100,35 @@ export const createOrganizationwithVisibility = async (
 
   return testOrganization;
 };
+
+export const createdOrganizationWithoutTimeout = async (
+  userID: string,
+  isMember = true,
+  isAdmin = true,
+  isPublic = true
+): Promise<TestOrganizationType> => {
+  const testOrganization = await Organization.create({
+    name: `orgName${nanoid().toLowerCase()}`,
+    description: `orgDesc${nanoid().toLowerCase()}`,
+    isPublic: isPublic ? true : false,
+    creator: userID,
+    admins: isAdmin ? [userID] : [],
+    members: isMember ? [userID] : [],
+    timeout: null,
+  });
+
+  await User.updateOne(
+    {
+      _id: userID,
+    },
+    {
+      $push: {
+        createdOrganizations: testOrganization._id,
+        adminFor: testOrganization._id,
+        joinedOrganizations: testOrganization._id,
+      },
+    }
+  );
+
+  return testOrganization;
+};

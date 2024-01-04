@@ -612,6 +612,7 @@ export type Mutation = {
   updateEventProject: EventProject;
   updateLanguage: User;
   updateOrganization: Organization;
+  updateOrganizationTimeout: Scalars['Boolean'];
   updatePluginStatus: Plugin;
   updatePost: Post;
   updateTask?: Maybe<Task>;
@@ -1055,6 +1056,12 @@ export type MutationUpdateOrganizationArgs = {
 };
 
 
+export type MutationUpdateOrganizationTimeoutArgs = {
+  organizationId: Scalars['ID'];
+  timeout: Scalars['Int'];
+};
+
+
 export type MutationUpdatePluginStatusArgs = {
   id: Scalars['ID'];
   orgId: Scalars['ID'];
@@ -1360,6 +1367,7 @@ export type Query = {
   getDonationById: Donation;
   getDonationByOrgId?: Maybe<Array<Maybe<Donation>>>;
   getDonationByOrgIdConnection: Array<Donation>;
+  getOrganizationTimeout: Scalars['Int'];
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
   hasSubmittedFeedback?: Maybe<Scalars['Boolean']>;
@@ -1442,6 +1450,11 @@ export type QueryGetDonationByOrgIdConnectionArgs = {
   orgId: Scalars['ID'];
   skip?: InputMaybe<Scalars['Int']>;
   where?: InputMaybe<DonationWhereInput>;
+};
+
+
+export type QueryGetOrganizationTimeoutArgs = {
+  id: Scalars['ID'];
 };
 
 
@@ -2649,6 +2662,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateEventProject?: Resolver<ResolversTypes['EventProject'], ParentType, ContextType, RequireFields<MutationUpdateEventProjectArgs, 'data' | 'id'>>;
   updateLanguage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateLanguageArgs, 'languageCode'>>;
   updateOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateOrganizationArgs, 'id'>>;
+  updateOrganizationTimeout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateOrganizationTimeoutArgs, 'organizationId' | 'timeout'>>;
   updatePluginStatus?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginStatusArgs, 'id' | 'orgId'>>;
   updatePost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationUpdatePostArgs, 'id'>>;
   updateTask?: Resolver<Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<MutationUpdateTaskArgs, 'data' | 'id'>>;
@@ -2778,6 +2792,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getDonationById?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<QueryGetDonationByIdArgs, 'id'>>;
   getDonationByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Donation']>>>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdArgs, 'orgId'>>;
   getDonationByOrgIdConnection?: Resolver<Array<ResolversTypes['Donation']>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdConnectionArgs, 'orgId'>>;
+  getOrganizationTimeout?: Resolver<ResolversTypes['Int'], ParentType, ContextType, RequireFields<QueryGetOrganizationTimeoutArgs, 'id'>>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
   hasSubmittedFeedback?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryHasSubmittedFeedbackArgs, 'eventId' | 'userId'>>;

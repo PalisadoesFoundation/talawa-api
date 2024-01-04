@@ -41,6 +41,8 @@ export const queries = gql`
 
     getlanguage(lang_code: String!): [Translation]
 
+    getOrganizationTimeout(id: ID!): Int! @auth
+
     getPlugins: [Plugin]
     getAdvertisements: [Advertisement]
 

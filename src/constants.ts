@@ -41,6 +41,20 @@ export const FEEDBACK_ALREADY_SUBMITTED = {
 
 export const INVALID_OTP = "Invalid OTP";
 
+export const INVALID_TIMEOUT_RANGE = {
+  DESC: "Timeout should be in the range of 15 to 60 minutes.",
+  CODE: "invalid.timeoutRange",
+  MESSAGE: "invalid.timeoutRange",
+  PARAM: "timeout",
+};
+
+export const UPDATE_ORGANIZATION_TIMEOUT_ARGUMENT_MISSING_ERROR = {
+  DESC: "OrganizationId and timeout is required.",
+  CODE: ".arguments.isMissing",
+  MESSAGE: "arguments.isMissing",
+  PARAM: "argumentsMissing",
+};
+
 export const IN_PRODUCTION = process.env.NODE_ENV === "production";
 export const MEMBER_NOT_FOUND_ERROR = {
   DESC: "Member not found",
