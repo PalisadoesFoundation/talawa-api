@@ -1,8 +1,11 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization, TransactionLog } from "../../../src/models";
-import type { MutationLeaveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
+import { User, Organization } from "../../../src/models";
+import type {
+  MutationLeaveOrganizationArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { leaveOrganization as leaveOrganizationResolver } from "../../../src/resolvers/Mutation/leaveOrganization";
@@ -28,6 +31,7 @@ import type {
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -196,22 +200,18 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(2);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "User",
+      model: "User",
     });
 
-    expect(mostRecentTransactions[1]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[1]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "Organization",
+      model: "Organization",
     });
   });
 });

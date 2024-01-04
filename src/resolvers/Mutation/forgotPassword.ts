@@ -1,15 +1,9 @@
 import bcrypt from "bcryptjs";
 import { jwtDecode } from "jwt-decode";
-<<<<<<< HEAD
-import { INVALID_OTP } from "../../constants";
-import { User } from "../../models";
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-=======
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 import { INVALID_OTP, TRANSACTION_LOG_TYPES } from "../../constants";
 import { storeTransaction } from "../../utilities/storeTransaction";
->>>>>>> 2aee982 (Transaction logs added for forgotPassword and joinPublicOrganization mutation)
 /**
  * This function enables a user to restore password.
  * @param _parent - parent of current request

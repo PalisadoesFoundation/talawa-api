@@ -1,8 +1,11 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { EventAttendee, TransactionLog } from "../../../src/models";
-import type { MutationCheckInArgs } from "../../../src/types/generatedGraphQLTypes";
+import { EventAttendee } from "../../../src/models";
+import type {
+  MutationCheckInArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import {
   EVENT_NOT_FOUND_ERROR,
@@ -17,6 +20,7 @@ import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
 import { type TestEventType } from "../../helpers/events";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -218,22 +222,18 @@ describe("resolvers -> Mutation -> checkIn", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(2);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "EventAttendee",
+      model: "EventAttendee",
     });
 
-    expect(mostRecentTransactions[1]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[1]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.CREATE,
-      modelName: "CheckIn",
+      model: "CheckIn",
     });
   });
 

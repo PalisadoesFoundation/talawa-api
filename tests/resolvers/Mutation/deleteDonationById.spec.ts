@@ -3,8 +3,11 @@ import type { Document } from "mongoose";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import type { InterfaceDonation } from "../../../src/models";
-import { TransactionLog, Donation } from "../../../src/models";
-import type { MutationDeleteDonationByIdArgs } from "../../../src/types/generatedGraphQLTypes";
+import { Donation } from "../../../src/models";
+import type {
+  MutationDeleteDonationByIdArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { deleteDonationById as deleteDonationByIdResolver } from "../../../src/resolvers/Mutation/deleteDonationById";
@@ -13,6 +16,7 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { TRANSACTION_LOG_TYPES } from "../../../src/constants";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testDonation: InterfaceDonation & Document<any, any, InterfaceDonation>;
 let testUser: TestUserType;
@@ -77,16 +81,12 @@ describe("resolvers -> Mutation -> deleteDonationById", () => {
     });
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(1);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.DELETE,
-      modelName: "Donation",
+      model: "Donation",
     });
   });
 });

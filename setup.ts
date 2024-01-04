@@ -1,3 +1,5 @@
+import path from "path";
+
 const dotenv = require("dotenv");
 const fs = require("fs");
 const cryptolib = require("crypto");
@@ -13,6 +15,7 @@ function checkEnvFile(): void {
   const env = dotenv.parse(fs.readFileSync(".env"));
   const envSample = dotenv.parse(fs.readFileSync(".env.sample"));
   const misplaced = Object.keys(envSample).filter((key) => !(key in env));
+  console.log(misplaced);
   if (misplaced.length > 0) {
     console.log("Please copy the contents of .env.sample to .env file");
     abort();
@@ -43,6 +46,28 @@ async function accessAndRefreshTokens(
       fs.appendFileSync(".env", `${key}=${config[key]}\n`);
     }
   }
+}
+
+function transactionLogPath(logPath: string | null): void {
+  const config = dotenv.parse(fs.readFileSync(".env"));
+  config.TRANSACTION_LOG_PATH =
+    logPath ?? path.resolve(__dirname, "logs/transaction.log");
+  fs.writeFileSync(".env", "");
+  for (const key in config) {
+    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+  }
+}
+
+async function askForTransactionLogPath(): Promise<string> {
+  const { logPath } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "logPath",
+      message: "Enter absolute path of log file:",
+      default: null,
+    },
+  ]);
+  return logPath;
 }
 
 // Check connection to Redis with the specified URL.
@@ -449,6 +474,25 @@ async function main(): Promise<void> {
   }
 
   accessAndRefreshTokens(accessToken, refreshToken);
+
+  if (process.env.TRANSACTION_LOG_PATH) {
+    console.log(
+      `\n Transaction log path already exists with the value:\n${process.env.TRANSACTION_LOG_PATH}`
+    );
+  }
+
+  let logPath: string | null = null;
+  const { shouldUseCustomLogPath } = await inquirer.prompt({
+    type: "confirm",
+    name: "shouldUseCustomLogPath",
+    message: "Would you like to provide a custom path for storing logs?",
+    default: false,
+  });
+
+  if (shouldUseCustomLogPath) {
+    logPath = await askForTransactionLogPath();
+  }
+  transactionLogPath(logPath);
 
   const { isDockerInstallation } = await inquirer.prompt({
     type: "confirm",

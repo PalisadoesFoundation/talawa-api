@@ -3,8 +3,11 @@ import type { Document } from "mongoose";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import type { InterfaceUser, InterfaceMessageChat } from "../../../src/models";
-import { TransactionLog, User } from "../../../src/models";
-import type { MutationCreateMessageChatArgs } from "../../../src/types/generatedGraphQLTypes";
+import { User } from "../../../src/models";
+import type {
+  MutationCreateMessageChatArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -22,6 +25,7 @@ import {
   afterEach,
 } from "vitest";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUsers: (InterfaceUser & Document<any, any, InterfaceUser>)[];
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -134,16 +138,12 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(1);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testUsers[0]?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUsers[0]?._id.toString(),
       type: TRANSACTION_LOG_TYPES.CREATE,
-      modelName: "MessageChat",
+      model: "MessageChat",
     });
   });
 });

@@ -1,7 +1,10 @@
 import "dotenv/config";
 import { Types } from "mongoose";
-import { Post, TransactionLog } from "../../../src/models";
-import type { MutationUpdatePostArgs } from "../../../src/types/generatedGraphQLTypes";
+import { Post } from "../../../src/models";
+import type {
+  MutationUpdatePostArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../../src/db";
 import { updatePost as updatePostResolver } from "../../../src/resolvers/Mutation/updatePost";
 import {
@@ -15,6 +18,7 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
 let testPost: TestPostType;
@@ -139,16 +143,12 @@ describe("resolvers -> Mutation -> updatePost", () => {
     expect(updatePostPayload).toEqual(testUpdatePostPayload);
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(1);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: context.userId,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: context.userId.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "Post",
+      model: "Post",
     });
   });
   it(`throws String Length Validation error if title is greater than 256 characters`, async () => {

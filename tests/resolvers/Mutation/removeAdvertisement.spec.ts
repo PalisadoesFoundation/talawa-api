@@ -1,6 +1,9 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
-import type { MutationCreateAdvertisementArgs } from "../../../src/types/generatedGraphQLTypes";
+import type {
+  MutationCreateAdvertisementArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -25,7 +28,7 @@ import {
   TRANSACTION_LOG_TYPES,
 } from "../../../src/constants";
 import { wait } from "./acceptAdmin.spec";
-import { TransactionLog } from "../../../src/models";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -109,16 +112,12 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(1);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.DELETE,
-      modelName: "Advertisement",
+      model: "Advertisement",
     });
   });
   it("should throw NOT_FOUND_ERROR on wrong advertisement", async () => {

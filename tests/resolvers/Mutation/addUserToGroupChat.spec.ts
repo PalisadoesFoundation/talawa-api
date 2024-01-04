@@ -1,8 +1,11 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Organization, GroupChat, TransactionLog } from "../../../src/models";
-import type { MutationAddUserToGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
+import { Organization, GroupChat } from "../../../src/models";
+import type {
+  MutationAddUserToGroupChatArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -30,6 +33,7 @@ import type { TestGroupChatType } from "../../helpers/groupChat";
 import { createTestGroupChat } from "../../helpers/groupChat";
 import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -271,14 +275,12 @@ describe("resolvers -> Mutation -> addUserToGroupChat", () => {
 
     await wait();
 
-    const mostRecentTransaction = await TransactionLog.findOne().sort({
-      createdAt: -1,
-    });
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransaction).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "GroupChat",
+      model: "GroupChat",
     });
   });
 });

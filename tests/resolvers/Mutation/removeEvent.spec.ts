@@ -1,8 +1,11 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Event, TransactionLog } from "../../../src/models";
-import type { MutationRemoveEventArgs } from "../../../src/types/generatedGraphQLTypes";
+import { User, Event } from "../../../src/models";
+import type {
+  MutationRemoveEventArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { removeEvent as removeEventResolver } from "../../../src/resolvers/Mutation/removeEvent";
@@ -21,6 +24,7 @@ import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
 import { cacheEvents } from "../../../src/services/EventCache/cacheEvents";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -200,36 +204,32 @@ describe("resolvers -> Mutation -> removeEvent", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(5);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.DELETE,
-      modelName: "TaskVolunteer",
+      model: "TaskVolunteer",
     });
-    expect(mostRecentTransactions[1]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[1]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.DELETE,
-      modelName: "Task",
+      model: "Task",
     });
-    expect(mostRecentTransactions[2]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[2]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.DELETE,
-      modelName: "EventProject",
+      model: "EventProject",
     });
-    expect(mostRecentTransactions[3]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[3]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "Event",
+      model: "Event",
     });
-    expect(mostRecentTransactions[4]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[4]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "User",
+      model: "User",
     });
   });
 });

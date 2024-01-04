@@ -1,11 +1,9 @@
 import "dotenv/config";
-import {
-  User,
-  Organization,
-  MembershipRequest,
+import { User, Organization, MembershipRequest } from "../../../src/models";
+import type {
+  MutationLoginArgs,
   TransactionLog,
-} from "../../../src/models";
-import type { MutationLoginArgs } from "../../../src/types/generatedGraphQLTypes";
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { login as loginResolver } from "../../../src/resolvers/Mutation/login";
@@ -28,6 +26,7 @@ import {
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -193,16 +192,12 @@ email === args.data.email`, async () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(1);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "User",
+      model: "User",
     });
   });
 

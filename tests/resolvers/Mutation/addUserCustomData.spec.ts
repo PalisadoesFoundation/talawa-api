@@ -13,8 +13,9 @@ import {
   TRANSACTION_LOG_TYPES,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { TransactionLog } from "../../../src/models";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
+import type { TransactionLog } from "../../../src/types/generatedGraphQLTypes";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -51,14 +52,12 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
 
     await wait();
 
-    const mostRecentTransaction = await TransactionLog.findOne().sort({
-      createdAt: -1,
-    });
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransaction).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.CREATE,
-      modelName: "UserCustomData",
+      model: "UserCustomData",
     });
   });
 

@@ -1,7 +1,10 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { MutationAcceptAdminArgs } from "../../../src/types/generatedGraphQLTypes";
+import type {
+  MutationAcceptAdminArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { acceptAdmin as acceptAdminResolver } from "../../../src/resolvers/Mutation/acceptAdmin";
@@ -21,7 +24,8 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-import { User, TransactionLog } from "../../../src/models";
+import { User } from "../../../src/models";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUserSuperAdmin: TestUserType;
 let testUserAdmin: TestUserType;
@@ -43,8 +47,8 @@ afterEach(() => {
   vi.resetModules();
 });
 
-export function wait(milliseconds = 1000): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+export function wait(ms = 1000): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 describe("resolvers -> Mutation -> acceptAdmin", () => {
@@ -136,20 +140,17 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
     expect(updatedTestUser?.adminApproved).toEqual(true);
 
     const transactionObject = {
-      createdBy: testUserSuperAdmin?._id,
+      createdBy: testUserSuperAdmin?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "User",
+      model: "User",
     };
+
     await wait();
-    const mostRecentTransaction = await TransactionLog.findOne().sort({
-      createdAt: -1,
-    });
-    expect(mostRecentTransaction).toMatchObject({
-      ...transactionObject,
-      createdAt: expect.anything(),
-      updatedAt: expect.anything(),
-      message: expect.anything(),
-    });
+
+    const recentLogs = getTransactionLogs!({}, {}, {})!;
+    expect((recentLogs as TransactionLog[])[0]).toMatchObject(
+      transactionObject
+    );
   });
 
   it(`throws not found error when user with _id === args._id is null`, async () => {

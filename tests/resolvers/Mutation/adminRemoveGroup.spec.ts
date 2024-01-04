@@ -1,8 +1,11 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Organization, GroupChat, TransactionLog } from "../../../src/models";
-import type { MutationAdminRemoveGroupArgs } from "../../../src/types/generatedGraphQLTypes";
+import { Organization, GroupChat } from "../../../src/models";
+import type {
+  MutationAdminRemoveGroupArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { adminRemoveGroup as adminRemoveGroupResolver } from "../../../src/resolvers/Mutation/adminRemoveGroup";
@@ -22,6 +25,7 @@ import type { TestGroupChatType } from "../../helpers/groupChat";
 import { createTestGroupChat } from "../../helpers/groupChat";
 import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -199,14 +203,12 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
 
     await wait();
 
-    const mostRecentTransaction = await TransactionLog.findOne().sort({
-      createdAt: -1,
-    });
+    const mostRecentTransaction = getTransactionLogs!({}, {}, {})!;
 
     expect(mostRecentTransaction).toMatchObject({
-      createdBy: testUser?._id,
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.DELETE,
-      modelName: "GroupChat",
+      model: "GroupChat",
     });
   });
 });

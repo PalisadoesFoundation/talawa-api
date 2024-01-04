@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Organization, TransactionLog, User } from "../../../src/models";
+import { Organization, User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 
 import bcrypt from "bcryptjs";
@@ -24,10 +24,14 @@ import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../../src/constants";
-import type { MutationUpdateUserRoleInOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
+import type {
+  MutationUpdateUserRoleInOrganizationArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import type { TestUserType } from "../../helpers/user";
 import type { TestOrganizationType } from "../../helpers/userAndOrg";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUserSuperAdmin: TestUserType;
@@ -403,22 +407,18 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(2);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: context.userId,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: context.userId.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "User",
+      model: "User",
     });
 
-    expect(mostRecentTransactions[1]).toMatchObject({
-      createdBy: context.userId,
+    expect((mostRecentTransactions as TransactionLog[])[1]).toMatchObject({
+      createdBy: context.userId.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "Organization",
+      model: "Organization",
     });
   });
   it(`Check when SUPERUSER is changing the role of a ADMIN member to USER`, async () => {
@@ -460,22 +460,18 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(2);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: context.userId,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: context.userId.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "User",
+      model: "User",
     });
 
-    expect(mostRecentTransactions[1]).toMatchObject({
-      createdBy: context.userId,
+    expect((mostRecentTransactions as TransactionLog[])[1]).toMatchObject({
+      createdBy: context.userId.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "Organization",
+      model: "Organization",
     });
   });
 });

@@ -1,8 +1,11 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Event, TransactionLog } from "../../../src/models";
-import type { MutationUpdateEventArgs } from "../../../src/types/generatedGraphQLTypes";
+import { User, Event } from "../../../src/models";
+import type {
+  MutationUpdateEventArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -26,6 +29,7 @@ import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
 import { cacheEvents } from "../../../src/services/EventCache/cacheEvents";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -223,16 +227,12 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     expect(updateEventPayload).toEqual(testUpdateEventPayload);
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(1);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: context.userId,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: context.userId.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "Event",
+      model: "Event",
     });
   });
 });

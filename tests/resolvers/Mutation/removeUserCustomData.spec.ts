@@ -20,8 +20,9 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { TransactionLog } from "../../../src/models";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
+import type { TransactionLog } from "../../../src/types/generatedGraphQLTypes";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -70,16 +71,12 @@ describe("removeUserCustomData mutation", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(1);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.DELETE,
-      modelName: "UserCustomData",
+      model: "UserCustomData",
     });
   });
 

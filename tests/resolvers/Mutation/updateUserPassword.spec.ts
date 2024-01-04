@@ -2,9 +2,12 @@ import "dotenv/config";
 import type { Document } from "mongoose";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { InterfaceUser} from "../../../src/models";
-import { TransactionLog , User } from "../../../src/models";
-import type { MutationUpdateUserPasswordArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { InterfaceUser } from "../../../src/models";
+import { User } from "../../../src/models";
+import type {
+  MutationUpdateUserPasswordArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { updateUserPassword as updateUserPasswordResolver } from "../../../src/resolvers/Mutation/updateUserPassword";
@@ -25,6 +28,7 @@ import {
 } from "vitest";
 import bcrypt from "bcryptjs";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: InterfaceUser & Document<any, any, InterfaceUser>;
@@ -203,16 +207,12 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(1);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: context.userId,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: context.userId.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "User",
+      model: "User",
     });
   });
 });

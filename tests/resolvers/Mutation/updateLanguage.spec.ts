@@ -1,7 +1,10 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
-import { TransactionLog, User } from "../../../src/models";
-import type { MutationUpdateLanguageArgs } from "../../../src/types/generatedGraphQLTypes";
+import { User } from "../../../src/models";
+import type {
+  MutationUpdateLanguageArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -17,6 +20,7 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { wait } from "./acceptAdmin.spec";
 import { TRANSACTION_LOG_TYPES } from "../../../src/constants";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -64,16 +68,12 @@ describe("resolvers -> Mutation -> updateLanguage", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(1);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: context.userId,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: context.userId.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "User",
+      model: "User",
     });
   });
 });

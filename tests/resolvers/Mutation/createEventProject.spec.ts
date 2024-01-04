@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { Event, Organization, TransactionLog, User } from "../../../src/models";
+import { Event, Organization, User } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import {
@@ -25,6 +25,8 @@ import type {
 import { createTestUser } from "../../helpers/userAndOrg";
 import { Types } from "mongoose";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
+import type { TransactionLog } from "../../../src/types/generatedGraphQLTypes";
 
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
@@ -201,24 +203,16 @@ describe("resolvers -> Mutation -> createEventProject", () => {
     expect(result).toHaveProperty("title", args.data.title);
     expect(result).toHaveProperty("description", args.data.description);
     expect(result).toHaveProperty("event", testEvent?._id);
-<<<<<<< HEAD
-    expect(result).toHaveProperty("creator", context.userId);
-=======
     expect(result).toHaveProperty("createdBy", context.userId);
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(1);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testAdminUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testAdminUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.CREATE,
-      modelName: "EventProject",
+      model: "EventProject",
     });
->>>>>>> 271e1b5 (Transaction logs updated for mutations starting with 'c')
   });
 });

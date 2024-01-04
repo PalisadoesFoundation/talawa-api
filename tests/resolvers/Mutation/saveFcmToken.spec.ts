@@ -1,7 +1,10 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
-import { TransactionLog, User } from "../../../src/models";
-import type { MutationSaveFcmTokenArgs } from "../../../src/types/generatedGraphQLTypes";
+import { User } from "../../../src/models";
+import type {
+  MutationSaveFcmTokenArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { saveFcmToken as saveFcmTokenResolver } from "../../../src/resolvers/Mutation/saveFcmToken";
@@ -10,6 +13,7 @@ import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
 import { wait } from "./acceptAdmin.spec";
 import { TRANSACTION_LOG_TYPES } from "../../../src/constants";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -47,16 +51,12 @@ describe("resolvers -> Mutation -> saveFcmToken", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(1);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "User",
+      model: "User",
     });
   });
 });

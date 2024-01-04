@@ -1,6 +1,9 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
-import type { MutationCreateAdvertisementArgs } from "../../../src/types/generatedGraphQLTypes";
+import type {
+  MutationCreateAdvertisementArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -20,9 +23,9 @@ import {
   createTestUserAndOrganization,
   createTestUser,
 } from "../../helpers/userAndOrg";
-import { TransactionLog } from "../../../src/models";
 import { wait } from "./acceptAdmin.spec";
 import { TRANSACTION_LOG_TYPES } from "../../../src/constants";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 let testUser: TestUserType;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let randomUser: TestUserType;
@@ -88,14 +91,12 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
 
     await wait();
 
-    const mostRecentTransaction = await TransactionLog.findOne().sort({
-      createdAt: -1,
-    });
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransaction).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.CREATE,
-      modelName: "Advertisement",
+      model: "Advertisement",
     });
   });
 });

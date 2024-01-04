@@ -1,7 +1,10 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { MutationRemoveUserTagArgs } from "../../../src/types/generatedGraphQLTypes";
+import type {
+  MutationRemoveUserTagArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -21,14 +24,11 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-import {
-  OrganizationTagUser,
-  TagUser,
-  TransactionLog,
-} from "../../../src/models";
+import { OrganizationTagUser, TagUser } from "../../../src/models";
 import type { TestUserTagType } from "../../helpers/tags";
 import { createTwoLevelTagsWithOrg } from "../../helpers/tags";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
 let randomUser: TestUserType;
@@ -200,22 +200,18 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(2);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.DELETE,
-      modelName: "TagUser",
+      model: "TagUser",
     });
 
-    expect(mostRecentTransactions[1]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[1]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.DELETE,
-      modelName: "OrganizationTagUser",
+      model: "OrganizationTagUser",
     });
   });
 });

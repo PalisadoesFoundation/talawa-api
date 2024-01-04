@@ -1,7 +1,10 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
-import { TransactionLog, User } from "../../../src/models";
-import type { MutationCreateOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
+import { User } from "../../../src/models";
+import type {
+  MutationCreateOrganizationArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { createOrganization as createOrganizationResolver } from "../../../src/resolvers/Mutation/createOrganization";
@@ -24,6 +27,7 @@ import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -155,21 +159,17 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     );
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(2);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "User",
+      model: "User",
     });
-    expect(mostRecentTransactions[1]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[1]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.CREATE,
-      modelName: "Organization",
+      model: "Organization",
     });
   });
   it(`creates the organization without image and returns it`, async () => {
@@ -216,21 +216,17 @@ describe("resolvers -> Mutation -> createOrganization", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(2);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "User",
+      model: "User",
     });
-    expect(mostRecentTransactions[1]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[1]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.CREATE,
-      modelName: "Organization",
+      model: "Organization",
     });
   });
 

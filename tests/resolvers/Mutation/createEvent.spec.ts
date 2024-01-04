@@ -1,13 +1,11 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import {
-  User,
-  Organization,
-  EventAttendee,
+import { User, Organization, EventAttendee } from "../../../src/models";
+import type {
+  MutationCreateEventArgs,
   TransactionLog,
-} from "../../../src/models";
-import type { MutationCreateEventArgs } from "../../../src/types/generatedGraphQLTypes";
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -24,6 +22,7 @@ import type {
 } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -237,28 +236,24 @@ describe("resolvers -> Mutation -> createEvent", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(3);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "User",
+      model: "User",
     });
 
-    expect(mostRecentTransactions[1]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[1]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.CREATE,
-      modelName: "EventAttendee",
+      model: "EventAttendee",
     });
 
-    expect(mostRecentTransactions[2]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[2]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.CREATE,
-      modelName: "Event",
+      model: "Event",
     });
   });
 

@@ -1,13 +1,12 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { TaskVolunteer, TransactionLog } from "../../../src/models";
+import { TaskVolunteer } from "../../../src/models";
 import type { MutationSetTaskVolunteersArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { setTaskVolunteers as setTaskVolunteersResolver } from "../../../src/resolvers/Mutation/setTaskVolunteers";
 import {
   TASK_NOT_FOUND_ERROR,
-  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
   VOLUNTEER_NOT_FOUND_ERROR,

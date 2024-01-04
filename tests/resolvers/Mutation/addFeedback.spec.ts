@@ -1,7 +1,10 @@
 import "dotenv/config";
 import { connect, disconnect } from "../../helpers/db";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import type { MutationAddFeedbackArgs } from "../../../src/types/generatedGraphQLTypes";
+import type {
+  MutationAddFeedbackArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import {
@@ -13,7 +16,8 @@ import {
 } from "./../../../src/constants";
 import { type TestUserType, createTestUser } from "./../../helpers/userAndOrg";
 import { createTestEvent, type TestEventType } from "../../helpers/events";
-import { CheckIn, EventAttendee, TransactionLog } from "../../../src/models";
+import { CheckIn, EventAttendee } from "../../../src/models";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -174,22 +178,18 @@ describe("resolvers -> Query -> addFeedback", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(2);
+    const recentLogs = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((recentLogs as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.CREATE,
-      modelName: "Feedback",
+      model: "Feedback",
     });
 
-    expect(mostRecentTransactions[1]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((recentLogs as TransactionLog[])[1]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "CheckIn",
+      model: "CheckIn",
     });
   });
 

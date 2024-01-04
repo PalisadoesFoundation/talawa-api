@@ -1446,6 +1446,11 @@ export type QueryGetDonationByOrgIdConnectionArgs = {
 };
 
 
+export type QueryGetTransactionLogsArgs = {
+  hours?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type QueryGetlanguageArgs = {
   lang_code: Scalars['String'];
 };
@@ -1615,13 +1620,11 @@ export type ToggleUserTagAssignInput = {
 
 export type TransactionLog = {
   __typename?: 'TransactionLog';
-  _id: Scalars['ID'];
-  createdAt?: Maybe<Scalars['DateTime']>;
-  createdBy: User;
-  message?: Maybe<Scalars['String']>;
-  modelName?: Maybe<Scalars['String']>;
-  type?: Maybe<Scalars['String']>;
-  updatedAt?: Maybe<Scalars['DateTime']>;
+  createdBy: Scalars['String'];
+  message: Scalars['String'];
+  model: Scalars['String'];
+  timestamp: Scalars['DateTime'];
+  type: Scalars['String'];
 };
 
 export type Translation = {
@@ -2091,7 +2094,7 @@ export type ResolversTypes = {
   TaskOrderByInput: TaskOrderByInput;
   Time: ResolverTypeWrapper<Scalars['Time']>;
   ToggleUserTagAssignInput: ToggleUserTagAssignInput;
-  TransactionLog: ResolverTypeWrapper<Omit<TransactionLog, 'createdBy'> & { createdBy: ResolversTypes['User'] }>;
+  TransactionLog: ResolverTypeWrapper<TransactionLog>;
   Translation: ResolverTypeWrapper<Translation>;
   Type: Type;
   URL: ResolverTypeWrapper<Scalars['URL']>;
@@ -2219,7 +2222,7 @@ export type ResolversParentTypes = {
   TaskInput: TaskInput;
   Time: Scalars['Time'];
   ToggleUserTagAssignInput: ToggleUserTagAssignInput;
-  TransactionLog: Omit<TransactionLog, 'createdBy'> & { createdBy: ResolversParentTypes['User'] };
+  TransactionLog: TransactionLog;
   Translation: Translation;
   URL: Scalars['URL'];
   UnauthenticatedError: UnauthenticatedError;
@@ -2793,7 +2796,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getDonationByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Donation']>>>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdArgs, 'orgId'>>;
   getDonationByOrgIdConnection?: Resolver<Array<ResolversTypes['Donation']>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdConnectionArgs, 'orgId'>>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
-  getTransactionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['TransactionLog']>>>, ParentType, ContextType>;
+  getTransactionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['TransactionLog']>>>, ParentType, ContextType, Partial<QueryGetTransactionLogsArgs>>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
   hasSubmittedFeedback?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryHasSubmittedFeedbackArgs, 'eventId' | 'userId'>>;
   isSampleOrganization?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<QueryIsSampleOrganizationArgs, 'id'>>;
@@ -2840,13 +2843,11 @@ export interface TimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
 }
 
 export type TransactionLogResolvers<ContextType = any, ParentType extends ResolversParentTypes['TransactionLog'] = ResolversParentTypes['TransactionLog']> = {
-  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  createdBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  modelName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  createdBy?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  model?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  timestamp?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

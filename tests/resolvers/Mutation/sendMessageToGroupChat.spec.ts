@@ -6,14 +6,13 @@ import type {
   InterfaceGroupChat,
   InterfaceGroupChatMessage,
 } from "../../../src/models";
-import { TransactionLog, GroupChat } from "../../../src/models";
+import { GroupChat } from "../../../src/models";
 import type { MutationSendMessageToGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { sendMessageToGroupChat as sendMessageToGroupChatResolver } from "../../../src/resolvers/Mutation/sendMessageToGroupChat";
 import {
   CHAT_NOT_FOUND_ERROR,
-  TRANSACTION_LOG_TYPES,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";

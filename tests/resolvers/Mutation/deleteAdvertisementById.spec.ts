@@ -6,8 +6,11 @@ import type {
   InterfaceAdvertisement,
   InterfaceDonation,
 } from "../../../src/models";
-import { TransactionLog, Advertisement } from "../../../src/models";
-import type { MutationDeleteDonationByIdArgs } from "../../../src/types/generatedGraphQLTypes";
+import { Advertisement } from "../../../src/models";
+import type {
+  MutationDeleteDonationByIdArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
@@ -15,6 +18,7 @@ import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { deleteAdvertisementById } from "../../../src/resolvers/Mutation/deleteAdvertisementById";
 import { wait } from "./acceptAdmin.spec";
 import { TRANSACTION_LOG_TYPES } from "../../../src/constants";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testAdvertisement: InterfaceAdvertisement &
   Document<any, any, InterfaceDonation>;
@@ -79,16 +83,12 @@ describe("resolvers -> Mutation -> deleteAdvertiementById", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(1);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.DELETE,
-      modelName: "Advertisement",
+      model: "Advertisement",
     });
   });
 });

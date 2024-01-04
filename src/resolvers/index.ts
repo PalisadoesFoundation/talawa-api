@@ -15,7 +15,6 @@ import { Post } from "./Post";
 import { Query } from "./Query";
 import { Subscription } from "./Subscription";
 import { Task } from "./Task";
-import { TransactionLog } from "./TransactionLog";
 import { User } from "./User";
 import { UserTag } from "./UserTag";
 import { composeResolvers } from "@graphql-tools/resolvers-composition";
@@ -50,7 +49,6 @@ const resolvers: Resolvers = {
   Query,
   Subscription,
   Task,
-  TransactionLog,
   User,
   UserTag,
 

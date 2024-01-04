@@ -1,13 +1,11 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import {
-  User,
-  Organization,
-  GroupChat,
+import { User, Organization, GroupChat } from "../../../src/models";
+import type {
+  MutationRemoveUserFromGroupChatArgs,
   TransactionLog,
-} from "../../../src/models";
-import type { MutationRemoveUserFromGroupChatArgs } from "../../../src/types/generatedGraphQLTypes";
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { removeUserFromGroupChat as removeUserFromGroupChatResolver } from "../../../src/resolvers/Mutation/removeUserFromGroupChat";
@@ -26,6 +24,7 @@ import type { TestGroupChatType } from "../../helpers/groupChat";
 import { createTestGroupChatMessage } from "../../helpers/groupChat";
 import { deleteOrganizationFromCache } from "../../../src/services/OrganizationCache/deleteOrganizationFromCache";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -195,16 +194,12 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(1);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "GroupChat",
+      model: "GroupChat",
     });
   });
 

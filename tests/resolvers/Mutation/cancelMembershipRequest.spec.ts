@@ -1,13 +1,11 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import {
-  User,
-  Organization,
-  MembershipRequest,
+import { User, Organization, MembershipRequest } from "../../../src/models";
+import type {
+  MutationCancelMembershipRequestArgs,
   TransactionLog,
-} from "../../../src/models";
-import type { MutationCancelMembershipRequestArgs } from "../../../src/types/generatedGraphQLTypes";
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { cancelMembershipRequest as cancelMembershipRequestResolver } from "../../../src/resolvers/Mutation/cancelMembershipRequest";
@@ -26,6 +24,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -194,28 +193,23 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(3);
-
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testUser?._id,
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "User",
+      model: "User",
     });
 
-    expect(mostRecentTransactions[1]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[1]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "Organization",
+      model: "Organization",
     });
 
-    expect(mostRecentTransactions[2]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[2]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.DELETE,
-      modelName: "MembershipRequest",
+      model: "MembershipRequest",
     });
   });
 });

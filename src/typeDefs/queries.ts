@@ -44,7 +44,7 @@ export const queries = gql`
     getPlugins: [Plugin]
     getAdvertisements: [Advertisement]
 
-    getTransactionLogs: [TransactionLog] @auth
+    getTransactionLogs(hours: Int): [TransactionLog] @auth
 
     isSampleOrganization(id: ID!): Boolean!
     hasSubmittedFeedback(userId: ID!, eventId: ID!): Boolean

@@ -1,8 +1,11 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { Task, TransactionLog } from "../../../src/models";
-import type { MutationUpdateTaskArgs } from "../../../src/types/generatedGraphQLTypes";
+import { Task } from "../../../src/models";
+import type {
+  MutationUpdateTaskArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { updateTask as updateTaskResolver } from "../../../src/resolvers/Mutation/updateTask";
 import {
@@ -15,6 +18,7 @@ import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
 import { createAndAssignTestTask, type TestTaskType } from "../../helpers/task";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -143,16 +147,12 @@ describe("resolvers -> Mutation -> updateTask", () => {
     expect(updateTaskPayload).toEqual(updatedTestTask);
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(1);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: context.userId,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: context.userId.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "Task",
+      model: "Task",
     });
   });
 });

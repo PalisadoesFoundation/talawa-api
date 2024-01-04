@@ -5,9 +5,11 @@ import {
   Organization,
   DirectChat,
   DirectChatMessage,
-  TransactionLog,
 } from "../../../src/models";
-import type { MutationRemoveDirectChatArgs } from "../../../src/types/generatedGraphQLTypes";
+import type {
+  MutationRemoveDirectChatArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -33,6 +35,7 @@ import type { TestDirectChatType } from "../../helpers/directChat";
 import { createTestDirectChat } from "../../helpers/directChat";
 import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -230,21 +233,17 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(2);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.DELETE,
-      modelName: "DirectChat",
+      model: "DirectChat",
     });
-    expect(mostRecentTransactions[1]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((mostRecentTransactions as TransactionLog[])[1]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.DELETE,
-      modelName: "DirectChatMessage",
+      model: "DirectChatMessage",
     });
   });
 });

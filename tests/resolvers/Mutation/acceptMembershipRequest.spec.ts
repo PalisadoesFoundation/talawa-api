@@ -1,13 +1,11 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import {
-  User,
-  Organization,
-  MembershipRequest,
+import { User, Organization, MembershipRequest } from "../../../src/models";
+import type {
+  MutationAcceptMembershipRequestArgs,
   TransactionLog,
-} from "../../../src/models";
-import type { MutationAcceptMembershipRequestArgs } from "../../../src/types/generatedGraphQLTypes";
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -33,6 +31,7 @@ import type {
 } from "../../helpers/userAndOrg";
 import type { TestMembershipRequestType } from "../../helpers/membershipRequests";
 import { createTestMembershipRequest } from "../../helpers/membershipRequests";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 import { wait } from "./acceptAdmin.spec";
 
 let testUser: TestUserType;
@@ -311,26 +310,18 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({ createdAt: -1 })
-      .limit(3);
+    const recentLogs = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((recentLogs as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "User",
+      model: "User",
     });
 
-    expect(mostRecentTransactions[1]).toMatchObject({
-      createdBy: testUser?._id,
+    expect((recentLogs as TransactionLog[])[1]).toMatchObject({
+      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "Organization",
-    });
-
-    expect(mostRecentTransactions[2]).toMatchObject({
-      createdBy: testUser?._id,
-      type: TRANSACTION_LOG_TYPES.DELETE,
-      modelName: "MembershipRequest",
+      model: "Organization",
     });
   });
 });

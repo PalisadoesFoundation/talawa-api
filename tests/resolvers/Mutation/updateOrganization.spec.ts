@@ -1,8 +1,11 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization, TransactionLog } from "../../../src/models";
-import type { MutationUpdateOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
+import { User, Organization } from "../../../src/models";
+import type {
+  MutationUpdateOrganizationArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -27,6 +30,7 @@ import type {
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -226,16 +230,12 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
     expect(updateOrganizationPayload).toEqual(testUpdateOrganizationPayload);
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(1);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: context.userId,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: context.userId.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "Organization",
+      model: "Organization",
     });
   });
 });

@@ -8,14 +8,16 @@ import type {
   InterfacePost,
 } from "../../../src/models";
 import {
-  TransactionLog,
   User,
   Organization,
   Post,
   Comment,
   MembershipRequest,
 } from "../../../src/models";
-import type { MutationRemoveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
+import type {
+  MutationRemoveOrganizationArgs,
+  TransactionLog,
+} from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import { removeOrganization as removeOrganizationResolver } from "../../../src/resolvers/Mutation/removeOrganization";
@@ -38,6 +40,7 @@ import { createTestUserFunc } from "../../helpers/user";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 import { wait } from "./acceptAdmin.spec";
+import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUsers: TestUserType[];
@@ -332,57 +335,53 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
 
     await wait();
 
-    const mostRecentTransactions = await TransactionLog.find()
-      .sort({
-        createdAt: -1,
-      })
-      .limit(9);
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransactions[0]).toMatchObject({
-      createdBy: testUsers[0]?._id,
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
+      createdBy: testUsers[0]?._id.toString(),
       type: TRANSACTION_LOG_TYPES.DELETE,
-      modelName: "Organization",
+      model: "Organization",
     });
-    expect(mostRecentTransactions[1]).toMatchObject({
-      createdBy: testUsers[0]?._id,
+    expect((mostRecentTransactions as TransactionLog[])[1]).toMatchObject({
+      createdBy: testUsers[0]?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "User",
+      model: "User",
     });
-    expect(mostRecentTransactions[2]).toMatchObject({
-      createdBy: testUsers[0]?._id,
+    expect((mostRecentTransactions as TransactionLog[])[2]).toMatchObject({
+      createdBy: testUsers[0]?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "User",
+      model: "User",
     });
-    expect(mostRecentTransactions[3]).toMatchObject({
-      createdBy: testUsers[0]?._id,
+    expect((mostRecentTransactions as TransactionLog[])[3]).toMatchObject({
+      createdBy: testUsers[0]?._id.toString(),
       type: TRANSACTION_LOG_TYPES.DELETE,
-      modelName: "MembershipRequest",
+      model: "MembershipRequest",
     });
-    expect(mostRecentTransactions[4]).toMatchObject({
-      createdBy: testUsers[0]?._id,
+    expect((mostRecentTransactions as TransactionLog[])[4]).toMatchObject({
+      createdBy: testUsers[0]?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "User",
+      model: "User",
     });
-    expect(mostRecentTransactions[5]).toMatchObject({
-      createdBy: testUsers[0]?._id,
+    expect((mostRecentTransactions as TransactionLog[])[5]).toMatchObject({
+      createdBy: testUsers[0]?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "User",
+      model: "User",
     });
 
-    expect(mostRecentTransactions[6]).toMatchObject({
-      createdBy: testUsers[0]?._id,
+    expect((mostRecentTransactions as TransactionLog[])[6]).toMatchObject({
+      createdBy: testUsers[0]?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
-      modelName: "User",
+      model: "User",
     });
-    expect(mostRecentTransactions[7]).toMatchObject({
-      createdBy: testUsers[0]?._id,
+    expect((mostRecentTransactions as TransactionLog[])[7]).toMatchObject({
+      createdBy: testUsers[0]?._id.toString(),
       type: TRANSACTION_LOG_TYPES.DELETE,
-      modelName: "Comment",
+      model: "Comment",
     });
-    expect(mostRecentTransactions[8]).toMatchObject({
-      createdBy: testUsers[0]?._id,
+    expect((mostRecentTransactions as TransactionLog[])[8]).toMatchObject({
+      createdBy: testUsers[0]?._id.toString(),
       type: TRANSACTION_LOG_TYPES.DELETE,
-      modelName: "Post",
+      model: "Post",
     });
   });
 

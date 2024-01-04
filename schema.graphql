@@ -807,7 +807,7 @@ type Query {
   getDonationByOrgId(orgId: ID!): [Donation]
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
   getPlugins: [Plugin]
-  getTransactionLogs: [TransactionLog]
+  getTransactionLogs(hours: Int): [TransactionLog]
   getlanguage(lang_code: String!): [Translation]
   hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean
   isSampleOrganization(id: ID!): Boolean!
@@ -893,13 +893,11 @@ input ToggleUserTagAssignInput {
 }
 
 type TransactionLog {
-  _id: ID!
-  createdAt: DateTime
-  createdBy: User!
-  message: String
-  modelName: String
-  type: String
-  updatedAt: DateTime
+  createdBy: String!
+  message: String!
+  model: String!
+  timestamp: DateTime!
+  type: String!
 }
 
 type Translation {

@@ -367,13 +367,11 @@ export const types = gql`
   }
 
   type TransactionLog {
-    _id: ID!
-    createdAt: DateTime
-    createdBy: User!
-    message: String
-    modelName: String
-    type: String
-    updatedAt: DateTime
+    timestamp: DateTime!
+    createdBy: String!
+    message: String!
+    model: String!
+    type: String!
   }
 
   type User {
