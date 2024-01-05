@@ -95,6 +95,10 @@ export type AggregateUser = {
   count: Scalars['Int'];
 };
 
+export type AppUserType =
+  | 'APP_USER'
+  | 'NON_APP_USER';
+
 export type AuthData = {
   __typename?: 'AuthData';
   accessToken: Scalars['String'];
@@ -608,6 +612,7 @@ export type Mutation = {
   unlikeComment?: Maybe<Comment>;
   unlikePost?: Maybe<Post>;
   unregisterForEventByUser: Event;
+  updateAppUserType: Scalars['Boolean'];
   updateEvent: Event;
   updateEventProject: EventProject;
   updateLanguage: User;
@@ -1028,6 +1033,11 @@ export type MutationUnlikePostArgs = {
 
 export type MutationUnregisterForEventByUserArgs = {
   id: Scalars['ID'];
+};
+
+
+export type MutationUpdateAppUserTypeArgs = {
+  data: UpdateAppUserTypeInput;
 };
 
 
@@ -1537,6 +1547,7 @@ export type QueryUserLanguageArgs = {
 
 export type QueryUsersArgs = {
   adminApproved?: InputMaybe<Scalars['Boolean']>;
+  appUserType?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<UserOrderByInput>;
   skip?: InputMaybe<Scalars['Int']>;
@@ -1634,6 +1645,11 @@ export type UnauthorizedError = Error & {
   message: Scalars['String'];
 };
 
+export type UpdateAppUserTypeInput = {
+  appUserType?: InputMaybe<Scalars['String']>;
+  id?: InputMaybe<Scalars['ID']>;
+};
+
 export type UpdateEventInput = {
   allDay?: InputMaybe<Scalars['Boolean']>;
   description?: InputMaybe<Scalars['String']>;
@@ -1707,6 +1723,7 @@ export type User = {
   adminApproved?: Maybe<Scalars['Boolean']>;
   adminFor?: Maybe<Array<Maybe<Organization>>>;
   appLanguageCode: Scalars['String'];
+  appUserType?: Maybe<Scalars['String']>;
   assignedTasks?: Maybe<Array<Maybe<Task>>>;
   birthDate?: Maybe<Scalars['Date']>;
   createdAt?: Maybe<Scalars['DateTime']>;
@@ -1986,6 +2003,7 @@ export type ResolversTypes = {
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
   Any: ResolverTypeWrapper<Scalars['Any']>;
+  AppUserType: AppUserType;
   AuthData: ResolverTypeWrapper<Omit<AuthData, 'user'> & { user: ResolversTypes['User'] }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   CheckIn: ResolverTypeWrapper<InterfaceCheckInModel>;
@@ -2084,6 +2102,7 @@ export type ResolversTypes = {
   URL: ResolverTypeWrapper<Scalars['URL']>;
   UnauthenticatedError: ResolverTypeWrapper<UnauthenticatedError>;
   UnauthorizedError: ResolverTypeWrapper<UnauthorizedError>;
+  UpdateAppUserTypeInput: UpdateAppUserTypeInput;
   UpdateEventInput: UpdateEventInput;
   UpdateEventProjectInput: UpdateEventProjectInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
@@ -2210,6 +2229,7 @@ export type ResolversParentTypes = {
   URL: Scalars['URL'];
   UnauthenticatedError: UnauthenticatedError;
   UnauthorizedError: UnauthorizedError;
+  UpdateAppUserTypeInput: UpdateAppUserTypeInput;
   UpdateEventInput: UpdateEventInput;
   UpdateEventProjectInput: UpdateEventProjectInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
@@ -2645,6 +2665,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   unlikeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationUnlikeCommentArgs, 'id'>>;
   unlikePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUnlikePostArgs, 'id'>>;
   unregisterForEventByUser?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUnregisterForEventByUserArgs, 'id'>>;
+  updateAppUserType?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateAppUserTypeArgs, 'data'>>;
   updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'id'>>;
   updateEventProject?: Resolver<ResolversTypes['EventProject'], ParentType, ContextType, RequireFields<MutationUpdateEventProjectArgs, 'data' | 'id'>>;
   updateLanguage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateLanguageArgs, 'languageCode'>>;
@@ -2856,6 +2877,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   adminApproved?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   adminFor?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   appLanguageCode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  appUserType?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   assignedTasks?: Resolver<Maybe<Array<Maybe<ResolversTypes['Task']>>>, ParentType, ContextType>;
   birthDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;

@@ -347,7 +347,10 @@ export const inputs = gql`
     userType: String
     id: ID
   }
-
+  input UpdateAppUserTypeInput {
+    id: ID
+    appUserType: String
+  }
   input UserAndOrganizationInput {
     organizationId: ID!
     userId: ID!

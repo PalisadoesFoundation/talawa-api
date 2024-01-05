@@ -112,6 +112,10 @@ export const enums = gql`
     ADMIN
     SUPERADMIN
   }
+  enum AppUserType {
+    APP_USER
+    NON_APP_USER
+  }
 
   enum EducationGrade {
     NO_GRADE
