@@ -5,8 +5,10 @@ import { averageFeedbackScore } from "./averageFeedbackScore";
 import { feedback } from "./feedback";
 import { organization } from "./organization";
 import { projects } from "./projects";
+import { actionItems } from "./actionItems";
 
 export const Event: EventResolvers = {
+  actionItems,
   attendees,
   attendeesCheckInStatus,
   averageFeedbackScore,

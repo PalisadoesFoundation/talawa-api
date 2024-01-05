@@ -1,7 +1,14 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
-import { User, Event, EventProject, Task, TaskVolunteer } from "../../models";
+import {
+  User,
+  Event,
+  EventProject,
+  Task,
+  TaskVolunteer,
+  ActionItem,
+} from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
@@ -165,5 +172,8 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
       $in: taskIds,
     },
   });
+
+  await ActionItem.deleteMany({ _id: { $in: event.actionItems } });
+
   return event;
 };

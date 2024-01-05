@@ -138,6 +138,7 @@ export const types = gql`
     # For each attendee, gives information about whether he/she has checked in yet or not
     attendeesCheckInStatus: [CheckInStatus!]!
     admins(adminId: ID): [User]
+    actionItems: [ActionItem]
     status: Status!
     projects: [EventProject]
     feedback: [Feedback!]!

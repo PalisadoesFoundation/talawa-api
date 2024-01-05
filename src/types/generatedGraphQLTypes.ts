@@ -288,6 +288,7 @@ export type Error = {
 export type Event = {
   __typename?: 'Event';
   _id: Scalars['ID'];
+  actionItems?: Maybe<Array<Maybe<ActionItem>>>;
   admins?: Maybe<Array<Maybe<User>>>;
   allDay: Scalars['Boolean'];
   attendees: Array<User>;
@@ -2550,6 +2551,7 @@ export type ErrorResolvers<ContextType = any, ParentType extends ResolversParent
 
 export type EventResolvers<ContextType = any, ParentType extends ResolversParentTypes['Event'] = ResolversParentTypes['Event']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  actionItems?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType>;
   admins?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<EventAdminsArgs>>;
   allDay?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   attendees?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;

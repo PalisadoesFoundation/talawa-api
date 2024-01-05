@@ -2,6 +2,7 @@ import type { Types, PopulatedDoc, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
+import type { InterfaceActionItem } from "./ActionItem";
 
 /**
  * This is an interface representing a document for an event in the database(MongoDB).
@@ -25,6 +26,7 @@ export interface InterfaceEvent {
   isRegisterable: boolean;
   creator: PopulatedDoc<InterfaceUser & Document>;
   admins: PopulatedDoc<InterfaceUser & Document>[];
+  actionItems: PopulatedDoc<InterfaceActionItem & Document>[];
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   status: string;
 }
@@ -48,6 +50,7 @@ export interface InterfaceEvent {
  * @param isRegisterable - Is the event Registrable
  * @param creator - Creator of the event
  * @param admins - Admins
+ * @param actionItems - Action Items
  * @param organization - Organization
  * @param status - whether the event is active, blocked, or deleted.
  */
@@ -137,6 +140,12 @@ const eventSchema = new Schema({
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+  ],
+  actionItems: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "ActionItem",
     },
   ],
   organization: {

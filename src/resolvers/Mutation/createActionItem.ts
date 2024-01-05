@@ -125,6 +125,17 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     updatedBy: context.userId,
   });
 
+  if (args.data.event) {
+    await Event.findOneAndUpdate(
+      {
+        _id: args.data.event,
+      },
+      {
+        $push: { actionItems: createActionItem._id },
+      }
+    );
+  }
+
   // Returns created action item.
   return createActionItem.toObject();
 };
