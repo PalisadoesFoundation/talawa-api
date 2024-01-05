@@ -162,9 +162,9 @@ jobs:
       with:
         source_file: 'talawa-api-docs/'
         destination_repo: 'PalisadoesFoundation/talawa-docs'
-        destination_branch: 'testing-workflows'
+        destination_branch: 'develop'
         destination_folder: 'docs/'
-        user_email: '${{env.email}}'
+        user_email: '${{secrets.YOUR_EMAIL_SECRET}}'
         user_name: '${{github.actor}}'
         commit_message: 'Talawa API docs updated'
       
