@@ -6,6 +6,8 @@ import {
   Post,
   Comment,
   MembershipRequest,
+  Category,
+  ActionItem,
 } from "../../models";
 import { superAdminCheck } from "../../utilities";
 import {
@@ -124,6 +126,14 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
       { _id: { $in: organization.blockedUsers } },
       { $pull: { organizationsBlockedBy: organization._id } }
     );
+
+    // Remove all Category documents whose id is in the actionCategories array
+    await Category.deleteMany({ _id: { $in: organization.actionCategories } });
+
+    // Remove all ActionItem documents whose category is in the actionCategories array
+    await ActionItem.deleteMany({
+      category: { $in: organization.actionCategories },
+    });
 
     // Deletes the organzation.
     await Organization.deleteOne({
