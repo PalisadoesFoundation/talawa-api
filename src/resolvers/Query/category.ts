@@ -13,9 +13,7 @@ import { CATEGORY_NOT_FOUND_ERROR } from "../../constants";
 export const category: QueryResolvers["category"] = async (_parent, args) => {
   const category = await Category.findOne({
     _id: args.id,
-  })
-    .populate("org")
-    .lean();
+  }).lean();
 
   if (!category) {
     throw new errors.NotFoundError(

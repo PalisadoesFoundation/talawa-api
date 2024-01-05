@@ -16,9 +16,7 @@ export const actionItem: QueryResolvers["actionItem"] = async (
 ) => {
   const actionItem = await ActionItem.findOne({
     _id: args.id,
-  })
-    .populate("org")
-    .lean();
+  }).lean();
 
   if (!actionItem) {
     throw new errors.NotFoundError(

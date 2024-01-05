@@ -1,18 +1,16 @@
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { ActionItem } from "../../models";
 /**
- * This query will fetch all action items for the event from database.
+ * This query will fetch all action items for an event from database.
  * @param _parent-
- * @param args - An object that contains `orderBy` to sort the object as specified and `id` of the Organization.
- * @returns An `actionItems` object that holds all action items with `ACTIVE` status for the Organization.
+ * @param args - An object that contains `eventId` which is the _id of the Event.
+ * @returns An `actionItems` object that holds all action items for the Event.
  */
 export const actionItemsByEvents: QueryResolvers["actionItemsByEvents"] =
   async (_parent, args) => {
-    const actionItem = await ActionItem.find({
+    const actionItems = await ActionItem.find({
       event: args.eventId,
-    })
-      .populate("org")
-      .lean();
+    }).lean();
 
-    return actionItem;
+    return actionItems;
   };
