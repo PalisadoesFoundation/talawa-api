@@ -107,12 +107,6 @@ export const inputs = gql`
     organization_id: ID
   }
 
-  # input EventProjectInput {
-  #   title: String!
-  #   description: String!
-  #   eventId: ID!
-  # }
-
   input FeedbackInput {
     eventId: ID!
     rating: Int!

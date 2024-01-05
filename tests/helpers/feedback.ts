@@ -1,8 +1,8 @@
 import { nanoid } from "nanoid";
 import { CheckIn, type InterfaceFeedback, Feedback } from "../../src/models";
 import type { Document } from "mongoose";
-import { createEventWithCheckedInUser} from "./checkIn";
-import type { TestEventType , type TestCheckInType  } from "./checkIn";
+import { createEventWithCheckedInUser } from "./checkIn";
+import type { TestEventType, TestCheckInType } from "./checkIn";
 import type { TestOrganizationType, TestUserType } from "./userAndOrg";
 
 export type TestFeedbackType =

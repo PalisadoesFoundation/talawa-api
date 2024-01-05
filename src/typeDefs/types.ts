@@ -120,7 +120,6 @@ export const types = gql`
     attendeesCheckInStatus: [CheckInStatus!]!
     admins(adminId: ID): [User]
     status: Status!
-    #projects: [EventProject]
     feedback: [Feedback!]!
     averageFeedbackScore: Float
   }
@@ -342,7 +341,6 @@ export const types = gql`
     adminApproved: Boolean
     adminFor: [Organization]
     appLanguageCode: String!
-    # assignedTasks: [Task]
     birthDate: Date
     createdAt: DateTime
     createdEvents: [Event]

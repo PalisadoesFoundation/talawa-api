@@ -40,7 +40,7 @@ describe("resolvers -> Query -> event", () => {
     }
   });
 
-  it(`returns event object with populated fields creator, tasks, admins`, async () => {
+  it(`returns event object with populated fields creator and admins`, async () => {
     const args: QueryEventArgs = {
       id: testEvent?._id,
     };
