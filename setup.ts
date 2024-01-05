@@ -405,6 +405,84 @@ async function importData(): Promise<void> {
   }
 }
 
+async function configureSmtp(): Promise<void> {
+  const { shouldConfigureSmtp } = await inquirer.prompt({
+    type: "confirm",
+    name: "shouldConfigureSmtp",
+    message: "Would you like to configure SMTP for Talawa to send emails?",
+    default: true,
+  });
+
+  if (!shouldConfigureSmtp) {
+    console.log("SMTP configuration skipped.");
+    return;
+  }
+
+  const smtpConfig = await inquirer.prompt([
+    {
+      type: "input",
+      name: "SMTP_HOST",
+      message: "Enter SMTP host:",
+    },
+    {
+      type: "input",
+      name: "SMTP_PORT",
+      message: "Enter SMTP port:",
+    },
+    {
+      type: "input",
+      name: "SMTP_USERNAME",
+      message: "Enter SMTP username:",
+    },
+    {
+      type: "password",
+      name: "SMTP_PASSWORD",
+      message: "Enter SMTP password:",
+    },
+    {
+      type: "confirm",
+      name: "SMTP_SSL_TLS",
+      message: "Use SSL/TLS for SMTP?",
+      default: false,
+    },
+  ]);
+
+  // Validate and save SMTP configuration
+  const isValidSmtpConfig =
+    smtpConfig.SMTP_HOST &&
+    smtpConfig.SMTP_PORT &&
+    smtpConfig.SMTP_USERNAME &&
+    smtpConfig.SMTP_PASSWORD;
+
+  if (!isValidSmtpConfig) {
+    console.error(
+      "Invalid SMTP configuration. Please provide all required parameters."
+    );
+    return;
+  }
+
+  // const isSmtpConnectionValid = await verifySmtpConnection(smtpConfig);
+  const isSmtpConnectionValid = true;
+
+  if (!isSmtpConnectionValid) {
+    console.error(
+      "SMTP configuration verification failed. Please check your SMTP settings."
+    );
+    return;
+  }
+
+  // Save SMTP configuration to .env file with IS_SMTP flag
+  const config = dotenv.parse(fs.readFileSync(".env"));
+  config.IS_SMTP = "true"; // Set IS_SMTP to true
+  Object.assign(config, smtpConfig);
+  fs.writeFileSync(".env", "");
+  for (const key in config) {
+    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+  }
+
+  console.log("SMTP configuration saved successfully.");
+}
+
 async function main(): Promise<void> {
   console.log("Welcome to the Talawa API setup! 🚀");
 
@@ -522,6 +600,7 @@ async function main(): Promise<void> {
       `\nMail username already exists with the value ${process.env.MAIL_USERNAME}`
     );
   }
+  await configureSmtp();
   const { shouldSetMail } = await inquirer.prompt([
     {
       type: "confirm",
