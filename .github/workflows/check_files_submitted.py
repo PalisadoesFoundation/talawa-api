@@ -59,13 +59,13 @@ def get_changed_files(base_branch, pr_branch):
 
             if git_diff_process.returncode != 0:
                 print(f"Error: {git_diff_error}")
-                return []
+                sys.exit(1)
 
             changed_files = git_diff_output.splitlines()
             return changed_files
     except Exception as e:
         print(f"Error: {e}")
-        return []
+        sys.exit(1)
 
 
 def main():
@@ -88,13 +88,19 @@ def main():
     parser = argparse.ArgumentParser(description="Check the number of changed files.")
     parser.add_argument("base_branch", help="Base branch name")
     parser.add_argument("pr_branch", help="Pull request branch name")
+    parser.add_argument(
+        "--max-files",
+        type=int,
+        default=20,
+        help="Maximum allowed number of changed files (default is 20)",
+    )
     args = parser.parse_args()
 
     base_branch = args.base_branch
     pr_branch = args.pr_branch
 
     changed_files = get_changed_files(base_branch, pr_branch)
-    if len(changed_files) > 20:
+    if len(changed_files) > args.max_files:
         print("The pull request contains an excessive number of changed files (more than 20).")
         print("Please ensure your changes are concise and focused.")
         print("Potential Causes: ")
