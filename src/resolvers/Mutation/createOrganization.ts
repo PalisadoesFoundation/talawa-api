@@ -1,6 +1,6 @@
 import "dotenv/config";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, Organization } from "../../models";
+import { User, Organization, Category } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import { LENGTH_VALIDATION_ERROR } from "../../constants";
 import { superAdminCheck } from "../../utilities";
@@ -82,6 +82,18 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       admins: [context.userId],
       members: [context.userId],
     });
+
+    // Creating a default category
+    const createdCategory = await Category.create({
+      category: "Default",
+      org: createdOrganization._id,
+      createdBy: context.userId,
+      updatedBy: context.userId,
+    });
+
+    // Adding the default category to the createdOrganization
+    createdOrganization.actionCategories.push(createdCategory._id);
+    await createdOrganization.save();
 
     await cacheOrganizations([createdOrganization.toObject()!]);
 

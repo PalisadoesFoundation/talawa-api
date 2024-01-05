@@ -1185,6 +1185,7 @@ export type OtpInput = {
 export type Organization = {
   __typename?: 'Organization';
   _id: Scalars['ID'];
+  actionCategories?: Maybe<Array<Maybe<Category>>>;
   admins?: Maybe<Array<Maybe<User>>>;
   apiUrl: Scalars['URL'];
   blockedUsers?: Maybe<Array<Maybe<User>>>;
@@ -2822,6 +2823,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type OrganizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Organization'] = ResolversParentTypes['Organization']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  actionCategories?: Resolver<Maybe<Array<Maybe<ResolversTypes['Category']>>>, ParentType, ContextType>;
   admins?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<OrganizationAdminsArgs>>;
   apiUrl?: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
   blockedUsers?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;

@@ -233,6 +233,7 @@ export const types = gql`
     creator: User!
     members: [User]
     admins(adminId: ID): [User]
+    actionCategories: [Category]
     membershipRequests: [MembershipRequest]
     blockedUsers: [User]
     visibleInSearch: Boolean!
