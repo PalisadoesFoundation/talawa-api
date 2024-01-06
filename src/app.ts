@@ -1,8 +1,10 @@
 import cors from "cors";
 import express from "express";
+
 import mongoSanitize from "express-mongo-sanitize";
-import rateLimit from "express-rate-limit";
 import { express as voyagerMiddleware } from "graphql-voyager/middleware";
+import { rateLimit } from "express-rate-limit";
+
 import helmet from "helmet";
 import i18n from "i18n";
 import requestLogger from "morgan";
