@@ -13,6 +13,7 @@ import {
   Post,
   Comment,
   MembershipRequest,
+  Category,
 } from "../../../src/models";
 import type { MutationRemoveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
@@ -106,6 +107,13 @@ beforeAll(async () => {
     organization: testOrganization._id,
   });
 
+  const testCategory = await Category.create({
+    createdBy: testUsers[0]?._id,
+    updatedBy: testUsers[0]?._id,
+    org: testOrganization?._id,
+    category: "Default",
+  });
+
   await Organization.updateOne(
     {
       _id: testOrganization._id,
@@ -114,6 +122,7 @@ beforeAll(async () => {
       $push: {
         membershipRequests: testMembershipRequest._id,
         posts: testPost._id,
+        actionCategories: testCategory?._id,
       },
     }
   );
@@ -321,11 +330,17 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       _id: testComment._id,
     }).lean();
 
+    const deletedTestCategories = await Category.find({
+      org: testOrganization?._id,
+    }).lean();
+
     expect(deletedMembershipRequests).toEqual([]);
 
     expect(deletedTestPosts).toEqual([]);
 
     expect(deletedTestComments).toEqual([]);
+
+    expect(deletedTestCategories).toEqual([]);
   });
 
   it(`removes the organization with image and returns the updated user's object with _id === context.userId`, async () => {
