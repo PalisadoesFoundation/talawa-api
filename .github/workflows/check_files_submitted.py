@@ -86,8 +86,8 @@ def main():
         None. (Exits with sys.exit() if conditions are met)
     """
     parser = argparse.ArgumentParser(description="Check the number of changed files.")
-    parser.add_argument("base_branch", help="Base branch name")
-    parser.add_argument("pr_branch", help="Pull request branch name")
+    parser.add_argument("--base_branch", help="Base branch name", required=True)
+    parser.add_argument("--pr_branch", help="Pull request branch name", required=True)
     parser.add_argument(
         "--max-files",
         type=int,
