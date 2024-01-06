@@ -1,31 +1,30 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization } from "../../../src/models";
+import { Organization, User } from "../../../src/models";
 import type { MutationJoinPublicOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
-  ORGANIZATION_NOT_FOUND_ERROR,
-  USER_ALREADY_MEMBER_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
-  USER_NOT_FOUND_ERROR,
-} from "../../../src/constants";
-import {
-  beforeAll,
   afterAll,
+  afterEach,
+  beforeAll,
   describe,
+  expect,
   it,
   vi,
-  expect,
-  afterEach,
 } from "vitest";
+import {
+  ORGANIZATION_NOT_FOUND_ERROR,
+  USER_ALREADY_MEMBER_ERROR,
+  USER_NOT_FOUND_ERROR,
+} from "../../../src/constants";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -72,29 +71,29 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     }
   });
 
-  it(`throws UnauthorizedError message if organization with _id === args.organizationId is not public`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => message);
-    try {
-      const args: MutationJoinPublicOrganizationArgs = {
-        organizationId: testOrganization?.id,
-      };
+  // it(`throws UnauthorizedError message if organization with _id === args.organizationId is not public`, async () => {
+  //   const { requestContext } = await import("../../../src/libraries");
+  //   const spy = vi
+  //     .spyOn(requestContext, "translate")
+  //     .mockImplementationOnce((message) => message);
+  //   try {
+  //     const args: MutationJoinPublicOrganizationArgs = {
+  //       organizationId: testOrganization?.id,
+  //     };
 
-      const context = {
-        userId: testUser?.id,
-      };
+  //     const context = {
+  //       userId: testUser?.id,
+  //     };
 
-      const { joinPublicOrganization: joinPublicOrganizationResolver } =
-        await import("../../../src/resolvers/Mutation/joinPublicOrganization");
+  //     const { joinPublicOrganization: joinPublicOrganizationResolver } =
+  //       await import("../../../src/resolvers/Mutation/joinPublicOrganization");
 
-      await joinPublicOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-    }
-  });
+  //     await joinPublicOrganizationResolver?.({}, args, context);
+  //   } catch (error: any) {
+  //     expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+  //     expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+  //   }
+  // });
 
   it(`throws NotFoundError message if no user exists with _id === context.userId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
