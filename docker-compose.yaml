@@ -9,7 +9,7 @@ services:
   redis-stack-server:
     image: redis/redis-stack-server:latest
     ports:
-      - 6380:6379
+      - 6379:6379
     volumes:
       - redis-data:/data/redis
 
