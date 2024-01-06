@@ -8,8 +8,6 @@ This document provides instructions on how to set up and start a running instanc
 
 - [Prerequisites](#prerequisites)
   - [Install node.js](#install-nodejs)
-  - [Install npm](#install-npm)
-  - [Install TypeScript](#install-typescript)
   - [Install git](#install-git)
   - [Setting up this repository](#setting-up-this-repository)
   - [Install the Required Packages](#install-the-required-packages)
