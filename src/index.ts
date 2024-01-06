@@ -22,6 +22,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin
 import { expressMiddleware } from "@apollo/server/express4";
 import loadPlugins from "./config/plugins/loadPlugins";
 import path from "path";
+import { Redis } from "ioredis";
 const pubsub = new PubSub();
 
 // defines schema
@@ -29,6 +30,37 @@ let schema = makeExecutableSchema({
   typeDefs,
   resolvers: composedResolvers,
 });
+
+const redisHost = process.env.REDIS_HOST;
+const redisPortString = process.env.REDIS_PORT;
+
+// Check if redisPortString is defined before attempting to parse
+const redisPort = redisPortString ? parseInt(redisPortString, 10) : undefined;
+
+// Create a Redis client
+const redisClient = new Redis({
+  host: redisHost,
+  port: redisPort,
+});
+
+// Ping the Redis server
+redisClient
+  .ping()
+  .then((response) => {
+    // Check the response
+    if (response === "PONG") {
+      console.log("Redis server is running.");
+    } else {
+      console.log("Redis server is not running.");
+    }
+  })
+  .catch((error) => {
+    console.error(`Error connecting to Redis: ${error}`);
+  })
+  .finally(() => {
+    // Close the Redis connection
+    redisClient.quit();
+  });
 
 // Defines directives
 schema = authDirectiveTransformer(schema, "auth");
