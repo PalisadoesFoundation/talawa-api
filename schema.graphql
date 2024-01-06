@@ -579,7 +579,6 @@ type Organization {
   pinnedPosts: [Post]
   userRegistrationRequired: Boolean!
   userTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
-  visibleInSearch: Boolean!
 }
 
 type OrganizationCustomField {
