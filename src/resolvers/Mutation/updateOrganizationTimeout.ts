@@ -65,7 +65,7 @@ export const updateOrganizationTimeout: MutationResolvers["updateOrganizationTim
     // superAdminCheck(user);
 
     // Check if the timeout is in the valid range of 15 to 60 minutes
-    if (args.timeout < 15 || args.timeout > 60) {
+    if (args.timeout < 15 || args.timeout > 60 || args.timeout % 5 !== 0) {
       throw new errors.ValidationError([
         {
           message: requestContext.translate(INVALID_TIMEOUT_RANGE.MESSAGE),
