@@ -31,7 +31,7 @@ async function accessAndRefreshTokens(
     config.ACCESS_TOKEN_SECRET = accessTokenSecret;
     fs.writeFileSync(".env", "");
     for (const key in config) {
-      fs.appendFileSync(".env", `${key} = ${config[key]}\n`);
+      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
     }
   }
 
@@ -214,18 +214,19 @@ async function mongoDB(): Promise<void> {
   }
 }
 
+// Function to ask if the user wants to keep the entered values
+async function askToKeepValues(): Promise<boolean> {
+  const { keepValues } = await inquirer.prompt({
+    type: "confirm",
+    name: "keepValues",
+    message: `Would you like to keep the entered key? `,
+    default: true,
+  });
+  return keepValues;
+}
+
 //Get recaptcha details
 async function recaptcha(): Promise<void> {
-  console.log(
-    "\nPlease visit this URL to set up reCAPTCHA:\n\nhttps://www.google.com/recaptcha/admin/create"
-  );
-  console.log(
-    '\nSelect reCAPTCHA v2 and the "I`m not a robot" checkbox option'
-  );
-  console.log(
-    '\nAdd "localhost" in domains and accept the terms, then press submit'
-  );
-
   const { recaptchaSecretKey } = await inquirer.prompt([
     {
       type: "input",
@@ -239,24 +240,32 @@ async function recaptcha(): Promise<void> {
       },
     },
   ]);
-  const config = dotenv.parse(fs.readFileSync(".env"));
-  config.RECAPTCHA_SECRET_KEY = recaptchaSecretKey;
-  fs.writeFileSync(".env", "");
-  for (const key in config) {
-    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+
+  const shouldKeepDetails = await askToKeepValues();
+
+  if (shouldKeepDetails) {
+    const config = dotenv.parse(fs.readFileSync(".env"));
+    config.RECAPTCHA_SECRET_KEY = recaptchaSecretKey;
+    fs.writeFileSync(".env", "");
+    for (const key in config) {
+      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+    }
+  } else {
+    await recaptcha();
   }
 }
+
 async function recaptchaSiteKey(): Promise<void> {
   if (process.env.RECAPTCHA_SITE_KEY) {
     console.log(
-      ` \nreCAPTCHA site key already exists with the value ${process.env.RECAPTCHA_SITE_KEY}`
+      `\nreCAPTCHA site key already exists with the value ${process.env.RECAPTCHA_SITE_KEY}`
     );
   }
 
-  const { recaptchaSiteKey } = await inquirer.prompt([
+  const { recaptchaSiteKeyInp } = await inquirer.prompt([
     {
       type: "input",
-      name: "recaptchaSiteKey",
+      name: "recaptchaSiteKeyInp",
       message: "Enter your reCAPTCHA site key:",
       validate: async (input: string): Promise<boolean | string> => {
         if (validateRecaptcha(input)) {
@@ -266,11 +275,18 @@ async function recaptchaSiteKey(): Promise<void> {
       },
     },
   ]);
-  const config = dotenv.parse(fs.readFileSync(".env"));
-  config.RECAPTCHA_SITE_KEY = recaptchaSiteKey;
-  fs.writeFileSync(".env", "");
-  for (const key in config) {
-    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+
+  const shouldKeepDetails = await askToKeepValues();
+
+  if (shouldKeepDetails) {
+    const config = dotenv.parse(fs.readFileSync(".env"));
+    config.RECAPTCHA_SITE_KEY = recaptchaSiteKeyInp;
+    fs.writeFileSync(".env", "");
+    for (const key in config) {
+      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+    }
+  } else {
+    await recaptchaSiteKey();
   }
 }
 
@@ -382,18 +398,16 @@ async function importData(): Promise<void> {
       (error: { message: string }, stdout: string, stderr: string) => {
         if (error) {
           console.error(`Error: ${error.message}`);
-          console.log("Could not import sample data.\n");
           abort();
         }
         if (stderr) {
           console.error(`Error: ${stderr}`);
-          console.log("Could not import sample data.\n");
           abort();
         }
         console.log(`Output: ${stdout}`);
       }
     );
-  }
+  } 
 }
 
 async function main(): Promise<void> {
@@ -409,14 +423,14 @@ async function main(): Promise<void> {
     refreshToken: string | null = "";
   if (process.env.ACCESS_TOKEN_SECRET) {
     console.log(
-      `\nAccess token secret already exists with the value: \n${process.env.ACCESS_TOKEN_SECRET}`
+      `\nAccess token secret already exists with the value:\n${process.env.ACCESS_TOKEN_SECRET}`
     );
   }
   const { shouldGenerateAccessToken } = await inquirer.prompt({
     type: "confirm",
     name: "shouldGenerateAccessToken",
     message: "Would you like to generate a new access token secret?",
-    default: true,
+    default: process.env.ACCESS_TOKEN_SECRET ? false : true,
   });
 
   if (shouldGenerateAccessToken) {
@@ -425,14 +439,14 @@ async function main(): Promise<void> {
 
   if (process.env.REFRESH_TOKEN_SECRET) {
     console.log(
-      `\nRefresh token secret already exists with the value: \n${process.env.REFRESH_TOKEN_SECRET}`
+      `\nRefresh token secret already exists with the value:\n${process.env.REFRESH_TOKEN_SECRET}`
     );
   }
   const { shouldGenerateRefreshToken } = await inquirer.prompt({
     type: "confirm",
     name: "shouldGenerateRefreshToken",
     message: "Would you like to generate a new refresh token secret?",
-    default: true,
+    default: process.env.REFRESH_TOKEN_SECRET ? false : true,
   });
 
   if (shouldGenerateRefreshToken) {
@@ -451,14 +465,14 @@ async function main(): Promise<void> {
     // Redis configuration
     if (process.env.REDIS_URL) {
       console.log(
-        ` \nRedis URL already exists with the value: \n${process.env.REDIS_URL}`
+        `\nRedis URL already exists with the value:\n${process.env.REDIS_URL}`
       );
     }
     const { shouldSetRedis } = await inquirer.prompt({
       type: "confirm",
       name: "shouldSetRedis",
       message: "Would you like to set up a Redis URL?",
-      default: true,
+      default: process.env.REDIS_URL ? false : true,
     });
     if (shouldSetRedis) {
       await redisConfiguration();
@@ -467,14 +481,14 @@ async function main(): Promise<void> {
     // MongoDB configuration
     if (process.env.MONGO_DB_URL) {
       console.log(
-        ` \nMongoDB URL already exists with the value: \n${process.env.MONGO_DB_URL}`
+        `\nMongoDB URL already exists with the value:\n${process.env.MONGO_DB_URL}`
       );
     }
     const { shouldSetMongoDb } = await inquirer.prompt({
       type: "confirm",
       name: "shouldSetMongoDb",
       message: "Would you like to set up a MongoDB URL?",
-      default: true,
+      default: process.env.MONGO_DB_URL ? false : true,
     });
 
     if (shouldSetMongoDb) {
@@ -490,7 +504,7 @@ async function main(): Promise<void> {
     type: "confirm",
     name: "shouldSetRecaptcha",
     message: "Would you like to set up a reCAPTCHA secret key?",
-    default: true,
+    default: process.env.RECAPTCHA_SECRET_KEY ? false : true,
   });
 
   if (shouldSetRecaptcha) {
@@ -508,6 +522,7 @@ async function main(): Promise<void> {
       type: "confirm",
       name: "shouldSetMail",
       message: "Would you like to setup the mail username and password?",
+      default: process.env.MAIL_USERNAME ? false : true,
     },
   ]);
   if (shouldSetMail) {
@@ -525,7 +540,7 @@ async function main(): Promise<void> {
       type: "confirm",
       name: "shouldSetSuperUserEmail",
       message: "Would you like to setup a Super Admin email of last resort?",
-      default: true,
+      default: process.env.LAST_RESORT_SUPERADMIN_EMAIL ? false : true,
     },
   ]);
   if (shouldSetSuperUserEmail) {
@@ -566,7 +581,7 @@ async function main(): Promise<void> {
   }
 
   console.log(
-    "\nCongratulations! Talawa API has been successfully setup! 🥂🎉\n"
+    "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
   );
 }
 
