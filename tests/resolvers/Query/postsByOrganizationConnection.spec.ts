@@ -250,7 +250,6 @@ describe("resolvers -> Query -> postsByOrganizationConnection", () => {
       {
         $set: {
           imageUrl: undefined,
-          updatedBy: testUser?._id,
         },
       }
     );

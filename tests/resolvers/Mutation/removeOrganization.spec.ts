@@ -115,9 +115,6 @@ beforeAll(async () => {
         membershipRequests: testMembershipRequest._id,
         posts: testPost._id,
       },
-      $set: {
-        updatedBy: testUsers[0]?._id,
-      },
     }
   );
 
@@ -132,9 +129,6 @@ beforeAll(async () => {
       _id: testPost._id,
     },
     {
-      $set: {
-        updatedBy: testUsers[0]?._id,
-      },
       $inc: {
         commentCount: 1,
       },
@@ -223,7 +217,6 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
         {
           $set: {
             createdBy: Types.ObjectId().toString(),
-            updatedBy: testUsers[0]?._id,
           },
         },
         {
@@ -263,7 +256,6 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       {
         $set: {
           createdBy: testUsers[0]?._id,
-          updatedBy: testUsers[0]?._id,
         },
       },
       {

@@ -24,7 +24,6 @@ export interface InterfaceEvent {
   isPublic: boolean;
   isRegisterable: boolean;
   createdBy: PopulatedDoc<InterfaceUser & Document>;
-  updatedBy: PopulatedDoc<InterfaceUser & Document>;
   admins: PopulatedDoc<InterfaceUser & Document>[];
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   status: string;
@@ -50,7 +49,6 @@ export interface InterfaceEvent {
  * @param isPublic - Is the event public
  * @param isRegisterable - Is the event Registrable
  * @param createdBy - Creator of the event
- * @param updatedBy - Updator of the event
  * @param admins - Admins
  * @param organization - Organization
  * @param status - whether the event is active, blocked, or deleted.
@@ -139,10 +137,6 @@ const eventSchema = new Schema(
       ref: "User",
       required: true,
     },
-    updatedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
     admins: [
       {
         type: Schema.Types.ObjectId,
@@ -166,13 +160,6 @@ const eventSchema = new Schema(
     timestamps: true,
   }
 );
-
-eventSchema.pre<InterfaceEvent>("save", function (next) {
-  if (!this.updatedBy) {
-    this.updatedBy = this.createdBy;
-  }
-  next();
-});
 
 const eventModel = (): Model<InterfaceEvent> =>
   model<InterfaceEvent>("Event", eventSchema);

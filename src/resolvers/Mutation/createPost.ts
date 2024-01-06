@@ -141,9 +141,6 @@ export const createPost: MutationResolvers["createPost"] = async (
     const updatedOrganizaiton = await Organization.findOneAndUpdate(
       { _id: args.data.organizationId },
       {
-        $set: {
-          updatedBy: context.userId,
-        },
         $push: {
           pinnedPosts: createdPost._id,
         },

@@ -98,9 +98,6 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
         _id: args.chatId,
       },
       {
-        $set: {
-          updatedBy: context.userId,
-        },
         $push: {
           users: args.userId,
         },

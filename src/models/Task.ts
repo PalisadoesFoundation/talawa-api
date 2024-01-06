@@ -18,7 +18,6 @@ export interface InterfaceTask {
   status: string;
   title: string;
   updatedAt: Date;
-  updatedBy: PopulatedDoc<InterfaceUser & Document>;
 }
 
 /**
@@ -32,7 +31,6 @@ export interface InterfaceTask {
  * @param status - Status.
  * @param title - Task title.
  * @param updatedAt - Time stamp of data updation.
- * @param updatedBy - Task updator, refer to `User` model
  */
 
 const taskSchema = new Schema(
@@ -62,10 +60,6 @@ const taskSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
-    updatedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
     completed: {
       type: Boolean,
       default: false,
@@ -76,13 +70,6 @@ const taskSchema = new Schema(
     timestamps: true,
   }
 );
-
-taskSchema.pre<InterfaceTask>("save", function (next) {
-  if (!this.updatedBy) {
-    this.updatedBy = this.createdBy;
-  }
-  next();
-});
 
 const taskModel = (): Model<InterfaceTask> =>
   model<InterfaceTask>("Task", taskSchema);

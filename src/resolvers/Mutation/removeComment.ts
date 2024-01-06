@@ -88,9 +88,6 @@ export const removeComment: MutationResolvers["removeComment"] = async (
       _id: comment!.postId._id,
     },
     {
-      $set: {
-        updatedBy: context.userId,
-      },
       $inc: {
         commentCount: -1,
       },

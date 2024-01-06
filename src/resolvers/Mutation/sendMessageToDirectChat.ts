@@ -56,9 +56,6 @@ export const sendMessageToDirectChat: MutationResolvers["sendMessageToDirectChat
         _id: directChat._id,
       },
       {
-        $set: {
-          updatedBy: context.userId,
-        },
         $push: {
           messages: createdDirectChatMessage._id,
         },

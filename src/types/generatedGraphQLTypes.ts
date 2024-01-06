@@ -86,7 +86,6 @@ export type Advertisement = {
   startDate: Scalars['Date'];
   type: Scalars['String'];
   updatedAt?: Maybe<Scalars['DateTime']>;
-  updatedBy?: Maybe<User>;
 };
 
 export type AggregatePost = {
@@ -143,7 +142,6 @@ export type Comment = {
   post: Post;
   text: Scalars['String'];
   updatedAt?: Maybe<Scalars['DateTime']>;
-  updatedBy?: Maybe<User>;
 };
 
 export type CommentInput = {
@@ -185,7 +183,6 @@ export type DirectChat = {
   messages?: Maybe<Array<Maybe<DirectChatMessage>>>;
   organization: Organization;
   updatedAt?: Maybe<Scalars['DateTime']>;
-  updatedBy?: Maybe<User>;
   users: Array<User>;
 };
 
@@ -283,7 +280,6 @@ export type Event = {
   status: Status;
   title: Scalars['String'];
   updatedAt?: Maybe<Scalars['DateTime']>;
-  updatedBy?: Maybe<User>;
 };
 
 
@@ -346,7 +342,6 @@ export type EventProject = {
   tasks?: Maybe<Array<Maybe<Task>>>;
   title: Scalars['String'];
   updatedAt?: Maybe<Scalars['DateTime']>;
-  updatedBy?: Maybe<User>;
 };
 
 export type EventProjectInput = {
@@ -440,7 +435,6 @@ export type GroupChat = {
   messages?: Maybe<Array<Maybe<GroupChatMessage>>>;
   organization: Organization;
   updatedAt?: Maybe<Scalars['DateTime']>;
-  updatedBy?: Maybe<User>;
   users: Array<User>;
 };
 
@@ -524,7 +518,6 @@ export type Message = {
   imageUrl?: Maybe<Scalars['URL']>;
   text?: Maybe<Scalars['String']>;
   updatedAt?: Maybe<Scalars['DateTime']>;
-  updatedBy?: Maybe<User>;
   videoUrl?: Maybe<Scalars['URL']>;
 };
 
@@ -1153,7 +1146,6 @@ export type Organization = {
   name: Scalars['String'];
   pinnedPosts?: Maybe<Array<Maybe<Post>>>;
   updatedAt?: Maybe<Scalars['DateTime']>;
-  updatedBy?: Maybe<User>;
   userTags?: Maybe<UserTagsConnection>;
   visibleInSearch: Scalars['Boolean'];
 };
@@ -1310,7 +1302,6 @@ export type Post = {
   text: Scalars['String'];
   title?: Maybe<Scalars['String']>;
   updatedAt?: Maybe<Scalars['DateTime']>;
-  updatedBy?: Maybe<User>;
   videoUrl?: Maybe<Scalars['URL']>;
 };
 
@@ -1622,7 +1613,6 @@ export type Task = {
   event: Event;
   title: Scalars['String'];
   updatedAt?: Maybe<Scalars['DateTime']>;
-  updatedBy?: Maybe<User>;
   volunteers?: Maybe<Array<Maybe<User>>>;
 };
 
@@ -2020,7 +2010,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 export type ResolversTypes = {
   Address: ResolverTypeWrapper<Address>;
   AddressInput: AddressInput;
-  Advertisement: ResolverTypeWrapper<Omit<Advertisement, 'createdBy' | 'updatedBy'> & { createdBy?: Maybe<ResolversTypes['User']>, updatedBy?: Maybe<ResolversTypes['User']> }>;
+  Advertisement: ResolverTypeWrapper<Omit<Advertisement, 'createdBy'> & { createdBy?: Maybe<ResolversTypes['User']> }>;
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
   Any: ResolverTypeWrapper<Scalars['Any']>;
@@ -2158,7 +2148,7 @@ export type ResolversTypes = {
 export type ResolversParentTypes = {
   Address: Address;
   AddressInput: AddressInput;
-  Advertisement: Omit<Advertisement, 'createdBy' | 'updatedBy'> & { createdBy?: Maybe<ResolversParentTypes['User']>, updatedBy?: Maybe<ResolversParentTypes['User']> };
+  Advertisement: Omit<Advertisement, 'createdBy'> & { createdBy?: Maybe<ResolversParentTypes['User']> };
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
   Any: Scalars['Any'];
@@ -2311,7 +2301,6 @@ export type AdvertisementResolvers<ContextType = any, ParentType extends Resolve
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  updatedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2365,7 +2354,6 @@ export type CommentResolvers<ContextType = any, ParentType extends ResolversPare
   post?: Resolver<ResolversTypes['Post'], ParentType, ContextType>;
   text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  updatedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2405,7 +2393,6 @@ export type DirectChatResolvers<ContextType = any, ParentType extends ResolversP
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['DirectChatMessage']>>>, ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  updatedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2470,7 +2457,6 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  updatedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2483,7 +2469,6 @@ export type EventProjectResolvers<ContextType = any, ParentType extends Resolver
   tasks?: Resolver<Maybe<Array<Maybe<ResolversTypes['Task']>>>, ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  updatedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2527,7 +2512,6 @@ export type GroupChatResolvers<ContextType = any, ParentType extends ResolversPa
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['GroupChatMessage']>>>, ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  updatedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2604,7 +2588,6 @@ export type MessageResolvers<ContextType = any, ParentType extends ResolversPare
   imageUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
   text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  updatedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   videoUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2745,7 +2728,6 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pinnedPosts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  updatedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   userTags?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<OrganizationUserTagsArgs>>;
   visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -2825,7 +2807,6 @@ export type PostResolvers<ContextType = any, ParentType extends ResolversParentT
   text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  updatedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   videoUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2890,7 +2871,6 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   event?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  updatedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   volunteers?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

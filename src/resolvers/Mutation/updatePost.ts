@@ -93,7 +93,6 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     },
     {
       ...(args.data as any),
-      updatedBy: context.userId,
     },
     {
       new: true,

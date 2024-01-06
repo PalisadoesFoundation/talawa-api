@@ -11,7 +11,6 @@ export interface InterfaceComment {
   createdAt: Date;
   createdBy: PopulatedDoc<InterfaceUser & Document>;
   updatedAt: Date;
-  updatedBy: PopulatedDoc<InterfaceUser & Document>;
   postId: PopulatedDoc<InterfacePost & Document>;
   likedBy: PopulatedDoc<InterfaceUser & Document>[];
   likeCount: number;
@@ -27,7 +26,6 @@ export interface InterfaceComment {
  * @param likeCount - No of likes
  * @param status - whether the comment is active, blocked or deleted.
  * @param updatedAt - Date when the comment was updated
- * @param updatedBy - Comment updator, refer to `User` model
  */
 const commentSchema = new Schema(
   {
@@ -36,10 +34,6 @@ const commentSchema = new Schema(
       required: true,
     },
     createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
-    updatedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },
@@ -69,13 +63,6 @@ const commentSchema = new Schema(
     timestamps: true,
   }
 );
-
-commentSchema.pre<InterfaceComment>("save", function (next) {
-  if (!this.updatedBy) {
-    this.updatedBy = this.createdBy;
-  }
-  next();
-});
 
 const commentModel = (): Model<InterfaceComment> =>
   model<InterfaceComment>("Comment", commentSchema);

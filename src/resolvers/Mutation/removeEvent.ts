@@ -117,7 +117,6 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
     },
     {
       status: "DELETED",
-      updatedBy: context.userId,
     },
     {
       new: true,

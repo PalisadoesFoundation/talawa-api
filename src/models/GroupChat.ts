@@ -12,7 +12,6 @@ export interface InterfaceGroupChat {
   users: PopulatedDoc<InterfaceUser & Document>[];
   messages: PopulatedDoc<InterfaceGroupChatMessage & Document>[];
   createdBy: PopulatedDoc<InterfaceUser & Document>;
-  updatedBy: PopulatedDoc<InterfaceUser & Document>;
   createdAt: Date;
   updatedAt: Date;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
@@ -24,7 +23,6 @@ export interface InterfaceGroupChat {
  * @param users - Users of the chat
  * @param messages - Message of the chat
  * @param createdBy - Creator of the chat
- * @param updatedBy - Updator of the chat
  * @param createdAt - Timestamp of creation
  * @param updatedAt - Timestamp of updation
  * @param organization - Organization
@@ -54,10 +52,6 @@ const groupChatSchema = new Schema(
       ref: "User",
       required: true,
     },
-    updatedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
     organization: {
       type: Schema.Types.ObjectId,
       ref: "Organization",
@@ -74,13 +68,6 @@ const groupChatSchema = new Schema(
     timestamps: true,
   }
 );
-
-groupChatSchema.pre<InterfaceGroupChat>("save", function (next) {
-  if (!this.updatedBy) {
-    this.updatedBy = this.createdBy;
-  }
-  next();
-});
 
 const groupChatModel = (): Model<InterfaceGroupChat> =>
   model<InterfaceGroupChat>("GroupChat", groupChatSchema);

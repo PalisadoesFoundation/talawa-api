@@ -55,7 +55,6 @@ describe("resolvers -> Organization -> createdBy", () => {
         {
           $set: {
             createdBy: Types.ObjectId().toString(),
-            updatedBy: testUser?._id,
           },
         },
         {
@@ -87,7 +86,6 @@ describe("resolvers -> Organization -> createdBy", () => {
       {
         $set: {
           createdBy: testUser?._id,
-          updatedBy: testUser?._id,
         },
       },
       {

@@ -114,7 +114,6 @@ describe("resolvers -> Mutation -> removeEvent", () => {
         {
           $set: {
             admins: [],
-            updatedBy: testUser?._id,
           },
         }
       );
@@ -157,9 +156,6 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       {
         $push: {
           admins: testUser?._id,
-        },
-        $set: {
-          updatedBy: testUser?._id,
         },
       },
       {

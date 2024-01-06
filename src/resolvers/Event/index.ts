@@ -6,7 +6,6 @@ import { feedback } from "./feedback";
 import { organization } from "./organization";
 import { projects } from "./projects";
 import { createdBy } from "./createdBy";
-import { updatedBy } from "./updatedBy";
 
 export const Event: EventResolvers = {
   attendees,
@@ -16,5 +15,4 @@ export const Event: EventResolvers = {
   organization,
   projects,
   createdBy,
-  updatedBy,
 };

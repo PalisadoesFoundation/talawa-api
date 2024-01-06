@@ -112,7 +112,6 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
           $set: {
             createdBy: Types.ObjectId().toString(),
             members: [Types.ObjectId().toString()],
-            updatedBy: testUser?._id,
           },
         },
         {
@@ -151,7 +150,6 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
       {
         $set: {
           members: [testUser?._id],
-          updatedBy: testUser?._id,
         },
       },
       {

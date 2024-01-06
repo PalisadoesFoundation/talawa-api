@@ -89,9 +89,6 @@ export const addOrganizationCustomField: MutationResolvers["addOrganizationCusto
     await Organization.findOneAndUpdate(
       { _id: organization._id },
       {
-        $set: {
-          updatedBy: context.userId,
-        },
         $push: { collectionFields: newCollectionField._id },
       }
     ).lean();

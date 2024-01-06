@@ -35,7 +35,6 @@ type Advertisement {
   startDate: Date!
   type: String!
   updatedAt: DateTime
-  updatedBy: User
 }
 
 type AggregatePost {
@@ -88,7 +87,6 @@ type Comment {
   post: Post!
   text: String!
   updatedAt: DateTime
-  updatedBy: User
 }
 
 input CommentInput {
@@ -133,7 +131,6 @@ type DirectChat {
   messages: [DirectChatMessage]
   organization: Organization!
   updatedAt: DateTime
-  updatedBy: User
   users: [User!]!
 }
 
@@ -232,7 +229,6 @@ type Event {
   status: Status!
   title: String!
   updatedAt: DateTime
-  updatedBy: User
 }
 
 input EventAttendeeInput {
@@ -290,7 +286,6 @@ type EventProject {
   tasks: [Task]
   title: String!
   updatedAt: DateTime
-  updatedBy: User
 }
 
 input EventProjectInput {
@@ -381,7 +376,6 @@ type GroupChat {
   messages: [GroupChatMessage]
   organization: Organization!
   updatedAt: DateTime
-  updatedBy: User
   users: [User!]!
 }
 
@@ -464,7 +458,6 @@ type Message {
   imageUrl: URL
   text: String
   updatedAt: DateTime
-  updatedBy: User
   videoUrl: URL
 }
 
@@ -610,7 +603,6 @@ type Organization {
   name: String!
   pinnedPosts: [Post]
   updatedAt: DateTime
-  updatedBy: User
   userTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
   visibleInSearch: Boolean!
 }
@@ -755,7 +747,6 @@ type Post {
   text: String!
   title: String
   updatedAt: DateTime
-  updatedBy: User
   videoUrl: URL
 }
 
@@ -898,7 +889,6 @@ type Task {
   event: Event!
   title: String!
   updatedAt: DateTime
-  updatedBy: User
   volunteers: [User]
 }
 

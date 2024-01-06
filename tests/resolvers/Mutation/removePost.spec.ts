@@ -170,7 +170,6 @@ describe("resolvers -> Mutation -> removePost", () => {
       {
         $set: {
           imageUrl: "images/fakeImagePathimage.png",
-          updatedBy: newTestUser?._id,
         },
       },
       { new: true }
@@ -214,7 +213,6 @@ describe("resolvers -> Mutation -> removePost", () => {
       {
         $set: {
           videoUrl: "videos/fakeVideoPathvideo.png",
-          updatedBy: newTestUser?._id,
         },
       },
       { new: true }

@@ -90,9 +90,6 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
         _id: organization._id,
       },
       {
-        $set: {
-          updatedBy: context.userId,
-        },
         $push: {
           members: context.userId,
         },

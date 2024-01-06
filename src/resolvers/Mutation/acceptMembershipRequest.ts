@@ -88,9 +88,6 @@ export const acceptMembershipRequest: MutationResolvers["acceptMembershipRequest
         _id: organization._id,
       },
       {
-        $set: {
-          updatedBy: context.userId,
-        },
         $push: {
           members: user._id,
         },

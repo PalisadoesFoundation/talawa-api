@@ -138,7 +138,6 @@ export const removeMember: MutationResolvers["removeMember"] = async (
         members: organization?.members.filter(
           (member) => member.toString() !== user._id.toString()
         ),
-        updatedBy: context.userId,
       },
     },
     {

@@ -44,9 +44,6 @@ beforeAll(async () => {
       _id: testGroupChat?._id,
     },
     {
-      $set: {
-        updatedBy: testUser?._id,
-      },
       $push: {
         messages: testGroupChatMessage?._id,
       },
@@ -110,7 +107,6 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
         {
           $set: {
             organization: Types.ObjectId().toString(),
-            updatedBy: testUser?._id,
           },
         }
       );
@@ -152,7 +148,6 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
         {
           $set: {
             organization: testOrganization?._id,
-            updatedBy: testUser?._id,
           },
         }
       );
@@ -164,7 +159,6 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
         {
           $set: {
             admins: [],
-            updatedBy: testUser?._id,
           },
         },
         {
@@ -206,9 +200,6 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
       {
         $push: {
           admins: testUser?._id,
-        },
-        $set: {
-          updatedBy: testUser?._id,
         },
       },
       {

@@ -11,7 +11,6 @@ export interface InterfaceDirectChat {
   users: PopulatedDoc<InterfaceUser & Document>[];
   messages: PopulatedDoc<InterfaceDirectChatMessage & Document>[];
   createdBy: PopulatedDoc<InterfaceUser & Document>;
-  updatedBy: PopulatedDoc<InterfaceUser & Document>;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   status: string;
   createdAt: Date;
@@ -22,7 +21,6 @@ export interface InterfaceDirectChat {
  * @param users - Users of the chat
  * @param messages -  Messages
  * @param createdBy - Creator of the chat, ref to `User` model
- * @param updatedBy - updator of the chat, ref to `User` model
  * @param organization - Organization
  * @param status - whether the chat is active, blocked or deleted.
  * @param createdAt - Timestamp of chat creation
@@ -48,10 +46,6 @@ const directChatSchema = new Schema(
       ref: "User",
       required: true,
     },
-    updatedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
     organization: {
       type: Schema.Types.ObjectId,
       ref: "Organization",
@@ -68,13 +62,6 @@ const directChatSchema = new Schema(
     timestamps: true,
   }
 );
-
-directChatSchema.pre<InterfaceDirectChat>("save", function (next) {
-  if (!this.updatedBy) {
-    this.updatedBy = this.createdBy;
-  }
-  next();
-});
 
 const directChatModel = (): Model<InterfaceDirectChat> =>
   model<InterfaceDirectChat>("DirectChat", directChatSchema);

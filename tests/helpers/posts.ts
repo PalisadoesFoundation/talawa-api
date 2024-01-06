@@ -32,9 +32,6 @@ export const createTestPost = async (
       _id: testOrganization?._id,
     },
     {
-      $set: {
-        updatedBy: testUser?._id,
-      },
       $push: {
         posts: testPost._id,
       },

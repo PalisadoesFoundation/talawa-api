@@ -83,9 +83,6 @@ export const leaveOrganization: MutationResolvers["leaveOrganization"] = async (
       _id: organization._id,
     },
     {
-      $set: {
-        updatedBy: context.userId,
-      },
       $pull: {
         admins: currentUser._id,
         members: currentUser._id,

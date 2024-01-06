@@ -52,8 +52,6 @@ export async function findOrganizationsInCache(
 
         updatedAt: new Date(organization.updatedAt),
 
-        updatedBy: Types.ObjectId(organization.updatedBy),
-
         groupChats:
           organization.groupChats.length !== 0
             ? organization.groupChat.map((groupChat: string) => {

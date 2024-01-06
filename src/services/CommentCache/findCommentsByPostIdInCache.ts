@@ -48,8 +48,6 @@ export async function findCommentsByPostIdInCache(
 
         updatedAt: new Date(commentObj.updatedAt),
 
-        updatedBy: Types.ObjectId(commentObj.updatedBy),
-
         postId: Types.ObjectId(commentObj.postId),
 
         likedBy:

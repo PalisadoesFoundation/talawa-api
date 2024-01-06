@@ -64,7 +64,6 @@ export const updateEventProject: MutationResolvers["updateEventProject"] =
       },
       {
         ...(args.data as any),
-        updatedBy: context.userId,
       },
       {
         new: true,

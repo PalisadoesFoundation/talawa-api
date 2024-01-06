@@ -122,9 +122,6 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
       const updatedOrg = await Organization.updateOne(
         { _id: args.organizationId },
         {
-          $set: {
-            updatedBy: context.userId,
-          },
           $push: { admins: args.userId },
         }
       );
@@ -137,9 +134,6 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
       const updatedOrg = await Organization.updateOne(
         { _id: args.organizationId },
         {
-          $set: {
-            updatedBy: context.userId,
-          },
           $pull: { admins: args.userId },
         }
       ).lean();

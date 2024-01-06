@@ -20,7 +20,6 @@ export interface InterfacePost {
   text: string;
   title: string | undefined;
   updatedAt: Date;
-  updatedBy: PopulatedDoc<InterfaceUser & Document>;
   videoUrl: string | undefined | null;
 }
 /**
@@ -37,7 +36,6 @@ export interface InterfacePost {
  * @param text - Post description.
  * @param title - Post title.
  * @param updatedAt - Time stamp of post updation
- * @param updatedBy - Post updator, refer to `User` model.
  * @param videoUrl - Post attached video URL(if attached).
  */
 const postSchema = new Schema(
@@ -64,10 +62,6 @@ const postSchema = new Schema(
       required: false,
     },
     createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
-    updatedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },
@@ -101,13 +95,6 @@ const postSchema = new Schema(
 );
 
 postSchema.plugin(mongoosePaginate);
-
-postSchema.pre<InterfacePost>("save", function (next) {
-  if (!this.updatedBy) {
-    this.updatedBy = this.createdBy;
-  }
-  next();
-});
 
 postSchema.index({ organization: 1 }, { unique: false });
 

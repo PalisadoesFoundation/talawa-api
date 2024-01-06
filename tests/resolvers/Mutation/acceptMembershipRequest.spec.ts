@@ -184,7 +184,6 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         {
           $set: {
             admins: [],
-            updatedBy: testUser?._id,
           },
         }
       );
@@ -222,9 +221,6 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
           _id: testOrganization?._id,
         },
         {
-          $set: {
-            updatedBy: testUser?._id,
-          },
           $push: {
             admins: testUser?._id,
             members: testUser?._id,
@@ -260,7 +256,6 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
       {
         $set: {
           members: [],
-          updatedBy: testUser?._id,
         },
       }
     );

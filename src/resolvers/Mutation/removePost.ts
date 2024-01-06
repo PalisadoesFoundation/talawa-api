@@ -106,9 +106,6 @@ export const removePost: MutationResolvers["removePost"] = async (
       _id: post.organization,
     },
     {
-      $set: {
-        updatedBy: context.userId,
-      },
       $pull: {
         pinnedPosts: args.id,
       },

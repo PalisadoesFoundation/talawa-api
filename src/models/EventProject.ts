@@ -12,7 +12,6 @@ export interface InterfaceEventProject {
   description: string;
   event: PopulatedDoc<InterfaceEvent & Document>;
   createdBy: PopulatedDoc<InterfaceUser & Document>;
-  updatedBy: PopulatedDoc<InterfaceUser & Document>;
   status: string;
   createdAt: Date;
   updatedAt: Date;
@@ -26,7 +25,6 @@ export interface InterfaceEventProject {
  * @param updatedAt - Updated At Date
  * @param event - Event
  * @param createdBy - Event creator, ref to `User` model
- * @param updatedBy - Event updator, ref to `User` model
  * @param tasks - Tasks
  * @param status - Status
  */
@@ -50,10 +48,6 @@ const eventProjectSchema = new Schema(
       ref: "User",
       required: true,
     },
-    updatedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
     status: {
       type: String,
       required: true,
@@ -65,13 +59,6 @@ const eventProjectSchema = new Schema(
     timestamps: true,
   }
 );
-
-eventProjectSchema.pre<InterfaceEventProject>("save", function (next) {
-  if (!this.updatedBy) {
-    this.updatedBy = this.createdBy;
-  }
-  next();
-});
 
 const eventProjectModel = (): Model<InterfaceEventProject> =>
   model<InterfaceEventProject>("EventProject", eventProjectSchema);

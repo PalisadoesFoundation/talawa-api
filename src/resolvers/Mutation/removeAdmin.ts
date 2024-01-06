@@ -96,7 +96,6 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
         admins: organization.admins.filter(
           (admin) => admin.toString() !== user!._id.toString()
         ),
-        updatedBy: context.userId,
       },
     },
     {

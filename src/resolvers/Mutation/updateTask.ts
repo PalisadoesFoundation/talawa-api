@@ -62,7 +62,6 @@ export const updateTask: MutationResolvers["updateTask"] = async (
     },
     {
       ...(args.data as any),
-      updatedBy: context.userId,
     },
     {
       new: true,

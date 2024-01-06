@@ -53,8 +53,6 @@ export async function findPostsInCache(
         createdBy: Types.ObjectId(postObj.createdBy),
 
         updatedAt: new Date(postObj.updatedAt),
-
-        updatedBy: Types.ObjectId(postObj.updatedBy),
       };
     } catch (parseError) {
       logger.info(`Error parsing JSON:${parseError}`);

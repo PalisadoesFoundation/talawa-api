@@ -111,9 +111,6 @@ export const blockUser: MutationResolvers["blockUser"] = async (
       _id: organization._id,
     },
     {
-      $set: {
-        updatedBy: context.userId,
-      },
       $push: {
         blockedUsers: args.userId,
       },

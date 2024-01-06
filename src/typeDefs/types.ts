@@ -45,7 +45,6 @@ export const types = gql`
     createdAt: DateTime
     createdBy: User
     updatedAt: DateTime
-    updatedBy: User
   }
 
   # A page info type adhering to Relay Specification for both cursor based pagination
@@ -65,7 +64,6 @@ export const types = gql`
     users: [User!]!
     messages: [DirectChatMessage]
     createdBy: User
-    updatedBy: User
     createdAt: DateTime
     updatedAt: DateTime
     organization: Organization!
@@ -103,7 +101,6 @@ export const types = gql`
     createdAt: DateTime
     createdBy: User
     updatedAt: DateTime
-    updatedBy: User
   }
 
   type ExtendSession {
@@ -129,7 +126,6 @@ export const types = gql`
     longitude: Longitude
     organization: Organization
     createdBy: User
-    updatedBy: User
     createdAt: DateTime
     updatedAt: DateTime
     attendees: [User!]!
@@ -149,7 +145,6 @@ export const types = gql`
     event: Event!
     tasks: [Task]
     createdBy: User
-    updatedBy: User
     createdAt: DateTime
     updatedAt: DateTime
   }
@@ -178,7 +173,6 @@ export const types = gql`
     users: [User!]!
     messages: [GroupChatMessage]
     createdBy: User!
-    updatedBy: User
     createdAt: DateTime
     updatedAt: DateTime
     organization: Organization!
@@ -222,7 +216,6 @@ export const types = gql`
     imageUrl: URL
     videoUrl: URL
     createdBy: User
-    updatedBy: User
   }
 
   type MessageChat {
@@ -245,7 +238,6 @@ export const types = gql`
     createdBy: User!
     createdAt: DateTime
     updatedAt: DateTime
-    updatedBy: User
     members: [User]
     admins(adminId: ID): [User]
     membershipRequests: [MembershipRequest]
@@ -337,7 +329,6 @@ export const types = gql`
     createdAt: DateTime
     createdBy: User
     updatedAt: DateTime
-    updatedBy: User
     imageUrl: URL
     videoUrl: URL
     organization: Organization!
@@ -373,7 +364,6 @@ export const types = gql`
     createdAt: DateTime!
     createdBy: User!
     updatedAt: DateTime
-    updatedBy: User
     completed: Boolean
     deadline: DateTime
     volunteers: [User]

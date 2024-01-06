@@ -55,9 +55,6 @@ beforeAll(async () => {
       _id: testDirectChat._id,
     },
     {
-      $set: {
-        updatedBy: testUser?._id,
-      },
       $push: {
         messages: testDirectChatMessage?._id,
       },
@@ -150,7 +147,6 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
         {
           $set: {
             admins: [],
-            updatedBy: testUser?._id,
           },
         },
         {
@@ -192,9 +188,6 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
       {
         $push: {
           admins: testUser?._id,
-        },
-        $set: {
-          updatedBy: testUser?._id,
         },
       },
       {

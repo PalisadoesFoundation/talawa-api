@@ -56,8 +56,6 @@ export async function findEventsInCache(
 
         createdBy: Types.ObjectId(eventObj.createdBy),
 
-        updatedBy: Types.ObjectId(eventObj.updatedBy),
-
         createdAt: new Date(eventObj.createdAt),
 
         updatedAt: new Date(eventObj.updatedAt),

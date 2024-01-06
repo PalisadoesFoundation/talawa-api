@@ -50,9 +50,6 @@ beforeAll(async () => {
       _id: testPost?._id,
     },
     {
-      $set: {
-        updatedBy: testUser?._id,
-      },
       $inc: {
         commentCount: 1,
       },

@@ -123,7 +123,6 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
       {
         $set: {
           admins: [testUser?._id],
-          updatedBy: testUser?._id,
         },
       }
     );
@@ -178,7 +177,6 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
       {
         $set: {
           admins: [testUser?._id],
-          updatedBy: testUser?._id,
         },
       }
     );

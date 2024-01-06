@@ -13,7 +13,6 @@ export interface InterfaceAdvertisement {
   orgId: string;
   name: string;
   createdBy: PopulatedDoc<InterfaceUser & Document>;
-  updatedBy: PopulatedDoc<InterfaceUser & Document>;
   link: string;
   type: AdvertisementTypes;
   startDate: string;
@@ -40,11 +39,6 @@ export interface InterfaceAdvertisement {
 /**
  * @param  updatedAt - Timestamp of Advertisement updation (type: Date)
  * Description: Timestamp of Advertisement updation.
- */
-
-/**
- * @param  updatedBy - Advertisement updator, ref to `User` model
- * Description: Advertisement updator.
  */
 
 /**
@@ -84,10 +78,6 @@ const advertisementSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
-    updatedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
     link: {
       type: String,
       required: true,
@@ -110,13 +100,6 @@ const advertisementSchema = new Schema(
     timestamps: true,
   }
 );
-
-advertisementSchema.pre<InterfaceAdvertisement>("save", function (next) {
-  if (!this.updatedBy) {
-    this.updatedBy = this.createdBy;
-  }
-  next();
-});
 
 const advertisementModel = (): Model<InterfaceAdvertisement> =>
   model<InterfaceAdvertisement>("Advertisement", advertisementSchema);

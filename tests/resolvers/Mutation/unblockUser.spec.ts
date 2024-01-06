@@ -129,9 +129,6 @@ describe("resolvers -> Mutation -> unblockUser", () => {
           $push: {
             admins: testUser?._id,
           },
-          $set: {
-            updatedBy: testUser?._id,
-          },
         }
       );
 
@@ -175,9 +172,6 @@ describe("resolvers -> Mutation -> unblockUser", () => {
       {
         $push: {
           blockedUsers: testUser?._id,
-        },
-        $set: {
-          updatedBy: testUser?._id,
         },
       },
       {

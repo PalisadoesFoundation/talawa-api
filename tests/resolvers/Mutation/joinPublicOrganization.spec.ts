@@ -109,7 +109,6 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
         {
           $set: {
             isPublic: true,
-            updatedBy: testUser?._id,
           },
         },
         {
@@ -169,7 +168,6 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
       {
         $set: {
           members: [],
-          updatedBy: testUser?._id,
         },
       },
       {

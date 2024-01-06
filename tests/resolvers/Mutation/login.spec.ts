@@ -62,9 +62,6 @@ beforeAll(async () => {
       _id: testOrganization?._id,
     },
     {
-      $set: {
-        updatedBy: testUser?._id,
-      },
       $push: {
         membershipRequests: testMembershipRequest._id,
       },

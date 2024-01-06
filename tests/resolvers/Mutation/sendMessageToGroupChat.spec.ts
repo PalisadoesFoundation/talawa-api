@@ -126,9 +126,6 @@ describe("resolvers -> Mutation -> sendMessageToGroupChat", () => {
         $push: {
           users: testUser?._id,
         },
-        $set: {
-          updatedBy: testUser?._id,
-        },
       }
     );
 

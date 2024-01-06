@@ -17,7 +17,6 @@ export interface InterfaceOrganization {
   location: string | undefined;
   isPublic: boolean;
   createdBy: PopulatedDoc<InterfaceUser & Document>;
-  updatedBy: PopulatedDoc<InterfaceUser & Document>;
   status: string;
   members: PopulatedDoc<InterfaceUser & Document>[];
   admins: PopulatedDoc<InterfaceUser & Document>[];
@@ -40,7 +39,6 @@ export interface InterfaceOrganization {
  * @param location - Organization location.
  * @param isPublic - Organization visibility.
  * @param createdBy - Organization creator, referring to `User` model.
- * @param updatedBy - Organization updator, referring to `User` model.
  * @param status - Status.
  * @param members - Collection of members, each object refer to `User` model.
  * @param admins - Collection of organization admins, each object refer to `User` model.
@@ -79,10 +77,6 @@ const organizationSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-    },
-    updatedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
     },
     status: {
       type: String,
@@ -148,13 +142,6 @@ const organizationSchema = new Schema(
     timestamps: true,
   }
 );
-
-organizationSchema.pre<InterfaceOrganization>("save", function (next) {
-  if (!this.updatedBy) {
-    this.updatedBy = this.createdBy;
-  }
-  next();
-});
 
 const organizationModel = (): Model<InterfaceOrganization> =>
   model<InterfaceOrganization>("Organization", organizationSchema);

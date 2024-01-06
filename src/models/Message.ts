@@ -13,7 +13,6 @@ export interface InterfaceMessage {
   createdAt: Date;
   updatedAt: Date;
   createdBy: PopulatedDoc<InterfaceUser & Document>;
-  updatedBy: PopulatedDoc<InterfaceUser & Document>;
   group: PopulatedDoc<InterfaceGroup & Document>;
   status: string;
 }
@@ -25,7 +24,6 @@ export interface InterfaceMessage {
  * @param createdAt - Timestamp of data creation.
  * @param createdBy - Message Sender(User), referring to `User` model.
  * @param updatedAt - Timestamp of data updation
- * @param updatedBy - Message Sender(User), referring to `User` model.
  * @param group - group data, referring to `Group` model.
  * @param status - Status.
  */
@@ -48,10 +46,6 @@ const messageSchema = new Schema(
       ref: "User",
       required: true,
     },
-    updatedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
     group: {
       type: Schema.Types.ObjectId,
       ref: "Group",
@@ -68,13 +62,6 @@ const messageSchema = new Schema(
     timestamps: true,
   }
 );
-
-messageSchema.pre<InterfaceMessage>("save", function (next) {
-  if (!this.updatedBy) {
-    this.updatedBy = this.createdBy;
-  }
-  next();
-});
 
 const messageModel = (): Model<InterfaceMessage> =>
   model<InterfaceMessage>("Message", messageSchema);

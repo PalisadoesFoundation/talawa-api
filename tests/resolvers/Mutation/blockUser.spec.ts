@@ -173,9 +173,6 @@ describe("resolvers -> Mutation -> blockUser", () => {
           $push: {
             members: testUser2?.id,
           },
-          $set: {
-            updatedBy: testUser?._id,
-          },
         },
         {
           new: true,
@@ -212,9 +209,6 @@ describe("resolvers -> Mutation -> blockUser", () => {
           $push: {
             admins: testUser?._id,
             blockedUsers: testUser2?._id,
-          },
-          $set: {
-            updatedBy: testUser?._id,
           },
         },
         {
@@ -261,7 +255,6 @@ describe("resolvers -> Mutation -> blockUser", () => {
       {
         $set: {
           blockedUsers: [],
-          updatedBy: testUser?._id,
         },
       },
       {

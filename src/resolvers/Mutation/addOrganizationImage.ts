@@ -59,7 +59,6 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
       {
         $set: {
           image: uploadImageFileName,
-          updatedBy: context.userId,
         },
       },
       {

@@ -111,9 +111,6 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
       _id: organization._id,
     },
     {
-      $set: {
-        updatedBy: context.userId,
-      },
       $push: {
         admins: args.data.userId,
       },

@@ -68,7 +68,6 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
       {
         $set: {
           image: null,
-          updatedBy: context.userId,
         },
       },
       {
