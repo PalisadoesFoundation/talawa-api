@@ -48,15 +48,6 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
       );
     }
 
-    // Checks whether organization is public.
-    // if (organization.isPublic === false) {
-    //   throw new errors.UnauthorizedError(
-    //     requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-    //     USER_NOT_AUTHORIZED_ERROR.CODE,
-    //     USER_NOT_AUTHORIZED_ERROR.PARAM
-    //   );
-    // }
-
     const currentUserExists = await User.exists({
       _id: context.userId,
     });

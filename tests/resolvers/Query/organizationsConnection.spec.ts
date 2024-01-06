@@ -27,7 +27,6 @@ beforeAll(async () => {
       admins: [testUser?._id],
       members: [testUser?._id],
       apiUrl: `apiUrl${nanoid()}`,
-      // visibleInSearch: true,
     },
     {
       name: `name${nanoid()}`,
@@ -36,7 +35,6 @@ beforeAll(async () => {
       admins: [testUser?._id],
       members: [testUser?._id],
       apiUrl: `apiUrl${nanoid()}`,
-      // visibleInSearch: true,
     },
     {
       name: `name${nanoid()}`,
@@ -45,7 +43,6 @@ beforeAll(async () => {
       admins: [testUser?._id],
       members: [testUser?._id],
       apiUrl: `apiUrl${nanoid()}`,
-      // visibleInSearch: true,
     },
   ]);
 
@@ -123,7 +120,6 @@ describe("resolvers -> Query -> organizationsConnection", () => {
       name: testOrganizations[1].name,
       description: testOrganizations[1].description,
       apiUrl: testOrganizations[1].apiUrl,
-      // visibleInSearch: testOrganizations[1].visibleInSearch,
     };
 
     const args: QueryOrganizationsConnectionArgs = {
@@ -134,7 +130,6 @@ describe("resolvers -> Query -> organizationsConnection", () => {
         name: testOrganizations[1].name,
         description: testOrganizations[1].description,
         apiUrl: testOrganizations[1].apiUrl,
-        // visibleInSearch: testOrganizations[1].visibleInSearch,
       },
       orderBy: "id_ASC",
     };
