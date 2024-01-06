@@ -8,6 +8,8 @@ This document provides instructions on how to set up and start a running instanc
 
 - [Prerequisites](#prerequisites)
   - [Install node.js](#install-nodejs)
+  - [Install npm](#install-npm)
+  - [Install TypeScript](#install-typescript)
   - [Install git](#install-git)
   - [Setting up this repository](#setting-up-this-repository)
   - [Install the Required Packages](#install-the-required-packages)
@@ -75,6 +77,25 @@ You will need to have copies of your code on your local system. Here's how to do
 ## Install node.js
 
 Best way to install and manage `node.js` is making use of node version managers. Two most popular node version managers right now are [fnm](https://github.com/Schniz/fnm) and [nvm](https://github.com/nvm-sh/nvm). We'd recommend `fnm` because it's written in `rust` and is much faster than `nvm`. Install whichever one you want and follow their guide to set up `node.js` on your system ensure the installation of Node.js version 20 LTS. 
+
+## Install npm
+
+npm is a package manager for Node.js and is installed with Node.js. npm is used to install, share, and distribute code as well as to manage dependencies in your projects. To check if you have npm installed you can run this command in your terminal:
+```
+npm -v
+```
+If you have it installed then you should see the version that's installed. If not, you can download Node.js and npm from the official [Node.js website](https://nodejs.org/en/download/).
+
+## Install TypeScript
+
+TypeScript is a typed superset of JavaScript that compiles to plain JavaScript. It adds optional types, classes, and modules to JavaScript, and supports tools for large-scale JavaScript applications.
+
+To install TypeScript, you can use npm:
+
+```bash
+npm install -g typescript
+```
+This command installs TypeScript globally on your system so that it can be accessed from any project.
 
 ## Install git
 
