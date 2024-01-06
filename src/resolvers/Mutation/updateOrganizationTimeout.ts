@@ -61,8 +61,7 @@ export const updateOrganizationTimeout: MutationResolvers["updateOrganizationTim
     }
 
     // Check if the user is an admin or super admin
-    adminCheck(userId, organization);
-    // superAdminCheck(user);
+    await adminCheck(userId, organization);
 
     // Check if the timeout is in the valid range of 15 to 60 minutes
     if (args.timeout < 15 || args.timeout > 60 || args.timeout % 5 !== 0) {
