@@ -1115,14 +1115,12 @@ export type Organization = {
   customFields: Array<OrganizationCustomField>;
   description: Scalars['String'];
   image?: Maybe<Scalars['String']>;
-  isPublic: Scalars['Boolean'];
   location?: Maybe<Scalars['String']>;
   members?: Maybe<Array<Maybe<User>>>;
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
   name: Scalars['String'];
   pinnedPosts?: Maybe<Array<Maybe<Post>>>;
   userTags?: Maybe<UserTagsConnection>;
-  visibleInSearch: Scalars['Boolean'];
 };
 
 
@@ -1153,9 +1151,7 @@ export type OrganizationInfoNode = {
   creator: User;
   description: Scalars['String'];
   image?: Maybe<Scalars['String']>;
-  isPublic: Scalars['Boolean'];
   name: Scalars['String'];
-  visibleInSearch: Scalars['Boolean'];
 };
 
 export type OrganizationInput = {
@@ -1163,10 +1159,8 @@ export type OrganizationInput = {
   attendees?: InputMaybe<Scalars['String']>;
   description: Scalars['String'];
   image?: InputMaybe<Scalars['String']>;
-  isPublic: Scalars['Boolean'];
   location?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
-  visibleInSearch: Scalars['Boolean'];
 };
 
 export type OrganizationOrderByInput =
@@ -1200,14 +1194,12 @@ export type OrganizationWhereInput = {
   id_not?: InputMaybe<Scalars['ID']>;
   id_not_in?: InputMaybe<Array<Scalars['ID']>>;
   id_starts_with?: InputMaybe<Scalars['ID']>;
-  isPublic?: InputMaybe<Scalars['Boolean']>;
   name?: InputMaybe<Scalars['String']>;
   name_contains?: InputMaybe<Scalars['String']>;
   name_in?: InputMaybe<Array<Scalars['String']>>;
   name_not?: InputMaybe<Scalars['String']>;
   name_not_in?: InputMaybe<Array<Scalars['String']>>;
   name_starts_with?: InputMaybe<Scalars['String']>;
-  visibleInSearch?: InputMaybe<Scalars['Boolean']>;
 };
 
 export type OtpData = {
@@ -1658,10 +1650,8 @@ export type UpdateEventProjectInput = {
 
 export type UpdateOrganizationInput = {
   description?: InputMaybe<Scalars['String']>;
-  isPublic?: InputMaybe<Scalars['Boolean']>;
   location?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
-  visibleInSearch?: InputMaybe<Scalars['Boolean']>;
 };
 
 export type UpdateTaskInput = {
@@ -2669,14 +2659,12 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   customFields?: Resolver<Array<ResolversTypes['OrganizationCustomField']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   location?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   members?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pinnedPosts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType>;
   userTags?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<OrganizationUserTagsArgs>>;
-  visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2694,9 +2682,7 @@ export type OrganizationInfoNodeResolvers<ContextType = any, ParentType extends 
   creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
