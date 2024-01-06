@@ -23,7 +23,7 @@
     "import:sample-data": "ts-node ./src/utilities/loadSampleData.ts",
     "import:sample-data:prod": "node ./build/utilities/loadSampleData.js",
     "gen:schema": "graphql-inspector introspect ./src/typeDefs/**/**/*.ts --write ./schema.graphql ",
-    "generate:toc": "node src/scripts/githooks/generate-toc"
+    "update:toc": "node scripts/githooks/update-toc.js"
   },
   "repository": {
     "type": "git",
