@@ -146,8 +146,6 @@ export const inputs = gql`
     description: String!
     location: String
     attendees: String
-    isPublic: Boolean!
-    visibleInSearch: Boolean!
     apiUrl: URL
     image: String
   }
@@ -180,10 +178,6 @@ export const inputs = gql`
     apiUrl_not_in: [URL!]
     apiUrl_contains: URL
     apiUrl_starts_with: URL
-
-    visibleInSearch: Boolean
-
-    isPublic: Boolean
   }
 
   input OTPInput {
@@ -290,8 +284,6 @@ export const inputs = gql`
   input UpdateOrganizationInput {
     name: String
     description: String
-    isPublic: Boolean
-    visibleInSearch: Boolean
     location: String
   }
 

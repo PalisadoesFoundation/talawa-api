@@ -142,9 +142,9 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
       id: testOrganization?._id,
       data: {
         description: "newDescription",
-        isPublic: false,
+        // isPublic: false,
         name: "newName",
-        visibleInSearch: false,
+        // visibleInSearch: false,
       },
     };
 
@@ -196,9 +196,9 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
       id: testOrganization?._id,
       data: {
         description: "newDescription",
-        isPublic: false,
+        // isPublic: false,
         name: "newName",
-        visibleInSearch: false,
+        // visibleInSearch: false,
       },
       file: "newImageFile.png",
     };

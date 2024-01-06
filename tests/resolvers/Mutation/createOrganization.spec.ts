@@ -4,24 +4,24 @@ import { User } from "../../../src/models";
 import type { MutationCreateOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
-import { createOrganization as createOrganizationResolver } from "../../../src/resolvers/Mutation/createOrganization";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import {
   LENGTH_VALIDATION_ERROR,
   USER_NOT_AUTHORIZED_SUPERADMIN,
 } from "../../../src/constants";
+import { createOrganization as createOrganizationResolver } from "../../../src/resolvers/Mutation/createOrganization";
+import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import * as uploadImage from "../../../src/utilities/uploadImage";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  vi,
-  afterEach,
-} from "vitest";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
-import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 
 let testUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -54,9 +54,8 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       const args: MutationCreateOrganizationArgs = {
         data: {
           description: "description",
-          isPublic: true,
           name: "name",
-          visibleInSearch: true,
+          // visibleInSearch: true,
           apiUrl: "apiUrl",
           location: "location",
         },
@@ -105,9 +104,8 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     const args: MutationCreateOrganizationArgs = {
       data: {
         description: "description",
-        isPublic: true,
         name: "name",
-        visibleInSearch: true,
+        // visibleInSearch: true,
         apiUrl: "apiUrl",
         location: "location",
       },
@@ -125,9 +123,8 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     expect(createOrganizationPayload).toEqual(
       expect.objectContaining({
         description: "description",
-        isPublic: true,
         name: "name",
-        visibleInSearch: true,
+        // visibleInSearch: true,
         apiUrl: "apiUrl",
         location: "location",
         creator: testUser?._id,
@@ -162,9 +159,8 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     const args: MutationCreateOrganizationArgs = {
       data: {
         description: "description",
-        isPublic: true,
         name: "name",
-        visibleInSearch: true,
+        // visibleInSearch: true,
         apiUrl: "apiUrl",
         location: "location",
       },
@@ -182,9 +178,8 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     expect(createOrganizationPayload).toEqual(
       expect.objectContaining({
         description: "description",
-        isPublic: true,
         name: "name",
-        visibleInSearch: true,
+        // visibleInSearch: true,
         apiUrl: "apiUrl",
         location: "location",
         creator: testUser?._id,
@@ -204,9 +199,8 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       const args: MutationCreateOrganizationArgs = {
         data: {
           description: "description",
-          isPublic: true,
           name: "JWQPfpdkGGGKyryb86K4YN85nDj4m4F7gEAMBbMXLax73pn2okV6kpWY0EYO0XSlUc0fAlp45UCgg3s6mqsRYF9FOlzNIDFLZ1rd03Z17cdJRuvBcAmbC0imyqGdXHGDUQmVyOjDkaOLAvjhB5uDeuEqajcAPTcKpZ6LMpigXuqRAd0xGdPNXyITC03FEeKZAjjJL35cSIUeMv5eWmiFlmmm70FU1Bp6575zzBtEdyWPLflcA2GpGmmf4zvT7nfgN3NIkwQIhk9OwP8dn75YYczcYuUzLpxBu1Lyog77YlAj5DNdTIveXu9zHeC6V4EEUcPQtf1622mhdU3jZNMIAyxcAG4ErtztYYRqFs0ApUxXiQI38rmiaLcicYQgcOxpmFvqRGiSduiCprCYm90CHWbQFq4w2uhr8HhR3r9HYMIYtrRyO6C3rPXaQ7otpjuNgE0AKI57AZ4nGG1lvNwptFCY60JEndSLX9Za6XP1zkVRLaMZArQNl",
-          visibleInSearch: true,
+          // visibleInSearch: true,
           apiUrl: "apiUrl",
           location: "location",
         },
@@ -233,9 +227,8 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         data: {
           description:
             "JWQPfpdkGGGKyryb86K4YN85nDj4m4F7gEAMBbMXLax73pn2okV6kpWY0EYO0XSlUc0fAlp45UCgg3s6mqsRYF9FOlzNIDFLZ1rd03Z17cdJRuvBcAmbC0imyqGdXHGDUQmVyOjDkaOLAvjhB5uDeuEqajcAPTcKpZ6LMpigXuqRAd0xGdPNXyITC03FEeKZAjjJL35cSIUeMv5eWmiFlmmm70FU1Bp6575zzBtEdyWPLflcA2GpGmmf4zvT7nfgN3NIkwQIhk9OwP8dn75YYczcYuUzLpxBu1Lyog77YlAj5DNdTIveXu9zHeC6V4EEUcPQtf1622mhdU3jZNMIAyxcAG4ErtztYYRqFs0ApUxXiQI38rmiaLcicYQgcOxpmFvqRGiSduiCprCYm90CHWbQFq4w2uhr8HhR3r9HYMIYtrRyO6C3rPXaQ7otpjuNgE0AKI57AZ4nGG1lvNwptFCY60JEndSLX9Za6XP1zkVRLaMZArQNl",
-          isPublic: true,
           name: "random",
-          visibleInSearch: true,
+          // visibleInSearch: true,
           apiUrl: "apiUrl",
           location: "location",
         },
@@ -261,9 +254,8 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       const args: MutationCreateOrganizationArgs = {
         data: {
           description: "description",
-          isPublic: true,
           name: "random",
-          visibleInSearch: true,
+          // visibleInSearch: true,
           apiUrl: "apiUrl",
           location:
             "JWQPfpdkGGGKyryb86K4YN85nDj4m4F7gEAMBbMXLax73pn2okV6kpWY0EYO0XSlUc0fAlp45UCgg3s6mqsRYF9FOlzNIDFLZ1rd03Z17cdJRuvBcAmbC0imyqGdXHGDUQmVyOjDkaOLAvjhB5uDeuEqajcAPTcKpZ6LMpigXuqRAd0xGdPNXyITC03FEeKZAjjJL35cSIUeMv5eWmiFlmmm70FU1Bp6575zzBtEdyWPLflcA2GpGmmf4zvT7nfgN3NIkwQIhk9OwP8dn75YYczcYuUzLpxBu1Lyog77YlAj5DNdTIveXu9zHeC6V4EEUcPQtf1622mhdU3jZNMIAyxcAG4ErtztYYRqFs0ApUxXiQI38rmiaLcicYQgcOxpmFvqRGiSduiCprCYm90CHWbQFq4w2uhr8HhR3r9HYMIYtrRyO6C3rPXaQ7otpjuNgE0AKI57AZ4nGG1lvNwptFCY60JEndSLX9Za6XP1zkVRLaMZArQNl",

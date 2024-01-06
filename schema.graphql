@@ -572,14 +572,12 @@ type Organization {
   customFields: [OrganizationCustomField!]!
   description: String!
   image: String
-  isPublic: Boolean!
   location: String
   members: [User]
   membershipRequests: [MembershipRequest]
   name: String!
   pinnedPosts: [Post]
   userTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
-  visibleInSearch: Boolean!
 }
 
 type OrganizationCustomField {
@@ -595,9 +593,7 @@ type OrganizationInfoNode {
   creator: User!
   description: String!
   image: String
-  isPublic: Boolean!
   name: String!
-  visibleInSearch: Boolean!
 }
 
 input OrganizationInput {
@@ -605,10 +601,8 @@ input OrganizationInput {
   attendees: String
   description: String!
   image: String
-  isPublic: Boolean!
   location: String
   name: String!
-  visibleInSearch: Boolean!
 }
 
 enum OrganizationOrderByInput {
@@ -643,14 +637,12 @@ input OrganizationWhereInput {
   id_not: ID
   id_not_in: [ID!]
   id_starts_with: ID
-  isPublic: Boolean
   name: String
   name_contains: String
   name_in: [String!]
   name_not: String
   name_not_in: [String!]
   name_starts_with: String
-  visibleInSearch: Boolean
 }
 
 type OtpData {
@@ -937,10 +929,8 @@ input UpdateEventProjectInput {
 
 input UpdateOrganizationInput {
   description: String
-  isPublic: Boolean
   location: String
   name: String
-  visibleInSearch: Boolean
 }
 
 input UpdateTaskInput {
