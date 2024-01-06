@@ -22,7 +22,7 @@ npm run gen:schema
 if git diff --cached --name-only | grep -E '\.md$'
 then
   # Generate table of contents for markdown files in root directory
-  npm run generate:toc
+  npm run update:toc
 fi
 
 # Add the changes made to the stage
