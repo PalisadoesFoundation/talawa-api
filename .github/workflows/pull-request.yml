@@ -76,20 +76,13 @@ jobs:
         with:
           python-version: '3.11.6'
 
-      #Job step description:
-      # 1. Fetches the Base Branch (BASE_BRANCH) for the Pull-Request from remote. 
-      # 2. Switches to Base Branch to execute the script.
-      # 3. The script takes the reference of the Base Branch, and the PR Head as
-      #    mandatory command line arguments.
-      # 4. It then calculates the difference in the number of changed files in PR.
-      # 5. Exits, if the PR fails to align with our established guidelines. Checkout
-      #    the file (check_files_submitted) in workflows for more reference. 
       - name: Compare changes between Base branch and PR Head.
         id: changed-files-base
         run: |
           git fetch origin $BASE_BRANCH
           git checkout $BASE_BRANCH
-          python .github/workflows/check_files_submitted.py $BASE_BRANCH pr-branch
+          python .github/workflows/check_files_submitted.py \
+            --base_branch $BASE_BRANCH --pr_branch pr-branch
 
   Test-Application:
     name: Testing Application
