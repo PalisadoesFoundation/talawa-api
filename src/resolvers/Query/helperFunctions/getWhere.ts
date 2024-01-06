@@ -378,22 +378,6 @@ export const getWhere = <T = unknown>(
     };
   }
 
-  // Returns organizations with provided visibleInSearch condition
-  // if (where.visibleInSearch !== undefined) {
-  //   wherePayload = {
-  //     ...wherePayload,
-  //     visibleInSearch: where.visibleInSearch,
-  //   };
-  // }
-
-  // Returns organizations with provided isPublic condition
-  // if (where.isPublic !== undefined) {
-  //   wherePayload = {
-  //     ...wherePayload,
-  //     isPublic: where.isPublic,
-  //   };
-  // }
-
   //Returns provided firstName user
   if (where.firstName) {
     wherePayload = {

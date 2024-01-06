@@ -24,7 +24,6 @@ export interface InterfaceOrganization {
   pinnedPosts: PopulatedDoc<InterfacePost & Document>[];
   membershipRequests: PopulatedDoc<InterfaceMembershipRequest & Document>[];
   blockedUsers: PopulatedDoc<InterfaceUser & Document>[];
-  // visibleInSearch: boolean | undefined;
   customFields: PopulatedDoc<InterfaceOrganizationCustomField & Document>[];
   createdAt: Date;
 }
@@ -119,9 +118,7 @@ const organizationSchema = new Schema({
       ref: "User",
     },
   ],
-  // visibleInSearch: {
-  //   type: Boolean,
-  // },
+
   customFields: [
     {
       type: Schema.Types.ObjectId,
