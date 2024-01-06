@@ -14,10 +14,28 @@ function checkEnvFile(): void {
   const envSample = dotenv.parse(fs.readFileSync(".env.sample"));
   const misplaced = Object.keys(envSample).filter((key) => !(key in env));
   if (misplaced.length > 0) {
-    console.log("Please copy the contents of .env.sample to .env file");
-    abort();
+    // copy the missing fields from .env.sample to .env
+    for (const key of misplaced) {
+      fs.appendFileSync(".env", `${key}=${envSample[key]}\n`);
+    }
+
   }
 }
+// Update the value of an environment variable in .env file
+function updateEnvVariable(config: { [key: string]: string | number }): void {
+
+  const existingContent: string = fs.
+    readFileSync(".env", 'utf8');
+
+  let updatedContent: string = existingContent;
+  for (const key in config) {
+    const regex: RegExp = new RegExp(`^${key}=.*`, 'gm');
+    updatedContent = updatedContent.replace(regex, `${key}=${config[key]}`);
+  }
+
+  fs.writeFileSync(".env", updatedContent, 'utf8');
+}
+
 
 // Generate and update the access and refresh token secrets in .env
 async function accessAndRefreshTokens(
@@ -29,19 +47,13 @@ async function accessAndRefreshTokens(
   if (accessTokenSecret === null) {
     accessTokenSecret = cryptolib.randomBytes(32).toString("hex");
     config.ACCESS_TOKEN_SECRET = accessTokenSecret;
-    fs.writeFileSync(".env", "");
-    for (const key in config) {
-      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-    }
+    updateEnvVariable(config);
   }
 
   if (refreshTokenSecret === null) {
     refreshTokenSecret = cryptolib.randomBytes(32).toString("hex");
     config.REFRESH_TOKEN_SECRET = refreshTokenSecret;
-    fs.writeFileSync(".env", "");
-    for (const key in config) {
-      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-    }
+    updateEnvVariable(config);
   }
 }
 
@@ -108,10 +120,7 @@ async function redisConfiguration(): Promise<void> {
 
     const config = dotenv.parse(fs.readFileSync(".env"));
     config.REDIS_URL = url;
-    fs.writeFileSync(".env", "");
-    for (const key in config) {
-      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-    }
+    updateEnvVariable(config);
   } catch (err) {
     console.error(err);
     abort();
@@ -138,14 +147,9 @@ async function askForSuperAdminEmail(): Promise<string> {
 async function superAdmin(): Promise<void> {
   try {
     const email = await askForSuperAdminEmail();
-
     const config = dotenv.parse(fs.readFileSync(".env"));
-
     config.LAST_RESORT_SUPERADMIN_EMAIL = email;
-    fs.writeFileSync(".env", "");
-    for (const key in config) {
-      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-    }
+    updateEnvVariable(config);
   } catch (err) {
     console.log(err);
     abort();
@@ -204,10 +208,7 @@ async function mongoDB(): Promise<void> {
     config.MONGO_DB_URL = DB_URL;
     // Modifying the environment variable to be able to access the url in importData function.
     process.env.MONGO_DB_URL = DB_URL;
-    fs.writeFileSync(".env", "");
-    for (const key in config) {
-      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-    }
+    updateEnvVariable(config);
   } catch (err) {
     console.error(err);
     abort();
@@ -246,10 +247,8 @@ async function recaptcha(): Promise<void> {
   if (shouldKeepDetails) {
     const config = dotenv.parse(fs.readFileSync(".env"));
     config.RECAPTCHA_SECRET_KEY = recaptchaSecretKey;
-    fs.writeFileSync(".env", "");
-    for (const key in config) {
-      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-    }
+    updateEnvVariable(config);
+
   } else {
     await recaptcha();
   }
@@ -281,10 +280,7 @@ async function recaptchaSiteKey(): Promise<void> {
   if (shouldKeepDetails) {
     const config = dotenv.parse(fs.readFileSync(".env"));
     config.RECAPTCHA_SITE_KEY = recaptchaSiteKeyInp;
-    fs.writeFileSync(".env", "");
-    for (const key in config) {
-      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-    }
+    updateEnvVariable(config);
   } else {
     await recaptchaSiteKey();
   }
@@ -338,10 +334,7 @@ async function twoFactorAuth(): Promise<void> {
 
   config.MAIL_USERNAME = email;
   config.MAIL_PASSWORD = password;
-  fs.writeFileSync(".env", "");
-  for (const key in config) {
-    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-  }
+  updateEnvVariable(config);
 }
 
 //Checks if the data exists and ask for deletion
@@ -407,7 +400,7 @@ async function importData(): Promise<void> {
         console.log(`Output: ${stdout}`);
       }
     );
-  } 
+  }
 }
 
 async function main(): Promise<void> {
@@ -559,10 +552,8 @@ async function main(): Promise<void> {
     }
     const config = dotenv.parse(fs.readFileSync(".env"));
     config.LAST_RESORT_SUPERADMIN_EMAIL = config.MAIL_USERNAME;
-    fs.writeFileSync(".env", "");
-    for (const key in config) {
-      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-    }
+    updateEnvVariable(config);
+
   }
 
   if (!isDockerInstallation) {
