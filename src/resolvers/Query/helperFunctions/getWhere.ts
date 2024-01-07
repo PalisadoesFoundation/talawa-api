@@ -384,6 +384,13 @@ export const getWhere = <T = unknown>(
       visibleInSearch: where.visibleInSearch,
     };
   }
+  // Returns organizations with provided userRegistrationRequired condition
+  if (where.userRegistrationRequired !== undefined) {
+    wherePayload = {
+      ...wherePayload,
+      isPublic: where.userRegistrationRequired,
+    };
+  }
 
   //Returns provided firstName user
   if (where.firstName) {
