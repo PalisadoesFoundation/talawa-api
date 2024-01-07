@@ -78,6 +78,7 @@ const advertisementSchema = new Schema(
     creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
     link: {
       type: String,
