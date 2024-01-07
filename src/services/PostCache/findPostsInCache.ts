@@ -50,7 +50,7 @@ export async function findPostsInCache(
               })
             : [],
 
-        createdBy: Types.ObjectId(postObj.createdBy),
+        creatorId: Types.ObjectId(postObj.creatorId),
 
         updatedAt: new Date(postObj.updatedAt),
       };

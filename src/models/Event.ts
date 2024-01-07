@@ -23,7 +23,7 @@ export interface InterfaceEvent {
   recurrance: string;
   isPublic: boolean;
   isRegisterable: boolean;
-  createdBy: PopulatedDoc<InterfaceUser & Document>;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
   admins: PopulatedDoc<InterfaceUser & Document>[];
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   status: string;
@@ -48,7 +48,7 @@ export interface InterfaceEvent {
  * @param recurrance - Periodicity of recurrance of the event
  * @param isPublic - Is the event public
  * @param isRegisterable - Is the event Registrable
- * @param createdBy - Creator of the event
+ * @param creatorId - Creator of the event
  * @param admins - Admins
  * @param organization - Organization
  * @param status - whether the event is active, blocked, or deleted.
@@ -132,7 +132,7 @@ const eventSchema = new Schema(
       type: Boolean,
       required: true,
     },
-    createdBy: {
+    creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,

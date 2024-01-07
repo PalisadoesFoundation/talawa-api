@@ -53,7 +53,7 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    createdBy: testUsers[0]?._id,
+    creatorId: testUsers[0]?._id,
     admins: [testUsers[0]?._id],
     members: [testUsers[1]?._id],
     blockedUsers: [testUsers[0]?._id],
@@ -102,7 +102,7 @@ beforeAll(async () => {
 
   testPost = await Post.create({
     text: "text",
-    createdBy: testUsers[0]?._id,
+    creatorId: testUsers[0]?._id,
     organization: testOrganization._id,
   });
 
@@ -120,7 +120,7 @@ beforeAll(async () => {
 
   testComment = await Comment.create({
     text: "text",
-    createdBy: testUsers[0]?._id,
+    creatorId: testUsers[0]?._id,
     postId: testPost._id,
   });
 
@@ -216,7 +216,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
         },
         {
           $set: {
-            createdBy: Types.ObjectId().toString(),
+            creatorId: Types.ObjectId().toString(),
           },
         },
         {
@@ -255,7 +255,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       },
       {
         $set: {
-          createdBy: testUsers[0]?._id,
+          creatorId: testUsers[0]?._id,
         },
       },
       {
@@ -333,7 +333,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       name: "name",
       description: "description",
       isPublic: true,
-      createdBy: testUsers[0]?._id,
+      creatorId: testUsers[0]?._id,
       admins: [testUsers[0]?._id],
       members: [testUsers[1]?._id],
       blockedUsers: [testUsers[0]?._id],

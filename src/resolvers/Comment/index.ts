@@ -1,6 +1,6 @@
 import type { CommentResolvers } from "../../types/generatedGraphQLTypes";
-import { createdBy } from "./createdBy";
+import { creatorId } from "./creatorId";
 
 export const Comment: CommentResolvers = {
-  createdBy,
+  creatorId,
 };

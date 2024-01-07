@@ -17,7 +17,7 @@ beforeAll(async () => {
   [testUser, , testPost] = await createTestPost();
   await Comment.create({
     text: "test comment",
-    createdBy: testUser!._id,
+    creatorId: testUser!._id,
     postId: testPost!._id,
   });
 

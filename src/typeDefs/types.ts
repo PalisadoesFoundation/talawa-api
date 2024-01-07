@@ -43,7 +43,7 @@ export const types = gql`
     likedBy: [User]
     likeCount: Int
     createdAt: DateTime
-    createdBy: User
+    creatorId: User
     updatedAt: DateTime
   }
 
@@ -63,7 +63,7 @@ export const types = gql`
     _id: ID!
     users: [User!]!
     messages: [DirectChatMessage]
-    createdBy: User
+    creatorId: User
     createdAt: DateTime
     updatedAt: DateTime
     organization: Organization!
@@ -99,7 +99,7 @@ export const types = gql`
     startDate: Date!
     endDate: Date!
     createdAt: DateTime
-    createdBy: User
+    creatorId: User
     updatedAt: DateTime
   }
 
@@ -125,7 +125,7 @@ export const types = gql`
     latitude: Latitude
     longitude: Longitude
     organization: Organization
-    createdBy: User
+    creatorId: User
     createdAt: DateTime
     updatedAt: DateTime
     attendees: [User!]!
@@ -144,7 +144,7 @@ export const types = gql`
     description: String!
     event: Event!
     tasks: [Task]
-    createdBy: User
+    creatorId: User
     createdAt: DateTime
     updatedAt: DateTime
   }
@@ -172,7 +172,7 @@ export const types = gql`
     _id: ID!
     users: [User!]!
     messages: [GroupChatMessage]
-    createdBy: User!
+    creatorId: User!
     createdAt: DateTime
     updatedAt: DateTime
     organization: Organization!
@@ -215,7 +215,7 @@ export const types = gql`
     updatedAt: DateTime
     imageUrl: URL
     videoUrl: URL
-    createdBy: User
+    creatorId: User
   }
 
   type MessageChat {
@@ -235,7 +235,7 @@ export const types = gql`
     description: String!
     location: String
     isPublic: Boolean!
-    createdBy: User!
+    creatorId: User!
     createdAt: DateTime
     updatedAt: DateTime
     members: [User]
@@ -327,7 +327,7 @@ export const types = gql`
     text: String!
     title: String
     createdAt: DateTime
-    createdBy: User
+    creatorId: User
     updatedAt: DateTime
     imageUrl: URL
     videoUrl: URL
@@ -362,7 +362,7 @@ export const types = gql`
     description: String
     event: Event!
     createdAt: DateTime!
-    createdBy: User!
+    creatorId: User!
     updatedAt: DateTime
     completed: Boolean
     deadline: DateTime

@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { createdBy as createdByResolver } from "../../../src/resolvers/Event/createdBy";
+import { creatorId as creatorIdResolver } from "../../../src/resolvers/Event/creatorId";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -25,12 +25,12 @@ describe("resolvers -> Event -> organization", () => {
   it(`returns the creator user object for parent event`, async () => {
     const parent = testEvent!.toObject();
 
-    const createdByPayload = await createdByResolver?.(parent, {}, {});
+    const creatorIdPayload = await creatorIdResolver?.(parent, {}, {});
 
-    const createdByObject = await User.findOne({
+    const creatorIdObject = await User.findOne({
       _id: testUser!._id,
     }).lean();
 
-    expect(createdByPayload).toEqual(createdByObject);
+    expect(creatorIdPayload).toEqual(creatorIdObject);
   });
 });

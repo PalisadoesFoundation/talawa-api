@@ -10,7 +10,7 @@ export interface InterfacePost {
   _id: Types.ObjectId;
   commentCount: number;
   createdAt: Date;
-  createdBy: PopulatedDoc<InterfaceUser & Document>;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
   imageUrl: string | undefined | null;
   likeCount: number;
   likedBy: PopulatedDoc<InterfaceUser & Document>[];
@@ -26,7 +26,7 @@ export interface InterfacePost {
  * This describes the schema for a `Post` that corresponds to `InterfacePost` document.
  * @param commentCount - Post comments count.
  * @param createdAt - Time stamp of data creation.
- * @param createdBy - Post creator, refer to `User` model.
+ * @param creatorId - Post creator, refer to `User` model.
  * @param imageUrl - Post attached image URL(if attached).
  * @param likeCount - Post likes count.
  * @param likedBy - Collection of user liked the post, each object refer to `User` model.
@@ -61,7 +61,7 @@ const postSchema = new Schema(
       type: String,
       required: false,
     },
-    createdBy: {
+    creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },

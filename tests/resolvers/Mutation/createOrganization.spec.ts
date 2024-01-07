@@ -130,7 +130,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         visibleInSearch: true,
         apiUrl: "apiUrl",
         location: "location",
-        createdBy: testUser?._id,
+        creatorId: testUser?._id,
         admins: [testUser?._id],
         members: [testUser?._id],
         image: "imagePath",
@@ -187,7 +187,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         visibleInSearch: true,
         apiUrl: "apiUrl",
         location: "location",
-        createdBy: testUser?._id,
+        creatorId: testUser?._id,
         admins: [testUser?._id],
         members: [testUser?._id],
       })

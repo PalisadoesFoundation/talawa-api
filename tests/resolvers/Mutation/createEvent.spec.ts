@@ -30,7 +30,7 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    createdBy: testUser?._id,
+    creatorId: testUser?._id,
     admins: [testUser?._id],
     members: [testUser?._id],
   });
@@ -201,7 +201,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         recurring: false,
         title: "newTitle",
         recurrance: "DAILY",
-        createdBy: testUser?._id,
+        creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
       })

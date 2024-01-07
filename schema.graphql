@@ -27,7 +27,7 @@ input AddressInput {
 type Advertisement {
   _id: ID
   createdAt: DateTime
-  createdBy: User
+  creatorId: User
   endDate: Date!
   link: String!
   name: String!
@@ -81,7 +81,7 @@ type CheckInStatus {
 type Comment {
   _id: ID
   createdAt: DateTime
-  createdBy: User
+  creatorId: User
   likeCount: Int
   likedBy: [User]
   post: Post!
@@ -127,7 +127,7 @@ type DeletePayload {
 type DirectChat {
   _id: ID!
   createdAt: DateTime
-  createdBy: User
+  creatorId: User
   messages: [DirectChatMessage]
   organization: Organization!
   updatedAt: DateTime
@@ -210,7 +210,7 @@ type Event {
   attendeesCheckInStatus: [CheckInStatus!]!
   averageFeedbackScore: Float
   createdAt: DateTime
-  createdBy: User
+  creatorId: User
   description: String!
   endDate: Date!
   endTime: Time
@@ -280,7 +280,7 @@ enum EventOrderByInput {
 type EventProject {
   _id: ID!
   createdAt: DateTime
-  createdBy: User
+  creatorId: User
   description: String!
   event: Event!
   tasks: [Task]
@@ -372,7 +372,7 @@ type Group {
 type GroupChat {
   _id: ID!
   createdAt: DateTime
-  createdBy: User!
+  creatorId: User!
   messages: [GroupChatMessage]
   organization: Organization!
   updatedAt: DateTime
@@ -454,7 +454,7 @@ type MembershipRequest {
 type Message {
   _id: ID!
   createdAt: DateTime
-  createdBy: User
+  creatorId: User
   imageUrl: URL
   text: String
   updatedAt: DateTime
@@ -592,7 +592,7 @@ type Organization {
   apiUrl: URL!
   blockedUsers: [User]
   createdAt: DateTime
-  createdBy: User!
+  creatorId: User!
   customFields: [OrganizationCustomField!]!
   description: String!
   image: String
@@ -738,7 +738,7 @@ type Post {
   commentCount: Int
   comments: [Comment]
   createdAt: DateTime
-  createdBy: User
+  creatorId: User
   imageUrl: URL
   likeCount: Int
   likedBy: [User]
@@ -883,7 +883,7 @@ type Task {
   _id: ID!
   completed: Boolean
   createdAt: DateTime!
-  createdBy: User!
+  creatorId: User!
   deadline: DateTime
   description: String
   event: Event!

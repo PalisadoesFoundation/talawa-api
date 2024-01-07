@@ -44,7 +44,7 @@ export async function findCommentsByPostIdInCache(
 
         createdAt: new Date(commentObj.createdAt),
 
-        createdBy: Types.ObjectId(commentObj.createdBy),
+        creatorId: Types.ObjectId(commentObj.creatorId),
 
         updatedAt: new Date(commentObj.updatedAt),
 

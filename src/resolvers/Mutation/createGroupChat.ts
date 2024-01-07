@@ -70,7 +70,7 @@ export const createGroupChat: MutationResolvers["createGroupChat"] = async (
 
   // Creates new groupChat.
   const createdGroupChat = await GroupChat.create({
-    createdBy: context.userId,
+    creatorId: context.userId,
     users: usersInGroupChat,
     organization: args.data?.organizationId,
     title: args.data?.title,

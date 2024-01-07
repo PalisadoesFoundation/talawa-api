@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { createdBy as creatorResolver } from "../../../src/resolvers/GroupChat/createdBy";
+import { creatorId as creatorResolver } from "../../../src/resolvers/GroupChat/creatorId";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import type { InterfaceGroupChat } from "../../../src/models";
@@ -32,7 +32,7 @@ describe("resolvers -> GroupChat -> creator", () => {
     );
 
     const creator = await User.findOne({
-      _id: testGroupChat?.createdBy,
+      _id: testGroupChat?.creatorId,
     }).lean();
 
     expect(creatorPayload).toEqual(creator);

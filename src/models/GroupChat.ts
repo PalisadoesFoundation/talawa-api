@@ -11,7 +11,7 @@ export interface InterfaceGroupChat {
   title: string;
   users: PopulatedDoc<InterfaceUser & Document>[];
   messages: PopulatedDoc<InterfaceGroupChatMessage & Document>[];
-  createdBy: PopulatedDoc<InterfaceUser & Document>;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
   createdAt: Date;
   updatedAt: Date;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
@@ -22,7 +22,7 @@ export interface InterfaceGroupChat {
  * @param title - Title
  * @param users - Users of the chat
  * @param messages - Message of the chat
- * @param createdBy - Creator of the chat
+ * @param creatorId - Creator of the chat
  * @param createdAt - Timestamp of creation
  * @param updatedAt - Timestamp of updation
  * @param organization - Organization
@@ -47,7 +47,7 @@ const groupChatSchema = new Schema(
         ref: "GroupChatMessage",
       },
     ],
-    createdBy: {
+    creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,

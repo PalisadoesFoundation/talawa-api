@@ -1,9 +1,7 @@
 import "dotenv/config";
-import { createdBy as creatorResolver } from "../../../src/resolvers/Comment/createdBy";
+import { creatorId as creatorIdResolver } from "../../../src/resolvers/Post/creatorId";
 import { connect, disconnect } from "../../helpers/db";
-import type { Document } from "mongoose";
 import type mongoose from "mongoose";
-import type { InterfaceComment } from "../../../src/models";
 import { Comment, User } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestPostType } from "../../helpers/posts";
@@ -12,17 +10,14 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 
 let testPost: TestPostType;
 let testUser: TestUserType;
-let testComment:
-  | (InterfaceComment & Document<any, any, InterfaceComment>)
-  | null;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   [testUser, , testPost] = await createTestPost();
-  testComment = await Comment.create({
+  await Comment.create({
     text: "test comment",
-    createdBy: testUser!._id,
+    creatorId: testUser!._id,
     postId: testPost!._id,
   });
 });
@@ -31,16 +26,16 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Post -> creator", () => {
-  it(`returns the creator object for parent post`, async () => {
-    const parent = testComment!.toObject();
+describe("resolvers -> Post -> creatorId", () => {
+  it(`returns the creatorId object for parent post`, async () => {
+    const parent = testPost!.toObject();
 
-    const creatorPayload = await creatorResolver?.(parent, {}, {});
+    const creatorIdPayload = await creatorIdResolver?.(parent, {}, {});
 
-    const creatorObject = await User.findOne({
-      _id: testPost!.createdBy,
+    const creatorIdObject = await User.findOne({
+      _id: testPost!.creatorId,
     }).lean();
 
-    expect(creatorPayload).toEqual(creatorObject);
+    expect(creatorIdPayload).toEqual(creatorIdObject);
   });
 });

@@ -5,8 +5,8 @@ import { User } from "../../models";
  * @param parent - An object that is the return value of the resolver for this field's parent.
  * @returns An object that contains the User data.
  */
-export const createdBy: GroupChatResolvers["createdBy"] = async (parent) => {
+export const creatorId: GroupChatResolvers["creatorId"] = async (parent) => {
   return await User.findOne({
-    _id: parent.createdBy,
+    _id: parent.creatorId,
   }).lean();
 };

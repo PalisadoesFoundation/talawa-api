@@ -12,7 +12,7 @@ export interface InterfaceMessage {
   videoUrl: string | undefined;
   createdAt: Date;
   updatedAt: Date;
-  createdBy: PopulatedDoc<InterfaceUser & Document>;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
   group: PopulatedDoc<InterfaceGroup & Document>;
   status: string;
 }
@@ -22,7 +22,7 @@ export interface InterfaceMessage {
  * @param imageUrl - Image URL attached in the message.
  * @param videoUrl - Video URL attached in the message.
  * @param createdAt - Timestamp of data creation.
- * @param createdBy - Message Sender(User), referring to `User` model.
+ * @param creatorId - Message Sender(User), referring to `User` model.
  * @param updatedAt - Timestamp of data updation
  * @param group - group data, referring to `Group` model.
  * @param status - Status.
@@ -41,7 +41,7 @@ const messageSchema = new Schema(
       type: String,
       required: false,
     },
-    createdBy: {
+    creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,

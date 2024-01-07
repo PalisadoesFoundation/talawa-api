@@ -34,7 +34,7 @@ export const createTestOrganizationWithAdmin = async (
     name: `orgName${nanoid().toLowerCase()}`,
     description: `orgDesc${nanoid().toLowerCase()}`,
     isPublic: isPublic ? true : false,
-    createdBy: userID,
+    creatorId: userID,
     admins: isAdmin ? [userID] : [],
     members: isMember ? [userID] : [],
   });
@@ -78,7 +78,7 @@ export const createOrganizationwithVisibility = async (
     name: `orgName${nanoid().toLowerCase()}`,
     description: `orgDesc${nanoid().toLowerCase()}`,
     isPublic: true,
-    createdBy: userID,
+    creatorId: userID,
     admins: [userID],
     members: [userID],
     apiUrl: `apiUrl${nanoid()}`,

@@ -109,7 +109,7 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
     }
 
     // ADMIN cannot change the role of the creator of the organization.
-    if (Types.ObjectId(organization?.createdBy).equals(user._id)) {
+    if (Types.ObjectId(organization?.creatorId).equals(user._id)) {
       throw new errors.UnauthorizedError(
         requestContext.translate(ADMIN_CHANGING_ROLE_OF_CREATOR.MESSAGE),
         ADMIN_CHANGING_ROLE_OF_CREATOR.CODE,

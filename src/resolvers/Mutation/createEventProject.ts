@@ -85,7 +85,7 @@ export const createEventProject: MutationResolvers["createEventProject"] =
       title: args.data.title,
       description: args.data.description,
       event: args.data.eventId,
-      createdBy: context.userId,
+      creatorId: context.userId,
     });
 
     // Returns createdEventProject.

@@ -41,7 +41,7 @@ beforeAll(async () => {
 
   testComment = await Comment.create({
     text: "text",
-    createdBy: testUser?._id,
+    creatorId: testUser?._id,
     postId: testPost?._id,
   });
 
@@ -133,7 +133,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
         },
         {
           $set: {
-            createdBy: Types.ObjectId().toString(),
+            creatorId: Types.ObjectId().toString(),
           },
         },
         {
@@ -184,7 +184,7 @@ describe("resolvers -> Mutation -> removeComment", () => {
       },
       {
         $set: {
-          createdBy: testUser!._id,
+          creatorId: testUser!._id,
         },
       },
       {

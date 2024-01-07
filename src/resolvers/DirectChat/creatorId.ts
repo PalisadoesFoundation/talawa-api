@@ -5,8 +5,8 @@ import type { DirectChatResolvers } from "../../types/generatedGraphQLTypes";
  * @param parent - An object that is the return value of the resolver for this field's parent.
  * @returns An `object` that contains the User data.
  */
-export const createdBy: DirectChatResolvers["createdBy"] = async (parent) => {
+export const creatorId: DirectChatResolvers["creatorId"] = async (parent) => {
   return await User.findOne({
-    _id: parent.createdBy,
+    _id: parent.creatorId,
   }).lean();
 };

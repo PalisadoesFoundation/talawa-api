@@ -120,7 +120,7 @@ describe("resolvers -> Mutation -> createDirectChat", () => {
 
     expect(createDirectChatPayload).toEqual(
       expect.objectContaining({
-        createdBy: testUser?._id,
+        creatorId: testUser?._id,
         users: [testUser?._id],
         organization: testOrganization?._id,
       })

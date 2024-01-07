@@ -644,7 +644,7 @@ describe("resolvers -> Query -> posts", () => {
   sorted by descending order of post.commentCount if args.orderBy === 'commentCount_DESC' when post.imageUrl === undefined`, async () => {
     await Post.findOneAndUpdate(
       {
-        createdBy: testUser?.id,
+        creatorId: testUser?.id,
       },
       {
         $set: {

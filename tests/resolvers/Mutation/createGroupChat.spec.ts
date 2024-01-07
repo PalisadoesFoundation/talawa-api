@@ -99,7 +99,7 @@ describe("resolvers -> Mutation -> createGroupChat", () => {
     expect(createGroupChatPayload).toEqual(
       expect.objectContaining({
         title: "title",
-        createdBy: testUser?._id,
+        creatorId: testUser?._id,
         users: [testUser?._id],
         organization: testOrganization?._id,
       })

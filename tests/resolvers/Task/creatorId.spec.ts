@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { createdBy as createdByResolver } from "../../../src/resolvers/Task/createdBy";
+import { creatorId as creatorIdResolver } from "../../../src/resolvers/Task/creatorId";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -21,15 +21,15 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Task -> Creator", () => {
-  it(`returns the createdBy user object for parent task`, async () => {
+  it(`returns the creatorId user object for parent task`, async () => {
     const parent = testTask!.toObject();
 
-    const createdByPayload = await createdByResolver?.(parent, {}, {});
+    const creatorIdPayload = await creatorIdResolver?.(parent, {}, {});
 
-    const createdByObject = await User.findOne({
+    const creatorIdObject = await User.findOne({
       _id: testUser!._id,
     }).lean();
 
-    expect(createdByPayload).toEqual(createdByObject);
+    expect(creatorIdPayload).toEqual(creatorIdObject);
   });
 });

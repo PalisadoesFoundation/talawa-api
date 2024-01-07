@@ -10,7 +10,7 @@ export interface InterfaceDirectChat {
   _id: Types.ObjectId;
   users: PopulatedDoc<InterfaceUser & Document>[];
   messages: PopulatedDoc<InterfaceDirectChatMessage & Document>[];
-  createdBy: PopulatedDoc<InterfaceUser & Document>;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   status: string;
   createdAt: Date;
@@ -20,7 +20,7 @@ export interface InterfaceDirectChat {
  * This is the Structure of the direct chat.
  * @param users - Users of the chat
  * @param messages -  Messages
- * @param createdBy - Creator of the chat, ref to `User` model
+ * @param creatorId - Creator of the chat, ref to `User` model
  * @param organization - Organization
  * @param status - whether the chat is active, blocked or deleted.
  * @param createdAt - Timestamp of chat creation
@@ -41,7 +41,7 @@ const directChatSchema = new Schema(
         ref: "DirectChatMessage",
       },
     ],
-    createdBy: {
+    creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,

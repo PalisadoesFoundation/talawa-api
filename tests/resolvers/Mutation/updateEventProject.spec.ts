@@ -43,7 +43,7 @@ beforeAll(async () => {
     title: "Event Project title",
     description: "Event Project Description",
     event: testEvent?._id,
-    createdBy: testAdminUser?._id,
+    creatorId: testAdminUser?._id,
   });
 });
 

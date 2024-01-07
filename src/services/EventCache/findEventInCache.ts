@@ -54,7 +54,7 @@ export async function findEventsInCache(
 
         ...(eventObj?.endTime ? { endTime: new Date(eventObj.endTime) } : {}), // Conditional removal of endTime field
 
-        createdBy: Types.ObjectId(eventObj.createdBy),
+        creatorId: Types.ObjectId(eventObj.creatorId),
 
         createdAt: new Date(eventObj.createdAt),
 

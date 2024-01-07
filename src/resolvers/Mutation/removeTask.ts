@@ -50,7 +50,7 @@ export const removeTask: MutationResolvers["removeTask"] = async (
 
   // Checks whether currentUser with _id === context.userId is not the creator of task.
   if (
-    !task.createdBy.equals(context.userId) &&
+    !task.creatorId.equals(context.userId) &&
     currentUser.userType !== "SUPERADMIN"
   ) {
     throw new errors.UnauthorizedError(

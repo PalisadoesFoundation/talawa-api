@@ -1,8 +1,8 @@
 import type { EventProjectResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 
-export const createdBy: EventProjectResolvers["createdBy"] = async (parent) => {
+export const creatorId: EventProjectResolvers["creatorId"] = async (parent) => {
   return User.findOne({
-    _id: parent.createdBy,
+    _id: parent.creatorId,
   }).lean();
 };

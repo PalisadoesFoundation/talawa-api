@@ -11,7 +11,7 @@ export interface InterfaceEventProject {
   title: string;
   description: string;
   event: PopulatedDoc<InterfaceEvent & Document>;
-  createdBy: PopulatedDoc<InterfaceUser & Document>;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
   status: string;
   createdAt: Date;
   updatedAt: Date;
@@ -24,7 +24,7 @@ export interface InterfaceEventProject {
  * @param createdAt - Created at Date
  * @param updatedAt - Updated At Date
  * @param event - Event
- * @param createdBy - Event creator, ref to `User` model
+ * @param creatorId - Event creator, ref to `User` model
  * @param tasks - Tasks
  * @param status - Status
  */
@@ -43,7 +43,7 @@ const eventProjectSchema = new Schema(
       ref: "Event",
       required: true,
     },
-    createdBy: {
+    creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,

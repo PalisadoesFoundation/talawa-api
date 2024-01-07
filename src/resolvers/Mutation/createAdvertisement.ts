@@ -7,7 +7,7 @@ export const createAdvertisement: MutationResolvers["createAdvertisement"] =
     // Creates new Ad.
     const createdAd = await Advertisement.create({
       ...args,
-      createdBy: _context.userId,
+      creatorId: _context.userId,
     });
     // Returns createdAd.
     return createdAd.toObject();

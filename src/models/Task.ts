@@ -11,7 +11,7 @@ export interface InterfaceTask {
   _id: Types.ObjectId;
   completed: boolean;
   createdAt: Date;
-  createdBy: PopulatedDoc<InterfaceUser & Document>;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
   deadline: Date | undefined;
   description: string | undefined;
   eventProjectId: PopulatedDoc<InterfaceEventProject & Document>;
@@ -24,7 +24,7 @@ export interface InterfaceTask {
  * This describes the schema for a `Task` that corresponds to `InterfaceTask` document.
  * @param completed - Has the task been completed
  * @param createdAt - Time stamp of data creation.
- * @param createdBy - Task creator, refer to `User` model.
+ * @param creatorId - Task creator, refer to `User` model.
  * @param deadline - Task deadline.
  * @param description - Task description.
  * @param eventProjectId - Event Project object for which task is added.
@@ -56,7 +56,7 @@ const taskSchema = new Schema(
       ref: "EventProject",
       required: true,
     },
-    createdBy: {
+    creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },

@@ -105,7 +105,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         }
         return {
           ...event,
-          createdBy: event?.createdBy._id,
+          creatorId: event?.creatorId._id,
           admins: adminIds,
         };
       });
@@ -158,7 +158,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         }
         return {
           ...event,
-          createdBy: event?.createdBy._id,
+          creatorId: event?.creatorId._id,
           admins: adminIds,
         };
       });
@@ -208,7 +208,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         }
         return {
           ...event,
-          createdBy: event?.createdBy?._id,
+          creatorId: event?.creatorId?._id,
           admins: adminIds,
         };
       });
@@ -262,7 +262,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         }
         return {
           ...event,
-          createdBy: event?.createdBy._id,
+          creatorId: event?.creatorId._id,
           admins: adminIds,
         };
       });
@@ -313,7 +313,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         }
         return {
           ...event,
-          createdBy: event?.createdBy._id,
+          creatorId: event?.creatorId._id,
           admins: adminIds,
         };
       });
@@ -353,7 +353,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         }
         return {
           ...event,
-          createdBy: event?.createdBy._id,
+          creatorId: event?.creatorId._id,
           admins: adminIds,
         };
       });

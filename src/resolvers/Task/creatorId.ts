@@ -1,8 +1,8 @@
 import type { TaskResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 
-export const createdBy: TaskResolvers["createdBy"] = async (parent) => {
+export const creatorId: TaskResolvers["creatorId"] = async (parent) => {
   return User.findOne({
-    _id: parent.createdBy,
+    _id: parent.creatorId,
   }).lean();
 };

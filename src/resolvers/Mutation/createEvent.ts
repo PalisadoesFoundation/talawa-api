@@ -122,7 +122,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   // Creates new event.
   const createdEvent = await Event.create({
     ...args.data,
-    createdBy: currentUser._id,
+    creatorId: currentUser._id,
     admins: [currentUser._id],
     organization: organization._id,
   });

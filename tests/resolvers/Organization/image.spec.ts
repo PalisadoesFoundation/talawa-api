@@ -44,7 +44,7 @@ describe("resolvers -> Organization -> image", () => {
       },
       {
         $set: {
-          createdBy: testUser?._id,
+          creatorId: testUser?._id,
           image: "/test/image.png",
         },
       },
@@ -76,7 +76,7 @@ describe("resolvers -> Organization -> image", () => {
       },
       {
         $set: {
-          createdBy: testUser?._id,
+          creatorId: testUser?._id,
           image: null,
         },
       },

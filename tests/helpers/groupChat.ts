@@ -22,7 +22,7 @@ export const createTestGroupChat = async (): Promise<
   const [testUser, testOrganization] = await createTestUserAndOrganization();
   if (testUser && testOrganization) {
     const testGroupChat = await GroupChat.create({
-      createdBy: testUser._id,
+      creatorId: testUser._id,
       users: [testUser._id],
       organization: testOrganization._id,
       title: `title${nanoid().toLowerCase()}`,

@@ -23,7 +23,7 @@ export const createTestDirectChat = async (): Promise<
   const [testUser, testOrganization] = await createTestUserAndOrganization();
   if (testUser && testOrganization) {
     const testDirectChat = await DirectChat.create({
-      createdBy: testUser._id,
+      creatorId: testUser._id,
       users: [testUser._id],
       organization: testOrganization._id,
     });
@@ -64,7 +64,7 @@ export const createTestDirectMessageForMultipleUser = async (
   organizationId: string
 ): Promise<TestDirectChatType> => {
   const testDirectChat = await DirectChat.create({
-    createdBy: senderId,
+    creatorId: senderId,
     users: [senderId],
     organization: organizationId,
   });
@@ -85,7 +85,7 @@ export const createTestDirectChatwithUsers = async (
   users: string[]
 ): Promise<TestDirectChatType> => {
   const testDirectChat = await DirectChat.create({
-    createdBy: creator,
+    creatorId: creator,
     users: users,
     organization: organizationId,
   });

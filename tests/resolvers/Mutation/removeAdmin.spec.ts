@@ -176,7 +176,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
             admins: testUserRemoved?._id,
           },
           $set: {
-            createdBy: Types.ObjectId().toString(),
+            creatorId: Types.ObjectId().toString(),
           },
         },
         {
@@ -222,7 +222,7 @@ describe("resolvers -> Mutation -> removeAdmin", () => {
       },
       {
         $set: {
-          createdBy: testUserRemover?._id,
+          creatorId: testUserRemover?._id,
         },
       }
     );

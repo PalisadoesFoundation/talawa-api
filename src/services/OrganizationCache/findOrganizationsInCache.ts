@@ -48,7 +48,7 @@ export async function findOrganizationsInCache(
               })
             : [],
 
-        createdBy: Types.ObjectId(organization.createdBy),
+        creatorId: Types.ObjectId(organization.creatorId),
 
         updatedAt: new Date(organization.updatedAt),
 

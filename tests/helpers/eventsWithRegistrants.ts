@@ -14,7 +14,7 @@ export const createTestEventWithRegistrants = async (
   const [testUser, testOrganization] = await createTestUserAndOrganization();
 
   const testEvent = await Event.create({
-    createdBy: testUser!._id,
+    creatorId: testUser!._id,
     admins: [testUser!._id],
     organization: testOrganization!._id,
     isRegisterable: true,

@@ -33,7 +33,7 @@ beforeAll(async () => {
 
   testGroupChat = await GroupChat.create({
     title: "title",
-    createdBy: testUser?._id,
+    creatorId: testUser?._id,
     organization: testOrganization?._id,
   });
 });

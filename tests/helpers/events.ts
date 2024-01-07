@@ -25,7 +25,7 @@ export const createTestEvent = async (): Promise<
       recurring: true,
       isPublic: true,
       isRegisterable: true,
-      createdBy: testUser._id,
+      creatorId: testUser._id,
       admins: [testUser._id],
       organization: testOrganization._id,
     });
@@ -56,7 +56,7 @@ export const createEventWithRegistrant = async (
   recurrance: string
 ): Promise<TestEventType> => {
   const testEvent = await Event.create({
-    createdBy: userId,
+    creatorId: userId,
     admins: [userId],
     organization: organizationId,
     isRegisterable: true,

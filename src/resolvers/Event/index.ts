@@ -5,7 +5,7 @@ import { averageFeedbackScore } from "./averageFeedbackScore";
 import { feedback } from "./feedback";
 import { organization } from "./organization";
 import { projects } from "./projects";
-import { createdBy } from "./createdBy";
+import { creatorId } from "./creatorId";
 
 export const Event: EventResolvers = {
   attendees,
@@ -14,5 +14,5 @@ export const Event: EventResolvers = {
   feedback,
   organization,
   projects,
-  createdBy,
+  creatorId,
 };

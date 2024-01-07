@@ -29,7 +29,7 @@ export const createTestEventProject = async (): Promise<
     title: `test${nanoid()}`,
     description: `testDesc${nanoid()}`,
     event: testEvent && testEvent._id,
-    createdBy: testUser && testUser._id,
+    creatorId: testUser && testUser._id,
   });
 
   return [testUser, testOrg, testEvent, testEventProject];
@@ -50,7 +50,7 @@ export const createAndAssignTestTask = async (): Promise<
   const testTask = await Task.create({
     title: `test${nanoid()}`,
     description: `testDesc${nanoid()}`,
-    createdBy: testUser && testUser._id,
+    creatorId: testUser && testUser._id,
     eventProjectId: testEventProject && testEventProject._id,
   });
 
@@ -71,13 +71,13 @@ export const createTestTask = async (
     title: `test${nanoid()}`,
     description: `testDesc${nanoid()}`,
     event: eventID,
-    createdBy: userID,
+    creatorId: userID,
   });
 
   const testTask = await Task.create({
     title: `test${nanoid()}`,
     description: `testDesc${nanoid()}`,
-    createdBy: userID,
+    creatorId: userID,
     eventProjectId: testEventProject!._id,
   });
 

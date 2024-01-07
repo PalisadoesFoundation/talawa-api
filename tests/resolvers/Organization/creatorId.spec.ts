@@ -35,13 +35,13 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Organization -> createdBy", () => {
+describe("resolvers -> Organization -> creatorId", () => {
   afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
 
-  it(`throws NotFoundError if no user exists with _id === parent.createdBy`, async () => {
+  it(`throws NotFoundError if no user exists with _id === parent.creatorId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -54,7 +54,7 @@ describe("resolvers -> Organization -> createdBy", () => {
         },
         {
           $set: {
-            createdBy: Types.ObjectId().toString(),
+            creatorId: Types.ObjectId().toString(),
           },
         },
         {
@@ -64,8 +64,8 @@ describe("resolvers -> Organization -> createdBy", () => {
 
       const parent = testOrganization?.toObject();
 
-      const { createdBy: creatorResolver } = await import(
-        "../../../src/resolvers/Organization/createdBy"
+      const { creatorId: creatorResolver } = await import(
+        "../../../src/resolvers/Organization/creatorId"
       );
       if (parent) {
         await creatorResolver?.(parent, {}, {});
@@ -78,14 +78,14 @@ describe("resolvers -> Organization -> createdBy", () => {
     }
   });
 
-  it(`returns user object for parent.createdBy`, async () => {
+  it(`returns user object for parent.creatorId`, async () => {
     testOrganization = await Organization.findOneAndUpdate(
       {
         _id: testOrganization?._id,
       },
       {
         $set: {
-          createdBy: testUser?._id,
+          creatorId: testUser?._id,
         },
       },
       {
@@ -95,13 +95,13 @@ describe("resolvers -> Organization -> createdBy", () => {
 
     const parent = testOrganization?.toObject();
 
-    const { createdBy: creatorResolver } = await import(
-      "../../../src/resolvers/Organization/createdBy"
+    const { creatorId: creatorResolver } = await import(
+      "../../../src/resolvers/Organization/creatorId"
     );
     if (parent) {
       const creatorPayload = await creatorResolver?.(parent, {}, {});
       const creator = await User.findOne({
-        _id: testOrganization?.createdBy,
+        _id: testOrganization?.creatorId,
       }).lean();
 
       expect(creatorPayload).toEqual(creator);

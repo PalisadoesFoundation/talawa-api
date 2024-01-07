@@ -9,7 +9,7 @@ export interface InterfaceComment {
   _id: Types.ObjectId;
   text: string;
   createdAt: Date;
-  createdBy: PopulatedDoc<InterfaceUser & Document>;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
   updatedAt: Date;
   postId: PopulatedDoc<InterfacePost & Document>;
   likedBy: PopulatedDoc<InterfaceUser & Document>[];
@@ -20,7 +20,7 @@ export interface InterfaceComment {
  * This is the Structure of the Comments
  * @param text - Text
  * @param createdAt - Date when the comment was created
- * @param createdBy - Comment Creator, refer to `User` model
+ * @param creatorId - Comment Creator, refer to `User` model
  * @param postId - Id of the post on which this comment is created
  * @param likedBy - Liked by whom
  * @param likeCount - No of likes
@@ -33,7 +33,7 @@ const commentSchema = new Schema(
       type: String,
       required: true,
     },
-    createdBy: {
+    creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },

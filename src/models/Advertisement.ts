@@ -12,7 +12,7 @@ export interface InterfaceAdvertisement {
   _id: Types.ObjectId;
   orgId: string;
   name: string;
-  createdBy: PopulatedDoc<InterfaceUser & Document>;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
   link: string;
   type: AdvertisementTypes;
   startDate: string;
@@ -32,7 +32,7 @@ export interface InterfaceAdvertisement {
  */
 
 /**
- * @param  createdBy - Advertisement creator, ref to `User` model
+ * @param  creatorId - Advertisement creator, ref to `User` model
  * Description: Advertisement creator.
  */
 
@@ -74,7 +74,7 @@ const advertisementSchema = new Schema(
     orgId: {
       type: String,
     },
-    createdBy: {
+    creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },

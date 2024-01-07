@@ -126,7 +126,7 @@ describe("resolvers -> Query -> users", () => {
         name: "name1",
         description: "description1",
         isPublic: true,
-        createdBy: testUsers[0]._id,
+        creatorId: testUsers[0]._id,
         admins: [testUsers[0]._id],
         members: [testUsers[0]._id, testUsers[1]._id],
         apiUrl: "apiUrl1",
@@ -140,7 +140,7 @@ describe("resolvers -> Query -> users", () => {
         startDate: new Date().toString(),
         isPublic: true,
         isRegisterable: true,
-        createdBy: testUsers[0]._id,
+        creatorId: testUsers[0]._id,
         registrants: [
           {
             userId: testUsers[0]._id,

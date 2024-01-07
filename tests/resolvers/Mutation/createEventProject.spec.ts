@@ -40,7 +40,7 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    createdBy: testUser?._id,
+    creatorId: testUser?._id,
     admins: [testAdminUser?._id],
     members: [testUser?._id, testAdminUser?._id],
   });
@@ -53,7 +53,7 @@ beforeAll(async () => {
     recurring: true,
     isPublic: true,
     isRegisterable: true,
-    createdBy: testUser?._id,
+    creatorId: testUser?._id,
     admins: [testAdminUser?._id],
     registrants: [],
     organization: testOrganization?._id,
@@ -185,7 +185,7 @@ describe("resolvers -> Mutation -> createEventProject", () => {
         title: "title",
         description: "description",
         event: testEvent?._id,
-        createdBy: context.userId,
+        creatorId: context.userId,
       },
     };
 
@@ -199,6 +199,6 @@ describe("resolvers -> Mutation -> createEventProject", () => {
     expect(result).toHaveProperty("title", args.data.title);
     expect(result).toHaveProperty("description", args.data.description);
     expect(result).toHaveProperty("event", testEvent?._id);
-    expect(result).toHaveProperty("createdBy", context.userId);
+    expect(result).toHaveProperty("creatorId", context.userId);
   });
 });
