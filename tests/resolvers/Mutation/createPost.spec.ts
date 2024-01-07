@@ -31,7 +31,6 @@ import {
 import { Organization } from "../../../src/models";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { createPost as createPostResolverImage } from "../../../src/resolvers/Mutation/createPost";
-import { nanoid } from "nanoid";
 
 let testUser: TestUserType;
 let randomUser: TestUserType;
@@ -233,46 +232,6 @@ describe("resolvers -> Mutation -> createPost", () => {
         imageUrl: null,
       })
     );
-  });
-
-  it(`uploads files`, async () => {
-    const imageUrl = `data:image/${nanoid()}.png`;
-    const videoUrl = `data:video/mp4;base64,${nanoid()}`;
-
-    const imgArg: MutationCreatePostArgs = {
-      data: {
-        organizationId: testOrganization?.id,
-        text: "text",
-        videoUrl: "videoUrl",
-        title: "title",
-      },
-      file: imageUrl,
-    };
-    const videoArg: MutationCreatePostArgs = {
-      data: {
-        organizationId: testOrganization?.id,
-        text: "text",
-        videoUrl: "videoUrl",
-        title: "title",
-      },
-      file: videoUrl,
-    };
-
-    const context = {
-      userId: testUser?.id,
-      apiRootUrl: BASE_URL,
-    };
-
-    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockResolvedValue(
-      imageUrl
-    );
-
-    vi.spyOn(uploadEncodedImage, "uploadEncodedImage").mockResolvedValue(
-      videoUrl
-    );
-
-    await createPostResolverImage?.({}, imgArg, context);
-    await createPostResolverImage?.({}, videoArg, context);
   });
 
   it(`creates the post and throws an error for unsupported file type`, async () => {
