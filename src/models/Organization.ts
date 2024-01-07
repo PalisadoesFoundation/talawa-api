@@ -43,7 +43,7 @@ export interface InterfaceOrganization {
  * @param status - Status.
  * @param members - Collection of members, each object refer to `User` model.
  * @param admins - Collection of organization admins, each object refer to `User` model.
- * @param actionCategories - COllection of categories belonging to an organization, refer to `Category` model.
+ * @param actionCategories - Collection of categories belonging to an organization, refer to `Category` model.
  * @param groupChats - Collection of group chats, each object refer to `Message` model.
  * @param posts - Collection of Posts in the Organization, each object refer to `Post` model.
  * @param membershipRequests - Collection of membership requests in the Organization, each object refer to `MembershipRequest` model.

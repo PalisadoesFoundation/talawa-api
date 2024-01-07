@@ -21,7 +21,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> ActionItem -> assignedBy", () => {
+describe("resolvers -> ActionItem -> assignedTo", () => {
   it(`returns the assignee for parent action item`, async () => {
     const parent = testActionItem?.toObject();
 

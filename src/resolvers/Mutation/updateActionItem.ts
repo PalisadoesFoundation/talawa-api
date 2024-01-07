@@ -12,7 +12,7 @@ import { Types } from "mongoose";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 /**
- * This function enables to update a task.
+ * This function enables to update an action item.
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @param context - context of entire application

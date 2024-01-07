@@ -6,11 +6,13 @@ import { ActionItem } from "../../models";
  * @param args - An object that contains `eventId` which is the _id of the Event.
  * @returns An `actionItems` object that holds all action items for the Event.
  */
-export const actionItemsByEvents: QueryResolvers["actionItemsByEvents"] =
-  async (_parent, args) => {
-    const actionItems = await ActionItem.find({
-      event: args.eventId,
-    }).lean();
+export const actionItemsByEvent: QueryResolvers["actionItemsByEvent"] = async (
+  _parent,
+  args
+) => {
+  const actionItems = await ActionItem.find({
+    event: args.eventId,
+  }).lean();
 
-    return actionItems;
-  };
+  return actionItems;
+};

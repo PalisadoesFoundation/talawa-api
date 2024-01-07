@@ -1,8 +1,8 @@
 import "dotenv/config";
 import { ActionItem } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
-import type { QueryActionItemsByEventsArgs } from "../../../src/types/generatedGraphQLTypes";
-import { actionItemsByEvents as actionItemsByEventsResolver } from "../../../src/resolvers/Query/actionItemsByEvents";
+import type { QueryActionItemsByEventArgs } from "../../../src/types/generatedGraphQLTypes";
+import { actionItemsByEvent as actionItemsByEventsResolver } from "../../../src/resolvers/Query/actionItemsByEvent";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type mongoose from "mongoose";
 import { createTestActionItems } from "../../helpers/actionItem";
@@ -22,7 +22,7 @@ afterAll(async () => {
 
 describe("resolvers -> Query -> actionItemsByEvent", () => {
   it(`returns list of all action items associated with an event`, async () => {
-    const args: QueryActionItemsByEventsArgs = {
+    const args: QueryActionItemsByEventArgs = {
       eventId: testEvent?._id,
     };
 

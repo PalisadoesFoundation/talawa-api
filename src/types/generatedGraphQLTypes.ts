@@ -1428,7 +1428,7 @@ export type PostWhereInput = {
 export type Query = {
   __typename?: 'Query';
   actionItem?: Maybe<ActionItem>;
-  actionItemsByEvents?: Maybe<Array<Maybe<ActionItem>>>;
+  actionItemsByEvent?: Maybe<Array<Maybe<ActionItem>>>;
   adminPlugin?: Maybe<Array<Maybe<Plugin>>>;
   categoriesByOrganization?: Maybe<Array<Maybe<Category>>>;
   category?: Maybe<Category>;
@@ -1472,7 +1472,7 @@ export type QueryActionItemArgs = {
 };
 
 
-export type QueryActionItemsByEventsArgs = {
+export type QueryActionItemsByEventArgs = {
   eventId: Scalars['ID'];
 };
 
@@ -2931,7 +2931,7 @@ export type PostConnectionResolvers<ContextType = any, ParentType extends Resolv
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   actionItem?: Resolver<Maybe<ResolversTypes['ActionItem']>, ParentType, ContextType, RequireFields<QueryActionItemArgs, 'id'>>;
-  actionItemsByEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType, RequireFields<QueryActionItemsByEventsArgs, 'eventId'>>;
+  actionItemsByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType, RequireFields<QueryActionItemsByEventArgs, 'eventId'>>;
   adminPlugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryAdminPluginArgs, 'orgId'>>;
   categoriesByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Category']>>>, ParentType, ContextType, RequireFields<QueryCategoriesByOrganizationArgs, 'orgId'>>;
   category?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType, RequireFields<QueryCategoryArgs, 'id'>>;

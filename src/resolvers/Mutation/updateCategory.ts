@@ -7,7 +7,7 @@ import { errors, requestContext } from "../../libraries";
 import { User, Category } from "../../models";
 import { adminCheck } from "../../utilities";
 /**
- * This function enables to update a task.
+ * This function enables to update a category.
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @param context - context of entire application

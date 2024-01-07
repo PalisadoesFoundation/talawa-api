@@ -9,7 +9,7 @@ export const queries = gql`
 
     actionItem(id: ID!): ActionItem
 
-    actionItemsByEvents(eventId: ID!): [ActionItem]
+    actionItemsByEvent(eventId: ID!): [ActionItem]
 
     category(id: ID!): Category
 

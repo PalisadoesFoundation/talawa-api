@@ -11,7 +11,7 @@ import { findOrganizationsInCache } from "../../services/OrganizationCache/findO
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 
 /**
- * This function enables to create a task.
+ * This function enables to create a Category.
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @param context - context of entire application

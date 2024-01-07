@@ -103,7 +103,7 @@ describe("resolvers -> Mutation -> updateCategoryResolver", () => {
     }
   });
 
-  it(`updated the category and returns it as an admin`, async () => {
+  it(`updates the category and returns it as an admin`, async () => {
     const args: MutationUpdateCategoryArgs = {
       id: testCategory?._id,
       data: {
@@ -127,7 +127,7 @@ describe("resolvers -> Mutation -> updateCategoryResolver", () => {
     );
   });
 
-  it(`updated the category and returns it as superadmin`, async () => {
+  it(`updates the category and returns it as superadmin`, async () => {
     const superAdminTestUser = await User.findOneAndUpdate(
       {
         _id: randomUser?._id,

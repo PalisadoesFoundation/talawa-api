@@ -12,7 +12,7 @@ import { Types } from "mongoose";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 /**
- * This function enables to update a task.
+ * This function enables to remove an action item.
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @param context - context of entire application
@@ -20,7 +20,7 @@ import { cacheEvents } from "../../services/EventCache/cacheEvents";
  * 1. If the user exists.
  * 2. If the action item exists.
  * 3. If the user is authorized.
- * @returns Updated action item.
+ * @returns deleted action item.
  */
 
 export const removeActionItem: MutationResolvers["removeActionItem"] = async (

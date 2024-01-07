@@ -21,7 +21,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Category -> updated", () => {
+describe("resolvers -> Category -> updatedBy", () => {
   it(`returns the user that last updated the parent category`, async () => {
     const parent = testCategory?.toObject();
 
