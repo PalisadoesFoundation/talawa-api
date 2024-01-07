@@ -5,6 +5,8 @@
   "user.alreadyMember": "User is already a member",
   "user.profileImage.notFound": "User profile image not found",
   "task.notFound": "Task not found",
+  "category.notFound": "Category not found",
+  "actionItem.notFound": "Action Item not found",
   "advertisement.notFound": "Advertisement not found",
   "event.notFound": "Event not found",
   "eventProject.notFound": "Event project not found",

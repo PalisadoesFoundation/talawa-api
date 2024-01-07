@@ -6,6 +6,8 @@ import type {
   InterfaceOrganization,
   InterfaceComment,
   InterfacePost,
+  InterfaceCategory,
+  InterfaceActionItem,
 } from "../../../src/models";
 import {
   User,
@@ -14,6 +16,7 @@ import {
   Comment,
   MembershipRequest,
   Category,
+  ActionItem,
 } from "../../../src/models";
 import type { MutationRemoveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
@@ -43,6 +46,8 @@ let testOrganization: InterfaceOrganization &
   Document<any, any, InterfaceOrganization>;
 let testPost: InterfacePost & Document<any, any, InterfacePost>;
 let testComment: InterfaceComment & Document<any, any, InterfaceComment>;
+let testCategory: InterfaceCategory & Document;
+let testActionItem: InterfaceActionItem & Document;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -107,11 +112,19 @@ beforeAll(async () => {
     organization: testOrganization._id,
   });
 
-  const testCategory = await Category.create({
+  testCategory = await Category.create({
     createdBy: testUsers[0]?._id,
     updatedBy: testUsers[0]?._id,
     org: testOrganization?._id,
     category: "Default",
+  });
+
+  testActionItem = await ActionItem.create({
+    createdBy: testUsers[0]?._id,
+    updatedBy: testUsers[0]?._id,
+    assignedTo: testUsers[1]?._id,
+    assignedBy: testUsers[0]?._id,
+    category: testCategory?._id,
   });
 
   await Organization.updateOne(
@@ -334,6 +347,10 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       org: testOrganization?._id,
     }).lean();
 
+    const deteledTestActionItems = await ActionItem.find({
+      _id: testActionItem?._id,
+    });
+
     expect(deletedMembershipRequests).toEqual([]);
 
     expect(deletedTestPosts).toEqual([]);
@@ -341,6 +358,8 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     expect(deletedTestComments).toEqual([]);
 
     expect(deletedTestCategories).toEqual([]);
+
+    expect(deteledTestActionItems).toEqual([]);
   });
 
   it(`removes the organization with image and returns the updated user's object with _id === context.userId`, async () => {

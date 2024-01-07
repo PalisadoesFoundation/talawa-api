@@ -19,7 +19,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 
-import { Organization } from "../../../src/models";
+import { Organization, User } from "../../../src/models";
 
 let randomUser: TestUserType;
 let testUser: TestUserType;
@@ -94,7 +94,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
     }
   });
 
-  it(`creates the category and returns it`, async () => {
+  it(`creates the category and returns it as an admin`, async () => {
     const args: MutationCreateCategoryArgs = {
       orgId: testOrganization?._id,
       category: "Default",
@@ -126,6 +126,54 @@ describe("resolvers -> Mutation -> createCategory", () => {
     expect(updatedTestOrganization).toEqual(
       expect.objectContaining({
         actionCategories: [createCategoryPayload?._id],
+      })
+    );
+  });
+
+  it(`creates the category and returns it as superAdmin`, async () => {
+    const superAdminTestUser = await User.findOneAndUpdate(
+      {
+        _id: randomUser?._id,
+      },
+      {
+        userType: "SUPERADMIN",
+      },
+      {
+        new: true,
+      }
+    );
+
+    const args: MutationCreateCategoryArgs = {
+      orgId: testOrganization?._id,
+      category: "Default",
+    };
+
+    const context = {
+      userId: superAdminTestUser?._id,
+    };
+
+    const createCategoryPayload = await createCategoryResolver?.(
+      {},
+      args,
+      context
+    );
+
+    expect(createCategoryPayload).toEqual(
+      expect.objectContaining({
+        org: testOrganization?._id,
+        category: "Default",
+      })
+    );
+
+    const updatedTestOrganization = await Organization.findOne({
+      _id: testOrganization?._id,
+    })
+      .select(["actionCategories"])
+      .lean();
+
+    expect(updatedTestOrganization).toEqual(
+      expect.objectContaining({
+        actionCategories: expect.arrayContaining([createCategoryPayload?._id]),
       })
     );
   });

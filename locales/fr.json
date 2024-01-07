@@ -5,6 +5,8 @@
   "user.alreadyMember": "L'utilisateur est déjà membre",
   "user.profileImage.notFound": "Image du profil utilisateur introuvable",
   "task.notFound": "Tâche introuvable",
+  "category.notFound": "Catégorie non trouvée",
+  "actionItem.notFound": "Élément d\\’action non trouvé",
   "event.notFound": "Événement non trouvé",
   "eventProject.notFound": "Projet d'événement introuvable",
   "organization.notFound": "Organisation introuvable",

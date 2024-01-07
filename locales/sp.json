@@ -5,6 +5,8 @@
   "user.alreadyMember": "El usuario ya es miembro",
   "user.profileImage.notFound": "No se encontró la imagen de perfil de usuario",
   "task.notFound": "Tarea no encontrada",
+  "category.notFound": "Categoría no encontrada",
+  "actionItem.notFound": "Elemento de acción no encontrado",
   "event.notFound": "Evento no encontrado",
   "eventProject.notFound": "Proyecto de evento no encontrado",
   "organization.notFound": "Organización no encontrada",

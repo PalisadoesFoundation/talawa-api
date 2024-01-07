@@ -18,6 +18,7 @@ import type {
 import { updateCategory as updateCategoryResolver } from "../../../src/resolvers/Mutation/updateCategory";
 import type { TestCategoryType } from "../../helpers/category";
 import { createTestCategory } from "../../helpers/category";
+import { User } from "../../../src/models";
 
 let randomUser: TestUserType;
 let testUser: TestUserType;
@@ -102,7 +103,7 @@ describe("resolvers -> Mutation -> updateCategoryResolver", () => {
     }
   });
 
-  it(`updated the category and returns it`, async () => {
+  it(`updated the category and returns it as an admin`, async () => {
     const args: MutationUpdateCategoryArgs = {
       id: testCategory?._id,
       data: {
@@ -122,6 +123,42 @@ describe("resolvers -> Mutation -> updateCategoryResolver", () => {
         org: testOrganization?._id,
         category: "updatedDefault",
         disabled: true,
+      })
+    );
+  });
+
+  it(`updated the category and returns it as superadmin`, async () => {
+    const superAdminTestUser = await User.findOneAndUpdate(
+      {
+        _id: randomUser?._id,
+      },
+      {
+        userType: "SUPERADMIN",
+      },
+      {
+        new: true,
+      }
+    );
+
+    const args: MutationUpdateCategoryArgs = {
+      id: testCategory?._id,
+      data: {
+        category: "updatedDefault",
+        disabled: false,
+      },
+    };
+
+    const context = {
+      userId: superAdminTestUser?._id,
+    };
+
+    const updatedCategory = await updateCategoryResolver?.({}, args, context);
+
+    expect(updatedCategory).toEqual(
+      expect.objectContaining({
+        org: testOrganization?._id,
+        category: "updatedDefault",
+        disabled: false,
       })
     );
   });

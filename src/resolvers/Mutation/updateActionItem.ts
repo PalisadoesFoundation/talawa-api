@@ -130,6 +130,10 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
     ? actionItem.assignmentDate
     : new Date();
 
+  const updatedAssignedBy = sameAssignedUser
+    ? actionItem.assignedBy
+    : context.userId;
+
   const updatedActionItem = await ActionItem.findOneAndUpdate(
     {
       _id: args.id,
@@ -138,6 +142,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
       ...(args.data as UpdateActionItemInputType),
       assignmentDate: updatedAssignmentDate,
       updatedBy: context.userId,
+      assignedBy: updatedAssignedBy,
     },
     {
       new: true,

@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Event } from "../../../src/models";
+import { User, Event, ActionItem } from "../../../src/models";
 import type { MutationRemoveEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -19,11 +19,14 @@ import type {
 import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
 import { cacheEvents } from "../../../src/services/EventCache/cacheEvents";
+import { createTestActionItems } from "../../helpers/actionItem";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
+let newTestUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testEvent: TestEventType;
+let newTestEvent: TestEventType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -195,5 +198,27 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       .lean();
 
     expect(updatedTestEvent?.status).toEqual("DELETED");
+  });
+
+  it(`removes the events and all action items assiciated with it`, async () => {
+    [newTestUser, newTestEvent] = await createTestActionItems();
+
+    const args: MutationRemoveEventArgs = {
+      id: newTestEvent?.id,
+    };
+
+    const context = {
+      userId: newTestUser?.id,
+    };
+
+    const removeEventPayload = await removeEventResolver?.({}, args, context);
+
+    expect(removeEventPayload).toEqual(newTestEvent?.toObject());
+
+    const deletedActionItems = await ActionItem.find({
+      event: newTestEvent?._id,
+    });
+
+    expect(deletedActionItems).toEqual([]);
   });
 });
