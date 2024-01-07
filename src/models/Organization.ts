@@ -54,7 +54,6 @@ const organizationSchema = new Schema(
   {
     apiUrl: {
       type: String,
-      required: true,
     },
     image: {
       type: String,
@@ -131,7 +130,6 @@ const organizationSchema = new Schema(
     ],
     visibleInSearch: {
       type: Boolean,
-      required: true,
     },
     customFields: [
       {

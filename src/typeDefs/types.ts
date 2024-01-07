@@ -242,8 +242,8 @@ export const types = gql`
     admins(adminId: ID): [User!]!
     membershipRequests: [MembershipRequest]
     blockedUsers: [User]
-    visibleInSearch: Boolean!
-    apiUrl: URL!
+    visibleInSearch: Boolean
+    apiUrl: URL
     pinnedPosts: [Post]
     userTags(
       after: String
@@ -268,8 +268,8 @@ export const types = gql`
     description: String!
     isPublic: Boolean!
     creator: User!
-    visibleInSearch: Boolean!
-    apiUrl: URL!
+    visibleInSearch: Boolean
+    apiUrl: URL
   }
 
   type OtpData {

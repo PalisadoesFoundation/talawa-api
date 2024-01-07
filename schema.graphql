@@ -589,7 +589,7 @@ input OTPInput {
 type Organization {
   _id: ID!
   admins(adminId: ID): [User!]!
-  apiUrl: URL!
+  apiUrl: URL
   blockedUsers: [User]
   createdAt: DateTime
   creator: User!
@@ -604,7 +604,7 @@ type Organization {
   pinnedPosts: [Post]
   updatedAt: DateTime
   userTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
-  visibleInSearch: Boolean!
+  visibleInSearch: Boolean
 }
 
 type OrganizationCustomField {
@@ -616,13 +616,13 @@ type OrganizationCustomField {
 
 type OrganizationInfoNode {
   _id: ID!
-  apiUrl: URL!
+  apiUrl: URL
   creator: User!
   description: String!
   image: String
   isPublic: Boolean!
   name: String!
-  visibleInSearch: Boolean!
+  visibleInSearch: Boolean
 }
 
 input OrganizationInput {
@@ -633,7 +633,7 @@ input OrganizationInput {
   isPublic: Boolean!
   location: String
   name: String!
-  visibleInSearch: Boolean!
+  visibleInSearch: Boolean
 }
 
 enum OrganizationOrderByInput {

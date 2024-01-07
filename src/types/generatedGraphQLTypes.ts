@@ -1132,7 +1132,7 @@ export type Organization = {
   __typename?: 'Organization';
   _id: Scalars['ID'];
   admins: Array<User>;
-  apiUrl: Scalars['URL'];
+  apiUrl?: Maybe<Scalars['URL']>;
   blockedUsers?: Maybe<Array<Maybe<User>>>;
   createdAt?: Maybe<Scalars['DateTime']>;
   creator: User;
@@ -1147,7 +1147,7 @@ export type Organization = {
   pinnedPosts?: Maybe<Array<Maybe<Post>>>;
   updatedAt?: Maybe<Scalars['DateTime']>;
   userTags?: Maybe<UserTagsConnection>;
-  visibleInSearch: Scalars['Boolean'];
+  visibleInSearch?: Maybe<Scalars['Boolean']>;
 };
 
 
@@ -1174,13 +1174,13 @@ export type OrganizationCustomField = {
 export type OrganizationInfoNode = {
   __typename?: 'OrganizationInfoNode';
   _id: Scalars['ID'];
-  apiUrl: Scalars['URL'];
+  apiUrl?: Maybe<Scalars['URL']>;
   creator: User;
   description: Scalars['String'];
   image?: Maybe<Scalars['String']>;
   isPublic: Scalars['Boolean'];
   name: Scalars['String'];
-  visibleInSearch: Scalars['Boolean'];
+  visibleInSearch?: Maybe<Scalars['Boolean']>;
 };
 
 export type OrganizationInput = {
@@ -1191,7 +1191,7 @@ export type OrganizationInput = {
   isPublic: Scalars['Boolean'];
   location?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
-  visibleInSearch: Scalars['Boolean'];
+  visibleInSearch?: InputMaybe<Scalars['Boolean']>;
 };
 
 export type OrganizationOrderByInput =
@@ -2714,7 +2714,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 export type OrganizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Organization'] = ResolversParentTypes['Organization']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   admins?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, Partial<OrganizationAdminsArgs>>;
-  apiUrl?: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
+  apiUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
   blockedUsers?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
@@ -2729,7 +2729,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   pinnedPosts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   userTags?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<OrganizationUserTagsArgs>>;
-  visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  visibleInSearch?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2743,13 +2743,13 @@ export type OrganizationCustomFieldResolvers<ContextType = any, ParentType exten
 
 export type OrganizationInfoNodeResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrganizationInfoNode'] = ResolversParentTypes['OrganizationInfoNode']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  apiUrl?: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
+  apiUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
   creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  visibleInSearch?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
