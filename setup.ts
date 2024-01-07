@@ -5,6 +5,7 @@ const inquirer = require("inquirer");
 const mongodb = require("mongodb");
 const redis = require("redis");
 const { exec } = require("child_process");
+const nodemailer = require("nodemailer");
 
 dotenv.config();
 
@@ -404,8 +405,34 @@ async function importData(): Promise<void> {
     );
   }
 }
+async function verifySmtpConnection(
+  config: Record<string, string>
+): Promise<boolean> {
+  const transporter = nodemailer.createTransport({
+    host: config.SMTP_HOST,
+    port: Number(config.SMTP_PORT),
+    secure: config.SMTP_SSL_TLS === "true",
+    auth: {
+      user: config.SMTP_USERNAME,
+      pass: config.SMTP_PASSWORD,
+    },
+  });
 
+  try {
+    await transporter.verify();
+    console.log("SMTP connection verified successfully.");
+    return true;
+  } catch (error: any) {
+    console.error("SMTP connection verification failed:");
+    return false;
+  } finally {
+    transporter.close();
+  }
+}
 async function configureSmtp(): Promise<void> {
+  console.log(
+    "SMTP Configuration is necessary for sending Emails through Talawa"
+  );
   const { shouldConfigureSmtp } = await inquirer.prompt({
     type: "confirm",
     name: "shouldConfigureSmtp",
@@ -447,7 +474,6 @@ async function configureSmtp(): Promise<void> {
     },
   ]);
 
-  // Validate and save SMTP configuration
   const isValidSmtpConfig =
     smtpConfig.SMTP_HOST &&
     smtpConfig.SMTP_PORT &&
@@ -461,8 +487,7 @@ async function configureSmtp(): Promise<void> {
     return;
   }
 
-  // const isSmtpConnectionValid = await verifySmtpConnection(smtpConfig);
-  const isSmtpConnectionValid = true;
+  const isSmtpConnectionValid = await verifySmtpConnection(smtpConfig);
 
   if (!isSmtpConnectionValid) {
     console.error(
@@ -471,9 +496,8 @@ async function configureSmtp(): Promise<void> {
     return;
   }
 
-  // Save SMTP configuration to .env file with IS_SMTP flag
   const config = dotenv.parse(fs.readFileSync(".env"));
-  config.IS_SMTP = "true"; // Set IS_SMTP to true
+  config.IS_SMTP = "true";
   Object.assign(config, smtpConfig);
   fs.writeFileSync(".env", "");
   for (const key in config) {
