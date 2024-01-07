@@ -13,6 +13,14 @@ export const CHAT_NOT_FOUND_ERROR = {
   MESSAGE: "chat.notFound",
   PARAM: "chat",
 };
+
+export const VENUE_ALREADY_EXISTS_ERROR = {
+  DESC: "Venue already exists",
+  CODE: "venue.alreadyExists",
+  MESSAGE: "venue.alreadyExists",
+  PARAM: "venue",
+};
+
 export const COMMENT_NOT_FOUND_ERROR = {
   DESC: "Comment not found",
   CODE: "comment.notFound",

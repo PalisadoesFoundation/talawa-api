@@ -216,6 +216,7 @@ type Event {
   startTime: Time
   status: Status!
   title: String!
+  venue: VenueId
 }
 
 input EventAttendeeInput {
@@ -239,6 +240,7 @@ input EventInput {
   startDate: Date!
   startTime: Time
   title: String!
+  venue: Venue
 }
 
 enum EventOrderByInput {
@@ -497,6 +499,7 @@ type Mutation {
   createSampleOrganization: Boolean!
   createTask(data: TaskInput!, eventProjectId: ID!): Task!
   createUserTag(input: CreateUserTagInput!): UserTag
+  createVenue(data: VenueInput!): returnVenue!
   deleteAdvertisementById(id: ID!): DeletePayload!
   deleteDonationById(id: ID!): DeletePayload!
   forgotPassword(data: ForgotPasswordData!): Boolean!
@@ -928,6 +931,7 @@ input UpdateEventInput {
   startDate: Date
   startTime: Time
   title: String
+  venue: Venue
 }
 
 input UpdateEventProjectInput {
@@ -1157,6 +1161,20 @@ type UsersConnectionResult {
   errors: [ConnectionError!]!
 }
 
+input Venue {
+  id: ID!
+}
+
+type VenueId {
+  _id: ID!
+}
+
+input VenueInput {
+  capacity: Int!
+  organizationId: ID!
+  place: String!
+}
+
 input createChatInput {
   organizationId: ID!
   userIds: [ID!]!
@@ -1166,4 +1184,10 @@ input createGroupChatInput {
   organizationId: ID!
   title: String!
   userIds: [ID!]!
+}
+
+type returnVenue {
+  _id: ID!
+  capacity: Int!
+  place: String!
 }

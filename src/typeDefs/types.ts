@@ -1,3 +1,4 @@
+import { organization } from "./../resolvers/UserTag/organization";
 import { gql } from "graphql-tag";
 
 // Place fields alphabetically to ensure easier lookup and navigation.
@@ -97,6 +98,16 @@ export const types = gql`
     refreshToken: String!
   }
 
+  type returnVenue {
+    _id: ID!
+    place: String!
+    capacity: Int!
+  }
+
+  type VenueId {
+    _id: ID!
+  }
+
   type Event {
     _id: ID!
     title: String!
@@ -116,6 +127,7 @@ export const types = gql`
     organization: Organization
     creator: User!
     attendees: [User!]!
+    venue: VenueId
     # For each attendee, gives information about whether he/she has checked in yet or not
     attendeesCheckInStatus: [CheckInStatus!]!
     admins(adminId: ID): [User]

@@ -27,6 +27,7 @@ export interface InterfaceEvent {
   admins: PopulatedDoc<InterfaceUser & Document>[];
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   status: string;
+  venue: Types.ObjectId;
 }
 
 /**
@@ -50,6 +51,7 @@ export interface InterfaceEvent {
  * @param admins - Admins
  * @param organization - Organization
  * @param status - whether the event is active, blocked, or deleted.
+ * @param venue - Venue
  */
 
 const eventSchema = new Schema({
@@ -149,6 +151,10 @@ const eventSchema = new Schema({
     required: true,
     enum: ["ACTIVE", "BLOCKED", "DELETED"],
     default: "ACTIVE",
+  },
+  venue: {
+    type: Schema.Types.ObjectId,
+    ref: "Venue",
   },
 });
 

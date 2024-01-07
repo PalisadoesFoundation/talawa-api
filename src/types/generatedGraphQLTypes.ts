@@ -267,6 +267,7 @@ export type Event = {
   startTime?: Maybe<Scalars['Time']>;
   status: Status;
   title: Scalars['String'];
+  venue?: Maybe<VenueId>;
 };
 
 
@@ -295,6 +296,7 @@ export type EventInput = {
   startDate: Scalars['Date'];
   startTime?: InputMaybe<Scalars['Time']>;
   title: Scalars['String'];
+  venue?: InputMaybe<Venue>;
 };
 
 export type EventOrderByInput =
@@ -561,6 +563,7 @@ export type Mutation = {
   createSampleOrganization: Scalars['Boolean'];
   createTask: Task;
   createUserTag?: Maybe<UserTag>;
+  createVenue: ReturnVenue;
   deleteAdvertisementById: DeletePayload;
   deleteDonationById: DeletePayload;
   forgotPassword: Scalars['Boolean'];
@@ -805,6 +808,11 @@ export type MutationCreateTaskArgs = {
 
 export type MutationCreateUserTagArgs = {
   input: CreateUserTagInput;
+};
+
+
+export type MutationCreateVenueArgs = {
+  data: VenueInput;
 };
 
 
@@ -1649,6 +1657,7 @@ export type UpdateEventInput = {
   startDate?: InputMaybe<Scalars['Date']>;
   startTime?: InputMaybe<Scalars['Time']>;
   title?: InputMaybe<Scalars['String']>;
+  venue?: InputMaybe<Venue>;
 };
 
 export type UpdateEventProjectInput = {
@@ -1904,6 +1913,21 @@ export type UsersConnectionResult = {
   errors: Array<ConnectionError>;
 };
 
+export type Venue = {
+  id: Scalars['ID'];
+};
+
+export type VenueId = {
+  __typename?: 'VenueId';
+  _id: Scalars['ID'];
+};
+
+export type VenueInput = {
+  capacity: Scalars['Int'];
+  organizationId: Scalars['ID'];
+  place: Scalars['String'];
+};
+
 export type CreateChatInput = {
   organizationId: Scalars['ID'];
   userIds: Array<Scalars['ID']>;
@@ -1913,6 +1937,13 @@ export type CreateGroupChatInput = {
   organizationId: Scalars['ID'];
   title: Scalars['String'];
   userIds: Array<Scalars['ID']>;
+};
+
+export type ReturnVenue = {
+  __typename?: 'returnVenue';
+  _id: Scalars['ID'];
+  capacity: Scalars['Int'];
+  place: Scalars['String'];
 };
 
 
@@ -2112,8 +2143,12 @@ export type ResolversTypes = {
   UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges: Array<ResolversTypes['UserEdge']> }>;
   UsersConnectionInput: UsersConnectionInput;
   UsersConnectionResult: ResolverTypeWrapper<Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UsersConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
+  Venue: Venue;
+  VenueId: ResolverTypeWrapper<VenueId>;
+  VenueInput: VenueInput;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
+  returnVenue: ResolverTypeWrapper<ReturnVenue>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -2236,8 +2271,12 @@ export type ResolversParentTypes = {
   UsersConnection: Omit<UsersConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserEdge']> };
   UsersConnectionInput: UsersConnectionInput;
   UsersConnectionResult: Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversParentTypes['UsersConnection']>, errors: Array<ResolversParentTypes['ConnectionError']> };
+  Venue: Venue;
+  VenueId: VenueId;
+  VenueInput: VenueInput;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
+  returnVenue: ReturnVenue;
 };
 
 export type AuthDirectiveArgs = { };
@@ -2416,6 +2455,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   startTime?: Resolver<Maybe<ResolversTypes['Time']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  venue?: Resolver<Maybe<ResolversTypes['VenueId']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2598,6 +2638,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createSampleOrganization?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   createTask?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationCreateTaskArgs, 'data' | 'eventProjectId'>>;
   createUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationCreateUserTagArgs, 'input'>>;
+  createVenue?: Resolver<ResolversTypes['returnVenue'], ParentType, ContextType, RequireFields<MutationCreateVenueArgs, 'data'>>;
   deleteAdvertisementById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteAdvertisementByIdArgs, 'id'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;
@@ -2951,6 +2992,18 @@ export type UsersConnectionResultResolvers<ContextType = any, ParentType extends
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type VenueIdResolvers<ContextType = any, ParentType extends ResolversParentTypes['VenueId'] = ResolversParentTypes['VenueId']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type ReturnVenueResolvers<ContextType = any, ParentType extends ResolversParentTypes['returnVenue'] = ResolversParentTypes['returnVenue']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  capacity?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  place?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type Resolvers<ContextType = any> = {
   Address?: AddressResolvers<ContextType>;
   Advertisement?: AdvertisementResolvers<ContextType>;
@@ -3025,6 +3078,8 @@ export type Resolvers<ContextType = any> = {
   UserTagsConnectionResult?: UserTagsConnectionResultResolvers<ContextType>;
   UsersConnection?: UsersConnectionResolvers<ContextType>;
   UsersConnectionResult?: UsersConnectionResultResolvers<ContextType>;
+  VenueId?: VenueIdResolvers<ContextType>;
+  returnVenue?: ReturnVenueResolvers<ContextType>;
 };
 
 export type DirectiveResolvers<ContextType = any> = {

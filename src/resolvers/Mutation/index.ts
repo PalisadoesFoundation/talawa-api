@@ -1,3 +1,4 @@
+import { createVenue } from "./createVenue";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { acceptAdmin } from "./acceptAdmin";
 import { acceptMembershipRequest } from "./acceptMembershipRequest";
@@ -97,6 +98,7 @@ export const Mutation: MutationResolvers = {
   acceptMembershipRequest,
   addEventAttendee,
   addFeedback,
+  createVenue,
   addLanguageTranslation,
   addOrganizationCustomField,
   addOrganizationImage,
