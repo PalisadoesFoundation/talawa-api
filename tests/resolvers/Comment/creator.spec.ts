@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { creatorId as creatorResolver } from "../../../src/resolvers/Comment/creatorId";
+import { creator as creatorResolver } from "../../../src/resolvers/Comment/creator";
 import { connect, disconnect } from "../../helpers/db";
 import type { Document } from "mongoose";
 import type mongoose from "mongoose";

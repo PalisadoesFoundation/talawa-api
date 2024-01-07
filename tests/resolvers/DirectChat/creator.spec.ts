@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { creatorId as creatorResolver } from "../../../src/resolvers/DirectChat/creatorId";
+import { creator as creatorResolver } from "../../../src/resolvers/DirectChat/creator";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { User } from "../../../src/models";

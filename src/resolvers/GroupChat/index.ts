@@ -1,11 +1,11 @@
 import type { GroupChatResolvers } from "../../types/generatedGraphQLTypes";
-import { creatorId } from "./creatorId";
+import { creator } from "./creator";
 import { messages } from "./messages";
 import { organization } from "./organization";
 import { users } from "./users";
 
 export const GroupChat: GroupChatResolvers = {
-  creatorId,
+  creator,
   messages,
   organization,
   users,

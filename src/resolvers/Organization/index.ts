@@ -1,7 +1,7 @@
 import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 import { admins } from "./admins";
 import { blockedUsers } from "./blockedUsers";
-import { creatorId } from "./creatorId";
+import { creator } from "./creator";
 import { image } from "./image";
 import { members } from "./members";
 import { pinnedPosts } from "./pinnedPosts";
@@ -11,7 +11,7 @@ import { membershipRequests } from "./membershipRequests";
 export const Organization: OrganizationResolvers = {
   admins,
   blockedUsers,
-  creatorId,
+  creator,
   image,
   members,
   membershipRequests,

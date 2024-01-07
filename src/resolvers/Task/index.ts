@@ -1,10 +1,10 @@
 import type { TaskResolvers } from "../../types/generatedGraphQLTypes";
-import { creatorId } from "./creatorId";
+import { creator } from "./creator";
 import { event } from "./event";
 import { volunteers } from "./volunteers";
 
 export const Task: TaskResolvers = {
-  creatorId,
+  creator,
   event,
   volunteers,
 };

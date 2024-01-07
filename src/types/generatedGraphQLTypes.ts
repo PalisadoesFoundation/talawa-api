@@ -78,7 +78,7 @@ export type Advertisement = {
   __typename?: 'Advertisement';
   _id?: Maybe<Scalars['ID']>;
   createdAt?: Maybe<Scalars['DateTime']>;
-  creatorId?: Maybe<User>;
+  creator: User;
   endDate: Scalars['Date'];
   link: Scalars['String'];
   name: Scalars['String'];
@@ -136,7 +136,7 @@ export type Comment = {
   __typename?: 'Comment';
   _id?: Maybe<Scalars['ID']>;
   createdAt?: Maybe<Scalars['DateTime']>;
-  creatorId?: Maybe<User>;
+  creator: User;
   likeCount?: Maybe<Scalars['Int']>;
   likedBy?: Maybe<Array<Maybe<User>>>;
   post: Post;
@@ -179,7 +179,7 @@ export type DirectChat = {
   __typename?: 'DirectChat';
   _id: Scalars['ID'];
   createdAt?: Maybe<Scalars['DateTime']>;
-  creatorId?: Maybe<User>;
+  creator: User;
   messages?: Maybe<Array<Maybe<DirectChatMessage>>>;
   organization: Organization;
   updatedAt?: Maybe<Scalars['DateTime']>;
@@ -261,7 +261,7 @@ export type Event = {
   attendeesCheckInStatus: Array<CheckInStatus>;
   averageFeedbackScore?: Maybe<Scalars['Float']>;
   createdAt?: Maybe<Scalars['DateTime']>;
-  creatorId?: Maybe<User>;
+  creator: User;
   description: Scalars['String'];
   endDate: Scalars['Date'];
   endTime?: Maybe<Scalars['Time']>;
@@ -336,7 +336,7 @@ export type EventProject = {
   __typename?: 'EventProject';
   _id: Scalars['ID'];
   createdAt?: Maybe<Scalars['DateTime']>;
-  creatorId?: Maybe<User>;
+  creator: User;
   description: Scalars['String'];
   event: Event;
   tasks?: Maybe<Array<Maybe<Task>>>;
@@ -431,7 +431,7 @@ export type GroupChat = {
   __typename?: 'GroupChat';
   _id: Scalars['ID'];
   createdAt?: Maybe<Scalars['DateTime']>;
-  creatorId: User;
+  creator: User;
   messages?: Maybe<Array<Maybe<GroupChatMessage>>>;
   organization: Organization;
   updatedAt?: Maybe<Scalars['DateTime']>;
@@ -514,7 +514,7 @@ export type Message = {
   __typename?: 'Message';
   _id: Scalars['ID'];
   createdAt?: Maybe<Scalars['DateTime']>;
-  creatorId?: Maybe<User>;
+  creator: User;
   imageUrl?: Maybe<Scalars['URL']>;
   text?: Maybe<Scalars['String']>;
   updatedAt?: Maybe<Scalars['DateTime']>;
@@ -1135,7 +1135,7 @@ export type Organization = {
   apiUrl: Scalars['URL'];
   blockedUsers?: Maybe<Array<Maybe<User>>>;
   createdAt?: Maybe<Scalars['DateTime']>;
-  creatorId: User;
+  creator: User;
   customFields: Array<OrganizationCustomField>;
   description: Scalars['String'];
   image?: Maybe<Scalars['String']>;
@@ -1293,7 +1293,7 @@ export type Post = {
   commentCount?: Maybe<Scalars['Int']>;
   comments?: Maybe<Array<Maybe<Comment>>>;
   createdAt?: Maybe<Scalars['DateTime']>;
-  creatorId?: Maybe<User>;
+  creator: User;
   imageUrl?: Maybe<Scalars['URL']>;
   likeCount?: Maybe<Scalars['Int']>;
   likedBy?: Maybe<Array<Maybe<User>>>;
@@ -1607,7 +1607,7 @@ export type Task = {
   _id: Scalars['ID'];
   completed?: Maybe<Scalars['Boolean']>;
   createdAt: Scalars['DateTime'];
-  creatorId: User;
+  creator: User;
   deadline?: Maybe<Scalars['DateTime']>;
   description?: Maybe<Scalars['String']>;
   event: Event;
@@ -2010,7 +2010,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 export type ResolversTypes = {
   Address: ResolverTypeWrapper<Address>;
   AddressInput: AddressInput;
-  Advertisement: ResolverTypeWrapper<Omit<Advertisement, 'creatorId'> & { creatorId?: Maybe<ResolversTypes['User']> }>;
+  Advertisement: ResolverTypeWrapper<Omit<Advertisement, 'creator'> & { creator: ResolversTypes['User'] }>;
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
   Any: ResolverTypeWrapper<Scalars['Any']>;
@@ -2148,7 +2148,7 @@ export type ResolversTypes = {
 export type ResolversParentTypes = {
   Address: Address;
   AddressInput: AddressInput;
-  Advertisement: Omit<Advertisement, 'creatorId'> & { creatorId?: Maybe<ResolversParentTypes['User']> };
+  Advertisement: Omit<Advertisement, 'creator'> & { creator: ResolversParentTypes['User'] };
   AggregatePost: AggregatePost;
   AggregateUser: AggregateUser;
   Any: Scalars['Any'];
@@ -2293,7 +2293,7 @@ export type AddressResolvers<ContextType = any, ParentType extends ResolversPare
 export type AdvertisementResolvers<ContextType = any, ParentType extends ResolversParentTypes['Advertisement'] = ResolversParentTypes['Advertisement']> = {
   _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  creatorId?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   link?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -2348,7 +2348,7 @@ export type CheckInStatusResolvers<ContextType = any, ParentType extends Resolve
 export type CommentResolvers<ContextType = any, ParentType extends ResolversParentTypes['Comment'] = ResolversParentTypes['Comment']> = {
   _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  creatorId?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   likeCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   likedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   post?: Resolver<ResolversTypes['Post'], ParentType, ContextType>;
@@ -2389,7 +2389,7 @@ export type DeletePayloadResolvers<ContextType = any, ParentType extends Resolve
 export type DirectChatResolvers<ContextType = any, ParentType extends ResolversParentTypes['DirectChat'] = ResolversParentTypes['DirectChat']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  creatorId?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['DirectChatMessage']>>>, ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -2438,7 +2438,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   attendeesCheckInStatus?: Resolver<Array<ResolversTypes['CheckInStatus']>, ParentType, ContextType>;
   averageFeedbackScore?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  creatorId?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   endTime?: Resolver<Maybe<ResolversTypes['Time']>, ParentType, ContextType>;
@@ -2463,7 +2463,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
 export type EventProjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventProject'] = ResolversParentTypes['EventProject']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  creatorId?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   event?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
   tasks?: Resolver<Maybe<Array<Maybe<ResolversTypes['Task']>>>, ParentType, ContextType>;
@@ -2508,7 +2508,7 @@ export type GroupResolvers<ContextType = any, ParentType extends ResolversParent
 export type GroupChatResolvers<ContextType = any, ParentType extends ResolversParentTypes['GroupChat'] = ResolversParentTypes['GroupChat']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  creatorId?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['GroupChatMessage']>>>, ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -2584,7 +2584,7 @@ export type MembershipRequestResolvers<ContextType = any, ParentType extends Res
 export type MessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['Message'] = ResolversParentTypes['Message']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  creatorId?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   imageUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
   text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -2717,7 +2717,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   apiUrl?: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
   blockedUsers?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  creatorId?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   customFields?: Resolver<Array<ResolversTypes['OrganizationCustomField']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -2798,7 +2798,7 @@ export type PostResolvers<ContextType = any, ParentType extends ResolversParentT
   commentCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   comments?: Resolver<Maybe<Array<Maybe<ResolversTypes['Comment']>>>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  creatorId?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   imageUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
   likeCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   likedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
@@ -2865,7 +2865,7 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   completed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creatorId?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   deadline?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   event?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;

@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { creatorId as creatorIdResolver } from "../../../src/resolvers/Task/creatorId";
+import { creator as creatorResolver } from "../../../src/resolvers/Task/creator";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -21,10 +21,10 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Task -> Creator", () => {
-  it(`returns the creatorId user object for parent task`, async () => {
+  it(`returns the creator user object for parent task`, async () => {
     const parent = testTask!.toObject();
 
-    const creatorIdPayload = await creatorIdResolver?.(parent, {}, {});
+    const creatorIdPayload = await creatorResolver?.(parent, {}, {});
 
     const creatorIdObject = await User.findOne({
       _id: testUser!._id,

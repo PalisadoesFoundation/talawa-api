@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { creatorId as creatorResolver } from "../../../src/resolvers/GroupChat/creatorId";
+import { creator as creatorResolver } from "../../../src/resolvers/GroupChat/creator";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import type { InterfaceGroupChat } from "../../../src/models";

@@ -64,8 +64,8 @@ describe("resolvers -> Organization -> creatorId", () => {
 
       const parent = testOrganization?.toObject();
 
-      const { creatorId: creatorResolver } = await import(
-        "../../../src/resolvers/Organization/creatorId"
+      const { creator: creatorResolver } = await import(
+        "../../../src/resolvers/Organization/creator"
       );
       if (parent) {
         await creatorResolver?.(parent, {}, {});
@@ -95,8 +95,8 @@ describe("resolvers -> Organization -> creatorId", () => {
 
     const parent = testOrganization?.toObject();
 
-    const { creatorId: creatorResolver } = await import(
-      "../../../src/resolvers/Organization/creatorId"
+    const { creator: creatorResolver } = await import(
+      "../../../src/resolvers/Organization/creator"
     );
     if (parent) {
       const creatorPayload = await creatorResolver?.(parent, {}, {});

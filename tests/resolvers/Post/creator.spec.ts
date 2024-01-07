@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { creatorId as creatorIdResolver } from "../../../src/resolvers/Post/creatorId";
+import { creator as creatorResolver } from "../../../src/resolvers/Post/creator";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { Comment, User } from "../../../src/models";
@@ -27,10 +27,10 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Post -> creatorId", () => {
-  it(`returns the creatorId object for parent post`, async () => {
+  it(`returns the creator object for parent post`, async () => {
     const parent = testPost!.toObject();
 
-    const creatorIdPayload = await creatorIdResolver?.(parent, {}, {});
+    const creatorIdPayload = await creatorResolver?.(parent, {}, {});
 
     const creatorIdObject = await User.findOne({
       _id: testPost!.creatorId,
