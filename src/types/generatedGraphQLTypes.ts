@@ -1120,7 +1120,9 @@ export type Organization = {
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
   name: Scalars['String'];
   pinnedPosts?: Maybe<Array<Maybe<Post>>>;
+  userRegistrationRequired: Scalars['Boolean'];
   userTags?: Maybe<UserTagsConnection>;
+  visibleInSearch: Scalars['Boolean'];
 };
 
 
@@ -1152,6 +1154,8 @@ export type OrganizationInfoNode = {
   description: Scalars['String'];
   image?: Maybe<Scalars['String']>;
   name: Scalars['String'];
+  userRegistrationRequired: Scalars['Boolean'];
+  visibleInSearch: Scalars['Boolean'];
 };
 
 export type OrganizationInput = {
@@ -1161,6 +1165,8 @@ export type OrganizationInput = {
   image?: InputMaybe<Scalars['String']>;
   location?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
+  userRegistrationRequired: Scalars['Boolean'];
+  visibleInSearch: Scalars['Boolean'];
 };
 
 export type OrganizationOrderByInput =
@@ -1200,6 +1206,8 @@ export type OrganizationWhereInput = {
   name_not?: InputMaybe<Scalars['String']>;
   name_not_in?: InputMaybe<Array<Scalars['String']>>;
   name_starts_with?: InputMaybe<Scalars['String']>;
+  userRegistrationRequired?: InputMaybe<Scalars['Boolean']>;
+  visibleInSearch?: InputMaybe<Scalars['Boolean']>;
 };
 
 export type OtpData = {
@@ -1652,6 +1660,8 @@ export type UpdateOrganizationInput = {
   description?: InputMaybe<Scalars['String']>;
   location?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  userRegistrationRequired: Scalars['Boolean'];
+  visibleInSearch: Scalars['Boolean'];
 };
 
 export type UpdateTaskInput = {
@@ -2664,7 +2674,9 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pinnedPosts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType>;
+  userRegistrationRequired?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   userTags?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<OrganizationUserTagsArgs>>;
+  visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2683,6 +2695,8 @@ export type OrganizationInfoNodeResolvers<ContextType = any, ParentType extends 
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  userRegistrationRequired?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

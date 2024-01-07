@@ -377,6 +377,13 @@ export const getWhere = <T = unknown>(
       apiUrl: regexp,
     };
   }
+  // Returns organizations with provided visibleInSearch condition
+  if (where.visibleInSearch !== undefined) {
+    wherePayload = {
+      ...wherePayload,
+      visibleInSearch: where.visibleInSearch,
+    };
+  }
 
   //Returns provided firstName user
   if (where.firstName) {

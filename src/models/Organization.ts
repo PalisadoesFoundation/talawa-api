@@ -26,6 +26,8 @@ export interface InterfaceOrganization {
   blockedUsers: PopulatedDoc<InterfaceUser & Document>[];
   customFields: PopulatedDoc<InterfaceOrganizationCustomField & Document>[];
   createdAt: Date;
+  userRegistrationRequired: boolean;
+  visibleInSearch: boolean | undefined;
 }
 /**
  * This describes the schema for a `Organization` that corresponds to `InterfaceOrganization` document.
@@ -62,6 +64,13 @@ const organizationSchema = new Schema({
   },
   location: {
     type: String,
+  },
+  userRegistrationRequired: {
+    type: Boolean,
+    required: true,
+  },
+  visibleInSearch: {
+    type: Boolean,
   },
   creator: {
     type: Schema.Types.ObjectId,

@@ -577,7 +577,9 @@ type Organization {
   membershipRequests: [MembershipRequest]
   name: String!
   pinnedPosts: [Post]
+  userRegistrationRequired: Boolean!
   userTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
+  visibleInSearch: Boolean!
 }
 
 type OrganizationCustomField {
@@ -594,6 +596,8 @@ type OrganizationInfoNode {
   description: String!
   image: String
   name: String!
+  userRegistrationRequired: Boolean!
+  visibleInSearch: Boolean!
 }
 
 input OrganizationInput {
@@ -603,6 +607,8 @@ input OrganizationInput {
   image: String
   location: String
   name: String!
+  userRegistrationRequired: Boolean!
+  visibleInSearch: Boolean!
 }
 
 enum OrganizationOrderByInput {
@@ -643,6 +649,8 @@ input OrganizationWhereInput {
   name_not: String
   name_not_in: [String!]
   name_starts_with: String
+  userRegistrationRequired: Boolean
+  visibleInSearch: Boolean
 }
 
 type OtpData {
@@ -931,6 +939,8 @@ input UpdateOrganizationInput {
   description: String
   location: String
   name: String
+  userRegistrationRequired: Boolean!
+  visibleInSearch: Boolean!
 }
 
 input UpdateTaskInput {

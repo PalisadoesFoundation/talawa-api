@@ -214,6 +214,8 @@ export const types = gql`
     members: [User]
     admins(adminId: ID): [User]
     membershipRequests: [MembershipRequest]
+    userRegistrationRequired: Boolean!
+    visibleInSearch: Boolean!
     blockedUsers: [User]
     apiUrl: URL!
     createdAt: DateTime
@@ -241,6 +243,8 @@ export const types = gql`
     description: String!
     creator: User!
     apiUrl: URL!
+    userRegistrationRequired: Boolean!
+    visibleInSearch: Boolean!
   }
 
   type OtpData {
