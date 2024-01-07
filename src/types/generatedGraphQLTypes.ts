@@ -1122,6 +1122,7 @@ export type Organization = {
   pinnedPosts?: Maybe<Array<Maybe<Post>>>;
   userRegistrationRequired: Scalars['Boolean'];
   userTags?: Maybe<UserTagsConnection>;
+  visibleInSearch: Scalars['Boolean'];
 };
 
 
@@ -2675,6 +2676,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   pinnedPosts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType>;
   userRegistrationRequired?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   userTags?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<OrganizationUserTagsArgs>>;
+  visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

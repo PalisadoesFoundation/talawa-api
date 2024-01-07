@@ -144,6 +144,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
         description: "newDescription",
         userRegistrationRequired: false,
         name: "newName",
+        visibleInSearch: false,
       },
     };
 
@@ -197,6 +198,7 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
         description: "newDescription",
         userRegistrationRequired: false,
         name: "newName",
+        visibleInSearch: false,
       },
 
       file: "newImageFile.png",
