@@ -25,13 +25,13 @@ input AddressInput {
 }
 
 type Advertisement {
-  _id: ID
+  _id: ID!
   createdAt: DateTime
   creator: User!
   endDate: Date!
   link: String!
   name: String!
-  orgId: ID
+  orgId: ID!
   startDate: Date!
   type: String!
   updatedAt: DateTime
@@ -79,7 +79,7 @@ type CheckInStatus {
 }
 
 type Comment {
-  _id: ID
+  _id: ID!
   createdAt: DateTime
   creator: User!
   likeCount: Int
@@ -204,15 +204,15 @@ interface Error {
 
 type Event {
   _id: ID!
-  admins(adminId: ID): [User]
+  admins(adminId: ID): [User!]
   allDay: Boolean!
-  attendees: [User!]!
+  attendees: [User]
   attendeesCheckInStatus: [CheckInStatus!]!
   averageFeedbackScore: Float
   createdAt: DateTime
   creator: User!
   description: String!
-  endDate: Date!
+  endDate: Date
   endTime: Time
   feedback: [Feedback!]!
   isPublic: Boolean!
@@ -220,7 +220,7 @@ type Event {
   latitude: Latitude
   location: String
   longitude: Longitude
-  organization: Organization
+  organization: Organization!
   projects: [EventProject]
   recurrance: Recurrance
   recurring: Boolean!
@@ -360,12 +360,12 @@ enum Gender {
 }
 
 type Group {
-  _id: ID
-  admins: [User]
+  _id: ID!
+  admins: [User!]!
   createdAt: DateTime
   description: String
   organization: Organization!
-  title: String
+  title: String!
   updatedAt: DateTime
 }
 
@@ -456,14 +456,14 @@ type Message {
   createdAt: DateTime
   creator: User!
   imageUrl: URL
-  text: String
+  text: String!
   updatedAt: DateTime
   videoUrl: URL
 }
 
 type MessageChat {
   _id: ID!
-  createdAt: DateTime!
+  createdAt: DateTime
   languageBarrier: Boolean
   message: String!
   receiver: User!
@@ -588,7 +588,7 @@ input OTPInput {
 
 type Organization {
   _id: ID!
-  admins(adminId: ID): [User]
+  admins(adminId: ID): [User!]!
   apiUrl: URL!
   blockedUsers: [User]
   createdAt: DateTime
@@ -708,7 +708,7 @@ type Plugin {
   pluginCreatedBy: String!
   pluginDesc: String!
   pluginName: String!
-  uninstalledOrgs: [ID!]!
+  uninstalledOrgs: [ID]
 }
 
 type PluginField {
@@ -881,8 +881,8 @@ type Subscription {
 
 type Task {
   _id: ID!
-  completed: Boolean
-  createdAt: DateTime!
+  completed: Boolean!
+  createdAt: DateTime
   creator: User!
   deadline: DateTime
   description: String
@@ -1033,12 +1033,12 @@ type User {
   organizationUserBelongsTo: Organization
   organizationsBlockedBy: [Organization]
   phone: UserPhone
-  pluginCreationAllowed: Boolean
+  pluginCreationAllowed: Boolean!
   registeredEvents: [Event]
   tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection
   tokenVersion: Int!
   updatedAt: DateTime
-  userType: String
+  userType: String!
 }
 
 input UserAndOrganizationInput {
@@ -1102,7 +1102,7 @@ type UserTag {
   _id: ID!
   childTags(input: UserTagsConnectionInput!): UserTagsConnectionResult!
   name: String!
-  organization: Organization
+  organization: Organization!
   parentTag: UserTag
   usersAssignedTo(input: UsersConnectionInput!): UsersConnectionResult!
 }

@@ -76,13 +76,13 @@ export type AddressInput = {
 
 export type Advertisement = {
   __typename?: 'Advertisement';
-  _id?: Maybe<Scalars['ID']>;
+  _id: Scalars['ID'];
   createdAt?: Maybe<Scalars['DateTime']>;
   creator: User;
   endDate: Scalars['Date'];
   link: Scalars['String'];
   name: Scalars['String'];
-  orgId?: Maybe<Scalars['ID']>;
+  orgId: Scalars['ID'];
   startDate: Scalars['Date'];
   type: Scalars['String'];
   updatedAt?: Maybe<Scalars['DateTime']>;
@@ -134,7 +134,7 @@ export type CheckInStatus = {
 
 export type Comment = {
   __typename?: 'Comment';
-  _id?: Maybe<Scalars['ID']>;
+  _id: Scalars['ID'];
   createdAt?: Maybe<Scalars['DateTime']>;
   creator: User;
   likeCount?: Maybe<Scalars['Int']>;
@@ -255,15 +255,15 @@ export type Error = {
 export type Event = {
   __typename?: 'Event';
   _id: Scalars['ID'];
-  admins?: Maybe<Array<Maybe<User>>>;
+  admins?: Maybe<Array<User>>;
   allDay: Scalars['Boolean'];
-  attendees: Array<User>;
+  attendees?: Maybe<Array<Maybe<User>>>;
   attendeesCheckInStatus: Array<CheckInStatus>;
   averageFeedbackScore?: Maybe<Scalars['Float']>;
   createdAt?: Maybe<Scalars['DateTime']>;
   creator: User;
   description: Scalars['String'];
-  endDate: Scalars['Date'];
+  endDate?: Maybe<Scalars['Date']>;
   endTime?: Maybe<Scalars['Time']>;
   feedback: Array<Feedback>;
   isPublic: Scalars['Boolean'];
@@ -271,7 +271,7 @@ export type Event = {
   latitude?: Maybe<Scalars['Latitude']>;
   location?: Maybe<Scalars['String']>;
   longitude?: Maybe<Scalars['Longitude']>;
-  organization?: Maybe<Organization>;
+  organization: Organization;
   projects?: Maybe<Array<Maybe<EventProject>>>;
   recurrance?: Maybe<Recurrance>;
   recurring: Scalars['Boolean'];
@@ -418,12 +418,12 @@ export type Gender =
 
 export type Group = {
   __typename?: 'Group';
-  _id?: Maybe<Scalars['ID']>;
-  admins?: Maybe<Array<Maybe<User>>>;
+  _id: Scalars['ID'];
+  admins: Array<User>;
   createdAt?: Maybe<Scalars['DateTime']>;
   description?: Maybe<Scalars['String']>;
   organization: Organization;
-  title?: Maybe<Scalars['String']>;
+  title: Scalars['String'];
   updatedAt?: Maybe<Scalars['DateTime']>;
 };
 
@@ -516,7 +516,7 @@ export type Message = {
   createdAt?: Maybe<Scalars['DateTime']>;
   creator: User;
   imageUrl?: Maybe<Scalars['URL']>;
-  text?: Maybe<Scalars['String']>;
+  text: Scalars['String'];
   updatedAt?: Maybe<Scalars['DateTime']>;
   videoUrl?: Maybe<Scalars['URL']>;
 };
@@ -524,7 +524,7 @@ export type Message = {
 export type MessageChat = {
   __typename?: 'MessageChat';
   _id: Scalars['ID'];
-  createdAt: Scalars['DateTime'];
+  createdAt?: Maybe<Scalars['DateTime']>;
   languageBarrier?: Maybe<Scalars['Boolean']>;
   message: Scalars['String'];
   receiver: User;
@@ -1131,7 +1131,7 @@ export type OtpInput = {
 export type Organization = {
   __typename?: 'Organization';
   _id: Scalars['ID'];
-  admins?: Maybe<Array<Maybe<User>>>;
+  admins: Array<User>;
   apiUrl: Scalars['URL'];
   blockedUsers?: Maybe<Array<Maybe<User>>>;
   createdAt?: Maybe<Scalars['DateTime']>;
@@ -1263,7 +1263,7 @@ export type Plugin = {
   pluginCreatedBy: Scalars['String'];
   pluginDesc: Scalars['String'];
   pluginName: Scalars['String'];
-  uninstalledOrgs: Array<Scalars['ID']>;
+  uninstalledOrgs?: Maybe<Array<Maybe<Scalars['ID']>>>;
 };
 
 export type PluginField = {
@@ -1605,8 +1605,8 @@ export type Subscription = {
 export type Task = {
   __typename?: 'Task';
   _id: Scalars['ID'];
-  completed?: Maybe<Scalars['Boolean']>;
-  createdAt: Scalars['DateTime'];
+  completed: Scalars['Boolean'];
+  createdAt?: Maybe<Scalars['DateTime']>;
   creator: User;
   deadline?: Maybe<Scalars['DateTime']>;
   description?: Maybe<Scalars['String']>;
@@ -1753,12 +1753,12 @@ export type User = {
   organizationUserBelongsTo?: Maybe<Organization>;
   organizationsBlockedBy?: Maybe<Array<Maybe<Organization>>>;
   phone?: Maybe<UserPhone>;
-  pluginCreationAllowed?: Maybe<Scalars['Boolean']>;
+  pluginCreationAllowed: Scalars['Boolean'];
   registeredEvents?: Maybe<Array<Maybe<Event>>>;
   tagsAssignedWith?: Maybe<UserTagsConnection>;
   tokenVersion: Scalars['Int'];
   updatedAt?: Maybe<Scalars['DateTime']>;
-  userType?: Maybe<Scalars['String']>;
+  userType: Scalars['String'];
 };
 
 
@@ -1835,7 +1835,7 @@ export type UserTag = {
   _id: Scalars['ID'];
   childTags: UserTagsConnectionResult;
   name: Scalars['String'];
-  organization?: Maybe<Organization>;
+  organization: Organization;
   parentTag?: Maybe<UserTag>;
   usersAssignedTo: UsersConnectionResult;
 };
@@ -2291,13 +2291,13 @@ export type AddressResolvers<ContextType = any, ParentType extends ResolversPare
 };
 
 export type AdvertisementResolvers<ContextType = any, ParentType extends ResolversParentTypes['Advertisement'] = ResolversParentTypes['Advertisement']> = {
-  _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   link?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  orgId?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  orgId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -2346,7 +2346,7 @@ export type CheckInStatusResolvers<ContextType = any, ParentType extends Resolve
 };
 
 export type CommentResolvers<ContextType = any, ParentType extends ResolversParentTypes['Comment'] = ResolversParentTypes['Comment']> = {
-  _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   likeCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -2432,15 +2432,15 @@ export type ErrorResolvers<ContextType = any, ParentType extends ResolversParent
 
 export type EventResolvers<ContextType = any, ParentType extends ResolversParentTypes['Event'] = ResolversParentTypes['Event']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  admins?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<EventAdminsArgs>>;
+  admins?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType, Partial<EventAdminsArgs>>;
   allDay?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  attendees?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
+  attendees?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   attendeesCheckInStatus?: Resolver<Array<ResolversTypes['CheckInStatus']>, ParentType, ContextType>;
   averageFeedbackScore?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  endDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   endTime?: Resolver<Maybe<ResolversTypes['Time']>, ParentType, ContextType>;
   feedback?: Resolver<Array<ResolversTypes['Feedback']>, ParentType, ContextType>;
   isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -2448,7 +2448,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   latitude?: Resolver<Maybe<ResolversTypes['Latitude']>, ParentType, ContextType>;
   location?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   longitude?: Resolver<Maybe<ResolversTypes['Longitude']>, ParentType, ContextType>;
-  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
+  organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
   projects?: Resolver<Maybe<Array<Maybe<ResolversTypes['EventProject']>>>, ParentType, ContextType>;
   recurrance?: Resolver<Maybe<ResolversTypes['Recurrance']>, ParentType, ContextType>;
   recurring?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -2495,12 +2495,12 @@ export type FieldErrorResolvers<ContextType = any, ParentType extends ResolversP
 };
 
 export type GroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['Group'] = ResolversParentTypes['Group']> = {
-  _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
-  admins?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  admins?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
-  title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2586,7 +2586,7 @@ export type MessageResolvers<ContextType = any, ParentType extends ResolversPare
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   imageUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
-  text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   videoUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -2594,7 +2594,7 @@ export type MessageResolvers<ContextType = any, ParentType extends ResolversPare
 
 export type MessageChatResolvers<ContextType = any, ParentType extends ResolversParentTypes['MessageChat'] = ResolversParentTypes['MessageChat']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   languageBarrier?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   receiver?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
@@ -2713,7 +2713,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type OrganizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Organization'] = ResolversParentTypes['Organization']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  admins?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<OrganizationAdminsArgs>>;
+  admins?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, Partial<OrganizationAdminsArgs>>;
   apiUrl?: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
   blockedUsers?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -2777,7 +2777,7 @@ export type PluginResolvers<ContextType = any, ParentType extends ResolversParen
   pluginCreatedBy?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pluginDesc?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pluginName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  uninstalledOrgs?: Resolver<Array<ResolversTypes['ID']>, ParentType, ContextType>;
+  uninstalledOrgs?: Resolver<Maybe<Array<Maybe<ResolversTypes['ID']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2863,8 +2863,8 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
 
 export type TaskResolvers<ContextType = any, ParentType extends ResolversParentTypes['Task'] = ResolversParentTypes['Task']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  completed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  completed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   deadline?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -2930,12 +2930,12 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   organizationUserBelongsTo?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   organizationsBlockedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['UserPhone']>, ParentType, ContextType>;
-  pluginCreationAllowed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  pluginCreationAllowed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   registeredEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   tagsAssignedWith?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<UserTagsAssignedWithArgs>>;
   tokenVersion?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  userType?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  userType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2971,7 +2971,7 @@ export type UserTagResolvers<ContextType = any, ParentType extends ResolversPare
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   childTags?: Resolver<ResolversTypes['UserTagsConnectionResult'], ParentType, ContextType, RequireFields<UserTagChildTagsArgs, 'input'>>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
+  organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
   parentTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType>;
   usersAssignedTo?: Resolver<ResolversTypes['UsersConnectionResult'], ParentType, ContextType, RequireFields<UserTagUsersAssignedToArgs, 'input'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

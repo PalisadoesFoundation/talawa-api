@@ -37,13 +37,13 @@ export const types = gql`
   }
 
   type Comment {
-    _id: ID
+    _id: ID!
     text: String!
     post: Post!
     likedBy: [User]
     likeCount: Int
-    createdAt: DateTime
     creator: User!
+    createdAt: DateTime
     updatedAt: DateTime
   }
 
@@ -91,9 +91,9 @@ export const types = gql`
     updatedAt: DateTime
   }
   type Advertisement {
-    _id: ID
+    _id: ID!
     name: String!
-    orgId: ID
+    orgId: ID!
     link: String!
     type: String!
     startDate: Date!
@@ -113,7 +113,7 @@ export const types = gql`
     title: String!
     description: String!
     startDate: Date!
-    endDate: Date!
+    endDate: Date
     startTime: Time
     endTime: Time
     allDay: Boolean!
@@ -124,14 +124,14 @@ export const types = gql`
     location: String
     latitude: Latitude
     longitude: Longitude
-    organization: Organization
+    organization: Organization!
     creator: User!
     createdAt: DateTime
     updatedAt: DateTime
-    attendees: [User!]!
+    attendees: [User]
     # For each attendee, gives information about whether he/she has checked in yet or not
     attendeesCheckInStatus: [CheckInStatus!]!
-    admins(adminId: ID): [User]
+    admins(adminId: ID): [User!]
     status: Status!
     projects: [EventProject]
     feedback: [Feedback!]!
@@ -159,13 +159,13 @@ export const types = gql`
   }
 
   type Group {
-    _id: ID
-    title: String
+    _id: ID!
+    title: String!
     description: String
     createdAt: DateTime
     updatedAt: DateTime
     organization: Organization!
-    admins: [User]
+    admins: [User!]!
   }
 
   type GroupChat {
@@ -210,7 +210,7 @@ export const types = gql`
 
   type Message {
     _id: ID!
-    text: String
+    text: String!
     createdAt: DateTime
     updatedAt: DateTime
     imageUrl: URL
@@ -224,7 +224,7 @@ export const types = gql`
     receiver: User!
     message: String!
     languageBarrier: Boolean
-    createdAt: DateTime!
+    createdAt: DateTime
     updatedAt: DateTime
   }
 
@@ -239,7 +239,7 @@ export const types = gql`
     createdAt: DateTime
     updatedAt: DateTime
     members: [User]
-    admins(adminId: ID): [User]
+    admins(adminId: ID): [User!]!
     membershipRequests: [MembershipRequest]
     blockedUsers: [User]
     visibleInSearch: Boolean!
@@ -302,18 +302,8 @@ export const types = gql`
     pluginName: String!
     pluginCreatedBy: String!
     pluginDesc: String!
-    uninstalledOrgs: [ID!]!
+    uninstalledOrgs: [ID]
   }
-
-  # type Plugin {
-  #   orgId: Organization!
-  #   pluginName: String!
-  #   pluginKey: String
-  #   pluginStatus: Status!
-  #   pluginType: Type!
-  #   additionalInfo: [PluginField!]
-  #   createdAt: String
-  # }
 
   type PluginField {
     key: String!
@@ -361,10 +351,10 @@ export const types = gql`
     title: String!
     description: String
     event: Event!
-    createdAt: DateTime!
+    createdAt: DateTime
     creator: User!
     updatedAt: DateTime
-    completed: Boolean
+    completed: Boolean!
     deadline: DateTime
     volunteers: [User]
   }
@@ -418,7 +408,7 @@ export const types = gql`
     organizationUserBelongsTo: Organization
     organizationsBlockedBy: [Organization]
     phone: UserPhone
-    pluginCreationAllowed: Boolean
+    pluginCreationAllowed: Boolean!
     registeredEvents: [Event]
     tagsAssignedWith(
       after: String
@@ -429,7 +419,7 @@ export const types = gql`
     ): UserTagsConnection
     tokenVersion: Int!
     updatedAt: DateTime
-    userType: String
+    userType: String!
   }
 
   type UserCustomData {
@@ -453,7 +443,7 @@ export const types = gql`
   type UserTag {
     _id: ID!
     name: String!
-    organization: Organization
+    organization: Organization!
     parentTag: UserTag
     childTags(input: UserTagsConnectionInput!): UserTagsConnectionResult!
     usersAssignedTo(input: UsersConnectionInput!): UsersConnectionResult!

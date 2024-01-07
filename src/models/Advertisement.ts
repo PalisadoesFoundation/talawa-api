@@ -73,6 +73,7 @@ const advertisementSchema = new Schema(
     },
     orgId: {
       type: String,
+      required: true,
     },
     creatorId: {
       type: Schema.Types.ObjectId,
