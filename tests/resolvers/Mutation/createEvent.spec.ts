@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization, EventAttendee } from "../../../src/models";
+import { User, Organization, EventAttendee, Event } from "../../../src/models";
 import type { MutationCreateEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -17,7 +17,7 @@ import type {
   TestOrganizationType,
 } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-
+import { generateWeeklyRecurringInstances } from "../../../src/resolvers/Mutation/createEvent";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -129,7 +129,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
           startDate: "",
           startTime: "",
           title: "",
-          recurrance: "DAILY",
+          recurrance: "ONCE",
         },
       };
 
@@ -176,7 +176,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         startDate: new Date().toUTCString(),
         startTime: new Date().toUTCString(),
         title: "newTitle",
-        recurrance: "DAILY",
+        recurrance: "ONCE",
       },
     };
 
@@ -200,7 +200,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         location: "newLocation",
         recurring: false,
         title: "newTitle",
-        recurrance: "DAILY",
+        recurrance: "ONCE",
         creator: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
@@ -449,6 +449,78 @@ describe("Check for validation conditions", () => {
       await createEventResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(`start date must be earlier than end date`);
+    }
+  });
+});
+
+describe("generateRecurringInstances", () => {
+  it("should create weekly recurring instances of events", async () => {
+    const args = {
+      data: {
+        organizationId: testOrganization?.id,
+        allDay: true,
+        description: "newDescription",
+        endDate: new Date().toUTCString(),
+        endTime: new Date().toUTCString(),
+        isPublic: false,
+        isRegisterable: false,
+        latitude: 1,
+        longitude: 1,
+        location: "newLocation",
+        recurring: true,
+        startDate: new Date().toUTCString(),
+        startTime: new Date().toUTCString(),
+        title: "newTitle",
+        recurrance: "WEEKLY",
+      },
+    };
+
+    const currentUser = testUser;
+    const organization = testOrganization;
+
+    const startDate = new Date("2023-01-01T00:00:00Z");
+    const endDate = new Date("2023-01-29T00:00:00Z");
+    args.data.startDate = startDate.toISOString();
+    args.data.endDate = endDate.toISOString();
+
+    const createdEvent = await generateWeeklyRecurringInstances(
+      args,
+      currentUser,
+      organization
+    );
+
+    const recurringEvents = await Event.find({
+      recurring: true,
+      recurrance: "WEEKLY",
+    }).lean();
+
+    expect(recurringEvents).toBeDefined();
+    expect(recurringEvents).toHaveLength(5);
+
+    recurringEvents.forEach((event) => {
+      expect(event).toBeDefined();
+    });
+
+    for (const event of createdEvent) {
+      const attendeeExists = await EventAttendee.exists({
+        userId: testUser!._id,
+        eventId: event!._id,
+      });
+      expect(attendeeExists).toBeTruthy();
+
+      const updatedTestUser = await User.findOne({
+        _id: testUser?._id,
+      })
+        .select(["eventAdmin", "createdEvents", "registeredEvents"])
+        .lean();
+
+      expect(updatedTestUser).toEqual(
+        expect.objectContaining({
+          eventAdmin: expect.arrayContaining([event?._id]),
+          createdEvents: expect.arrayContaining([event?._id]),
+          registeredEvents: expect.arrayContaining([event?._id]),
+        })
+      );
     }
   });
 });
