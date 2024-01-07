@@ -145,7 +145,5 @@
       "prettier --write"
     ],
     "**/*.ts": "eslint --fix"
-  "engines": {
-    "node": ">=20.x"
   }
 }
