@@ -405,9 +405,14 @@ async function importData(): Promise<void> {
     );
   }
 }
+
+type VerifySmtpConnectionReturnType = {
+  success: boolean;
+  error: any;
+};
 async function verifySmtpConnection(
   config: Record<string, string>
-): Promise<boolean> {
+): Promise<VerifySmtpConnectionReturnType> {
   const transporter = nodemailer.createTransport({
     host: config.SMTP_HOST,
     port: Number(config.SMTP_PORT),
@@ -421,10 +426,10 @@ async function verifySmtpConnection(
   try {
     await transporter.verify();
     console.log("SMTP connection verified successfully.");
-    return true;
+    return { success: true, error: null };
   } catch (error: any) {
     console.error("SMTP connection verification failed:");
-    return false;
+    return { success: false, error };
   } finally {
     transporter.close();
   }
@@ -487,12 +492,13 @@ async function configureSmtp(): Promise<void> {
     return;
   }
 
-  const isSmtpConnectionValid = await verifySmtpConnection(smtpConfig);
+  const { success, error } = await verifySmtpConnection(smtpConfig);
 
-  if (!isSmtpConnectionValid) {
+  if (!success) {
     console.error(
       "SMTP configuration verification failed. Please check your SMTP settings."
     );
+    console.log(error.message);
     return;
   }
 
