@@ -1660,8 +1660,8 @@ export type UpdateOrganizationInput = {
   description?: InputMaybe<Scalars['String']>;
   location?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
-  userRegistrationRequired: Scalars['Boolean'];
-  visibleInSearch: Scalars['Boolean'];
+  userRegistrationRequired?: InputMaybe<Scalars['Boolean']>;
+  visibleInSearch?: InputMaybe<Scalars['Boolean']>;
 };
 
 export type UpdateTaskInput = {

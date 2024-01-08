@@ -27,7 +27,7 @@ export interface InterfaceOrganization {
   customFields: PopulatedDoc<InterfaceOrganizationCustomField & Document>[];
   createdAt: Date;
   userRegistrationRequired: boolean;
-  visibleInSearch: boolean | undefined;
+  visibleInSearch: boolean;
 }
 /**
  * This describes the schema for a `Organization` that corresponds to `InterfaceOrganization` document.
@@ -71,6 +71,7 @@ const organizationSchema = new Schema({
   },
   visibleInSearch: {
     type: Boolean,
+    default: true,
   },
   creator: {
     type: Schema.Types.ObjectId,

@@ -289,8 +289,8 @@ export const inputs = gql`
     name: String
     description: String
     location: String
-    userRegistrationRequired: Boolean!
-    visibleInSearch: Boolean!
+    userRegistrationRequired: Boolean
+    visibleInSearch: Boolean
   }
 
   input UpdateUserTagInput {

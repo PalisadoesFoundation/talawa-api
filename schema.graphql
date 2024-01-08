@@ -939,8 +939,8 @@ input UpdateOrganizationInput {
   description: String
   location: String
   name: String
-  userRegistrationRequired: Boolean!
-  visibleInSearch: Boolean!
+  userRegistrationRequired: Boolean
+  visibleInSearch: Boolean
 }
 
 input UpdateTaskInput {
