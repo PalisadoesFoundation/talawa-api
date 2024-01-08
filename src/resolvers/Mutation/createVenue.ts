@@ -52,12 +52,10 @@ export const createVenue: MutationResolvers["createVenue"] = async (
     );
   }
 
-  const newVenue = await Venue.create({ ...args.data });
-
   // Check if a venue with the same place already exists in the organization
   if (
     organization.availableVenues?.some(
-      (venue) => venue.place === newVenue.place
+      (venue) => venue.name === args.data?.name
     )
   ) {
     throw new errors.ConflictError(
@@ -66,6 +64,8 @@ export const createVenue: MutationResolvers["createVenue"] = async (
       VENUE_ALREADY_EXISTS_ERROR.PARAM
     );
   }
+
+  const newVenue = await Venue.create({ ...args.data });
 
   // Add the new venue to the availableVenues inside the organization
   await Organization.findOneAndUpdate(

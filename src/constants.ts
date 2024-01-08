@@ -21,6 +21,13 @@ export const VENUE_ALREADY_EXISTS_ERROR = {
   PARAM: "venue",
 };
 
+export const VENUE_DOESNT_EXIST_ERROR = {
+  DESC: "Venue does not exist",
+  CODE: "venue.doesntExist",
+  MESSAGE: "venue.doesntExists",
+  PARAM: "venue",
+};
+
 export const COMMENT_NOT_FOUND_ERROR = {
   DESC: "Comment not found",
   CODE: "comment.notFound",

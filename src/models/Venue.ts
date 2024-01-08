@@ -3,18 +3,24 @@ import type { Model, Types } from "mongoose";
 
 export interface InterfaceVenue {
   _id: Types.ObjectId;
-  place: string;
+  name: string;
+  description: string;
   capacity: number;
 }
 
 /**
  * This describes the schema for a Venue that corresponds to InterfaceVenue document.
  * @param name - Name of the venue.
+ * @param description - Description of the venue.
  * @param capacity - Maximum capacity of the venue.
  */
 
 const venueSchema = new Schema({
-  place: {
+  name: {
+    type: String,
+    required: true,
+  },
+  description: {
     type: String,
     required: true,
   },

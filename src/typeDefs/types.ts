@@ -98,10 +98,11 @@ export const types = gql`
     refreshToken: String!
   }
 
-  type returnVenue {
+  type Venue {
     _id: ID!
-    place: String!
+    name: String!
     capacity: Int!
+    description: String
   }
 
   type VenueId {
@@ -127,7 +128,7 @@ export const types = gql`
     organization: Organization
     creator: User!
     attendees: [User!]!
-    venue: VenueId
+    venue: ID
     # For each attendee, gives information about whether he/she has checked in yet or not
     attendeesCheckInStatus: [CheckInStatus!]!
     admins(adminId: ID): [User]

@@ -57,8 +57,11 @@ export const inputs = gql`
     name_of_user_starts_with: String
   }
 
-  input Venue {
-    id: ID!
+  input EditVenueInput {
+    _id: ID!
+    capacity: Int!
+    name: String!
+    description: String
   }
 
   input EventInput {
@@ -77,7 +80,7 @@ export const inputs = gql`
     latitude: Latitude
     longitude: Longitude
     organizationId: ID!
-    venue: Venue
+    venue: ID
   }
 
   input EventWhereInput {
@@ -210,8 +213,9 @@ export const inputs = gql`
 
   input VenueInput {
     organizationId: ID!
-    place: String!
+    name: String!
     capacity: Int!
+    description: String
   }
 
   input PostInput {
@@ -277,7 +281,7 @@ export const inputs = gql`
     allDay: Boolean
     startTime: Time
     endTime: Time
-    venue: Venue
+    venue: ID
   }
 
   # Implements CursorPaginationInput

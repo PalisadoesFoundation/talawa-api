@@ -214,6 +214,13 @@ export type DonationWhereInput = {
   name_of_user_starts_with?: InputMaybe<Scalars['String']>;
 };
 
+export type EditVenueInput = {
+  _id: Scalars['ID'];
+  capacity: Scalars['Int'];
+  description?: InputMaybe<Scalars['String']>;
+  name: Scalars['String'];
+};
+
 export type EducationGrade =
   | 'GRADE_1'
   | 'GRADE_2'
@@ -267,7 +274,7 @@ export type Event = {
   startTime?: Maybe<Scalars['Time']>;
   status: Status;
   title: Scalars['String'];
-  venue?: Maybe<VenueId>;
+  venue?: Maybe<Scalars['ID']>;
 };
 
 
@@ -296,7 +303,7 @@ export type EventInput = {
   startDate: Scalars['Date'];
   startTime?: InputMaybe<Scalars['Time']>;
   title: Scalars['String'];
-  venue?: InputMaybe<Venue>;
+  venue?: InputMaybe<Scalars['ID']>;
 };
 
 export type EventOrderByInput =
@@ -563,9 +570,10 @@ export type Mutation = {
   createSampleOrganization: Scalars['Boolean'];
   createTask: Task;
   createUserTag?: Maybe<UserTag>;
-  createVenue: ReturnVenue;
+  createVenue: Venue;
   deleteAdvertisementById: DeletePayload;
   deleteDonationById: DeletePayload;
+  editVenue: Venue;
   forgotPassword: Scalars['Boolean'];
   joinPublicOrganization: User;
   leaveOrganization: User;
@@ -823,6 +831,11 @@ export type MutationDeleteAdvertisementByIdArgs = {
 
 export type MutationDeleteDonationByIdArgs = {
   id: Scalars['ID'];
+};
+
+
+export type MutationEditVenueArgs = {
+  data: EditVenueInput;
 };
 
 
@@ -1657,7 +1670,7 @@ export type UpdateEventInput = {
   startDate?: InputMaybe<Scalars['Date']>;
   startTime?: InputMaybe<Scalars['Time']>;
   title?: InputMaybe<Scalars['String']>;
-  venue?: InputMaybe<Venue>;
+  venue?: InputMaybe<Scalars['ID']>;
 };
 
 export type UpdateEventProjectInput = {
@@ -1914,7 +1927,11 @@ export type UsersConnectionResult = {
 };
 
 export type Venue = {
-  id: Scalars['ID'];
+  __typename?: 'Venue';
+  _id: Scalars['ID'];
+  capacity: Scalars['Int'];
+  description?: Maybe<Scalars['String']>;
+  name: Scalars['String'];
 };
 
 export type VenueId = {
@@ -1924,8 +1941,9 @@ export type VenueId = {
 
 export type VenueInput = {
   capacity: Scalars['Int'];
+  description?: InputMaybe<Scalars['String']>;
+  name: Scalars['String'];
   organizationId: Scalars['ID'];
-  place: Scalars['String'];
 };
 
 export type CreateChatInput = {
@@ -1937,13 +1955,6 @@ export type CreateGroupChatInput = {
   organizationId: Scalars['ID'];
   title: Scalars['String'];
   userIds: Array<Scalars['ID']>;
-};
-
-export type ReturnVenue = {
-  __typename?: 'returnVenue';
-  _id: Scalars['ID'];
-  capacity: Scalars['Int'];
-  place: Scalars['String'];
 };
 
 
@@ -2036,6 +2047,7 @@ export type ResolversTypes = {
   DirectChatMessage: ResolverTypeWrapper<InterfaceDirectChatMessageModel>;
   Donation: ResolverTypeWrapper<InterfaceDonationModel>;
   DonationWhereInput: DonationWhereInput;
+  EditVenueInput: EditVenueInput;
   EducationGrade: EducationGrade;
   EmailAddress: ResolverTypeWrapper<Scalars['EmailAddress']>;
   EmploymentStatus: EmploymentStatus;
@@ -2143,12 +2155,11 @@ export type ResolversTypes = {
   UsersConnection: ResolverTypeWrapper<Omit<UsersConnection, 'edges'> & { edges: Array<ResolversTypes['UserEdge']> }>;
   UsersConnectionInput: UsersConnectionInput;
   UsersConnectionResult: ResolverTypeWrapper<Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UsersConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
-  Venue: Venue;
+  Venue: ResolverTypeWrapper<Venue>;
   VenueId: ResolverTypeWrapper<VenueId>;
   VenueInput: VenueInput;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
-  returnVenue: ResolverTypeWrapper<ReturnVenue>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -2178,6 +2189,7 @@ export type ResolversParentTypes = {
   DirectChatMessage: InterfaceDirectChatMessageModel;
   Donation: InterfaceDonationModel;
   DonationWhereInput: DonationWhereInput;
+  EditVenueInput: EditVenueInput;
   EmailAddress: Scalars['EmailAddress'];
   Error: ResolversParentTypes['UnauthenticatedError'] | ResolversParentTypes['UnauthorizedError'];
   Event: InterfaceEventModel;
@@ -2276,7 +2288,6 @@ export type ResolversParentTypes = {
   VenueInput: VenueInput;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
-  returnVenue: ReturnVenue;
 };
 
 export type AuthDirectiveArgs = { };
@@ -2455,7 +2466,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   startTime?: Resolver<Maybe<ResolversTypes['Time']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  venue?: Resolver<Maybe<ResolversTypes['VenueId']>, ParentType, ContextType>;
+  venue?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2638,9 +2649,10 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createSampleOrganization?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   createTask?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationCreateTaskArgs, 'data' | 'eventProjectId'>>;
   createUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationCreateUserTagArgs, 'input'>>;
-  createVenue?: Resolver<ResolversTypes['returnVenue'], ParentType, ContextType, RequireFields<MutationCreateVenueArgs, 'data'>>;
+  createVenue?: Resolver<ResolversTypes['Venue'], ParentType, ContextType, RequireFields<MutationCreateVenueArgs, 'data'>>;
   deleteAdvertisementById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteAdvertisementByIdArgs, 'id'>>;
   deleteDonationById?: Resolver<ResolversTypes['DeletePayload'], ParentType, ContextType, RequireFields<MutationDeleteDonationByIdArgs, 'id'>>;
+  editVenue?: Resolver<ResolversTypes['Venue'], ParentType, ContextType, RequireFields<MutationEditVenueArgs, 'data'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'data'>>;
   joinPublicOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationJoinPublicOrganizationArgs, 'organizationId'>>;
   leaveOrganization?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationLeaveOrganizationArgs, 'organizationId'>>;
@@ -2992,15 +3004,16 @@ export type UsersConnectionResultResolvers<ContextType = any, ParentType extends
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type VenueIdResolvers<ContextType = any, ParentType extends ResolversParentTypes['VenueId'] = ResolversParentTypes['VenueId']> = {
+export type VenueResolvers<ContextType = any, ParentType extends ResolversParentTypes['Venue'] = ResolversParentTypes['Venue']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  capacity?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type ReturnVenueResolvers<ContextType = any, ParentType extends ResolversParentTypes['returnVenue'] = ResolversParentTypes['returnVenue']> = {
+export type VenueIdResolvers<ContextType = any, ParentType extends ResolversParentTypes['VenueId'] = ResolversParentTypes['VenueId']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  capacity?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  place?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -3078,8 +3091,8 @@ export type Resolvers<ContextType = any> = {
   UserTagsConnectionResult?: UserTagsConnectionResultResolvers<ContextType>;
   UsersConnection?: UsersConnectionResolvers<ContextType>;
   UsersConnectionResult?: UsersConnectionResultResolvers<ContextType>;
+  Venue?: VenueResolvers<ContextType>;
   VenueId?: VenueIdResolvers<ContextType>;
-  returnVenue?: ReturnVenueResolvers<ContextType>;
 };
 
 export type DirectiveResolvers<ContextType = any> = {

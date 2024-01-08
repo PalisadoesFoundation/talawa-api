@@ -97,7 +97,9 @@ export const mutations = gql`
       endDate: Date!
     ): Advertisement!
 
-    createVenue(data: VenueInput!): returnVenue! @auth @role(requires: ADMIN)
+    createVenue(data: VenueInput!): Venue! @auth @role(requires: ADMIN)
+
+    editVenue(data: EditVenueInput!): Venue! @auth @role(requires: ADMIN)
 
     createPost(data: PostInput!, file: String): Post @auth
 
