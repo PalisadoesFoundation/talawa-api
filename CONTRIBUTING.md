@@ -253,6 +253,7 @@ Remember to replace `README.md` with the name of the file you want to generate t
 </br>
 For more information on how to use `markdown-toc` package, visit [this link](https://www.npmjs.com/package/markdown-toc).
 
+
 ### Automation using husky
 
 <br/>
