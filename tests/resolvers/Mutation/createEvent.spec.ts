@@ -17,7 +17,6 @@ import type {
   TestOrganizationType,
 } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-import { generateWeeklyRecurringInstances } from "../../../src/resolvers/Mutation/createEvent";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -145,6 +144,30 @@ describe("resolvers -> Mutation -> createEvent", () => {
     } catch (error: any) {
       expect(error.message).toEqual(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
+  });
+
+  /*
+  Add joined and created organization to current user
+
+  -> This test is only added to associate organization with current
+      user
+  -> This is created only to support other test cases and can be removed once
+      DB replication is implemented
+  -> And the below commented test cases can be reintroduced
+  
+  */
+  it(`Add joined and created organization to current user`, async () => {
+    await User.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization?._id,
+          joinedOrganizations: testOrganization?._id,
+        },
+      }
+    );
   });
 
   //Commenting Out this test untill DB replication is implemented - PR related(#1658)
