@@ -153,12 +153,12 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     );
 
     const defaultCategory = await Category.findOne({
-      org: createOrganizationPayload?._id,
+      orgId: createOrganizationPayload?._id,
     }).lean();
 
     expect(defaultCategory).toEqual(
       expect.objectContaining({
-        org: createOrganizationPayload?._id,
+        orgId: createOrganizationPayload?._id,
         category: "Default",
         disabled: false,
       })

@@ -112,7 +112,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
 
     expect(createCategoryPayload).toEqual(
       expect.objectContaining({
-        org: testOrganization?._id,
+        orgId: testOrganization?._id,
         category: "Default",
       })
     );
@@ -160,7 +160,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
 
     expect(createCategoryPayload).toEqual(
       expect.objectContaining({
-        org: testOrganization?._id,
+        orgId: testOrganization?._id,
         category: "Default",
       })
     );

@@ -69,7 +69,7 @@ export const createCategory: MutationResolvers["createCategory"] = async (
   // Creates new category.
   const createdCategory = await Category.create({
     category: args.category,
-    org: args.orgId,
+    orgId: args.orgId,
     createdBy: context.userId,
     updatedBy: context.userId,
   });

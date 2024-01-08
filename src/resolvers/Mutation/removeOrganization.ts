@@ -132,7 +132,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
 
     // Remove all ActionItem documents whose category is in the actionCategories array
     await ActionItem.deleteMany({
-      category: { $in: organization.actionCategories },
+      categoryId: { $in: organization.actionCategories },
     });
 
     // Deletes the organzation.

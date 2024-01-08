@@ -9,7 +9,7 @@ import { Category } from "../../models";
 export const categoriesByOrganization: QueryResolvers["categoriesByOrganization"] =
   async (_parent, args) => {
     const categories = await Category.find({
-      org: args.orgId,
+      orgId: args.orgId,
     }).lean();
 
     return categories;

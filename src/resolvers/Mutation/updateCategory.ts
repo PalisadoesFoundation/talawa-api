@@ -44,7 +44,7 @@ export const updateCategory: MutationResolvers["updateCategory"] = async (
   const category = await Category.findOne({
     _id: args.id,
   })
-    .populate("org")
+    .populate("orgId")
     .lean();
 
   // Checks if the category exists
@@ -56,7 +56,7 @@ export const updateCategory: MutationResolvers["updateCategory"] = async (
     );
   }
 
-  await adminCheck(context.userId, category.org);
+  await adminCheck(context.userId, category.orgId);
 
   const updatedCategory = await Category.findOneAndUpdate(
     {

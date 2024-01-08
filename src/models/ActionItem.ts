@@ -12,7 +12,7 @@ export interface InterfaceActionItem {
   _id: Types.ObjectId;
   assignedTo: PopulatedDoc<InterfaceUser & Document>;
   assignedBy: PopulatedDoc<InterfaceUser & Document>;
-  category: PopulatedDoc<InterfaceCategory & Document>;
+  categoryId: PopulatedDoc<InterfaceCategory & Document>;
   preCompletionNotes: string;
   postCompletionNotes: string;
   assignmentDate: Date;
@@ -30,7 +30,7 @@ export interface InterfaceActionItem {
  * This describes the schema for a `ActionItem` that corresponds to `InterfaceActionItem` document.
  * @param assignedTo - User to whom the ActionItem is assigned, refer to `User` model.
  * @param assignedBy - User who assigned the ActionItem, refer to the `User` model.
- * @param category - Category to which the ActionItem is related, refer to the `Category` model.
+ * @param categoryId - Category to which the ActionItem is related, refer to the `Category` model.
  * @param preCompletionNotes - Notes prior to completion.
  * @param postCompletionNotes - Notes on completion.
  * @param assignmentDate - Date of assignment.
@@ -56,7 +56,7 @@ const actionItemSchema = new Schema(
       ref: "User",
       required: true,
     },
-    category: {
+    categoryId: {
       type: Schema.Types.ObjectId,
       ref: "Category",
       required: true,

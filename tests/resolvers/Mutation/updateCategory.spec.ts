@@ -120,7 +120,7 @@ describe("resolvers -> Mutation -> updateCategoryResolver", () => {
 
     expect(updatedCategory).toEqual(
       expect.objectContaining({
-        org: testOrganization?._id,
+        orgId: testOrganization?._id,
         category: "updatedDefault",
         disabled: true,
       })
@@ -156,7 +156,7 @@ describe("resolvers -> Mutation -> updateCategoryResolver", () => {
 
     expect(updatedCategory).toEqual(
       expect.objectContaining({
-        org: testOrganization?._id,
+        orgId: testOrganization?._id,
         category: "updatedDefault",
         disabled: false,
       })

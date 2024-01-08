@@ -29,7 +29,7 @@ export const createTestActionItem = async (): Promise<
   const testCategory = await Category.create({
     createdBy: testUser?._id,
     updatedBy: testUser?._id,
-    org: testOrganization?._id,
+    orgId: testOrganization?._id,
     category: "Default",
   });
 
@@ -38,7 +38,7 @@ export const createTestActionItem = async (): Promise<
     updatedBy: testUser?._id,
     assignedTo: randomUser?._id,
     assignedBy: testUser?._id,
-    category: testCategory?._id,
+    categoryId: testCategory?._id,
   });
 
   return [testUser, testOrganization, testCategory, testActionItem, randomUser];
@@ -60,7 +60,7 @@ export const createNewTestActionItem = async ({
     updatedBy: currUserId,
     assignedTo: assignedUserId,
     assignedBy: currUserId,
-    category: categoryId,
+    categoryId: categoryId,
   });
 
   return newTestActionItem;
@@ -77,7 +77,7 @@ export const createTestActionItems = async (): Promise<
     updatedBy: testUser?._id,
     assignedTo: randomUser?._id,
     assignedBy: testUser?._id,
-    category: testCategory?._id,
+    categoryId: testCategory?._id,
   });
 
   const testActionItem2 = await ActionItem.create({
@@ -85,7 +85,7 @@ export const createTestActionItems = async (): Promise<
     updatedBy: testUser?._id,
     assignedTo: randomUser?._id,
     assignedBy: testUser?._id,
-    category: testCategory?._id,
+    categoryId: testCategory?._id,
   });
 
   const testEvent = await Event.create({

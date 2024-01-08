@@ -76,8 +76,8 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   let asigneeIsOrganizationMember = false;
   asigneeIsOrganizationMember = assignee.joinedOrganizations.some(
     (organizationId) =>
-      organizationId === category.org ||
-      Types.ObjectId(organizationId).equals(category.org)
+      organizationId === category.orgId ||
+      Types.ObjectId(organizationId).equals(category.orgId)
   );
 
   // Checks if the asignee is a member of the organization
@@ -127,8 +127,8 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   // Checks if the currUser is an admin of the organization
   const currentUserIsOrgAdmin = currentUser.adminFor.some(
     (ogranizationId) =>
-      ogranizationId === category.org ||
-      Types.ObjectId(ogranizationId).equals(category.org)
+      ogranizationId === category.orgId ||
+      Types.ObjectId(ogranizationId).equals(category.orgId)
   );
 
   // Checks whether currentUser with _id === context.userId is authorized for the operation.
@@ -148,7 +148,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   const createActionItem = await ActionItem.create({
     assignedTo: args.data.assignedTo,
     assignedBy: context.userId,
-    category: args.categoryId,
+    categoryId: args.categoryId,
     preCompletionNotes: args.data.preCompletionNotes,
     postCompletionNotes: args.data.postCompletionNotes,
     dueDate: args.data.dueDate,

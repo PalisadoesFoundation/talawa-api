@@ -3,6 +3,6 @@ import { Organization } from "../../models";
 
 export const org: CategoryResolvers["org"] = async (parent) => {
   return Organization.findOne({
-    _id: parent.org,
+    _id: parent.orgId,
   }).lean();
 };

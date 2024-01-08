@@ -86,7 +86,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     // Creating a default category
     const createdCategory = await Category.create({
       category: "Default",
-      org: createdOrganization._id,
+      orgId: createdOrganization._id,
       createdBy: context.userId,
       updatedBy: context.userId,
     });

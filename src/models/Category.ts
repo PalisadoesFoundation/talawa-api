@@ -10,7 +10,7 @@ import type { InterfaceOrganization } from "./Organization";
 export interface InterfaceCategory {
   _id: Types.ObjectId;
   category: string;
-  org: PopulatedDoc<InterfaceOrganization & Document>;
+  orgId: PopulatedDoc<InterfaceOrganization & Document>;
   disabled: boolean;
   createdBy: PopulatedDoc<InterfaceUser & Document>;
   updatedBy: PopulatedDoc<InterfaceUser & Document>;
@@ -21,7 +21,7 @@ export interface InterfaceCategory {
 /**
  * This describes the schema for a `category` that corresponds to `InterfaceCategory` document.
  * @param category - A category to be selected for ActionItems.
- * @param org - Organization the category belongs to, refer to the `Organization` model.
+ * @param orgId - Organization the category belongs to, refer to the `Organization` model.
  * @param disabled - Whether category is disabled or not.
  * @param createdBy - Task creator, refer to `User` model.
  * @param updatedBy - Task creator, refer to `User` model.
@@ -35,7 +35,7 @@ const categorySchema = new Schema(
       type: String,
       required: true,
     },
-    org: {
+    orgId: {
       type: Schema.Types.ObjectId,
       ref: "Organization",
       required: true,

@@ -3,6 +3,6 @@ import { Category } from "../../models";
 
 export const category: ActionItemResolvers["category"] = async (parent) => {
   return Category.findOne({
-    _id: parent.category,
+    _id: parent.categoryId,
   }).lean();
 };

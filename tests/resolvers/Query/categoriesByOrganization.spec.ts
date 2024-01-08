@@ -30,7 +30,7 @@ describe("resolvers -> Query -> categoriesByOrganization", () => {
       await categoriesByOrganizationResolver?.({}, args, {});
 
     const categoriesByOrganizationInfo = await Category.find({
-      org: testOrganization?._id,
+      orgId: testOrganization?._id,
     }).lean();
 
     expect(categoriesByOrganizationPayload).toEqual(

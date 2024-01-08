@@ -115,7 +115,7 @@ beforeAll(async () => {
   testCategory = await Category.create({
     createdBy: testUsers[0]?._id,
     updatedBy: testUsers[0]?._id,
-    org: testOrganization?._id,
+    orgId: testOrganization?._id,
     category: "Default",
   });
 
@@ -124,7 +124,7 @@ beforeAll(async () => {
     updatedBy: testUsers[0]?._id,
     assignedTo: testUsers[1]?._id,
     assignedBy: testUsers[0]?._id,
-    category: testCategory?._id,
+    categoryId: testCategory?._id,
   });
 
   await Organization.updateOne(
@@ -344,7 +344,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     }).lean();
 
     const deletedTestCategories = await Category.find({
-      org: testOrganization?._id,
+      orgId: testOrganization?._id,
     }).lean();
 
     const deteledTestActionItems = await ActionItem.find({

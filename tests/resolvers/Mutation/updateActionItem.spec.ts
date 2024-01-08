@@ -186,7 +186,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
     expect(updatedActionItemPayload).toEqual(
       expect.objectContaining({
         assignedTo: assignedTestUser?._id,
-        category: testCategory?._id,
+        categoryId: testCategory?._id,
       })
     );
   });
@@ -224,7 +224,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
     expect(updatedActionItemPayload).toEqual(
       expect.objectContaining({
         assignedTo: testUser?._id,
-        category: testCategory?._id,
+        categoryId: testCategory?._id,
       })
     );
   });
@@ -301,7 +301,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
 
     expect(updatedActionItemPayload).toEqual(
       expect.objectContaining({
-        category: testCategory?._id,
+        categoryId: testCategory?._id,
         assignedTo: testUser?._id,
       })
     );
