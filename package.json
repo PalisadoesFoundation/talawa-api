@@ -110,7 +110,7 @@
     "@types/jsonwebtoken": "^9.0.5",
     "@types/lodash": "^4.14.202",
     "@types/mongoose-paginate-v2": "^1.6.5",
-    "@types/morgan": "^1.9.3",
+    "@types/morgan": "^1.9.9",
     "@types/node": "^18.11.9",
     "@types/nodemailer": "^6.4.14",
     "@types/shortid": "^0.0.29",
