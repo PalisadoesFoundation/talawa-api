@@ -54,11 +54,11 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
 
   it(`creates the ad and then deleting the ad`, async () => {
     const args: MutationCreateAdvertisementArgs = {
-      data: {
+      input: {
         name: "myad",
-        orgId: "64d1f8cb77a4b61004f824b8",
+        organizationId: "64d1f8cb77a4b61004f824b8",
         type: "POPUP",
-        mediaUrl: "data:image/png;base64,bWVkaWEgY29udGVudA==",
+        file: "data:image/png;base64,bWVkaWEgY29udGVudA==",
         startDate: "2023-10-08T13:02:29.000Z",
         endDate: "2023-10-08T13:02:29.000Z",
       },
@@ -115,7 +115,7 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
+      .mockImplementationOnce((message: string) => `Translated ${message}`);
 
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

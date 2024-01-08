@@ -53,11 +53,11 @@ describe("resolvers -> Mutation -> getAdvertisement", () => {
 
   it(`shouldl return the created ad from the list`, async () => {
     const args: MutationCreateAdvertisementArgs = {
-      data: {
+      input: {
         name: "myad",
-        orgId: "64d1f8cb77a4b61004f824b8",
+        organizationId: "64d1f8cb77a4b61004f824b8",
         type: "POPUP",
-        mediaUrl: "data:image/png;base64,bWVkaWEgY29udGVudA==",
+        file: "data:image/png;base64,bWVkaWEgY29udGVudA==",
         startDate: "2023-10-08T13:02:29.000Z",
         endDate: "2023-10-08T13:02:29.000Z",
       },

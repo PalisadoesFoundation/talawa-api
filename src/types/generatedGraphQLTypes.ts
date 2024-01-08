@@ -54,9 +54,9 @@ export type Advertisement = {
   __typename?: 'Advertisement';
   _id?: Maybe<Scalars['ID']>;
   endDate: Scalars['Date'];
-  mediaUrl: Scalars['URL'];
+  mediaUrl?: Maybe<Scalars['URL']>;
   name: Scalars['String'];
-  orgId?: Maybe<Scalars['ID']>;
+  organizationId: Scalars['ID'];
   startDate: Scalars['Date'];
   type: Scalars['String'];
 };
@@ -141,11 +141,17 @@ export type ConnectionPageInfo = {
 
 export type CreateAdvertisementInput = {
   endDate: Scalars['Date'];
-  mediaUrl: Scalars['URL'];
+  file: Scalars['String'];
   name: Scalars['String'];
-  orgId: Scalars['ID'];
+  organizationId: Scalars['ID'];
   startDate: Scalars['Date'];
   type: Scalars['String'];
+};
+
+export type CreateAdvertisementPayload = {
+  __typename?: 'CreateAdvertisementPayload';
+  _id?: Maybe<Scalars['ID']>;
+  advertisement: Advertisement;
 };
 
 export type CreateUserTagInput = {
@@ -517,7 +523,7 @@ export type Mutation = {
   cancelMembershipRequest: MembershipRequest;
   checkIn: CheckIn;
   createAdmin: User;
-  createAdvertisement: Advertisement;
+  createAdvertisement?: Maybe<CreateAdvertisementPayload>;
   createComment?: Maybe<Comment>;
   createDirectChat: DirectChat;
   createDonation: Donation;
@@ -693,7 +699,7 @@ export type MutationCreateAdminArgs = {
 
 
 export type MutationCreateAdvertisementArgs = {
-  data: CreateAdvertisementInput;
+  input: CreateAdvertisementInput;
 };
 
 
@@ -1934,6 +1940,7 @@ export type ResolversTypes = {
   ConnectionError: ResolversTypes['InvalidCursor'] | ResolversTypes['MaximumValueError'];
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
   CreateAdvertisementInput: CreateAdvertisementInput;
+  CreateAdvertisementPayload: ResolverTypeWrapper<CreateAdvertisementPayload>;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: ResolverTypeWrapper<Scalars['Date']>;
@@ -2066,6 +2073,7 @@ export type ResolversParentTypes = {
   ConnectionError: ResolversParentTypes['InvalidCursor'] | ResolversParentTypes['MaximumValueError'];
   ConnectionPageInfo: ConnectionPageInfo;
   CreateAdvertisementInput: CreateAdvertisementInput;
+  CreateAdvertisementPayload: CreateAdvertisementPayload;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date'];
@@ -2184,9 +2192,9 @@ export type RoleDirectiveResolver<Result, Parent, ContextType = any, Args = Role
 export type AdvertisementResolvers<ContextType = any, ParentType extends ResolversParentTypes['Advertisement'] = ResolversParentTypes['Advertisement']> = {
   _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  mediaUrl?: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
+  mediaUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  orgId?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  organizationId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -2262,6 +2270,12 @@ export type ConnectionPageInfoResolvers<ContextType = any, ParentType extends Re
   hasNextPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   hasPreviousPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   startCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type CreateAdvertisementPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateAdvertisementPayload'] = ResolversParentTypes['CreateAdvertisementPayload']> = {
+  _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  advertisement?: Resolver<ResolversTypes['Advertisement'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2520,7 +2534,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   cancelMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationCancelMembershipRequestArgs, 'membershipRequestId'>>;
   checkIn?: Resolver<ResolversTypes['CheckIn'], ParentType, ContextType, RequireFields<MutationCheckInArgs, 'data'>>;
   createAdmin?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateAdminArgs, 'data'>>;
-  createAdvertisement?: Resolver<ResolversTypes['Advertisement'], ParentType, ContextType, RequireFields<MutationCreateAdvertisementArgs, 'data'>>;
+  createAdvertisement?: Resolver<Maybe<ResolversTypes['CreateAdvertisementPayload']>, ParentType, ContextType, RequireFields<MutationCreateAdvertisementArgs, 'input'>>;
   createComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationCreateCommentArgs, 'data' | 'postId'>>;
   createDirectChat?: Resolver<ResolversTypes['DirectChat'], ParentType, ContextType, RequireFields<MutationCreateDirectChatArgs, 'data'>>;
   createDonation?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<MutationCreateDonationArgs, 'amount' | 'nameOfOrg' | 'nameOfUser' | 'orgId' | 'payPalId' | 'userId'>>;
@@ -2886,6 +2900,7 @@ export type Resolvers<ContextType = any> = {
   Comment?: CommentResolvers<ContextType>;
   ConnectionError?: ConnectionErrorResolvers<ContextType>;
   ConnectionPageInfo?: ConnectionPageInfoResolvers<ContextType>;
+  CreateAdvertisementPayload?: CreateAdvertisementPayloadResolvers<ContextType>;
   Date?: GraphQLScalarType;
   DateTime?: GraphQLScalarType;
   DeletePayload?: DeletePayloadResolvers<ContextType>;

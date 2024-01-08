@@ -387,10 +387,10 @@ export const inputs = gql`
 
   input CreateAdvertisementInput {
     endDate: Date!
-    mediaUrl: URL!
     name: String!
-    orgId: ID!
+    organizationId: ID!
     startDate: Date!
     type: String!
+    file: String!
   }
 `;

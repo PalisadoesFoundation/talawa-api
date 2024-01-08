@@ -28,6 +28,7 @@ beforeAll(async () => {
     startDate: new Date(),
     type: "POPUP",
     name: "Cookies at just $5 for a packet",
+    file: "data:image/png;base64,bWVkaWEgY29udGVudA==",
   });
 });
 

@@ -5,9 +5,9 @@ directive @role(requires: UserType) on FIELD_DEFINITION
 type Advertisement {
   _id: ID
   endDate: Date!
-  mediaUrl: URL!
+  mediaUrl: URL
   name: String!
-  orgId: ID
+  organizationId: ID!
   startDate: Date!
   type: String!
 }
@@ -86,11 +86,16 @@ type ConnectionPageInfo {
 
 input CreateAdvertisementInput {
   endDate: Date!
-  mediaUrl: URL!
+  file: String!
   name: String!
-  orgId: ID!
+  organizationId: ID!
   startDate: Date!
   type: String!
+}
+
+type CreateAdvertisementPayload {
+  _id: ID
+  advertisement: Advertisement!
 }
 
 input CreateUserTagInput {
@@ -447,7 +452,7 @@ type Mutation {
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   checkIn(data: CheckInInput!): CheckIn!
   createAdmin(data: UserAndOrganizationInput!): User!
-  createAdvertisement(data: CreateAdvertisementInput!): Advertisement!
+  createAdvertisement(input: CreateAdvertisementInput!): CreateAdvertisementPayload
   createComment(data: CommentInput!, postId: ID!): Comment
   createDirectChat(data: createChatInput!): DirectChat!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!

@@ -1,15 +1,12 @@
-import type { Types, Model } from "mongoose";
+import type { Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 /**
  * This is an interface that represents a database(MongoDB) document for Advertisement.
  */
-type AdvertisementTypes = {
-  type: "POPUP" | "MENU" | "BANNER";
-  // Other properties specific to each type
-};
+type AdvertisementTypes = "POPUP" | "MENU" | "BANNER";
 export interface InterfaceAdvertisement {
-  _id: Types.ObjectId;
-  orgId: string;
+  _id: string;
+  organizationId: string;
   name: string;
   mediaUrl: string;
   type: AdvertisementTypes;
@@ -23,7 +20,7 @@ export interface InterfaceAdvertisement {
  */
 
 /**
- * @param  orgId - Organization ID associated with the advertisement (type: Schema.Types.ObjectId)
+ * @param  organizationId - Organization ID associated with the advertisement (type: Schema.Types.ObjectId)
  * Description: Organization ID associated with the advertisement.
  */
 
@@ -51,8 +48,9 @@ const advertisementSchema = new Schema({
     type: String,
     required: true,
   },
-  orgId: {
+  organizationId: {
     type: String,
+    required: true,
   },
   mediaUrl: {
     type: String,
