@@ -27,7 +27,7 @@ input AddressInput {
 type Advertisement {
   _id: ID
   endDate: Date!
-  mediaUrl: URL
+  mediaUrl: URL!
   name: String!
   organizationId: ID!
   startDate: Date!

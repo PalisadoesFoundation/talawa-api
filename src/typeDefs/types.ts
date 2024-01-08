@@ -86,7 +86,7 @@ export const types = gql`
     _id: ID
     name: String!
     organizationId: ID!
-    mediaUrl: URL
+    mediaUrl: URL!
     type: String!
     startDate: Date!
     endDate: Date!

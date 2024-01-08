@@ -78,7 +78,7 @@ export type Advertisement = {
   __typename?: 'Advertisement';
   _id?: Maybe<Scalars['ID']>;
   endDate: Scalars['Date'];
-  mediaUrl?: Maybe<Scalars['URL']>;
+  mediaUrl: Scalars['URL'];
   name: Scalars['String'];
   organizationId: Scalars['ID'];
   startDate: Scalars['Date'];
