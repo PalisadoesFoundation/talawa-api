@@ -71,7 +71,6 @@ export const createCategory: MutationResolvers["createCategory"] = async (
     category: args.category,
     orgId: args.orgId,
     createdBy: context.userId,
-    updatedBy: context.userId,
   });
 
   await Organization.findOneAndUpdate(

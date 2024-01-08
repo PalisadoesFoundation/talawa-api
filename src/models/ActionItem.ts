@@ -21,7 +21,6 @@ export interface InterfaceActionItem {
   completed: boolean;
   event: PopulatedDoc<InterfaceEvent & Document>;
   createdBy: PopulatedDoc<InterfaceUser & Document>;
-  updatedBy: PopulatedDoc<InterfaceUser & Document>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -39,7 +38,6 @@ export interface InterfaceActionItem {
  * @param completed - Whether the ActionItem has been completed.
  * @param event - Event to which the ActionItem is related, refer to the `Event` model.
  * @param createdBy - User who created the ActionItem, refer to the `User` model.
- * @param updatedBy - User who last updated the ActionItem, refer to the `User` model.
  * @param createdAt - Timestamp when the ActionItem was created.
  * @param updatedAt - Timestamp when the ActionItem was last updated.
  */
@@ -88,11 +86,6 @@ const actionItemSchema = new Schema(
       ref: "Event",
     },
     createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    updatedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,

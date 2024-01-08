@@ -176,7 +176,6 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
     {
       ...(args.data as UpdateActionItemInputType),
       assignmentDate: updatedAssignmentDate,
-      updatedBy: context.userId,
       assignedBy: updatedAssignedBy,
     },
     {

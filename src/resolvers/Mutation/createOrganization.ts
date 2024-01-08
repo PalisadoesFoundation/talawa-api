@@ -88,7 +88,6 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       category: "Default",
       orgId: createdOrganization._id,
       createdBy: context.userId,
-      updatedBy: context.userId,
     });
 
     // Adding the default category to the createdOrganization

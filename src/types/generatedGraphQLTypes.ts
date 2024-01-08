@@ -69,7 +69,6 @@ export type ActionItem = {
   postCompletionNotes?: Maybe<Scalars['String']>;
   preCompletionNotes?: Maybe<Scalars['String']>;
   updatedAt: Scalars['Date'];
-  updatedBy: User;
 };
 
 export type Address = {
@@ -132,7 +131,6 @@ export type Category = {
   disabled: Scalars['Boolean'];
   org: Organization;
   updatedAt: Scalars['Date'];
-  updatedBy: User;
 };
 
 export type CheckIn = {
@@ -2392,7 +2390,6 @@ export type ActionItemResolvers<ContextType = any, ParentType extends ResolversP
   postCompletionNotes?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   preCompletionNotes?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  updatedBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2448,7 +2445,6 @@ export type CategoryResolvers<ContextType = any, ParentType extends ResolversPar
   disabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   org?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  updatedBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

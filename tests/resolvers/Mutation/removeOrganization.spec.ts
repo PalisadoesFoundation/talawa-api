@@ -114,14 +114,12 @@ beforeAll(async () => {
 
   testCategory = await Category.create({
     createdBy: testUsers[0]?._id,
-    updatedBy: testUsers[0]?._id,
     orgId: testOrganization?._id,
     category: "Default",
   });
 
   testActionItem = await ActionItem.create({
     createdBy: testUsers[0]?._id,
-    updatedBy: testUsers[0]?._id,
     assignedTo: testUsers[1]?._id,
     assignedBy: testUsers[0]?._id,
     categoryId: testCategory?._id,

@@ -13,7 +13,6 @@ export interface InterfaceCategory {
   orgId: PopulatedDoc<InterfaceOrganization & Document>;
   disabled: boolean;
   createdBy: PopulatedDoc<InterfaceUser & Document>;
-  updatedBy: PopulatedDoc<InterfaceUser & Document>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,7 +23,6 @@ export interface InterfaceCategory {
  * @param orgId - Organization the category belongs to, refer to the `Organization` model.
  * @param disabled - Whether category is disabled or not.
  * @param createdBy - Task creator, refer to `User` model.
- * @param updatedBy - Task creator, refer to `User` model.
  * @param createdAt - Time stamp of data creation.
  * @param updatedAt - Time stamp of data updation.
  */
@@ -45,11 +43,6 @@ const categorySchema = new Schema(
       default: false,
     },
     createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    updatedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,

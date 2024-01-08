@@ -28,14 +28,12 @@ export const createTestActionItem = async (): Promise<
 
   const testCategory = await Category.create({
     createdBy: testUser?._id,
-    updatedBy: testUser?._id,
     orgId: testOrganization?._id,
     category: "Default",
   });
 
   const testActionItem = await ActionItem.create({
     createdBy: testUser?._id,
-    updatedBy: testUser?._id,
     assignedTo: randomUser?._id,
     assignedBy: testUser?._id,
     categoryId: testCategory?._id,
@@ -57,7 +55,6 @@ export const createNewTestActionItem = async ({
 }: InterfaceCreateNewTestAction): Promise<TestActionItemType> => {
   const newTestActionItem = await ActionItem.create({
     createdBy: currUserId,
-    updatedBy: currUserId,
     assignedTo: assignedUserId,
     assignedBy: currUserId,
     categoryId: categoryId,
@@ -74,7 +71,6 @@ export const createTestActionItems = async (): Promise<
 
   const testActionItem1 = await ActionItem.create({
     createdBy: testUser?._id,
-    updatedBy: testUser?._id,
     assignedTo: randomUser?._id,
     assignedBy: testUser?._id,
     categoryId: testCategory?._id,
@@ -82,7 +78,6 @@ export const createTestActionItems = async (): Promise<
 
   const testActionItem2 = await ActionItem.create({
     createdBy: testUser?._id,
-    updatedBy: testUser?._id,
     assignedTo: randomUser?._id,
     assignedBy: testUser?._id,
     categoryId: testCategory?._id,

@@ -30,7 +30,6 @@ export const types = gql`
     completed: Boolean
     event: Event
     createdBy: User!
-    updatedBy: User!
     createdAt: Date!
     updatedAt: Date!
   }
@@ -369,7 +368,6 @@ export const types = gql`
     org: Organization!
     disabled: Boolean!
     createdBy: User!
-    updatedBy: User!
     createdAt: Date!
     updatedAt: Date!
   }

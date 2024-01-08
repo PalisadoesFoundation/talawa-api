@@ -64,7 +64,6 @@ export const updateCategory: MutationResolvers["updateCategory"] = async (
     },
     {
       ...(args.data as UpdateCategoryInputType),
-      updatedBy: context.userId,
     },
     {
       new: true,

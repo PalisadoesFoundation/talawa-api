@@ -155,7 +155,6 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     completionDate: args.data.completionDate,
     event: args.data.event,
     createdBy: context.userId,
-    updatedBy: context.userId,
   });
 
   if (args.data.event) {

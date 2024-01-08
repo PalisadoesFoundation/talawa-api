@@ -4,7 +4,6 @@ import { assignedBy } from "./assignedBy";
 import { category } from "./category";
 import { event } from "./event";
 import { createdBy } from "./createdBy";
-import { updatedBy } from "./updatedBy";
 
 export const ActionItem: ActionItemResolvers = {
   assignedTo,
@@ -12,5 +11,4 @@ export const ActionItem: ActionItemResolvers = {
   category,
   event,
   createdBy,
-  updatedBy,
 };
