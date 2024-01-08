@@ -5,10 +5,6 @@ import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { login as loginResolver } from "../../../src/resolvers/Mutation/login";
 import {
-  androidFirebaseOptions,
-  iosFirebaseOptions,
-} from "../../../src/config";
-import {
   INVALID_CREDENTIALS_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
@@ -219,8 +215,6 @@ email === args.data.email`, async () => {
     expect(loginPayload).toEqual(
       expect.objectContaining({
         user: testUser,
-        androidFirebaseOptions,
-        iosFirebaseOptions,
       })
     );
     expect(loginPayload?.user).toBeDefined();
