@@ -26,6 +26,8 @@ beforeAll(async () => {
       creator: testUser?._id,
       admins: [testUser?._id],
       members: [testUser?._id],
+      userRegistrationRequired: true,
+      visibleInSearch: true,
       apiUrl: `apiUrl${nanoid()}`,
     },
     {
@@ -33,6 +35,8 @@ beforeAll(async () => {
       description: `description${nanoid()}`,
       creator: testUser?._id,
       admins: [testUser?._id],
+      userRegistrationRequired: false,
+      visibleInSearch: false,
       members: [testUser?._id],
       apiUrl: `apiUrl${nanoid()}`,
     },
@@ -41,6 +45,8 @@ beforeAll(async () => {
       description: `description${nanoid()}`,
       creator: testUser?._id,
       admins: [testUser?._id],
+      userRegistrationRequired: true,
+      visibleInSearch: true,
       members: [testUser?._id],
       apiUrl: `apiUrl${nanoid()}`,
     },
@@ -109,7 +115,7 @@ describe("resolvers -> Query -> organizationsConnection", () => {
   it(`returns paginated list of all existing organizations filtered by args.where ===
   { id: testOrganizations[1]._id, name: testOrganizations[1].name, 
   description: testOrganizations[1].description, apiUrl: testOrganizations[1].apiUrl,
-  visibleInSearch: testOrganizations[1].visibleInSearch, isPublic: testOrganizations[1].isPublic }
+  visibleInSearch: testOrganizations[1].visibleInSearch, userRegistrationRequired: testOrganizations[1].userRegistrationRequired }
   and sorted by ascending order of organization._id if args.orderBy === 'id_ASC'`, async () => {
     const sort = {
       _id: 1,
@@ -120,6 +126,8 @@ describe("resolvers -> Query -> organizationsConnection", () => {
       name: testOrganizations[1].name,
       description: testOrganizations[1].description,
       apiUrl: testOrganizations[1].apiUrl,
+      visibleInSearch: testOrganizations[1].visibleInSearch,
+      userRegistrationRequired: testOrganizations[1].userRegistrationRequired,
     };
 
     const args: QueryOrganizationsConnectionArgs = {
@@ -130,6 +138,8 @@ describe("resolvers -> Query -> organizationsConnection", () => {
         name: testOrganizations[1].name,
         description: testOrganizations[1].description,
         apiUrl: testOrganizations[1].apiUrl,
+        visibleInSearch: testOrganizations[1].visibleInSearch,
+        userRegistrationRequired: testOrganizations[1].userRegistrationRequired,
       },
       orderBy: "id_ASC",
     };
