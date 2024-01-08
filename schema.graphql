@@ -106,15 +106,12 @@ input CreateAdvertisementInput {
   type: String!
 }
 
-<<<<<<< HEAD
 type CreateAdvertisementPayload {
   _id: ID
   advertisement: Advertisement!
 }
-=======
-scalar CountryCode
 
->>>>>>> b04e7c608abc3df516b2451c3800dab71cf49917
+scalar CountryCode
 
 input CreateUserTagInput {
   name: String!
