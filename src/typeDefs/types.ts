@@ -209,7 +209,7 @@ export const types = gql`
     _id: ID!
     name: String!
     description: String!
-    location: String
+    address: Address
     isPublic: Boolean!
     creator: User!
     members: [User]

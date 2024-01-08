@@ -14,7 +14,16 @@ export interface InterfaceOrganization {
   image: string | undefined;
   name: string;
   description: string;
-  location: string | undefined;
+  address: {
+    city: string;
+    countryCode: string;
+    dependentLocality: string;
+    line1: string;
+    line2: string;
+    postalCode: string;
+    sortingCode: string;
+    state: string;
+  };
   isPublic: boolean;
   creator: PopulatedDoc<InterfaceUser & Document>;
   status: string;
@@ -35,7 +44,7 @@ export interface InterfaceOrganization {
  * @param image - Organization image URL.
  * @param name - Organization name.
  * @param description - Organization description.
- * @param location - Organization location.
+ * @param address - Organization address, stored as an object.
  * @param isPublic - Organization visibility.
  * @param creator - Organization creator, referring to `User` model.
  * @param status - Status.
@@ -63,8 +72,31 @@ const organizationSchema = new Schema({
     type: String,
     required: true,
   },
-  location: {
-    type: String,
+  address: {
+    city: {
+      type: String,
+    },
+    countryCode: {
+      type: String,
+    },
+    dependentLocality: {
+      type: String,
+    },
+    line1: {
+      type: String,
+    },
+    line2: {
+      type: String,
+    },
+    postalCode: {
+      type: String,
+    },
+    sortingCode: {
+      type: String,
+    },
+    state: {
+      type: String,
+    },
   },
   isPublic: {
     type: Boolean,

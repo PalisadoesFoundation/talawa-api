@@ -564,6 +564,7 @@ input OTPInput {
 
 type Organization {
   _id: ID!
+  address: Address
   admins(adminId: ID): [User]
   apiUrl: URL!
   blockedUsers: [User]
@@ -573,7 +574,6 @@ type Organization {
   description: String!
   image: String
   isPublic: Boolean!
-  location: String
   members: [User]
   membershipRequests: [MembershipRequest]
   name: String!
@@ -601,12 +601,12 @@ type OrganizationInfoNode {
 }
 
 input OrganizationInput {
+  address: AddressInput
   apiUrl: URL
   attendees: String
   description: String!
   image: String
   isPublic: Boolean!
-  location: String
   name: String!
   visibleInSearch: Boolean!
 }

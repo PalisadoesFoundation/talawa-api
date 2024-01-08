@@ -1107,6 +1107,7 @@ export type OtpInput = {
 export type Organization = {
   __typename?: 'Organization';
   _id: Scalars['ID'];
+  address?: Maybe<Address>;
   admins?: Maybe<Array<Maybe<User>>>;
   apiUrl: Scalars['URL'];
   blockedUsers?: Maybe<Array<Maybe<User>>>;
@@ -1116,7 +1117,6 @@ export type Organization = {
   description: Scalars['String'];
   image?: Maybe<Scalars['String']>;
   isPublic: Scalars['Boolean'];
-  location?: Maybe<Scalars['String']>;
   members?: Maybe<Array<Maybe<User>>>;
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
   name: Scalars['String'];
@@ -1159,12 +1159,12 @@ export type OrganizationInfoNode = {
 };
 
 export type OrganizationInput = {
+  address?: InputMaybe<AddressInput>;
   apiUrl?: InputMaybe<Scalars['URL']>;
   attendees?: InputMaybe<Scalars['String']>;
   description: Scalars['String'];
   image?: InputMaybe<Scalars['String']>;
   isPublic: Scalars['Boolean'];
-  location?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
   visibleInSearch: Scalars['Boolean'];
 };
@@ -2661,6 +2661,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type OrganizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Organization'] = ResolversParentTypes['Organization']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  address?: Resolver<Maybe<ResolversTypes['Address']>, ParentType, ContextType>;
   admins?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<OrganizationAdminsArgs>>;
   apiUrl?: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
   blockedUsers?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
@@ -2670,7 +2671,6 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  location?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   members?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
