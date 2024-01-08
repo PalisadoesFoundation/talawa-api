@@ -3,6 +3,7 @@ import {
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
+  USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
@@ -18,8 +19,10 @@ import { cacheEvents } from "../../services/EventCache/cacheEvents";
  * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the user exists.
+ * 2. If the new asignee exists.
  * 2. If the action item exists.
- * 3. If the user is authorized.
+ * 4. If the new asignee is a member of the organization.
+ * 5. If the user is authorized.
  * @returns Updated action item.
  */
 
@@ -62,6 +65,46 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
       ACTION_ITEM_NOT_FOUND_ERROR.CODE,
       ACTION_ITEM_NOT_FOUND_ERROR.PARAM
     );
+  }
+
+  let sameAssignedUser = false;
+
+  if (args.data.assignedTo) {
+    sameAssignedUser = Types.ObjectId(actionItem.assignedTo).equals(
+      args.data.assignedTo
+    );
+
+    if (!sameAssignedUser) {
+      const newAssignedUser = await User.findOne({
+        _id: args.data.assignedTo,
+      });
+
+      // Checks if the new asignee exists
+      if (newAssignedUser === null) {
+        throw new errors.NotFoundError(
+          requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+          USER_NOT_FOUND_ERROR.CODE,
+          USER_NOT_FOUND_ERROR.PARAM
+        );
+      }
+
+      let userIsOrganizationMember = false;
+      const currOrgId = actionItem.category.org;
+      userIsOrganizationMember = newAssignedUser.joinedOrganizations.some(
+        (organizationId) =>
+          organizationId === currOrgId ||
+          Types.ObjectId(organizationId).equals(currOrgId)
+      );
+
+      // Checks if the new asignee is a member of the organization
+      if (!userIsOrganizationMember) {
+        throw new errors.NotFoundError(
+          requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),
+          USER_NOT_MEMBER_FOR_ORGANIZATION.CODE,
+          USER_NOT_MEMBER_FOR_ORGANIZATION.PARAM
+        );
+      }
+    }
   }
 
   const currentUserIsOrgAdmin = currentUser.adminFor.some(
@@ -115,14 +158,6 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
       requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
       USER_NOT_AUTHORIZED_ERROR.CODE,
       USER_NOT_AUTHORIZED_ERROR.PARAM
-    );
-  }
-
-  let sameAssignedUser = false;
-
-  if (args.data.assignedTo) {
-    sameAssignedUser = Types.ObjectId(actionItem.assignedTo).equals(
-      args.data.assignedTo
     );
   }
 

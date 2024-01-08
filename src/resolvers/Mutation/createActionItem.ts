@@ -7,6 +7,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   EVENT_NOT_FOUND_ERROR,
   CATEGORY_NOT_FOUND_ERROR,
+  USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../constants";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
@@ -19,9 +20,12 @@ import { Types } from "mongoose";
  * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the user exists
- * 2. If the category exists
- * 3. If the event exists (if action item related to an event)
- * 4. If the user is authorized.
+ * 3. If the asignee exists
+ * 4. If the category exists
+ * 5. If the asignee is a member of the organization
+ * 6. If the user is a member of the organization
+ * 7. If the event exists (if action item related to an event)
+ * 8. If the user is authorized.
  * @returns Created action item
  */
 
@@ -43,6 +47,19 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     );
   }
 
+  const assignee = await User.findOne({
+    _id: args.data.assignedTo,
+  });
+
+  // Checks whether the asignee exists.
+  if (assignee === null) {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+      USER_NOT_FOUND_ERROR.CODE,
+      USER_NOT_FOUND_ERROR.PARAM
+    );
+  }
+
   const category = await Category.findOne({
     _id: args.categoryId,
   }).lean();
@@ -53,6 +70,22 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
       requestContext.translate(CATEGORY_NOT_FOUND_ERROR.MESSAGE),
       CATEGORY_NOT_FOUND_ERROR.CODE,
       CATEGORY_NOT_FOUND_ERROR.PARAM
+    );
+  }
+
+  let asigneeIsOrganizationMember = false;
+  asigneeIsOrganizationMember = assignee.joinedOrganizations.some(
+    (organizationId) =>
+      organizationId === category.org ||
+      Types.ObjectId(organizationId).equals(category.org)
+  );
+
+  // Checks if the asignee is a member of the organization
+  if (!asigneeIsOrganizationMember) {
+    throw new errors.NotFoundError(
+      requestContext.translate(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE),
+      USER_NOT_MEMBER_FOR_ORGANIZATION.CODE,
+      USER_NOT_MEMBER_FOR_ORGANIZATION.PARAM
     );
   }
 

@@ -8,6 +8,7 @@ import {
   ACTION_ITEM_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   EVENT_NOT_FOUND_ERROR,
+  USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
@@ -107,12 +108,50 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
     }
   });
 
-  it(`throws NotAuthorizedError if the user is not a superadmin/orgAdmin/eventAdmin`, async () => {
+  it(`throws NotFoundError if no user exists with _id === args.data.assignedTo`, async () => {
+    try {
+      const args: MutationUpdateActionItemArgs = {
+        id: testActionItem?._id,
+        data: {
+          assignedTo: Types.ObjectId().toString(),
+        },
+      };
+
+      const context = {
+        userId: testUser?._id,
+      };
+
+      await updateActionItemResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
+
+  it(`throws NotFoundError if the new asignee is not a member of the organization`, async () => {
     try {
       const args: MutationUpdateActionItemArgs = {
         id: testActionItem?._id,
         data: {
           assignedTo: randomUser?._id,
+        },
+      };
+
+      const context = {
+        userId: testUser?._id,
+      };
+
+      await updateActionItemResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE);
+    }
+  });
+
+  it(`throws NotAuthorizedError if the user is not a superadmin/orgAdmin/eventAdmin`, async () => {
+    try {
+      const args: MutationUpdateActionItemArgs = {
+        id: testActionItem?._id,
+        data: {
+          assignedTo: testUser?._id,
         },
       };
 
@@ -200,6 +239,15 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       },
       {
         new: true,
+      }
+    );
+
+    await User.updateOne(
+      {
+        _id: randomUser?._id,
+      },
+      {
+        $push: { joinedOrganizations: testOrganization?._id },
       }
     );
 

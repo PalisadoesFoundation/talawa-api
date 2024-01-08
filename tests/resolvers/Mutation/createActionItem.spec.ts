@@ -9,6 +9,7 @@ import {
   CATEGORY_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   EVENT_NOT_FOUND_ERROR,
+  USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUser } from "../../helpers/userAndOrg";
@@ -113,7 +114,54 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     }
   });
 
+  it(`throws NotFoundError if no user exists with _id === args.data.assignedTo`, async () => {
+    try {
+      const args: MutationCreateActionItemArgs = {
+        data: {
+          assignedTo: Types.ObjectId().toString(),
+        },
+        categoryId: testCategory?._id,
+      };
+
+      const context = {
+        userId: testUser?._id,
+      };
+
+      await createActionItemResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
+
+  it(`throws NotFoundError new assignee is not a member of the organization`, async () => {
+    try {
+      const args: MutationCreateActionItemArgs = {
+        data: {
+          assignedTo: randomUser?._id,
+        },
+        categoryId: testCategory?._id,
+      };
+
+      const context = {
+        userId: testUser?._id,
+      };
+
+      await createActionItemResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(USER_NOT_MEMBER_FOR_ORGANIZATION.MESSAGE);
+    }
+  });
+
   it(`throws NotFoundError if no event exists with _id === args.data.event`, async () => {
+    await User.findOneAndUpdate(
+      {
+        _id: randomUser?._id,
+      },
+      {
+        $push: { joinedOrganizations: testOrganization?._id },
+      }
+    );
+
     try {
       const args: MutationCreateActionItemArgs = {
         data: {
