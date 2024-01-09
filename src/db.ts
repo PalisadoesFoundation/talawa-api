@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import { MONGO_DB_URL } from "./constants";
 import { logger } from "./libraries";
 
+let session!: mongoose.ClientSession;
+
 export const connect = async (): Promise<void> => {
   try {
     await mongoose.connect(MONGO_DB_URL as string, {
@@ -10,6 +12,7 @@ export const connect = async (): Promise<void> => {
       useFindAndModify: false,
       useNewUrlParser: true,
     });
+    session = await mongoose.startSession();
   } catch (error: unknown) {
     if (error instanceof Error) {
       const errorMessage = error.toString();
@@ -45,5 +48,8 @@ export const connect = async (): Promise<void> => {
 };
 
 export const disconnect = async (): Promise<void> => {
+  session?.endSession();
   await mongoose.connection.close();
 };
+
+export { session };

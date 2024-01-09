@@ -11,7 +11,8 @@ import { isValidString } from "../../libraries/validators/validateString";
 import { compareDates } from "../../libraries/validators/compareDates";
 import { EventAttendee } from "../../models/EventAttendee";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
-import mongoose from "mongoose";
+import type mongoose from "mongoose";
+import { session } from "../../db";
 
 /**
  * This function enables to create an event.
@@ -120,7 +121,6 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     );
   }
 
-  const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
@@ -151,7 +151,6 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     }
 
     await session.commitTransaction();
-    session.endSession();
 
     if (!createdEvent) {
       throw new Error(requestContext.translate("Failed to create event!"));
@@ -161,7 +160,6 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     return createdEvent[0].toObject();
   } catch (error) {
     await session.abortTransaction();
-    session.endSession();
     throw error;
   }
   /* Commenting out this notification code coz we don't use firebase anymore.
