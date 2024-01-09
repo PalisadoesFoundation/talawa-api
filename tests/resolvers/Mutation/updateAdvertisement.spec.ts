@@ -10,6 +10,8 @@ import {
   END_DATE_VALIDATION_ERROR,
   INPUT_NOT_FOUND_ERROR,
   START_DATE_VALIDATION_ERROR,
+  FORBIDDEN_FIELD_UPDATE_ERROR,
+  FIELD_NON_EMPTY_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
@@ -211,6 +213,64 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       expect(spy).toHaveBeenLastCalledWith(INPUT_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${INPUT_NOT_FOUND_ERROR.MESSAGE}`
+      );
+    }
+  });
+  it(`throws InputValidationError if a field has null value or empty string`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationUpdateAdvertisementArgs = {
+        input: {
+          _id: testAdvertisement!._id,
+          name: null,
+        },
+      };
+
+      const context = { userId: testUser?._id };
+
+      const { updateAdvertisement: updateAdvertisementResolverInputError } =
+        await import("../../../src/resolvers/Mutation/updateAdvertisement");
+
+      await updateAdvertisementResolverInputError?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenLastCalledWith(FIELD_NON_EMPTY_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        `Translated ${FIELD_NON_EMPTY_ERROR.MESSAGE}`
+      );
+    }
+  });
+  it(`throws InputValidationError if trying to update a non-permitted field`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args = {
+        input: {
+          _id: testAdvertisement!._id,
+          orgId: "1",
+        },
+      };
+
+      const context = { userId: testUser?._id };
+
+      const { updateAdvertisement: updateAdvertisementResolverInputError } =
+        await import("../../../src/resolvers/Mutation/updateAdvertisement");
+
+      await updateAdvertisementResolverInputError?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toHaveBeenLastCalledWith(
+        FORBIDDEN_FIELD_UPDATE_ERROR.MESSAGE
+      );
+      expect(error.message).toEqual(
+        `Translated ${FORBIDDEN_FIELD_UPDATE_ERROR.MESSAGE}`
       );
     }
   });

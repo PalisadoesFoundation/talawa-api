@@ -3,16 +3,12 @@ import { Schema, model, models } from "mongoose";
 /**
  * This is an interface that represents a database(MongoDB) document for Advertisement.
  */
-type AdvertisementTypes = {
-  type: "POPUP" | "MENU" | "BANNER";
-  // Other properties specific to each type
-};
 export interface InterfaceAdvertisement {
   _id: Types.ObjectId;
   orgId: string;
   name: string;
   link: string;
-  type: string;
+  type: "POPUP" | "MENU" | "BANNER";
   startDate: string;
   endDate: string;
 }

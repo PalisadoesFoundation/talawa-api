@@ -608,7 +608,7 @@ export type Mutation = {
   unlikeComment?: Maybe<Comment>;
   unlikePost?: Maybe<Post>;
   unregisterForEventByUser: Event;
-  updateAdvertisement?: Maybe<Advertisement>;
+  updateAdvertisement: UpdateAdvertisementPayload;
   updateEvent: Event;
   updateEventProject: EventProject;
   updateLanguage: User;
@@ -1649,6 +1649,16 @@ export type UpdateAdvertisementInput = {
   type?: InputMaybe<Scalars['String']>;
 };
 
+export type UpdateAdvertisementPayload = {
+  __typename?: 'UpdateAdvertisementPayload';
+  _id?: Maybe<Scalars['ID']>;
+  endDate: Scalars['Date'];
+  link: Scalars['String'];
+  name: Scalars['String'];
+  startDate: Scalars['Date'];
+  type: Scalars['String'];
+};
+
 export type UpdateEventInput = {
   allDay?: InputMaybe<Scalars['Boolean']>;
   description?: InputMaybe<Scalars['String']>;
@@ -2100,6 +2110,7 @@ export type ResolversTypes = {
   UnauthenticatedError: ResolverTypeWrapper<UnauthenticatedError>;
   UnauthorizedError: ResolverTypeWrapper<UnauthorizedError>;
   UpdateAdvertisementInput: UpdateAdvertisementInput;
+  UpdateAdvertisementPayload: ResolverTypeWrapper<UpdateAdvertisementPayload>;
   UpdateEventInput: UpdateEventInput;
   UpdateEventProjectInput: UpdateEventProjectInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
@@ -2227,6 +2238,7 @@ export type ResolversParentTypes = {
   UnauthenticatedError: UnauthenticatedError;
   UnauthorizedError: UnauthorizedError;
   UpdateAdvertisementInput: UpdateAdvertisementInput;
+  UpdateAdvertisementPayload: UpdateAdvertisementPayload;
   UpdateEventInput: UpdateEventInput;
   UpdateEventProjectInput: UpdateEventProjectInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
@@ -2662,7 +2674,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   unlikeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationUnlikeCommentArgs, 'id'>>;
   unlikePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUnlikePostArgs, 'id'>>;
   unregisterForEventByUser?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUnregisterForEventByUserArgs, 'id'>>;
-  updateAdvertisement?: Resolver<Maybe<ResolversTypes['Advertisement']>, ParentType, ContextType, RequireFields<MutationUpdateAdvertisementArgs, 'input'>>;
+  updateAdvertisement?: Resolver<ResolversTypes['UpdateAdvertisementPayload'], ParentType, ContextType, RequireFields<MutationUpdateAdvertisementArgs, 'input'>>;
   updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'id'>>;
   updateEventProject?: Resolver<ResolversTypes['EventProject'], ParentType, ContextType, RequireFields<MutationUpdateEventProjectArgs, 'data' | 'id'>>;
   updateLanguage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateLanguageArgs, 'languageCode'>>;
@@ -2864,6 +2876,16 @@ export type UnauthorizedErrorResolvers<ContextType = any, ParentType extends Res
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type UpdateAdvertisementPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['UpdateAdvertisementPayload'] = ResolversParentTypes['UpdateAdvertisementPayload']> = {
+  _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  link?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
   name: 'Upload';
 }
@@ -3031,6 +3053,7 @@ export type Resolvers<ContextType = any> = {
   URL?: GraphQLScalarType;
   UnauthenticatedError?: UnauthenticatedErrorResolvers<ContextType>;
   UnauthorizedError?: UnauthorizedErrorResolvers<ContextType>;
+  UpdateAdvertisementPayload?: UpdateAdvertisementPayloadResolvers<ContextType>;
   Upload?: GraphQLScalarType;
   User?: UserResolvers<ContextType>;
   UserConnection?: UserConnectionResolvers<ContextType>;

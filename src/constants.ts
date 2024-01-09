@@ -137,6 +137,19 @@ export const START_DATE_VALIDATION_ERROR = {
   PARAM: "dateValidation",
 };
 
+export const FORBIDDEN_FIELD_UPDATE_ERROR = {
+  MESSAGE: "Error: Forbidden field update.",
+  CODE: "forbidden_field_update",
+  PARAM: "field",
+};
+
+export const FIELD_NON_EMPTY_ERROR = {
+  MESSAGE:
+    "Error: Field cannot be null, an empty string, or contain only spaces.",
+  CODE: "field_non_empty_error",
+  PARAM: "field",
+};
+
 export const LENGTH_VALIDATION_ERROR = {
   MESSAGE: "Error: Length must be greater than 0 and less than",
   CODE: "string.notValid",

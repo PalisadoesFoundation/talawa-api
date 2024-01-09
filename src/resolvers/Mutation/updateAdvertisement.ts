@@ -7,6 +7,8 @@ import {
   INPUT_NOT_FOUND_ERROR,
   END_DATE_VALIDATION_ERROR,
   START_DATE_VALIDATION_ERROR,
+  FORBIDDEN_FIELD_UPDATE_ERROR,
+  FIELD_NON_EMPTY_ERROR,
 } from "../../constants";
 
 export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
@@ -20,6 +22,37 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
         INPUT_NOT_FOUND_ERROR.CODE,
         INPUT_NOT_FOUND_ERROR.PARAM
       );
+    }
+
+    const permittedFields = [
+      "_id",
+      "name",
+      "link",
+      "type",
+      "startDate",
+      "endDate",
+    ];
+
+    // Check for unintended null values in permitted fields, if all fields are permitted
+    for (const field of Object.keys(args.input)) {
+      if (!permittedFields.includes(field)) {
+        throw new errors.InputValidationError(
+          requestContext.translate(FORBIDDEN_FIELD_UPDATE_ERROR.MESSAGE),
+          FORBIDDEN_FIELD_UPDATE_ERROR.CODE,
+          FORBIDDEN_FIELD_UPDATE_ERROR.PARAM
+        );
+      }
+      const fieldValue = (args.input as Record<string, any>)[field];
+      if (
+        fieldValue === null ||
+        (typeof fieldValue === "string" && fieldValue.trim() === "")
+      ) {
+        throw new errors.InputValidationError(
+          requestContext.translate(FIELD_NON_EMPTY_ERROR.MESSAGE),
+          FIELD_NON_EMPTY_ERROR.CODE,
+          FIELD_NON_EMPTY_ERROR.PARAM
+        );
+      }
     }
 
     const currentUser = await User.findOne({
@@ -48,7 +81,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
 
     const { startDate, endDate } = args.input;
 
-    //If startDate is less than current date
+    //If startDate is less than or equal to current date
     if (
       startDate &&
       new Date(startDate) <= new Date(new Date().toDateString())
@@ -60,7 +93,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       );
     }
 
-    //If endDate is less than startDate
+    //If endDate is less than or equal to startDate
     if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
       throw new errors.InputValidationError(
         requestContext.translate(END_DATE_VALIDATION_ERROR.MESSAGE),
