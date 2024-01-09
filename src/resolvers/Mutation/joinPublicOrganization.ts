@@ -49,18 +49,16 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
       );
     }
 
-    const currentUserExists = await User.exists({
-      _id: context.userId,
-    });
-
-    if (organization.userRegistrationRequired == false) {
+    if (organization.userRegistrationRequired === true) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
         USER_NOT_AUTHORIZED_ERROR.CODE,
         USER_NOT_AUTHORIZED_ERROR.PARAM
       );
     }
-
+    const currentUserExists = await User.exists({
+      _id: context.userId,
+    });
     // Checks whether currentUser with _id === context.userId exists.
     if (currentUserExists === false) {
       throw new errors.NotFoundError(

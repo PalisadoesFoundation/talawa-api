@@ -17,6 +17,7 @@ import {
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_ALREADY_MEMBER_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
@@ -68,6 +69,69 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
     } catch (error: any) {
       expect(spy).toBeCalledWith(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
+  it(`throws UnauthorizedError message if organization with _id === args.organizationId  required registration for the users`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+    try {
+      const args: MutationJoinPublicOrganizationArgs = {
+        organizationId: testOrganization?.id,
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { joinPublicOrganization: joinPublicOrganizationResolver } =
+        await import("../../../src/resolvers/Mutation/joinPublicOrganization");
+
+      await joinPublicOrganizationResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toBeCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+    }
+  });
+
+  it(`throws NotFoundError message if no user exists with _id === context.userId`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => message);
+    try {
+      const updatedOrganizaiton = await Organization.findOneAndUpdate(
+        {
+          _id: testOrganization?._id,
+        },
+        {
+          $set: {
+            isPublic: true,
+          },
+        },
+        {
+          new: true,
+        }
+      );
+
+      await cacheOrganizations([updatedOrganizaiton!]);
+
+      const args: MutationJoinPublicOrganizationArgs = {
+        organizationId: testOrganization?.id,
+      };
+
+      const context = {
+        userId: Types.ObjectId().toString(),
+      };
+
+      const { joinPublicOrganization: joinPublicOrganizationResolver } =
+        await import("../../../src/resolvers/Mutation/joinPublicOrganization");
+
+      await joinPublicOrganizationResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(spy).toBeCalledWith(USER_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
