@@ -93,6 +93,7 @@ beforeAll(async () => {
     admins: [testUserSuperAdmin?._id, testAdminUser?._id],
     members: [testUserSuperAdmin?._id, testAdminUser?._id, testMemberUser?._id],
     blockedUsers: [testBlockedMemberUser?._id],
+    visibleInSearch: true,
   });
   await User.updateOne(
     {

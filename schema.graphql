@@ -26,15 +26,15 @@ input AddressInput {
 
 type Advertisement {
   _id: ID!
-  createdAt: DateTime
-  creator: User!
+  createdAt: DateTime!
+  creator: User
   endDate: Date!
   link: String!
   name: String!
   orgId: ID!
   startDate: Date!
   type: String!
-  updatedAt: DateTime
+  updatedAt: DateTime!
 }
 
 type AggregatePost {
@@ -57,11 +57,11 @@ type CheckIn {
   _id: ID!
   allotedRoom: String
   allotedSeat: String
-  createdAt: DateTime
+  createdAt: DateTime!
   event: Event!
   feedbackSubmitted: Boolean!
   time: DateTime!
-  updatedAt: DateTime
+  updatedAt: DateTime!
   user: User!
 }
 
@@ -80,13 +80,13 @@ type CheckInStatus {
 
 type Comment {
   _id: ID!
-  createdAt: DateTime
-  creator: User!
+  createdAt: DateTime!
+  creator: User
   likeCount: Int
   likedBy: [User]
   post: Post!
   text: String!
-  updatedAt: DateTime
+  updatedAt: DateTime!
 }
 
 input CommentInput {
@@ -126,33 +126,33 @@ type DeletePayload {
 
 type DirectChat {
   _id: ID!
-  createdAt: DateTime
-  creator: User!
+  createdAt: DateTime!
+  creator: User
   messages: [DirectChatMessage]
   organization: Organization!
-  updatedAt: DateTime
+  updatedAt: DateTime!
   users: [User!]!
 }
 
 type DirectChatMessage {
   _id: ID!
-  createdAt: DateTime
+  createdAt: DateTime!
   directChatMessageBelongsTo: DirectChat!
   messageContent: String!
   receiver: User!
   sender: User!
-  updatedAt: DateTime
+  updatedAt: DateTime!
 }
 
 type Donation {
   _id: ID!
   amount: Float!
-  createdAt: DateTime
+  createdAt: DateTime!
   nameOfOrg: String!
   nameOfUser: String!
   orgId: ID!
   payPalId: String!
-  updatedAt: DateTime
+  updatedAt: DateTime!
   userId: ID!
 }
 
@@ -209,8 +209,8 @@ type Event {
   attendees: [User]
   attendeesCheckInStatus: [CheckInStatus!]!
   averageFeedbackScore: Float
-  createdAt: DateTime
-  creator: User!
+  createdAt: DateTime!
+  creator: User
   description: String!
   endDate: Date
   endTime: Time
@@ -228,7 +228,7 @@ type Event {
   startTime: Time
   status: Status!
   title: String!
-  updatedAt: DateTime
+  updatedAt: DateTime!
 }
 
 input EventAttendeeInput {
@@ -279,13 +279,13 @@ enum EventOrderByInput {
 
 type EventProject {
   _id: ID!
-  createdAt: DateTime
-  creator: User!
+  createdAt: DateTime!
+  creator: User
   description: String!
   event: Event!
   tasks: [Task]
   title: String!
-  updatedAt: DateTime
+  updatedAt: DateTime!
 }
 
 input EventProjectInput {
@@ -329,11 +329,11 @@ type ExtendSession {
 
 type Feedback {
   _id: ID!
-  createdAt: DateTime
+  createdAt: DateTime!
   event: Event!
   rating: Int!
   review: String
-  updatedAt: DateTime
+  updatedAt: DateTime!
 }
 
 input FeedbackInput {
@@ -362,30 +362,30 @@ enum Gender {
 type Group {
   _id: ID!
   admins: [User!]!
-  createdAt: DateTime
+  createdAt: DateTime!
   description: String
   organization: Organization!
   title: String!
-  updatedAt: DateTime
+  updatedAt: DateTime!
 }
 
 type GroupChat {
   _id: ID!
-  createdAt: DateTime
-  creator: User!
+  createdAt: DateTime!
+  creator: User
   messages: [GroupChatMessage]
   organization: Organization!
-  updatedAt: DateTime
+  updatedAt: DateTime!
   users: [User!]!
 }
 
 type GroupChatMessage {
   _id: ID!
-  createdAt: DateTime
+  createdAt: DateTime!
   groupChatMessageBelongsTo: GroupChat!
   messageContent: String!
   sender: User!
-  updatedAt: DateTime
+  updatedAt: DateTime!
 }
 
 type InvalidCursor implements FieldError {
@@ -453,22 +453,22 @@ type MembershipRequest {
 
 type Message {
   _id: ID!
-  createdAt: DateTime
-  creator: User!
+  createdAt: DateTime!
+  creator: User
   imageUrl: URL
   text: String!
-  updatedAt: DateTime
+  updatedAt: DateTime!
   videoUrl: URL
 }
 
 type MessageChat {
   _id: ID!
-  createdAt: DateTime
+  createdAt: DateTime!
   languageBarrier: Boolean
   message: String!
   receiver: User!
   sender: User!
-  updatedAt: DateTime
+  updatedAt: DateTime!
 }
 
 input MessageChatInput {
@@ -591,8 +591,8 @@ type Organization {
   admins(adminId: ID): [User!]!
   apiUrl: URL
   blockedUsers: [User]
-  createdAt: DateTime
-  creator: User!
+  createdAt: DateTime!
+  creator: User
   customFields: [OrganizationCustomField!]!
   description: String!
   image: String
@@ -602,9 +602,9 @@ type Organization {
   membershipRequests: [MembershipRequest]
   name: String!
   pinnedPosts: [Post]
-  updatedAt: DateTime
+  updatedAt: DateTime!
   userTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
-  visibleInSearch: Boolean
+  visibleInSearch: Boolean!
 }
 
 type OrganizationCustomField {
@@ -617,7 +617,7 @@ type OrganizationCustomField {
 type OrganizationInfoNode {
   _id: ID!
   apiUrl: URL
-  creator: User!
+  creator: User
   description: String!
   image: String
   isPublic: Boolean!
@@ -633,7 +633,7 @@ input OrganizationInput {
   isPublic: Boolean!
   location: String
   name: String!
-  visibleInSearch: Boolean
+  visibleInSearch: Boolean!
 }
 
 enum OrganizationOrderByInput {
@@ -712,7 +712,7 @@ type Plugin {
 }
 
 type PluginField {
-  createdAt: DateTime
+  createdAt: DateTime!
   key: String!
   status: Status!
   value: String!
@@ -737,8 +737,8 @@ type Post {
   _id: ID
   commentCount: Int
   comments: [Comment]
-  createdAt: DateTime
-  creator: User!
+  createdAt: DateTime!
+  creator: User
   imageUrl: URL
   likeCount: Int
   likedBy: [User]
@@ -746,7 +746,7 @@ type Post {
   pinned: Boolean
   text: String!
   title: String
-  updatedAt: DateTime
+  updatedAt: DateTime!
   videoUrl: URL
 }
 
@@ -882,13 +882,13 @@ type Subscription {
 type Task {
   _id: ID!
   completed: Boolean!
-  createdAt: DateTime
-  creator: User!
+  createdAt: DateTime!
+  creator: User
   deadline: DateTime
   description: String
   event: Event!
   title: String!
-  updatedAt: DateTime
+  updatedAt: DateTime!
   volunteers: [User]
 }
 
@@ -1016,7 +1016,7 @@ type User {
   appLanguageCode: String!
   assignedTasks: [Task]
   birthDate: Date
-  createdAt: DateTime
+  createdAt: DateTime!
   createdEvents: [Event]
   createdOrganizations: [Organization]
   educationGrade: EducationGrade
@@ -1037,7 +1037,7 @@ type User {
   registeredEvents: [Event]
   tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection
   tokenVersion: Int!
-  updatedAt: DateTime
+  updatedAt: DateTime!
   userType: String!
 }
 

@@ -147,7 +147,7 @@ export const inputs = gql`
     location: String
     attendees: String
     isPublic: Boolean!
-    visibleInSearch: Boolean
+    visibleInSearch: Boolean!
     apiUrl: URL
     image: String
   }

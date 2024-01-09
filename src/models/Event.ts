@@ -135,7 +135,6 @@ const eventSchema = new Schema(
     creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
     },
     admins: [
       {

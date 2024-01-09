@@ -43,6 +43,7 @@ beforeAll(async () => {
     creatorId: testUser?._id,
     admins: [testAdminUser?._id],
     members: [testUser?._id, testAdminUser?._id],
+    visibleInSearch: true,
   });
 
   testEvent = await Event.create({

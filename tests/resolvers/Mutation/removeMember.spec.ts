@@ -53,6 +53,7 @@ beforeAll(async () => {
       testUsers[2]?._id,
       testUsers[4],
     ],
+    visibleInSearch: true,
   });
 
   // testUser[3] is not a member of the testOrganization

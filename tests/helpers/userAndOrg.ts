@@ -37,6 +37,7 @@ export const createTestOrganizationWithAdmin = async (
     creatorId: userID,
     admins: isAdmin ? [userID] : [],
     members: isMember ? [userID] : [],
+    visibleInSearch: false,
   });
 
   await User.updateOne(

@@ -130,6 +130,7 @@ describe("resolvers -> Query -> users", () => {
         admins: [testUsers[0]._id],
         members: [testUsers[0]._id, testUsers[1]._id],
         apiUrl: "apiUrl1",
+        visibleInSearch: true,
       });
 
       const testEvent = await Event.create({

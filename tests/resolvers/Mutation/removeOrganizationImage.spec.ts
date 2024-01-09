@@ -46,6 +46,7 @@ beforeAll(async () => {
     creatorId: testAdminUser?._id,
     members: [testUser?._id],
     blockedUsers: [testUser?._id],
+    visibleInSearch: true,
   });
 
   await User.updateOne(

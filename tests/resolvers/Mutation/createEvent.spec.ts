@@ -33,6 +33,7 @@ beforeAll(async () => {
     creatorId: testUser?._id,
     admins: [testUser?._id],
     members: [testUser?._id],
+    visibleInSearch: true,
   });
 
   await User.updateOne(

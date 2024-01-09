@@ -36,7 +36,6 @@ const commentSchema = new Schema(
     creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
     },
     postId: {
       type: Schema.Types.ObjectId,

@@ -57,6 +57,7 @@ beforeAll(async () => {
     admins: [testUsers[0]?._id],
     members: [testUsers[1]?._id],
     blockedUsers: [testUsers[0]?._id],
+    visibleInSearch: true,
   });
 
   await User.updateOne(
@@ -338,6 +339,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       members: [testUsers[1]?._id],
       blockedUsers: [testUsers[0]?._id],
       image: "images/fake-image-path.png",
+      visibleInSearch: true,
     });
 
     const args: MutationRemoveOrganizationArgs = {
