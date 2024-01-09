@@ -402,7 +402,6 @@ export const types = gql`
     ): UserTagsConnection
     tokenVersion: Int!
     userType: String
-    appUserType: String
   }
 
   type UserCustomData {

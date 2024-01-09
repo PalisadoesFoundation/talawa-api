@@ -99,7 +99,6 @@ export const queries = gql`
       skip: Int
       userType: String
       adminApproved: Boolean
-      appUserType: String
     ): [User] @auth
 
     usersConnection(

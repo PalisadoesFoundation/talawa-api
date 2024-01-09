@@ -54,7 +54,6 @@ export interface InterfaceUser {
   token: string | undefined;
   tokenVersion: number;
   userType: string;
-  appUserType: string;
 }
 /**
  * This describes the schema for a `User` that corresponds to `InterfaceUser` document.
@@ -278,14 +277,8 @@ const userSchema = new Schema({
   userType: {
     type: String,
     required: true,
-    enum: ["USER", "ADMIN", "SUPERADMIN"],
+    enum: ["USER", "ADMIN", "SUPERADMIN", "NON_USER"],
     default: "USER",
-  },
-  appUserType: {
-    type: String,
-    required: true,
-    enum: ["NON_APP_USER", "APP_USER"],
-    default: "APP_USER",
   },
 });
 

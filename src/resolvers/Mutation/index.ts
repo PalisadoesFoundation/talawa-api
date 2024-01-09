@@ -90,7 +90,6 @@ import { updateUserProfile } from "./updateUserProfile";
 import { updateUserPassword } from "./updateUserPassword";
 import { updateUserTag } from "./updateUserTag";
 import { updateUserType } from "./updateUserType";
-import { updateAppUserType } from "./updateAppUserType";
 import { deleteAdvertisementById } from "./deleteAdvertisementById";
 
 export const Mutation: MutationResolvers = {
@@ -184,7 +183,6 @@ export const Mutation: MutationResolvers = {
   updateUserProfile,
   updateUserPassword,
   updateUserType,
-  updateAppUserType,
   updateUserTag,
   updatePost,
 };

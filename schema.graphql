@@ -44,11 +44,6 @@ type AggregateUser {
 
 scalar Any
 
-enum AppUserType {
-  APP_USER
-  NON_APP_USER
-}
-
 type AuthData {
   accessToken: String!
   refreshToken: String!
@@ -549,7 +544,6 @@ type Mutation {
   unlikeComment(id: ID!): Comment
   unlikePost(id: ID!): Post
   unregisterForEventByUser(id: ID!): Event!
-  updateAppUserType(data: UpdateAppUserTypeInput!): Boolean!
   updateEvent(data: UpdateEventInput, id: ID!): Event!
   updateEventProject(data: UpdateEventProjectInput!, id: ID!): EventProject!
   updateLanguage(languageCode: String!): User!
@@ -830,7 +824,7 @@ type Query {
   registrantsByEvent(id: ID!): [User]
   user(id: ID!): User!
   userLanguage(userId: ID!): String
-  users(adminApproved: Boolean, appUserType: String, first: Int, orderBy: UserOrderByInput, skip: Int, userType: String, where: UserWhereInput): [User]
+  users(adminApproved: Boolean, first: Int, orderBy: UserOrderByInput, skip: Int, userType: String, where: UserWhereInput): [User]
   usersConnection(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [User]!
 }
 
@@ -919,11 +913,6 @@ type UnauthorizedError implements Error {
   message: String!
 }
 
-input UpdateAppUserTypeInput {
-  appUserType: String
-  id: ID
-}
-
 input UpdateEventInput {
   allDay: Boolean
   description: String
@@ -998,7 +987,6 @@ type User {
   adminApproved: Boolean
   adminFor: [Organization]
   appLanguageCode: String!
-  appUserType: String
   assignedTasks: [Task]
   birthDate: Date
   createdAt: DateTime
@@ -1114,6 +1102,7 @@ type UserTagsConnectionResult {
 
 enum UserType {
   ADMIN
+  NON_USER
   SUPERADMIN
   USER
 }
