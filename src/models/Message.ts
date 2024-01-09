@@ -44,6 +44,7 @@ const messageSchema = new Schema(
     creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
     group: {
       type: Schema.Types.ObjectId,

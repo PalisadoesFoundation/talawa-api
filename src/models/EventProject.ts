@@ -46,6 +46,7 @@ const eventProjectSchema = new Schema(
     creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
     status: {
       type: String,

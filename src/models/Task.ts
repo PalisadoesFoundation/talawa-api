@@ -59,6 +59,7 @@ const taskSchema = new Schema(
     creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
     completed: {
       type: Boolean,

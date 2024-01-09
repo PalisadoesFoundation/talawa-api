@@ -76,6 +76,7 @@ const organizationSchema = new Schema(
     creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
     status: {
       type: String,
@@ -129,7 +130,6 @@ const organizationSchema = new Schema(
     ],
     visibleInSearch: {
       type: Boolean,
-      required: true,
     },
     customFields: [
       {
