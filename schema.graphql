@@ -607,8 +607,8 @@ input OrganizationInput {
   image: String
   location: String
   name: String!
-  userRegistrationRequired: Boolean!
-  visibleInSearch: Boolean!
+  userRegistrationRequired: Boolean
+  visibleInSearch: Boolean
 }
 
 enum OrganizationOrderByInput {

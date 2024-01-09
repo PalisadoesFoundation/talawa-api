@@ -148,8 +148,8 @@ export const inputs = gql`
     attendees: String
     apiUrl: URL
     image: String
-    userRegistrationRequired: Boolean!
-    visibleInSearch: Boolean!
+    userRegistrationRequired: Boolean
+    visibleInSearch: Boolean
   }
 
   input OrganizationWhereInput {

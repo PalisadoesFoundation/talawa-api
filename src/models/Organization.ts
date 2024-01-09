@@ -68,10 +68,12 @@ const organizationSchema = new Schema({
   userRegistrationRequired: {
     type: Boolean,
     required: true,
+    default: false,
   },
   visibleInSearch: {
     type: Boolean,
     default: true,
+    required: true,
   },
   creator: {
     type: Schema.Types.ObjectId,

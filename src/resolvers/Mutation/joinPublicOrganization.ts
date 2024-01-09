@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_ALREADY_MEMBER_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
@@ -51,6 +52,14 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
     const currentUserExists = await User.exists({
       _id: context.userId,
     });
+
+    if (organization.userRegistrationRequired == false) {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM
+      );
+    }
 
     // Checks whether currentUser with _id === context.userId exists.
     if (currentUserExists === false) {

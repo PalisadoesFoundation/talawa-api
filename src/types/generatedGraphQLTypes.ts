@@ -1165,8 +1165,8 @@ export type OrganizationInput = {
   image?: InputMaybe<Scalars['String']>;
   location?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
-  userRegistrationRequired: Scalars['Boolean'];
-  visibleInSearch: Scalars['Boolean'];
+  userRegistrationRequired?: InputMaybe<Scalars['Boolean']>;
+  visibleInSearch?: InputMaybe<Scalars['Boolean']>;
 };
 
 export type OrganizationOrderByInput =
