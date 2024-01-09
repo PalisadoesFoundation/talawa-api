@@ -107,12 +107,6 @@ export const inputs = gql`
     organization_id: ID
   }
 
-  input EventProjectInput {
-    title: String!
-    description: String!
-    eventId: ID!
-  }
-
   input FeedbackInput {
     eventId: ID!
     rating: Int!
@@ -240,12 +234,6 @@ export const inputs = gql`
     recaptchaToken: String!
   }
 
-  input TaskInput {
-    title: String!
-    description: String!
-    deadline: DateTime!
-  }
-
   input ToggleUserTagAssignInput {
     userId: ID!
     tagId: ID!
@@ -307,13 +295,6 @@ export const inputs = gql`
   input UpdateUserTagInput {
     _id: ID!
     name: String!
-  }
-
-  input UpdateTaskInput {
-    title: String
-    description: String
-    deadline: DateTime
-    completed: Boolean
   }
 
   input AddressInput {
