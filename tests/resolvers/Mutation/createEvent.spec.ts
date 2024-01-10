@@ -261,7 +261,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         longitude: 1,
         location: "newLocation",
         recurring: true,
-        startDate: new Date("2023-01-01T00:00:00Z"),
+        startDate: new Date("2023-01-02T00:00:00Z"),
         startTime: new Date().toUTCString(),
         title: "newTitle",
         recurrance: "ONCE",
@@ -297,6 +297,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
     const recurringEvents = await Event.find({
       recurring: true,
       recurrance: "ONCE",
+      startDate: "2023-01-02T00:00:00Z",
     }).lean();
 
     expect(recurringEvents).toBeDefined();
