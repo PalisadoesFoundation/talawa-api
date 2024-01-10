@@ -179,7 +179,7 @@ async function askForSuperAdminEmail(): Promise<string> {
       type: "input",
       name: "email",
       message:
-        "Enter the email which you wish to assign as the Super Admin of last resort:",
+        "Please make sure to register with this email before logging in.\n Enter the email which you wish to assign as the Super Admin of last resort :",
       validate: (input: string) =>
         isValidEmail(input) || "Invalid email. Please try again.",
     },
