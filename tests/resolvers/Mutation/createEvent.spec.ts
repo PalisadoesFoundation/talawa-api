@@ -164,7 +164,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         organizationId: testOrganization?.id,
         allDay: false,
         description: "newDescription",
-        endDate: new Date().toUTCString(),
+        endDate: new Date("2023-01-29T00:00:00Z"),
         endTime: new Date().toUTCString(),
         isPublic: false,
         isRegisterable: false,
@@ -172,7 +172,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         longitude: 1,
         location: "newLocation",
         recurring: false,
-        startDate: new Date().toUTCString(),
+        startDate: new Date("2023-01-01T00:00:00Z"),
         startTime: new Date().toUTCString(),
         title: "newTitle",
         recurrance: "ONCE",
@@ -206,6 +206,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
     );
 
     const recurringEvents = await Event.find({
+      recurring: false,
       recurrance: "ONCE",
     }).lean();
 
@@ -252,7 +253,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         organizationId: testOrganization?.id,
         allDay: false,
         description: "newDescription",
-        endDate: new Date().toUTCString(),
+        endDate: new Date("2023-01-29T00:00:00Z"),
         endTime: new Date().toUTCString(),
         isPublic: false,
         isRegisterable: false,
@@ -260,7 +261,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         longitude: 1,
         location: "newLocation",
         recurring: true,
-        startDate: new Date().toUTCString(),
+        startDate: new Date("2023-01-01T00:00:00Z"),
         startTime: new Date().toUTCString(),
         title: "newTitle",
         recurrance: "ONCE",
