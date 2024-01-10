@@ -3,10 +3,7 @@ import { Types } from "mongoose";
 import { Advertisement } from "../../../src/models";
 import type { MutationUpdateAdvertisementArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import {
-  updateAdvertisement,
-  updateAdvertisement as updateAdvertisementResolver,
-} from "../../../src/resolvers/Mutation/updateAdvertisement";
+import { updateAdvertisement as updateAdvertisementResolver } from "../../../src/resolvers/Mutation/updateAdvertisement";
 import {
   ADVERTISEMENT_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -16,15 +13,7 @@ import {
   FORBIDDEN_FIELD_UPDATE_ERROR,
   FIELD_NON_EMPTY_ERROR,
 } from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  expect,
-  vi,
-  afterEach,
-} from "vitest";
+import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
 import {
   createTestAdvertisement,
@@ -43,11 +32,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
-});
-
-afterEach(() => {
-  vi.doUnmock("../../../src/constants");
-  vi.resetModules();
 });
 
 describe("resolvers -> Mutation -> updateAdvertisement", () => {
@@ -114,6 +98,11 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
   });
 
   it(`updates the advertisement with _id === args.id and returns it`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
     const args: MutationUpdateAdvertisementArgs = {
       input: {
         _id: testAdvertisement!._id,
@@ -174,7 +163,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
           type: "POPUP",
           startDate: new Date(new Date().getFullYear() + 1, 11, 31)
             .toISOString()
-            .split("T")[0], // Current date
+            .split("T")[0],
           endDate: "2023-12-26", // Past date
         },
       };
