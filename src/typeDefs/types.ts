@@ -87,18 +87,13 @@ export const types = gql`
     name: String!
     orgId: ID
     link: String!
-    type: String!
+    type: AdvertisementType!
     startDate: Date!
     endDate: Date!
   }
 
   type UpdateAdvertisementPayload {
-    _id: ID
-    name: String!
-    link: String!
-    type: String!
-    startDate: Date!
-    endDate: Date!
+    advertisement: Advertisement
   }
 
   type ExtendSession {

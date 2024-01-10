@@ -279,11 +279,6 @@ export const inputs = gql`
     endDate: Date
   }
 
-  input UpdateEventProjectInput {
-    title: String
-    description: String
-  }
-
   input UpdateOrganizationInput {
     name: String
     description: String

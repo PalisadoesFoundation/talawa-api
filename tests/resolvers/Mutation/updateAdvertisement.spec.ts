@@ -118,12 +118,13 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       args,
       context
     );
+    const { advertisement } = updateAdvertisementPayload || {};
 
     const updatedTestAdvertisement = await Advertisement.findOne({
       _id: testAdvertisement!._id,
     }).lean();
 
-    expect(updateAdvertisementPayload).toEqual(updatedTestAdvertisement);
+    expect(advertisement).toEqual(updatedTestAdvertisement);
   });
 
   it(`throws ValidationError if endDate is before startDate`, async () => {
@@ -140,11 +141,12 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
           name: "New Advertisement Name",
           link: "Updated Advertisement Link",
           type: "POPUP",
-          startDate: new Date().toISOString().split("T")[0], // Current date
+          startDate: new Date(new Date().getFullYear() + 1, 11, 31)
+            .toISOString()
+            .split("T")[0], // Current date
           endDate: "2023-12-26", // Past date
         },
       };
-      console.log(args.input.startDate);
       const context = { userId: testUser?._id };
 
       const {
@@ -173,7 +175,6 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
           startDate: "2023-12-26",
         },
       };
-      console.log(args.input.startDate);
       const context = { userId: testUser?._id };
 
       const {

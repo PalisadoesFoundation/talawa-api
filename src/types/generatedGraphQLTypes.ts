@@ -80,8 +80,13 @@ export type Advertisement = {
   name: Scalars['String'];
   orgId?: Maybe<Scalars['ID']>;
   startDate: Scalars['Date'];
-  type: Scalars['String'];
+  type: AdvertisementType;
 };
+
+export type AdvertisementType =
+  | 'BANNER'
+  | 'MENU'
+  | 'POPUP';
 
 export type AggregatePost = {
   __typename?: 'AggregatePost';
@@ -585,7 +590,7 @@ export type Mutation = {
   unlikeComment?: Maybe<Comment>;
   unlikePost?: Maybe<Post>;
   unregisterForEventByUser: Event;
-  updateAdvertisement: UpdateAdvertisementPayload;
+  updateAdvertisement?: Maybe<UpdateAdvertisementPayload>;
   updateEvent: Event;
   updateLanguage: User;
   updateOrganization: Organization;
@@ -1556,12 +1561,7 @@ export type UpdateAdvertisementInput = {
 
 export type UpdateAdvertisementPayload = {
   __typename?: 'UpdateAdvertisementPayload';
-  _id?: Maybe<Scalars['ID']>;
-  endDate: Scalars['Date'];
-  link: Scalars['String'];
-  name: Scalars['String'];
-  startDate: Scalars['Date'];
-  type: Scalars['String'];
+  advertisement?: Maybe<Advertisement>;
 };
 
 export type UpdateEventInput = {
@@ -1578,11 +1578,6 @@ export type UpdateEventInput = {
   recurring?: InputMaybe<Scalars['Boolean']>;
   startDate?: InputMaybe<Scalars['Date']>;
   startTime?: InputMaybe<Scalars['Time']>;
-  title?: InputMaybe<Scalars['String']>;
-};
-
-export type UpdateEventProjectInput = {
-  description?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
 };
 
@@ -1905,6 +1900,7 @@ export type ResolversTypes = {
   Address: ResolverTypeWrapper<Address>;
   AddressInput: AddressInput;
   Advertisement: ResolverTypeWrapper<Advertisement>;
+  AdvertisementType: AdvertisementType;
   AggregatePost: ResolverTypeWrapper<AggregatePost>;
   AggregateUser: ResolverTypeWrapper<AggregateUser>;
   Any: ResolverTypeWrapper<Scalars['Any']>;
@@ -2004,7 +2000,6 @@ export type ResolversTypes = {
   UpdateAdvertisementInput: UpdateAdvertisementInput;
   UpdateAdvertisementPayload: ResolverTypeWrapper<UpdateAdvertisementPayload>;
   UpdateEventInput: UpdateEventInput;
-  UpdateEventProjectInput: UpdateEventProjectInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
   UpdateUserInput: UpdateUserInput;
   UpdateUserPasswordInput: UpdateUserPasswordInput;
@@ -2127,7 +2122,6 @@ export type ResolversParentTypes = {
   UpdateAdvertisementInput: UpdateAdvertisementInput;
   UpdateAdvertisementPayload: UpdateAdvertisementPayload;
   UpdateEventInput: UpdateEventInput;
-  UpdateEventProjectInput: UpdateEventProjectInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
   UpdateUserInput: UpdateUserInput;
   UpdateUserPasswordInput: UpdateUserPasswordInput;
@@ -2184,7 +2178,7 @@ export type AdvertisementResolvers<ContextType = any, ParentType extends Resolve
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   orgId?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['AdvertisementType'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2545,7 +2539,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   unlikeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationUnlikeCommentArgs, 'id'>>;
   unlikePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUnlikePostArgs, 'id'>>;
   unregisterForEventByUser?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUnregisterForEventByUserArgs, 'id'>>;
-  updateAdvertisement?: Resolver<ResolversTypes['UpdateAdvertisementPayload'], ParentType, ContextType, RequireFields<MutationUpdateAdvertisementArgs, 'input'>>;
+  updateAdvertisement?: Resolver<Maybe<ResolversTypes['UpdateAdvertisementPayload']>, ParentType, ContextType, RequireFields<MutationUpdateAdvertisementArgs, 'input'>>;
   updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'id'>>;
   updateLanguage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateLanguageArgs, 'languageCode'>>;
   updateOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateOrganizationArgs, 'id'>>;
@@ -2733,12 +2727,7 @@ export type UnauthorizedErrorResolvers<ContextType = any, ParentType extends Res
 };
 
 export type UpdateAdvertisementPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['UpdateAdvertisementPayload'] = ResolversParentTypes['UpdateAdvertisementPayload']> = {
-  _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
-  endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  link?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  advertisement?: Resolver<Maybe<ResolversTypes['Advertisement']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

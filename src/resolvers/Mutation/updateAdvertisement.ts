@@ -102,7 +102,7 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       );
     }
 
-    return await Advertisement.findOneAndUpdate(
+    const updatedAdvertisement = await Advertisement.findOneAndUpdate(
       {
         _id: args.input._id,
       },
@@ -113,4 +113,25 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
         new: true,
       }
     ).lean();
+
+    if (!updatedAdvertisement) {
+      throw new errors.NotFoundError(
+        requestContext.translate(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE),
+        ADVERTISEMENT_NOT_FOUND_ERROR.CODE,
+        ADVERTISEMENT_NOT_FOUND_ERROR.PARAM
+      );
+    }
+
+    const updatedAdvertisementPayload = {
+      _id: updatedAdvertisement._id.toString(), // Ensure _id is converted to String as per GraphQL schema
+      name: updatedAdvertisement.name,
+      orgId: updatedAdvertisement.orgId.toString(),
+      link: updatedAdvertisement.link,
+      type: updatedAdvertisement.type,
+      startDate: updatedAdvertisement.startDate,
+      endDate: updatedAdvertisement.endDate,
+    };
+    return {
+      advertisement: updatedAdvertisementPayload,
+    };
   };
