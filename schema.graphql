@@ -2,6 +2,23 @@ directive @auth on FIELD_DEFINITION
 
 directive @role(requires: UserType) on FIELD_DEFINITION
 
+type ActionItem {
+  _id: ID!
+  assignedBy: User!
+  assignedTo: User!
+  assignmentDate: Date
+  category: Category!
+  completed: Boolean
+  completionDate: Date
+  createdAt: Date!
+  createdBy: User!
+  dueDate: Date
+  event: Event
+  postCompletionNotes: String
+  preCompletionNotes: String
+  updatedAt: Date!
+}
+
 type Address {
   city: String
   countryCode: CountryCode
@@ -48,6 +65,16 @@ type AuthData {
   accessToken: String!
   refreshToken: String!
   user: User!
+}
+
+type Category {
+  _id: ID!
+  category: String!
+  createdAt: Date!
+  createdBy: User!
+  disabled: Boolean!
+  org: Organization!
+  updatedAt: Date!
 }
 
 type CheckIn {
@@ -97,6 +124,17 @@ type ConnectionPageInfo {
 }
 
 scalar CountryCode
+
+input CreateActionItemInput {
+  assignedTo: ID!
+  assignmentDate: Date
+  completed: Boolean
+  completionDate: Date
+  dueDate: Date
+  event: ID
+  postCompletionNotes: String
+  preCompletionNotes: String
+}
 
 input CreateUserTagInput {
   name: String!
@@ -193,6 +231,7 @@ interface Error {
 
 type Event {
   _id: ID!
+  actionItems: [ActionItem]
   admins(adminId: ID): [User]
   allDay: Boolean!
   attendees: [User!]!
@@ -209,7 +248,6 @@ type Event {
   location: String
   longitude: Longitude
   organization: Organization
-  projects: [EventProject]
   recurrance: Recurrance
   recurring: Boolean!
   startDate: Date!
@@ -262,20 +300,6 @@ enum EventOrderByInput {
   startTime_DESC
   title_ASC
   title_DESC
-}
-
-type EventProject {
-  _id: ID!
-  description: String!
-  event: Event!
-  tasks: [Task]
-  title: String!
-}
-
-input EventProjectInput {
-  description: String!
-  eventId: ID!
-  title: String!
 }
 
 input EventWhereInput {
@@ -481,13 +505,14 @@ type Mutation {
   blockUser(organizationId: ID!, userId: ID!): User!
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   checkIn(data: CheckInInput!): CheckIn!
+  createActionItem(categoryId: ID!, data: CreateActionItemInput!): ActionItem!
   createAdmin(data: UserAndOrganizationInput!): User!
   createAdvertisement(endDate: Date!, link: String!, name: String!, orgId: ID!, startDate: Date!, type: String!): Advertisement!
+  createCategory(category: String!, orgId: ID!): Category!
   createComment(data: CommentInput!, postId: ID!): Comment
   createDirectChat(data: createChatInput!): DirectChat!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
   createEvent(data: EventInput): Event!
-  createEventProject(data: EventProjectInput!): EventProject!
   createGroupChat(data: createGroupChatInput!): GroupChat!
   createMember(input: UserAndOrganizationInput!): Organization!
   createMessageChat(data: MessageChatInput!): MessageChat!
@@ -495,7 +520,6 @@ type Mutation {
   createPlugin(pluginCreatedBy: String!, pluginDesc: String!, pluginName: String!, uninstalledOrgs: [ID!]): Plugin!
   createPost(data: PostInput!, file: String): Post
   createSampleOrganization: Boolean!
-  createTask(data: TaskInput!, eventProjectId: ID!): Task!
   createUserTag(input: CreateUserTagInput!): UserTag
   deleteAdvertisementById(id: ID!): DeletePayload!
   deleteDonationById(id: ID!): DeletePayload!
@@ -512,13 +536,13 @@ type Mutation {
   registerForEvent(id: ID!): Event!
   rejectAdmin(id: ID!): Boolean!
   rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
+  removeActionItem(id: ID!): ActionItem!
   removeAdmin(data: UserAndOrganizationInput!): User!
   removeAdvertisement(id: ID!): Advertisement
   removeComment(id: ID!): Comment
   removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
   removeEvent(id: ID!): Event!
   removeEventAttendee(data: EventAttendeeInput!): User!
-  removeEventProject(id: ID!): EventProject!
   removeGroupChat(chatId: ID!): GroupChat!
   removeMember(data: UserAndOrganizationInput!): Organization!
   removeOrganization(id: ID!): User!
@@ -526,7 +550,6 @@ type Mutation {
   removeOrganizationImage(organizationId: String!): Organization!
   removePost(id: ID!): Post
   removeSampleOrganization: Boolean!
-  removeTask(id: ID!): Task
   removeUserCustomData(organizationId: ID!): UserCustomData!
   removeUserFromGroupChat(chatId: ID!, userId: ID!): GroupChat!
   removeUserImage: User!
@@ -536,7 +559,6 @@ type Mutation {
   sendMembershipRequest(organizationId: ID!): MembershipRequest!
   sendMessageToDirectChat(chatId: ID!, messageContent: String!): DirectChatMessage!
   sendMessageToGroupChat(chatId: ID!, messageContent: String!): GroupChatMessage!
-  setTaskVolunteers(id: ID!, volunteers: [ID]!): Task
   signUp(data: UserInput!, file: String): AuthData!
   togglePostPin(id: ID!): Post!
   unassignUserTag(input: ToggleUserTagAssignInput!): User
@@ -544,13 +566,13 @@ type Mutation {
   unlikeComment(id: ID!): Comment
   unlikePost(id: ID!): Post
   unregisterForEventByUser(id: ID!): Event!
+  updateActionItem(data: UpdateActionItemInput!, id: ID!): ActionItem
+  updateCategory(data: UpdateCategoryInput!, id: ID!): Category
   updateEvent(data: UpdateEventInput, id: ID!): Event!
-  updateEventProject(data: UpdateEventProjectInput!, id: ID!): EventProject!
   updateLanguage(languageCode: String!): User!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
   updatePluginStatus(id: ID!, orgId: ID!): Plugin!
   updatePost(data: PostUpdateInput, id: ID!): Post!
-  updateTask(data: UpdateTaskInput!, id: ID!): Task
   updateUserPassword(data: UpdateUserPasswordInput!): User!
   updateUserProfile(data: UpdateUserInput, file: String): User!
   updateUserRoleInOrganization(organizationId: ID!, role: String!, userId: ID!): Organization!
@@ -564,6 +586,7 @@ input OTPInput {
 
 type Organization {
   _id: ID!
+  actionCategories: [Category]
   admins(adminId: ID): [User]
   apiUrl: URL!
   blockedUsers: [User]
@@ -793,7 +816,11 @@ input PostWhereInput {
 }
 
 type Query {
+  actionItem(id: ID!): ActionItem
+  actionItemsByEvent(eventId: ID!): [ActionItem]
   adminPlugin(orgId: ID!): [Plugin]
+  categoriesByOrganization(orgId: ID!): [Category]
+  category(id: ID!): Category
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
@@ -853,37 +880,6 @@ type Subscription {
   onPluginUpdate: Plugin
 }
 
-type Task {
-  _id: ID!
-  completed: Boolean
-  createdAt: DateTime!
-  creator: User!
-  deadline: DateTime
-  description: String
-  event: Event!
-  title: String!
-  volunteers: [User]
-}
-
-input TaskInput {
-  deadline: DateTime!
-  description: String!
-  title: String!
-}
-
-enum TaskOrderByInput {
-  createdAt_ASC
-  createdAt_DESC
-  deadline_ASC
-  deadline_DESC
-  description_ASC
-  description_DESC
-  id_ASC
-  id_DESC
-  title_ASC
-  title_DESC
-}
-
 scalar Time
 
 input ToggleUserTagAssignInput {
@@ -913,6 +909,19 @@ type UnauthorizedError implements Error {
   message: String!
 }
 
+input UpdateActionItemInput {
+  assignedTo: ID
+  completed: Boolean
+  dueDate: Date
+  postCompletionNotes: String
+  preCompletionNotes: String
+}
+
+input UpdateCategoryInput {
+  category: String
+  disabled: Boolean
+}
+
 input UpdateEventInput {
   allDay: Boolean
   description: String
@@ -930,24 +939,12 @@ input UpdateEventInput {
   title: String
 }
 
-input UpdateEventProjectInput {
-  description: String
-  title: String
-}
-
 input UpdateOrganizationInput {
   description: String
   isPublic: Boolean
   location: String
   name: String
   visibleInSearch: Boolean
-}
-
-input UpdateTaskInput {
-  completed: Boolean
-  deadline: DateTime
-  description: String
-  title: String
 }
 
 input UpdateUserInput {
@@ -987,7 +984,6 @@ type User {
   adminApproved: Boolean
   adminFor: [Organization]
   appLanguageCode: String!
-  assignedTasks: [Task]
   birthDate: Date
   createdAt: DateTime
   createdEvents: [Event]
@@ -1102,6 +1098,7 @@ type UserTagsConnectionResult {
 
 enum UserType {
   ADMIN
+  NON_USER
   SUPERADMIN
   USER
 }
