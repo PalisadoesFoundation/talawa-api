@@ -11,15 +11,6 @@ export interface InterfaceCommunity {
   image: string | undefined;
   description: string;
   websiteLink: string | undefined;
-  socialMediaUrls: {
-    facebook: string | undefined;
-    twitter: string | undefined;
-    linkedIn: string | undefined;
-    gitHub: string | undefined;
-    youTube: string | undefined;
-    slack: string | undefined;
-    reddit: string | undefined;
-  };
   timeout: number;
   createdAt: Date;
 }
@@ -28,14 +19,6 @@ export interface InterfaceCommunity {
  * This describes the schema for a `Community` that corresponds to `InterfaceCommunity` document.
  * @param image - Community logo URL.
  * @param description - Community description.
- * @param socialMediaUrls - Social media URLs.
- * @param facebook - Facebook URL.
- * @param twitter - Twitter URL.
- * @param linkedIn - LinkedIn URL.
- * @param gitHub - GitHub URL.
- * @param youTube - YouTube URL.
- * @param slack - Slack URL.
- * @param reddit - Reddit URL.
  * @param websiteLink - Community website URL.
  * @param name - Community name.
  * @param timeout - Timeout duration in minutes (default is 30 minutes).
@@ -56,29 +39,6 @@ const communitySchema = new Schema({
   },
   websiteLink: {
     type: String,
-  },
-  socialMediaUrls: {
-    facebook: {
-      type: String,
-    },
-    twitter: {
-      type: String,
-    },
-    linkedIn: {
-      type: String,
-    },
-    gitHub: {
-      type: String,
-    },
-    youTube: {
-      type: String,
-    },
-    slack: {
-      type: String,
-    },
-    reddit: {
-      type: String,
-    },
   },
   timeout: {
     type: Number,

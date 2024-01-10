@@ -13,15 +13,6 @@ export const createTestCommunity = async (): Promise<TestCommunityType> => {
     image: "test-image.jpg",
     description: "Test community description",
     websiteLink: "https://testcommunity.com",
-    socialMediaUrls: {
-      facebook: "https://facebook.com/testcommunity",
-      twitter: "https://twitter.com/testcommunity",
-      linkedIn: "https://linkedin.com/testcommunity",
-      gitHub: "https://github.com/testcommunity",
-      youTube: "https://youtube.com/testcommunity",
-      slack: "https://slack.com/testcommunity",
-      reddit: "https://reddit.com/testcommunity",
-    },
     organizations: [],
     timeout: 30,
   });

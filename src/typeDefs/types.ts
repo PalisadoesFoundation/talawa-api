@@ -50,7 +50,6 @@ export const types = gql`
     image: String
     description: String!
     websiteLink: String
-    socialMediaUrls: SocialMediaUrls
     timeout: Int
     createdAt: DateTime
   }
@@ -339,16 +338,6 @@ export const types = gql`
     edges: [Post]!
 
     aggregate: AggregatePost!
-  }
-
-  type SocialMediaUrls {
-    facebook: String
-    twitter: String
-    linkedIn: String
-    gitHub: String
-    youTube: String
-    slack: String
-    reddit: String
   }
 
   type Task {

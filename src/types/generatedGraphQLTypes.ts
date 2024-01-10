@@ -149,7 +149,6 @@ export type Community = {
   description: Scalars['String'];
   image?: Maybe<Scalars['String']>;
   name: Scalars['String'];
-  socialMediaUrls?: Maybe<SocialMediaUrls>;
   timeout?: Maybe<Scalars['Int']>;
   websiteLink?: Maybe<Scalars['String']>;
 };
@@ -1582,17 +1581,6 @@ export type Recurrance =
   | 'WEEKLY'
   | 'YEARLY';
 
-export type SocialMediaUrls = {
-  __typename?: 'SocialMediaUrls';
-  facebook?: Maybe<Scalars['String']>;
-  gitHub?: Maybe<Scalars['String']>;
-  linkedIn?: Maybe<Scalars['String']>;
-  reddit?: Maybe<Scalars['String']>;
-  slack?: Maybe<Scalars['String']>;
-  twitter?: Maybe<Scalars['String']>;
-  youTube?: Maybe<Scalars['String']>;
-};
-
 export type Status =
   | 'ACTIVE'
   | 'BLOCKED'
@@ -2102,7 +2090,6 @@ export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>;
   RecaptchaVerification: RecaptchaVerification;
   Recurrance: Recurrance;
-  SocialMediaUrls: ResolverTypeWrapper<SocialMediaUrls>;
   Status: Status;
   String: ResolverTypeWrapper<Scalars['String']>;
   Subscription: ResolverTypeWrapper<{}>;
@@ -2233,7 +2220,6 @@ export type ResolversParentTypes = {
   PostWhereInput: PostWhereInput;
   Query: {};
   RecaptchaVerification: RecaptchaVerification;
-  SocialMediaUrls: SocialMediaUrls;
   String: Scalars['String'];
   Subscription: {};
   Task: InterfaceTaskModel;
@@ -2363,7 +2349,6 @@ export type CommunityResolvers<ContextType = any, ParentType extends ResolversPa
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  socialMediaUrls?: Resolver<Maybe<ResolversTypes['SocialMediaUrls']>, ParentType, ContextType>;
   timeout?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   websiteLink?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -2848,17 +2833,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   usersConnection?: Resolver<Array<Maybe<ResolversTypes['User']>>, ParentType, ContextType, Partial<QueryUsersConnectionArgs>>;
 };
 
-export type SocialMediaUrlsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SocialMediaUrls'] = ResolversParentTypes['SocialMediaUrls']> = {
-  facebook?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  gitHub?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  linkedIn?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  reddit?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  slack?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  twitter?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  youTube?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
   directMessageChat?: SubscriptionResolver<Maybe<ResolversTypes['MessageChat']>, "directMessageChat", ParentType, ContextType>;
   messageSentToDirectChat?: SubscriptionResolver<Maybe<ResolversTypes['DirectChatMessage']>, "messageSentToDirectChat", ParentType, ContextType>;
@@ -3066,7 +3040,6 @@ export type Resolvers<ContextType = any> = {
   Post?: PostResolvers<ContextType>;
   PostConnection?: PostConnectionResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
-  SocialMediaUrls?: SocialMediaUrlsResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   Task?: TaskResolvers<ContextType>;
   Time?: GraphQLScalarType;

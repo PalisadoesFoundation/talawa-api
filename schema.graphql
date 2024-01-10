@@ -93,7 +93,6 @@ type Community {
   description: String!
   image: String
   name: String!
-  socialMediaUrls: SocialMediaUrls
   timeout: Int
   websiteLink: String
 }
@@ -851,16 +850,6 @@ enum Recurrance {
   ONCE
   WEEKLY
   YEARLY
-}
-
-type SocialMediaUrls {
-  facebook: String
-  gitHub: String
-  linkedIn: String
-  reddit: String
-  slack: String
-  twitter: String
-  youTube: String
 }
 
 enum Status {

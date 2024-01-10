@@ -6,7 +6,7 @@ import {
   revokeRefreshToken,
 } from "../../src/utilities";
 import type { InterfaceUser } from "../../src/models";
-import { Community, User } from "../../src/models";
+import { User } from "../../src/models";
 import jwt from "jsonwebtoken";
 import type { TestUserType } from "../helpers/user";
 import { createTestUserFunc } from "../helpers/user";
