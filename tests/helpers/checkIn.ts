@@ -1,14 +1,12 @@
 import { nanoid } from "nanoid";
-import {
-  CheckIn,
-  EventAttendee,
-  type InterfaceCheckIn,
-} from "../../src/models";
+import { CheckIn, EventAttendee } from "../../src/models";
+import type { InterfaceCheckIn, InterfaceEvent } from "../../src/models";
 import type { Document } from "mongoose";
 import { createTestEventWithRegistrants } from "./eventsWithRegistrants";
 import type { TestOrganizationType, TestUserType } from "./userAndOrg";
-import type { TestEventType } from "./task";
-
+export type TestEventType =
+  | (InterfaceEvent & Document<any, any, InterfaceEvent>)
+  | null;
 export type TestCheckInType =
   | (InterfaceCheckIn & Document<any, any, InterfaceCheckIn>)
   | null;
