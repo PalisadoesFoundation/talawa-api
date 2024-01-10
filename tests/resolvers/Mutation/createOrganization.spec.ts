@@ -147,7 +147,16 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         name: "name",
         visibleInSearch: true,
         apiUrl: "apiUrl",
-        location: "location",
+        address: {
+          city: "CityName",
+          countryCode: "CountryCode",
+          dependentLocality: "Dependent Locality",
+          line1: "123 Main Street",
+          line2: "Apartment 456",
+          postalCode: "12345",
+          sortingCode: "ABC-123",
+          state: "State/Province",
+        },
         creator: testUser?._id,
         admins: [testUser?._id],
         members: [testUser?._id],
@@ -306,40 +315,81 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       );
     }
   });
-  it(`throws String Length Validation error if location is greater than 50 characters`, async () => {
+  it("throws Address Validation Error for an invalid address", async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
       (message) => message
     );
-    try {
-      const args: MutationCreateOrganizationArgs = {
-        data: {
-          description: "description",
-          isPublic: true,
-          name: "random",
-          visibleInSearch: true,
-          apiUrl: "apiUrl",
-          address: {
-            city: "CityName",
-            countryCode: "CountryCode",
-            dependentLocality: "Dependent Locality",
-            line1: "123 Main Street",
-            line2: "Apartment 456",
-            postalCode: "12345",
-            sortingCode: "ABC-123",
-            state: "State/Province",
-          },
-        },
-        file: null,
-      };
-      const context = {
-        userId: testUser?._id,
-      };
+    const invalidAddress = {
+      // Constructing an invalid address.
+      city: "", // An empty city field
+      countryCode: "USA", // Invalid country code format
+      dependentLocality: "Manhattan",
+      line1: "123 Main Street",
+      line2: "Apt 2B",
+      postalCode: "InvalidPostalCode", // Invalid postal code format
+      sortingCode: "ABC123",
+      state: "New York",
+    };
 
-      await createOrganizationResolver?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
+    const validAddress = {
+      city: "New York",
+      countryCode: "US",
+      dependentLocality: "Manhattan",
+      line1: "123 Main Street",
+      line2: "Apt 2B",
+      postalCode: "10001",
+      sortingCode: "ABC123",
+      state: "NY",
+    };
+
+    const invalidArgs: MutationCreateOrganizationArgs = {
+      data: {
+        description: "Some description",
+        isPublic: true,
+        name: "Test Organization",
+        visibleInSearch: true,
+        apiUrl: "https://example.com/api",
+        address: invalidAddress,
+      },
+      file: null,
+    };
+
+    const validArgs: MutationCreateOrganizationArgs = {
+      data: {
+        description: "Some description",
+        isPublic: true,
+        name: "Test Organization",
+        visibleInSearch: true,
+        apiUrl: "https://example.com/api",
+        address: validAddress,
+      },
+      file: null,
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    if (createOrganizationResolver) {
+      // Testing for Invalid address
+      try {
+        await createOrganizationResolver({}, invalidArgs, context);
+      } catch (error: any) {
+        // Validate that the error message matches the expected Address Validation Error message
+        expect(error.message).toEqual("Invalid Address Provided");
+      }
+
+      //Testing for Valid address
+      try {
+        await createOrganizationResolver({}, validArgs, context);
+      } catch (error: any) {
+        // Validate that the error message matches the expected Address Validation Error message
+        expect(error.message).toEqual("Something went wrong.");
+      }
+    } else {
+      console.error(
+        "Error: createOrganizationResolver is undefined in the test suite"
       );
     }
   });

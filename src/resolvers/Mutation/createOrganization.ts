@@ -1,5 +1,8 @@
 import "dotenv/config";
-import type { MutationResolvers , Address } from "../../types/generatedGraphQLTypes";
+import type {
+  MutationResolvers,
+  Address,
+} from "../../types/generatedGraphQLTypes";
 import { User, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import { LENGTH_VALIDATION_ERROR } from "../../constants";
