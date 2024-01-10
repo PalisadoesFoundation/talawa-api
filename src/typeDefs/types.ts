@@ -133,20 +133,8 @@ export const types = gql`
     attendeesCheckInStatus: [CheckInStatus!]!
     admins(adminId: ID): [User!]
     status: Status!
-    projects: [EventProject]
     feedback: [Feedback!]!
     averageFeedbackScore: Float
-  }
-
-  type EventProject {
-    _id: ID!
-    title: String!
-    description: String!
-    event: Event!
-    tasks: [Task]
-    creator: User
-    createdAt: DateTime!
-    updatedAt: DateTime!
   }
 
   type Feedback {
@@ -346,19 +334,6 @@ export const types = gql`
     aggregate: AggregatePost!
   }
 
-  type Task {
-    _id: ID!
-    title: String!
-    description: String
-    event: Event!
-    createdAt: DateTime!
-    creator: User
-    updatedAt: DateTime!
-    completed: Boolean!
-    deadline: DateTime
-    volunteers: [User]
-  }
-
   type Translation {
     lang_code: String
     en_value: String
@@ -389,7 +364,6 @@ export const types = gql`
     adminApproved: Boolean
     adminFor: [Organization]
     appLanguageCode: String!
-    assignedTasks: [Task]
     birthDate: Date
     createdAt: DateTime!
     createdEvents: [Event]

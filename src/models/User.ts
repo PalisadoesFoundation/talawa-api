@@ -277,7 +277,7 @@ const userSchema = new Schema(
     userType: {
       type: String,
       required: true,
-      enum: ["USER", "ADMIN", "SUPERADMIN"],
+      enum: ["USER", "ADMIN", "SUPERADMIN", "NON_USER"],
       default: "USER",
     },
   },

@@ -221,7 +221,6 @@ type Event {
   location: String
   longitude: Longitude
   organization: Organization!
-  projects: [EventProject]
   recurrance: Recurrance
   recurring: Boolean!
   startDate: Date!
@@ -275,23 +274,6 @@ enum EventOrderByInput {
   startTime_DESC
   title_ASC
   title_DESC
-}
-
-type EventProject {
-  _id: ID!
-  createdAt: DateTime!
-  creator: User
-  description: String!
-  event: Event!
-  tasks: [Task]
-  title: String!
-  updatedAt: DateTime!
-}
-
-input EventProjectInput {
-  description: String!
-  eventId: ID!
-  title: String!
 }
 
 input EventWhereInput {
@@ -511,7 +493,6 @@ type Mutation {
   createDirectChat(data: createChatInput!): DirectChat!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
   createEvent(data: EventInput): Event!
-  createEventProject(data: EventProjectInput!): EventProject!
   createGroupChat(data: createGroupChatInput!): GroupChat!
   createMember(input: UserAndOrganizationInput!): Organization!
   createMessageChat(data: MessageChatInput!): MessageChat!
@@ -519,7 +500,6 @@ type Mutation {
   createPlugin(pluginCreatedBy: String!, pluginDesc: String!, pluginName: String!, uninstalledOrgs: [ID!]): Plugin!
   createPost(data: PostInput!, file: String): Post
   createSampleOrganization: Boolean!
-  createTask(data: TaskInput!, eventProjectId: ID!): Task!
   createUserTag(input: CreateUserTagInput!): UserTag
   deleteAdvertisementById(id: ID!): DeletePayload!
   deleteDonationById(id: ID!): DeletePayload!
@@ -542,7 +522,6 @@ type Mutation {
   removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
   removeEvent(id: ID!): Event!
   removeEventAttendee(data: EventAttendeeInput!): User!
-  removeEventProject(id: ID!): EventProject!
   removeGroupChat(chatId: ID!): GroupChat!
   removeMember(data: UserAndOrganizationInput!): Organization!
   removeOrganization(id: ID!): User!
@@ -550,7 +529,6 @@ type Mutation {
   removeOrganizationImage(organizationId: String!): Organization!
   removePost(id: ID!): Post
   removeSampleOrganization: Boolean!
-  removeTask(id: ID!): Task
   removeUserCustomData(organizationId: ID!): UserCustomData!
   removeUserFromGroupChat(chatId: ID!, userId: ID!): GroupChat!
   removeUserImage: User!
@@ -560,7 +538,6 @@ type Mutation {
   sendMembershipRequest(organizationId: ID!): MembershipRequest!
   sendMessageToDirectChat(chatId: ID!, messageContent: String!): DirectChatMessage!
   sendMessageToGroupChat(chatId: ID!, messageContent: String!): GroupChatMessage!
-  setTaskVolunteers(id: ID!, volunteers: [ID]!): Task
   signUp(data: UserInput!, file: String): AuthData!
   togglePostPin(id: ID!): Post!
   unassignUserTag(input: ToggleUserTagAssignInput!): User
@@ -569,12 +546,10 @@ type Mutation {
   unlikePost(id: ID!): Post
   unregisterForEventByUser(id: ID!): Event!
   updateEvent(data: UpdateEventInput, id: ID!): Event!
-  updateEventProject(data: UpdateEventProjectInput!, id: ID!): EventProject!
   updateLanguage(languageCode: String!): User!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
   updatePluginStatus(id: ID!, orgId: ID!): Plugin!
   updatePost(data: PostUpdateInput, id: ID!): Post!
-  updateTask(data: UpdateTaskInput!, id: ID!): Task
   updateUserPassword(data: UpdateUserPasswordInput!): User!
   updateUserProfile(data: UpdateUserInput, file: String): User!
   updateUserRoleInOrganization(organizationId: ID!, role: String!, userId: ID!): Organization!
@@ -879,38 +854,6 @@ type Subscription {
   onPluginUpdate: Plugin
 }
 
-type Task {
-  _id: ID!
-  completed: Boolean!
-  createdAt: DateTime!
-  creator: User
-  deadline: DateTime
-  description: String
-  event: Event!
-  title: String!
-  updatedAt: DateTime!
-  volunteers: [User]
-}
-
-input TaskInput {
-  deadline: DateTime!
-  description: String!
-  title: String!
-}
-
-enum TaskOrderByInput {
-  createdAt_ASC
-  createdAt_DESC
-  deadline_ASC
-  deadline_DESC
-  description_ASC
-  description_DESC
-  id_ASC
-  id_DESC
-  title_ASC
-  title_DESC
-}
-
 scalar Time
 
 input ToggleUserTagAssignInput {
@@ -957,24 +900,12 @@ input UpdateEventInput {
   title: String
 }
 
-input UpdateEventProjectInput {
-  description: String
-  title: String
-}
-
 input UpdateOrganizationInput {
   description: String
   isPublic: Boolean
   location: String
   name: String
   visibleInSearch: Boolean
-}
-
-input UpdateTaskInput {
-  completed: Boolean
-  deadline: DateTime
-  description: String
-  title: String
 }
 
 input UpdateUserInput {
@@ -1014,7 +945,6 @@ type User {
   adminApproved: Boolean
   adminFor: [Organization]
   appLanguageCode: String!
-  assignedTasks: [Task]
   birthDate: Date
   createdAt: DateTime!
   createdEvents: [Event]
@@ -1130,6 +1060,7 @@ type UserTagsConnectionResult {
 
 enum UserType {
   ADMIN
+  NON_USER
   SUPERADMIN
   USER
 }
