@@ -13,6 +13,12 @@
     "description": "A foundation aimed at uniting the world and making it a better place for all.",
     "address": {
       "city": "Delhi",
+      "countryCode": "IN",
+      "dependentLocality": "Some Dependent Locality",
+      "line1": "123 Random Street",
+      "line2": "Apartment 456",
+      "postalCode": "110001",
+      "sortingCode": "ABC-123",
       "state": "Delhi"
     },
     "isPublic": true,
