@@ -301,7 +301,7 @@ export const inputs = gql`
     _id: ID!
     name: String!
   }
-  
+
   input UpdateCategoryInput {
     category: String
     disabled: Boolean
