@@ -16,7 +16,6 @@ export const event: QueryResolvers["event"] = async (_parent, args) => {
     status: "ACTIVE",
   })
     .populate("creator", "-password")
-    .populate("tasks")
     .populate("admins", "-password")
     .lean();
 

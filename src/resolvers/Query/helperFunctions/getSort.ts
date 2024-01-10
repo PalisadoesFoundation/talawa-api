@@ -3,7 +3,6 @@ import type {
   InputMaybe,
   OrganizationOrderByInput,
   PostOrderByInput,
-  TaskOrderByInput,
   UserOrderByInput,
 } from "../../../types/generatedGraphQLTypes";
 
@@ -13,7 +12,6 @@ export const getSort = (
         | EventOrderByInput
         | OrganizationOrderByInput
         | PostOrderByInput
-        | TaskOrderByInput
         | UserOrderByInput
       >
     | undefined
@@ -150,18 +148,6 @@ export const getSort = (
     case "createdAt_DESC":
       sortPayload = {
         createdAt: -1,
-      };
-      break;
-
-    case "deadline_ASC":
-      sortPayload = {
-        deadline: 1,
-      };
-      break;
-
-    case "deadline_DESC":
-      sortPayload = {
-        deadline: -1,
       };
       break;
 

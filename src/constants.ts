@@ -26,12 +26,6 @@ export const EVENT_NOT_FOUND_ERROR = {
   MESSAGE: "event.notFound",
   PARAM: "event",
 };
-export const EVENT_PROJECT_NOT_FOUND_ERROR = {
-  DESC: "EventProject not found",
-  CODE: "eventProject.notFound",
-  MESSAGE: "eventProject.notFound",
-  PARAM: "eventProject",
-};
 
 export const FEEDBACK_ALREADY_SUBMITTED = {
   MESSAGE: "The user has already submitted a feedback for this event.",
@@ -299,12 +293,6 @@ export const USER_DOES_NOT_HAVE_THE_TAG = {
   PARAM: "user.doesNotHaveTag",
 };
 
-export const TASK_NOT_FOUND_ERROR = {
-  DESC: "Task not found",
-  CODE: "task.notFound",
-  MESSAGE: "task.notFound",
-  PARAM: "task",
-};
 export const ADVERTISEMENT_NOT_FOUND_ERROR = {
   DESC: "Advertisement not found",
   CODE: "advertisement.notFound",
