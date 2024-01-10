@@ -146,17 +146,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
     }
   });
 
-  /*
-  Add joined and created organization to current user
-
-  -> This test is only added to associate organization with current
-      user
-  -> This is created only to support other test cases and can be removed once
-      DB replication is implemented
-  -> And the below commented test cases can be reintroduced
-  
-  */
-  it(`Add joined and created organization to current user`, async () => {
+  it(`creates the single non-recurring event and returns it`, async () => {
     await User.updateOne(
       {
         _id: testUser?._id,
@@ -168,186 +158,259 @@ describe("resolvers -> Mutation -> createEvent", () => {
         },
       }
     );
+
+    const args: MutationCreateEventArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        allDay: false,
+        description: "newDescription",
+        endDate: new Date().toUTCString(),
+        endTime: new Date().toUTCString(),
+        isPublic: false,
+        isRegisterable: false,
+        latitude: 1,
+        longitude: 1,
+        location: "newLocation",
+        recurring: false,
+        startDate: new Date().toUTCString(),
+        startTime: new Date().toUTCString(),
+        title: "newTitle",
+        recurrance: "ONCE",
+      },
+    };
+
+    const context = {
+      userId: testUser?.id,
+    };
+    const { createEvent: createEventResolver } = await import(
+      "../../../src/resolvers/Mutation/createEvent"
+    );
+
+    const createEventPayload = await createEventResolver?.({}, args, context);
+
+    expect(createEventPayload).toEqual(
+      expect.objectContaining({
+        allDay: false,
+        description: "newDescription",
+        isPublic: false,
+        isRegisterable: false,
+        latitude: 1,
+        longitude: 1,
+        location: "newLocation",
+        recurring: false,
+        title: "newTitle",
+        creator: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
+      })
+    );
+
+    const recurringEvents = await Event.find({
+      recurrance: "ONCE",
+    }).lean();
+
+    expect(recurringEvents).toBeDefined();
+    expect(recurringEvents).toHaveLength(1);
+
+    const attendeeExists = await EventAttendee.exists({
+      userId: testUser!._id,
+      eventId: createEventPayload!._id,
+    });
+
+    expect(attendeeExists).toBeTruthy();
+
+    const updatedTestUser = await User.findOne({
+      _id: testUser?._id,
+    })
+      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .lean();
+
+    expect(updatedTestUser).toEqual(
+      expect.objectContaining({
+        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
+        createdEvents: expect.arrayContaining([createEventPayload?._id]),
+        registeredEvents: expect.arrayContaining([createEventPayload?._id]),
+      })
+    );
   });
 
-  //Commenting Out this test untill DB replication is implemented - PR related(#1658)
+  it(`creates the single recurring event and returns it`, async () => {
+    await User.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization?._id,
+          joinedOrganizations: testOrganization?._id,
+        },
+      }
+    );
 
-  // it(`creates the single event and returns it`, async () => {
-  //   await User.updateOne(
-  //     {
-  //       _id: testUser?._id,
-  //     },
-  //     {
-  //       $push: {
-  //         createdOrganizations: testOrganization?._id,
-  //         joinedOrganizations: testOrganization?._id,
-  //       },
-  //     }
-  //   );
+    const args: MutationCreateEventArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        allDay: false,
+        description: "newDescription",
+        endDate: new Date().toUTCString(),
+        endTime: new Date().toUTCString(),
+        isPublic: false,
+        isRegisterable: false,
+        latitude: 1,
+        longitude: 1,
+        location: "newLocation",
+        recurring: true,
+        startDate: new Date().toUTCString(),
+        startTime: new Date().toUTCString(),
+        title: "newTitle",
+        recurrance: "ONCE",
+      },
+    };
 
-  //   const args: MutationCreateEventArgs = {
-  //     data: {
-  //       organizationId: testOrganization?.id,
-  //       allDay: false,
-  //       description: "newDescription",
-  //       endDate: new Date().toUTCString(),
-  //       endTime: new Date().toUTCString(),
-  //       isPublic: false,
-  //       isRegisterable: false,
-  //       latitude: 1,
-  //       longitude: 1,
-  //       location: "newLocation",
-  //       recurring: false,
-  //       startDate: new Date().toUTCString(),
-  //       startTime: new Date().toUTCString(),
-  //       title: "newTitle",
-  //       recurrance: "ONCE",
-  //     },
-  //   };
+    const context = {
+      userId: testUser?.id,
+    };
+    const { createEvent: createEventResolver } = await import(
+      "../../../src/resolvers/Mutation/createEvent"
+    );
 
-  //   const context = {
-  //     userId: testUser?.id,
-  //   };
-  //   const { createEvent: createEventResolver } = await import(
-  //     "../../../src/resolvers/Mutation/createEvent"
-  //   );
+    const createEventPayload = await createEventResolver?.({}, args, context);
 
-  //   const createEventPayload = await createEventResolver?.({}, args, context);
+    expect(createEventPayload).toEqual(
+      expect.objectContaining({
+        allDay: false,
+        description: "newDescription",
+        isPublic: false,
+        isRegisterable: false,
+        latitude: 1,
+        longitude: 1,
+        location: "newLocation",
+        recurring: true,
+        title: "newTitle",
+        creator: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
+      })
+    );
 
-  //   expect(createEventPayload).toEqual(
-  //     expect.objectContaining({
-  //       allDay: false,
-  //       description: "newDescription",
-  //       isPublic: false,
-  //       isRegisterable: false,
-  //       latitude: 1,
-  //       longitude: 1,
-  //       location: "newLocation",
-  //       recurring: false,
-  //       title: "newTitle",
-  //       creator: testUser?._id,
-  //       admins: expect.arrayContaining([testUser?._id]),
-  //       organization: testOrganization?._id,
-  //     })
-  //   );
+    const recurringEvents = await Event.find({
+      recurring: true,
+      recurrance: "ONCE",
+    }).lean();
 
-  //   const recurringEvents = await Event.find({
-  //     recurrance: "ONCE",
-  //   }).lean();
+    expect(recurringEvents).toBeDefined();
+    expect(recurringEvents).toHaveLength(1);
 
-  //   expect(recurringEvents).toBeDefined();
-  //   expect(recurringEvents).toHaveLength(1);
+    const attendeeExists = await EventAttendee.exists({
+      userId: testUser!._id,
+      eventId: createEventPayload!._id,
+    });
 
-  //   const attendeeExists = await EventAttendee.exists({
-  //     userId: testUser!._id,
-  //     eventId: createEventPayload!._id,
-  //   });
+    expect(attendeeExists).toBeTruthy();
 
-  //   expect(attendeeExists).toBeTruthy();
+    const updatedTestUser = await User.findOne({
+      _id: testUser?._id,
+    })
+      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .lean();
 
-  //   const updatedTestUser = await User.findOne({
-  //     _id: testUser?._id,
-  //   })
-  //     .select(["eventAdmin", "createdEvents", "registeredEvents"])
-  //     .lean();
+    expect(updatedTestUser).toEqual(
+      expect.objectContaining({
+        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
+        createdEvents: expect.arrayContaining([createEventPayload?._id]),
+        registeredEvents: expect.arrayContaining([createEventPayload?._id]),
+      })
+    );
+  });
 
-  //   expect(updatedTestUser).toEqual(
-  //     expect.objectContaining({
-  //       eventAdmin: expect.arrayContaining([createEventPayload?._id]),
-  //       createdEvents: expect.arrayContaining([createEventPayload?._id]),
-  //       registeredEvents: expect.arrayContaining([createEventPayload?._id]),
-  //     })
-  //   );
-  // });
+  it(`creates the Weekly recurring event and returns it`, async () => {
+    await User.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization?._id,
+          joinedOrganizations: testOrganization?._id,
+        },
+      }
+    );
 
-  // it(`creates the Weekly recurring event and returns it`, async () => {
-  //   await User.updateOne(
-  //     {
-  //       _id: testUser?._id,
-  //     },
-  //     {
-  //       $push: {
-  //         createdOrganizations: testOrganization?._id,
-  //         joinedOrganizations: testOrganization?._id,
-  //       },
-  //     }
-  //   );
+    const args: MutationCreateEventArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        allDay: false,
+        description: "newDescription",
+        endDate: new Date("2023-01-29T00:00:00Z"),
+        endTime: new Date().toUTCString(),
+        isPublic: false,
+        isRegisterable: false,
+        latitude: 1,
+        longitude: 1,
+        location: "newLocation",
+        recurring: true,
+        startDate: new Date("2023-01-01T00:00:00Z"),
+        startTime: new Date().toUTCString(),
+        title: "newTitle",
+        recurrance: "WEEKLY",
+      },
+    };
 
-  //   const args: MutationCreateEventArgs = {
-  //     data: {
-  //       organizationId: testOrganization?.id,
-  //       allDay: false,
-  //       description: "newDescription",
-  //       endDate: new Date("2023-01-29T00:00:00Z"),
-  //       endTime: new Date().toUTCString(),
-  //       isPublic: false,
-  //       isRegisterable: false,
-  //       latitude: 1,
-  //       longitude: 1,
-  //       location: "newLocation",
-  //       recurring: true,
-  //       startDate: new Date("2023-01-01T00:00:00Z"),
-  //       startTime: new Date().toUTCString(),
-  //       title: "newTitle",
-  //       recurrance: "WEEKLY",
-  //     },
-  //   };
+    const context = {
+      userId: testUser?.id,
+    };
+    const { createEvent: createEventResolver } = await import(
+      "../../../src/resolvers/Mutation/createEvent"
+    );
 
-  //   const context = {
-  //     userId: testUser?.id,
-  //   };
-  //   const { createEvent: createEventResolver } = await import(
-  //     "../../../src/resolvers/Mutation/createEvent"
-  //   );
+    const createEventPayload = await createEventResolver?.({}, args, context);
 
-  //   const createEventPayload = await createEventResolver?.({}, args, context);
+    expect(createEventPayload).toEqual(
+      expect.objectContaining({
+        allDay: false,
+        description: "newDescription",
+        isPublic: false,
+        isRegisterable: false,
+        latitude: 1,
+        longitude: 1,
+        location: "newLocation",
+        recurring: true,
+        title: "newTitle",
+        creator: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
+      })
+    );
 
-  //   expect(createEventPayload).toEqual(
-  //     expect.objectContaining({
-  //       allDay: false,
-  //       description: "newDescription",
-  //       isPublic: false,
-  //       isRegisterable: false,
-  //       latitude: 1,
-  //       longitude: 1,
-  //       location: "newLocation",
-  //       recurring: true,
-  //       title: "newTitle",
-  //       creator: testUser?._id,
-  //       admins: expect.arrayContaining([testUser?._id]),
-  //       organization: testOrganization?._id,
-  //     })
-  //   );
+    const recurringEvents = await Event.find({
+      recurring: true,
+      recurrance: "WEEKLY",
+    }).lean();
 
-  //   const recurringEvents = await Event.find({
-  //     recurring: true,
-  //     recurrance: "WEEKLY",
-  //   }).lean();
+    expect(recurringEvents).toBeDefined();
+    expect(recurringEvents).toHaveLength(5);
 
-  //   expect(recurringEvents).toBeDefined();
-  //   expect(recurringEvents).toHaveLength(5);
+    const attendeeExists = await EventAttendee.exists({
+      userId: testUser!._id,
+      eventId: createEventPayload!._id,
+    });
 
-  //   const attendeeExists = await EventAttendee.exists({
-  //     userId: testUser!._id,
-  //     eventId: createEventPayload!._id,
-  //   });
+    expect(attendeeExists).toBeTruthy();
 
-  //   expect(attendeeExists).toBeTruthy();
+    const updatedTestUser = await User.findOne({
+      _id: testUser?._id,
+    })
+      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .lean();
 
-  //   const updatedTestUser = await User.findOne({
-  //     _id: testUser?._id,
-  //   })
-  //     .select(["eventAdmin", "createdEvents", "registeredEvents"])
-  //     .lean();
-
-  //   expect(updatedTestUser).toEqual(
-  //     expect.objectContaining({
-  //       eventAdmin: expect.arrayContaining([createEventPayload?._id]),
-  //       createdEvents: expect.arrayContaining([createEventPayload?._id]),
-  //       registeredEvents: expect.arrayContaining([createEventPayload?._id]),
-  //     })
-  //   );
-  // });
+    expect(updatedTestUser).toEqual(
+      expect.objectContaining({
+        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
+        createdEvents: expect.arrayContaining([createEventPayload?._id]),
+        registeredEvents: expect.arrayContaining([createEventPayload?._id]),
+      })
+    );
+  });
 
   /* Commenting out this test because we are not using firebase notification anymore.
   

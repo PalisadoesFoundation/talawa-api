@@ -13,6 +13,10 @@ import { EventAttendee } from "../../models/EventAttendee";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import type mongoose from "mongoose";
 import { session } from "../../db";
+import {
+  generateSingleEvent,
+  generateWeeklyEvents,
+} from "../../helpers/eventInstance";
 
 /**
  * This function enables to create an event.
@@ -121,39 +125,61 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     );
   }
 
-  session.startTransaction();
+  if (session) {
+    session.startTransaction();
+  }
 
   try {
-    let createdEvent;
+    let createdEvent!: any;
 
-    if (
-      !args.data?.recurring ||
-      (args.data?.recurring && args.data?.recurrance == "ONCE")
-    ) {
-      createdEvent = await generateOnetimeEvent(
-        args,
-        currentUser,
-        organization,
-        session
-      );
-    } else {
-      //Cases for DAILY, WEEKLY, MONTHLY AND YEARLY recurring events
+    if (args.data?.recurring) {
       switch (args.data?.recurrance) {
-        case "WEEKLY":
-          createdEvent = await generateWeeklyRecurringInstances(
+        case "ONCE":
+          createdEvent = await generateSingleEvent(
             args,
             currentUser,
             organization,
             session
           );
+
+          for (const event of createdEvent) {
+            await associateEventWithUser(currentUser, event, session);
+            await cacheEvents([event]);
+          }
+
           break;
+
+        case "WEEKLY":
+          createdEvent = await generateWeeklyEvents(
+            args,
+            currentUser,
+            organization,
+            session
+          );
+
+          for (const event of createdEvent) {
+            await associateEventWithUser(currentUser, event, session);
+            await cacheEvents([event]);
+          }
+
+          break;
+      }
+    } else {
+      createdEvent = await generateSingleEvent(
+        args,
+        currentUser,
+        organization,
+        session
+      );
+
+      for (const event of createdEvent) {
+        await associateEventWithUser(currentUser, event, session);
+        await cacheEvents([event]);
       }
     }
 
-    await session.commitTransaction();
-
-    if (!createdEvent) {
-      throw new Error(requestContext.translate("Failed to create event!"));
+    if (session) {
+      await session.commitTransaction();
     }
 
     // Returns the createdEvent.
@@ -162,27 +188,6 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     await session.abortTransaction();
     throw error;
   }
-  /* Commenting out this notification code coz we don't use firebase anymore.
-
-    for (let i = 0; i < organization.members.length; i++) {
-    const user = await User.findOne({
-      _id: organization.members[i],
-    }).lean();
-
-  
-    
-    // Checks whether both user and user.token exist.
-    if (user && user.token) {
-      await admin.messaging().send({
-        token: user.token,
-        notification: {
-          title: "New Event",
-          body: `${currentUser.firstName} has created a new event in ${organization.name}`,
-        },
-      });
-    }
-  }
-     */
 };
 
 async function associateEventWithUser(
@@ -213,79 +218,4 @@ async function associateEventWithUser(
     },
     { session }
   );
-}
-
-export async function generateOnetimeEvent(
-  args: any,
-  currentUser: any,
-  organization: any,
-  session: mongoose.ClientSession
-) {
-  const createdEvent = await Event.create(
-    [
-      {
-        ...args.data,
-        creator: currentUser._id,
-        admins: [currentUser._id],
-        organization: organization._id,
-      },
-    ],
-    { session }
-  );
-
-  if (createdEvent !== null) {
-    await cacheEvents([createdEvent[0]]);
-  }
-
-  await associateEventWithUser(currentUser, createdEvent[0], session);
-
-  return createdEvent;
-}
-
-export async function generateWeeklyRecurringInstances(
-  args: any,
-  currentUser: any,
-  organization: any,
-  session: mongoose.ClientSession
-) {
-  const recurringEvents = [];
-  const { data } = args;
-
-  const startDate = new Date(data?.startDate);
-  const endDate = new Date(data?.endDate);
-
-  while (startDate <= endDate) {
-    const recurringEventData = {
-      ...data,
-      startDate: new Date(startDate),
-    };
-
-    const createdEvent = {
-      ...recurringEventData,
-      creator: currentUser._id,
-      admins: [currentUser._id],
-      organization: organization._id,
-    };
-
-    recurringEvents.push(createdEvent);
-
-    startDate.setDate(startDate.getDate() + 7);
-  }
-
-  //Bulk insertion in database
-  const createdEvents = await Event.insertMany(recurringEvents, { session });
-
-  const eventsArray = Array.isArray(createdEvents)
-    ? createdEvents
-    : [createdEvents];
-
-  for (const createdEvent of eventsArray) {
-    await associateEventWithUser(currentUser, createdEvent, session);
-
-    if (createdEvent !== null) {
-      await cacheEvents([createdEvent]);
-    }
-  }
-
-  return eventsArray;
 }
