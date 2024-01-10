@@ -1740,6 +1740,7 @@ export type UserTagsConnectionResult = {
 
 export type UserType =
   | 'ADMIN'
+  | 'NON_USER'
   | 'SUPERADMIN'
   | 'USER';
 

@@ -1036,6 +1036,7 @@ type UserTagsConnectionResult {
 
 enum UserType {
   ADMIN
+  NON_USER
   SUPERADMIN
   USER
 }
