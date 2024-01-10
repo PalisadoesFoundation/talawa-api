@@ -17,7 +17,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
  * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the organization exists
- * 2. If the organization is public.
+ * 2. If the organization required user registration
  * 3. If the user exists
  * 4. If the user is already a member of the organization.
  * @returns Updated user.
@@ -49,6 +49,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
       );
     }
 
+    // Checks whether organization requires user registration.
     if (organization.userRegistrationRequired === true) {
       throw new errors.UnauthorizedError(
         requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),

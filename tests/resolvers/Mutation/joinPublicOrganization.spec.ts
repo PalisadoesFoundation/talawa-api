@@ -33,7 +33,7 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  const temp = await createTestUserAndOrganization(true, true, false);
+  const temp = await createTestUserAndOrganization(true, true, true);
   testUser = temp[0];
   testOrganization = temp[1];
 });
@@ -107,7 +107,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
         },
         {
           $set: {
-            isPublic: true,
+            userRegistrationRequired: false,
           },
         },
         {
