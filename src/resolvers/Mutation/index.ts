@@ -24,7 +24,6 @@ import { createComment } from "./createComment";
 import { createDirectChat } from "./createDirectChat";
 import { createDonation } from "./createDonation";
 import { createEvent } from "./createEvent";
-import { createEventProject } from "./createEventProject";
 import { createGroupChat } from "./createGroupChat";
 import { createMessageChat } from "./createMessageChat";
 import { createOrganization } from "./createOrganization";
@@ -32,7 +31,6 @@ import { createPlugin } from "./createPlugin";
 import { createAdvertisement } from "./createAdvertisement";
 import { createPost } from "./createPost";
 import { createSampleOrganization } from "./createSampleOrganization";
-import { createTask } from "./createTask";
 import { createCategory } from "./createCategory";
 import { createUserTag } from "./createUserTag";
 import { deleteDonationById } from "./deleteDonationById";
@@ -55,7 +53,6 @@ import { removeComment } from "./removeComment";
 import { removeDirectChat } from "./removeDirectChat";
 import { removeEvent } from "./removeEvent";
 import { removeEventAttendee } from "./removeEventAttendee";
-import { removeEventProject } from "./removeEventProject";
 import { removeGroupChat } from "./removeGroupChat";
 import { removeAdvertisement } from "./removeAdvertisement";
 import { removeMember } from "./removeMember";
@@ -64,7 +61,6 @@ import { removeOrganizationCustomField } from "./removeOrganizationCustomField";
 import { removeOrganizationImage } from "./removeOrganizationImage";
 import { removePost } from "./removePost";
 import { removeSampleOrganization } from "./removeSampleOrganization";
-import { removeTask } from "./removeTask";
 import { removeUserCustomData } from "./removeUserCustomData";
 import { removeUserFromGroupChat } from "./removeUserFromGroupChat";
 import { removeUserImage } from "./removeUserImage";
@@ -74,7 +70,6 @@ import { saveFcmToken } from "./saveFcmToken";
 import { sendMembershipRequest } from "./sendMembershipRequest";
 import { sendMessageToDirectChat } from "./sendMessageToDirectChat";
 import { sendMessageToGroupChat } from "./sendMessageToGroupChat";
-import { setTaskVolunteers } from "./setTaskVolunteers";
 import { signUp } from "./signUp";
 import { togglePostPin } from "./togglePostPin";
 import { unassignUserTag } from "./unassignUserTag";
@@ -85,12 +80,10 @@ import { unregisterForEventByUser } from "./unregisterForEventByUser";
 import { updateActionItem } from "./updateActionItem";
 import { updateCategory } from "./updateCategory";
 import { updateEvent } from "./updateEvent";
-import { updateEventProject } from "./updateEventProject";
 import { updateLanguage } from "./updateLanguage";
 import { updateOrganization } from "./updateOrganization";
 import { updatePluginStatus } from "./updatePluginStatus";
 import { updatePost } from "./updatePost";
-import { updateTask } from "./updateTask";
 import { updateUserProfile } from "./updateUserProfile";
 import { updateUserPassword } from "./updateUserPassword";
 import { updateUserTag } from "./updateUserTag";
@@ -124,14 +117,12 @@ export const Mutation: MutationResolvers = {
   createDirectChat,
   createDonation,
   createEvent,
-  createEventProject,
   createGroupChat,
   createMessageChat,
   createOrganization,
   createPlugin,
   createPost,
   createSampleOrganization,
-  createTask,
   createCategory,
   createUserTag,
   deleteDonationById,
@@ -156,7 +147,6 @@ export const Mutation: MutationResolvers = {
   removeEvent,
   removeEventAttendee,
   removeAdvertisement,
-  removeEventProject,
   removeGroupChat,
   removeMember,
   removeOrganization,
@@ -164,7 +154,6 @@ export const Mutation: MutationResolvers = {
   removeOrganizationImage,
   removeSampleOrganization,
   removePost,
-  removeTask,
   removeUserCustomData,
   removeUserFromGroupChat,
   removeUserImage,
@@ -174,7 +163,6 @@ export const Mutation: MutationResolvers = {
   sendMembershipRequest,
   sendMessageToDirectChat,
   sendMessageToGroupChat,
-  setTaskVolunteers,
   signUp,
   togglePostPin,
   unassignUserTag,
@@ -185,11 +173,9 @@ export const Mutation: MutationResolvers = {
   updateActionItem,
   updateCategory,
   updateEvent,
-  updateEventProject,
   updateLanguage,
   updateOrganization,
   updatePluginStatus,
-  updateTask,
   updateUserProfile,
   updateUserPassword,
   updateUserType,

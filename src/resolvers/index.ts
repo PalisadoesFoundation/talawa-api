@@ -6,7 +6,6 @@ import { Comment } from "./Comment";
 import { DirectChat } from "./DirectChat";
 import { DirectChatMessage } from "./DirectChatMessage";
 import { Event } from "./Event";
-import { EventProject } from "./EventProject";
 import { Feedback } from "./Feedback";
 import { GroupChat } from "./GroupChat";
 import { GroupChatMessage } from "./GroupChatMessage";
@@ -16,7 +15,6 @@ import { Organization } from "./Organization";
 import { Post } from "./Post";
 import { Query } from "./Query";
 import { Subscription } from "./Subscription";
-import { Task } from "./Task";
 import { User } from "./User";
 import { UserTag } from "./UserTag";
 import { composeResolvers } from "@graphql-tools/resolvers-composition";
@@ -41,7 +39,6 @@ const resolvers: Resolvers = {
   DirectChat,
   DirectChatMessage,
   Event,
-  EventProject,
   Feedback,
   GroupChat,
   GroupChatMessage,
@@ -51,7 +48,6 @@ const resolvers: Resolvers = {
   Post,
   Query,
   Subscription,
-  Task,
   Category,
   User,
   UserTag,

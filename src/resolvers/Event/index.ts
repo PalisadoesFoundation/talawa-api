@@ -4,7 +4,6 @@ import { attendeesCheckInStatus } from "./attendeesCheckInStatus";
 import { averageFeedbackScore } from "./averageFeedbackScore";
 import { feedback } from "./feedback";
 import { organization } from "./organization";
-import { projects } from "./projects";
 import { actionItems } from "./actionItems";
 
 export const Event: EventResolvers = {
@@ -14,5 +13,4 @@ export const Event: EventResolvers = {
   averageFeedbackScore,
   feedback,
   organization,
-  projects,
 };
