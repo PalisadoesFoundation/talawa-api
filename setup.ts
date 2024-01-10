@@ -33,6 +33,35 @@ function updateEnvVariable(config: { [key: string]: string | number }): void {
   fs.writeFileSync(".env", updatedContent, "utf8");
 }
 
+// Get the node environment
+async function getNodeEnvironment(): Promise<string> {
+  const { nodeEnv } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "nodeEnv",
+      message: "Select Node environment:",
+      choices: ["development", "production"],
+      default: "development",
+    },
+  ]);
+
+  return nodeEnv;
+}
+
+async function setNodeEnvironment(): Promise<void> {
+  try {
+    const nodeEnv = await getNodeEnvironment();
+    process.env.NODE_ENV = nodeEnv;
+
+    const config = dotenv.parse(fs.readFileSync(".env"));
+    config.NODE_ENV = nodeEnv;
+    updateEnvVariable(config);
+  } catch (err) {
+    console.error(err);
+    abort();
+  }
+}
+
 // Generate and update the access and refresh token secrets in .env
 async function accessAndRefreshTokens(
   accessTokenSecret: string | null,
@@ -426,6 +455,11 @@ async function main(): Promise<void> {
   } else {
     checkEnvFile();
   }
+
+  if (process.env.NODE_ENV) {
+    console.log(`\nNode environment is already set to ${process.env.NODE_ENV}`);
+  }
+  await setNodeEnvironment();
 
   let accessToken: string | null = "",
     refreshToken: string | null = "";
