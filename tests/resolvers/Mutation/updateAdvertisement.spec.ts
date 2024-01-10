@@ -16,7 +16,15 @@ import {
   FORBIDDEN_FIELD_UPDATE_ERROR,
   FIELD_NON_EMPTY_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  vi,
+  afterEach,
+} from "vitest";
 import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
 import {
   createTestAdvertisement,
@@ -35,6 +43,11 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
+});
+
+afterEach(() => {
+  vi.doUnmock("../../../src/constants");
+  vi.resetModules();
 });
 
 describe("resolvers -> Mutation -> updateAdvertisement", () => {
