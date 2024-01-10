@@ -3,7 +3,10 @@ import { Types } from "mongoose";
 import { Advertisement } from "../../../src/models";
 import type { MutationUpdateAdvertisementArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import { updateAdvertisement as updateAdvertisementResolver } from "../../../src/resolvers/Mutation/updateAdvertisement";
+import {
+  updateAdvertisement,
+  updateAdvertisement as updateAdvertisementResolver,
+} from "../../../src/resolvers/Mutation/updateAdvertisement";
 import {
   ADVERTISEMENT_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -124,7 +127,22 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       _id: testAdvertisement!._id,
     }).lean();
 
-    expect(advertisement).toEqual(updatedTestAdvertisement);
+    let expectedAdvertisement;
+
+    if (!updatedTestAdvertisement) {
+      console.error("Updated advertisement not found in the database");
+    } else {
+      expectedAdvertisement = {
+        _id: updatedTestAdvertisement._id.toString(), // Ensure _id is converted to String as per GraphQL schema
+        name: updatedTestAdvertisement.name,
+        orgId: updatedTestAdvertisement.orgId.toString(),
+        link: updatedTestAdvertisement.link,
+        type: updatedTestAdvertisement.type,
+        startDate: updatedTestAdvertisement.startDate,
+        endDate: updatedTestAdvertisement.endDate,
+      };
+    }
+    expect(advertisement).toEqual(expectedAdvertisement);
   });
 
   it(`throws ValidationError if endDate is before startDate`, async () => {

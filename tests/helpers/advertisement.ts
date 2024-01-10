@@ -18,6 +18,7 @@ export const createTestAdvertisement =
       type: "POPUP",
       startDate: "2023-01-01",
       endDate: "2023-01-31",
+      orgId: "1",
     };
 
     // Create test advertisement in the database
