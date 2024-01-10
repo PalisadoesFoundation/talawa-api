@@ -18,24 +18,20 @@ function checkEnvFile(): void {
     for (const key of misplaced) {
       fs.appendFileSync(".env", `${key}=${envSample[key]}\n`);
     }
-
   }
 }
 // Update the value of an environment variable in .env file
 function updateEnvVariable(config: { [key: string]: string | number }): void {
-
-  const existingContent: string = fs.
-    readFileSync(".env", 'utf8');
+  const existingContent: string = fs.readFileSync(".env", "utf8");
 
   let updatedContent: string = existingContent;
   for (const key in config) {
-    const regex: RegExp = new RegExp(`^${key}=.*`, 'gm');
+    const regex = new RegExp(`^${key}=.*`, "gm");
     updatedContent = updatedContent.replace(regex, `${key}=${config[key]}`);
   }
 
-  fs.writeFileSync(".env", updatedContent, 'utf8');
+  fs.writeFileSync(".env", updatedContent, "utf8");
 }
-
 
 // Generate and update the access and refresh token secrets in .env
 async function accessAndRefreshTokens(
@@ -248,7 +244,6 @@ async function recaptcha(): Promise<void> {
     const config = dotenv.parse(fs.readFileSync(".env"));
     config.RECAPTCHA_SECRET_KEY = recaptchaSecretKey;
     updateEnvVariable(config);
-
   } else {
     await recaptcha();
   }
@@ -461,15 +456,8 @@ async function main(): Promise<void> {
         `\nRedis URL already exists with the value:\n${process.env.REDIS_URL}`
       );
     }
-    const { shouldSetRedis } = await inquirer.prompt({
-      type: "confirm",
-      name: "shouldSetRedis",
-      message: "Would you like to set up a Redis URL?",
-      default: process.env.REDIS_URL ? false : true,
-    });
-    if (shouldSetRedis) {
-      await redisConfiguration();
-    }
+
+    await redisConfiguration();
 
     // MongoDB configuration
     if (process.env.MONGO_DB_URL) {
@@ -477,16 +465,8 @@ async function main(): Promise<void> {
         `\nMongoDB URL already exists with the value:\n${process.env.MONGO_DB_URL}`
       );
     }
-    const { shouldSetMongoDb } = await inquirer.prompt({
-      type: "confirm",
-      name: "shouldSetMongoDb",
-      message: "Would you like to set up a MongoDB URL?",
-      default: process.env.MONGO_DB_URL ? false : true,
-    });
 
-    if (shouldSetMongoDb) {
-      await mongoDB();
-    }
+    await mongoDB();
   }
   if (process.env.RECAPTCHA_SECRET_KEY) {
     console.log(
@@ -553,7 +533,6 @@ async function main(): Promise<void> {
     const config = dotenv.parse(fs.readFileSync(".env"));
     config.LAST_RESORT_SUPERADMIN_EMAIL = config.MAIL_USERNAME;
     updateEnvVariable(config);
-
   }
 
   if (!isDockerInstallation) {
