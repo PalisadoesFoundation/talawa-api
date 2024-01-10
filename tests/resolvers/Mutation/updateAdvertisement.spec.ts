@@ -109,7 +109,9 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         name: "New Advertisement Name",
         link: "Updated Advertisement Link",
         type: "POPUP",
-        startDate: new Date().toISOString().split("T")[0],
+        startDate: new Date(new Date().getFullYear() + 0, 11, 31)
+          .toISOString()
+          .split("T")[0],
         endDate: new Date(new Date().getFullYear() + 1, 11, 31)
           .toISOString()
           .split("T")[0],
