@@ -87,6 +87,17 @@ input CommentInput {
   text: String!
 }
 
+type Community {
+  _id: ID!
+  createdAt: DateTime
+  description: String!
+  image: String
+  name: String!
+  socialMediaUrls: SocialMediaUrls
+  timeout: Int
+  websiteLink: String
+}
+
 union ConnectionError = InvalidCursor | MaximumValueError
 
 type ConnectionPageInfo {
@@ -550,6 +561,7 @@ type Mutation {
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
   updatePluginStatus(id: ID!, orgId: ID!): Plugin!
   updatePost(data: PostUpdateInput, id: ID!): Post!
+  updateSessionTimeout(timeout: Int!): Boolean!
   updateTask(data: UpdateTaskInput!, id: ID!): Task
   updateUserPassword(data: UpdateUserPasswordInput!): User!
   updateUserProfile(data: UpdateUserInput, file: String): User!
@@ -795,6 +807,7 @@ input PostWhereInput {
 type Query {
   adminPlugin(orgId: ID!): [Plugin]
   checkAuth: User!
+  community: Community!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
   directChatsByUserID(id: ID!): [DirectChat]
@@ -838,6 +851,16 @@ enum Recurrance {
   ONCE
   WEEKLY
   YEARLY
+}
+
+type SocialMediaUrls {
+  facebook: String
+  gitHub: String
+  linkedIn: String
+  reddit: String
+  slack: String
+  twitter: String
+  youTube: String
 }
 
 enum Status {

@@ -227,6 +227,8 @@ export const mutations = gql`
 
     updatePluginStatus(id: ID!, orgId: ID!): Plugin!
 
+    updateSessionTimeout(timeout: Int!): Boolean! @auth
+
     updateUserTag(input: UpdateUserTagInput!): UserTag @auth
 
     updateTask(id: ID!, data: UpdateTaskInput!): Task @auth

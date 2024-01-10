@@ -44,6 +44,17 @@ export const types = gql`
     likeCount: Int
   }
 
+  type Community {
+    _id: ID!
+    name: String!
+    image: String
+    description: String!
+    websiteLink: String
+    socialMediaUrls: SocialMediaUrls
+    timeout: Int
+    createdAt: DateTime
+  }
+
   # A page info type adhering to Relay Specification for both cursor based pagination
   type ConnectionPageInfo {
     hasNextPage: Boolean!
@@ -328,6 +339,16 @@ export const types = gql`
     edges: [Post]!
 
     aggregate: AggregatePost!
+  }
+
+  type SocialMediaUrls {
+    facebook: String
+    twitter: String
+    linkedIn: String
+    gitHub: String
+    youTube: String
+    slack: String
+    reddit: String
   }
 
   type Task {
