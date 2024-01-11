@@ -113,7 +113,7 @@ export const types = gql`
     title: String!
     description: String!
     startDate: Date!
-    endDate: Date
+    endDate: Date!
     startTime: Time
     endTime: Time
     allDay: Boolean!

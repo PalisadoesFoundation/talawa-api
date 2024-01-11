@@ -212,7 +212,7 @@ type Event {
   createdAt: DateTime!
   creator: User
   description: String!
-  endDate: Date
+  endDate: Date!
   endTime: Time
   feedback: [Feedback!]!
   isPublic: Boolean!

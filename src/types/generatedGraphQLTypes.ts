@@ -261,7 +261,7 @@ export type Event = {
   createdAt: Scalars['DateTime'];
   creator?: Maybe<User>;
   description: Scalars['String'];
-  endDate?: Maybe<Scalars['Date']>;
+  endDate: Scalars['Date'];
   endTime?: Maybe<Scalars['Time']>;
   feedback: Array<Feedback>;
   isPublic: Scalars['Boolean'];
@@ -2316,7 +2316,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  endDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   endTime?: Resolver<Maybe<ResolversTypes['Time']>, ParentType, ContextType>;
   feedback?: Resolver<Array<ResolversTypes['Feedback']>, ParentType, ContextType>;
   isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
