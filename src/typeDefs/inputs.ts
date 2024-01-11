@@ -274,7 +274,7 @@ export const inputs = gql`
     _id: ID!
     name: String
     link: String
-    type: String
+    type: AdvertisementType
     startDate: Date
     endDate: Date
   }

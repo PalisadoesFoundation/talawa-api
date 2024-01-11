@@ -1,6 +1,6 @@
 directive @auth on FIELD_DEFINITION
 
-directive @role(requires: UserType) on FIELD_DEFINITION
+directive @role(requires: [UserType!]) on FIELD_DEFINITION
 
 type Address {
   city: String
@@ -873,7 +873,7 @@ input UpdateAdvertisementInput {
   link: String
   name: String
   startDate: Date
-  type: String
+  type: AdvertisementType
 }
 
 type UpdateAdvertisementPayload {

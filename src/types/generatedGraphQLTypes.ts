@@ -1556,7 +1556,7 @@ export type UpdateAdvertisementInput = {
   link?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   startDate?: InputMaybe<Scalars['Date']>;
-  type?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<AdvertisementType>;
 };
 
 export type UpdateAdvertisementPayload = {
@@ -2154,7 +2154,7 @@ export type AuthDirectiveArgs = { };
 export type AuthDirectiveResolver<Result, Parent, ContextType = any, Args = AuthDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
 export type RoleDirectiveArgs = {
-  requires?: Maybe<UserType>;
+  requires?: Maybe<Array<UserType>>;
 };
 
 export type RoleDirectiveResolver<Result, Parent, ContextType = any, Args = RoleDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
