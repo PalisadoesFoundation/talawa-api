@@ -19,6 +19,14 @@ export const COMMENT_NOT_FOUND_ERROR = {
   MESSAGE: "comment.notFound",
   PARAM: "comment",
 };
+
+export const COMMUNITY_NOT_FOUND_ERROR = {
+  DESC: "Community not found",
+  CODE: "community.notFound",
+  MESSAGE: "community.notFound",
+  PARAM: "community",
+};
+
 export const ERROR_IN_SENDING_MAIL = "Error in sending mail";
 export const EVENT_NOT_FOUND_ERROR = {
   DESC: "Event not found",

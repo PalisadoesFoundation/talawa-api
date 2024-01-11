@@ -234,6 +234,16 @@ export const inputs = gql`
     recaptchaToken: String!
   }
 
+  input SocialMediaUrlsInput {
+    facebook: String
+    twitter: String
+    linkedIn: String
+    gitHub: String
+    youTube: String
+    slack: String
+    reddit: String
+  }
+
   input ToggleUserTagAssignInput {
     userId: ID!
     tagId: ID!
@@ -268,6 +278,13 @@ export const inputs = gql`
     cursor: String
     direction: PaginationDirection!
     limit: PositiveInt!
+  }
+
+  input UpdateCommunityInput {
+    name: String
+    description: String
+    websiteLink: String
+    socialMediaUrls: SocialMediaUrlsInput
   }
 
   input UpdateOrganizationInput {

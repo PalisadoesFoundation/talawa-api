@@ -200,6 +200,12 @@ export const mutations = gql`
 
     unregisterForEventByUser(id: ID!): Event! @auth
 
+    updateCommunity(
+      id: ID!
+      data: UpdateCommunityInput
+      file: String
+    ): Community! @auth @role(requires: SUPERADMIN)
+
     updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
 
     updatePost(id: ID!, data: PostUpdateInput): Post! @auth

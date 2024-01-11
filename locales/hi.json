@@ -26,5 +26,6 @@
   "registrant.alreadyUnregistered": "घटना के लिए पहले से ही अपंजीकृत",
   "translation.alreadyPresent": "अनुवाद पहले से मौजूद है",
   "translation.notFound": "अनुवाद नहीं मिला",
-  "parameter.missing": "छोड़ें पैरामीटर मौजूद नहीं है. इसे 0 या किसी अन्य मान पर सेट करें"
+  "parameter.missing": "छोड़ें पैरामीटर मौजूद नहीं है. इसे 0 या किसी अन्य मान पर सेट करें",
+  "community.notFound": "समुदाय नहीं मिला"
 }

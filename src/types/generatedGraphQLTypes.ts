@@ -140,6 +140,18 @@ export type CommentInput = {
   text: Scalars['String'];
 };
 
+export type Community = {
+  __typename?: 'Community';
+  _id: Scalars['ID'];
+  createdAt?: Maybe<Scalars['DateTime']>;
+  description: Scalars['String'];
+  image?: Maybe<Scalars['String']>;
+  name: Scalars['String'];
+  socialMediaUrls?: Maybe<SocialMediaUrls>;
+  timeout?: Maybe<Scalars['Int']>;
+  websiteLink?: Maybe<Scalars['String']>;
+};
+
 export type ConnectionError = InvalidCursor | MaximumValueError;
 
 export type ConnectionPageInfo = {
@@ -585,6 +597,7 @@ export type Mutation = {
   unlikeComment?: Maybe<Comment>;
   unlikePost?: Maybe<Post>;
   unregisterForEventByUser: Event;
+  updateCommunity: Community;
   updateEvent: Event;
   updateLanguage: User;
   updateOrganization: Organization;
@@ -975,6 +988,13 @@ export type MutationUnlikePostArgs = {
 
 
 export type MutationUnregisterForEventByUserArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type MutationUpdateCommunityArgs = {
+  data?: InputMaybe<UpdateCommunityInput>;
+  file?: InputMaybe<Scalars['String']>;
   id: Scalars['ID'];
 };
 
@@ -1499,6 +1519,27 @@ export type Recurrance =
   | 'WEEKLY'
   | 'YEARLY';
 
+export type SocialMediaUrls = {
+  __typename?: 'SocialMediaUrls';
+  facebook?: Maybe<Scalars['String']>;
+  gitHub?: Maybe<Scalars['String']>;
+  linkedIn?: Maybe<Scalars['String']>;
+  reddit?: Maybe<Scalars['String']>;
+  slack?: Maybe<Scalars['String']>;
+  twitter?: Maybe<Scalars['String']>;
+  youTube?: Maybe<Scalars['String']>;
+};
+
+export type SocialMediaUrlsInput = {
+  facebook?: InputMaybe<Scalars['String']>;
+  gitHub?: InputMaybe<Scalars['String']>;
+  linkedIn?: InputMaybe<Scalars['String']>;
+  reddit?: InputMaybe<Scalars['String']>;
+  slack?: InputMaybe<Scalars['String']>;
+  twitter?: InputMaybe<Scalars['String']>;
+  youTube?: InputMaybe<Scalars['String']>;
+};
+
 export type Status =
   | 'ACTIVE'
   | 'BLOCKED'
@@ -1537,6 +1578,13 @@ export type UnauthenticatedError = Error & {
 export type UnauthorizedError = Error & {
   __typename?: 'UnauthorizedError';
   message: Scalars['String'];
+};
+
+export type UpdateCommunityInput = {
+  description?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
+  socialMediaUrls?: InputMaybe<SocialMediaUrlsInput>;
+  websiteLink?: InputMaybe<Scalars['String']>;
 };
 
 export type UpdateEventInput = {
@@ -1886,6 +1934,7 @@ export type ResolversTypes = {
   CheckInStatus: ResolverTypeWrapper<Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversTypes['CheckIn']>, user: ResolversTypes['User'] }>;
   Comment: ResolverTypeWrapper<InterfaceCommentModel>;
   CommentInput: CommentInput;
+  Community: ResolverTypeWrapper<Community>;
   ConnectionError: ResolversTypes['InvalidCursor'] | ResolversTypes['MaximumValueError'];
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
   CountryCode: ResolverTypeWrapper<Scalars['CountryCode']>;
@@ -1962,6 +2011,8 @@ export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>;
   RecaptchaVerification: RecaptchaVerification;
   Recurrance: Recurrance;
+  SocialMediaUrls: ResolverTypeWrapper<SocialMediaUrls>;
+  SocialMediaUrlsInput: SocialMediaUrlsInput;
   Status: Status;
   String: ResolverTypeWrapper<Scalars['String']>;
   Subscription: ResolverTypeWrapper<{}>;
@@ -1972,6 +2023,7 @@ export type ResolversTypes = {
   URL: ResolverTypeWrapper<Scalars['URL']>;
   UnauthenticatedError: ResolverTypeWrapper<UnauthenticatedError>;
   UnauthorizedError: ResolverTypeWrapper<UnauthorizedError>;
+  UpdateCommunityInput: UpdateCommunityInput;
   UpdateEventInput: UpdateEventInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
   UpdateUserInput: UpdateUserInput;
@@ -2017,6 +2069,7 @@ export type ResolversParentTypes = {
   CheckInStatus: Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversParentTypes['CheckIn']>, user: ResolversParentTypes['User'] };
   Comment: InterfaceCommentModel;
   CommentInput: CommentInput;
+  Community: Community;
   ConnectionError: ResolversParentTypes['InvalidCursor'] | ResolversParentTypes['MaximumValueError'];
   ConnectionPageInfo: ConnectionPageInfo;
   CountryCode: Scalars['CountryCode'];
@@ -2084,6 +2137,8 @@ export type ResolversParentTypes = {
   PostWhereInput: PostWhereInput;
   Query: {};
   RecaptchaVerification: RecaptchaVerification;
+  SocialMediaUrls: SocialMediaUrls;
+  SocialMediaUrlsInput: SocialMediaUrlsInput;
   String: Scalars['String'];
   Subscription: {};
   Time: Scalars['Time'];
@@ -2092,6 +2147,7 @@ export type ResolversParentTypes = {
   URL: Scalars['URL'];
   UnauthenticatedError: UnauthenticatedError;
   UnauthorizedError: UnauthorizedError;
+  UpdateCommunityInput: UpdateCommunityInput;
   UpdateEventInput: UpdateEventInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
   UpdateUserInput: UpdateUserInput;
@@ -2200,6 +2256,18 @@ export type CommentResolvers<ContextType = any, ParentType extends ResolversPare
   likedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   post?: Resolver<ResolversTypes['Post'], ParentType, ContextType>;
   text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type CommunityResolvers<ContextType = any, ParentType extends ResolversParentTypes['Community'] = ResolversParentTypes['Community']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  socialMediaUrls?: Resolver<Maybe<ResolversTypes['SocialMediaUrls']>, ParentType, ContextType>;
+  timeout?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  websiteLink?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2510,6 +2578,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   unlikeComment?: Resolver<Maybe<ResolversTypes['Comment']>, ParentType, ContextType, RequireFields<MutationUnlikeCommentArgs, 'id'>>;
   unlikePost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationUnlikePostArgs, 'id'>>;
   unregisterForEventByUser?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUnregisterForEventByUserArgs, 'id'>>;
+  updateCommunity?: Resolver<ResolversTypes['Community'], ParentType, ContextType, RequireFields<MutationUpdateCommunityArgs, 'id'>>;
   updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'id'>>;
   updateLanguage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateLanguageArgs, 'languageCode'>>;
   updateOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateOrganizationArgs, 'id'>>;
@@ -2663,6 +2732,17 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   usersConnection?: Resolver<Array<Maybe<ResolversTypes['User']>>, ParentType, ContextType, Partial<QueryUsersConnectionArgs>>;
 };
 
+export type SocialMediaUrlsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SocialMediaUrls'] = ResolversParentTypes['SocialMediaUrls']> = {
+  facebook?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  gitHub?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  linkedIn?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  reddit?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  slack?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  twitter?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  youTube?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
   directMessageChat?: SubscriptionResolver<Maybe<ResolversTypes['MessageChat']>, "directMessageChat", ParentType, ContextType>;
   messageSentToDirectChat?: SubscriptionResolver<Maybe<ResolversTypes['DirectChatMessage']>, "messageSentToDirectChat", ParentType, ContextType>;
@@ -2810,6 +2890,7 @@ export type Resolvers<ContextType = any> = {
   CheckIn?: CheckInResolvers<ContextType>;
   CheckInStatus?: CheckInStatusResolvers<ContextType>;
   Comment?: CommentResolvers<ContextType>;
+  Community?: CommunityResolvers<ContextType>;
   ConnectionError?: ConnectionErrorResolvers<ContextType>;
   ConnectionPageInfo?: ConnectionPageInfoResolvers<ContextType>;
   CountryCode?: GraphQLScalarType;
@@ -2854,6 +2935,7 @@ export type Resolvers<ContextType = any> = {
   Post?: PostResolvers<ContextType>;
   PostConnection?: PostConnectionResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  SocialMediaUrls?: SocialMediaUrlsResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   Time?: GraphQLScalarType;
   Translation?: TranslationResolvers<ContextType>;

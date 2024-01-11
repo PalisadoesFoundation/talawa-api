@@ -87,6 +87,17 @@ input CommentInput {
   text: String!
 }
 
+type Community {
+  _id: ID!
+  createdAt: DateTime
+  description: String!
+  image: String
+  name: String!
+  socialMediaUrls: SocialMediaUrls
+  timeout: Int
+  websiteLink: String
+}
+
 union ConnectionError = InvalidCursor | MaximumValueError
 
 type ConnectionPageInfo {
@@ -524,6 +535,7 @@ type Mutation {
   unlikeComment(id: ID!): Comment
   unlikePost(id: ID!): Post
   unregisterForEventByUser(id: ID!): Event!
+  updateCommunity(data: UpdateCommunityInput, file: String, id: ID!): Community!
   updateEvent(data: UpdateEventInput, id: ID!): Event!
   updateLanguage(languageCode: String!): User!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
@@ -818,6 +830,26 @@ enum Recurrance {
   YEARLY
 }
 
+type SocialMediaUrls {
+  facebook: String
+  gitHub: String
+  linkedIn: String
+  reddit: String
+  slack: String
+  twitter: String
+  youTube: String
+}
+
+input SocialMediaUrlsInput {
+  facebook: String
+  gitHub: String
+  linkedIn: String
+  reddit: String
+  slack: String
+  twitter: String
+  youTube: String
+}
+
 enum Status {
   ACTIVE
   BLOCKED
@@ -858,6 +890,13 @@ type UnauthenticatedError implements Error {
 
 type UnauthorizedError implements Error {
   message: String!
+}
+
+input UpdateCommunityInput {
+  description: String
+  name: String
+  socialMediaUrls: SocialMediaUrlsInput
+  websiteLink: String
 }
 
 input UpdateEventInput {

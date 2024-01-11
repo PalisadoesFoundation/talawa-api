@@ -2,6 +2,7 @@ export * from "./Advertisement";
 export * from "./CheckIn";
 export * from "./MessageChat";
 export * from "./Comment";
+export * from "./Community";
 export * from "./DirectChat";
 export * from "./DirectChatMessage";
 export * from "./Donation";

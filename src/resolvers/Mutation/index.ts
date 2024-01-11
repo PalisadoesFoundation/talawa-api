@@ -74,6 +74,7 @@ import { unblockUser } from "./unblockUser";
 import { unlikeComment } from "./unlikeComment";
 import { unlikePost } from "./unlikePost";
 import { unregisterForEventByUser } from "./unregisterForEventByUser";
+import { updateCommunity } from "./updateCommunity";
 import { updateEvent } from "./updateEvent";
 import { updateLanguage } from "./updateLanguage";
 import { updateOrganization } from "./updateOrganization";
@@ -162,6 +163,7 @@ export const Mutation: MutationResolvers = {
   unlikeComment,
   unlikePost,
   unregisterForEventByUser,
+  updateCommunity,
   updateEvent,
   updateLanguage,
   updateOrganization,
