@@ -124,7 +124,7 @@ export const types = gql`
     location: String
     latitude: Latitude
     longitude: Longitude
-    organization: Organization!
+    organization: Organization
     creator: User
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -227,11 +227,11 @@ export const types = gql`
     createdAt: DateTime!
     updatedAt: DateTime!
     members: [User]
-    admins(adminId: ID): [User!]!
+    admins(adminId: ID): [User!]
     membershipRequests: [MembershipRequest]
     blockedUsers: [User]
     visibleInSearch: Boolean!
-    apiUrl: URL
+    apiUrl: URL!
     pinnedPosts: [Post]
     userTags(
       after: String
@@ -256,8 +256,8 @@ export const types = gql`
     description: String!
     isPublic: Boolean!
     creator: User
-    visibleInSearch: Boolean
-    apiUrl: URL
+    visibleInSearch: Boolean!
+    apiUrl: URL!
   }
 
   type OtpData {
@@ -290,7 +290,7 @@ export const types = gql`
     pluginName: String!
     pluginCreatedBy: String!
     pluginDesc: String!
-    uninstalledOrgs: [ID]
+    uninstalledOrgs: [ID!]
   }
 
   type PluginField {
@@ -393,7 +393,7 @@ export const types = gql`
     ): UserTagsConnection
     tokenVersion: Int!
     updatedAt: DateTime!
-    userType: String!
+    userType: UserType!
   }
 
   type UserCustomData {
@@ -417,7 +417,7 @@ export const types = gql`
   type UserTag {
     _id: ID!
     name: String!
-    organization: Organization!
+    organization: Organization
     parentTag: UserTag
     childTags(input: UserTagsConnectionInput!): UserTagsConnectionResult!
     usersAssignedTo(input: UsersConnectionInput!): UsersConnectionResult!

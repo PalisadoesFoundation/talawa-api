@@ -220,7 +220,7 @@ type Event {
   latitude: Latitude
   location: String
   longitude: Longitude
-  organization: Organization!
+  organization: Organization
   recurrance: Recurrance
   recurring: Boolean!
   startDate: Date!
@@ -563,8 +563,8 @@ input OTPInput {
 
 type Organization {
   _id: ID!
-  admins(adminId: ID): [User!]!
-  apiUrl: URL
+  admins(adminId: ID): [User!]
+  apiUrl: URL!
   blockedUsers: [User]
   createdAt: DateTime!
   creator: User
@@ -591,13 +591,13 @@ type OrganizationCustomField {
 
 type OrganizationInfoNode {
   _id: ID!
-  apiUrl: URL
+  apiUrl: URL!
   creator: User
   description: String!
   image: String
   isPublic: Boolean!
   name: String!
-  visibleInSearch: Boolean
+  visibleInSearch: Boolean!
 }
 
 input OrganizationInput {
@@ -683,7 +683,7 @@ type Plugin {
   pluginCreatedBy: String!
   pluginDesc: String!
   pluginName: String!
-  uninstalledOrgs: [ID]
+  uninstalledOrgs: [ID!]
 }
 
 type PluginField {
@@ -968,7 +968,7 @@ type User {
   tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection
   tokenVersion: Int!
   updatedAt: DateTime!
-  userType: String!
+  userType: UserType!
 }
 
 input UserAndOrganizationInput {
@@ -1032,7 +1032,7 @@ type UserTag {
   _id: ID!
   childTags(input: UserTagsConnectionInput!): UserTagsConnectionResult!
   name: String!
-  organization: Organization!
+  organization: Organization
   parentTag: UserTag
   usersAssignedTo(input: UsersConnectionInput!): UsersConnectionResult!
 }

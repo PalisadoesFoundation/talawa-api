@@ -269,7 +269,7 @@ export type Event = {
   latitude?: Maybe<Scalars['Latitude']>;
   location?: Maybe<Scalars['String']>;
   longitude?: Maybe<Scalars['Longitude']>;
-  organization: Organization;
+  organization?: Maybe<Organization>;
   recurrance?: Maybe<Recurrance>;
   recurring: Scalars['Boolean'];
   startDate: Scalars['Date'];
@@ -1064,8 +1064,8 @@ export type OtpInput = {
 export type Organization = {
   __typename?: 'Organization';
   _id: Scalars['ID'];
-  admins: Array<User>;
-  apiUrl?: Maybe<Scalars['URL']>;
+  admins?: Maybe<Array<User>>;
+  apiUrl: Scalars['URL'];
   blockedUsers?: Maybe<Array<Maybe<User>>>;
   createdAt: Scalars['DateTime'];
   creator?: Maybe<User>;
@@ -1107,13 +1107,13 @@ export type OrganizationCustomField = {
 export type OrganizationInfoNode = {
   __typename?: 'OrganizationInfoNode';
   _id: Scalars['ID'];
-  apiUrl?: Maybe<Scalars['URL']>;
+  apiUrl: Scalars['URL'];
   creator?: Maybe<User>;
   description: Scalars['String'];
   image?: Maybe<Scalars['String']>;
   isPublic: Scalars['Boolean'];
   name: Scalars['String'];
-  visibleInSearch?: Maybe<Scalars['Boolean']>;
+  visibleInSearch: Scalars['Boolean'];
 };
 
 export type OrganizationInput = {
@@ -1196,7 +1196,7 @@ export type Plugin = {
   pluginCreatedBy: Scalars['String'];
   pluginDesc: Scalars['String'];
   pluginName: Scalars['String'];
-  uninstalledOrgs?: Maybe<Array<Maybe<Scalars['ID']>>>;
+  uninstalledOrgs?: Maybe<Array<Scalars['ID']>>;
 };
 
 export type PluginField = {
@@ -1646,7 +1646,7 @@ export type User = {
   tagsAssignedWith?: Maybe<UserTagsConnection>;
   tokenVersion: Scalars['Int'];
   updatedAt: Scalars['DateTime'];
-  userType: Scalars['String'];
+  userType: UserType;
 };
 
 
@@ -1723,7 +1723,7 @@ export type UserTag = {
   _id: Scalars['ID'];
   childTags: UserTagsConnectionResult;
   name: Scalars['String'];
-  organization: Organization;
+  organization?: Maybe<Organization>;
   parentTag?: Maybe<UserTag>;
   usersAssignedTo: UsersConnectionResult;
 };
@@ -2324,7 +2324,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   latitude?: Resolver<Maybe<ResolversTypes['Latitude']>, ParentType, ContextType>;
   location?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   longitude?: Resolver<Maybe<ResolversTypes['Longitude']>, ParentType, ContextType>;
-  organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
+  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   recurrance?: Resolver<Maybe<ResolversTypes['Recurrance']>, ParentType, ContextType>;
   recurring?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
@@ -2569,8 +2569,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type OrganizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Organization'] = ResolversParentTypes['Organization']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  admins?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, Partial<OrganizationAdminsArgs>>;
-  apiUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
+  admins?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType, Partial<OrganizationAdminsArgs>>;
+  apiUrl?: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
   blockedUsers?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
@@ -2599,13 +2599,13 @@ export type OrganizationCustomFieldResolvers<ContextType = any, ParentType exten
 
 export type OrganizationInfoNodeResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrganizationInfoNode'] = ResolversParentTypes['OrganizationInfoNode']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  apiUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
+  apiUrl?: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  visibleInSearch?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  visibleInSearch?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2633,7 +2633,7 @@ export type PluginResolvers<ContextType = any, ParentType extends ResolversParen
   pluginCreatedBy?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pluginDesc?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pluginName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  uninstalledOrgs?: Resolver<Maybe<Array<Maybe<ResolversTypes['ID']>>>, ParentType, ContextType>;
+  uninstalledOrgs?: Resolver<Maybe<Array<ResolversTypes['ID']>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2776,7 +2776,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   tagsAssignedWith?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<UserTagsAssignedWithArgs>>;
   tokenVersion?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  userType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  userType?: Resolver<ResolversTypes['UserType'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2812,7 +2812,7 @@ export type UserTagResolvers<ContextType = any, ParentType extends ResolversPare
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   childTags?: Resolver<ResolversTypes['UserTagsConnectionResult'], ParentType, ContextType, RequireFields<UserTagChildTagsArgs, 'input'>>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
+  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   parentTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType>;
   usersAssignedTo?: Resolver<ResolversTypes['UsersConnectionResult'], ParentType, ContextType, RequireFields<UserTagUsersAssignedToArgs, 'input'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
