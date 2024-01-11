@@ -102,7 +102,7 @@ export const createTestActionItems = async (): Promise<
       _id: testActionItem1?._id,
     },
     {
-      event: testEvent?._id,
+      eventId: testEvent?._id,
     }
   );
 
@@ -111,7 +111,7 @@ export const createTestActionItems = async (): Promise<
       _id: testActionItem2?._id,
     },
     {
-      event: testEvent?._id,
+      eventId: testEvent?._id,
     }
   );
 

@@ -43,7 +43,7 @@ export const inputs = gql`
     dueDate: Date
     completionDate: Date
     completed: Boolean
-    event: ID
+    eventId: ID
   }
 
   input CursorPaginationInput {

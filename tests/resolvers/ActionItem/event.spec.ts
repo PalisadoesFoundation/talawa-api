@@ -48,7 +48,7 @@ describe("resolvers -> ActionItem -> event", () => {
         _id: testActionItem?._id,
       },
       {
-        event: testEvent?._id,
+        eventId: testEvent?._id,
       },
       {
         new: true,

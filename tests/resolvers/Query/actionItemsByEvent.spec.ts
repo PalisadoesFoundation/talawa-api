@@ -33,7 +33,7 @@ describe("resolvers -> Query -> actionItemsByEvent", () => {
     );
 
     const actionItemsByEventInfo = await ActionItem.find({
-      event: testEvent?._id,
+      eventId: testEvent?._id,
     }).lean();
 
     expect(actionItemsByEventPayload).toEqual(actionItemsByEventInfo);

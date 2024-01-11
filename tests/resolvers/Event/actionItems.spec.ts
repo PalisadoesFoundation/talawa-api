@@ -30,7 +30,7 @@ describe("resolvers -> Organization -> actionItems", () => {
       );
 
       const actionItems = await ActionItem.find({
-        event: testEvent?._id,
+        eventId: testEvent?._id,
       }).lean();
 
       expect(actionCategoriesPayload).toEqual(actionItems);

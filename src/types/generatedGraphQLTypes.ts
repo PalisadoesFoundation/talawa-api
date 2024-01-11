@@ -54,14 +54,14 @@ export type Scalars = {
 export type ActionItem = {
   __typename?: 'ActionItem';
   _id: Scalars['ID'];
-  assignedBy: User;
-  assignedTo: User;
+  assignedBy?: Maybe<User>;
+  assignedTo?: Maybe<User>;
   assignmentDate?: Maybe<Scalars['Date']>;
-  category: Category;
+  category?: Maybe<Category>;
   completed?: Maybe<Scalars['Boolean']>;
   completionDate?: Maybe<Scalars['Date']>;
   createdAt: Scalars['Date'];
-  createdBy: User;
+  createdBy?: Maybe<User>;
   dueDate?: Maybe<Scalars['Date']>;
   event?: Maybe<Event>;
   postCompletionNotes?: Maybe<Scalars['String']>;
@@ -125,9 +125,9 @@ export type Category = {
   _id: Scalars['ID'];
   category: Scalars['String'];
   createdAt: Scalars['Date'];
-  createdBy: User;
+  createdBy?: Maybe<User>;
   disabled: Scalars['Boolean'];
-  org: Organization;
+  org?: Maybe<Organization>;
   updatedAt: Scalars['Date'];
 };
 
@@ -187,7 +187,7 @@ export type CreateActionItemInput = {
   completed?: InputMaybe<Scalars['Boolean']>;
   completionDate?: InputMaybe<Scalars['Date']>;
   dueDate?: InputMaybe<Scalars['Date']>;
-  event?: InputMaybe<Scalars['ID']>;
+  eventId?: InputMaybe<Scalars['ID']>;
   postCompletionNotes?: InputMaybe<Scalars['String']>;
   preCompletionNotes?: InputMaybe<Scalars['String']>;
 };
@@ -287,14 +287,14 @@ export type Event = {
   actionItems?: Maybe<Array<Maybe<ActionItem>>>;
   admins?: Maybe<Array<Maybe<User>>>;
   allDay: Scalars['Boolean'];
-  attendees: Array<User>;
-  attendeesCheckInStatus: Array<CheckInStatus>;
+  attendees?: Maybe<Array<User>>;
+  attendeesCheckInStatus?: Maybe<Array<CheckInStatus>>;
   averageFeedbackScore?: Maybe<Scalars['Float']>;
-  creator: User;
+  creator?: Maybe<User>;
   description: Scalars['String'];
   endDate: Scalars['Date'];
   endTime?: Maybe<Scalars['Time']>;
-  feedback: Array<Feedback>;
+  feedback?: Maybe<Array<Feedback>>;
   isPublic: Scalars['Boolean'];
   isRegisterable: Scalars['Boolean'];
   latitude?: Maybe<Scalars['Latitude']>;
@@ -1124,9 +1124,9 @@ export type Organization = {
   admins?: Maybe<Array<Maybe<User>>>;
   apiUrl: Scalars['URL'];
   blockedUsers?: Maybe<Array<Maybe<User>>>;
-  createdAt?: Maybe<Scalars['DateTime']>;
-  creator: User;
-  customFields: Array<OrganizationCustomField>;
+  createdAt: Scalars['DateTime'];
+  creator?: Maybe<User>;
+  customFields?: Maybe<Array<OrganizationCustomField>>;
   description: Scalars['String'];
   image?: Maybe<Scalars['String']>;
   isPublic: Scalars['Boolean'];
@@ -2257,14 +2257,14 @@ export type RoleDirectiveResolver<Result, Parent, ContextType = any, Args = Role
 
 export type ActionItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['ActionItem'] = ResolversParentTypes['ActionItem']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  assignedBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  assignedTo?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  assignedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  assignedTo?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   assignmentDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
-  category?: Resolver<ResolversTypes['Category'], ParentType, ContextType>;
+  category?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType>;
   completed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   completionDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  createdBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  createdBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   dueDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
   postCompletionNotes?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -2321,9 +2321,9 @@ export type CategoryResolvers<ContextType = any, ParentType extends ResolversPar
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   category?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  createdBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  createdBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   disabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  org?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
+  org?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -2430,14 +2430,14 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   actionItems?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType>;
   admins?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<EventAdminsArgs>>;
   allDay?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  attendees?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
-  attendeesCheckInStatus?: Resolver<Array<ResolversTypes['CheckInStatus']>, ParentType, ContextType>;
+  attendees?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType>;
+  attendeesCheckInStatus?: Resolver<Maybe<Array<ResolversTypes['CheckInStatus']>>, ParentType, ContextType>;
   averageFeedbackScore?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
-  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   endTime?: Resolver<Maybe<ResolversTypes['Time']>, ParentType, ContextType>;
-  feedback?: Resolver<Array<ResolversTypes['Feedback']>, ParentType, ContextType>;
+  feedback?: Resolver<Maybe<Array<ResolversTypes['Feedback']>>, ParentType, ContextType>;
   isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isRegisterable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   latitude?: Resolver<Maybe<ResolversTypes['Latitude']>, ParentType, ContextType>;
@@ -2688,9 +2688,9 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   admins?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<OrganizationAdminsArgs>>;
   apiUrl?: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
   blockedUsers?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
-  createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  customFields?: Resolver<Array<ResolversTypes['OrganizationCustomField']>, ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  customFields?: Resolver<Maybe<Array<ResolversTypes['OrganizationCustomField']>>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;

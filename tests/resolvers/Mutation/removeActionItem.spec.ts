@@ -195,7 +195,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
         _id: newTestActionItem?._id,
       },
       {
-        event: Types.ObjectId().toString(),
+        eventId: Types.ObjectId().toString(),
       },
       {
         new: true,
@@ -229,7 +229,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
         _id: newTestActionItem?._id,
       },
       {
-        event: testEvent?._id,
+        eventId: testEvent?._id,
       },
       {
         new: true,

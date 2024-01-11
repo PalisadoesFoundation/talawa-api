@@ -64,16 +64,16 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
 
   let currentUserIsEventAdmin = false;
 
-  if (actionItem.event) {
+  if (actionItem.eventId) {
     let currEvent: InterfaceEvent | null;
 
-    const eventFoundInCache = await findEventsInCache([actionItem.event]);
+    const eventFoundInCache = await findEventsInCache([actionItem.eventId]);
 
     currEvent = eventFoundInCache[0];
 
     if (eventFoundInCache[0] === null) {
       currEvent = await Event.findOne({
-        _id: actionItem.event,
+        _id: actionItem.eventId,
       }).lean();
 
       if (currEvent !== null) {
@@ -110,10 +110,10 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
     );
   }
 
-  if (actionItem.event) {
+  if (actionItem.eventId) {
     await Event.updateOne(
       {
-        _id: actionItem.event,
+        _id: actionItem.eventId,
       },
       {
         $pull: { actionItems: actionItem._id },

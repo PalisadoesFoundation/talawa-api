@@ -2,23 +2,6 @@ directive @auth on FIELD_DEFINITION
 
 directive @role(requires: UserType) on FIELD_DEFINITION
 
-type ActionItem {
-  _id: ID!
-  assignedBy: User!
-  assignedTo: User!
-  assignmentDate: Date
-  category: Category!
-  completed: Boolean
-  completionDate: Date
-  createdAt: Date!
-  createdBy: User!
-  dueDate: Date
-  event: Event
-  postCompletionNotes: String
-  preCompletionNotes: String
-  updatedAt: Date!
-}
-
 type Address {
   city: String
   countryCode: CountryCode
@@ -65,16 +48,6 @@ type AuthData {
   accessToken: String!
   refreshToken: String!
   user: User!
-}
-
-type Category {
-  _id: ID!
-  category: String!
-  createdAt: Date!
-  createdBy: User!
-  disabled: Boolean!
-  org: Organization!
-  updatedAt: Date!
 }
 
 type CheckIn {
@@ -124,17 +97,6 @@ type ConnectionPageInfo {
 }
 
 scalar CountryCode
-
-input CreateActionItemInput {
-  assignedTo: ID!
-  assignmentDate: Date
-  completed: Boolean
-  completionDate: Date
-  dueDate: Date
-  event: ID
-  postCompletionNotes: String
-  preCompletionNotes: String
-}
 
 input CreateUserTagInput {
   name: String!
@@ -231,7 +193,6 @@ interface Error {
 
 type Event {
   _id: ID!
-  actionItems: [ActionItem]
   admins(adminId: ID): [User]
   allDay: Boolean!
   attendees: [User!]!
@@ -505,10 +466,8 @@ type Mutation {
   blockUser(organizationId: ID!, userId: ID!): User!
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   checkIn(data: CheckInInput!): CheckIn!
-  createActionItem(categoryId: ID!, data: CreateActionItemInput!): ActionItem!
   createAdmin(data: UserAndOrganizationInput!): User!
   createAdvertisement(endDate: Date!, link: String!, name: String!, orgId: ID!, startDate: Date!, type: String!): Advertisement!
-  createCategory(category: String!, orgId: ID!): Category!
   createComment(data: CommentInput!, postId: ID!): Comment
   createDirectChat(data: createChatInput!): DirectChat!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
@@ -536,7 +495,6 @@ type Mutation {
   registerForEvent(id: ID!): Event!
   rejectAdmin(id: ID!): Boolean!
   rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
-  removeActionItem(id: ID!): ActionItem!
   removeAdmin(data: UserAndOrganizationInput!): User!
   removeAdvertisement(id: ID!): Advertisement
   removeComment(id: ID!): Comment
@@ -566,8 +524,6 @@ type Mutation {
   unlikeComment(id: ID!): Comment
   unlikePost(id: ID!): Post
   unregisterForEventByUser(id: ID!): Event!
-  updateActionItem(data: UpdateActionItemInput!, id: ID!): ActionItem
-  updateCategory(data: UpdateCategoryInput!, id: ID!): Category
   updateEvent(data: UpdateEventInput, id: ID!): Event!
   updateLanguage(languageCode: String!): User!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
@@ -586,7 +542,6 @@ input OTPInput {
 
 type Organization {
   _id: ID!
-  actionCategories: [Category]
   admins(adminId: ID): [User]
   apiUrl: URL!
   blockedUsers: [User]
@@ -816,11 +771,7 @@ input PostWhereInput {
 }
 
 type Query {
-  actionItem(id: ID!): ActionItem
-  actionItemsByEvent(eventId: ID!): [ActionItem]
   adminPlugin(orgId: ID!): [Plugin]
-  categoriesByOrganization(orgId: ID!): [Category]
-  category(id: ID!): Category
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
@@ -907,19 +858,6 @@ type UnauthenticatedError implements Error {
 
 type UnauthorizedError implements Error {
   message: String!
-}
-
-input UpdateActionItemInput {
-  assignedTo: ID
-  completed: Boolean
-  dueDate: Date
-  postCompletionNotes: String
-  preCompletionNotes: String
-}
-
-input UpdateCategoryInput {
-  category: String
-  disabled: Boolean
 }
 
 input UpdateEventInput {

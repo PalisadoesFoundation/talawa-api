@@ -19,9 +19,9 @@ export const types = gql`
   # Action Item for a Category
   type ActionItem {
     _id: ID!
-    assignedTo: User!
-    assignedBy: User!
-    category: Category!
+    assignedTo: User
+    assignedBy: User
+    category: Category
     preCompletionNotes: String
     postCompletionNotes: String
     assignmentDate: Date
@@ -29,7 +29,7 @@ export const types = gql`
     completionDate: Date
     completed: Boolean
     event: Event
-    createdBy: User!
+    createdBy: User
     createdAt: Date!
     updatedAt: Date!
   }
@@ -132,14 +132,14 @@ export const types = gql`
     latitude: Latitude
     longitude: Longitude
     organization: Organization
-    creator: User!
-    attendees: [User!]!
+    creator: User
+    attendees: [User!]
     # For each attendee, gives information about whether he/she has checked in yet or not
-    attendeesCheckInStatus: [CheckInStatus!]!
+    attendeesCheckInStatus: [CheckInStatus!]
     admins(adminId: ID): [User]
     actionItems: [ActionItem]
     status: Status!
-    feedback: [Feedback!]!
+    feedback: [Feedback!]
     averageFeedbackScore: Float
   }
 
@@ -221,7 +221,7 @@ export const types = gql`
     description: String!
     location: String
     isPublic: Boolean!
-    creator: User!
+    creator: User
     members: [User]
     admins(adminId: ID): [User]
     actionCategories: [Category]
@@ -229,7 +229,7 @@ export const types = gql`
     blockedUsers: [User]
     visibleInSearch: Boolean!
     apiUrl: URL!
-    createdAt: DateTime
+    createdAt: DateTime!
     pinnedPosts: [Post]
     userTags(
       after: String
@@ -237,7 +237,7 @@ export const types = gql`
       first: PositiveInt
       last: PositiveInt
     ): UserTagsConnection
-    customFields: [OrganizationCustomField!]!
+    customFields: [OrganizationCustomField!]
   }
 
   type OrganizationCustomField {
@@ -334,9 +334,9 @@ export const types = gql`
   type Category {
     _id: ID!
     category: String!
-    org: Organization!
+    org: Organization
     disabled: Boolean!
-    createdBy: User!
+    createdBy: User
     createdAt: Date!
     updatedAt: Date!
   }

@@ -216,7 +216,7 @@ describe("resolvers -> Mutation -> removeEvent", () => {
     expect(removeEventPayload).toEqual(newTestEvent?.toObject());
 
     const deletedActionItems = await ActionItem.find({
-      event: newTestEvent?._id,
+      eventId: newTestEvent?._id,
     });
 
     expect(deletedActionItems).toEqual([]);

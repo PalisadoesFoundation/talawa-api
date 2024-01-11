@@ -152,7 +152,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     }
   });
 
-  it(`throws NotFoundError if no event exists with _id === args.data.event`, async () => {
+  it(`throws NotFoundError if no event exists with _id === args.data.eventId`, async () => {
     await User.findOneAndUpdate(
       {
         _id: randomUser?._id,
@@ -166,7 +166,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       const args: MutationCreateActionItemArgs = {
         data: {
           assignedTo: randomUser?._id,
-          event: Types.ObjectId().toString(),
+          eventId: Types.ObjectId().toString(),
         },
         categoryId: testCategory?._id,
       };
@@ -204,7 +204,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     const args: MutationCreateActionItemArgs = {
       data: {
         assignedTo: randomUser?._id,
-        event: testEvent?._id,
+        eventId: testEvent?._id,
       },
       categoryId: testCategory?._id,
     };

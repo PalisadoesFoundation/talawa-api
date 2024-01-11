@@ -11,7 +11,7 @@ export const actionItemsByEvent: QueryResolvers["actionItemsByEvent"] = async (
   args
 ) => {
   const actionItems = await ActionItem.find({
-    event: args.eventId,
+    eventId: args.eventId,
   }).lean();
 
   return actionItems;

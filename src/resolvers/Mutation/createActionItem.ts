@@ -91,16 +91,16 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
 
   let currentUserIsEventAdmin = false;
 
-  if (args.data.event) {
+  if (args.data.eventId) {
     let currEvent: InterfaceEvent | null;
 
-    const eventFoundInCache = await findEventsInCache([args.data.event]);
+    const eventFoundInCache = await findEventsInCache([args.data.eventId]);
 
     currEvent = eventFoundInCache[0];
 
     if (eventFoundInCache[0] === null) {
       currEvent = await Event.findOne({
-        _id: args.data.event,
+        _id: args.data.eventId,
       }).lean();
 
       if (currEvent !== null) {
@@ -153,14 +153,14 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     postCompletionNotes: args.data.postCompletionNotes,
     dueDate: args.data.dueDate,
     completionDate: args.data.completionDate,
-    event: args.data.event,
+    eventId: args.data.eventId,
     createdBy: context.userId,
   });
 
-  if (args.data.event) {
+  if (args.data.eventId) {
     await Event.findOneAndUpdate(
       {
-        _id: args.data.event,
+        _id: args.data.eventId,
       },
       {
         $push: { actionItems: createActionItem._id },
