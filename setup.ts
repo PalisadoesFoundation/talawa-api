@@ -506,10 +506,7 @@ async function main(): Promise<void> {
   if (!isDockerInstallation) {
     // Redis configuration
     if (process.env.REDIS_HOST && process.env.REDIS_PORT) {
-      const url = `redis://${
-        process.env.REDIS_PASSWORD ? process.env.REDIS_PASSWORD + "@" : ""
-      }${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`;
-      console.log(`\nRedis URL already exists with the value:\n${url}`);
+      console.log(`\nRedis URL already exists`);
     }
 
     await redisConfiguration();
