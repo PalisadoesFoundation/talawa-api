@@ -6,31 +6,34 @@ If you are new to contributing to open source, please read the Open Source Guide
 
 ## Table of Contents
 
-- [Contributing to Talawa API](#contributing-to-talawa-api)
-  - [Table of Contents](#table-of-contents)
-  - [Code of Conduct](#code-of-conduct)
-  - [Ways to Contribute](#ways-to-contribute)
-    - [Our Development Process](#our-development-process)
-      - [Issues](#issues)
-      - [Pull Requests](#pull-requests)
-      - [Branching Strategy](#branching-strategy)
-      - [Conflict Resolution](#conflict-resolution)
-    - [Contributing Code](#contributing-code)
-  - [Upgrading Code](#upgrading-code)
+<!-- toc -->
+
+- [Code of Conduct](#code-of-conduct)
+- [Ways to Contribute](#ways-to-contribute)
+  - [Our Development Process](#our-development-process)
+    - [Issues](#issues)
+    - [Pull Requests](#pull-requests)
+    - [Branching Strategy](#branching-strategy)
+    - [Conflict Resolution](#conflict-resolution)
+  - [Contributing Code](#contributing-code)
+- [Upgrading Code](#upgrading-code)
     - [Setting up Upstream and Origin](#setting-up-upstream-and-origin)
     - [Creating a Pull Request - Process Overview](#creating-a-pull-request---process-overview)
-  - [Type checking and code quality](#type-checking-and-code-quality)
-    - [Type checking code files](#type-checking-code-files)
-    - [Linting code files](#linting-code-files)
-    - [Formatting code files](#formatting-code-files)
-    - [Automation using husky](#automation-using-husky)
-      - [Pre-Commit hook](#pre-commit-hook)
-      - [Post-Merge hook](#post-merge-hook)
-    - [GraphQL Voyager](#graphql-voyager)
-    - [GraphQL Markdown](#graphql-markdown)
-    - [Running Queries with talawa-api](#running-queries-with-talawa-api)
-  - [Internships](#internships)
-  - [Community](#community)
+- [Type checking and code quality](#type-checking-and-code-quality)
+  - [Type checking code files](#type-checking-code-files)
+  - [Linting code files](#linting-code-files)
+  - [Formatting code files](#formatting-code-files)
+  - [Generating Table of Contents](#generating-table-of-contents)
+  - [Automation using husky](#automation-using-husky)
+    - [Pre-Commit hook](#pre-commit-hook)
+    - [Post-Merge hook](#post-merge-hook)
+  - [GraphQL Voyager](#graphql-voyager)
+  - [GraphQL Markdown](#graphql-markdown)
+  - [Running Queries with talawa-api](#running-queries-with-talawa-api)
+- [Internships](#internships)
+- [Community](#community)
+
+<!-- tocstop -->
 
 ## Code of Conduct
 
@@ -169,12 +172,12 @@ Now you can pull in changes from `PalisadoesFoundation/talawa-api` by running `g
 
 We have established a clean setup now. We can make any changes we like and push it to this forked repository, and then make a pull request for getting the changes merged into the original repository. Here's a nice picture explaining the process ([image source](https://github.com/Rafase282/My-FreeCodeCamp-Code/wiki/Lesson-Save-your-Code-Revisions-Forever-with-Git)).
 
-![Diagram of the fork-and-clone workflow](./image/install3.png)
+![Diagram of the fork-and-clone workflow](public/markdown/images/install3.png)
 
 #### Creating a Pull Request - Process Overview
 
 For making any changes to original repository, we first sync our cloned repository with original repository. We merge `develop` with `upstream/develop` to do this.
-This make sometimes require a hard reset, and can be done with the following commands:
+This may sometimes require a hard reset, and can be done with the following commands:
 
 ```
 git fetch upstream
@@ -237,6 +240,20 @@ To fix formatting issues in code use this command:-
 
 <br/>
 
+### Generating Table of Contents
+To generate table of contents for markdown files use this command:-
+```bash
+npm run update:toc
+```
+And if you want to generate table of content for specific file you can use the `markdown-toc` package directly as shown:-
+```bash
+npx markdown-toc -i README.md
+```
+Remember to replace `README.md` with the name of the file you want to generate table of contents for.
+</br>
+For more information on how to use `markdown-toc` package, visit [this link](https://www.npmjs.com/package/markdown-toc).
+
+
 ### Automation using husky
 
 <br/>
@@ -271,7 +288,7 @@ We use the open source project [GraphQL Voyager](https://github.com/IvanGoncharo
 
 Go to `http://localhost:4000/voyager` after running the development server to explore the same!
 
-![Voyager Demo for User Model](./image/GraphQL_Voyager.png)
+![Voyager Demo for User Model](public/markdown/images/GraphQL_Voyager.png)
 
 ### GraphQL Markdown
 
