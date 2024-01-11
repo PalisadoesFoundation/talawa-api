@@ -128,7 +128,7 @@ jobs:
         run: echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
 
       - name: Set up transaction logs path
-        run: echo "TRANSACTION_LOG_PATH=/var/log/talawa.log" >> $GITHUB_ENV
+        run: echo "TRANSACTION_LOG_PATH=logs/transaction.log" >> $GITHUB_ENV
 
       - name: Set up Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
