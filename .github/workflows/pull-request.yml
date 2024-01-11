@@ -127,8 +127,11 @@ jobs:
       - name: Generate Refresh Token Secret
         run: echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
 
-      - name: Set up transaction logs path
-        run: echo "TRANSACTION_LOG_PATH=logs/transaction.log" >> $GITHUB_ENV
+      - name: Set up Transaction Logs path
+        run: |
+          mkdir -p logs
+          touch logs/transaction.log
+          echo "TRANSACTION_LOG_PATH=logs/transaction.log" >> $GITHUB_ENV
 
       - name: Set up Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
