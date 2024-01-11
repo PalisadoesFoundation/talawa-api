@@ -131,7 +131,7 @@ jobs:
         run: |
           mkdir -p logs
           touch logs/transaction.log
-          echo "TRANSACTION_LOG_PATH=logs/transaction.log" >> $GITHUB_ENV
+          echo "TRANSACTION_LOG_PATH=${GITHUB_WORKSPACE}/logs/transaction.log" >> $GITHUB_ENV
 
       - name: Set up Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
