@@ -12,8 +12,7 @@ import { TRANSACTION_LOG_TYPES } from "../../constants";
  */
 export const createDonation: MutationResolvers["createDonation"] = async (
   _parent,
-  args,
-  context
+  args
 ) => {
   const createdDonation = await Donation.create({
     amount: args.amount,
@@ -24,7 +23,7 @@ export const createDonation: MutationResolvers["createDonation"] = async (
     userId: args.userId,
   });
   await storeTransaction(
-    context.userId,
+    args.userId,
     TRANSACTION_LOG_TYPES.CREATE,
     "Donation",
     `Donation:${createdDonation._id} created`

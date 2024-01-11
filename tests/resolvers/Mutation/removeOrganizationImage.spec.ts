@@ -223,7 +223,7 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
     expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
-      createdBy: testUser?._id.toString(),
+      createdBy: context.userId.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
       model: "Organization",
     });

@@ -103,7 +103,7 @@ describe("resolvers -> Mutation -> addUserImage", () => {
 
     const mostRecentTransaction = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransaction).toMatchObject({
+    expect((mostRecentTransaction as TransactionLog[])[0]).toMatchObject({
       createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
       model: "User",

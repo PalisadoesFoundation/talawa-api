@@ -78,7 +78,7 @@ export const removeOrganizationImage: MutationResolvers["removeOrganizationImage
     ).lean();
     await storeTransaction(
       context.userId,
-      TRANSACTION_LOG_TYPES.DELETE,
+      TRANSACTION_LOG_TYPES.UPDATE,
       "Organization",
       `Organization:${organization._id} updated image`
     );

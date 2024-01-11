@@ -198,7 +198,6 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
 
     expect(adminRemoveGroupPayload).toEqual({
       ...testGroupChat?.toObject(),
-      updatedAt: expect.anything(),
     });
 
     const mostRecentTransaction = getTransactionLogs!({}, {}, {})!;

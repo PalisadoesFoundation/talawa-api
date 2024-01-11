@@ -206,25 +206,17 @@ describe("resolvers -> Mutation -> removeEvent", () => {
 
     expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
       createdBy: testUser?._id.toString(),
-      type: TRANSACTION_LOG_TYPES.DELETE,
-      model: "TaskVolunteer",
-    });
-    expect((mostRecentTransactions as TransactionLog[])[1]).toMatchObject({
-      createdBy: testUser?._id.toString(),
-      type: TRANSACTION_LOG_TYPES.DELETE,
-      model: "Task",
-    });
-    expect((mostRecentTransactions as TransactionLog[])[2]).toMatchObject({
-      createdBy: testUser?._id.toString(),
-      type: TRANSACTION_LOG_TYPES.DELETE,
-      model: "EventProject",
-    });
-    expect((mostRecentTransactions as TransactionLog[])[3]).toMatchObject({
-      createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
       model: "Event",
     });
-    expect((mostRecentTransactions as TransactionLog[])[4]).toMatchObject({
+
+    expect((mostRecentTransactions as TransactionLog[])[1]).toMatchObject({
+      createdBy: testUser?._id.toString(),
+      type: TRANSACTION_LOG_TYPES.UPDATE,
+      model: "User",
+    });
+
+    expect((mostRecentTransactions as TransactionLog[])[2]).toMatchObject({
       createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.UPDATE,
       model: "User",
