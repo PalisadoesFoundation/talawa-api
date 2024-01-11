@@ -49,8 +49,28 @@ async function accessAndRefreshTokens(
 
 function transactionLogPath(logPath: string | null): void {
   const config = dotenv.parse(fs.readFileSync(".env"));
-  config.TRANSACTION_LOG_PATH =
-    logPath ?? path.resolve(__dirname, "logs/transaction.log");
+  if (!logPath) {
+    // Check if the logs/transaction.log file exists, if not, create it
+    const defaultLogPath = path.resolve(__dirname, "logs");
+    const defaultLogFile = path.join(defaultLogPath, "transaction.log");
+
+    if (!fs.existsSync(defaultLogPath)) {
+      fs.mkdirSync(defaultLogPath);
+    }
+
+    config.TRANSACTION_LOG_PATH = defaultLogFile;
+  } else {
+    // Remove the default logs directory and it's files, if it exists
+    const logsDirPath = path.resolve(__dirname, "logs");
+    if (fs.existsSync(logsDirPath)) {
+      fs.readdirSync(logsDirPath).forEach((file: string) => {
+        const curPath = path.join(logsDirPath, file);
+        fs.unlinkSync(curPath);
+      });
+      fs.rmdirSync(logsDirPath);
+    }
+    config.TRANSACTION_LOG_PATH = logPath;
+  }
   fs.writeFileSync(".env", "");
   for (const key in config) {
     fs.appendFileSync(".env", `${key}=${config[key]}\n`);
@@ -58,14 +78,34 @@ function transactionLogPath(logPath: string | null): void {
 }
 
 async function askForTransactionLogPath(): Promise<string> {
-  const { logPath } = await inquirer.prompt([
-    {
-      type: "input",
-      name: "logPath",
-      message: "Enter absolute path of log file:",
-      default: null,
-    },
-  ]);
+  let logPath: string | null;
+  // Keep asking for path, until user gives a valid path
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const response = await inquirer.prompt([
+      {
+        type: "input",
+        name: "logPath",
+        message: "Enter absolute path of log file:",
+        default: null,
+      },
+    ]);
+    logPath = response.logPath;
+    if (logPath && fs.existsSync(logPath)) {
+      try {
+        fs.accessSync(logPath, fs.constants.R_OK | fs.constants.W_OK);
+        break;
+      } catch {
+        console.error(
+          "The file is not readable/writable. Please enter a valid file path."
+        );
+      }
+    } else {
+      console.error(
+        "Invalid path or file does not exist. Please enter a valid file path."
+      );
+    }
+  }
   return logPath;
 }
 
