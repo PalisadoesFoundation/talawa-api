@@ -23,7 +23,7 @@ export const createDonation: MutationResolvers["createDonation"] = async (
     payPalId: args.payPalId,
     userId: args.userId,
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.CREATE,
     "Donation",

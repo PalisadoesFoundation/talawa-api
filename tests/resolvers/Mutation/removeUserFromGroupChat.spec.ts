@@ -23,7 +23,7 @@ import type {
 import type { TestGroupChatType } from "../../helpers/groupChat";
 import { createTestGroupChatMessage } from "../../helpers/groupChat";
 import { deleteOrganizationFromCache } from "../../../src/services/OrganizationCache/deleteOrganizationFromCache";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -191,8 +191,6 @@ describe("resolvers -> Mutation -> removeUserFromGroupChat", () => {
     expect(removeUserFromGroupChatPayload).toEqual(
       testRemoveUserFromGroupChatPayload
     );
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

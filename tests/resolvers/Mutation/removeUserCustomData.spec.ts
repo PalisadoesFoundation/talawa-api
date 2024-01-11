@@ -20,7 +20,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 import type { TransactionLog } from "../../../src/types/generatedGraphQLTypes";
 
@@ -68,8 +68,6 @@ describe("removeUserCustomData mutation", () => {
     expect(removeCustomData?.userId).toBe(addedCustomData?.userId);
     expect(removeCustomData?.values).toStrictEqual(addedCustomData?.values);
     expect(removeCustomData?._id).toStrictEqual(addedCustomData?._id);
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

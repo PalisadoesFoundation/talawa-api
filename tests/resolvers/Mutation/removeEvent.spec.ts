@@ -23,7 +23,7 @@ import type {
 import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
 import { cacheEvents } from "../../../src/services/EventCache/cacheEvents";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -201,8 +201,6 @@ describe("resolvers -> Mutation -> removeEvent", () => {
       .lean();
 
     expect(updatedTestEvent?.status).toEqual("DELETED");
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

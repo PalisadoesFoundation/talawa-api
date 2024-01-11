@@ -121,7 +121,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
       new: true,
     }
   );
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "Organization",
@@ -152,7 +152,7 @@ export const blockUser: MutationResolvers["blockUser"] = async (
     .select(["-password"])
     .lean();
 
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "User",

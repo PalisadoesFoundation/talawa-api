@@ -107,7 +107,7 @@ export const checkIn: MutationResolvers["checkIn"] = async (
     allotedSeat: args.data.allotedSeat,
     allotedRoom: args.data.allotedRoom,
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.CREATE,
     "CheckIn",
@@ -126,7 +126,7 @@ export const checkIn: MutationResolvers["checkIn"] = async (
       new: true,
     }
   );
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "EventAttendee",

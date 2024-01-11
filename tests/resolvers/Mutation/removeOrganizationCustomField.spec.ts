@@ -21,7 +21,7 @@ import {
 import { createTestUser } from "../../helpers/userAndOrg";
 
 import { OrganizationCustomField } from "../../../src/models";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 import type { TransactionLog } from "../../../src/types/generatedGraphQLTypes";
 
@@ -84,8 +84,6 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
       (field) => field._id.toString() === customField?._id.toString()
     );
     expect(removedCustomField).toBeUndefined();
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

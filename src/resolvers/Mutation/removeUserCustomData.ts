@@ -57,7 +57,7 @@ export const removeUserCustomData: MutationResolvers["removeUserCustomData"] =
       userId: context.userId,
       organizationId,
     }).lean();
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.DELETE,
       "UserCustomData",

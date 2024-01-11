@@ -15,7 +15,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { TRANSACTION_LOG_TYPES } from "../../../src/constants";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testDonation: InterfaceDonation & Document<any, any, InterfaceDonation>;
@@ -79,8 +79,6 @@ describe("resolvers -> Mutation -> deleteDonationById", () => {
     expect(deleteDonationByIdPayload).toEqual({
       success: true,
     });
-    await wait();
-
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
     expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({

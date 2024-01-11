@@ -70,7 +70,7 @@ export const removeOrganizationCustomField: MutationResolvers["removeOrganizatio
     );
 
     await organization.save();
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "Organization",
@@ -80,7 +80,7 @@ export const removeOrganizationCustomField: MutationResolvers["removeOrganizatio
     const removedCustomField = await OrganizationCustomField.findByIdAndDelete(
       customFieldId
     );
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.DELETE,
       "OrganizationCustomField",

@@ -26,7 +26,7 @@ export const saveFcmToken: MutationResolvers["saveFcmToken"] = async (
       },
     }
   );
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "User",

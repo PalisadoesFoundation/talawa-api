@@ -27,7 +27,7 @@ export const removeAdvertisement: MutationResolvers["removeAdvertisement"] =
     await Advertisement.deleteOne({
       _id: args.id ? args.id : "",
     });
-    storeTransaction(
+    await storeTransaction(
       _context.userId,
       TRANSACTION_LOG_TYPES.DELETE,
       "Advertisement",

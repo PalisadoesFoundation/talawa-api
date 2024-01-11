@@ -30,7 +30,7 @@ import type {
 } from "../../../src/types/generatedGraphQLTypes";
 import type { TestUserType } from "../../helpers/user";
 import type { TestOrganizationType } from "../../helpers/userAndOrg";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -405,8 +405,6 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
     expect(updatedOrganizationCheck).toBe(true);
     expect(updatedUserCheck).toBe(true);
 
-    await wait();
-
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
     expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
@@ -457,8 +455,6 @@ describe("resolvers -> Mutation -> updateUserRoleInOrganization", () => {
 
     expect(updatedOrgCheck).toBe(false);
     expect(updatedUserCheck).toBe(false);
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

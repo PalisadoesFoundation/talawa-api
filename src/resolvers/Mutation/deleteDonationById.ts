@@ -14,7 +14,7 @@ export const deleteDonationById: MutationResolvers["deleteDonationById"] =
     const deletedDonation = await Donation.deleteOne({
       _id: args.id,
     });
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.DELETE,
       "Donation",

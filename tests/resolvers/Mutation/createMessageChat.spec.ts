@@ -24,7 +24,7 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUsers: (InterfaceUser & Document<any, any, InterfaceUser>)[];
@@ -135,8 +135,6 @@ describe("resolvers -> Mutation -> createMessageChat", () => {
         languageBarrier: false,
       })
     );
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

@@ -121,7 +121,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
       new: true,
     }
   );
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "Organization",
@@ -151,7 +151,7 @@ export const createAdmin: MutationResolvers["createAdmin"] = async (
   )
     .select(["-password"])
     .lean();
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "User",

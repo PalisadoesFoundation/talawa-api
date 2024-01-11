@@ -26,7 +26,7 @@ import {
 import type { TestUserType } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
@@ -144,8 +144,6 @@ describe("resolvers -> Mutation -> registerForEvent", () => {
       .lean();
 
     expect(updatedTestUser?.registeredEvents).toEqual([testEvent?._id]);
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

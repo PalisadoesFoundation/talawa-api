@@ -133,7 +133,7 @@ export const createPost: MutationResolvers["createPost"] = async (
     imageUrl: uploadImageFileName,
     videoUrl: uploadVideoFileName,
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.CREATE,
     "Post",
@@ -157,7 +157,7 @@ export const createPost: MutationResolvers["createPost"] = async (
         new: true,
       }
     );
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "Organization",

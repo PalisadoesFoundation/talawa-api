@@ -34,7 +34,7 @@ import type {
 import type { TestDirectChatType } from "../../helpers/directChat";
 import { createTestDirectChat } from "../../helpers/directChat";
 import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -230,8 +230,6 @@ describe("resolvers -> Mutation -> removeDirectChat", () => {
     }).lean();
 
     expect(testDeletedDirectChatMessages).toEqual([]);
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

@@ -29,7 +29,7 @@ import type {
 } from "../../helpers/userAndOrg";
 import { createTestUserFunc } from "../../helpers/user";
 import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -219,8 +219,6 @@ describe("resolvers -> Mutation -> removeOrganizationImage", () => {
     expect(removeOrganizationImagePayload).toEqual(updatedTestOrg);
     expect(deleteImageSpy).toBeCalledWith(testImage);
     expect(removeOrganizationImagePayload?.image).toEqual(null);
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

@@ -96,7 +96,7 @@ export const updateUserTag: MutationResolvers["updateUserTag"] = async (
     }
   ).lean();
 
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "OrganizationTagUser",

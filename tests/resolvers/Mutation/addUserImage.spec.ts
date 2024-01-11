@@ -24,7 +24,7 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { addUserImage as addUserImageResolverUserImage } from "../../../src/resolvers/Mutation/addUserImage";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
@@ -100,8 +100,6 @@ describe("resolvers -> Mutation -> addUserImage", () => {
 
       image: "newImageFile.png",
     });
-
-    await wait();
 
     const mostRecentTransaction = getTransactionLogs!({}, {}, {})!;
 

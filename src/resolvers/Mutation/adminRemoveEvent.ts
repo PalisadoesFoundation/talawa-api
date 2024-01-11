@@ -112,7 +112,7 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
       },
     }
   );
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "User",
@@ -123,7 +123,7 @@ export const adminRemoveEvent: MutationResolvers["adminRemoveEvent"] = async (
   await Event.deleteOne({
     _id: event._id,
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.DELETE,
     "Event",

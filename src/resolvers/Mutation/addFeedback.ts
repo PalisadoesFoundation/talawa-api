@@ -61,7 +61,7 @@ export const addFeedback: MutationResolvers["addFeedback"] = async (
   await CheckIn.findByIdAndUpdate(eventAttendeeObject.checkInId, {
     feedbackSubmitted: true,
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "CheckIn",
@@ -69,7 +69,7 @@ export const addFeedback: MutationResolvers["addFeedback"] = async (
   );
 
   const feedback = await Feedback.create({ ...args.data });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.CREATE,
     "Feedback",

@@ -105,7 +105,7 @@ export const createUserTag: MutationResolvers["createUserTag"] = async (
   const newTag = await OrganizationTagUser.create({
     ...args.input,
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.CREATE,
     "OrganizationTagUser",

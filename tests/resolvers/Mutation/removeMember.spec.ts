@@ -32,7 +32,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserFunc } from "../../helpers/user";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -356,8 +356,6 @@ describe("resolvers -> Mutation -> removeMember", () => {
     expect(removedUser?.joinedOrganizations).not.toContain(
       testOrganization?._id
     );
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

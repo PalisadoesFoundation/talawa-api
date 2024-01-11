@@ -26,7 +26,7 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
@@ -248,8 +248,6 @@ describe("resolvers -> Mutation -> refreshToken", () => {
 
     expect(typeof refreshTokenPayload?.refreshToken).toEqual("string");
     expect(refreshTokenPayload?.refreshToken.length).toBeGreaterThan(1);
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

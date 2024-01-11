@@ -26,7 +26,7 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestPost } from "../../helpers/posts";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
@@ -110,8 +110,6 @@ describe("resolvers -> Mutation -> likeComment", () => {
 
     expect(likeCommentPayload?.likedBy).toEqual([testUser?._id]);
     expect(likeCommentPayload?.likeCount).toEqual(1);
-    await wait();
-
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
     expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({

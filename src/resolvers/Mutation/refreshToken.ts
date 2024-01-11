@@ -97,7 +97,7 @@ export const refreshToken: MutationResolvers["refreshToken"] = async (
     new: true,
   });
 
-  storeTransaction(
+  await storeTransaction(
     jwtPayload.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "User",

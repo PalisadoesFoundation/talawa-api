@@ -88,7 +88,7 @@ export const unassignUserTag: MutationResolvers["unassignUserTag"] = async (
   await TagUser.deleteOne({
     ...args.input,
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.DELETE,
     "TagUser",

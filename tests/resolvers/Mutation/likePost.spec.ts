@@ -24,7 +24,7 @@ import {
 import type { TestUserType } from "../../helpers/userAndOrg";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
@@ -87,8 +87,6 @@ describe("resolvers -> Mutation -> likePost", () => {
 
     expect(likePostPayload?.likedBy).toEqual([testUser?._id]);
     expect(likePostPayload?.likeCount).toEqual(1);
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

@@ -73,7 +73,7 @@ export const removeDirectChat: MutationResolvers["removeDirectChat"] = async (
       $in: directChat.messages,
     },
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.DELETE,
     "DirectChatMessage",
@@ -84,7 +84,7 @@ export const removeDirectChat: MutationResolvers["removeDirectChat"] = async (
   await DirectChat.deleteOne({
     _id: args.chatId,
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.DELETE,
     "DirectChat",

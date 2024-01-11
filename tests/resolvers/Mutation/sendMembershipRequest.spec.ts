@@ -21,7 +21,7 @@ import type {
 } from "../../helpers/userAndOrg";
 import type { TestMembershipRequestType } from "../../helpers/membershipRequests";
 import { createTestMembershipRequest } from "../../helpers/membershipRequests";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -138,8 +138,6 @@ describe("resolvers -> Mutation -> sendMembershipRequest", () => {
         organization: testOrganization?._id,
       })
     );
-    await wait();
-
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
     expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({

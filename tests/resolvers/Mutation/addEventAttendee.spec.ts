@@ -18,7 +18,6 @@ import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
 import { createTestEvent, type TestEventType } from "../../helpers/events";
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
-import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -179,8 +178,6 @@ describe("resolvers -> Mutation -> addEventAttendee", () => {
     const isUserRegistered = await EventAttendee.exists({
       ...args.data,
     });
-
-    await wait();
 
     expect(payload).toEqual(requestUser);
     expect(isUserRegistered).toBeTruthy();

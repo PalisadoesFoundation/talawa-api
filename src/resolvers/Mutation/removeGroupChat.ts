@@ -73,7 +73,7 @@ export const removeGroupChat: MutationResolvers["removeGroupChat"] = async (
       $in: groupChat.messages,
     },
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.DELETE,
     "GroupChatMessage",
@@ -84,7 +84,7 @@ export const removeGroupChat: MutationResolvers["removeGroupChat"] = async (
   await GroupChat.deleteOne({
     _id: groupChat._id,
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.DELETE,
     "GroupChat",

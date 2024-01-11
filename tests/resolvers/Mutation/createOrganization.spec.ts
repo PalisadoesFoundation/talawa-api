@@ -26,7 +26,6 @@ import {
 import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
-import { wait } from "./acceptAdmin.spec";
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
@@ -157,7 +156,6 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         adminFor: [createOrganizationPayload?._id],
       })
     );
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
@@ -213,8 +211,6 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       })
     );
     expect(createOrganizationPayload?.image).toBe(null);
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

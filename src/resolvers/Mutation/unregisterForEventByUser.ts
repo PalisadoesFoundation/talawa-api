@@ -66,7 +66,7 @@ export const unregisterForEventByUser: MutationResolvers["unregisterForEventByUs
       userId: context.userId,
       eventId: args.id,
     });
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.DELETE,
       "EventAttendee",

@@ -131,7 +131,7 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",
     adminApproved: isLastResortSuperAdmin,
   });
-  storeTransaction(
+  await storeTransaction(
     createdUser._id,
     TRANSACTION_LOG_TYPES.CREATE,
     "User",

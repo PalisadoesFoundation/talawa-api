@@ -109,7 +109,7 @@ export const addUserToGroupChat: MutationResolvers["addUserToGroupChat"] =
       }
     ).lean();
 
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "GroupChat",

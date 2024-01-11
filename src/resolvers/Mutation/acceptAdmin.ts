@@ -55,7 +55,7 @@ export const acceptAdmin: MutationResolvers["acceptAdmin"] = async (
     }
   );
 
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "User",

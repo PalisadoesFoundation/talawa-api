@@ -27,7 +27,7 @@ import {
   ADVERTISEMENT_NOT_FOUND_ERROR,
   TRANSACTION_LOG_TYPES,
 } from "../../../src/constants";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
@@ -109,8 +109,6 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
     );
 
     expect(removeAdvertisementPayload).toHaveProperty("type", "POPUP");
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

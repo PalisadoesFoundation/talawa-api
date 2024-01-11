@@ -86,7 +86,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       admins: [context.userId],
       members: [context.userId],
     });
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.CREATE,
       "Organization",
@@ -111,7 +111,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
         },
       }
     );
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "User",

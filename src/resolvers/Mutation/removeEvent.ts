@@ -101,7 +101,7 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
       },
     }
   );
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "User",
@@ -118,7 +118,7 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
       },
     }
   );
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "User",
@@ -136,7 +136,7 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
       new: true,
     }
   );
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "Event",

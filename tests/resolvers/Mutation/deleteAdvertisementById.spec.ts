@@ -16,7 +16,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import { deleteAdvertisementById } from "../../../src/resolvers/Mutation/deleteAdvertisementById";
-import { wait } from "./acceptAdmin.spec";
+
 import { TRANSACTION_LOG_TYPES } from "../../../src/constants";
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
@@ -80,8 +80,6 @@ describe("resolvers -> Mutation -> deleteAdvertiementById", () => {
     expect(deleteAdvertisementByIdPayload).toEqual({
       success: true,
     });
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

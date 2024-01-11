@@ -88,7 +88,7 @@ export const removeEventAttendee: MutationResolvers["removeEventAttendee"] =
     }
     const deletedEventAttendee = await EventAttendee.findOne({ ...args.data });
     await EventAttendee.deleteOne({ ...args.data });
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.DELETE,
       "EventAttendee",

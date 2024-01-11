@@ -76,7 +76,7 @@ export const likeComment: MutationResolvers["likeComment"] = async (
       }
     ).lean();
 
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "Comment",

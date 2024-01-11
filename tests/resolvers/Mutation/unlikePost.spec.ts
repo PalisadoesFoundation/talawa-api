@@ -17,7 +17,7 @@ import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import type { TestPostType } from "../../helpers/posts";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -105,8 +105,6 @@ describe("resolvers -> Mutation -> unlikePost", () => {
     }).lean();
 
     expect(unlikePostPayload).toEqual(testUnlikePostPayload);
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

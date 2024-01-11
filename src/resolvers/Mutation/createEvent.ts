@@ -128,7 +128,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     admins: [currentUser._id],
     organization: organization._id,
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.CREATE,
     "Event",
@@ -143,7 +143,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     userId: currentUser._id.toString(),
     eventId: createdEvent._id,
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.CREATE,
     "EventAttendee",
@@ -166,7 +166,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       },
     }
   );
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "User",

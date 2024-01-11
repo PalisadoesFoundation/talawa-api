@@ -29,7 +29,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -228,8 +228,6 @@ describe("resolvers -> Mutation -> updateOrganization", () => {
     }).lean();
 
     expect(updateOrganizationPayload).toEqual(testUpdateOrganizationPayload);
-    await wait();
-
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
     expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({

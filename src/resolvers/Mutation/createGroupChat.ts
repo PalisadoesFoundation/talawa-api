@@ -77,7 +77,7 @@ export const createGroupChat: MutationResolvers["createGroupChat"] = async (
     organization: args.data?.organizationId,
     title: args.data?.title,
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.CREATE,
     "GroupChat",

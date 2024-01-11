@@ -18,7 +18,6 @@ import { type TestUserType, createTestUser } from "./../../helpers/userAndOrg";
 import { createTestEvent, type TestEventType } from "../../helpers/events";
 import { CheckIn, EventAttendee } from "../../../src/models";
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
-import { wait } from "./acceptAdmin.spec";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let randomTestUser: TestUserType;
@@ -175,8 +174,6 @@ describe("resolvers -> Query -> addFeedback", () => {
       rating: 4,
       review: "Test Review",
     });
-
-    await wait();
 
     const recentLogs = getTransactionLogs!({}, {}, {})!;
 

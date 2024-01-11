@@ -21,7 +21,7 @@ export const createPlugin: MutationResolvers["createPlugin"] = async (
     ...args,
     uninstalledOrgs: [],
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "Plugin",

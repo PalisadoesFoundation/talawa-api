@@ -24,7 +24,7 @@ import type {
 import type { TestGroupChatType } from "../../helpers/groupChat";
 import { createTestGroupChat } from "../../helpers/groupChat";
 import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
@@ -200,8 +200,6 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
       ...testGroupChat?.toObject(),
       updatedAt: expect.anything(),
     });
-
-    await wait();
 
     const mostRecentTransaction = getTransactionLogs!({}, {}, {})!;
 

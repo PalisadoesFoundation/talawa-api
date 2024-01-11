@@ -25,7 +25,7 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
@@ -127,8 +127,6 @@ describe("resolvers -> Mutation -> blockPluginCreationBySuperadmin", () => {
     }).lean();
 
     expect(blockPluginCreationBySuperadminPayload).toEqual(testUpdatedTestUser);
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

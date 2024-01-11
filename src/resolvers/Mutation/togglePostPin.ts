@@ -108,7 +108,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
         new: true,
       }
     );
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "Organization",
@@ -129,7 +129,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
         },
       }
     ).lean();
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "Post",
@@ -155,7 +155,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
         new: true,
       }
     );
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "Organization",
@@ -175,7 +175,7 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
         },
       }
     ).lean();
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "Post",

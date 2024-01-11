@@ -67,7 +67,7 @@ export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"]
       createdAt: new Date(),
       messageContent: args.messageContent,
     });
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.CREATE,
       "GroupChatMessage",
@@ -85,7 +85,7 @@ export const sendMessageToGroupChat: MutationResolvers["sendMessageToGroupChat"]
         },
       }
     );
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "GroupChat",

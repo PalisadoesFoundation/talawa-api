@@ -10,7 +10,7 @@ export const createAdvertisement: MutationResolvers["createAdvertisement"] =
     const createdAd = await Advertisement.create({
       ...args,
     });
-    storeTransaction(
+    await storeTransaction(
       _context.userId,
       TRANSACTION_LOG_TYPES.CREATE,
       "Advertisement",

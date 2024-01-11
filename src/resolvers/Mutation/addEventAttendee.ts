@@ -93,7 +93,7 @@ export const addEventAttendee: MutationResolvers["addEventAttendee"] = async (
   }
 
   const eventAttendee = await EventAttendee.create({ ...args.data });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.CREATE,
     "EventAttendee",

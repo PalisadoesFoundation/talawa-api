@@ -25,7 +25,7 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -156,8 +156,6 @@ describe("resolvers -> Mutation -> rejectAdmin", () => {
     const flag = await rejectAdminResolver?.({}, args, context);
 
     expect(flag).toBe(true);
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

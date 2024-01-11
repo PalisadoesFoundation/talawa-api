@@ -46,7 +46,7 @@ export const createMessageChat: MutationResolvers["createMessageChat"] = async (
     message: args.data.message,
     languageBarrier: !isSenderReceiverLanguageSame,
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.CREATE,
     "MessageChat",

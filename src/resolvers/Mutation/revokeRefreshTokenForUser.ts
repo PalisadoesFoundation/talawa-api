@@ -18,7 +18,7 @@ export const revokeRefreshTokenForUser: MutationResolvers["revokeRefreshTokenFor
         $unset: { token: 1 },
       }
     );
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "User",

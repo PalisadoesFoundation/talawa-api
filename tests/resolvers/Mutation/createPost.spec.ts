@@ -35,7 +35,7 @@ import {
 import { Organization } from "../../../src/models";
 import * as uploadEncodedImage from "../../../src/utilities/encodedImageStorage/uploadEncodedImage";
 import { createPost as createPostResolverImage } from "../../../src/resolvers/Mutation/createPost";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
@@ -208,8 +208,6 @@ describe("resolvers -> Mutation -> createPost", () => {
         .includes(createdPost?._id.toString())
     ).toBeTruthy();
 
-    await wait();
-
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
     expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
@@ -253,8 +251,6 @@ describe("resolvers -> Mutation -> createPost", () => {
         imageUrl: null,
       })
     );
-    await wait();
-
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
     expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({

@@ -66,7 +66,7 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
     await MembershipRequest.deleteOne({
       _id: membershipRequest._id,
     });
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.DELETE,
       "MembershipRequest",
@@ -87,7 +87,7 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
         new: true,
       }
     );
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "Organization",
@@ -109,7 +109,7 @@ export const rejectMembershipRequest: MutationResolvers["rejectMembershipRequest
         },
       }
     );
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "User",

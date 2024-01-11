@@ -106,7 +106,7 @@ export const assignUserTag: MutationResolvers["assignUserTag"] = async (
     ...args.input,
   });
 
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.CREATE,
     "TagUser",

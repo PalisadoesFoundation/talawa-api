@@ -27,7 +27,7 @@ import { createTestUser } from "../../helpers/userAndOrg";
 import { OrganizationTagUser, TagUser } from "../../../src/models";
 import type { TestUserTagType } from "../../helpers/tags";
 import { createTwoLevelTagsWithOrg } from "../../helpers/tags";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
@@ -197,8 +197,6 @@ describe("resolvers -> Mutation -> removeUserTag", () => {
     });
 
     expect(userTagExists).toBeFalsy();
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

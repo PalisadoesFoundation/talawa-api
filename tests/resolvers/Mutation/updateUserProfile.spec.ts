@@ -28,7 +28,7 @@ import {
   vi,
   afterEach,
 } from "vitest";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -341,8 +341,6 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       lastName: "newLastName",
       image: null,
     });
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

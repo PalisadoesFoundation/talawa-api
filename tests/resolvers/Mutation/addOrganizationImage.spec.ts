@@ -29,7 +29,7 @@ import type {
   TestOrganizationType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 const testImagePath = `${nanoid().toLowerCase()}test.png`;
@@ -112,8 +112,6 @@ describe("resolvers -> Mutation -> addOrganizationImage", () => {
     }).lean();
     expect(addOrganizationImagePayload).toEqual(updatedTestOrganization);
     expect(addOrganizationImagePayload?.image).toEqual(testImagePath);
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

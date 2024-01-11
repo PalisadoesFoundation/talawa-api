@@ -55,7 +55,7 @@ export const sendMessageToDirectChat: MutationResolvers["sendMessageToDirectChat
       createdAt: new Date(),
       messageContent: args.messageContent,
     });
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.CREATE,
       "DirectChatMessage",
@@ -73,7 +73,7 @@ export const sendMessageToDirectChat: MutationResolvers["sendMessageToDirectChat
         },
       }
     );
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "DirectChat",

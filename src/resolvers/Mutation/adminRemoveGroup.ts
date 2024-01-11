@@ -101,7 +101,7 @@ export const adminRemoveGroup: MutationResolvers["adminRemoveGroup"] = async (
   await GroupChat.deleteOne({
     _id: groupChat._id,
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.DELETE,
     "GroupChat",

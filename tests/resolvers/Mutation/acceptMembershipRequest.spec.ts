@@ -32,7 +32,6 @@ import type {
 import type { TestMembershipRequestType } from "../../helpers/membershipRequests";
 import { createTestMembershipRequest } from "../../helpers/membershipRequests";
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
-import { wait } from "./acceptAdmin.spec";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -307,8 +306,6 @@ describe("resolvers -> Mutation -> acceptMembershipRequest", () => {
         membershipRequests: expect.arrayContaining([]),
       })
     );
-
-    await wait();
 
     const recentLogs = getTransactionLogs!({}, {}, {})!;
 

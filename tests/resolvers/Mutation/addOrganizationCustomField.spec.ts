@@ -18,7 +18,7 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 import type { TransactionLog } from "../../../src/types/generatedGraphQLTypes";
 
@@ -57,8 +57,6 @@ describe("resolvers => Mutation => addOrganizationCustomField", () => {
     expect(newCustomField?.organizationId.toString()).toBe(
       testOrganization?._id.toString()
     );
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

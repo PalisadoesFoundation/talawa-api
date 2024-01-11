@@ -17,7 +17,7 @@ import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
 import type { TestUserType } from "../../helpers/userAndOrg";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
@@ -93,8 +93,6 @@ describe("resolvers -> Mutation -> createComment", () => {
     expect(createCommentPayload?.postId.toString()).toEqual(
       testPost?._id.toString()
     );
-    await wait();
-
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
     expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({

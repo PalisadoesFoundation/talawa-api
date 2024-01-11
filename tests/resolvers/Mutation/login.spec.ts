@@ -25,7 +25,7 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestEventWithRegistrants } from "../../helpers/eventsWithRegistrants";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
@@ -189,8 +189,6 @@ email === args.data.email`, async () => {
     if (mockUser?.tokenVersion !== undefined) {
       expect(updatedUser?.tokenVersion).toBe(mockUser?.tokenVersion + 1);
     }
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

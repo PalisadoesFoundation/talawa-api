@@ -13,7 +13,7 @@ import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserFunc } from "../../helpers/user";
 import { User } from "../../../src/models";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
@@ -92,8 +92,6 @@ describe("resolvers -> Mutation -> forgotPassword", () => {
       .lean();
 
     expect(updatedTestUser?.password).not.toEqual(testUser!.password);
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

@@ -30,7 +30,7 @@ import {
 } from "vitest";
 import { createTestUserFunc } from "../../helpers/user";
 import type { TestUserType } from "../../helpers/userAndOrg";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -180,8 +180,6 @@ describe("resolvers -> Mutation -> sendMessageToDirectChat", () => {
         messageContent: "messageContent",
       })
     );
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

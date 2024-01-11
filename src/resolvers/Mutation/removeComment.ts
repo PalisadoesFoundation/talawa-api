@@ -98,7 +98,7 @@ export const removeComment: MutationResolvers["removeComment"] = async (
       new: true,
     }
   ).lean();
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "Post",
@@ -113,7 +113,7 @@ export const removeComment: MutationResolvers["removeComment"] = async (
   await Comment.deleteOne({
     _id: comment._id,
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.DELETE,
     "Comment",

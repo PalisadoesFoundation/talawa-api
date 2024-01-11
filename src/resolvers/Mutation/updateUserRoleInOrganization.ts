@@ -125,7 +125,7 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
         { _id: args.organizationId },
         { $push: { admins: args.userId } }
       );
-      storeTransaction(
+      await storeTransaction(
         context.userId,
         TRANSACTION_LOG_TYPES.UPDATE,
         "Organization",
@@ -135,7 +135,7 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
         { _id: args.userId },
         { $push: { adminFor: args.organizationId } }
       );
-      storeTransaction(
+      await storeTransaction(
         context.userId,
         TRANSACTION_LOG_TYPES.UPDATE,
         "User",
@@ -147,7 +147,7 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
         { _id: args.organizationId },
         { $pull: { admins: args.userId } }
       ).lean();
-      storeTransaction(
+      await storeTransaction(
         context.userId,
         TRANSACTION_LOG_TYPES.UPDATE,
         "Organization",
@@ -157,7 +157,7 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
         { _id: args.userId },
         { $pull: { adminFor: args.organizationId } }
       );
-      storeTransaction(
+      await storeTransaction(
         context.userId,
         TRANSACTION_LOG_TYPES.UPDATE,
         "User",

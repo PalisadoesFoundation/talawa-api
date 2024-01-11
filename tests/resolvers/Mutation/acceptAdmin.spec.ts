@@ -47,10 +47,6 @@ afterEach(() => {
   vi.resetModules();
 });
 
-export function wait(ms = 1000): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 describe("resolvers -> Mutation -> acceptAdmin", () => {
   it(`throws not found error when user with _id === context.userId is null`, async () => {
     const { requestContext } = await import("../../../src/libraries");
@@ -144,8 +140,6 @@ describe("resolvers -> Mutation -> acceptAdmin", () => {
       type: TRANSACTION_LOG_TYPES.UPDATE,
       model: "User",
     };
-
-    await wait();
 
     const recentLogs = getTransactionLogs!({}, {}, {})!;
     expect((recentLogs as TransactionLog[])[0]).toMatchObject(

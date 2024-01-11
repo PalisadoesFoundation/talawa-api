@@ -89,7 +89,7 @@ export const removePost: MutationResolvers["removePost"] = async (
   const deletedPost = await Post.findOneAndDelete({
     _id: args.id,
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.DELETE,
     "Post",
@@ -122,7 +122,7 @@ export const removePost: MutationResolvers["removePost"] = async (
       new: true,
     }
   ).lean();
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "Organization",

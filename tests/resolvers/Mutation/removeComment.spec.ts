@@ -29,7 +29,7 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
 import { cacheComments } from "../../../src/services/CommentCache/cacheComments";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -239,8 +239,6 @@ describe("resolvers -> Mutation -> removeComment", () => {
     expect(removeCommentPayload).toEqual(testComment?.toObject());
     expect(commentExists).toBeFalsy();
     expect(testUpdatedPost?.commentCount).toEqual(0);
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

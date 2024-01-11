@@ -28,7 +28,7 @@ import { createTestUser } from "../../helpers/userAndOrg";
 import type { TestUserTagType } from "../../helpers/tags";
 import { createRootTagWithOrg } from "../../helpers/tags";
 import { TagUser } from "../../../src/models";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -247,8 +247,6 @@ describe("resolvers -> Mutation -> unassignUserTag", () => {
     });
 
     expect(tagAssigned).toBeFalsy();
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

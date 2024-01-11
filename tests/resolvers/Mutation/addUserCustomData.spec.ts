@@ -13,7 +13,7 @@ import {
   TRANSACTION_LOG_TYPES,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 import type { TransactionLog } from "../../../src/types/generatedGraphQLTypes";
 
@@ -49,8 +49,6 @@ describe("resolvers => Mutation => removeOrganizationCustomField", () => {
       testOrganization?._id.toString()
     );
     expect(customDataDoc?.userId.toString()).toBe(testUser?._id.toString());
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

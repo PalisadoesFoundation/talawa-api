@@ -46,7 +46,7 @@ export const forgotPassword: MutationResolvers["forgotPassword"] = async (
       password: hashedPassword,
     }
   );
-  storeTransaction(
+  await storeTransaction(
     updatedUser?._id,
     TRANSACTION_LOG_TYPES.UPDATE,
     "User",

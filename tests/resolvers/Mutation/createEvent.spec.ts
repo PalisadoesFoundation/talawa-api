@@ -15,13 +15,21 @@ import {
   TRANSACTION_LOG_TYPES,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+} from "vitest";
 import type {
   TestUserType,
   TestOrganizationType,
 } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
@@ -51,10 +59,6 @@ beforeAll(async () => {
       },
     }
   );
-  const { requestContext } = await import("../../../src/libraries");
-  vi.spyOn(requestContext, "translate").mockImplementation(
-    (message) => message
-  );
 });
 
 afterAll(async () => {
@@ -62,6 +66,12 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> createEvent", () => {
+  beforeEach(async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message
+    );
+  });
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationCreateEventArgs = {};
@@ -234,8 +244,6 @@ describe("resolvers -> Mutation -> createEvent", () => {
       })
     );
 
-    await wait();
-
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
     expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
@@ -315,11 +323,13 @@ describe("resolvers -> Mutation -> createEvent", () => {
 });
 
 describe("Check for validation conditions", () => {
-  it(`throws String Length Validation error if title is greater than 256 characters`, async () => {
+  beforeEach(async () => {
     const { requestContext } = await import("../../../src/libraries");
     vi.spyOn(requestContext, "translate").mockImplementation(
       (message) => message
     );
+  });
+  it(`throws String Length Validation error if title is greater than 256 characters`, async () => {
     try {
       const args: MutationCreateEventArgs = {
         data: {
@@ -358,10 +368,6 @@ describe("Check for validation conditions", () => {
     }
   });
   it(`throws String Length Validation error if description is greater than 500 characters`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
     try {
       const args: MutationCreateEventArgs = {
         data: {
@@ -400,10 +406,6 @@ describe("Check for validation conditions", () => {
     }
   });
   it(`throws String Length Validation error if location is greater than 50 characters`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
     try {
       const args: MutationCreateEventArgs = {
         data: {
@@ -441,10 +443,6 @@ describe("Check for validation conditions", () => {
     }
   });
   it(`throws Date Validation error if start date is greater than end date`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-    vi.spyOn(requestContext, "translate").mockImplementation(
-      (message) => message
-    );
     try {
       const args: MutationCreateEventArgs = {
         data: {

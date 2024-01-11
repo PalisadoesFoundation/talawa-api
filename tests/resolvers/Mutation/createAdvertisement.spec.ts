@@ -23,7 +23,7 @@ import {
   createTestUserAndOrganization,
   createTestUser,
 } from "../../helpers/userAndOrg";
-import { wait } from "./acceptAdmin.spec";
+
 import { TRANSACTION_LOG_TYPES } from "../../../src/constants";
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 let testUser: TestUserType;
@@ -88,8 +88,6 @@ describe("resolvers -> Mutation -> createAdvertisement", () => {
     );
 
     expect(createdAdvertisementPayload).toHaveProperty("type", "POPUP");
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

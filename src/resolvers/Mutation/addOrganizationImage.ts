@@ -70,7 +70,7 @@ export const addOrganizationImage: MutationResolvers["addOrganizationImage"] =
         new: true,
       }
     ).lean();
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "Organization",

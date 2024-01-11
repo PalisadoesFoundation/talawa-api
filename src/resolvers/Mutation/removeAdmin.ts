@@ -104,7 +104,7 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
       new: true,
     }
   );
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "Organization",
@@ -135,7 +135,7 @@ export const removeAdmin: MutationResolvers["removeAdmin"] = async (
     .select(["-password"])
     .lean();
 
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "User",

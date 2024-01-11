@@ -100,7 +100,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
         new: true,
       }
     );
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "Organization",
@@ -131,7 +131,7 @@ export const joinPublicOrganization: MutationResolvers["joinPublicOrganization"]
       .select(["-password"])
       .populate("joinedOrganizations")
       .lean();
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "User",

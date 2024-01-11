@@ -18,7 +18,7 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import { wait } from "./acceptAdmin.spec";
+
 import { TRANSACTION_LOG_TYPES } from "../../../src/constants";
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
@@ -65,8 +65,6 @@ describe("resolvers -> Mutation -> updateLanguage", () => {
     }).lean();
 
     expect(updateLanguagePayload).toEqual(testUpdateLanguagePayload);
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

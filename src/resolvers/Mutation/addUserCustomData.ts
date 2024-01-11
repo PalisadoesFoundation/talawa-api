@@ -7,7 +7,6 @@ import {
   TRANSACTION_LOG_TYPES,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
-import { wait } from "../../../tests/resolvers/Mutation/acceptAdmin.spec";
 import { storeTransaction } from "../../utilities/storeTransaction";
 
 /**
@@ -67,7 +66,7 @@ export const addUserCustomData: MutationResolvers["addUserCustomData"] = async (
 
   await userCustomData.save();
 
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.CREATE,
     "UserCustomData",

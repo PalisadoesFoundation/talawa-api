@@ -88,7 +88,7 @@ export const addOrganizationCustomField: MutationResolvers["addOrganizationCusto
 
     await newCollectionField.save();
 
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.CREATE,
       "OrganizationCustomField",
@@ -99,7 +99,7 @@ export const addOrganizationCustomField: MutationResolvers["addOrganizationCusto
       { _id: organization._id },
       { $push: { collectionFields: newCollectionField._id } }
     ).lean();
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "Organization",

@@ -27,7 +27,7 @@ import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
 import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -204,8 +204,6 @@ describe("resolvers -> Mutation -> togglePostPin", () => {
 
     expect(currentPostIsPinned).toBeFalsy();
     expect(updatedPost?.pinned).toBeFalsy();
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

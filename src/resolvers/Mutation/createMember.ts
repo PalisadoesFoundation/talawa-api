@@ -107,7 +107,7 @@ export const createMember: MutationResolvers["createMember"] = async (
       new: true,
     }
   );
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "User",
@@ -128,7 +128,7 @@ export const createMember: MutationResolvers["createMember"] = async (
       new: true,
     }
   ).lean();
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "Organization",

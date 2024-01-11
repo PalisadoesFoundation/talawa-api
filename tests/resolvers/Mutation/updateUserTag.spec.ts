@@ -29,7 +29,7 @@ import { createTestUser } from "../../helpers/userAndOrg";
 import type { TestUserTagType } from "../../helpers/tags";
 import { createRootTagsWithOrg } from "../../helpers/tags";
 import { OrganizationTagUser } from "../../../src/models";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -233,8 +233,6 @@ describe("resolvers -> Mutation -> updateUserTag", () => {
     }).lean();
 
     expect(updatedTag!.name).toEqual("NewName");
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

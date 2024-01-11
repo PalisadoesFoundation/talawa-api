@@ -28,7 +28,7 @@ import type { TestUserType } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
 import { cacheEvents } from "../../../src/services/EventCache/cacheEvents";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -225,8 +225,6 @@ describe("resolvers -> Mutation -> updateEvent", () => {
     }).lean();
 
     expect(updateEventPayload).toEqual(testUpdateEventPayload);
-    await wait();
-
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
     expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({

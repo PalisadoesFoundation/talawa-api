@@ -17,7 +17,7 @@ import {
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
 import { createTestEvent, type TestEventType } from "../../helpers/events";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -216,8 +216,6 @@ describe("resolvers -> Mutation -> removeEventAttendee", () => {
 
     expect(payload).toEqual(requestUser);
     expect(isUserRegistered).toBeFalsy();
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

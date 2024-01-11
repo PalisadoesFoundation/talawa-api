@@ -77,7 +77,7 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
       },
     }
   );
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "User",
@@ -88,7 +88,7 @@ export const registerForEvent: MutationResolvers["registerForEvent"] = async (
     userId: context.userId,
     eventId: args.id,
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.CREATE,
     "EventAttendee",

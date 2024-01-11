@@ -87,7 +87,7 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
       $in: allTagIds,
     },
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.DELETE,
     "OrganizationTagUser",
@@ -100,7 +100,7 @@ export const removeUserTag: MutationResolvers["removeUserTag"] = async (
       $in: allTagIds,
     },
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.DELETE,
     "TagUser",

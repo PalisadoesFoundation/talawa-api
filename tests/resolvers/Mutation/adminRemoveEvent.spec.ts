@@ -25,7 +25,7 @@ import type { TestEventType } from "../../helpers/events";
 import { createTestEvent } from "../../helpers/events";
 import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 import { cacheEvents } from "../../../src/services/EventCache/cacheEvents";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
@@ -218,8 +218,6 @@ describe("resolvers -> Mutation -> adminRemoveEvent", () => {
         registeredEvents: expect.arrayContaining([]),
       })
     );
-    await wait();
-
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
     expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({

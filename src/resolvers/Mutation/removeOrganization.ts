@@ -71,14 +71,14 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
 
     // Remove each post and comments associated to it for organization.posts list.
     await Post.deleteMany({ _id: { $in: organization.posts } });
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.DELETE,
       "Post",
       `Post with _id in ${organization.posts} are deleted`
     );
     await Comment.deleteMany({ postId: { $in: organization.posts } });
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.DELETE,
       "Comment",
@@ -96,7 +96,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
         },
       }
     );
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "User",
@@ -108,7 +108,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
       { _id: { $in: organization.members } },
       { $pull: { joinedOrganizations: organization._id } }
     );
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "User",
@@ -120,7 +120,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
       { _id: { $in: organization.admins } },
       { $pull: { joinedOrganizations: organization._id } }
     );
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "User",
@@ -138,7 +138,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     await MembershipRequest.deleteMany({
       _id: { $in: organization.membershipRequests },
     });
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.DELETE,
       "MembershipRequest",
@@ -153,7 +153,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
         },
       }
     );
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "User",
@@ -170,7 +170,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
       { _id: { $in: organization.blockedUsers } },
       { $pull: { organizationsBlockedBy: organization._id } }
     );
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "User",
@@ -183,7 +183,7 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
     await Organization.deleteOne({
       _id: organization._id,
     });
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.DELETE,
       "Organization",

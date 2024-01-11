@@ -12,7 +12,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import { wait } from "./acceptAdmin.spec";
+
 import { TRANSACTION_LOG_TYPES } from "../../../src/constants";
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
@@ -55,8 +55,6 @@ describe("resolvers -> Mutation -> createDonation", () => {
         userId: testUser?._id,
       })
     );
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

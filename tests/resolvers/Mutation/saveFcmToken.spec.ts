@@ -11,7 +11,7 @@ import { saveFcmToken as saveFcmTokenResolver } from "../../../src/resolvers/Mut
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
-import { wait } from "./acceptAdmin.spec";
+
 import { TRANSACTION_LOG_TYPES } from "../../../src/constants";
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
@@ -48,8 +48,6 @@ describe("resolvers -> Mutation -> saveFcmToken", () => {
       .lean();
 
     expect(testSaveFcmTokenPayload?.token).toEqual("fcmToken");
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

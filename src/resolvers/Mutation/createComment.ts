@@ -39,7 +39,7 @@ export const createComment: MutationResolvers["createComment"] = async (
     creator: context.userId,
     postId: args.postId,
   });
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.CREATE,
     "Comment",
@@ -62,7 +62,7 @@ export const createComment: MutationResolvers["createComment"] = async (
       new: true,
     }
   );
-  storeTransaction(
+  await storeTransaction(
     context.userId,
     TRANSACTION_LOG_TYPES.UPDATE,
     "Post",

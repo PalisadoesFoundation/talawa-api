@@ -9,7 +9,7 @@ import type {
 import { Language } from "../../../src/models";
 import { nanoid } from "nanoid";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { wait } from "./acceptAdmin.spec";
+
 import { TRANSACTION_LOG_TYPES } from "../../../src/constants";
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
@@ -101,8 +101,6 @@ describe("resolvers -> Mutation -> addLanguageTranslation", () => {
         ]),
       })
     );
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

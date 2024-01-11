@@ -52,7 +52,7 @@ export const addLanguageTranslation: MutationResolvers["addLanguageTranslation"]
         }
       ).lean();
     }
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "Language",
@@ -69,7 +69,7 @@ export const addLanguageTranslation: MutationResolvers["addLanguageTranslation"]
         },
       ],
     });
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.CREATE,
       "Language",

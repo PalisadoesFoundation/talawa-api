@@ -23,7 +23,7 @@ import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let testUser: TestUserType;
@@ -190,8 +190,6 @@ describe("resolvers -> Mutation -> cancelMembershipRequest", () => {
       .lean();
 
     expect(testUpdatedOrganization?.membershipRequests).toEqual([]);
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
     expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({

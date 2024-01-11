@@ -65,7 +65,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
       user: context.userId,
       organization: organization._id,
     });
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.CREATE,
       "MembershipRequest",
@@ -86,7 +86,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
         new: true,
       }
     ).lean();
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "Organization",
@@ -108,7 +108,7 @@ export const sendMembershipRequest: MutationResolvers["sendMembershipRequest"] =
         },
       }
     );
-    storeTransaction(
+    await storeTransaction(
       context.userId,
       TRANSACTION_LOG_TYPES.UPDATE,
       "User",

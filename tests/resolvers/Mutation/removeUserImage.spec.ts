@@ -20,7 +20,7 @@ import {
 } from "vitest";
 import type { TestUserType } from "../../helpers/user";
 import { createTestUserFunc } from "../../helpers/user";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 import type { TransactionLog } from "../../../src/types/generatedGraphQLTypes";
 
@@ -134,8 +134,6 @@ describe("resolvers -> Mutation -> removeUserImage", () => {
     expect(removeUserImagePayload).toEqual(updatedTestUser);
     expect(deleteImageSpy).toBeCalledWith(testImage);
     expect(removeUserImagePayload?.image).toEqual(null);
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 

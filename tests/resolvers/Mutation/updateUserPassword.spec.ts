@@ -27,7 +27,7 @@ import {
   afterEach,
 } from "vitest";
 import bcrypt from "bcryptjs";
-import { wait } from "./acceptAdmin.spec";
+
 import { getTransactionLogs } from "../../../src/resolvers/Query/getTransactionLogs";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -204,8 +204,6 @@ describe("resolvers -> Mutation -> updateUserPassword", () => {
     );
 
     expect(updateUserPasswordPayload).not.toBeNull();
-
-    await wait();
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
