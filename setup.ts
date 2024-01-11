@@ -7,6 +7,7 @@ const inquirer = require("inquirer");
 const mongodb = require("mongodb");
 const redis = require("redis");
 const { exec } = require("child_process");
+const nodemailer = require("nodemailer");
 
 dotenv.config();
 
@@ -469,6 +470,113 @@ async function importData(): Promise<void> {
   }
 }
 
+type VerifySmtpConnectionReturnType = {
+  success: boolean;
+  error: any;
+};
+async function verifySmtpConnection(
+  config: Record<string, string>
+): Promise<VerifySmtpConnectionReturnType> {
+  const transporter = nodemailer.createTransport({
+    host: config.SMTP_HOST,
+    port: Number(config.SMTP_PORT),
+    secure: config.SMTP_SSL_TLS === "true",
+    auth: {
+      user: config.SMTP_USERNAME,
+      pass: config.SMTP_PASSWORD,
+    },
+  });
+
+  try {
+    await transporter.verify();
+    console.log("SMTP connection verified successfully.");
+    return { success: true, error: null };
+  } catch (error: any) {
+    console.error("SMTP connection verification failed:");
+    return { success: false, error };
+  } finally {
+    transporter.close();
+  }
+}
+async function configureSmtp(): Promise<void> {
+  console.log(
+    "SMTP Configuration is necessary for sending Emails through Talawa"
+  );
+  const { shouldConfigureSmtp } = await inquirer.prompt({
+    type: "confirm",
+    name: "shouldConfigureSmtp",
+    message: "Would you like to configure SMTP for Talawa to send emails?",
+    default: true,
+  });
+
+  if (!shouldConfigureSmtp) {
+    console.log("SMTP configuration skipped.");
+    return;
+  }
+
+  const smtpConfig = await inquirer.prompt([
+    {
+      type: "input",
+      name: "SMTP_HOST",
+      message: "Enter SMTP host:",
+    },
+    {
+      type: "input",
+      name: "SMTP_PORT",
+      message: "Enter SMTP port:",
+    },
+    {
+      type: "input",
+      name: "SMTP_USERNAME",
+      message: "Enter SMTP username:",
+    },
+    {
+      type: "password",
+      name: "SMTP_PASSWORD",
+      message: "Enter SMTP password:",
+    },
+    {
+      type: "confirm",
+      name: "SMTP_SSL_TLS",
+      message: "Use SSL/TLS for SMTP?",
+      default: false,
+    },
+  ]);
+
+  const isValidSmtpConfig =
+    smtpConfig.SMTP_HOST &&
+    smtpConfig.SMTP_PORT &&
+    smtpConfig.SMTP_USERNAME &&
+    smtpConfig.SMTP_PASSWORD;
+
+  if (!isValidSmtpConfig) {
+    console.error(
+      "Invalid SMTP configuration. Please provide all required parameters."
+    );
+    return;
+  }
+
+  const { success, error } = await verifySmtpConnection(smtpConfig);
+
+  if (!success) {
+    console.error(
+      "SMTP configuration verification failed. Please check your SMTP settings."
+    );
+    console.log(error.message);
+    return;
+  }
+
+  const config = dotenv.parse(fs.readFileSync(".env"));
+  config.IS_SMTP = "true";
+  Object.assign(config, smtpConfig);
+  fs.writeFileSync(".env", "");
+  for (const key in config) {
+    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+  }
+
+  console.log("SMTP configuration saved successfully.");
+}
+
 async function main(): Promise<void> {
   console.log("Welcome to the Talawa API setup! 🚀");
 
@@ -605,6 +713,7 @@ async function main(): Promise<void> {
       `\nMail username already exists with the value ${process.env.MAIL_USERNAME}`
     );
   }
+  await configureSmtp();
   const { shouldSetMail } = await inquirer.prompt([
     {
       type: "confirm",
