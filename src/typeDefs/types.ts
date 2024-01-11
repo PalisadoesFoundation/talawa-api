@@ -201,13 +201,13 @@ export const types = gql`
     name: String!
     description: String!
     location: String
-    isPublic: Boolean!
     creator: User!
     members: [User]
     admins(adminId: ID): [User]
     membershipRequests: [MembershipRequest]
-    blockedUsers: [User]
+    userRegistrationRequired: Boolean!
     visibleInSearch: Boolean!
+    blockedUsers: [User]
     apiUrl: URL!
     createdAt: DateTime
     pinnedPosts: [Post]
@@ -232,10 +232,10 @@ export const types = gql`
     _id: ID!
     name: String!
     description: String!
-    isPublic: Boolean!
     creator: User!
-    visibleInSearch: Boolean!
     apiUrl: URL!
+    userRegistrationRequired: Boolean!
+    visibleInSearch: Boolean!
   }
 
   type OtpData {

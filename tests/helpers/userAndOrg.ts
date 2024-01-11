@@ -28,12 +28,12 @@ export const createTestOrganizationWithAdmin = async (
   userID: string,
   isMember = true,
   isAdmin = true,
-  isPublic = true
+  userRegistrationRequired = false
 ): Promise<TestOrganizationType> => {
   const testOrganization = await Organization.create({
     name: `orgName${nanoid().toLowerCase()}`,
     description: `orgDesc${nanoid().toLowerCase()}`,
-    isPublic: isPublic ? true : false,
+    userRegistrationRequired: userRegistrationRequired ? true : false,
     creator: userID,
     admins: isAdmin ? [userID] : [],
     members: isMember ? [userID] : [],
@@ -58,14 +58,14 @@ export const createTestOrganizationWithAdmin = async (
 export const createTestUserAndOrganization = async (
   isMember = true,
   isAdmin = true,
-  isPublic = true
+  userRegistrationRequired = false
 ): Promise<[TestUserType, TestOrganizationType]> => {
   const testUser = await createTestUser();
   const testOrganization = await createTestOrganizationWithAdmin(
     testUser?._id,
     isMember,
     isAdmin,
-    isPublic
+    userRegistrationRequired
   );
   return [testUser, testOrganization];
 };
@@ -77,7 +77,7 @@ export const createOrganizationwithVisibility = async (
   const testOrganization = await Organization.create({
     name: `orgName${nanoid().toLowerCase()}`,
     description: `orgDesc${nanoid().toLowerCase()}`,
-    isPublic: true,
+    userRegistrationRequired: false,
     creator: userID,
     admins: [userID],
     members: [userID],
