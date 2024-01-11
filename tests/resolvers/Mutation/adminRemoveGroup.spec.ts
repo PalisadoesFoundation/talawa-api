@@ -200,9 +200,9 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
       ...testGroupChat?.toObject(),
     });
 
-    const mostRecentTransaction = getTransactionLogs!({}, {}, {})!;
+    const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
 
-    expect(mostRecentTransaction).toMatchObject({
+    expect((mostRecentTransactions as TransactionLog[])[0]).toMatchObject({
       createdBy: testUser?._id.toString(),
       type: TRANSACTION_LOG_TYPES.DELETE,
       model: "GroupChat",
