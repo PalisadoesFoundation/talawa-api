@@ -125,15 +125,15 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
         { _id: args.organizationId },
         { $push: { admins: args.userId } }
       );
-      await User.updateOne(
-        { _id: args.userId },
-        { $push: { adminFor: args.organizationId } }
-      );
       storeTransaction(
         context.userId,
         TRANSACTION_LOG_TYPES.UPDATE,
         "Organization",
         `Organization:${args.organizationId} updated admins`
+      );
+      await User.updateOne(
+        { _id: args.userId },
+        { $push: { adminFor: args.organizationId } }
       );
       storeTransaction(
         context.userId,
