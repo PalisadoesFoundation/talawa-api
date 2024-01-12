@@ -62,6 +62,7 @@ export const inputs = gql`
     description: String!
     startDate: Date!
     endDate: Date
+    images: [String]
     startTime: Time
     endTime: Time
     allDay: Boolean!
@@ -107,6 +108,12 @@ export const inputs = gql`
     organization_id: ID
   }
 
+  input EventProjectInput {
+    title: String!
+    description: String!
+    eventId: ID!
+  }
+
   input FeedbackInput {
     eventId: ID!
     rating: Int!
@@ -140,10 +147,10 @@ export const inputs = gql`
     description: String!
     location: String
     attendees: String
+    isPublic: Boolean!
+    visibleInSearch: Boolean!
     apiUrl: URL
     image: String
-    userRegistrationRequired: Boolean
-    visibleInSearch: Boolean
   }
 
   input OrganizationWhereInput {
@@ -174,8 +181,10 @@ export const inputs = gql`
     apiUrl_not_in: [URL!]
     apiUrl_contains: URL
     apiUrl_starts_with: URL
-    userRegistrationRequired: Boolean
+
     visibleInSearch: Boolean
+
+    isPublic: Boolean
   }
 
   input OTPInput {
@@ -232,6 +241,12 @@ export const inputs = gql`
     recaptchaToken: String!
   }
 
+  input TaskInput {
+    title: String!
+    description: String!
+    deadline: DateTime!
+  }
+
   input ToggleUserTagAssignInput {
     userId: ID!
     tagId: ID!
@@ -242,6 +257,7 @@ export const inputs = gql`
     description: String
     recurring: Boolean
     recurrance: Recurrance
+    images: [String]
     isPublic: Boolean
     isRegisterable: Boolean
     startDate: Date
@@ -268,17 +284,29 @@ export const inputs = gql`
     limit: PositiveInt!
   }
 
+  input UpdateEventProjectInput {
+    title: String
+    description: String
+  }
+
   input UpdateOrganizationInput {
     name: String
     description: String
-    location: String
-    userRegistrationRequired: Boolean
+    isPublic: Boolean
     visibleInSearch: Boolean
+    location: String
   }
 
   input UpdateUserTagInput {
     _id: ID!
     name: String!
+  }
+
+  input UpdateTaskInput {
+    title: String
+    description: String
+    deadline: DateTime
+    completed: Boolean
   }
 
   input AddressInput {
