@@ -28,6 +28,7 @@ export const createTestEvent = async (): Promise<
       creator: testUser._id,
       admins: [testUser._id],
       organization: testOrganization._id,
+      images: ["image.png", "image2.png", "image3.png", "image4.png"],
     });
 
     await User.updateOne(
