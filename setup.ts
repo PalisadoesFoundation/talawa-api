@@ -153,38 +153,43 @@ async function superAdmin(): Promise<void> {
   }
 }
 
-// Function to check if local MongoDB instance is running
-async function checkLocalMongoDB(): Promise<boolean> {
-  try {
-    await mongodb.connect("mongodb://localhost:27017", {
-      useUnifiedTopology: true,
-      useNewUrlParser: true,
-    });
-    return true;
-  } catch (err) {
-    return false;
+// Function to check if Existing MongoDB instance is running
+async function checkExistingMongoDB(): Promise<string | null> {
+  const existingMongoDbUrls = [
+    process.env.MONGO_DB_URL,
+    "mongodb://localhost:27017",
+  ];
+
+  for (const url of existingMongoDbUrls) {
+    if (!url) {
+      continue;
+    }
+
+    const isConnected = await checkConnection(url);
+    if (isConnected) {
+      return url;
+    }
   }
+
+  return null;
 }
 
 // Check the connection to MongoDB with the specified URL.
 async function checkConnection(url: string): Promise<boolean> {
-  const client = new mongodb.MongoClient(url, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 1000,
-  });
-
   console.log("\nChecking MongoDB connection....");
 
   try {
-    await client.connect();
+    const connection = await mongodb.connect(url, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 1000,
+    });
     console.log("\nConnection to MongoDB successful! 🎉");
+    await connection.close();
     return true;
   } catch (error) {
     console.log(`\nConnection to MongoDB failed. Please try again.\n`);
     return false;
-  } finally {
-    await client.close();
   }
 }
 
@@ -195,6 +200,7 @@ async function askForMongoDBUrl(): Promise<string> {
       type: "input",
       name: "url",
       message: "Enter your MongoDB URL:",
+      default: process.env.MONGO_DB_URL,
     },
   ]);
 
@@ -204,10 +210,11 @@ async function askForMongoDBUrl(): Promise<string> {
 // Get the mongodb url
 async function mongoDB(): Promise<void> {
   let DB_URL = process.env.MONGO_DB_URL;
-
   try {
-    let isConnected = await checkLocalMongoDB(),
-      url = isConnected ? "mongodb://localhost:27017" : "";
+    let url = await checkExistingMongoDB();
+
+    let isConnected = url !== null;
+
     if (isConnected) {
       console.log("MongoDB URL detected: " + url);
     }
@@ -228,7 +235,6 @@ async function mongoDB(): Promise<void> {
     }
   } catch (err) {
     console.error(err);
-    abort();
   }
 }
 
@@ -626,12 +632,6 @@ async function main(): Promise<void> {
       await redisConfiguration();
     }
 
-    // MongoDB configuration
-    if (process.env.MONGO_DB_URL) {
-      console.log(
-        `\nMongoDB URL already exists with the value:\n${process.env.MONGO_DB_URL}`
-      );
-    }
     const { shouldSetMongoDb } = await inquirer.prompt({
       type: "confirm",
       name: "shouldSetMongoDb",
