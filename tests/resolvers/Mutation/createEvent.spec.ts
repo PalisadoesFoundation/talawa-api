@@ -93,6 +93,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
           startTime: "",
           title: "",
           recurrance: "DAILY",
+          images: ["image_url_1", "image_url_2"],
         },
       };
 
@@ -130,6 +131,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
           startTime: "",
           title: "",
           recurrance: "DAILY",
+          images: ["image_url_1", "image_url_2"],
         },
       };
 
@@ -177,6 +179,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         startTime: new Date().toUTCString(),
         title: "newTitle",
         recurrance: "DAILY",
+        images: ["image_url_1", "image_url_2"],
       },
     };
 
@@ -204,6 +207,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         creator: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
+        images: ["image_url_1", "image_url_2"],
       })
     );
 
@@ -449,6 +453,55 @@ describe("Check for validation conditions", () => {
       await createEventResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(`start date must be earlier than end date`);
+    }
+  });
+  it(`throws Image Validation error if greater then 5 images are uploaded`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message
+    );
+    try {
+      const args: MutationCreateEventArgs = {
+        data: {
+          organizationId: testOrganization?.id,
+          allDay: false,
+          description: "newDescription",
+          endDate: new Date().toUTCString(),
+          endTime: new Date().toUTCString(),
+          isPublic: false,
+          isRegisterable: false,
+          latitude: 1,
+          longitude: 1,
+          location: "newLocation",
+          recurring: false,
+          startDate: new Date().toUTCString(),
+          startTime: new Date().toUTCString(),
+          title: "newTitle",
+          recurrance: "DAILY",
+          images: [
+            "image_url_1",
+            "image_url_2",
+            "image_url_3",
+            "image_url_4",
+            "image_url_5",
+            "image_url_6",
+          ],
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { createEvent: createEventResolverError } = await import(
+        "../../../src/resolvers/Mutation/createEvent"
+      );
+
+      await createEventResolverError?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        `Event validation failed: images: Up to 5 images are allowed.`
+      );
     }
   });
 });
