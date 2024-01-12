@@ -98,8 +98,8 @@ export const enums = gql`
     USER
     ADMIN
     SUPERADMIN
+    NON_USER
   }
-
   enum EducationGrade {
     NO_GRADE
     PRE_KG

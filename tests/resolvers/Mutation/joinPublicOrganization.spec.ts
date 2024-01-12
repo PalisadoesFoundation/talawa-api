@@ -1,31 +1,31 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization } from "../../../src/models";
+import { Organization, User } from "../../../src/models";
 import type { MutationJoinPublicOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_ALREADY_MEMBER_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import {
-  beforeAll,
-  afterAll,
-  describe,
-  it,
-  vi,
-  expect,
-  afterEach,
-} from "vitest";
+import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
 import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
-import { cacheOrganizations } from "../../../src/services/OrganizationCache/cacheOrganizations";
 
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -33,7 +33,7 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  const temp = await createTestUserAndOrganization(true, true, false);
+  const temp = await createTestUserAndOrganization(true, true, true);
   testUser = temp[0];
   testOrganization = temp[1];
 });
@@ -71,8 +71,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
       expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
   });
-
-  it(`throws UnauthorizedError message if organization with _id === args.organizationId is not public`, async () => {
+  it(`throws UnauthorizedError message if organization with _id === args.organizationId  required registration for the users`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -108,7 +107,7 @@ describe("resolvers -> Mutation -> joinPublicOrganization", () => {
         },
         {
           $set: {
-            isPublic: true,
+            userRegistrationRequired: false,
           },
         },
         {

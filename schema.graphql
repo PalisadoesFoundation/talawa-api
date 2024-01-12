@@ -557,12 +557,12 @@ type Organization {
   customFields: [OrganizationCustomField!]!
   description: String!
   image: String
-  isPublic: Boolean!
   location: String
   members: [User]
   membershipRequests: [MembershipRequest]
   name: String!
   pinnedPosts: [Post]
+  userRegistrationRequired: Boolean!
   userTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
   visibleInSearch: Boolean!
 }
@@ -580,8 +580,8 @@ type OrganizationInfoNode {
   creator: User!
   description: String!
   image: String
-  isPublic: Boolean!
   name: String!
+  userRegistrationRequired: Boolean!
   visibleInSearch: Boolean!
 }
 
@@ -590,10 +590,10 @@ input OrganizationInput {
   attendees: String
   description: String!
   image: String
-  isPublic: Boolean!
   location: String
   name: String!
-  visibleInSearch: Boolean!
+  userRegistrationRequired: Boolean
+  visibleInSearch: Boolean
 }
 
 enum OrganizationOrderByInput {
@@ -628,13 +628,13 @@ input OrganizationWhereInput {
   id_not: ID
   id_not_in: [ID!]
   id_starts_with: ID
-  isPublic: Boolean
   name: String
   name_contains: String
   name_in: [String!]
   name_not: String
   name_not_in: [String!]
   name_starts_with: String
+  userRegistrationRequired: Boolean
   visibleInSearch: Boolean
 }
 
@@ -899,9 +899,9 @@ input UpdateEventInput {
 
 input UpdateOrganizationInput {
   description: String
-  isPublic: Boolean
   location: String
   name: String
+  userRegistrationRequired: Boolean
   visibleInSearch: Boolean
 }
 
@@ -1056,6 +1056,7 @@ type UserTagsConnectionResult {
 
 enum UserType {
   ADMIN
+  NON_USER
   SUPERADMIN
   USER
 }
