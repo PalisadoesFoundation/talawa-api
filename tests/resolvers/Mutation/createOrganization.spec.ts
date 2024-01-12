@@ -60,7 +60,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
           apiUrl: "apiUrl",
           address: {
             city: "CityName",
-            countryCode: "CountryCode",
+            countryCode: "US",
             dependentLocality: "Dependent Locality",
             line1: "123 Main Street",
             line2: "Apartment 456",
@@ -120,7 +120,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         apiUrl: "apiUrl",
         address: {
           city: "CityName",
-          countryCode: "CountryCode",
+          countryCode: "US",
           dependentLocality: "Dependent Locality",
           line1: "123 Main Street",
           line2: "Apartment 456",
@@ -149,7 +149,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         apiUrl: "apiUrl",
         address: {
           city: "CityName",
-          countryCode: "CountryCode",
+          countryCode: "US",
           dependentLocality: "Dependent Locality",
           line1: "123 Main Street",
           line2: "Apartment 456",
@@ -195,7 +195,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         apiUrl: "apiUrl",
         address: {
           city: "CityName",
-          countryCode: "CountryCode",
+          countryCode: "US",
           dependentLocality: "Dependent Locality",
           line1: "123 Main Street",
           line2: "Apartment 456",
@@ -224,7 +224,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         apiUrl: "apiUrl",
         address: {
           city: "CityName",
-          countryCode: "CountryCode",
+          countryCode: "US",
           dependentLocality: "Dependent Locality",
           line1: "123 Main Street",
           line2: "Apartment 456",
@@ -255,7 +255,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
           apiUrl: "apiUrl",
           address: {
             city: "CityName",
-            countryCode: "CountryCode",
+            countryCode: "US",
             dependentLocality: "Dependent Locality",
             line1: "123 Main Street",
             line2: "Apartment 456",
@@ -293,7 +293,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
           apiUrl: "apiUrl",
           address: {
             city: "CityName",
-            countryCode: "CountryCode",
+            countryCode: "US",
             dependentLocality: "Dependent Locality",
             line1: "123 Main Street",
             line2: "Apartment 456",
@@ -377,7 +377,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         await createOrganizationResolver({}, invalidArgs, context);
       } catch (error: any) {
         // Validate that the error message matches the expected Address Validation Error message
-        expect(error.message).toEqual("Invalid Address Provided");
+        expect(error.message).toEqual("Not a Valid Address");
       }
 
       //Testing for Valid address
