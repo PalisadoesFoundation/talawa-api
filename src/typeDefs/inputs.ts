@@ -62,7 +62,6 @@ export const inputs = gql`
     description: String!
     startDate: Date!
     endDate: Date
-    images: [String]
     startTime: Time
     endTime: Time
     allDay: Boolean!
@@ -70,6 +69,7 @@ export const inputs = gql`
     recurrance: Recurrance
     isPublic: Boolean!
     isRegisterable: Boolean!
+    images: [String]
     location: String
     latitude: Latitude
     longitude: Longitude
@@ -108,12 +108,6 @@ export const inputs = gql`
     organization_id: ID
   }
 
-  input EventProjectInput {
-    title: String!
-    description: String!
-    eventId: ID!
-  }
-
   input FeedbackInput {
     eventId: ID!
     rating: Int!
@@ -147,10 +141,10 @@ export const inputs = gql`
     description: String!
     location: String
     attendees: String
-    isPublic: Boolean!
-    visibleInSearch: Boolean!
     apiUrl: URL
     image: String
+    userRegistrationRequired: Boolean
+    visibleInSearch: Boolean
   }
 
   input OrganizationWhereInput {
@@ -181,10 +175,8 @@ export const inputs = gql`
     apiUrl_not_in: [URL!]
     apiUrl_contains: URL
     apiUrl_starts_with: URL
-
+    userRegistrationRequired: Boolean
     visibleInSearch: Boolean
-
-    isPublic: Boolean
   }
 
   input OTPInput {
@@ -241,12 +233,6 @@ export const inputs = gql`
     recaptchaToken: String!
   }
 
-  input TaskInput {
-    title: String!
-    description: String!
-    deadline: DateTime!
-  }
-
   input ToggleUserTagAssignInput {
     userId: ID!
     tagId: ID!
@@ -257,7 +243,6 @@ export const inputs = gql`
     description: String
     recurring: Boolean
     recurrance: Recurrance
-    images: [String]
     isPublic: Boolean
     isRegisterable: Boolean
     startDate: Date
@@ -265,6 +250,7 @@ export const inputs = gql`
     location: String
     latitude: Latitude
     longitude: Longitude
+    images: [String]
     allDay: Boolean
     startTime: Time
     endTime: Time
@@ -284,29 +270,17 @@ export const inputs = gql`
     limit: PositiveInt!
   }
 
-  input UpdateEventProjectInput {
-    title: String
-    description: String
-  }
-
   input UpdateOrganizationInput {
     name: String
     description: String
-    isPublic: Boolean
-    visibleInSearch: Boolean
     location: String
+    userRegistrationRequired: Boolean
+    visibleInSearch: Boolean
   }
 
   input UpdateUserTagInput {
     _id: ID!
     name: String!
-  }
-
-  input UpdateTaskInput {
-    title: String
-    description: String
-    deadline: DateTime
-    completed: Boolean
   }
 
   input AddressInput {
