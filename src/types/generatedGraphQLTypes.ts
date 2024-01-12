@@ -1051,14 +1051,14 @@ export type Organization = {
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   creator: User;
   customFields: Array<OrganizationCustomField>;
-  description: Scalars['String'];
-  image?: Maybe<Scalars['String']>;
-  location?: Maybe<Scalars['String']>;
+  description: Scalars['String']['output'];
+  image?: Maybe<Scalars['String']['output']>;
+  location?: Maybe<Scalars['String']['output']>;
   members?: Maybe<Array<Maybe<User>>>;
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
   name: Scalars['String']['output'];
   pinnedPosts?: Maybe<Array<Maybe<Post>>>;
-  userRegistrationRequired: Scalars['Boolean'];
+  userRegistrationRequired: Scalars['Boolean']['output'];
   userTags?: Maybe<UserTagsConnection>;
   visibleInSearch: Scalars['Boolean']['output'];
 };
@@ -1089,23 +1089,22 @@ export type OrganizationInfoNode = {
   _id: Scalars['ID']['output'];
   apiUrl: Scalars['URL']['output'];
   creator: User;
-
-  description: Scalars['String'];
-  image?: Maybe<Scalars['String']>;
-  name: Scalars['String'];
-  userRegistrationRequired: Scalars['Boolean'];
-  visibleInSearch: Scalars['Boolean'];
+  description: Scalars['String']['output'];
+  image?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
+  userRegistrationRequired: Scalars['Boolean']['output'];
+  visibleInSearch: Scalars['Boolean']['output'];
 };
 
 export type OrganizationInput = {
-  apiUrl?: InputMaybe<Scalars['URL']>;
-  attendees?: InputMaybe<Scalars['String']>;
-  description: Scalars['String'];
-  image?: InputMaybe<Scalars['String']>;
-  location?: InputMaybe<Scalars['String']>;
-  name: Scalars['String'];
-  userRegistrationRequired?: InputMaybe<Scalars['Boolean']>;
-  visibleInSearch?: InputMaybe<Scalars['Boolean']>;
+  apiUrl?: InputMaybe<Scalars['URL']['input']>;
+  attendees?: InputMaybe<Scalars['String']['input']>;
+  description: Scalars['String']['input'];
+  image?: InputMaybe<Scalars['String']['input']>;
+  location?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  userRegistrationRequired?: InputMaybe<Scalars['Boolean']['input']>;
+  visibleInSearch?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type OrganizationOrderByInput =
@@ -1121,32 +1120,32 @@ export type OrganizationOrderByInput =
   | 'name_DESC';
 
 export type OrganizationWhereInput = {
-  apiUrl?: InputMaybe<Scalars['URL']>;
-  apiUrl_contains?: InputMaybe<Scalars['URL']>;
-  apiUrl_in?: InputMaybe<Array<Scalars['URL']>>;
-  apiUrl_not?: InputMaybe<Scalars['URL']>;
-  apiUrl_not_in?: InputMaybe<Array<Scalars['URL']>>;
-  apiUrl_starts_with?: InputMaybe<Scalars['URL']>;
-  description?: InputMaybe<Scalars['String']>;
-  description_contains?: InputMaybe<Scalars['String']>;
-  description_in?: InputMaybe<Array<Scalars['String']>>;
-  description_not?: InputMaybe<Scalars['String']>;
-  description_not_in?: InputMaybe<Array<Scalars['String']>>;
-  description_starts_with?: InputMaybe<Scalars['String']>;
-  id?: InputMaybe<Scalars['ID']>;
-  id_contains?: InputMaybe<Scalars['ID']>;
-  id_in?: InputMaybe<Array<Scalars['ID']>>;
-  id_not?: InputMaybe<Scalars['ID']>;
-  id_not_in?: InputMaybe<Array<Scalars['ID']>>;
-  id_starts_with?: InputMaybe<Scalars['ID']>;
-  name?: InputMaybe<Scalars['String']>;
-  name_contains?: InputMaybe<Scalars['String']>;
-  name_in?: InputMaybe<Array<Scalars['String']>>;
-  name_not?: InputMaybe<Scalars['String']>;
-  name_not_in?: InputMaybe<Array<Scalars['String']>>;
-  name_starts_with?: InputMaybe<Scalars['String']>;
-  userRegistrationRequired?: InputMaybe<Scalars['Boolean']>;
-  visibleInSearch?: InputMaybe<Scalars['Boolean']>;
+  apiUrl?: InputMaybe<Scalars['URL']['input']>;
+  apiUrl_contains?: InputMaybe<Scalars['URL']['input']>;
+  apiUrl_in?: InputMaybe<Array<Scalars['URL']['input']>>;
+  apiUrl_not?: InputMaybe<Scalars['URL']['input']>;
+  apiUrl_not_in?: InputMaybe<Array<Scalars['URL']['input']>>;
+  apiUrl_starts_with?: InputMaybe<Scalars['URL']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  description_contains?: InputMaybe<Scalars['String']['input']>;
+  description_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  description_not?: InputMaybe<Scalars['String']['input']>;
+  description_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  description_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['ID']['input']>;
+  id_contains?: InputMaybe<Scalars['ID']['input']>;
+  id_in?: InputMaybe<Array<Scalars['ID']['input']>>;
+  id_not?: InputMaybe<Scalars['ID']['input']>;
+  id_not_in?: InputMaybe<Array<Scalars['ID']['input']>>;
+  id_starts_with?: InputMaybe<Scalars['ID']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  name_contains?: InputMaybe<Scalars['String']['input']>;
+  name_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  name_not?: InputMaybe<Scalars['String']['input']>;
+  name_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
+  name_starts_with?: InputMaybe<Scalars['String']['input']>;
+  userRegistrationRequired?: InputMaybe<Scalars['Boolean']['input']>;
+  visibleInSearch?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type OtpData = {
@@ -1560,18 +1559,11 @@ export type UpdateEventInput = {
 };
 
 export type UpdateOrganizationInput = {
-  description?: InputMaybe<Scalars['String']>;
-  location?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
-  userRegistrationRequired?: InputMaybe<Scalars['Boolean']>;
-  visibleInSearch?: InputMaybe<Scalars['Boolean']>;
-};
-
-export type UpdateTaskInput = {
-  completed?: InputMaybe<Scalars['Boolean']>;
-  deadline?: InputMaybe<Scalars['DateTime']>;
-  description?: InputMaybe<Scalars['String']>;
-  title?: InputMaybe<Scalars['String']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  location?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  userRegistrationRequired?: InputMaybe<Scalars['Boolean']['input']>;
+  visibleInSearch?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type UpdateUserInput = {
