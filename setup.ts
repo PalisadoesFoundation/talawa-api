@@ -260,6 +260,9 @@ async function superAdmin(): Promise<void> {
 }
 
 // Function to check if Existing MongoDB instance is running
+/* The function `checkExistingMongoDB` checks for an existing MongoDB connection. It first
+creates an array `existingMongoDbUrls` which contains two elements: `process.env.MONGO_DB_URL` and
+`"mongodb://localhost:27017"`. */
 async function checkExistingMongoDB(): Promise<string | null> {
   const existingMongoDbUrls = [
     process.env.MONGO_DB_URL,
