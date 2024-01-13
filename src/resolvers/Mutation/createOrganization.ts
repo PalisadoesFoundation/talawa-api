@@ -46,9 +46,12 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       isAddressValid: false,
     };
 
-    if (args.data?.name && args.data?.description && args.data?.address) {
+    if (args.data?.name && args.data?.description) {
       validationResultName = isValidString(args.data?.name, 256);
       validationResultDescription = isValidString(args.data?.description, 500);
+    }
+
+    if (args.data?.address) {
       validationResultAddress = validateAddress(args.data?.address);
     }
 

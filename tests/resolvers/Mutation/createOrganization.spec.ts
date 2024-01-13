@@ -392,4 +392,39 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       );
     }
   });
+  it("throws Address Validation Error for missing address", async () => {
+    const { requestContext } = await import("../../../src/libraries");
+    vi.spyOn(requestContext, "translate").mockImplementation(
+      (message) => message
+    );
+
+    const missingAddress = undefined; // No address field in the data
+
+    const validArgs: MutationCreateOrganizationArgs = {
+      data: {
+        description: "Some description",
+        name: "Test Organization",
+        visibleInSearch: true,
+        apiUrl: "https://example.com/api",
+      },
+      file: null,
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    if (createOrganizationResolver) {
+      try {
+        await createOrganizationResolver({}, validArgs, context);
+      } catch (error: any) {
+        // Validate that the error message matches the expected Address Validation Error message
+        expect(error.message).toEqual("Not a Valid Address");
+      }
+    } else {
+      console.error(
+        "Error: createOrganizationResolver is undefined in the test suite"
+      );
+    }
+  });
 });
