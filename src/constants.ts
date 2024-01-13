@@ -131,12 +131,6 @@ export const START_DATE_VALIDATION_ERROR = {
   PARAM: "dateValidation",
 };
 
-export const FORBIDDEN_FIELD_UPDATE_ERROR = {
-  MESSAGE: "Error: Forbidden field update.",
-  CODE: "forbidden_field_update",
-  PARAM: "field",
-};
-
 export const FIELD_NON_EMPTY_ERROR = {
   MESSAGE:
     "Error: Field cannot be null, an empty string, or contain only spaces.",

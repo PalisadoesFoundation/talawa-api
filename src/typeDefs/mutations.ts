@@ -202,7 +202,7 @@ export const mutations = gql`
 
     updateAdvertisement(
       input: UpdateAdvertisementInput!
-    ): UpdateAdvertisementPayload @auth @role(requires: [ADMIN, SUPERADMIN])
+    ): UpdateAdvertisementPayload @auth
 
     updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
 

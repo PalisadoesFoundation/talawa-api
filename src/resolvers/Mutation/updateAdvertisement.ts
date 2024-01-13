@@ -8,6 +8,7 @@ import {
   END_DATE_VALIDATION_ERROR,
   START_DATE_VALIDATION_ERROR,
   FIELD_NON_EMPTY_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 
 export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
@@ -47,6 +48,14 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
         USER_NOT_FOUND_ERROR.PARAM
+      );
+    }
+
+    if (currentUser.userType === "USER") {
+      throw new errors.UnauthorizedError(
+        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.CODE,
+        USER_NOT_AUTHORIZED_ERROR.PARAM
       );
     }
 

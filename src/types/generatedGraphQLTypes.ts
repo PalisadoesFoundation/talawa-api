@@ -2192,7 +2192,7 @@ export type AuthDirectiveArgs = { };
 export type AuthDirectiveResolver<Result, Parent, ContextType = any, Args = AuthDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
 export type RoleDirectiveArgs = {
-  requires?: Maybe<Array<UserType>>;
+  requires?: Maybe<UserType>;
 };
 
 export type RoleDirectiveResolver<Result, Parent, ContextType = any, Args = RoleDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;

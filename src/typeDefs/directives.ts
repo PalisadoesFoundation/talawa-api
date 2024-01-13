@@ -4,5 +4,5 @@ import { gql } from "graphql-tag";
 export const directives = gql`
   directive @auth on FIELD_DEFINITION
 
-  directive @role(requires: [UserType!]) on FIELD_DEFINITION
+  directive @role(requires: UserType) on FIELD_DEFINITION
 `;

@@ -1,6 +1,6 @@
 directive @auth on FIELD_DEFINITION
 
-directive @role(requires: [UserType!]) on FIELD_DEFINITION
+directive @role(requires: UserType) on FIELD_DEFINITION
 
 type Address {
   city: String

@@ -10,7 +10,7 @@ import {
   END_DATE_VALIDATION_ERROR,
   INPUT_NOT_FOUND_ERROR,
   START_DATE_VALIDATION_ERROR,
-  FORBIDDEN_FIELD_UPDATE_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
   FIELD_NON_EMPTY_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
@@ -18,15 +18,19 @@ import { createTestUser, type TestUserType } from "../../helpers/userAndOrg";
 import {
   createTestAdvertisement,
   type TestAdvertisementType,
+  createTestSuperAdmin,
+  type TestSuperAdminType,
 } from "../../helpers/advertisement";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
 let testAdvertisement: TestAdvertisementType;
+let testSuperAdmin: TestSuperAdminType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
+  testSuperAdmin = await createTestSuperAdmin();
   testAdvertisement = await createTestAdvertisement();
 });
 
@@ -64,6 +68,35 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
     }
   });
 
+  it(`throws Authorization Error if the userType is USER`, async () => {
+    const { requestContext } = await import("../../../src/libraries");
+
+    const spy = vi
+      .spyOn(requestContext, "translate")
+      .mockImplementationOnce((message) => `Translated ${message}`);
+
+    try {
+      const args: MutationUpdateAdvertisementArgs = {
+        input: {
+          _id: testAdvertisement?._id,
+          name: "Sample",
+        },
+      };
+
+      const context = { userId: testUser?._id };
+
+      const { updateAdvertisement: updateAdvertisementResolverNotFoundError } =
+        await import("../../../src/resolvers/Mutation/updateAdvertisement");
+
+      await updateAdvertisementResolverNotFoundError?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
+      );
+      expect(spy).toHaveBeenLastCalledWith(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+    }
+  });
+
   it(`throws NotFoundError if no advertisement exists with _id === args.id `, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
@@ -80,7 +113,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       };
 
       const context = {
-        userId: testUser?.id,
+        userId: testSuperAdmin?.id,
       };
 
       const { updateAdvertisement: updateAdvertisementResolverNotFoundError } =
@@ -118,7 +151,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       },
     };
 
-    const context = { userId: testUser?._id };
+    const context = { userId: testSuperAdmin?._id };
 
     const updateAdvertisementPayload = await updateAdvertisementResolver?.(
       {},
@@ -171,7 +204,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
           endDate: "2023-12-26", // Past date
         },
       };
-      const context = { userId: testUser?._id };
+      const context = { userId: testSuperAdmin?._id };
 
       const {
         updateAdvertisement: updateAdvertisementResolverValidationError,
@@ -199,7 +232,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
           startDate: "2023-12-26",
         },
       };
-      const context = { userId: testUser?._id };
+      const context = { userId: testSuperAdmin?._id };
 
       const {
         updateAdvertisement: updateAdvertisementResolverValidationError,
@@ -228,7 +261,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         },
       };
 
-      const context = { userId: testUser?._id };
+      const context = { userId: testSuperAdmin?._id };
 
       const { updateAdvertisement: updateAdvertisementResolverInputError } =
         await import("../../../src/resolvers/Mutation/updateAdvertisement");
@@ -256,7 +289,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         },
       };
 
-      const context = { userId: testUser?._id };
+      const context = { userId: testSuperAdmin?._id };
 
       const { updateAdvertisement: updateAdvertisementResolverInputError } =
         await import("../../../src/resolvers/Mutation/updateAdvertisement");
@@ -266,36 +299,6 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       expect(spy).toHaveBeenLastCalledWith(FIELD_NON_EMPTY_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${FIELD_NON_EMPTY_ERROR.MESSAGE}`
-      );
-    }
-  });
-  it(`throws InputValidationError if trying to update a non-permitted field`, async () => {
-    const { requestContext } = await import("../../../src/libraries");
-
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
-
-    try {
-      const args = {
-        input: {
-          _id: testAdvertisement!._id,
-          orgId: "1",
-        },
-      };
-
-      const context = { userId: testUser?._id };
-
-      const { updateAdvertisement: updateAdvertisementResolverInputError } =
-        await import("../../../src/resolvers/Mutation/updateAdvertisement");
-
-      await updateAdvertisementResolverInputError?.({}, args, context);
-    } catch (error: any) {
-      expect(spy).toHaveBeenLastCalledWith(
-        FORBIDDEN_FIELD_UPDATE_ERROR.MESSAGE
-      );
-      expect(error.message).toEqual(
-        `Translated ${FORBIDDEN_FIELD_UPDATE_ERROR.MESSAGE}`
       );
     }
   });

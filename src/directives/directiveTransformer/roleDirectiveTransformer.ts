@@ -45,7 +45,7 @@ function roleDirectiveTransformer(schema, directiveName): any {
             );
           }
 
-          if (!requires.includes(currentUser.userType)) {
+          if (currentUser.userType !== requires) {
             throw new errors.UnauthenticatedError(
               USER_NOT_AUTHORIZED_ERROR.MESSAGE,
               USER_NOT_AUTHORIZED_ERROR.CODE,
