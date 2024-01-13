@@ -24,7 +24,7 @@ export const VENUE_ALREADY_EXISTS_ERROR = {
 export const VENUE_DOESNT_EXIST_ERROR = {
   DESC: "Venue does not exist",
   CODE: "venue.doesntExist",
-  MESSAGE: "venue.doesntExists",
+  MESSAGE: "venue.doesntExist",
   PARAM: "venue",
 };
 
@@ -90,6 +90,20 @@ export const ORGANIZATION_NOT_FOUND_ERROR = {
   MESSAGE: "organization.notFound",
   PARAM: "organization",
 };
+export const VENUE_NAME_MISSING_ERROR = {
+  DESC: "Venue name not found",
+  CODE: "venueName.notFound",
+  MESSAGE: "venueName.notFound",
+  PARAM: "venueName",
+};
+
+export const VENUE_ALREADY_SCHEDULED = {
+  DESC: "Venue is already scheduled",
+  CODE: "venue.alreadySchduled",
+  MESSAGE: "venue.alreadySchduled",
+  PARAM: "venue",
+};
+
 export const ORGANIZATION_IMAGE_NOT_FOUND_ERROR = {
   DESC: "OrganizationImage not found",
   CODE: "organizationImage.notFound",

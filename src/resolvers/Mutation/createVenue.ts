@@ -1,9 +1,11 @@
+import { InputValidationError } from "./../../libraries/errors/inputValidationError";
 import { Organization, User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   VENUE_ALREADY_EXISTS_ERROR,
   USER_NOT_FOUND_ERROR,
+  VENUE_NAME_MISSING_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { Venue } from "../../models/Venue";
@@ -40,7 +42,7 @@ export const createVenue: MutationResolvers["createVenue"] = async (
   const organization = await Organization.findOne({
     _id: args.data?.organizationId,
   })
-    .populate("availableVenues")
+    .populate("venues")
     .lean();
 
   // Checks whether organization exists.
@@ -51,13 +53,16 @@ export const createVenue: MutationResolvers["createVenue"] = async (
       ORGANIZATION_NOT_FOUND_ERROR.PARAM
     );
   }
-
-  // Check if a venue with the same place already exists in the organization
-  if (
-    organization.availableVenues?.some(
-      (venue) => venue.name === args.data?.name
-    )
-  ) {
+  // Checks if the venue name provided is null, undefined or empty string
+  if (!args.data?.name ?? "") {
+    throw new errors.InputValidationError(
+      requestContext.translate(VENUE_NAME_MISSING_ERROR.MESSAGE),
+      VENUE_NAME_MISSING_ERROR.CODE,
+      VENUE_NAME_MISSING_ERROR.PARAM
+    );
+  }
+  if (organization.venues?.some((venue) => venue.name === args.data?.name)) {
+    // Check if a venue with the same place already exists in the organization
     throw new errors.ConflictError(
       requestContext.translate(VENUE_ALREADY_EXISTS_ERROR.MESSAGE),
       VENUE_ALREADY_EXISTS_ERROR.CODE,
@@ -67,10 +72,10 @@ export const createVenue: MutationResolvers["createVenue"] = async (
 
   const newVenue = await Venue.create({ ...args.data });
 
-  // Add the new venue to the availableVenues inside the organization
+  // Add the new venue to the venues inside the organization
   await Organization.findOneAndUpdate(
     { _id: organization._id },
-    { $push: { availableVenues: newVenue._id } },
+    { $push: { venues: newVenue._id } },
     { new: true }
   );
 

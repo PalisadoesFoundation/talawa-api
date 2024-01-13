@@ -1,12 +1,13 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
-import { User, Event } from "../../models";
+import { User, Event, Organization } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   LENGTH_VALIDATION_ERROR,
+  ORGANIZATION_NOT_FOUND_ERROR,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
@@ -65,6 +66,20 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
       EVENT_NOT_FOUND_ERROR.PARAM
     );
   }
+  const organization = await Organization.findOne({
+    _id: event?.organization,
+  })
+    .populate("venues")
+    .lean();
+
+  // Checks whether organization exists.
+  if (!organization) {
+    throw new errors.NotFoundError(
+      requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+      ORGANIZATION_NOT_FOUND_ERROR.CODE,
+      ORGANIZATION_NOT_FOUND_ERROR.PARAM
+    );
+  }
 
   const currentUserIsEventAdmin = event.admins.some(
     (admin) =>
@@ -113,6 +128,90 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
       ),
       LENGTH_VALIDATION_ERROR.CODE
     );
+  }
+
+  // Checks if the venue is provided and whether that venue exists in the organization
+  if (
+    args.data?.venue &&
+    organization.venues?.some((venue) => venue._id.equals(args.data?.venue))
+  ) {
+    const conflictingEvents = await Event.find({
+      organization: event?.organization,
+      venue: args.data?.venue ?? "",
+      $or: [
+        {
+          $and: [
+            { startDate: { $lte: args.data?.startDate } },
+            { endDate: { $gte: args.data?.startDate } },
+          ],
+        },
+        {
+          $and: [
+            { startDate: { $lte: args.data?.endDate } },
+            { endDate: { $gte: args.data?.endDate } },
+          ],
+        },
+        {
+          $and: [
+            { startDate: { $gte: args.data?.startDate } },
+            { endDate: { $lte: args.data?.endDate } },
+          ],
+        },
+        {
+          $and: [
+            { startDate: { $lte: args.data?.startDate } },
+            { endDate: { $gte: args.data?.endDate } },
+          ],
+        },
+      ],
+      $and: [
+        {
+          $or: [
+            {
+              allDay: true,
+            },
+            {
+              $and: [
+                { startTime: { $lte: args.data?.startTime } },
+                { endTime: { $gte: args.data?.startTime } },
+              ],
+            },
+            {
+              $and: [
+                { startTime: { $lte: args.data?.endTime } },
+                { endTime: { $gte: args.data?.endTime } },
+              ],
+            },
+            {
+              $and: [
+                { startTime: { $gte: args.data?.startTime } },
+                { endTime: { $lte: args.data?.endTime } },
+              ],
+            },
+            {
+              $and: [
+                { startTime: { $lte: args.data?.startTime } },
+                { endTime: { $gte: args.data?.endTime } },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    if (conflictingEvents.length > 0) {
+      const conflictDetails = conflictingEvents.map((event) => ({
+        eventId: event._id,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        startTime: event.startTime,
+        endTime: event.endTime,
+      }));
+      console.log("Conflict Details:", conflictingEvents);
+      throw new Error("Venue not available due to schedule conflicts");
+    }
+  } else {
+    throw new Error("Venue is not available in the organization");
   }
 
   const updatedEvent = await Event.findOneAndUpdate(

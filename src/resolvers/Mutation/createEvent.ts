@@ -1,3 +1,4 @@
+import { organization } from "./../DirectChat/organization";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Organization, Event } from "../../models";
@@ -6,6 +7,8 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
   LENGTH_VALIDATION_ERROR,
+  VENUE_ALREADY_SCHEDULED,
+  VENUE_DOESNT_EXIST_ERROR,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 import { compareDates } from "../../libraries/validators/compareDates";
@@ -31,7 +34,6 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   const currentUser = await User.findOne({
     _id: context.userId,
   }).lean();
-
   // Checks whether currentUser exists.
   if (!currentUser) {
     throw new errors.NotFoundError(
@@ -43,8 +45,9 @@ export const createEvent: MutationResolvers["createEvent"] = async (
 
   const organization = await Organization.findOne({
     _id: args.data?.organizationId,
-  }).lean();
-
+  })
+    .populate("venues")
+    .lean();
   // Checks whether organization exists.
   if (!organization) {
     throw new errors.NotFoundError(
@@ -118,7 +121,99 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       compareDatesResult
     );
   }
+  // Checks if the venue is provided and whether that venue exists in the organization
+  if (
+    args.data?.venue &&
+    organization.venues?.some((venue) => venue._id.equals(args.data?.venue))
+  ) {
+    const conflictingEvents = await Event.find({
+      organization: args.data?.organizationId,
+      venue: args.data?.venue ?? "",
+      $or: [
+        {
+          $and: [
+            { startDate: { $lte: args.data?.startDate } },
+            { endDate: { $gte: args.data?.startDate } },
+          ],
+        },
+        {
+          $and: [
+            { startDate: { $lte: args.data?.endDate } },
+            { endDate: { $gte: args.data?.endDate } },
+          ],
+        },
+        {
+          $and: [
+            { startDate: { $gte: args.data?.startDate } },
+            { endDate: { $lte: args.data?.endDate } },
+          ],
+        },
+        {
+          $and: [
+            { startDate: { $lte: args.data?.startDate } },
+            { endDate: { $gte: args.data?.endDate } },
+          ],
+        },
+      ],
+      $and: [
+        {
+          $or: [
+            {
+              allDay: true,
+            },
+            {
+              $and: [
+                { startTime: { $lte: args.data?.startTime } },
+                { endTime: { $gte: args.data?.startTime } },
+              ],
+            },
+            {
+              $and: [
+                { startTime: { $lte: args.data?.endTime } },
+                { endTime: { $gte: args.data?.endTime } },
+              ],
+            },
+            {
+              $and: [
+                { startTime: { $gte: args.data?.startTime } },
+                { endTime: { $lte: args.data?.endTime } },
+              ],
+            },
+            {
+              $and: [
+                { startTime: { $lte: args.data?.startTime } },
+                { endTime: { $gte: args.data?.endTime } },
+              ],
+            },
+          ],
+        },
+      ],
+    });
 
+    if (conflictingEvents.length > 0) {
+      const conflictDetails = conflictingEvents.map((event) => ({
+        _id: event._id,
+        title: event.title,
+        description: event.description,
+        allDay: event.allDay,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        startTime: event.startTime,
+        endTime: event.endTime,
+      }));
+      throw new errors.ConflictError(
+        requestContext.translate(VENUE_ALREADY_SCHEDULED.MESSAGE),
+        VENUE_ALREADY_SCHEDULED.CODE,
+        VENUE_ALREADY_SCHEDULED.PARAM
+      );
+    }
+  } else {
+    throw new errors.NotFoundError(
+      requestContext.translate(VENUE_DOESNT_EXIST_ERROR.MESSAGE),
+      VENUE_DOESNT_EXIST_ERROR.CODE,
+      VENUE_DOESNT_EXIST_ERROR.PARAM
+    );
+  }
   // Creates new event.
   const createdEvent = await Event.create({
     ...args.data,

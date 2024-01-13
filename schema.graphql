@@ -837,6 +837,7 @@ type Query {
   userLanguage(userId: ID!): String
   users(adminApproved: Boolean, first: Int, orderBy: UserOrderByInput, skip: Int, userType: String, where: UserWhereInput): [User]
   usersConnection(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [User]!
+  venuesInOrganization(id: ID!): [Venue]
 }
 
 input RecaptchaVerification {

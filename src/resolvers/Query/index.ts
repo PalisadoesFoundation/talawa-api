@@ -1,3 +1,4 @@
+import { venuesInOrganization } from "./venuesInOrganization";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { checkAuth } from "./checkAuth";
 import { customDataByOrganization } from "./customDataByOrganization";
@@ -57,4 +58,5 @@ export const Query: QueryResolvers = {
   userLanguage,
   users,
   usersConnection,
+  venuesInOrganization,
 };

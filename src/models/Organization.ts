@@ -29,7 +29,7 @@ export interface InterfaceOrganization {
   visibleInSearch: boolean | undefined;
   customFields: PopulatedDoc<InterfaceOrganizationCustomField & Document>[];
   createdAt: Date;
-  availableVenues: PopulatedDoc<InterfaceVenue & Document>[];
+  venues: PopulatedDoc<InterfaceVenue & Document>[];
 }
 /**
  * This describes the schema for a `Organization` that corresponds to `InterfaceOrganization` document.
@@ -49,7 +49,7 @@ export interface InterfaceOrganization {
  * @param blockedUsers - Collection of Blocked User in the Organization, each object refer to `User` model.
  * @param tags - Collection of tags.
  * @param createdAt - Time stamp of data creation.
- * @param availableVenues - All the available venues in the organization
+ * @param venues - All the available venues in the organization
  */
 const organizationSchema = new Schema({
   apiUrl: {
@@ -141,7 +141,7 @@ const organizationSchema = new Schema({
     type: Date,
     default: Date.now,
   },
-  availableVenues: [
+  venues: [
     {
       type: Schema.Types.ObjectId,
       ref: "Venue",
