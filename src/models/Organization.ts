@@ -24,7 +24,6 @@ export interface InterfaceOrganization {
     sortingCode: string;
     state: string;
   };
-  isPublic: boolean;
   creator: PopulatedDoc<InterfaceUser & Document>;
   status: string;
   members: PopulatedDoc<InterfaceUser & Document>[];

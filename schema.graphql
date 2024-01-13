@@ -551,7 +551,6 @@ type Organization {
   customFields: [OrganizationCustomField!]!
   description: String!
   image: String
-  isPublic: Boolean!
   members: [User]
   membershipRequests: [MembershipRequest]
   name: String!

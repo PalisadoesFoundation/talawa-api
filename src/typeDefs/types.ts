@@ -201,7 +201,6 @@ export const types = gql`
     name: String!
     description: String!
     address: Address
-    isPublic: Boolean!
     creator: User!
     members: [User]
     admins(adminId: ID): [User]
