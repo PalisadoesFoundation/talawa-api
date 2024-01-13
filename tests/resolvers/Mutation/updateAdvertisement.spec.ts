@@ -144,6 +144,8 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         type: updatedTestAdvertisement.type,
         startDate: updatedTestAdvertisement.startDate,
         endDate: updatedTestAdvertisement.endDate,
+        createdAt: updatedTestAdvertisement.createdAt,
+        updatedAt: updatedTestAdvertisement.updatedAt,
       };
     }
     expect(advertisement).toEqual(expectedAdvertisement);
