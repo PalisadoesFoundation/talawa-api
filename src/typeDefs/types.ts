@@ -222,7 +222,6 @@ export const types = gql`
     name: String!
     description: String!
     location: String
-    isPublic: Boolean!
     creator: User
     createdAt: DateTime!
     updatedAt: DateTime!

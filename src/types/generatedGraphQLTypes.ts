@@ -1074,7 +1074,6 @@ export type Organization = {
   customFields: Array<OrganizationCustomField>;
   description: Scalars['String']['output'];
   image?: Maybe<Scalars['String']['output']>;
-  isPublic: Scalars['Boolean']['output'];
   location?: Maybe<Scalars['String']['output']>;
   members?: Maybe<Array<Maybe<User>>>;
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
@@ -2591,7 +2590,6 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   customFields?: Resolver<Array<ResolversTypes['OrganizationCustomField']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   location?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   members?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
   membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
