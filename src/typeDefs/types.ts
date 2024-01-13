@@ -25,6 +25,8 @@ export const types = gql`
     user: User!
     event: Event!
     feedbackSubmitted: Boolean!
+    createdAt: DateTime!
+    updatedAt: DateTime!
   }
 
   # Used to show whether an user has checked in for an event
@@ -35,13 +37,14 @@ export const types = gql`
   }
 
   type Comment {
-    _id: ID
+    _id: ID!
     text: String!
-    createdAt: DateTime
-    creator: User!
     post: Post!
     likedBy: [User]
     likeCount: Int
+    creator: User
+    createdAt: DateTime!
+    updatedAt: DateTime!
   }
 
   # A page info type adhering to Relay Specification for both cursor based pagination
@@ -60,7 +63,9 @@ export const types = gql`
     _id: ID!
     users: [User!]!
     messages: [DirectChatMessage]
-    creator: User!
+    creator: User
+    createdAt: DateTime!
+    updatedAt: DateTime!
     organization: Organization!
   }
 
@@ -70,6 +75,7 @@ export const types = gql`
     sender: User!
     receiver: User!
     createdAt: DateTime!
+    updatedAt: DateTime!
     messageContent: String!
   }
 
@@ -81,15 +87,20 @@ export const types = gql`
     nameOfUser: String!
     nameOfOrg: String!
     amount: Float!
+    createdAt: DateTime!
+    updatedAt: DateTime!
   }
   type Advertisement {
-    _id: ID
+    _id: ID!
     name: String!
-    orgId: ID
+    orgId: ID!
     link: String!
     type: String!
     startDate: Date!
     endDate: Date!
+    createdAt: DateTime!
+    creator: User
+    updatedAt: DateTime!
   }
 
   type ExtendSession {
@@ -114,11 +125,13 @@ export const types = gql`
     latitude: Latitude
     longitude: Longitude
     organization: Organization
-    creator: User!
-    attendees: [User!]!
+    creator: User
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    attendees: [User]
     # For each attendee, gives information about whether he/she has checked in yet or not
     attendeesCheckInStatus: [CheckInStatus!]!
-    admins(adminId: ID): [User]
+    admins(adminId: ID): [User!]
     status: Status!
     feedback: [Feedback!]!
     averageFeedbackScore: Float
@@ -129,22 +142,27 @@ export const types = gql`
     event: Event!
     rating: Int!
     review: String
+    createdAt: DateTime!
+    updatedAt: DateTime!
   }
 
   type Group {
-    _id: ID
-    title: String
+    _id: ID!
+    title: String!
     description: String
-    createdAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
     organization: Organization!
-    admins: [User]
+    admins: [User!]!
   }
 
   type GroupChat {
     _id: ID!
     users: [User!]!
     messages: [GroupChatMessage]
-    creator: User!
+    creator: User
+    createdAt: DateTime!
+    updatedAt: DateTime!
     organization: Organization!
   }
 
@@ -153,6 +171,7 @@ export const types = gql`
     groupChatMessageBelongsTo: GroupChat!
     sender: User!
     createdAt: DateTime!
+    updatedAt: DateTime!
     messageContent: String!
   }
 
@@ -179,8 +198,9 @@ export const types = gql`
 
   type Message {
     _id: ID!
-    text: String
-    createdAt: DateTime
+    text: String!
+    createdAt: DateTime!
+    updatedAt: DateTime!
     imageUrl: URL
     videoUrl: URL
     creator: User
@@ -193,6 +213,7 @@ export const types = gql`
     message: String!
     languageBarrier: Boolean
     createdAt: DateTime!
+    updatedAt: DateTime!
   }
 
   type Organization {
@@ -201,15 +222,16 @@ export const types = gql`
     name: String!
     description: String!
     location: String
-    creator: User!
+    creator: User
+    createdAt: DateTime!
+    updatedAt: DateTime!
     members: [User]
-    admins(adminId: ID): [User]
+    admins(adminId: ID): [User!]
     membershipRequests: [MembershipRequest]
     userRegistrationRequired: Boolean!
     visibleInSearch: Boolean!
     blockedUsers: [User]
     apiUrl: URL!
-    createdAt: DateTime
     pinnedPosts: [Post]
     userTags(
       after: String
@@ -232,7 +254,7 @@ export const types = gql`
     _id: ID!
     name: String!
     description: String!
-    creator: User!
+    creator: User
     apiUrl: URL!
     userRegistrationRequired: Boolean!
     visibleInSearch: Boolean!
@@ -268,24 +290,25 @@ export const types = gql`
     pluginName: String!
     pluginCreatedBy: String!
     pluginDesc: String!
-    uninstalledOrgs: [ID!]!
+    uninstalledOrgs: [ID!]
   }
 
   type PluginField {
     key: String!
     value: String!
     status: Status!
-    createdAt: DateTime
+    createdAt: DateTime!
   }
 
   type Post {
     _id: ID
     text: String!
     title: String
-    createdAt: DateTime
+    createdAt: DateTime!
+    creator: User
+    updatedAt: DateTime!
     imageUrl: URL
     videoUrl: URL
-    creator: User!
     organization: Organization!
     likedBy: [User]
     comments: [Comment]
@@ -342,7 +365,7 @@ export const types = gql`
     adminFor: [Organization]
     appLanguageCode: String!
     birthDate: Date
-    createdAt: DateTime
+    createdAt: DateTime!
     createdEvents: [Event]
     createdOrganizations: [Organization]
     educationGrade: EducationGrade
@@ -359,7 +382,7 @@ export const types = gql`
     organizationUserBelongsTo: Organization
     organizationsBlockedBy: [Organization]
     phone: UserPhone
-    pluginCreationAllowed: Boolean
+    pluginCreationAllowed: Boolean!
     registeredEvents: [Event]
     tagsAssignedWith(
       after: String
@@ -369,7 +392,8 @@ export const types = gql`
       organizationId: ID
     ): UserTagsConnection
     tokenVersion: Int!
-    userType: String
+    updatedAt: DateTime!
+    userType: UserType!
   }
 
   type UserCustomData {

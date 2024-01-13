@@ -23,7 +23,7 @@ beforeAll(async () => {
     {
       name: `name${nanoid()}`,
       description: `description${nanoid()}`,
-      creator: testUser?._id,
+      creatorId: testUser?._id,
       admins: [testUser?._id],
       members: [testUser?._id],
       userRegistrationRequired: true,
@@ -33,7 +33,7 @@ beforeAll(async () => {
     {
       name: `name${nanoid()}`,
       description: `description${nanoid()}`,
-      creator: testUser?._id,
+      creatorId: testUser?._id,
       admins: [testUser?._id],
       userRegistrationRequired: false,
       visibleInSearch: false,
@@ -43,7 +43,7 @@ beforeAll(async () => {
     {
       name: `name${nanoid()}`,
       description: `description${nanoid()}`,
-      creator: testUser?._id,
+      creatorId: testUser?._id,
       admins: [testUser?._id],
       userRegistrationRequired: true,
       visibleInSearch: true,

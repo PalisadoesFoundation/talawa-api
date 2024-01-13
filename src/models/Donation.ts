@@ -10,6 +10,8 @@ export interface InterfaceDonation {
   payPalId: string;
   nameOfUser: string;
   amount: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 /**
  * This is the Structure of the Donation
@@ -19,33 +21,40 @@ export interface InterfaceDonation {
  * @param payPalId - PayPalId
  * @param nameOfUser - Name of the user
  * @param amount - Amount of the donation
+ * @param createdAt - Timestamp of creation
+ * @param updatedAt - Timestamp of updation
  */
-const donationSchema = new Schema({
-  userId: {
-    type: Schema.Types.ObjectId,
-    required: true,
+const donationSchema = new Schema(
+  {
+    userId: {
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
+    orgId: {
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
+    nameOfOrg: {
+      type: String,
+      required: true,
+    },
+    payPalId: {
+      type: String,
+      required: true,
+    },
+    nameOfUser: {
+      type: String,
+      required: true,
+    },
+    amount: {
+      type: Number,
+      required: true,
+    },
   },
-  orgId: {
-    type: Schema.Types.ObjectId,
-    required: true,
-  },
-  nameOfOrg: {
-    type: String,
-    required: true,
-  },
-  payPalId: {
-    type: String,
-    required: true,
-  },
-  nameOfUser: {
-    type: String,
-    required: true,
-  },
-  amount: {
-    type: Number,
-    required: true,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 const donationModel = (): Model<InterfaceDonation> =>
   model<InterfaceDonation>("Donation", donationSchema);
