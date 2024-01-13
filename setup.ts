@@ -507,18 +507,40 @@ async function main(): Promise<void> {
     // Redis configuration
     if (process.env.REDIS_HOST && process.env.REDIS_PORT) {
       console.log(`\nRedis URL already exists`);
-    }
 
-    await redisConfiguration();
+      const { shouldSetupRedis } = await inquirer.prompt({
+        type: "confirm",
+        name: "shouldSetupRedis",
+        message: "Would you like to change the existing Redis URL?",
+        default: false,
+      });
+
+      if (shouldSetupRedis) {
+        await redisConfiguration();
+      }
+    } else {
+      await redisConfiguration();
+    }
 
     // MongoDB configuration
     if (process.env.MONGO_DB_URL) {
       console.log(
         `\nMongoDB URL already exists with the value:\n${process.env.MONGO_DB_URL}`
       );
-    }
 
-    await mongoDB();
+      const { shouldSetupMongo } = await inquirer.prompt({
+        type: "confirm",
+        name: "shouldSetupMongo",
+        message: "Would you like to change the existing Mongo DB URL?",
+        default: false,
+      });
+
+      if (shouldSetupMongo) {
+        await mongoDB();
+      }
+    } else {
+      await mongoDB();
+    }
   }
   if (process.env.RECAPTCHA_SECRET_KEY) {
     console.log(
