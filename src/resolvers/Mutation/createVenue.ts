@@ -1,4 +1,3 @@
-import { InputValidationError } from "./../../libraries/errors/inputValidationError";
 import { Organization, User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import {

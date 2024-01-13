@@ -133,17 +133,8 @@ export const types = gql`
     attendeesCheckInStatus: [CheckInStatus!]!
     admins(adminId: ID): [User]
     status: Status!
-    projects: [EventProject]
     feedback: [Feedback!]!
     averageFeedbackScore: Float
-  }
-
-  type EventProject {
-    _id: ID!
-    title: String!
-    description: String!
-    event: Event!
-    tasks: [Task]
   }
 
   type Feedback {
@@ -223,13 +214,13 @@ export const types = gql`
     name: String!
     description: String!
     location: String
-    isPublic: Boolean!
     creator: User!
     members: [User]
     admins(adminId: ID): [User]
     membershipRequests: [MembershipRequest]
-    blockedUsers: [User]
+    userRegistrationRequired: Boolean!
     visibleInSearch: Boolean!
+    blockedUsers: [User]
     apiUrl: URL!
     createdAt: DateTime
     pinnedPosts: [Post]
@@ -254,10 +245,10 @@ export const types = gql`
     _id: ID!
     name: String!
     description: String!
-    isPublic: Boolean!
     creator: User!
-    visibleInSearch: Boolean!
     apiUrl: URL!
+    userRegistrationRequired: Boolean!
+    visibleInSearch: Boolean!
   }
 
   type OtpData {
@@ -292,16 +283,6 @@ export const types = gql`
     pluginDesc: String!
     uninstalledOrgs: [ID!]!
   }
-
-  # type Plugin {
-  #   orgId: Organization!
-  #   pluginName: String!
-  #   pluginKey: String
-  #   pluginStatus: Status!
-  #   pluginType: Type!
-  #   additionalInfo: [PluginField!]
-  #   createdAt: String
-  # }
 
   type PluginField {
     key: String!
@@ -343,18 +324,6 @@ export const types = gql`
     aggregate: AggregatePost!
   }
 
-  type Task {
-    _id: ID!
-    title: String!
-    description: String
-    event: Event!
-    creator: User!
-    createdAt: DateTime!
-    completed: Boolean
-    deadline: DateTime
-    volunteers: [User]
-  }
-
   type Translation {
     lang_code: String
     en_value: String
@@ -385,7 +354,6 @@ export const types = gql`
     adminApproved: Boolean
     adminFor: [Organization]
     appLanguageCode: String!
-    assignedTasks: [Task]
     birthDate: Date
     createdAt: DateTime
     createdEvents: [Event]

@@ -58,6 +58,32 @@ jobs:
       - name: Run Typescript Type-Checker
         run: npm run typecheck
 
+  File-count-check:
+    name: Counting files changed
+    runs-on: ubuntu-latest
+    env:
+      BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        
+      - name: Checkout code
+        run: git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-branch
+        working-directory: ${{ github.workspace }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11.6'
+
+      - name: Compare changes between Base branch and PR Head.
+        id: changed-files-base
+        run: |
+          git fetch origin $BASE_BRANCH
+          git checkout $BASE_BRANCH
+          python .github/workflows/check_files_submitted.py \
+            --base_branch $BASE_BRANCH --pr_branch pr-branch
+
   Test-Application:
     name: Testing Application
     runs-on: ubuntu-latest
@@ -142,4 +168,3 @@ jobs:
       - name: 'Run JSDocs'
         if: env.RUN_JSDOCS == 'True'
         run: echo "Run JSdocs :${{ env.RUN_JSDOCS }}"
-
