@@ -215,7 +215,6 @@ async function redisConfiguration(): Promise<void> {
     config.REDIS_PORT = port;
     config.REDIS_PASSWORD = password;
     updateEnvVariable(config);
-    console.log("\nRedis configuration updated successfully!");
   } catch (err) {
     console.error(err);
     abort();
@@ -260,9 +259,11 @@ async function superAdmin(): Promise<void> {
 }
 
 // Function to check if Existing MongoDB instance is running
-/* The function `checkExistingMongoDB` checks for an existing MongoDB connection. It first
-creates an array `existingMongoDbUrls` which contains two elements: `process.env.MONGO_DB_URL` and
-`"mongodb://localhost:27017"`. */
+/**
+ * The function `checkExistingMongoDB` checks for an existing MongoDB connection by iterating through a
+ * list of URLs and testing the connection using the `checkConnection` function.
+ * @returns The function `checkExistingMongoDB` returns a promise that resolves to a string or null.
+ */
 async function checkExistingMongoDB(): Promise<string | null> {
   const existingMongoDbUrls = [
     process.env.MONGO_DB_URL,
@@ -338,6 +339,7 @@ async function askForMongoDBUrl(): Promise<string> {
  */
 async function mongoDB(): Promise<void> {
   let DB_URL = process.env.MONGO_DB_URL;
+
   try {
     let url = await checkExistingMongoDB();
 
@@ -352,7 +354,7 @@ async function mongoDB(): Promise<void> {
       isConnected = await checkConnection(url);
     }
 
-    DB_URL = `${url}/talawa-api`;
+    DB_URL = `${url?.endsWith("/talawa-api") ? url : `${url}/talawa-api`}`;
     const config = dotenv.parse(fs.readFileSync(".env"));
     config.MONGO_DB_URL = DB_URL;
     // Modifying the environment variable to be able to access the url in importData function.
@@ -360,6 +362,7 @@ async function mongoDB(): Promise<void> {
     updateEnvVariable(config);
   } catch (err) {
     console.error(err);
+    abort();
   }
 }
 
@@ -711,10 +714,7 @@ async function configureSmtp(): Promise<void> {
   const config = dotenv.parse(fs.readFileSync(".env"));
   config.IS_SMTP = "true";
   Object.assign(config, smtpConfig);
-  fs.writeFileSync(".env", "");
-  for (const key in config) {
-    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-  }
+  updateEnvVariable(config);
 
   console.log("SMTP configuration saved successfully.");
 }
@@ -798,10 +798,7 @@ async function main(): Promise<void> {
     process.env.REDIS_PORT = REDIS_PORT;
     process.env.REDIS_PASSWORD = REDIS_PASSWORD;
 
-    fs.writeFileSync(".env", "");
-    for (const key in config) {
-      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-    }
+    updateEnvVariable(config);
     console.log(`Your MongoDB URL is:\n${process.env.MONGO_DB_URL}`);
     console.log(`Your Redis host is:\n${process.env.REDIS_HOST}`);
     console.log(`Your Redis port is:\n${process.env.REDIS_PORT}`);
@@ -816,7 +813,8 @@ async function main(): Promise<void> {
         type: "confirm",
         name: "shouldSetupRedis",
         message: "Would you like to change the existing Redis URL?",
-        default: false,
+        default:
+          process.env.REDIS_HOST && process.env.REDIS_PORT ? false : true,
       });
 
       if (shouldSetupRedis) {
@@ -831,13 +829,6 @@ async function main(): Promise<void> {
       console.log(
         `\nMongoDB URL already exists with the value:\n${process.env.MONGO_DB_URL}`
       );
-
-    const { shouldSetMongoDb } = await inquirer.prompt({
-      type: "confirm",
-      name: "shouldSetMongoDb",
-      message: "Would you like to set up a MongoDB URL?",
-      default: true,
-    });
 
       const { shouldSetupMongo } = await inquirer.prompt({
         type: "confirm",
