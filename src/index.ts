@@ -22,7 +22,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin
 import { expressMiddleware } from "@apollo/server/express4";
 import loadPlugins from "./config/plugins/loadPlugins";
 import path from "path";
-const pubsub = new PubSub();
+export const pubsub = new PubSub();
 
 // defines schema
 let schema = makeExecutableSchema({
