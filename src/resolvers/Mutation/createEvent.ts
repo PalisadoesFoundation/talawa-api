@@ -205,7 +205,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
         VENUE_ALREADY_SCHEDULED.PARAM
       );
     }
-  } else {
+  } else if (args.data?.venue) {
     throw new errors.NotFoundError(
       requestContext.translate(VENUE_DOESNT_EXIST_ERROR.MESSAGE),
       VENUE_DOESNT_EXIST_ERROR.CODE,

@@ -210,7 +210,7 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
       console.log("Conflict Details:", conflictingEvents);
       throw new Error("Venue not available due to schedule conflicts");
     }
-  } else {
+  } else if (args.data?.venue) {
     throw new Error("Venue is not available in the organization");
   }
 
