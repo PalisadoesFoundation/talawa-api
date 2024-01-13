@@ -9,7 +9,7 @@ import { USER_NOT_FOUND_ERROR } from "../../constants";
  */
 export const creator: OrganizationResolvers["creator"] = async (parent) => {
   const user = await User.findOne({
-    _id: parent.creator,
+    _id: parent.creatorId,
   }).lean();
 
   if (!user) {

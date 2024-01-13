@@ -7,7 +7,6 @@ import {
   INPUT_NOT_FOUND_ERROR,
   END_DATE_VALIDATION_ERROR,
   START_DATE_VALIDATION_ERROR,
-  FORBIDDEN_FIELD_UPDATE_ERROR,
   FIELD_NON_EMPTY_ERROR,
 } from "../../constants";
 
@@ -24,24 +23,8 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       );
     }
 
-    const permittedFields = [
-      "_id",
-      "name",
-      "link",
-      "type",
-      "startDate",
-      "endDate",
-    ];
-
     // Check for unintended null values in permitted fields, if all fields are permitted
     for (const field of Object.keys(args.input)) {
-      if (!permittedFields.includes(field)) {
-        throw new errors.InputValidationError(
-          requestContext.translate(FORBIDDEN_FIELD_UPDATE_ERROR.MESSAGE),
-          FORBIDDEN_FIELD_UPDATE_ERROR.CODE,
-          FORBIDDEN_FIELD_UPDATE_ERROR.PARAM
-        );
-      }
       const fieldValue = (args.input as Record<string, any>)[field];
       if (
         fieldValue === null ||
@@ -118,6 +101,8 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       type: updatedAdvertisement.type,
       startDate: updatedAdvertisement.startDate,
       endDate: updatedAdvertisement.endDate,
+      createdAt: updatedAdvertisement.createdAt,
+      updatedAt: updatedAdvertisement.updatedAt,
     };
     return {
       advertisement: updatedAdvertisementPayload,

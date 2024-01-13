@@ -1,5 +1,6 @@
-import type { Types, Model } from "mongoose";
+import type { Types, Model, PopulatedDoc } from "mongoose";
 import { Schema, model, models } from "mongoose";
+import type { InterfaceUser } from "./User";
 /**
  * This is an interface that represents a database(MongoDB) document for Advertisement.
  */
@@ -7,15 +8,33 @@ export interface InterfaceAdvertisement {
   _id: Types.ObjectId;
   orgId: string;
   name: string;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
   link: string;
   type: "POPUP" | "MENU" | "BANNER";
   startDate: string;
   endDate: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 /**
  * @param  name - Name of the advertisement (type: String)
  * Description: Name of the advertisement.
+ */
+
+/**
+ * @param  createdAt - Timestamp of Advertisement creation (type: Date)
+ * Description: Timestamp of Advertisement creation.
+ */
+
+/**
+ * @param  creatorId - Advertisement creator, ref to `User` model
+ * Description: Advertisement creator.
+ */
+
+/**
+ * @param  updatedAt - Timestamp of Advertisement updation (type: Date)
+ * Description: Timestamp of Advertisement updation.
  */
 
 /**
@@ -42,32 +61,43 @@ export interface InterfaceAdvertisement {
  * @param  endDate - End date of the advertisement (type: Date)
  * Description: End date of the advertisement.
  */
-const advertisementSchema = new Schema({
-  name: {
-    type: String,
-    required: true,
+const advertisementSchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    orgId: {
+      type: String,
+      required: true,
+    },
+    creatorId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    link: {
+      type: String,
+      required: true,
+    },
+    type: {
+      type: String,
+      enum: ["POPUP", "MENU", "BANNER"],
+      required: true,
+    },
+    startDate: {
+      type: Date,
+      required: true,
+    },
+    endDate: {
+      type: Date,
+      required: true,
+    },
   },
-  orgId: {
-    type: String,
-  },
-  link: {
-    type: String,
-    required: true,
-  },
-  type: {
-    type: String,
-    enum: ["POPUP", "MENU", "BANNER"],
-    required: true,
-  },
-  startDate: {
-    type: Date,
-    required: true,
-  },
-  endDate: {
-    type: Date,
-    required: true,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 const advertisementModel = (): Model<InterfaceAdvertisement> =>
   model<InterfaceAdvertisement>("Advertisement", advertisementSchema);
