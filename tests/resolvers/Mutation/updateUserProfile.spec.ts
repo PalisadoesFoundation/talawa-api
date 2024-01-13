@@ -230,6 +230,8 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
     expect(updateUserProfilePayload).toEqual({
       ...testUser.toObject(),
       image: null,
+      updatedAt: expect.anything(),
+      createdAt: expect.anything(),
     });
   });
 
@@ -256,6 +258,8 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       firstName: "firstName",
       lastName: "lastName",
       image: null,
+      updatedAt: expect.anything(),
+      createdAt: expect.anything(),
     });
   });
 
@@ -284,6 +288,8 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       firstName: args.data?.firstName,
       lastName: testUser.lastName,
       image: null,
+      updatedAt: expect.anything(),
+      createdAt: expect.anything(),
     });
   });
 
@@ -312,6 +318,8 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       firstName: testUserobj?.firstName,
       lastName: args.data?.lastName,
       image: null,
+      updatedAt: expect.anything(),
+      createdAt: expect.anything(),
     });
   });
 
@@ -340,6 +348,8 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       firstName: "newFirstName",
       lastName: "newLastName",
       image: null,
+      updatedAt: expect.anything(),
+      createdAt: expect.anything(),
     });
 
     const mostRecentTransactions = getTransactionLogs!({}, {}, {})!;
@@ -382,6 +392,8 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       firstName: "newFirstName",
       lastName: "newLastName",
       image: BASE_URL + "newImageFile.png",
+      updatedAt: expect.anything(),
+      createdAt: expect.anything(),
     });
   });
   it("When Image is give updates the current user's object with the uploaded image and returns it", async () => {
@@ -411,6 +423,8 @@ describe("resolvers -> Mutation -> updateUserProfile", () => {
       firstName: "newFirstName",
       lastName: "newLastName",
       image: BASE_URL + "newImageFile.png",
+      updatedAt: expect.anything(),
+      createdAt: expect.anything(),
     });
   });
 });

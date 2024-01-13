@@ -59,10 +59,11 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    creator: testUsers[0]?._id,
+    creatorId: testUsers[0]?._id,
     admins: [testUsers[0]?._id],
     members: [testUsers[1]?._id],
     blockedUsers: [testUsers[0]?._id],
+    visibleInSearch: true,
   });
 
   await User.updateOne(
@@ -108,7 +109,7 @@ beforeAll(async () => {
 
   testPost = await Post.create({
     text: "text",
-    creator: testUsers[0]?._id,
+    creatorId: testUsers[0]?._id,
     organization: testOrganization._id,
   });
 
@@ -126,7 +127,7 @@ beforeAll(async () => {
 
   testComment = await Comment.create({
     text: "text",
-    creator: testUsers[0]?._id,
+    creatorId: testUsers[0]?._id,
     postId: testPost._id,
   });
 
@@ -222,7 +223,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
         },
         {
           $set: {
-            creator: Types.ObjectId().toString(),
+            creatorId: Types.ObjectId().toString(),
           },
         },
         {
@@ -261,7 +262,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       },
       {
         $set: {
-          creator: testUsers[0]?._id,
+          creatorId: testUsers[0]?._id,
         },
       },
       {
@@ -388,11 +389,12 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       name: "name",
       description: "description",
       isPublic: true,
-      creator: testUsers[0]?._id,
+      creatorId: testUsers[0]?._id,
       admins: [testUsers[0]?._id],
       members: [testUsers[1]?._id],
       blockedUsers: [testUsers[0]?._id],
       image: "images/fake-image-path.png",
+      visibleInSearch: true,
     });
 
     const args: MutationRemoveOrganizationArgs = {
@@ -428,7 +430,10 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       context
     );
 
-    expect(removeOrganizationPayload).toEqual(updatedTestUser);
+    expect(removeOrganizationPayload).toEqual({
+      ...updatedTestUser,
+      updatedAt: expect.anything(),
+    });
     expect(deleteImageSpy).toBeCalledWith("images/fake-image-path.png");
   });
 });

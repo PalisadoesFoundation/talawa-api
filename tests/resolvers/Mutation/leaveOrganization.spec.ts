@@ -116,7 +116,7 @@ describe("resolvers -> Mutation -> leaveOrganization", () => {
         },
         {
           $set: {
-            creator: Types.ObjectId().toString(),
+            creatorId: Types.ObjectId().toString(),
             members: [Types.ObjectId().toString()],
           },
         },

@@ -33,7 +33,7 @@ beforeAll(async () => {
 
   testComment = await Comment.create({
     text: "text",
-    creator: testUser?._id,
+    creatorId: testUser?._id,
     postId: testPost?._id,
     likedBy: [testUser?._id],
     likeCount: 1,

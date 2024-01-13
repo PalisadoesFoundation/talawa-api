@@ -97,7 +97,8 @@ describe("resolvers -> Mutation -> addUserImage", () => {
 
     expect(addUserImagePayload).toEqual({
       ...testUser?.toObject(),
-
+      createdAt: addUserImagePayload?.createdAt,
+      updatedAt: addUserImagePayload?.updatedAt,
       image: "newImageFile.png",
     });
 

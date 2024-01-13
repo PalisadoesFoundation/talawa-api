@@ -30,7 +30,7 @@ export const createPlugin: MutationResolvers["createPlugin"] = async (
 
   // calls subscription
   context.pubsub.publish("TALAWA_PLUGIN_UPDATED", {
-    Plugin: createdPlugin.toObject(),
+    onPluginUpdate: createdPlugin.toObject(),
   });
 
   // Returns createdPlugin.

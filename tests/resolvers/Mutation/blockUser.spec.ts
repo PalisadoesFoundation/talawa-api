@@ -53,7 +53,7 @@ beforeAll(async () => {
     name: `name${nanoid().toLowerCase()}`,
     description: `desc${nanoid().toLowerCase()}`,
     isPublic: true,
-    creator: testUser?._id,
+    creatorId: testUser?._id,
     members: [testUser?._id],
     visibleInSearch: true,
   });

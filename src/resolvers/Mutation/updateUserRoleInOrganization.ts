@@ -111,7 +111,7 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
     }
 
     // ADMIN cannot change the role of the creator of the organization.
-    if (Types.ObjectId(organization?.creator).equals(user._id)) {
+    if (Types.ObjectId(organization?.creatorId).equals(user._id)) {
       throw new errors.UnauthorizedError(
         requestContext.translate(ADMIN_CHANGING_ROLE_OF_CREATOR.MESSAGE),
         ADMIN_CHANGING_ROLE_OF_CREATOR.CODE,
@@ -123,7 +123,9 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
     if (args.role === "ADMIN") {
       const updatedOrg = await Organization.updateOne(
         { _id: args.organizationId },
-        { $push: { admins: args.userId } }
+        {
+          $push: { admins: args.userId },
+        }
       );
       await storeTransaction(
         context.userId,
@@ -145,7 +147,9 @@ export const updateUserRoleInOrganization: MutationResolvers["updateUserRoleInOr
     } else {
       const updatedOrg = await Organization.updateOne(
         { _id: args.organizationId },
-        { $pull: { admins: args.userId } }
+        {
+          $pull: { admins: args.userId },
+        }
       ).lean();
       await storeTransaction(
         context.userId,

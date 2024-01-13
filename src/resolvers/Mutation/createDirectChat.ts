@@ -72,7 +72,7 @@ export const createDirectChat: MutationResolvers["createDirectChat"] = async (
 
   // Creates new directChat.
   const createdDirectChat = await DirectChat.create({
-    creator: context.userId,
+    creatorId: context.userId,
     users: usersInDirectChat,
     organization: args.data.organizationId,
   });

@@ -246,7 +246,7 @@ describe("resolvers -> Mutation -> createPost", () => {
       expect.objectContaining({
         title: "title",
         videoUrl: null, // Update the expected value to match the received value
-        creator: testUser?._id,
+        creatorId: testUser?._id,
         organization: testOrganization?._id,
         imageUrl: null,
       })

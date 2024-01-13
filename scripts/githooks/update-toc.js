@@ -9,5 +9,4 @@ markdownFiles.forEach((file) => {
   const command = `markdown-toc -i "${file}" --bullets "-"`;
   execSync(command, { stdio: "inherit" });
 });
-
 console.log("Table of contents updated successfully.");

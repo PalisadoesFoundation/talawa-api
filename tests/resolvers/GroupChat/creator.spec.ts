@@ -32,7 +32,7 @@ describe("resolvers -> GroupChat -> creator", () => {
     );
 
     const creator = await User.findOne({
-      _id: testGroupChat?.creator,
+      _id: testGroupChat?.creatorId,
     }).lean();
 
     expect(creatorPayload).toEqual(creator);

@@ -50,7 +50,7 @@ beforeAll(async () => {
 
   testDirectChat = await DirectChat.create({
     users: [testUser?._id],
-    creator: testUser?._id,
+    creatorId: testUser?._id,
     organization: testOrganization?._id,
   });
 

@@ -74,7 +74,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
         },
         {
           $set: {
-            creator: Types.ObjectId().toString(),
+            creatorId: Types.ObjectId().toString(),
           },
         }
       );
@@ -104,7 +104,7 @@ describe("resolvers -> Mutation -> createAdmin", () => {
         },
         {
           $set: {
-            creator: testUser?._id,
+            creatorId: testUser?._id,
           },
         }
       );

@@ -48,7 +48,9 @@ export async function findOrganizationsInCache(
               })
             : [],
 
-        creator: Types.ObjectId(organization.creator),
+        creatorId: Types.ObjectId(organization.creatorId),
+
+        updatedAt: new Date(organization.updatedAt),
 
         groupChats:
           organization.groupChats.length !== 0

@@ -44,7 +44,7 @@ export const updatePost: MutationResolvers["updatePost"] = async (
     );
   }
 
-  const currentUserIsPostCreator = post.creator.equals(context.userId);
+  const currentUserIsPostCreator = post.creatorId.equals(context.userId);
 
   // checks if current user is an creator of the post with _id === args.id
   if (currentUserIsPostCreator === false) {

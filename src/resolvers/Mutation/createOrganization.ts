@@ -82,7 +82,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     const createdOrganization = await Organization.create({
       ...args.data,
       image: uploadImageFileName ? uploadImageFileName : null,
-      creator: context.userId,
+      creatorId: context.userId,
       admins: [context.userId],
       members: [context.userId],
     });

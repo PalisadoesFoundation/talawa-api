@@ -67,7 +67,7 @@ describe("resolvers -> Mutation -> updatePost", () => {
 
       await Post.updateOne(
         { _id: testPost?._id },
-        { $set: { creator: Types.ObjectId().toString() } }
+        { $set: { creatorId: Types.ObjectId().toString() } }
       );
 
       await updatePostResolver?.({}, args, context);

@@ -52,7 +52,6 @@ export const sendMessageToDirectChat: MutationResolvers["sendMessageToDirectChat
       directChatMessageBelongsTo: directChat._id,
       sender: context.userId,
       receiver: directChat.users[receiverIndex],
-      createdAt: new Date(),
       messageContent: args.messageContent,
     });
     await storeTransaction(

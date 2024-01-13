@@ -32,7 +32,7 @@ beforeAll(async () => {
 
   testPost = await Post.create({
     text: "text",
-    creator: testUser?._id,
+    creatorId: testUser?._id,
     organization: testOrganization?._id,
     likedBy: [testUser?._id],
     likeCount: 1,
