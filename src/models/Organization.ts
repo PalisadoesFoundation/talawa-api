@@ -1,10 +1,10 @@
-import type { PopulatedDoc, Types, Document, Model } from "mongoose";
+import type { Document, Model, PopulatedDoc, Types } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceMessage } from "./Message";
+import type { InterfaceOrganizationCustomField } from "./OrganizationCustomField";
 import type { InterfacePost } from "./Post";
 import type { InterfaceUser } from "./User";
-import type { InterfaceOrganizationCustomField } from "./OrganizationCustomField";
 /**
  * This is an interface that represents a database(MongoDB) document for Organization.
  */
@@ -15,7 +15,6 @@ export interface InterfaceOrganization {
   name: string;
   description: string;
   location: string | undefined;
-  isPublic: boolean;
   creatorId: PopulatedDoc<InterfaceUser & Document>;
   status: string;
   members: PopulatedDoc<InterfaceUser & Document>[];
@@ -25,10 +24,11 @@ export interface InterfaceOrganization {
   pinnedPosts: PopulatedDoc<InterfacePost & Document>[];
   membershipRequests: PopulatedDoc<InterfaceMembershipRequest & Document>[];
   blockedUsers: PopulatedDoc<InterfaceUser & Document>[];
-  visibleInSearch: boolean | undefined;
   customFields: PopulatedDoc<InterfaceOrganizationCustomField & Document>[];
   createdAt: Date;
   updatedAt: Date;
+  userRegistrationRequired: boolean;
+  visibleInSearch: boolean;
 }
 /**
  * This describes the schema for a `Organization` that corresponds to `InterfaceOrganization` document.
@@ -37,7 +37,6 @@ export interface InterfaceOrganization {
  * @param name - Organization name.
  * @param description - Organization description.
  * @param location - Organization location.
- * @param isPublic - Organization visibility.
  * @param creatorId - Organization creator, referring to `User` model.
  * @param status - Status.
  * @param members - Collection of members, each object refer to `User` model.
@@ -50,6 +49,7 @@ export interface InterfaceOrganization {
  * @param createdAt - Time stamp of data creation.
  * @param updatedAt - Time stamp of data updation.
  */
+
 const organizationSchema = new Schema(
   {
     apiUrl: {
@@ -69,8 +69,14 @@ const organizationSchema = new Schema(
     location: {
       type: String,
     },
-    isPublic: {
+    userRegistrationRequired: {
       type: Boolean,
+      required: true,
+      default: false,
+    },
+    visibleInSearch: {
+      type: Boolean,
+      default: true,
       required: true,
     },
     creatorId: {
@@ -128,14 +134,10 @@ const organizationSchema = new Schema(
         ref: "User",
       },
     ],
-    visibleInSearch: {
-      type: Boolean,
-    },
     customFields: [
       {
         type: Schema.Types.ObjectId,
         ref: "CustomField",
-        required: true,
       },
     ],
   },
