@@ -377,7 +377,6 @@ export const getWhere = <T = unknown>(
       apiUrl: regexp,
     };
   }
-
   // Returns organizations with provided visibleInSearch condition
   if (where.visibleInSearch !== undefined) {
     wherePayload = {
@@ -385,12 +384,11 @@ export const getWhere = <T = unknown>(
       visibleInSearch: where.visibleInSearch,
     };
   }
-
-  // Returns organizations with provided isPublic condition
-  if (where.isPublic !== undefined) {
+  // Returns organizations with provided userRegistrationRequired condition
+  if (where.userRegistrationRequired !== undefined) {
     wherePayload = {
       ...wherePayload,
-      isPublic: where.isPublic,
+      isPublic: where.userRegistrationRequired,
     };
   }
 

@@ -5,6 +5,7 @@ const inquirer = require("inquirer");
 const mongodb = require("mongodb");
 const redis = require("redis");
 const { exec } = require("child_process");
+const nodemailer = require("nodemailer");
 
 dotenv.config();
 
@@ -258,6 +259,27 @@ async function superAdmin(): Promise<void> {
   }
 }
 
+// Function to check if Existing MongoDB instance is running
+async function checkExistingMongoDB(): Promise<string | null> {
+  const existingMongoDbUrls = [
+    process.env.MONGO_DB_URL,
+    "mongodb://localhost:27017",
+  ];
+
+  for (const url of existingMongoDbUrls) {
+    if (!url) {
+      continue;
+    }
+
+    const isConnected = await checkConnection(url);
+    if (isConnected) {
+      return url;
+    }
+  }
+
+  return null;
+}
+
 // Check the connection to MongoDB with the specified URL.
 /**
  * The function `checkConnection` is an asynchronous function that checks the connection to a MongoDB
@@ -270,24 +292,21 @@ async function superAdmin(): Promise<void> {
  * connection to the MongoDB server was successful (true) or not (false).
  */
 async function checkConnection(url: string): Promise<boolean> {
-  let response = false;
-  const client = new mongodb.MongoClient(url, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 1000,
-  });
-
   console.log("\nChecking MongoDB connection....");
 
   try {
-    await client.connect();
+    const connection = await mongodb.connect(url, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 1000,
+    });
     console.log("\nConnection to MongoDB successful! 🎉");
-    response = true;
+    await connection.close();
+    return true;
   } catch (error) {
     console.log(`\nConnection to MongoDB failed. Please try again.\n`);
+    return false;
   }
-  client.close();
-  return response;
 }
 
 //Mongodb url prompt
@@ -302,6 +321,7 @@ async function askForMongoDBUrl(): Promise<string> {
       type: "input",
       name: "url",
       message: "Enter your MongoDB URL:",
+      default: process.env.MONGO_DB_URL,
     },
   ]);
 
@@ -315,16 +335,21 @@ async function askForMongoDBUrl(): Promise<string> {
  */
 async function mongoDB(): Promise<void> {
   let DB_URL = process.env.MONGO_DB_URL;
-
   try {
-    let isConnected = false,
-      url = "";
+    let url = await checkExistingMongoDB();
+
+    let isConnected = url !== null;
+
+    if (isConnected) {
+      console.log("MongoDB URL detected: " + url);
+    }
+
     while (!isConnected) {
       url = await askForMongoDBUrl();
       isConnected = await checkConnection(url);
     }
 
-    DB_URL = url;
+    DB_URL = `${url}/talawa-api`;
     const config = dotenv.parse(fs.readFileSync(".env"));
     config.MONGO_DB_URL = DB_URL;
     // Modifying the environment variable to be able to access the url in importData function.
@@ -332,7 +357,6 @@ async function mongoDB(): Promise<void> {
     updateEnvVariable(config);
   } catch (err) {
     console.error(err);
-    abort();
   }
 }
 
@@ -568,6 +592,130 @@ async function importData(): Promise<void> {
   }
 }
 
+type VerifySmtpConnectionReturnType = {
+  success: boolean;
+  error: any;
+};
+
+/**
+ * The function `verifySmtpConnection` verifies the SMTP connection using the provided configuration
+ * and returns a success status and error message if applicable.
+ * @param config - The `config` parameter is an object that contains the configuration settings for the
+ * SMTP connection. It should have the following properties:
+ * @returns The function `verifySmtpConnection` returns a Promise that resolves to an object of type
+ * `VerifySmtpConnectionReturnType`. The `VerifySmtpConnectionReturnType` object has two properties:
+ * `success` and `error`. If the SMTP connection is verified successfully, the `success` property will
+ * be `true` and the `error` property will be `null`. If the SMTP connection verification fails
+ */
+async function verifySmtpConnection(
+  config: Record<string, string>
+): Promise<VerifySmtpConnectionReturnType> {
+  const transporter = nodemailer.createTransport({
+    host: config.SMTP_HOST,
+    port: Number(config.SMTP_PORT),
+    secure: config.SMTP_SSL_TLS === "true",
+    auth: {
+      user: config.SMTP_USERNAME,
+      pass: config.SMTP_PASSWORD,
+    },
+  });
+
+  try {
+    await transporter.verify();
+    console.log("SMTP connection verified successfully.");
+    return { success: true, error: null };
+  } catch (error: any) {
+    console.error("SMTP connection verification failed:");
+    return { success: false, error };
+  } finally {
+    transporter.close();
+  }
+}
+
+/**
+ * The function `configureSmtp` prompts the user to configure SMTP settings for sending emails through
+ * Talawa and saves the configuration in a .env file.
+ * @returns a Promise that resolves to void.
+ */
+async function configureSmtp(): Promise<void> {
+  console.log(
+    "SMTP Configuration is necessary for sending Emails through Talawa"
+  );
+  const { shouldConfigureSmtp } = await inquirer.prompt({
+    type: "confirm",
+    name: "shouldConfigureSmtp",
+    message: "Would you like to configure SMTP for Talawa to send emails?",
+    default: true,
+  });
+
+  if (!shouldConfigureSmtp) {
+    console.log("SMTP configuration skipped.");
+    return;
+  }
+
+  const smtpConfig = await inquirer.prompt([
+    {
+      type: "input",
+      name: "SMTP_HOST",
+      message: "Enter SMTP host:",
+    },
+    {
+      type: "input",
+      name: "SMTP_PORT",
+      message: "Enter SMTP port:",
+    },
+    {
+      type: "input",
+      name: "SMTP_USERNAME",
+      message: "Enter SMTP username:",
+    },
+    {
+      type: "password",
+      name: "SMTP_PASSWORD",
+      message: "Enter SMTP password:",
+    },
+    {
+      type: "confirm",
+      name: "SMTP_SSL_TLS",
+      message: "Use SSL/TLS for SMTP?",
+      default: false,
+    },
+  ]);
+
+  const isValidSmtpConfig =
+    smtpConfig.SMTP_HOST &&
+    smtpConfig.SMTP_PORT &&
+    smtpConfig.SMTP_USERNAME &&
+    smtpConfig.SMTP_PASSWORD;
+
+  if (!isValidSmtpConfig) {
+    console.error(
+      "Invalid SMTP configuration. Please provide all required parameters."
+    );
+    return;
+  }
+
+  const { success, error } = await verifySmtpConnection(smtpConfig);
+
+  if (!success) {
+    console.error(
+      "SMTP configuration verification failed. Please check your SMTP settings."
+    );
+    console.log(error.message);
+    return;
+  }
+
+  const config = dotenv.parse(fs.readFileSync(".env"));
+  config.IS_SMTP = "true";
+  Object.assign(config, smtpConfig);
+  fs.writeFileSync(".env", "");
+  for (const key in config) {
+    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+  }
+
+  console.log("SMTP configuration saved successfully.");
+}
+
 /**
  * The main function sets up the Talawa API by prompting the user to configure various environment
  * variables and import sample data if desired.
@@ -628,6 +776,34 @@ async function main(): Promise<void> {
     message: "Are you setting up this project using Docker?",
     default: false,
   });
+
+  if (isDockerInstallation) {
+    const DB_URL = "mongodb://localhost:27017/talawa-api";
+    const REDIS_HOST = "localhost";
+    const REDIS_PORT = "6379"; // default Redis port
+    const REDIS_PASSWORD = "";
+
+    const config = dotenv.parse(fs.readFileSync(".env"));
+
+    config.MONGO_DB_URL = DB_URL;
+    config.REDIS_HOST = REDIS_HOST;
+    config.REDIS_PORT = REDIS_PORT;
+    config.REDIS_PASSWORD = REDIS_PASSWORD;
+
+    process.env.MONGO_DB_URL = DB_URL;
+    process.env.REDIS_HOST = REDIS_HOST;
+    process.env.REDIS_PORT = REDIS_PORT;
+    process.env.REDIS_PASSWORD = REDIS_PASSWORD;
+
+    fs.writeFileSync(".env", "");
+    for (const key in config) {
+      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+    }
+    console.log(`Your MongoDB URL is:\n${process.env.MONGO_DB_URL}`);
+    console.log(`Your Redis host is:\n${process.env.REDIS_HOST}`);
+    console.log(`Your Redis port is:\n${process.env.REDIS_PORT}`);
+  }
+
   if (!isDockerInstallation) {
     // Redis configuration
     if (process.env.REDIS_HOST && process.env.REDIS_PORT) {
@@ -652,6 +828,13 @@ async function main(): Promise<void> {
       console.log(
         `\nMongoDB URL already exists with the value:\n${process.env.MONGO_DB_URL}`
       );
+
+    const { shouldSetMongoDb } = await inquirer.prompt({
+      type: "confirm",
+      name: "shouldSetMongoDb",
+      message: "Would you like to set up a MongoDB URL?",
+      default: true,
+    });
 
       const { shouldSetupMongo } = await inquirer.prompt({
         type: "confirm",
@@ -689,6 +872,7 @@ async function main(): Promise<void> {
       `\nMail username already exists with the value ${process.env.MAIL_USERNAME}`
     );
   }
+  await configureSmtp();
   const { shouldSetMail } = await inquirer.prompt([
     {
       type: "confirm",

@@ -1,14 +1,14 @@
-import express from "express";
-import { rateLimit } from "express-rate-limit";
-import helmet from "helmet";
-import mongoSanitize from "express-mongo-sanitize";
 import cors from "cors";
-import requestLogger from "morgan";
+import express from "express";
+import mongoSanitize from "express-mongo-sanitize";
+import rateLimit from "express-rate-limit";
+import { express as voyagerMiddleware } from "graphql-voyager/middleware";
+import helmet from "helmet";
 import i18n from "i18n";
+import requestLogger from "morgan";
+import path from "path";
 import { appConfig } from "./config";
 import { requestContext, requestTracing, stream } from "./libraries";
-import { express as voyagerMiddleware } from "graphql-voyager/middleware";
-import path from "path";
 //@ts-ignore
 import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
 
@@ -66,6 +66,12 @@ app.use(
 );
 app.use(mongoSanitize());
 app.use(cors());
+
+app.use("/images", (req, res, next) => {
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  next();
+});
+
 app.use(express.json({ limit: "50mb" }));
 app.use(graphqlUploadExpress());
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
