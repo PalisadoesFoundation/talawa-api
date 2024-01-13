@@ -219,6 +219,7 @@ export type EditVenueInput = {
   capacity: Scalars['Int'];
   description?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
+  organizationId: Scalars['ID'];
 };
 
 export type EducationGrade =

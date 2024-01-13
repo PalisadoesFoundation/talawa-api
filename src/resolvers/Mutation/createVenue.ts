@@ -6,6 +6,7 @@ import {
   VENUE_ALREADY_EXISTS_ERROR,
   USER_NOT_FOUND_ERROR,
   VENUE_NAME_MISSING_ERROR,
+  ORGANIZATION_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { Venue } from "../../models/Venue";
@@ -16,8 +17,9 @@ import { Venue } from "../../models/Venue";
  * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the user exists
- * 2. If the organization exists
- * 3. If the same venue already exists in an organization
+ * 2. Whether the user is admin or superadmin or not
+ * 3. If the organization exists
+ * 4. If the same venue already exists in an organization
  * @returns Created venue
  */
 
@@ -53,16 +55,31 @@ export const createVenue: MutationResolvers["createVenue"] = async (
       ORGANIZATION_NOT_FOUND_ERROR.PARAM
     );
   }
-  // Checks if the venue name provided is null, undefined or empty string
+
+  // Checks Whether the user is admin or superadmin or not
+  if (
+    !(
+      organization.admins?.some((admin) => admin._id.equals(context.userId)) ||
+      currentUser.userType == "SUPERADMIN"
+    )
+  ) {
+    throw new errors.UnauthorizedError(
+      requestContext.translate(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE),
+      ORGANIZATION_NOT_AUTHORIZED_ERROR.CODE,
+      ORGANIZATION_NOT_AUTHORIZED_ERROR.PARAM
+    );
+  }
+
   if (!args.data?.name ?? "") {
+    // Checks if the venue name provided is null, undefined or empty string
     throw new errors.InputValidationError(
       requestContext.translate(VENUE_NAME_MISSING_ERROR.MESSAGE),
       VENUE_NAME_MISSING_ERROR.CODE,
       VENUE_NAME_MISSING_ERROR.PARAM
     );
   }
+  // Check if a venue with the same place already exists in the organization
   if (organization.venues?.some((venue) => venue.name === args.data?.name)) {
-    // Check if a venue with the same place already exists in the organization
     throw new errors.ConflictError(
       requestContext.translate(VENUE_ALREADY_EXISTS_ERROR.MESSAGE),
       VENUE_ALREADY_EXISTS_ERROR.CODE,

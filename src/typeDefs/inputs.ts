@@ -62,6 +62,7 @@ export const inputs = gql`
     capacity: Int!
     name: String!
     description: String
+    organizationId: ID!
   }
 
   input EventInput {

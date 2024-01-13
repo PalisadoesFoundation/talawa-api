@@ -69,14 +69,14 @@ const resolvers: Resolvers = {
 
 const resolversComposition = {
   "Mutation.addFeedback": [currentUserExists()],
-  "Mutation.createVenue": [currentUserExists()],
-  "Mutation.editVenue": [currentUserExists()],
   "Mutation.addOrganizationImage": [currentUserExists()],
   "Mutation.blockPluginCreationBySuperadmin": [currentUserExists()],
   "Mutation.createComment": [currentUserExists()],
   "Mutation.createDirectChat": [currentUserExists()],
   "Mutation.createGroupChat": [currentUserExists()],
+  "Mutation.createVenue": [currentUserExists()],
   "Mutation.createOrganization": [currentUserExists()],
+  "Mutation.editVenue": [currentUserExists()],
   "Mutation.likeComment": [currentUserExists()],
   "Mutation.likePost": [currentUserExists()],
   "Mutation.logout": [currentUserExists()],

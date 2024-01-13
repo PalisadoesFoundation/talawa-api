@@ -97,9 +97,7 @@ export const mutations = gql`
       endDate: Date!
     ): Advertisement!
 
-    createVenue(data: VenueInput!): Venue! @auth @role(requires: ADMIN)
-
-    editVenue(data: EditVenueInput!): Venue! @auth @role(requires: ADMIN)
+    createVenue(data: VenueInput!): Venue! @auth
 
     createPost(data: PostInput!, file: String): Post @auth
 
@@ -112,6 +110,8 @@ export const mutations = gql`
     deleteAdvertisementById(id: ID!): DeletePayload!
 
     deleteDonationById(id: ID!): DeletePayload!
+
+    editVenue(data: EditVenueInput!): Venue! @auth
 
     forgotPassword(data: ForgotPasswordData!): Boolean!
 

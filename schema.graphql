@@ -165,6 +165,7 @@ input EditVenueInput {
   capacity: Int!
   description: String
   name: String!
+  organizationId: ID!
 }
 
 enum EducationGrade {
