@@ -1044,17 +1044,17 @@ export type OtpInput = {
 
 export type Organization = {
   __typename?: 'Organization';
-  address?: Maybe<Address>;
   _id: Scalars['ID']['output'];
+  address?: Maybe<Address>;
   admins?: Maybe<Array<Maybe<User>>>;
   apiUrl: Scalars['URL']['output'];
   blockedUsers?: Maybe<Array<Maybe<User>>>;
   createdAt?: Maybe<Scalars['DateTime']['output']>;
   creator: User;
   customFields: Array<OrganizationCustomField>;
-  isPublic: Scalars['Boolean'];
   description: Scalars['String']['output'];
   image?: Maybe<Scalars['String']['output']>;
+  isPublic: Scalars['Boolean']['output'];
   members?: Maybe<Array<Maybe<User>>>;
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
   name: Scalars['String']['output'];
@@ -1103,7 +1103,6 @@ export type OrganizationInput = {
   attendees?: InputMaybe<Scalars['String']['input']>;
   description: Scalars['String']['input'];
   image?: InputMaybe<Scalars['String']['input']>;
-  location?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   userRegistrationRequired?: InputMaybe<Scalars['Boolean']['input']>;
   visibleInSearch?: InputMaybe<Scalars['Boolean']['input']>;

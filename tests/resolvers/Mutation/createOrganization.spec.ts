@@ -332,7 +332,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       sortingCode: "ABC123",
       state: "New York",
     };
-    
+
     const validAddress = {
       city: "New York",
       countryCode: "US",
@@ -347,7 +347,6 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     const invalidArgs: MutationCreateOrganizationArgs = {
       data: {
         description: "Some description",
-        isPublic: true,
         name: "Test Organization",
         visibleInSearch: true,
         apiUrl: "https://example.com/api",
@@ -359,7 +358,6 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     const validArgs: MutationCreateOrganizationArgs = {
       data: {
         description: "Some description",
-        isPublic: true,
         name: "Test Organization",
         visibleInSearch: true,
         apiUrl: "https://example.com/api",
