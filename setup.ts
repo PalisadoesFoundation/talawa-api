@@ -9,6 +9,10 @@ const { exec } = require("child_process");
 dotenv.config();
 
 // Check if all the fields in .env.sample are present in .env
+/**
+ * The function `checkEnvFile` checks if any fields are missing in the .env file compared to the .env.sample file, and
+ * if so, it copies the missing fields from .env.sample to .env.
+ */
 function checkEnvFile(): void {
   const env = dotenv.parse(fs.readFileSync(".env"));
   const envSample = dotenv.parse(fs.readFileSync(".env.sample"));
@@ -20,7 +24,15 @@ function checkEnvFile(): void {
     }
   }
 }
+
 // Update the value of an environment variable in .env file
+/**
+ * The function `updateEnvVariable` updates the values of environment variables in a .env file based on the provided
+ * configuration object.
+ * @param config - An object that contains key-value pairs where the keys are strings and the values
+ * can be either strings or numbers. These key-value pairs represent the environment variables that
+ * need to be updated.
+ */
 function updateEnvVariable(config: { [key: string]: string | number }): void {
   const existingContent: string = fs.readFileSync(".env", "utf8");
 
@@ -34,6 +46,11 @@ function updateEnvVariable(config: { [key: string]: string | number }): void {
 }
 
 // Get the node environment
+/**
+ * The function `getNodeEnvironment` is an asynchronous function that prompts the user to select a Node
+ * environment (either "development" or "production") and returns the selected environment as a string.
+ * @returns a Promise that resolves to a string representing the selected Node environment.
+ */
 async function getNodeEnvironment(): Promise<string> {
   const { nodeEnv } = await inquirer.prompt([
     {
@@ -48,6 +65,10 @@ async function getNodeEnvironment(): Promise<string> {
   return nodeEnv;
 }
 
+/**
+ * The function `setNodeEnvironment` sets the Node environment by reading the value from a file, updating the process
+ * environment variable, and updating a configuration file.
+ */
 async function setNodeEnvironment(): Promise<void> {
   try {
     const nodeEnv = await getNodeEnvironment();
@@ -63,6 +84,16 @@ async function setNodeEnvironment(): Promise<void> {
 }
 
 // Generate and update the access and refresh token secrets in .env
+/**
+ * The function `accessAndRefreshTokens` generates and updates access and refresh tokens if they are
+ * null.
+ * @param {string | null} accessTokenSecret - A string representing the access token secret. It is
+ * initially set to `null` and will be generated if it is `null`.
+ * @param {string | null} refreshTokenSecret - The `refreshTokenSecret` parameter is a string that
+ * represents the secret key used to generate and verify refresh tokens. Refresh tokens are typically
+ * used in authentication systems to obtain new access tokens without requiring the user to
+ * re-authenticate.
+ */
 async function accessAndRefreshTokens(
   accessTokenSecret: string | null,
   refreshTokenSecret: string | null
@@ -83,6 +114,13 @@ async function accessAndRefreshTokens(
 }
 
 // Check connection to Redis with the specified URL.
+/**
+ * The function `checkRedisConnection` checks if a connection to Redis can be established using the
+ * provided URL.
+ * @param {string} url - The `url` parameter is a string that represents the URL of the Redis server.
+ * It is used to establish a connection to the Redis server.
+ * @returns a Promise that resolves to a boolean value.
+ */
 async function checkRedisConnection(url: string): Promise<boolean> {
   let response = false;
   const client = redis.createClient({ url });
@@ -102,6 +140,12 @@ async function checkRedisConnection(url: string): Promise<boolean> {
 }
 
 // Redis url prompt
+/**
+ * The function `askForRedisUrl` prompts the user to enter the Redis hostname, port, and password, and
+ * returns an object with these values.
+ * @returns The function `askForRedisUrl` returns a promise that resolves to an object with the
+ * properties `host`, `port`, and `password`.
+ */
 async function askForRedisUrl(): Promise<{
   host: string;
   port: number;
@@ -132,6 +176,11 @@ async function askForRedisUrl(): Promise<{
 }
 
 // get the redis url
+/**
+ * The `redisConfiguration` function updates the Redis configuration by prompting the user for the
+ * Redis URL, checking the connection, and updating the environment variables and .env file
+ * accordingly.
+ */
 async function redisConfiguration(): Promise<void> {
   const REDIS_URL = process.env.REDIS_URL;
 
@@ -173,6 +222,10 @@ async function redisConfiguration(): Promise<void> {
 }
 
 //LAST_RESORT_SUPERADMIN_EMAIL prompt
+/**
+ * The function `askForSuperAdminEmail` asks the user to enter an email address and returns it as a promise.
+ * @returns The email entered by the user is being returned.
+ */
 async function askForSuperAdminEmail(): Promise<string> {
   const { email } = await inquirer.prompt([
     {
@@ -189,6 +242,10 @@ async function askForSuperAdminEmail(): Promise<string> {
 }
 
 // Get the super admin email
+/**
+ * The function `superAdmin` prompts the user for a super admin email, updates a configuration file
+ * with the email, and handles any errors that occur.
+ */
 async function superAdmin(): Promise<void> {
   try {
     const email = await askForSuperAdminEmail();
@@ -202,6 +259,16 @@ async function superAdmin(): Promise<void> {
 }
 
 // Check the connection to MongoDB with the specified URL.
+/**
+ * The function `checkConnection` is an asynchronous function that checks the connection to a MongoDB
+ * database using the provided URL and returns a boolean value indicating whether the connection was
+ * successful or not.
+ * @param {string} url - The `url` parameter is a string that represents the connection URL for the
+ * MongoDB server. It typically includes the protocol (e.g., `mongodb://`), the host and port
+ * information, and any authentication credentials if required.
+ * @returns a Promise that resolves to a boolean value. The boolean value indicates whether the
+ * connection to the MongoDB server was successful (true) or not (false).
+ */
 async function checkConnection(url: string): Promise<boolean> {
   let response = false;
   const client = new mongodb.MongoClient(url, {
@@ -224,6 +291,11 @@ async function checkConnection(url: string): Promise<boolean> {
 }
 
 //Mongodb url prompt
+/**
+ * The function `askForMongoDBUrl` prompts the user to enter a MongoDB URL and returns the entered URL
+ * as a string.
+ * @returns a Promise that resolves to a string.
+ */
 async function askForMongoDBUrl(): Promise<string> {
   const { url } = await inquirer.prompt([
     {
@@ -237,6 +309,10 @@ async function askForMongoDBUrl(): Promise<string> {
 }
 
 // Get the mongodb url
+/**
+ * The `mongoDB` function connects to a MongoDB database by asking for a URL, checking the connection,
+ * and updating the environment variable with the URL.
+ */
 async function mongoDB(): Promise<void> {
   let DB_URL = process.env.MONGO_DB_URL;
 
@@ -261,6 +337,11 @@ async function mongoDB(): Promise<void> {
 }
 
 // Function to ask if the user wants to keep the entered values
+/**
+ * The function `askToKeepValues` prompts the user with a confirmation message and returns a boolean
+ * indicating whether the user wants to keep the entered key.
+ * @returns a boolean value, either true or false.
+ */
 async function askToKeepValues(): Promise<boolean> {
   const { keepValues } = await inquirer.prompt({
     type: "confirm",
@@ -272,6 +353,10 @@ async function askToKeepValues(): Promise<boolean> {
 }
 
 //Get recaptcha details
+/**
+ * The function `recaptcha` prompts the user to enter a reCAPTCHA secret key, validates the input, and
+ * allows the user to choose whether to keep the entered value or try again.
+ */
 async function recaptcha(): Promise<void> {
   const { recaptchaSecretKey } = await inquirer.prompt([
     {
@@ -298,6 +383,10 @@ async function recaptcha(): Promise<void> {
   }
 }
 
+/**
+ * The function `recaptchaSiteKey` prompts the user to enter a reCAPTCHA site key, validates the input,
+ * and updates the environment variable if the user chooses to keep the entered value.
+ */
 async function recaptchaSiteKey(): Promise<void> {
   if (process.env.RECAPTCHA_SITE_KEY) {
     console.log(
@@ -330,23 +419,42 @@ async function recaptchaSiteKey(): Promise<void> {
   }
 }
 
+/**
+ * The function `isValidEmail` checks if a given email address is valid according to a specific pattern.
+ * @param {string} email - The `email` parameter is a string that represents an email address.
+ * @returns a boolean value. It returns true if the email passed as an argument matches the specified
+ * pattern, and false otherwise.
+ */
 function isValidEmail(email: string): boolean {
   const pattern = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   const match = email.match(pattern);
   return match !== null && match[0] === email;
 }
 
+/**
+ * The function validates whether a given string matches the pattern of a reCAPTCHA token.
+ * @param {string} string - The `string` parameter represents the input string that needs to be
+ * validated. In this case, it is expected to be a string containing a Recaptcha response token.
+ * @returns a boolean value.
+ */
 function validateRecaptcha(string: string): boolean {
   const pattern = /^[a-zA-Z0-9_-]{40}$/;
   return pattern.test(string);
 }
 
+/**
+ * The `abort` function logs a message and exits the process.
+ */
 function abort(): void {
   console.log("\nSetup process aborted. 🫠");
   process.exit(1);
 }
 
 //Get mail username and password
+/**
+ * The function `twoFactorAuth` prompts the user to set up Two-Factor Authentication Google Account and
+ * then collects their email and generated password to update environment variables.
+ */
 async function twoFactorAuth(): Promise<void> {
   console.log("\nIMPORTANT");
   console.log(
@@ -382,6 +490,14 @@ async function twoFactorAuth(): Promise<void> {
 }
 
 //Checks if the data exists and ask for deletion
+/**
+ * The function `shouldWipeExistingData` checks if there is existing data in a MongoDB database and prompts the user to delete
+ * it before importing new data.
+ * @param {string} url - The `url` parameter is a string that represents the connection URL for the
+ * MongoDB database. It is used to establish a connection to the database using the `MongoClient` class
+ * from the `mongodb` package.
+ * @returns The function returns a Promise<boolean>.
+ */
 async function shouldWipeExistingData(url: string): Promise<boolean> {
   let shouldImport = false;
   const client = new mongodb.MongoClient(url, {
@@ -421,6 +537,11 @@ async function shouldWipeExistingData(url: string): Promise<boolean> {
 }
 
 //Import sample data
+/**
+ * The function `importData` imports sample data into a MongoDB database if the database URL is provided and if it
+ * is determined that existing data should be wiped.
+ * @returns The function returns a Promise that resolves to `void`.
+ */
 async function importData(): Promise<void> {
   if (!process.env.MONGO_DB_URL) {
     console.log("Couldn't find mongodb url");
@@ -447,6 +568,10 @@ async function importData(): Promise<void> {
   }
 }
 
+/**
+ * The main function sets up the Talawa API by prompting the user to configure various environment
+ * variables and import sample data if desired.
+ */
 async function main(): Promise<void> {
   console.log("Welcome to the Talawa API setup! 🚀");
 
