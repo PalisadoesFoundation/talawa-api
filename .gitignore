@@ -7,10 +7,12 @@ docs/schema.json
 
 # Miscellaneous files
 
-node_modules
+node_modules/**
 .idea
 .env
 image/**
+images/**
+video/**
 videos/**
 .vscode
 
