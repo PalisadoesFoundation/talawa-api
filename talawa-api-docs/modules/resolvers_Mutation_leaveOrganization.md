@@ -38,4 +38,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/leaveOrganization.ts:24](https://github.com/PalisadoesFoundation/talawa-api/blob/55cb3be/src/resolvers/Mutation/leaveOrganization.ts#L24)
+[src/resolvers/Mutation/leaveOrganization.ts:24](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/resolvers/Mutation/leaveOrganization.ts#L24)

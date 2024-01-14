@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/resolvers/MembershipRequest/index.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/55cb3be/src/resolvers/MembershipRequest/index.ts#L5)
+[src/resolvers/MembershipRequest/index.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/resolvers/MembershipRequest/index.ts#L5)

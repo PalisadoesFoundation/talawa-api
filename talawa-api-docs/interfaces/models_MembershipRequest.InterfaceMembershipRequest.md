@@ -23,7 +23,7 @@ This is an interface that represents a database(MongoDB) document for Membership
 
 #### Defined in
 
-[src/models/MembershipRequest.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/55cb3be/src/models/MembershipRequest.ts#L9)
+[src/models/MembershipRequest.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/models/MembershipRequest.ts#L9)
 
 ___
 
@@ -33,7 +33,7 @@ ___
 
 #### Defined in
 
-[src/models/MembershipRequest.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/55cb3be/src/models/MembershipRequest.ts#L10)
+[src/models/MembershipRequest.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/models/MembershipRequest.ts#L10)
 
 ___
 
@@ -43,7 +43,7 @@ ___
 
 #### Defined in
 
-[src/models/MembershipRequest.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/55cb3be/src/models/MembershipRequest.ts#L12)
+[src/models/MembershipRequest.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/models/MembershipRequest.ts#L12)
 
 ___
 
@@ -53,4 +53,4 @@ ___
 
 #### Defined in
 
-[src/models/MembershipRequest.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/55cb3be/src/models/MembershipRequest.ts#L11)
+[src/models/MembershipRequest.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/models/MembershipRequest.ts#L11)
