@@ -139,4 +139,9 @@ export const enums = gql`
     WIDOWED
     SEPERATED
   }
+  enum AdvertisementType {
+    BANNER
+    POPUP
+    MENU
+  }
 `;
