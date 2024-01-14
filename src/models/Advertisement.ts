@@ -4,17 +4,13 @@ import type { InterfaceUser } from "./User";
 /**
  * This is an interface that represents a database(MongoDB) document for Advertisement.
  */
-type AdvertisementTypes = {
-  type: "POPUP" | "MENU" | "BANNER";
-  // Other properties specific to each type
-};
 export interface InterfaceAdvertisement {
   _id: Types.ObjectId;
   orgId: string;
   name: string;
   creatorId: PopulatedDoc<InterfaceUser & Document>;
   link: string;
-  type: AdvertisementTypes;
+  type: "POPUP" | "MENU" | "BANNER";
   startDate: string;
   endDate: string;
   createdAt: Date;

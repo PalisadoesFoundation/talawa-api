@@ -1,2 +1,1 @@
-timestamp=2024-01-11T18:40:08.654Z, createdBy=test, type=CREATE, model=User, message=test message
-timestamp=2024-01-11T19:03:07.994Z, createdBy=65a03b6baac2095bd6ac99c3, type=DELETE, model=GroupChat, message=GroupChat:65a03b6baac2095bd6ac99c9 deleted
+timestamp=2024-01-13T18:29:40.610Z, createdBy=test, type=CREATE, model=User, message=test message

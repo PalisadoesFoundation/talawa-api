@@ -33,8 +33,14 @@ type Advertisement {
   name: String!
   orgId: ID!
   startDate: Date!
-  type: String!
+  type: AdvertisementType!
   updatedAt: DateTime!
+}
+
+enum AdvertisementType {
+  BANNER
+  MENU
+  POPUP
 }
 
 type AggregatePost {
@@ -545,6 +551,7 @@ type Mutation {
   unlikeComment(id: ID!): Comment
   unlikePost(id: ID!): Post
   unregisterForEventByUser(id: ID!): Event!
+  updateAdvertisement(input: UpdateAdvertisementInput!): UpdateAdvertisementPayload
   updateEvent(data: UpdateEventInput, id: ID!): Event!
   updateLanguage(languageCode: String!): User!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
@@ -890,6 +897,19 @@ type UnauthenticatedError implements Error {
 
 type UnauthorizedError implements Error {
   message: String!
+}
+
+input UpdateAdvertisementInput {
+  _id: ID!
+  endDate: Date
+  link: String
+  name: String
+  startDate: Date
+  type: AdvertisementType
+}
+
+type UpdateAdvertisementPayload {
+  advertisement: Advertisement
 }
 
 input UpdateEventInput {
