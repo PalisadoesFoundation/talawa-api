@@ -103,10 +103,7 @@ export const types = gql`
     name: String!
     capacity: Int!
     description: String
-  }
-
-  type VenueId {
-    _id: ID!
+    imageUrl: URL
   }
 
   type Event {

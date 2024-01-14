@@ -6,6 +6,7 @@ export interface InterfaceVenue {
   name: string;
   description: string;
   capacity: number;
+  imageUrl: string | undefined | null;
 }
 
 /**
@@ -13,6 +14,7 @@ export interface InterfaceVenue {
  * @param name - Name of the venue.
  * @param description - Description of the venue.
  * @param capacity - Maximum capacity of the venue.
+ * @param imageUrl - Image URL(if attached) of the venue.
  */
 
 const venueSchema = new Schema({
@@ -27,6 +29,10 @@ const venueSchema = new Schema({
   capacity: {
     type: Number,
     required: true,
+  },
+  imageUrl: {
+    type: String,
+    required: false,
   },
 });
 

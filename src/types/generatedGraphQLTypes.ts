@@ -216,6 +216,7 @@ export type EditVenueInput = {
   _id: Scalars['ID'];
   capacity: Scalars['Int'];
   description?: InputMaybe<Scalars['String']>;
+  imageUrl?: InputMaybe<Scalars['URL']>;
   name: Scalars['String'];
   organizationId: Scalars['ID'];
 };
@@ -786,6 +787,7 @@ export type MutationCreateUserTagArgs = {
 
 export type MutationCreateVenueArgs = {
   data: VenueInput;
+  file?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -801,6 +803,7 @@ export type MutationDeleteDonationByIdArgs = {
 
 export type MutationEditVenueArgs = {
   data: EditVenueInput;
+  file?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1831,17 +1834,14 @@ export type Venue = {
   _id: Scalars['ID'];
   capacity: Scalars['Int'];
   description?: Maybe<Scalars['String']>;
+  imageUrl?: Maybe<Scalars['URL']>;
   name: Scalars['String'];
-};
-
-export type VenueId = {
-  __typename?: 'VenueId';
-  _id: Scalars['ID'];
 };
 
 export type VenueInput = {
   capacity: Scalars['Int'];
   description?: InputMaybe<Scalars['String']>;
+  imageUrl?: InputMaybe<Scalars['URL']>;
   name: Scalars['String'];
   organizationId: Scalars['ID'];
 };
@@ -2049,7 +2049,6 @@ export type ResolversTypes = {
   UsersConnectionInput: UsersConnectionInput;
   UsersConnectionResult: ResolverTypeWrapper<Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UsersConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
   Venue: ResolverTypeWrapper<Venue>;
-  VenueId: ResolverTypeWrapper<VenueId>;
   VenueInput: VenueInput;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
@@ -2171,7 +2170,6 @@ export type ResolversParentTypes = {
   UsersConnectionInput: UsersConnectionInput;
   UsersConnectionResult: Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversParentTypes['UsersConnection']>, errors: Array<ResolversParentTypes['ConnectionError']> };
   Venue: Venue;
-  VenueId: VenueId;
   VenueInput: VenueInput;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
@@ -2865,12 +2863,8 @@ export type VenueResolvers<ContextType = any, ParentType extends ResolversParent
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   capacity?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  imageUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type VenueIdResolvers<ContextType = any, ParentType extends ResolversParentTypes['VenueId'] = ResolversParentTypes['VenueId']> = {
-  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2947,7 +2941,6 @@ export type Resolvers<ContextType = any> = {
   UsersConnection?: UsersConnectionResolvers<ContextType>;
   UsersConnectionResult?: UsersConnectionResultResolvers<ContextType>;
   Venue?: VenueResolvers<ContextType>;
-  VenueId?: VenueIdResolvers<ContextType>;
 };
 
 export type DirectiveResolvers<ContextType = any> = {

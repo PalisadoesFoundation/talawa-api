@@ -164,6 +164,7 @@ input EditVenueInput {
   _id: ID!
   capacity: Int!
   description: String
+  imageUrl: URL
   name: String!
   organizationId: ID!
 }
@@ -490,10 +491,10 @@ type Mutation {
   createPost(data: PostInput!, file: String): Post
   createSampleOrganization: Boolean!
   createUserTag(input: CreateUserTagInput!): UserTag
-  createVenue(data: VenueInput!): Venue!
+  createVenue(data: VenueInput!, file: String): Venue!
   deleteAdvertisementById(id: ID!): DeletePayload!
   deleteDonationById(id: ID!): DeletePayload!
-  editVenue(data: EditVenueInput!): Venue!
+  editVenue(data: EditVenueInput!, file: String): Venue!
   forgotPassword(data: ForgotPasswordData!): Boolean!
   joinPublicOrganization(organizationId: ID!): User!
   leaveOrganization(organizationId: ID!): User!
@@ -1110,16 +1111,14 @@ type Venue {
   _id: ID!
   capacity: Int!
   description: String
+  imageUrl: URL
   name: String!
-}
-
-type VenueId {
-  _id: ID!
 }
 
 input VenueInput {
   capacity: Int!
   description: String
+  imageUrl: URL
   name: String!
   organizationId: ID!
 }

@@ -63,6 +63,7 @@ export const inputs = gql`
     name: String!
     description: String
     organizationId: ID!
+    imageUrl: URL
   }
 
   input EventInput {
@@ -209,6 +210,7 @@ export const inputs = gql`
     name: String!
     capacity: Int!
     description: String
+    imageUrl: URL
   }
 
   input PostInput {

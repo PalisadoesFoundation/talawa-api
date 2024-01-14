@@ -8,6 +8,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { USER_NOT_FOUND_ERROR } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { Venue } from "../../models/Venue";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 /**
  * This function enables to edit a venue.
  * @param _parent - parent of current request
@@ -69,6 +70,15 @@ export const editVenue: MutationResolvers["editVenue"] = async (
     );
   }
 
+  let uploadImageFileName = null;
+
+  if (args.file) {
+    const dataUrlPrefix = "data:";
+    if (args.file.startsWith(dataUrlPrefix + "image/")) {
+      uploadImageFileName = await uploadEncodedImage(args.file, null);
+    }
+  }
+
   // Find the venue by its _id and update its place and capacity
   const updatedVenue = await Venue.findOneAndUpdate(
     { _id: venue?._id },
@@ -77,6 +87,7 @@ export const editVenue: MutationResolvers["editVenue"] = async (
         name: args.data?.name,
         capacity: args.data?.capacity,
         description: args.data?.description,
+        imageUrl: `${context.apiRootUrl}${uploadImageFileName}`,
       },
     },
     { new: true }

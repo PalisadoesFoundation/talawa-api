@@ -9,6 +9,7 @@ import {
 } from "../../constants";
 import { errors, requestContext } from "../../libraries";
 import { Venue } from "../../models/Venue";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 /**
  * This function enables to create a venue in an organization.
  * @param _parent - parent of current request
@@ -86,7 +87,19 @@ export const createVenue: MutationResolvers["createVenue"] = async (
     );
   }
 
-  const newVenue = await Venue.create({ ...args.data });
+  let uploadImageFileName = null;
+
+  if (args.file) {
+    const dataUrlPrefix = "data:";
+    if (args.file.startsWith(dataUrlPrefix + "image/")) {
+      uploadImageFileName = await uploadEncodedImage(args.file, null);
+    }
+  }
+
+  const newVenue = await Venue.create({
+    ...args.data,
+    imageUrl: `${context.apiRootUrl}${uploadImageFileName}`,
+  });
 
   // Add the new venue to the venues inside the organization
   await Organization.findOneAndUpdate(
@@ -94,6 +107,6 @@ export const createVenue: MutationResolvers["createVenue"] = async (
     { $push: { venues: newVenue._id } },
     { new: true }
   );
-
+  console.log(newVenue);
   return newVenue;
 };
