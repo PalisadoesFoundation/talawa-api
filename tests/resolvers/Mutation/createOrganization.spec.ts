@@ -157,7 +157,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         },
         userRegistrationRequired: true,
         visibleInSearch: true,
-        creator: testUser?._id,
+        creatorId: testUser?._id,
         admins: [testUser?._id],
         members: [testUser?._id],
         image: "imagePath",
@@ -232,7 +232,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
           sortingCode: "ABC-123",
           state: "State/Province",
         },
-        creator: testUser?._id,
+        creatorId: testUser?._id,
         admins: [testUser?._id],
         members: [testUser?._id],
       })

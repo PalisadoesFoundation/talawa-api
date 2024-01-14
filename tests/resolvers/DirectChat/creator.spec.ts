@@ -27,7 +27,7 @@ describe("resolvers -> DirectChat -> creator", () => {
     const creatorPayload = await creatorResolver?.(parent, {}, {});
 
     const creator = await User.findOne({
-      _id: testDirectChat!.creator,
+      _id: testDirectChat!.creatorId,
     }).lean();
 
     expect(creatorPayload).toEqual(creator);

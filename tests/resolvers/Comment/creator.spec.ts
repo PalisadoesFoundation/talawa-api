@@ -22,7 +22,7 @@ beforeAll(async () => {
   [testUser, , testPost] = await createTestPost();
   testComment = await Comment.create({
     text: "test comment",
-    creator: testUser!._id,
+    creatorId: testUser!._id,
     postId: testPost!._id,
   });
 });
@@ -38,7 +38,7 @@ describe("resolvers -> Post -> creator", () => {
     const creatorPayload = await creatorResolver?.(parent, {}, {});
 
     const creatorObject = await User.findOne({
-      _id: testPost!.creator,
+      _id: testPost!.creatorId,
     }).lean();
 
     expect(creatorPayload).toEqual(creatorObject);

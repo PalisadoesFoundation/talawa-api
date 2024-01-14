@@ -10,6 +10,7 @@ export interface InterfaceGroupChatMessage {
   groupChatMessageBelongsTo: PopulatedDoc<InterfaceGroupChat & Document>;
   sender: PopulatedDoc<InterfaceUser & Document>;
   createdAt: Date;
+  updatedAt: Date;
   messageContent: string;
   status: string;
 }
@@ -18,35 +19,37 @@ export interface InterfaceGroupChatMessage {
  * @param groupChatMessageBelongsTo - This is the association referring to the `GroupChat` model.
  * @param sender - Sender of the message.
  * @param createdAt - Time stamp of data creation.
+ * @param updatedAt - Time stamp of data updation.
  * @param messageContent - Content of the message.
- * @param status - Status.
+ * @param status - Status
  */
-const groupChatMessageSchema = new Schema({
-  groupChatMessageBelongsTo: {
-    type: Schema.Types.ObjectId,
-    ref: "GroupChat",
-    required: true,
+const groupChatMessageSchema = new Schema(
+  {
+    groupChatMessageBelongsTo: {
+      type: Schema.Types.ObjectId,
+      ref: "GroupChat",
+      required: true,
+    },
+    sender: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    messageContent: {
+      type: String,
+      required: true,
+    },
+    status: {
+      type: String,
+      required: true,
+      enum: ["ACTIVE", "BLOCKED", "DELETED"],
+      default: "ACTIVE",
+    },
   },
-  sender: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    required: true,
-  },
-  messageContent: {
-    type: String,
-    required: true,
-  },
-  status: {
-    type: String,
-    required: true,
-    enum: ["ACTIVE", "BLOCKED", "DELETED"],
-    default: "ACTIVE",
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 const groupChatMessageModel = (): Model<InterfaceGroupChatMessage> =>
   model<InterfaceGroupChatMessage>("GroupChatMessage", groupChatMessageSchema);

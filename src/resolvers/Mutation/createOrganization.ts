@@ -80,7 +80,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       ...args.data,
       address: args.data?.address,
       image: uploadImageFileName ? uploadImageFileName : null,
-      creator: context.userId,
+      creatorId: context.userId,
       admins: [context.userId],
       members: [context.userId],
     });
