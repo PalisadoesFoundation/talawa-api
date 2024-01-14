@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/resolvers/Subscription/index.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/ad7a1f7/src/resolvers/Subscription/index.ts#L6)
+[src/resolvers/Subscription/index.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/55cb3be/src/resolvers/Subscription/index.ts#L6)

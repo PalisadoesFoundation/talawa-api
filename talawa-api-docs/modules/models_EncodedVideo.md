@@ -20,4 +20,4 @@
 
 #### Defined in
 
-[src/models/EncodedVideo.ts:38](https://github.com/PalisadoesFoundation/talawa-api/blob/ad7a1f7/src/models/EncodedVideo.ts#L38)
+[src/models/EncodedVideo.ts:38](https://github.com/PalisadoesFoundation/talawa-api/blob/55cb3be/src/models/EncodedVideo.ts#L38)

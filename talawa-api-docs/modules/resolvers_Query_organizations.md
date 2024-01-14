@@ -29,4 +29,4 @@ An object containing `orderBy` and `id` of the Organization.
 
 #### Defined in
 
-[src/resolvers/Query/organizations.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/ad7a1f7/src/resolvers/Query/organizations.ts#L16)
+[src/resolvers/Query/organizations.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/55cb3be/src/resolvers/Query/organizations.ts#L16)

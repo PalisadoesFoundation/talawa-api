@@ -38,4 +38,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/blockUser.ts:27](https://github.com/PalisadoesFoundation/talawa-api/blob/ad7a1f7/src/resolvers/Mutation/blockUser.ts#L27)
+[src/resolvers/Mutation/blockUser.ts:27](https://github.com/PalisadoesFoundation/talawa-api/blob/55cb3be/src/resolvers/Mutation/blockUser.ts#L27)

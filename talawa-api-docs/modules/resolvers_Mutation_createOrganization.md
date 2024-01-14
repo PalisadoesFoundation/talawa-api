@@ -35,4 +35,4 @@ The following checks are done:
 
 #### Defined in
 
-[src/resolvers/Mutation/createOrganization.ts:19](https://github.com/PalisadoesFoundation/talawa-api/blob/ad7a1f7/src/resolvers/Mutation/createOrganization.ts#L19)
+[src/resolvers/Mutation/createOrganization.ts:19](https://github.com/PalisadoesFoundation/talawa-api/blob/55cb3be/src/resolvers/Mutation/createOrganization.ts#L19)

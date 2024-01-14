@@ -26,4 +26,4 @@
 
 #### Defined in
 
-[src/libraries/validators/validatePaginationArgs.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/ad7a1f7/src/libraries/validators/validatePaginationArgs.ts#L7)
+[src/libraries/validators/validatePaginationArgs.ts:7](https://github.com/PalisadoesFoundation/talawa-api/blob/55cb3be/src/libraries/validators/validatePaginationArgs.ts#L7)

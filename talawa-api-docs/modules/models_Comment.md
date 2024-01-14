@@ -20,4 +20,4 @@
 
 #### Defined in
 
-[src/models/Comment.ts:72](https://github.com/PalisadoesFoundation/talawa-api/blob/ad7a1f7/src/models/Comment.ts#L72)
+[src/models/Comment.ts:72](https://github.com/PalisadoesFoundation/talawa-api/blob/55cb3be/src/models/Comment.ts#L72)

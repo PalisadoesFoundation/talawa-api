@@ -26,4 +26,4 @@
 
 #### Defined in
 
-[src/utilities/encodedImageStorage/encodedImageExtensionCheck.ts:1](https://github.com/PalisadoesFoundation/talawa-api/blob/ad7a1f7/src/utilities/encodedImageStorage/encodedImageExtensionCheck.ts#L1)
+[src/utilities/encodedImageStorage/encodedImageExtensionCheck.ts:1](https://github.com/PalisadoesFoundation/talawa-api/blob/55cb3be/src/utilities/encodedImageStorage/encodedImageExtensionCheck.ts#L1)
