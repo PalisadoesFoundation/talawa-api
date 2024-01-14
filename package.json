@@ -80,7 +80,7 @@
     "mongoose": "^5.13.21",
     "mongoose-paginate-v2": "^1.7.0",
     "morgan": "^1.10.0",
-    "nanoid": "^5.0.4",
+    "nanoid": "^3.3.7",
     "nodemailer": "^6.9.8",
     "pm2": "^5.2.0",
     "redis": "^4.6.12",
