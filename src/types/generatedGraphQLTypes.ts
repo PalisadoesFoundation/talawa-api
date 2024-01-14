@@ -1066,7 +1066,7 @@ export type OtpInput = {
 export type Organization = {
   __typename?: 'Organization';
   _id: Scalars['ID']['output'];
-  address: Maybe<Address>;
+  address?: Maybe<Address>;
   admins?: Maybe<Array<User>>;
   apiUrl: Scalars['URL']['output'];
   blockedUsers?: Maybe<Array<Maybe<User>>>;
@@ -1119,7 +1119,7 @@ export type OrganizationInfoNode = {
 };
 
 export type OrganizationInput = {
-  address?: InputMaybe<AddressInput>;
+  address: AddressInput;
   apiUrl?: InputMaybe<Scalars['URL']['input']>;
   attendees?: InputMaybe<Scalars['String']['input']>;
   description: Scalars['String']['input'];
@@ -2582,7 +2582,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type OrganizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Organization'] = ResolversParentTypes['Organization']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  address: Resolver<Maybe<ResolversTypes['Address']>, ParentType, ContextType>;
+  address?: Resolver<Maybe<ResolversTypes['Address']>, ParentType, ContextType>;
   admins?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType, Partial<OrganizationAdminsArgs>>;
   apiUrl?: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
   blockedUsers?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;

@@ -398,7 +398,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       (message) => message
     );
 
-    const missingAddress = undefined; // No address field in the data
+    const missingAddress = {}; // No address field in the data
 
     const validArgs: MutationCreateOrganizationArgs = {
       data: {
@@ -406,6 +406,7 @@ describe("resolvers -> Mutation -> createOrganization", () => {
         name: "Test Organization",
         visibleInSearch: true,
         apiUrl: "https://example.com/api",
+        address: missingAddress,
       },
       file: null,
     };
