@@ -20,7 +20,7 @@ export const createTestMembershipRequest = async (): Promise<
       name: `name${nanoid().toLowerCase()}`,
       description: `desc${nanoid().toLowerCase()}`,
       isPublic: true,
-      creator: testUser._id,
+      creatorId: testUser._id,
       admins: [testUser._id],
       visibleInSearch: true,
     });

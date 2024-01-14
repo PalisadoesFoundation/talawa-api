@@ -9,7 +9,6 @@ import { createTestUserAndOrganization } from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
 import { createEventWithRegistrant } from "../../helpers/events";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { createTestTask } from "../../helpers/task";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvents: TestEventType[];
@@ -36,7 +35,6 @@ beforeAll(async () => {
     "DAILY"
   );
   testEvents = [testEvent1, testEvent2, testEvent3];
-  createTestTask(testEvent1?._id, testUser?._id);
 });
 
 afterAll(async () => {
@@ -57,7 +55,6 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
       .limit(1)
       .skip(1)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -105,7 +102,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         }
         return {
           ...event,
-          creator: event?.creator._id,
+          creatorId: event?.creatorId._id,
           admins: adminIds,
         };
       });
@@ -158,7 +155,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         }
         return {
           ...event,
-          creator: event?.creator._id,
+          creatorId: event?.creatorId._id,
           admins: adminIds,
         };
       });
@@ -208,7 +205,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         }
         return {
           ...event,
-          creator: event?.creator?._id,
+          creatorId: event?.creatorId?._id,
           admins: adminIds,
         };
       });
@@ -262,7 +259,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         }
         return {
           ...event,
-          creator: event?.creator._id,
+          creatorId: event?.creatorId._id,
           admins: adminIds,
         };
       });
@@ -313,7 +310,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         }
         return {
           ...event,
-          creator: event?.creator._id,
+          creatorId: event?.creatorId._id,
           admins: adminIds,
         };
       });
@@ -353,7 +350,7 @@ describe("resolvers -> Query -> organizationsMemberConnection", () => {
         }
         return {
           ...event,
-          creator: event?.creator._id,
+          creatorId: event?.creatorId._id,
           admins: adminIds,
         };
       });

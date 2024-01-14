@@ -7,6 +7,6 @@ import type { DirectChatResolvers } from "../../types/generatedGraphQLTypes";
  */
 export const creator: DirectChatResolvers["creator"] = async (parent) => {
   return await User.findOne({
-    _id: parent.creator,
+    _id: parent.creatorId,
   }).lean();
 };

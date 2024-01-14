@@ -8,90 +8,95 @@ import type { InterfaceUser } from "./User";
  */
 export interface InterfacePost {
   _id: Types.ObjectId;
+  commentCount: number;
+  createdAt: Date;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
+  imageUrl: string | undefined | null;
+  likeCount: number;
+  likedBy: PopulatedDoc<InterfaceUser & Document>[];
+  organization: PopulatedDoc<InterfaceOrganization & Document>;
+  pinned: boolean;
+  status: string;
   text: string;
   title: string | undefined;
-  status: string;
-  createdAt: Date;
-  imageUrl: string | undefined | null;
+  updatedAt: Date;
   videoUrl: string | undefined | null;
-  creator: PopulatedDoc<InterfaceUser & Document>;
-  organization: PopulatedDoc<InterfaceOrganization & Document>;
-  likedBy: PopulatedDoc<InterfaceUser & Document>[];
-  likeCount: number;
-  commentCount: number;
-  pinned: boolean;
 }
 /**
  * This describes the schema for a `Post` that corresponds to `InterfacePost` document.
+ * @param commentCount - Post comments count.
+ * @param createdAt - Time stamp of data creation.
+ * @param creatorId - Post creator, refer to `User` model.
+ * @param imageUrl - Post attached image URL(if attached).
+ * @param likeCount - Post likes count.
+ * @param likedBy - Collection of user liked the post, each object refer to `User` model.
+ * @param pinned - Post pinned status
+ * @param organization - Organization data where the post is uploaded, refer to `Organization` model.
+ * @param status - Status.
  * @param text - Post description.
  * @param title - Post title.
- * @param status - Status.
- * @param createdAt - Time stamp of data creation.
- * @param imageUrl - Post attached image URL(if attached).
+ * @param updatedAt - Time stamp of post updation
  * @param videoUrl - Post attached video URL(if attached).
- * @param creator - Post creator, refer to `User` model.
- * @param organization - Organization data where the post is uploaded, refer to `Organization` model.
- * @param likedBy - Collection of user liked the post, each object refer to `User` model.
- * @param likeCount - Post likes count.
- * @param commentCount - Post comments count.
  */
-const postSchema = new Schema({
-  text: {
-    type: String,
-    required: true,
-  },
-  title: {
-    type: String,
-  },
-  status: {
-    type: String,
-    required: true,
-    enum: ["ACTIVE", "BLOCKED", "DELETED"],
-    default: "ACTIVE",
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  imageUrl: {
-    type: String,
-    required: false,
-  },
-  videoUrl: {
-    type: String,
-    required: false,
-  },
-  creator: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  organization: {
-    type: Schema.Types.ObjectId,
-    ref: "Organization",
-    required: true,
-  },
-  likedBy: [
-    {
+const postSchema = new Schema(
+  {
+    text: {
+      type: String,
+      required: true,
+    },
+    title: {
+      type: String,
+    },
+    status: {
+      type: String,
+      required: true,
+      enum: ["ACTIVE", "BLOCKED", "DELETED"],
+      default: "ACTIVE",
+    },
+    imageUrl: {
+      type: String,
+      required: false,
+    },
+    videoUrl: {
+      type: String,
+      required: false,
+    },
+    creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
-  ],
-  likeCount: {
-    type: Number,
-    default: 0,
+    organization: {
+      type: Schema.Types.ObjectId,
+      ref: "Organization",
+      required: true,
+    },
+    likedBy: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    likeCount: {
+      type: Number,
+      default: 0,
+    },
+    commentCount: {
+      type: Number,
+      default: 0,
+    },
+    pinned: {
+      type: Boolean,
+      default: false,
+    },
   },
-  commentCount: {
-    type: Number,
-    default: 0,
-  },
-  pinned: {
-    type: Boolean,
-    default: false,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 postSchema.plugin(mongoosePaginate);
+
 postSchema.index({ organization: 1 }, { unique: false });
 
 const postModel = (): PaginateModel<InterfacePost> =>
