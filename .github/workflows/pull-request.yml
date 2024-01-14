@@ -141,6 +141,9 @@ jobs:
       - name: Run the tests
         run: npm run test
 
+      - name: Import Sample Data
+        run: npm run import:sample-data  
+
       - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
         uses: codecov/codecov-action@v3
         with:
