@@ -131,12 +131,6 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     userType: isLastResortSuperAdmin ? "SUPERADMIN" : "USER",
     adminApproved: isLastResortSuperAdmin,
   });
-  await storeTransaction(
-    createdUser._id,
-    TRANSACTION_LOG_TYPES.CREATE,
-    "User",
-    `User:${createdUser._id} created`
-  );
 
   const accessToken = await createAccessToken(createdUser);
   const refreshToken = await createRefreshToken(createdUser);

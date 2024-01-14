@@ -5,6 +5,8 @@ import validator from "validator";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceOrganization } from "./Organization";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
+
 /**
  * This is an interface that represents a database(MongoDB) document for User.
  */
@@ -89,6 +91,7 @@ export interface InterfaceUser {
  * @param updatedAt - Timestamp of data updation
  * @param userType - User type.
  */
+
 const userSchema = new Schema(
   {
     address: {
@@ -285,6 +288,8 @@ const userSchema = new Schema(
     timestamps: true,
   }
 );
+
+createLoggingMiddleware(userSchema, "User");
 
 userSchema.plugin(mongoosePaginate);
 

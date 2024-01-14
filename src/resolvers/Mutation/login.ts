@@ -79,12 +79,6 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     { _id: user._id },
     { token: refreshToken, $inc: { tokenVersion: 1 } }
   );
-  await storeTransaction(
-    user._id,
-    TRANSACTION_LOG_TYPES.UPDATE,
-    "User",
-    `User:${user._id} updated token, tokenVersion`
-  );
 
   // Assigns new value with populated fields to user object.
   user = await User.findOne({

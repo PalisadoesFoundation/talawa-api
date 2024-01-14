@@ -88,6 +88,12 @@ export const REGISTRANT_ALREADY_EXIST_ERROR = {
   PARAM: "registrant",
 };
 
+export const TRANSACTION_LOG_TYPES = {
+  CREATE: "CREATE",
+  UPDATE: "UPDATE",
+  DELETE: "DELETE",
+};
+
 export const INVALID_FILE_TYPE = {
   MESSAGE: "invalid.fileType",
   CODE: "internalServerError",
@@ -434,12 +440,6 @@ export const CUSTOM_FIELD_TYPE_MISSING = {
   MESSAGE: "The type of the custom field is missing",
   CODE: "customField.isMissing",
   PARAM: "customField.isMissing",
-};
-
-export const TRANSACTION_LOG_TYPES = {
-  CREATE: "CREATE",
-  UPDATE: "UPDATE",
-  DELETE: "DELETE",
 };
 
 export const MAXIMUM_FETCH_LIMIT = 100;
