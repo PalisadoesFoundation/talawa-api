@@ -91,7 +91,6 @@ export const login: MutationResolvers["login"] = async (_parent, args) => {
     .populate("adminFor")
     .populate("membershipRequests")
     .populate("organizationsBlockedBy")
-    .populate("organizationUserBelongsTo")
     .lean();
 
   return {

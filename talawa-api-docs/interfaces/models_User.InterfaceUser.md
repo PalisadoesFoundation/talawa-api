@@ -30,7 +30,6 @@ This is an interface that represents a database(MongoDB) document for User.
 - [lastName](models_User.InterfaceUser.md#lastname)
 - [maritalStatus](models_User.InterfaceUser.md#maritalstatus)
 - [membershipRequests](models_User.InterfaceUser.md#membershiprequests)
-- [organizationUserBelongsTo](models_User.InterfaceUser.md#organizationuserbelongsto)
 - [organizationsBlockedBy](models_User.InterfaceUser.md#organizationsblockedby)
 - [password](models_User.InterfaceUser.md#password)
 - [phone](models_User.InterfaceUser.md#phone)
@@ -254,16 +253,6 @@ ___
 #### Defined in
 
 [src/models/User.ts:40](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/models/User.ts#L40)
-
-___
-
-### organizationUserBelongsTo
-
-• **organizationUserBelongsTo**: `any`
-
-#### Defined in
-
-[src/models/User.ts:42](https://github.com/PalisadoesFoundation/talawa-api/blob/ae7aa4f/src/models/User.ts#L42)
 
 ___
 
