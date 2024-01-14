@@ -229,7 +229,10 @@ describe("resolvers -> Mutation -> removeGroupChat", () => {
       context
     );
 
-    expect(removeGroupChatPayload).toEqual(testGroupChat?.toObject());
+    expect(removeGroupChatPayload).toEqual({
+      ...testGroupChat?.toObject(),
+      updatedAt: expect.anything(),
+    });
 
     const testDeletedGroupChatMessages = await GroupChatMessage.find({
       groupChatMessageBelongsTo: testGroupChat?._id,

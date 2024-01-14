@@ -17,7 +17,7 @@ beforeAll(async () => {
   [testUser, , testPost] = await createTestPost();
   await Comment.create({
     text: "test comment",
-    creator: testUser!._id,
+    creatorId: testUser!._id,
     postId: testPost!._id,
   });
 });
@@ -26,16 +26,16 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Post -> creator", () => {
+describe("resolvers -> Post -> creatorId", () => {
   it(`returns the creator object for parent post`, async () => {
     const parent = testPost!.toObject();
 
-    const creatorPayload = await creatorResolver?.(parent, {}, {});
+    const creatorIdPayload = await creatorResolver?.(parent, {}, {});
 
-    const creatorObject = await User.findOne({
-      _id: testPost!.creator,
+    const creatorIdObject = await User.findOne({
+      _id: testPost!.creatorId,
     }).lean();
 
-    expect(creatorPayload).toEqual(creatorObject);
+    expect(creatorIdPayload).toEqual(creatorIdObject);
   });
 });
