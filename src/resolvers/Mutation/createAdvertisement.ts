@@ -69,6 +69,7 @@ export const createAdvertisement: MutationResolvers["createAdvertisement"] =
     const createdAdvertisement = await Advertisement.create({
       ...args.input,
       mediaUrl: uploadMediaFile,
+      creatorId: _context.userId,
     });
     // Returns createdAd.
     return {

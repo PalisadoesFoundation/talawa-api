@@ -26,12 +26,6 @@ export const EVENT_NOT_FOUND_ERROR = {
   MESSAGE: "event.notFound",
   PARAM: "event",
 };
-export const EVENT_PROJECT_NOT_FOUND_ERROR = {
-  DESC: "EventProject not found",
-  CODE: "eventProject.notFound",
-  MESSAGE: "eventProject.notFound",
-  PARAM: "eventProject",
-};
 
 export const FEEDBACK_ALREADY_SUBMITTED = {
   MESSAGE: "The user has already submitted a feedback for this event.",
@@ -123,6 +117,25 @@ export const UNAUTHENTICATED_ERROR = {
   MESSAGE: "UnauthenticatedError",
   CODE: "user.notAuthenticated",
   PARAM: "userAuthentication",
+};
+
+export const END_DATE_VALIDATION_ERROR = {
+  MESSAGE: "Error: End date must be greater than or equal to start date.",
+  CODE: "enddate.notvalid",
+  PARAM: "dateValidation",
+};
+
+export const START_DATE_VALIDATION_ERROR = {
+  MESSAGE: "Error: Start date must be greater than or equal to current date.",
+  CODE: "startdate.notvalid",
+  PARAM: "dateValidation",
+};
+
+export const FIELD_NON_EMPTY_ERROR = {
+  MESSAGE:
+    "Error: Field cannot be null, an empty string, or contain only spaces.",
+  CODE: "field_non_empty_error",
+  PARAM: "field",
 };
 
 export const LENGTH_VALIDATION_ERROR = {
@@ -279,16 +292,15 @@ export const USER_DOES_NOT_HAVE_THE_TAG = {
   PARAM: "user.doesNotHaveTag",
 };
 
-export const TASK_NOT_FOUND_ERROR = {
-  DESC: "Task not found",
-  CODE: "task.notFound",
-  MESSAGE: "task.notFound",
-  PARAM: "task",
-};
 export const ADVERTISEMENT_NOT_FOUND_ERROR = {
   DESC: "Advertisement not found",
   CODE: "advertisement.notFound",
   MESSAGE: "advertisement.notFound",
+  PARAM: "advertisement",
+};
+export const INPUT_NOT_FOUND_ERROR = {
+  MESSAGE: "Input not found",
+  CODE: "Input.required",
   PARAM: "advertisement",
 };
 export const STATUS_ACTIVE = "ACTIVE";

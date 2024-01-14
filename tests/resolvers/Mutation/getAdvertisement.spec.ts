@@ -87,14 +87,18 @@ describe("resolvers -> Mutation -> getAdvertisement", () => {
       context
     );
     if (getAdvertisementPayload) {
-      expect(getAdvertisementPayload[0]).toHaveProperty("name", "myad");
+      const lastIndex = getAdvertisementPayload.length - 1;
+      expect(getAdvertisementPayload[lastIndex]).toHaveProperty("name", "myad");
 
-      expect(getAdvertisementPayload[0]).toHaveProperty(
+      expect(getAdvertisementPayload[lastIndex]).toHaveProperty(
         "mediaUrl",
         "data:image/png;base64,bWVkaWEgY29udGVudA=="
       );
 
-      expect(getAdvertisementPayload[0]).toHaveProperty("type", "POPUP");
+      expect(getAdvertisementPayload[lastIndex]).toHaveProperty(
+        "type",
+        "POPUP"
+      );
     }
   });
 });

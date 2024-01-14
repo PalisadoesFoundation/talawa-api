@@ -10,50 +10,53 @@ export interface InterfaceDirectChatMessage {
   directChatMessageBelongsTo: PopulatedDoc<InterfaceDirectChat & Document>;
   sender: PopulatedDoc<InterfaceUser & Document>;
   receiver: PopulatedDoc<InterfaceUser & Document>;
-  createdAt: Date;
   messageContent: string;
   status: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 /**
  * This is the Structure of the Direct chat Message
  * @param directChatMessageBelongsTo - To whom the direct chat messages belong
  * @param sender - Sender
  * @param receiver - Receiver
- * @param createdAt - Date when the message was created
+ * @param createdAt - Timestamp when the message was created
+ * @param updatedAt - Timestamp when the message was updated
  * @param messageContent - Message content
  * @param status - whether the message is active, blocked or deleted
  */
-const directChatMessageSchema = new Schema({
-  directChatMessageBelongsTo: {
-    type: Schema.Types.ObjectId,
-    ref: "DirectChat",
-    required: true,
+const directChatMessageSchema = new Schema(
+  {
+    directChatMessageBelongsTo: {
+      type: Schema.Types.ObjectId,
+      ref: "DirectChat",
+      required: true,
+    },
+    sender: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    receiver: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    messageContent: {
+      type: String,
+      required: true,
+    },
+    status: {
+      type: String,
+      required: true,
+      enum: ["ACTIVE", "BLOCKED", "DELETED"],
+      default: "ACTIVE",
+    },
   },
-  sender: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  receiver: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    required: true,
-  },
-  messageContent: {
-    type: String,
-    required: true,
-  },
-  status: {
-    type: String,
-    required: true,
-    enum: ["ACTIVE", "BLOCKED", "DELETED"],
-    default: "ACTIVE",
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 const directChatMessageModel = (): Model<InterfaceDirectChatMessage> =>
   model<InterfaceDirectChatMessage>(

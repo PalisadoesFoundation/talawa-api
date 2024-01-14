@@ -50,7 +50,9 @@ export async function findPostsInCache(
               })
             : [],
 
-        creator: Types.ObjectId(postObj.creator),
+        creatorId: Types.ObjectId(postObj.creatorId),
+
+        updatedAt: new Date(postObj.updatedAt),
       };
     } catch (parseError) {
       logger.info(`Error parsing JSON:${parseError}`);

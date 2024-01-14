@@ -71,8 +71,6 @@ export const mutations = gql`
 
     createEvent(data: EventInput): Event! @auth
 
-    createEventProject(data: EventProjectInput!): EventProject! @auth
-
     createGroupChat(data: createGroupChatInput!): GroupChat! @auth
 
     createMessageChat(data: MessageChatInput!): MessageChat! @auth
@@ -97,8 +95,6 @@ export const mutations = gql`
     createUserTag(input: CreateUserTagInput!): UserTag @auth
 
     createSampleOrganization: Boolean! @auth
-
-    createTask(data: TaskInput!, eventProjectId: ID!): Task! @auth
 
     deleteAdvertisementById(id: ID!): DeletePayload!
 
@@ -147,8 +143,6 @@ export const mutations = gql`
 
     removeEventAttendee(data: EventAttendeeInput!): User! @auth
 
-    removeEventProject(id: ID!): EventProject! @auth
-
     removeGroupChat(chatId: ID!): GroupChat! @auth
 
     removeMember(data: UserAndOrganizationInput!): Organization! @auth
@@ -166,8 +160,6 @@ export const mutations = gql`
     removeUserTag(id: ID!): UserTag @auth
 
     removeSampleOrganization: Boolean! @auth
-
-    removeTask(id: ID!): Task @auth
 
     removeUserFromGroupChat(userId: ID!, chatId: ID!): GroupChat! @auth
 
@@ -189,8 +181,6 @@ export const mutations = gql`
       messageContent: String!
     ): GroupChatMessage! @auth
 
-    setTaskVolunteers(id: ID!, volunteers: [ID]!): Task @auth
-
     signUp(data: UserInput!, file: String): AuthData!
 
     togglePostPin(id: ID!): Post! @auth
@@ -205,10 +195,11 @@ export const mutations = gql`
 
     unregisterForEventByUser(id: ID!): Event! @auth
 
-    updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
+    updateAdvertisement(
+      input: UpdateAdvertisementInput!
+    ): UpdateAdvertisementPayload @auth
 
-    updateEventProject(id: ID!, data: UpdateEventProjectInput!): EventProject!
-      @auth
+    updateEvent(id: ID!, data: UpdateEventInput): Event! @auth
 
     updatePost(id: ID!, data: PostUpdateInput): Post! @auth
 
@@ -223,8 +214,6 @@ export const mutations = gql`
     updatePluginStatus(id: ID!, orgId: ID!): Plugin!
 
     updateUserTag(input: UpdateUserTagInput!): UserTag @auth
-
-    updateTask(id: ID!, data: UpdateTaskInput!): Task @auth
 
     updateUserProfile(data: UpdateUserInput, file: String): User! @auth
 
