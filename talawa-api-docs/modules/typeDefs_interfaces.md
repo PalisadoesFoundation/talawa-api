@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[src/typeDefs/interfaces.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/ad7a1f7/src/typeDefs/interfaces.ts#L4)
+[src/typeDefs/interfaces.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/55cb3be/src/typeDefs/interfaces.ts#L4)

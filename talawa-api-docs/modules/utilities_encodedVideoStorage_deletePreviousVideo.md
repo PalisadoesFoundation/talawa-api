@@ -26,4 +26,4 @@
 
 #### Defined in
 
-[src/utilities/encodedVideoStorage/deletePreviousVideo.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/ad7a1f7/src/utilities/encodedVideoStorage/deletePreviousVideo.ts#L5)
+[src/utilities/encodedVideoStorage/deletePreviousVideo.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/55cb3be/src/utilities/encodedVideoStorage/deletePreviousVideo.ts#L5)
