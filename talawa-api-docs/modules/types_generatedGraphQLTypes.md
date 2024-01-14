@@ -6523,7 +6523,6 @@ ___
 | `lastName` | [`Scalars`](types_generatedGraphQLTypes.md#scalars)[``"String"``][``"output"``] |
 | `maritalStatus?` | [`Maybe`](types_generatedGraphQLTypes.md#maybe)\<[`MaritalStatus`](types_generatedGraphQLTypes.md#maritalstatus)\> |
 | `membershipRequests?` | [`Maybe`](types_generatedGraphQLTypes.md#maybe)\<[`Maybe`](types_generatedGraphQLTypes.md#maybe)\<[`MembershipRequest`](types_generatedGraphQLTypes.md#membershiprequest)\>[]\> |
-| `organizationUserBelongsTo?` | [`Maybe`](types_generatedGraphQLTypes.md#maybe)\<[`Organization`](types_generatedGraphQLTypes.md#organization)\> |
 | `organizationsBlockedBy?` | [`Maybe`](types_generatedGraphQLTypes.md#maybe)\<[`Maybe`](types_generatedGraphQLTypes.md#maybe)\<[`Organization`](types_generatedGraphQLTypes.md#organization)\>[]\> |
 | `phone?` | [`Maybe`](types_generatedGraphQLTypes.md#maybe)\<[`UserPhone`](types_generatedGraphQLTypes.md#userphone)\> |
 | `pluginCreationAllowed` | [`Scalars`](types_generatedGraphQLTypes.md#scalars)[``"Boolean"``][``"output"``] |
@@ -6821,7 +6820,6 @@ ___
 | `lastName?` | [`Resolver`](types_generatedGraphQLTypes.md#resolver)\<[`ResolversTypes`](types_generatedGraphQLTypes.md#resolverstypes)[``"String"``], `ParentType`, `ContextType`\> |
 | `maritalStatus?` | [`Resolver`](types_generatedGraphQLTypes.md#resolver)\<[`Maybe`](types_generatedGraphQLTypes.md#maybe)\<[`ResolversTypes`](types_generatedGraphQLTypes.md#resolverstypes)[``"MaritalStatus"``]\>, `ParentType`, `ContextType`\> |
 | `membershipRequests?` | [`Resolver`](types_generatedGraphQLTypes.md#resolver)\<[`Maybe`](types_generatedGraphQLTypes.md#maybe)\<[`Maybe`](types_generatedGraphQLTypes.md#maybe)\<[`ResolversTypes`](types_generatedGraphQLTypes.md#resolverstypes)[``"MembershipRequest"``]\>[]\>, `ParentType`, `ContextType`\> |
-| `organizationUserBelongsTo?` | [`Resolver`](types_generatedGraphQLTypes.md#resolver)\<[`Maybe`](types_generatedGraphQLTypes.md#maybe)\<[`ResolversTypes`](types_generatedGraphQLTypes.md#resolverstypes)[``"Organization"``]\>, `ParentType`, `ContextType`\> |
 | `organizationsBlockedBy?` | [`Resolver`](types_generatedGraphQLTypes.md#resolver)\<[`Maybe`](types_generatedGraphQLTypes.md#maybe)\<[`Maybe`](types_generatedGraphQLTypes.md#maybe)\<[`ResolversTypes`](types_generatedGraphQLTypes.md#resolverstypes)[``"Organization"``]\>[]\>, `ParentType`, `ContextType`\> |
 | `phone?` | [`Resolver`](types_generatedGraphQLTypes.md#resolver)\<[`Maybe`](types_generatedGraphQLTypes.md#maybe)\<[`ResolversTypes`](types_generatedGraphQLTypes.md#resolverstypes)[``"UserPhone"``]\>, `ParentType`, `ContextType`\> |
 | `pluginCreationAllowed?` | [`Resolver`](types_generatedGraphQLTypes.md#resolver)\<[`ResolversTypes`](types_generatedGraphQLTypes.md#resolverstypes)[``"Boolean"``], `ParentType`, `ContextType`\> |

@@ -383,7 +383,6 @@ export const types = gql`
     lastName: String!
     maritalStatus: MaritalStatus
     membershipRequests: [MembershipRequest]
-    organizationUserBelongsTo: Organization
     organizationsBlockedBy: [Organization]
     phone: UserPhone
     pluginCreationAllowed: Boolean!
