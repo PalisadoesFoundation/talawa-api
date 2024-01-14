@@ -132,7 +132,7 @@ jobs:
         run: |
           Green='0;32'
           NoColor='\033[0m' 
-          git config --global user.name "${{github.actor}}"
+          git config --global user.name "${{ github.actor}}"
           git config --global user.email "${{env.email}}"
           git add .
           git commit -m "Update documentation"
