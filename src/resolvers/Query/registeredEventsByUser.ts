@@ -24,7 +24,6 @@ export const registeredEventsByUser: QueryResolvers["registeredEventsByUser"] =
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
   };
