@@ -122,7 +122,6 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
 
   const createdUser = await User.create({
     ...args.data,
-    organizationUserBelongsTo: organization ? organization._id : null,
     email: args.data.email.toLowerCase(), // ensure all emails are stored as lowercase to prevent duplicated due to comparison errors
     image: uploadImageFileName ? uploadImageFileName : null,
     password: hashedPassword,

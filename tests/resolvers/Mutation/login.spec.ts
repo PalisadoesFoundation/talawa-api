@@ -187,7 +187,7 @@ email === args.data.email`, async () => {
 
   it(`returns the user object with populated fields joinedOrganizations, createdOrganizations,
   createdEvents, registeredEvents, eventAdmin, adminFor, membershipRequests, 
-  organizationsBlockedBy, organizationUserBelongsTo`, async () => {
+  organizationsBlockedBy`, async () => {
     const args: MutationLoginArgs = {
       data: {
         email: testUser?.email,
@@ -209,7 +209,6 @@ email === args.data.email`, async () => {
       .populate("adminFor")
       .populate("membershipRequests")
       .populate("organizationsBlockedBy")
-      .populate("organizationUserBelongsTo")
       .lean();
 
     expect(loginPayload).toEqual(

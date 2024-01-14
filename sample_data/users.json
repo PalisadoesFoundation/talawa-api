@@ -19,7 +19,6 @@
     "lastName": "Shepherd",
     "email": "testsuperadmin@example.com",
     "password": "$2a$12$bSYpay6TRMpTOaAmYPFXku4avwmqfFBtmgg39TabxmtFEiz4plFtW",
-    "organizationUserBelongsTo": null,
     "image": null,
     "createdAt": "2023-04-13T04:53:17.742Z",
     "__v": 0
@@ -44,7 +43,6 @@
     "lastName": "Kerry",
     "email": "testadmin1@example.com",
     "password": "$2a$12$bSYpay6TRMpTOaAmYPFXku4avwmqfFBtmgg39TabxmtFEiz4plFtW",
-    "organizationUserBelongsTo": null,
     "image": null,
     "createdAt": "2023-04-13T04:53:17.742Z",
     "__v": 0
@@ -69,7 +67,6 @@
     "lastName": "Solomon",
     "email": "testadmin2@example.com",
     "password": "$2a$12$bSYpay6TRMpTOaAmYPFXku4avwmqfFBtmgg39TabxmtFEiz4plFtW",
-    "organizationUserBelongsTo": null,
     "image": null,
     "createdAt": "2023-04-13T04:53:17.742Z",
     "__v": 0
@@ -94,7 +91,6 @@
     "lastName": "Wilf",
     "email": "testadmin3@example.com",
     "password": "$2a$12$bSYpay6TRMpTOaAmYPFXku4avwmqfFBtmgg39TabxmtFEiz4plFtW",
-    "organizationUserBelongsTo": null,
     "image": null,
     "createdAt": "2023-04-13T04:53:17.742Z",
     "__v": 0
@@ -119,7 +115,6 @@
     "lastName": "Lance",
     "email": "testuser1@example.com",
     "password": "$2a$12$bSYpay6TRMpTOaAmYPFXku4avwmqfFBtmgg39TabxmtFEiz4plFtW",
-    "organizationUserBelongsTo": null,
     "image": null,
     "createdAt": "2023-04-13T04:53:17.742Z",
     "__v": 0
@@ -144,7 +139,6 @@
     "lastName": "Norris",
     "email": "testuser2@example.com",
     "password": "$2a$12$bSYpay6TRMpTOaAmYPFXku4avwmqfFBtmgg39TabxmtFEiz4plFtW",
-    "organizationUserBelongsTo": null,
     "image": null,
     "createdAt": "2023-04-13T04:53:17.742Z",
     "__v": 0
@@ -169,7 +163,6 @@
     "lastName": "Tony",
     "email": "testuser3@example.com",
     "password": "$2a$12$bSYpay6TRMpTOaAmYPFXku4avwmqfFBtmgg39TabxmtFEiz4plFtW",
-    "organizationUserBelongsTo": null,
     "image": null,
     "createdAt": "2023-04-13T04:53:17.742Z",
     "__v": 0
