@@ -50,7 +50,7 @@ jobs:
         run: npm ci
 
       - name: Run ESLint to check for linting errors in modified files
-        run: npx eslint $(git diff --name-only --diff-filter=d ${{ github.event.before }} ${{ github.sha }})
+        run: npx eslint $(git diff --name-only --diff-filter=d -- '***.ts' ${{ github.event.before }} ${{ github.sha }})
 
       - name: Check for formatting errors
         run: npm run format:check
