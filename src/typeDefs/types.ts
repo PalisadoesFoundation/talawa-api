@@ -95,12 +95,16 @@ export const types = gql`
     name: String!
     orgId: ID!
     link: String!
-    type: String!
+    type: AdvertisementType!
     startDate: Date!
     endDate: Date!
     createdAt: DateTime!
     creator: User
     updatedAt: DateTime!
+  }
+
+  type UpdateAdvertisementPayload {
+    advertisement: Advertisement
   }
 
   type ExtendSession {
@@ -379,7 +383,6 @@ export const types = gql`
     lastName: String!
     maritalStatus: MaritalStatus
     membershipRequests: [MembershipRequest]
-    organizationUserBelongsTo: Organization
     organizationsBlockedBy: [Organization]
     phone: UserPhone
     pluginCreationAllowed: Boolean!

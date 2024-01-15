@@ -17,3 +17,6 @@ docker-compose down
 
 # Build and launch containers in the background
 docker-compose up -d --build
+
+# Remove all unused containers, networks, and images (both dangling and all unused)
+docker system prune -f

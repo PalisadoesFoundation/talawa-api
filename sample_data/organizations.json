@@ -21,7 +21,7 @@
       "sortingCode": "ABC-123",
       "state": "Delhi"
     },
-    "isPublic": true,
+    "userRegistrationRequired": false,
     "visibleInSearch": true,
     "image": null,
     "creator": "64378abd85008f171cf2990d",
@@ -55,7 +55,7 @@
       "sortingCode": "ABC-124",
       "state": "West Bengal"
     },
-    "isPublic": true,
+    "userRegistrationRequired": false,
     "visibleInSearch": true,
     "image": null,
     "creator": "64378abd85008f171cf2990d",
@@ -84,7 +84,7 @@
       "sortingCode": "XYZ-789",
       "state": "CA"
     },
-    "isPublic": true,
+    "userRegistrationRequired": false,
     "visibleInSearch": true,
     "image": null,
     "creator": "64378abd85008f171cf2990d",
@@ -113,7 +113,7 @@
       "sortingCode": "ABC-789",
       "state": "NY"
     },
-    "isPublic": true,
+    "userRegistrationRequired": false,
     "visibleInSearch": true,
     "image": null,
     "creator": "64378abd85008f171cf2990d",

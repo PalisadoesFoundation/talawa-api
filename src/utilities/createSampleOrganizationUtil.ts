@@ -219,7 +219,7 @@ export const createSampleOrganization = async (): Promise<void> => {
     name: faker.company.name(),
     description: faker.lorem.sentences(),
     location: `${faker.location.country()}, ${faker.location.city()}`,
-    isPublic: true,
+    userRegistrationRequired: false,
     creatorId: creator._id,
     status: "ACTIVE",
     members: [creator._id],
