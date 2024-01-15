@@ -227,12 +227,15 @@ async function redisConfiguration(): Promise<void> {
  * @returns The email entered by the user is being returned.
  */
 async function askForSuperAdminEmail(): Promise<string> {
+  console.log(
+    "\nPlease make sure to register with this email before logging in.\n"
+  );
   const { email } = await inquirer.prompt([
     {
       type: "input",
       name: "email",
       message:
-        "Please make sure to register with this email before logging in.\n Enter the email which you wish to assign as the Super Admin of last resort :",
+        "Enter the email which you wish to assign as the Super Admin of last resort :",
       validate: (input: string) =>
         isValidEmail(input) || "Invalid email. Please try again.",
     },
@@ -645,7 +648,7 @@ async function verifySmtpConnection(
  */
 async function configureSmtp(): Promise<void> {
   console.log(
-    "SMTP Configuration is necessary for sending Emails through Talawa"
+    "\nSMTP Configuration is necessary for sending Emails through Talawa\n"
   );
   const { shouldConfigureSmtp } = await inquirer.prompt({
     type: "confirm",
