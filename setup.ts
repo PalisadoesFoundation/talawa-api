@@ -130,7 +130,6 @@ async function checkRedisConnection(url: string): Promise<boolean> {
 
   try {
     await client.connect();
-    console.log("\nConnection to Redis successful! 🎉");
     response = true;
   } catch (error) {
     console.log(`\nConnection to Redis failed. Please try again.\n`);
@@ -176,6 +175,29 @@ async function askForRedisUrl(): Promise<{
   return { host, port, password };
 }
 
+//check existing redis url
+/**
+ * The function `checkExistingRedis` checks if there is an existing Redis connection by iterating
+ * through a list of Redis URLs and testing the connection.
+ * @returns The function `checkExistingRedis` returns a Promise that resolves to a string or null.
+ */
+async function checkExistingRedis(): Promise<string | null> {
+  const existingRedisURL = ["redis://localhost:6379"];
+
+  for (const url of existingRedisURL) {
+    if (!url) {
+      continue;
+    }
+
+    const isConnected = await checkRedisConnection(url);
+    if (isConnected) {
+      return url;
+    }
+  }
+
+  return null;
+}
+
 // get the redis url
 /**
  * The `redisConfiguration` function updates the Redis configuration by prompting the user for the
@@ -186,31 +208,54 @@ async function redisConfiguration(): Promise<void> {
   const REDIS_URL = process.env.REDIS_URL;
 
   try {
-    let isConnected = false,
-      url = "";
     let host!: string;
     let port!: number;
     let password!: string;
+    let url = await checkExistingRedis();
+    let isConnected = url !== null;
+
+    if (isConnected) {
+      console.log("Redis URL detected: " + url);
+      const { keepValues } = await inquirer.prompt({
+        type: "confirm",
+        name: "keepValues",
+        message: `Do you want to connect to the detected Redis URL?`,
+        default: true,
+      });
+
+      if (keepValues) {
+        console.log("Keeping existing Redis URL: " + url);
+        host = "localhost";
+        port = 6379;
+        password = "";
+      } else {
+        isConnected = false;
+      }
+    }
+
+    url = "";
 
     while (!isConnected) {
-      const result = await askForRedisUrl();
-      host = result.host;
-      port = result.port;
-      password = result.password;
-
+      if (!url) {
+        const result = await askForRedisUrl();
+        host = result.host;
+        port = result.port;
+        password = result.password;
+      }
       url = `redis://${password ? password + "@" : ""}${host}:${port}`;
       isConnected = await checkRedisConnection(url);
     }
+    if (isConnected) {
+      console.log("\nConnection to Redis successful! 🎉");
+    }
 
     // Set the Redis parameters in process.env
-    process.env.REDIS_URL = url;
     process.env.REDIS_HOST = host;
     process.env.REDIS_PORT = port.toString();
     process.env.REDIS_PASSWORD = password;
 
     // Update the .env file
     const config = dotenv.parse(fs.readFileSync(".env"));
-    config.REDIS_URL = url;
     config.REDIS_HOST = host;
     config.REDIS_PORT = port;
     config.REDIS_PASSWORD = password;
