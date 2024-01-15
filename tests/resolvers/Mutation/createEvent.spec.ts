@@ -29,9 +29,10 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    creator: testUser?._id,
+    creatorId: testUser?._id,
     admins: [testUser?._id],
     members: [testUser?._id],
+    visibleInSearch: true,
   });
 
   await User.updateOne(

@@ -1,10 +1,10 @@
-import type { PopulatedDoc, Types, Document, Model } from "mongoose";
+import type { Document, Model, PopulatedDoc, Types } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceMessage } from "./Message";
+import type { InterfaceOrganizationCustomField } from "./OrganizationCustomField";
 import type { InterfacePost } from "./Post";
 import type { InterfaceUser } from "./User";
-import type { InterfaceOrganizationCustomField } from "./OrganizationCustomField";
 /**
  * This is an interface that represents a database(MongoDB) document for Organization.
  */
@@ -15,8 +15,7 @@ export interface InterfaceOrganization {
   name: string;
   description: string;
   location: string | undefined;
-  isPublic: boolean;
-  creator: PopulatedDoc<InterfaceUser & Document>;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
   status: string;
   members: PopulatedDoc<InterfaceUser & Document>[];
   admins: PopulatedDoc<InterfaceUser & Document>[];
@@ -25,9 +24,11 @@ export interface InterfaceOrganization {
   pinnedPosts: PopulatedDoc<InterfacePost & Document>[];
   membershipRequests: PopulatedDoc<InterfaceMembershipRequest & Document>[];
   blockedUsers: PopulatedDoc<InterfaceUser & Document>[];
-  visibleInSearch: boolean | undefined;
   customFields: PopulatedDoc<InterfaceOrganizationCustomField & Document>[];
   createdAt: Date;
+  updatedAt: Date;
+  userRegistrationRequired: boolean;
+  visibleInSearch: boolean;
 }
 /**
  * This describes the schema for a `Organization` that corresponds to `InterfaceOrganization` document.
@@ -36,8 +37,7 @@ export interface InterfaceOrganization {
  * @param name - Organization name.
  * @param description - Organization description.
  * @param location - Organization location.
- * @param isPublic - Organization visibility.
- * @param creator - Organization creator, referring to `User` model.
+ * @param creatorId - Organization creator, referring to `User` model.
  * @param status - Status.
  * @param members - Collection of members, each object refer to `User` model.
  * @param admins - Collection of organization admins, each object refer to `User` model.
@@ -47,98 +47,104 @@ export interface InterfaceOrganization {
  * @param blockedUsers - Collection of Blocked User in the Organization, each object refer to `User` model.
  * @param tags - Collection of tags.
  * @param createdAt - Time stamp of data creation.
+ * @param updatedAt - Time stamp of data updation.
  */
-const organizationSchema = new Schema({
-  apiUrl: {
-    type: String,
-  },
-  image: {
-    type: String,
-  },
-  name: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
-    required: true,
-  },
-  location: {
-    type: String,
-  },
-  isPublic: {
-    type: Boolean,
-    required: true,
-  },
-  creator: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  status: {
-    type: String,
-    required: true,
-    enum: ["ACTIVE", "BLOCKED", "DELETED"],
-    default: "ACTIVE",
-  },
-  members: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "User",
+
+const organizationSchema = new Schema(
+  {
+    apiUrl: {
+      type: String,
     },
-  ],
-  admins: [
-    {
+    image: {
+      type: String,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    location: {
+      type: String,
+    },
+    userRegistrationRequired: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    visibleInSearch: {
+      type: Boolean,
+      default: true,
+      required: true,
+    },
+    creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-  ],
-  groupChats: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Message",
+    status: {
+      type: String,
+      required: true,
+      enum: ["ACTIVE", "BLOCKED", "DELETED"],
+      default: "ACTIVE",
     },
-  ],
-  posts: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Post",
-    },
-  ],
-  pinnedPosts: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Post",
-      default: [],
-    },
-  ],
-  membershipRequests: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "MembershipRequest",
-    },
-  ],
-  blockedUsers: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
-  ],
-  visibleInSearch: {
-    type: Boolean,
+    members: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    admins: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+    ],
+    groupChats: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Message",
+      },
+    ],
+    posts: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Post",
+      },
+    ],
+    pinnedPosts: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Post",
+        default: [],
+      },
+    ],
+    membershipRequests: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "MembershipRequest",
+      },
+    ],
+    blockedUsers: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    customFields: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "CustomField",
+      },
+    ],
   },
-  customFields: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "CustomField",
-    },
-  ],
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 const organizationModel = (): Model<InterfaceOrganization> =>
   model<InterfaceOrganization>("Organization", organizationSchema);

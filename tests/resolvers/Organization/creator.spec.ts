@@ -35,13 +35,13 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Organization -> creator", () => {
+describe("resolvers -> Organization -> creatorId", () => {
   afterEach(() => {
     vi.doUnmock("../../../src/constants");
     vi.resetModules();
   });
 
-  it(`throws NotFoundError if no user exists with _id === parent.creator`, async () => {
+  it(`throws NotFoundError if no user exists with _id === parent.creatorId`, async () => {
     const { requestContext } = await import("../../../src/libraries");
     const spy = vi
       .spyOn(requestContext, "translate")
@@ -54,7 +54,7 @@ describe("resolvers -> Organization -> creator", () => {
         },
         {
           $set: {
-            creator: Types.ObjectId().toString(),
+            creatorId: Types.ObjectId().toString(),
           },
         },
         {
@@ -78,14 +78,14 @@ describe("resolvers -> Organization -> creator", () => {
     }
   });
 
-  it(`returns user object for parent.creator`, async () => {
+  it(`returns user object for parent.creatorId`, async () => {
     testOrganization = await Organization.findOneAndUpdate(
       {
         _id: testOrganization?._id,
       },
       {
         $set: {
-          creator: testUser?._id,
+          creatorId: testUser?._id,
         },
       },
       {
@@ -101,7 +101,7 @@ describe("resolvers -> Organization -> creator", () => {
     if (parent) {
       const creatorPayload = await creatorResolver?.(parent, {}, {});
       const creator = await User.findOne({
-        _id: testOrganization?.creator,
+        _id: testOrganization?.creatorId,
       }).lean();
 
       expect(creatorPayload).toEqual(creator);

@@ -1,7 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent } from "../../models";
-import { User, Event, EventProject, Task, TaskVolunteer } from "../../models";
+import { User, Event } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
@@ -127,43 +127,5 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
     await cacheEvents([updatedEvent]);
   }
 
-  // Fetch and delete all the event projects under the particular event
-  const eventProjects = await EventProject.find(
-    {
-      event: event._id,
-    },
-    {
-      _id: 1,
-    }
-  ).lean();
-  const eventProjectIds = eventProjects.map((project) => project._id);
-  await EventProject.deleteMany({
-    event: event._id,
-  });
-
-  // Fetch and delete all the event tasks indirectly under the particular event
-  const eventTasks = await Task.find(
-    {
-      eventProjectId: {
-        $in: eventProjectIds,
-      },
-    },
-    {
-      _id: 1,
-    }
-  ).lean();
-  const taskIds = eventTasks.map((task) => task._id);
-  await Task.deleteMany({
-    eventProjectId: {
-      $in: eventProjectIds,
-    },
-  });
-
-  // Delete all the task volunteer entries indirectly under the particular event
-  await TaskVolunteer.deleteMany({
-    taskId: {
-      $in: taskIds,
-    },
-  });
   return event;
 };
