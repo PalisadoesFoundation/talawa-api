@@ -140,10 +140,10 @@ export const inputs = gql`
     description: String!
     location: String
     attendees: String
-    isPublic: Boolean!
-    visibleInSearch: Boolean!
     apiUrl: URL
     image: String
+    userRegistrationRequired: Boolean
+    visibleInSearch: Boolean
   }
 
   input OrganizationWhereInput {
@@ -174,10 +174,8 @@ export const inputs = gql`
     apiUrl_not_in: [URL!]
     apiUrl_contains: URL
     apiUrl_starts_with: URL
-
+    userRegistrationRequired: Boolean
     visibleInSearch: Boolean
-
-    isPublic: Boolean
   }
 
   input OTPInput {
@@ -270,12 +268,21 @@ export const inputs = gql`
     limit: PositiveInt!
   }
 
+  input UpdateAdvertisementInput {
+    _id: ID!
+    name: String
+    link: String
+    type: AdvertisementType
+    startDate: Date
+    endDate: Date
+  }
+
   input UpdateOrganizationInput {
     name: String
     description: String
-    isPublic: Boolean
-    visibleInSearch: Boolean
     location: String
+    userRegistrationRequired: Boolean
+    visibleInSearch: Boolean
   }
 
   input UpdateUserTagInput {

@@ -190,6 +190,9 @@ describe("resolvers -> Mutation -> adminRemoveGroup", () => {
       context
     );
 
-    expect(adminRemoveGroupPayload).toEqual(testGroupChat?.toObject());
+    expect(adminRemoveGroupPayload).toEqual({
+      ...testGroupChat?.toObject(),
+      updatedAt: expect.anything(),
+    });
   });
 });

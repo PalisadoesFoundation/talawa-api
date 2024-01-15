@@ -98,7 +98,7 @@ export const generateEventData = async (
     ]),
     isPublic: faker.datatype.boolean({ probability: 0.9 }),
     isRegisterable: faker.datatype.boolean(),
-    creator: faker.helpers.arrayElement(users)._id,
+    creatorId: faker.helpers.arrayElement(users)._id,
     admins: [faker.helpers.arrayElement(users)._id],
     organization: organizationId,
     status: "ACTIVE",
@@ -113,7 +113,7 @@ export const generateEventData = async (
 
   await sampleModel.save();
 
-  const creatorId = event.creator.toString();
+  const creatorId = event.creatorId.toString();
   await User.findByIdAndUpdate(
     creatorId,
     { $push: { eventsCreated: event._id } },
@@ -135,7 +135,7 @@ export const generatePostData = async (
     pinned: false,
     text: faker.lorem.sentence(),
     title: faker.lorem.words(),
-    creator: faker.helpers.arrayElement(users),
+    creatorId: faker.helpers.arrayElement(users),
     organization: organizationId,
     imageUrl: faker.image.url(),
     createdAt: faker.date.recent(),
@@ -220,7 +220,7 @@ export const createSampleOrganization = async (): Promise<void> => {
     description: faker.lorem.sentences(),
     location: `${faker.location.country()}, ${faker.location.city()}`,
     isPublic: true,
-    creator: creator._id,
+    creatorId: creator._id,
     status: "ACTIVE",
     members: [creator._id],
     admins: [creator._id],

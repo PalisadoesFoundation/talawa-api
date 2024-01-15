@@ -25,13 +25,22 @@ input AddressInput {
 }
 
 type Advertisement {
-  _id: ID
+  _id: ID!
+  createdAt: DateTime!
+  creator: User
   endDate: Date!
   link: String!
   name: String!
-  orgId: ID
+  orgId: ID!
   startDate: Date!
-  type: String!
+  type: AdvertisementType!
+  updatedAt: DateTime!
+}
+
+enum AdvertisementType {
+  BANNER
+  MENU
+  POPUP
 }
 
 type AggregatePost {
@@ -54,9 +63,11 @@ type CheckIn {
   _id: ID!
   allotedRoom: String
   allotedSeat: String
+  createdAt: DateTime!
   event: Event!
   feedbackSubmitted: Boolean!
   time: DateTime!
+  updatedAt: DateTime!
   user: User!
 }
 
@@ -74,13 +85,14 @@ type CheckInStatus {
 }
 
 type Comment {
-  _id: ID
-  createdAt: DateTime
-  creator: User!
+  _id: ID!
+  createdAt: DateTime!
+  creator: User
   likeCount: Int
   likedBy: [User]
   post: Post!
   text: String!
+  updatedAt: DateTime!
 }
 
 input CommentInput {
@@ -130,9 +142,11 @@ type DeletePayload {
 
 type DirectChat {
   _id: ID!
-  creator: User!
+  createdAt: DateTime!
+  creator: User
   messages: [DirectChatMessage]
   organization: Organization!
+  updatedAt: DateTime!
   users: [User!]!
 }
 
@@ -143,15 +157,18 @@ type DirectChatMessage {
   messageContent: String!
   receiver: User!
   sender: User!
+  updatedAt: DateTime!
 }
 
 type Donation {
   _id: ID!
   amount: Float!
+  createdAt: DateTime!
   nameOfOrg: String!
   nameOfUser: String!
   orgId: ID!
   payPalId: String!
+  updatedAt: DateTime!
   userId: ID!
 }
 
@@ -203,12 +220,13 @@ interface Error {
 
 type Event {
   _id: ID!
-  admins(adminId: ID): [User]
+  admins(adminId: ID): [User!]
   allDay: Boolean!
-  attendees: [User!]!
+  attendees: [User]
   attendeesCheckInStatus: [CheckInStatus!]!
   averageFeedbackScore: Float
-  creator: User!
+  createdAt: DateTime!
+  creator: User
   description: String!
   endDate: Date!
   endTime: Time
@@ -225,6 +243,7 @@ type Event {
   startTime: Time
   status: Status!
   title: String!
+  updatedAt: DateTime!
 }
 
 input EventAttendeeInput {
@@ -308,9 +327,11 @@ type ExtendSession {
 
 type Feedback {
   _id: ID!
+  createdAt: DateTime!
   event: Event!
   rating: Int!
   review: String
+  updatedAt: DateTime!
 }
 
 input FeedbackInput {
@@ -337,19 +358,22 @@ enum Gender {
 }
 
 type Group {
-  _id: ID
-  admins: [User]
-  createdAt: DateTime
+  _id: ID!
+  admins: [User!]!
+  createdAt: DateTime!
   description: String
   organization: Organization!
-  title: String
+  title: String!
+  updatedAt: DateTime!
 }
 
 type GroupChat {
   _id: ID!
-  creator: User!
+  createdAt: DateTime!
+  creator: User
   messages: [GroupChatMessage]
   organization: Organization!
+  updatedAt: DateTime!
   users: [User!]!
 }
 
@@ -359,6 +383,7 @@ type GroupChatMessage {
   groupChatMessageBelongsTo: GroupChat!
   messageContent: String!
   sender: User!
+  updatedAt: DateTime!
 }
 
 type InvalidCursor implements FieldError {
@@ -426,10 +451,11 @@ type MembershipRequest {
 
 type Message {
   _id: ID!
-  createdAt: DateTime
+  createdAt: DateTime!
   creator: User
   imageUrl: URL
-  text: String
+  text: String!
+  updatedAt: DateTime!
   videoUrl: URL
 }
 
@@ -440,6 +466,7 @@ type MessageChat {
   message: String!
   receiver: User!
   sender: User!
+  updatedAt: DateTime!
 }
 
 input MessageChatInput {
@@ -534,6 +561,7 @@ type Mutation {
   unlikeComment(id: ID!): Comment
   unlikePost(id: ID!): Post
   unregisterForEventByUser(id: ID!): Event!
+  updateAdvertisement(input: UpdateAdvertisementInput!): UpdateAdvertisementPayload
   updateEvent(data: UpdateEventInput, id: ID!): Event!
   updateLanguage(languageCode: String!): User!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
@@ -553,20 +581,21 @@ input OTPInput {
 
 type Organization {
   _id: ID!
-  admins(adminId: ID): [User]
+  admins(adminId: ID): [User!]
   apiUrl: URL!
   blockedUsers: [User]
-  createdAt: DateTime
-  creator: User!
+  createdAt: DateTime!
+  creator: User
   customFields: [OrganizationCustomField!]!
   description: String!
   image: String
-  isPublic: Boolean!
   location: String
   members: [User]
   membershipRequests: [MembershipRequest]
   name: String!
   pinnedPosts: [Post]
+  updatedAt: DateTime!
+  userRegistrationRequired: Boolean!
   userTags(after: String, before: String, first: PositiveInt, last: PositiveInt): UserTagsConnection
   visibleInSearch: Boolean!
 }
@@ -581,11 +610,11 @@ type OrganizationCustomField {
 type OrganizationInfoNode {
   _id: ID!
   apiUrl: URL!
-  creator: User!
+  creator: User
   description: String!
   image: String
-  isPublic: Boolean!
   name: String!
+  userRegistrationRequired: Boolean!
   visibleInSearch: Boolean!
 }
 
@@ -594,10 +623,10 @@ input OrganizationInput {
   attendees: String
   description: String!
   image: String
-  isPublic: Boolean!
   location: String
   name: String!
-  visibleInSearch: Boolean!
+  userRegistrationRequired: Boolean
+  visibleInSearch: Boolean
 }
 
 enum OrganizationOrderByInput {
@@ -632,13 +661,13 @@ input OrganizationWhereInput {
   id_not: ID
   id_not_in: [ID!]
   id_starts_with: ID
-  isPublic: Boolean
   name: String
   name_contains: String
   name_in: [String!]
   name_not: String
   name_not_in: [String!]
   name_starts_with: String
+  userRegistrationRequired: Boolean
   visibleInSearch: Boolean
 }
 
@@ -672,11 +701,11 @@ type Plugin {
   pluginCreatedBy: String!
   pluginDesc: String!
   pluginName: String!
-  uninstalledOrgs: [ID!]!
+  uninstalledOrgs: [ID!]
 }
 
 type PluginField {
-  createdAt: DateTime
+  createdAt: DateTime!
   key: String!
   status: Status!
   value: String!
@@ -701,8 +730,8 @@ type Post {
   _id: ID
   commentCount: Int
   comments: [Comment]
-  createdAt: DateTime
-  creator: User!
+  createdAt: DateTime!
+  creator: User
   imageUrl: URL
   likeCount: Int
   likedBy: [User]
@@ -710,6 +739,7 @@ type Post {
   pinned: Boolean
   text: String!
   title: String
+  updatedAt: DateTime!
   videoUrl: URL
 }
 
@@ -872,6 +902,19 @@ type UnauthorizedError implements Error {
   message: String!
 }
 
+input UpdateAdvertisementInput {
+  _id: ID!
+  endDate: Date
+  link: String
+  name: String
+  startDate: Date
+  type: AdvertisementType
+}
+
+type UpdateAdvertisementPayload {
+  advertisement: Advertisement
+}
+
 input UpdateEventInput {
   allDay: Boolean
   description: String
@@ -891,9 +934,9 @@ input UpdateEventInput {
 
 input UpdateOrganizationInput {
   description: String
-  isPublic: Boolean
   location: String
   name: String
+  userRegistrationRequired: Boolean
   visibleInSearch: Boolean
 }
 
@@ -935,7 +978,7 @@ type User {
   adminFor: [Organization]
   appLanguageCode: String!
   birthDate: Date
-  createdAt: DateTime
+  createdAt: DateTime!
   createdEvents: [Event]
   createdOrganizations: [Organization]
   educationGrade: EducationGrade
@@ -952,11 +995,12 @@ type User {
   organizationUserBelongsTo: Organization
   organizationsBlockedBy: [Organization]
   phone: UserPhone
-  pluginCreationAllowed: Boolean
+  pluginCreationAllowed: Boolean!
   registeredEvents: [Event]
   tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection
   tokenVersion: Int!
-  userType: String
+  updatedAt: DateTime!
+  userType: UserType!
 }
 
 input UserAndOrganizationInput {

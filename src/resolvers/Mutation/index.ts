@@ -85,6 +85,7 @@ import { updateUserPassword } from "./updateUserPassword";
 import { updateUserTag } from "./updateUserTag";
 import { updateUserType } from "./updateUserType";
 import { deleteAdvertisementById } from "./deleteAdvertisementById";
+import { updateAdvertisement } from "./updateAdvertisement";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,
@@ -173,4 +174,5 @@ export const Mutation: MutationResolvers = {
   updateUserType,
   updateUserTag,
   updatePost,
+  updateAdvertisement,
 };
