@@ -307,7 +307,6 @@ async function checkConnection(url: string): Promise<boolean> {
       useUnifiedTopology: true,
       serverSelectionTimeoutMS: 1000,
     });
-    console.log("\nConnection to MongoDB successful! 🎉");
     await connection.close();
     return true;
   } catch (error) {
@@ -345,11 +344,22 @@ async function mongoDB(): Promise<void> {
 
   try {
     let url = await checkExistingMongoDB();
-
     let isConnected = url !== null;
 
     if (isConnected) {
       console.log("MongoDB URL detected: " + url);
+      const { keepValues } = await inquirer.prompt({
+        type: "confirm",
+        name: "keepValues",
+        message: `Do you want to connect to the detected MongoDB URL?`,
+        default: true,
+      });
+
+      if (keepValues) {
+        console.log("Keeping existing MongoDB URL: " + url);
+      } else {
+        isConnected = false;
+      }
     }
 
     while (!isConnected) {
@@ -357,10 +367,13 @@ async function mongoDB(): Promise<void> {
       isConnected = await checkConnection(url);
     }
 
+    if (isConnected) {
+      console.log("\nConnection to MongoDB successful! 🎉");
+    }
     DB_URL = `${url?.endsWith("/talawa-api") ? url : `${url}/talawa-api`}`;
     const config = dotenv.parse(fs.readFileSync(".env"));
     config.MONGO_DB_URL = DB_URL;
-    // Modifying the environment variable to be able to access the url in importData function.
+    // Modifying the environment variable to be able to access the URL in importData function.
     process.env.MONGO_DB_URL = DB_URL;
     updateEnvVariable(config);
   } catch (err) {
