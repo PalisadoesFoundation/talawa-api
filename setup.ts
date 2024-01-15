@@ -705,21 +705,6 @@ async function verifySmtpConnection(
  * @returns a Promise that resolves to void.
  */
 async function configureSmtp(): Promise<void> {
-  console.log(
-    "\nSMTP Configuration is necessary for sending Emails through Talawa\n"
-  );
-  const { shouldConfigureSmtp } = await inquirer.prompt({
-    type: "confirm",
-    name: "shouldConfigureSmtp",
-    message: "Would you like to configure SMTP for Talawa to send emails?",
-    default: true,
-  });
-
-  if (!shouldConfigureSmtp) {
-    console.log("SMTP configuration skipped.");
-    return;
-  }
-
   const smtpConfig = await inquirer.prompt([
     {
       type: "input",
@@ -922,12 +907,16 @@ async function main(): Promise<void> {
     await recaptchaSiteKey();
   }
 
+  console.log(
+    "\n You can configure either SMTP or Mail for sending emails through Talawa.\n"
+  );
+
   if (process.env.MAIL_USERNAME) {
     console.log(
-      `\nMail username already exists with the value ${process.env.MAIL_USERNAME}`
+      `Mail username already exists with the value ${process.env.MAIL_USERNAME}`
     );
   }
-  await configureSmtp();
+
   const { shouldSetMail } = await inquirer.prompt([
     {
       type: "confirm",
@@ -938,6 +927,20 @@ async function main(): Promise<void> {
   ]);
   if (shouldSetMail) {
     await twoFactorAuth();
+  } else {
+    console.log("Mail configuration skipped.\n");
+    const { shouldConfigureSmtp } = await inquirer.prompt({
+      type: "confirm",
+      name: "shouldConfigureSmtp",
+      message: "Would you like to configure SMTP for Talawa to send emails?",
+      default: true,
+    });
+
+    if (shouldConfigureSmtp) {
+      await configureSmtp();
+    } else {
+      console.log("SMTP configuration skipped.\n");
+    }
   }
 
   if (process.env.LAST_RESORT_SUPERADMIN_EMAIL) {
