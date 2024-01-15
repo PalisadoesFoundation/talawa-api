@@ -1,19 +1,25 @@
 import type mongoose from "mongoose";
+import type {
+  InterfaceEvent,
+  InterfaceOrganization,
+  InterfaceUser,
+} from "../models";
 import { Event } from "../models";
+import type { MutationCreateEventArgs } from "../types/generatedGraphQLTypes";
 
 //Function for creating single events
 
 export async function generateSingleEvent(
-  args: any,
-  currentUser: any,
-  organization: any,
+  args: Partial<MutationCreateEventArgs>,
+  currentUser: InterfaceUser,
+  organization: InterfaceOrganization,
   session: mongoose.ClientSession
-) {
+): Promise<Promise<InterfaceEvent[]>> {
   const createdEvent = await Event.create(
     [
       {
         ...args.data,
-        creator: currentUser._id,
+        creatorId: currentUser._id,
         admins: [currentUser._id],
         organization: organization._id,
       },
@@ -27,11 +33,11 @@ export async function generateSingleEvent(
 //Function for creating Weekly events
 
 export async function generateWeeklyEvents(
-  args: any,
-  currentUser: any,
-  organization: any,
+  args: Partial<MutationCreateEventArgs>,
+  currentUser: InterfaceUser,
+  organization: InterfaceOrganization,
   session: mongoose.ClientSession
-) {
+): Promise<InterfaceEvent[]> {
   const recurringEvents = [];
   const { data } = args;
 
@@ -46,7 +52,7 @@ export async function generateWeeklyEvents(
 
     const createdEvent = {
       ...recurringEventData,
-      creator: currentUser._id,
+      creatorId: currentUser._id,
       admins: [currentUser._id],
       organization: organization._id,
     };

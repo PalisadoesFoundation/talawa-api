@@ -1,6 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Organization, Event } from "../../models";
+import type { InterfaceEvent, InterfaceUser } from "../../models";
+import { User, Organization } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -17,7 +18,6 @@ import {
   generateSingleEvent,
   generateWeeklyEvents,
 } from "../../helpers/eventInstance";
-
 /**
  * This function enables to create an event.
  * @param _parent - parent of current request
@@ -130,7 +130,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   }
 
   try {
-    let createdEvent!: any;
+    let createdEvent!: InterfaceEvent[];
 
     if (args.data?.recurring) {
       switch (args.data?.recurrance) {
@@ -183,18 +183,20 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     }
 
     // Returns the createdEvent.
-    return createdEvent[0].toObject();
+    return createdEvent[0];
   } catch (error) {
-    await session.abortTransaction();
+    if (session) {
+      await session.abortTransaction();
+    }
     throw error;
   }
 };
 
 async function associateEventWithUser(
-  currentUser: any,
-  createdEvent: any,
+  currentUser: InterfaceUser,
+  createdEvent: InterfaceEvent,
   session: mongoose.ClientSession
-) {
+): Promise<void> {
   await EventAttendee.create(
     [
       {

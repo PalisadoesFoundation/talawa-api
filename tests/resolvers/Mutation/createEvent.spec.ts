@@ -17,6 +17,12 @@ import type {
   TestOrganizationType,
 } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
+import {
+  InputValidationError,
+  NotFoundError,
+  UnauthorizedError,
+} from "../../../src/libraries/errors";
+import { fail } from "assert";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -69,8 +75,12 @@ describe("resolvers -> Mutation -> createEvent", () => {
       );
 
       await createEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      } else {
+        fail(`Expected NotFoundError, but got ${error}`);
+      }
     }
   });
 
@@ -105,8 +115,12 @@ describe("resolvers -> Mutation -> createEvent", () => {
       );
 
       await createEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      } else {
+        fail(`Expected NotFoundError, but got ${error}`);
+      }
     }
   });
 
@@ -142,8 +156,14 @@ describe("resolvers -> Mutation -> createEvent", () => {
       );
 
       await createEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof UnauthorizedError) {
+        expect(error.message).toEqual(
+          ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE
+        );
+      } else {
+        fail(`Expected UnauthorizedError, but got ${error}`);
+      }
     }
   });
 
@@ -200,7 +220,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         location: "newLocation",
         recurring: false,
         title: "newTitle",
-        creator: testUser?._id,
+        creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
       })
@@ -215,8 +235,8 @@ describe("resolvers -> Mutation -> createEvent", () => {
     expect(recurringEvents).toHaveLength(1);
 
     const attendeeExists = await EventAttendee.exists({
-      userId: testUser!._id,
-      eventId: createEventPayload!._id,
+      userId: testUser?._id,
+      eventId: createEventPayload?._id,
     });
 
     expect(attendeeExists).toBeTruthy();
@@ -289,7 +309,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         location: "newLocation",
         recurring: true,
         title: "newTitle",
-        creator: testUser?._id,
+        creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
       })
@@ -305,8 +325,8 @@ describe("resolvers -> Mutation -> createEvent", () => {
     expect(recurringEvents).toHaveLength(1);
 
     const attendeeExists = await EventAttendee.exists({
-      userId: testUser!._id,
-      eventId: createEventPayload!._id,
+      userId: testUser?._id,
+      eventId: createEventPayload?._id,
     });
 
     expect(attendeeExists).toBeTruthy();
@@ -379,7 +399,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         location: "newLocation",
         recurring: true,
         title: "newTitle",
-        creator: testUser?._id,
+        creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
       })
@@ -394,8 +414,8 @@ describe("resolvers -> Mutation -> createEvent", () => {
     expect(recurringEvents).toHaveLength(5);
 
     const attendeeExists = await EventAttendee.exists({
-      userId: testUser!._id,
-      eventId: createEventPayload!._id,
+      userId: testUser?._id,
+      eventId: createEventPayload?._id,
     });
 
     expect(attendeeExists).toBeTruthy();
@@ -509,10 +529,14 @@ describe("Check for validation conditions", () => {
       );
 
       await createEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
-      );
+    } catch (error: unknown) {
+      if (error instanceof InputValidationError) {
+        expect(error.message).toEqual(
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
+        );
+      } else {
+        fail(`Expected LengthValidationError, but got ${error}`);
+      }
     }
   });
   it(`throws String Length Validation error if description is greater than 500 characters`, async () => {
@@ -551,10 +575,14 @@ describe("Check for validation conditions", () => {
       );
 
       await createEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
-      );
+    } catch (error: unknown) {
+      if (error instanceof InputValidationError) {
+        expect(error.message).toEqual(
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
+        );
+      } else {
+        fail(`Expected LengthValidationError, but got ${error}`);
+      }
     }
   });
   it(`throws String Length Validation error if location is greater than 50 characters`, async () => {
@@ -592,10 +620,14 @@ describe("Check for validation conditions", () => {
       );
 
       await createEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
-      );
+    } catch (error: unknown) {
+      if (error instanceof InputValidationError) {
+        expect(error.message).toEqual(
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
+        );
+      } else {
+        fail(`Expected LengthValidationError, but got ${error}`);
+      }
     }
   });
   it(`throws Date Validation error if start date is greater than end date`, async () => {
@@ -633,8 +665,14 @@ describe("Check for validation conditions", () => {
       );
 
       await createEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(`start date must be earlier than end date`);
+    } catch (error: unknown) {
+      if (error instanceof InputValidationError) {
+        expect(error.message).toEqual(
+          `start date must be earlier than end date`
+        );
+      } else {
+        fail(`Expected DateValidationError, but got ${error}`);
+      }
     }
   });
 });
