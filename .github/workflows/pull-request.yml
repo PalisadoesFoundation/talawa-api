@@ -178,7 +178,7 @@ jobs:
     steps:
       - name: "Check if base branch is develop"
         run: |
-          if [ "${{github.base.ref}}" != "develop"]; then 
+          if [ "${{github.event.pull_request.base.ref}}" != "develop"]; then 
             echo "PR is not against develop branch. Please refer PR_GUIDELINES.md"
             exit 1
           fi
