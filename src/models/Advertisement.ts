@@ -25,7 +25,7 @@ export interface InterfaceAdvertisement {
 /**
  * @param  organizationId - Organization ID associated with the advertisement (type: Schema.Types.ObjectId)
  */
- 
+
 /**
  * @param  createdAt - Timestamp of Advertisement creation (type: Date)
  * Description: Timestamp of Advertisement creation.

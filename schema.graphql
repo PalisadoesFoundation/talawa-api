@@ -908,7 +908,7 @@ type UnauthorizedError implements Error {
 input UpdateAdvertisementInput {
   _id: ID!
   endDate: Date
-  mediaUrl: URL
+  file: URL
   name: String
   startDate: Date
   type: AdvertisementType

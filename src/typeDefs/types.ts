@@ -108,6 +108,7 @@ export const types = gql`
   }
 
   type CreateAdvertisementPayload {
+    _id: ID!
     advertisement: Advertisement
   }
 

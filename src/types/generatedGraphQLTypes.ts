@@ -76,13 +76,13 @@ export type AddressInput = {
 
 export type Advertisement = {
   __typename?: 'Advertisement';
-  mediaUrl: Scalars['URL']['output'];
-  organizationId: Scalars['ID']['output'];
   _id: Scalars['ID']['output'];
   createdAt: Scalars['DateTime']['output'];
   creator?: Maybe<User>;
   endDate: Scalars['Date']['output'];
+  mediaUrl: Scalars['URL']['output'];
   name: Scalars['String']['output'];
+  organizationId: Scalars['ID']['output'];
   startDate: Scalars['Date']['output'];
   type: AdvertisementType;
   updatedAt: Scalars['DateTime']['output'];
@@ -174,7 +174,8 @@ export type CreateAdvertisementInput = {
 
 export type CreateAdvertisementPayload = {
   __typename?: 'CreateAdvertisementPayload';
-  advertisement: Advertisement;
+  _id: Scalars['ID']['output'];
+  advertisement?: Maybe<Advertisement>;
 };
 
 export type CreateUserTagInput = {
@@ -1587,7 +1588,7 @@ export type UnauthorizedError = Error & {
 export type UpdateAdvertisementInput = {
   _id: Scalars['ID']['input'];
   endDate?: InputMaybe<Scalars['Date']['input']>;
-  file?: InputMaybe<Scalars['String']['input']>;
+  file?: InputMaybe<Scalars['URL']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   startDate?: InputMaybe<Scalars['Date']['input']>;
   type?: InputMaybe<AdvertisementType>;
@@ -1960,9 +1961,9 @@ export type ResolversTypes = {
   CommentInput: CommentInput;
   ConnectionError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['ConnectionError']>;
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
-  CreateAdvertisementInput: CreateAdvertisementInput;
-  CreateAdvertisementPayload: ResolverTypeWrapper<CreateAdvertisementPayload>;
   CountryCode: ResolverTypeWrapper<Scalars['CountryCode']['output']>;
+  CreateAdvertisementInput: CreateAdvertisementInput;
+  CreateAdvertisementPayload: ResolverTypeWrapper<Omit<CreateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversTypes['Advertisement']> }>;
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: ResolverTypeWrapper<Scalars['Date']['output']>;
@@ -2095,9 +2096,9 @@ export type ResolversParentTypes = {
   CommentInput: CommentInput;
   ConnectionError: ResolversUnionTypes<ResolversParentTypes>['ConnectionError'];
   ConnectionPageInfo: ConnectionPageInfo;
-  CreateAdvertisementInput: CreateAdvertisementInput;
-  CreateAdvertisementPayload: CreateAdvertisementPayload;
   CountryCode: Scalars['CountryCode']['output'];
+  CreateAdvertisementInput: CreateAdvertisementInput;
+  CreateAdvertisementPayload: Omit<CreateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversParentTypes['Advertisement']> };
   CreateUserTagInput: CreateUserTagInput;
   CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date']['output'];
@@ -2227,7 +2228,7 @@ export type AdvertisementResolvers<ContextType = any, ParentType extends Resolve
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   endDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  mediaUrl?: Resolver<Maybe<ResolversTypes['URL']>, ParentType, ContextType>;
+  mediaUrl?: Resolver<ResolversTypes['URL'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   organizationId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
@@ -2306,8 +2307,8 @@ export interface CountryCodeScalarConfig extends GraphQLScalarTypeConfig<Resolve
 }
 
 export type CreateAdvertisementPayloadResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreateAdvertisementPayload'] = ResolversParentTypes['CreateAdvertisementPayload']> = {
-  _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
-  advertisement?: Resolver<ResolversTypes['Advertisement'], ParentType, ContextType>;
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  advertisement?: Resolver<Maybe<ResolversTypes['Advertisement']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
