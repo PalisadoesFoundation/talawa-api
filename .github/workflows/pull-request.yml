@@ -177,9 +177,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Check if base branch is develop"
+        if: github.event.pull_request.base.ref != 'develop'
         run: |
-          if [ "${{github.event.pull_request.base.ref}}" != "develop"]; then 
-            echo "PR is not against develop branch. Please refer PR_GUIDELINES.md"
-            exit 1
-          fi
-          echo "PR is against develop branch"
+          echo "PR is not against develop branch. Please refer PR_GUIDELINES.md"
+          exit 1
+      - name: "Success message"
+        if: github.event.pull_request.base.ref == 'develop'
+        run: echo "PR is against develop branch"
+
+      
+          
