@@ -200,13 +200,10 @@ async function checkExistingRedis(): Promise<string | null> {
 
 // get the redis url
 /**
- * The `redisConfiguration` function updates the Redis configuration by prompting the user for the
- * Redis URL, checking the connection, and updating the environment variables and .env file
- * accordingly.
+ * The `redisConfiguration` function connects to a Redis server and sets the Redis parameters in the
+ * environment variables and updates the .env file.
  */
 async function redisConfiguration(): Promise<void> {
-  const REDIS_URL = process.env.REDIS_URL;
-
   try {
     let host!: string;
     let port!: number;
@@ -232,19 +229,17 @@ async function redisConfiguration(): Promise<void> {
         isConnected = false;
       }
     }
-
     url = "";
 
     while (!isConnected) {
-      if (!url) {
-        const result = await askForRedisUrl();
-        host = result.host;
-        port = result.port;
-        password = result.password;
-      }
+      const result = await askForRedisUrl();
+      host = result.host;
+      port = result.port;
+      password = result.password;
       url = `redis://${password ? password + "@" : ""}${host}:${port}`;
       isConnected = await checkRedisConnection(url);
     }
+
     if (isConnected) {
       console.log("\nConnection to Redis successful! 🎉");
     }
@@ -853,7 +848,15 @@ async function main(): Promise<void> {
   if (!isDockerInstallation) {
     // Redis configuration
     if (process.env.REDIS_HOST && process.env.REDIS_PORT) {
-      console.log(`\nRedis URL already exists`);
+      const redis_password_str = process.env.REDIS_PASSWORD
+        ? "X".repeat(process.env.REDIS_PASSWORD.length)
+        : "";
+
+      const url = `redis://${
+        process.env.REDIS_PASSWORD ? redis_password_str + "@" : ""
+      }${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`;
+
+      console.log(`\nRedis URL already exists with the value:\n${url}`);
 
       const { shouldSetupRedis } = await inquirer.prompt({
         type: "confirm",
@@ -929,6 +932,7 @@ async function main(): Promise<void> {
     await twoFactorAuth();
   } else {
     console.log("Mail configuration skipped.\n");
+
     const { shouldConfigureSmtp } = await inquirer.prompt({
       type: "confirm",
       name: "shouldConfigureSmtp",
