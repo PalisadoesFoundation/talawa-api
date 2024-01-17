@@ -91,7 +91,7 @@ export const createTestActionItems = async (): Promise<
     recurring: true,
     isPublic: true,
     isRegisterable: true,
-    creator: testUser?._id,
+    creatorId: testUser?._id,
     admins: [testUser?._id],
     organization: testOrganization?._id,
     actionItems: [testActionItem1?._id, testActionItem2?._id],

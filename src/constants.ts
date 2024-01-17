@@ -89,6 +89,12 @@ export const ORGANIZATION_IMAGE_NOT_FOUND_ERROR = {
   MESSAGE: "organizationImage.notFound",
   PARAM: "organizationImage",
 };
+export const PLUGIN_NOT_FOUND = {
+  DESC: "Plugin not found",
+  CODE: "plugin.notFound",
+  MESSAGE: "plugin.notFound",
+  PARAM: "plugin",
+};
 export const POST_NOT_FOUND_ERROR = {
   DESC: "Post not found",
   CODE: "post.notFound",
@@ -131,6 +137,25 @@ export const UNAUTHENTICATED_ERROR = {
   MESSAGE: "UnauthenticatedError",
   CODE: "user.notAuthenticated",
   PARAM: "userAuthentication",
+};
+
+export const END_DATE_VALIDATION_ERROR = {
+  MESSAGE: "Error: End date must be greater than or equal to start date.",
+  CODE: "enddate.notvalid",
+  PARAM: "dateValidation",
+};
+
+export const START_DATE_VALIDATION_ERROR = {
+  MESSAGE: "Error: Start date must be greater than or equal to current date.",
+  CODE: "startdate.notvalid",
+  PARAM: "dateValidation",
+};
+
+export const FIELD_NON_EMPTY_ERROR = {
+  MESSAGE:
+    "Error: Field cannot be null, an empty string, or contain only spaces.",
+  CODE: "field_non_empty_error",
+  PARAM: "field",
 };
 
 export const LENGTH_VALIDATION_ERROR = {
@@ -291,6 +316,11 @@ export const ADVERTISEMENT_NOT_FOUND_ERROR = {
   DESC: "Advertisement not found",
   CODE: "advertisement.notFound",
   MESSAGE: "advertisement.notFound",
+  PARAM: "advertisement",
+};
+export const INPUT_NOT_FOUND_ERROR = {
+  MESSAGE: "Input not found",
+  CODE: "Input.required",
   PARAM: "advertisement",
 };
 export const STATUS_ACTIVE = "ACTIVE";

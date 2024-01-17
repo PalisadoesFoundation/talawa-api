@@ -59,7 +59,7 @@ beforeAll(async () => {
     recurring: true,
     isPublic: true,
     isRegisterable: true,
-    creator: testUser2?._id,
+    creatorId: testUser2?._id,
     admins: [testUser2?._id],
     organization: testOrganization?._id,
   });
