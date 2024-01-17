@@ -14,10 +14,8 @@ import { EventAttendee } from "../../models/EventAttendee";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import type mongoose from "mongoose";
 import { session } from "../../db";
-import {
-  generateSingleEvent,
-  generateWeeklyEvents,
-} from "../../helpers/eventInstance";
+import { Weekly, Once } from "../../helpers/eventInstances";
+
 /**
  * This function enables to create an event.
  * @param _parent - parent of current request
@@ -135,7 +133,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     if (args.data?.recurring) {
       switch (args.data?.recurrance) {
         case "ONCE":
-          createdEvent = await generateSingleEvent(
+          createdEvent = await Once.generateEvent(
             args,
             currentUser,
             organization,
@@ -150,7 +148,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
           break;
 
         case "WEEKLY":
-          createdEvent = await generateWeeklyEvents(
+          createdEvent = await Weekly.generateEvents(
             args,
             currentUser,
             organization,
@@ -165,7 +163,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
           break;
       }
     } else {
-      createdEvent = await generateSingleEvent(
+      createdEvent = await Once.generateEvent(
         args,
         currentUser,
         organization,
