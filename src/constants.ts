@@ -94,6 +94,12 @@ export const INVALID_FILE_TYPE = {
   PARAM: "internalServerError",
 };
 
+export const IMAGE_SIZE_LIMIT = {
+  MESSAGE: "The Image Size Limit has been exceeded",
+  CODE: "internalServerError",
+  PARAM: "internalServerError",
+};
+
 export const INVALID_ROLE_TYPE = {
   DESC: "Invalid Role Type",
   MESSAGE: "invalid.roleType",

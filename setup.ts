@@ -94,6 +94,17 @@ async function askForRedisUrl(): Promise<{
   return { host, port, password };
 }
 
+// set the image upload size limit
+async function setImageUploadSize(size: number): Promise<void> {
+  const config = dotenv.parse(fs.readFileSync(".env"));
+
+  config.IMAGE_SIZE_LIMIT = size.toString();
+  fs.writeFileSync(".env", "");
+  for (const key in config) {
+    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+  }
+}
+
 // get the redis url
 async function redisConfiguration(): Promise<void> {
   const REDIS_URL = process.env.REDIS_URL;
@@ -311,6 +322,10 @@ function isValidEmail(email: string): boolean {
 function validateRecaptcha(string: string): boolean {
   const pattern = /^[a-zA-Z0-9_-]{40}$/;
   return pattern.test(string);
+}
+
+function validateImageFileSize(size: number): boolean {
+  return size > 0 && size <= 3000;
 }
 
 function abort(): void {
@@ -737,6 +752,21 @@ async function main(): Promise<void> {
       await importData();
     }
   }
+
+  const { imageSizeLimit } = await inquirer.prompt([
+    {
+      type: "input",
+      name: "imageSizeLimit",
+      message: "Enter the maximum size limit of Images uploaded (in Kb)",
+      default: 3000,
+      validate: (input: number) =>
+        validateImageFileSize(input) ||
+        "Enter a valid number between 0 and 3000",
+    },
+  ]);
+
+  console.log(imageSizeLimit);
+  await setImageUploadSize(imageSizeLimit);
 
   console.log(
     "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"

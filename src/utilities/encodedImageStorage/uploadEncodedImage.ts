@@ -3,7 +3,7 @@ import * as fs from "fs";
 import { writeFile } from "fs/promises";
 import { encodedImageExtentionCheck } from "./encodedImageExtensionCheck";
 import { errors, requestContext } from "../../libraries";
-import { INVALID_FILE_TYPE } from "../../constants";
+import { IMAGE_SIZE_LIMIT, INVALID_FILE_TYPE } from "../../constants";
 import { EncodedImage } from "../../models/EncodedImage";
 import path from "path";
 import { deletePreviousImage } from "./deletePreviousImage";
@@ -13,6 +13,18 @@ export const uploadEncodedImage = async (
   previousImagePath?: string | null
 ): Promise<string> => {
   const isURLValidImage = encodedImageExtentionCheck(encodedImageURL);
+
+  const data = encodedImageURL.replace(/^data:image\/\w+;base64,/, "");
+  const stringLength = data.length;
+  const sizeInKb = (4 * Math.ceil(stringLength / 3) * 0.5624896334383812) / 1000;
+
+  if (sizeInKb > Number(process.env.IMAGE_SIZE_LIMIT)) {
+    throw new errors.ImageSizeLimitExceeded(
+      IMAGE_SIZE_LIMIT.MESSAGE,
+      IMAGE_SIZE_LIMIT.CODE,
+      IMAGE_SIZE_LIMIT.PARAM
+    );
+  }
 
   if (!isURLValidImage) {
     throw new errors.InvalidFileTypeError(
@@ -61,8 +73,6 @@ export const uploadEncodedImage = async (
     fileName: id,
     content: encodedImageURL,
   });
-
-  const data = encodedImageURL.replace(/^data:image\/\w+;base64,/, "");
 
   const buf = Buffer.from(data, "base64");
 
