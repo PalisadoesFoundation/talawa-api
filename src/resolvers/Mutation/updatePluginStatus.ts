@@ -1,6 +1,8 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { Plugin } from "../../models";
 import mongoose from "mongoose";
+import { errors, requestContext } from "../../libraries";
+import { PLUGIN_NOT_FOUND } from "../../constants";
 
 /**
  * This function enables to update plugin install status.
@@ -20,8 +22,11 @@ export const updatePluginStatus: MutationResolvers["updatePluginStatus"] =
     const plugin = await Plugin.findById(uid);
 
     if (!plugin) {
-      console.log("Document not found");
-      return;
+      throw new errors.NotFoundError(
+        requestContext.translate(PLUGIN_NOT_FOUND.MESSAGE),
+        PLUGIN_NOT_FOUND.CODE,
+        PLUGIN_NOT_FOUND.PARAM
+      );
     }
 
     let uninstalledOrgsList = plugin.uninstalledOrgs;
@@ -51,7 +56,7 @@ export const updatePluginStatus: MutationResolvers["updatePluginStatus"] =
 
     // calls subscription
     context.pubsub.publish("TALAWA_PLUGIN_UPDATED", {
-      Plugin: res,
+      onPluginUpdate: res,
     });
     return res;
   };

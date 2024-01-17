@@ -1,6 +1,7 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Organization, Event } from "../../models";
+import type { InterfaceEvent, InterfaceUser } from "../../models";
+import { User, Organization } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -11,6 +12,9 @@ import { isValidString } from "../../libraries/validators/validateString";
 import { compareDates } from "../../libraries/validators/compareDates";
 import { EventAttendee } from "../../models/EventAttendee";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
+import type mongoose from "mongoose";
+import { session } from "../../db";
+import { Weekly, Once } from "../../helpers/eventInstances";
 
 /**
  * This function enables to create an event.
@@ -119,27 +123,88 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     );
   }
 
-  // Creates new event.
-  const createdEvent = await Event.create({
-    ...args.data,
-    creatorId: currentUser._id,
-    admins: [currentUser._id],
-    organization: organization._id,
-  });
-
-  if (createdEvent !== null) {
-    await cacheEvents([createdEvent]);
+  if (session) {
+    session.startTransaction();
   }
 
-  await EventAttendee.create({
-    userId: currentUser._id.toString(),
-    eventId: createdEvent._id,
-  });
+  try {
+    let createdEvent!: InterfaceEvent[];
 
-  /*
-  Adds createdEvent._id to eventAdmin, createdEvents and registeredEvents lists
-  on currentUser's document.
-  */
+    if (args.data?.recurring) {
+      switch (args.data?.recurrance) {
+        case "ONCE":
+          createdEvent = await Once.generateEvent(
+            args,
+            currentUser,
+            organization,
+            session
+          );
+
+          for (const event of createdEvent) {
+            await associateEventWithUser(currentUser, event, session);
+            await cacheEvents([event]);
+          }
+
+          break;
+
+        case "WEEKLY":
+          createdEvent = await Weekly.generateEvents(
+            args,
+            currentUser,
+            organization,
+            session
+          );
+
+          for (const event of createdEvent) {
+            await associateEventWithUser(currentUser, event, session);
+            await cacheEvents([event]);
+          }
+
+          break;
+      }
+    } else {
+      createdEvent = await Once.generateEvent(
+        args,
+        currentUser,
+        organization,
+        session
+      );
+
+      for (const event of createdEvent) {
+        await associateEventWithUser(currentUser, event, session);
+        await cacheEvents([event]);
+      }
+    }
+
+    if (session) {
+      await session.commitTransaction();
+    }
+
+    // Returns the createdEvent.
+    return createdEvent[0];
+  } catch (error) {
+    if (session) {
+      await session.abortTransaction();
+    }
+    throw error;
+  }
+};
+
+async function associateEventWithUser(
+  currentUser: InterfaceUser,
+  createdEvent: InterfaceEvent,
+  session: mongoose.ClientSession
+): Promise<void> {
+  await EventAttendee.create(
+    [
+      {
+        userId: currentUser._id.toString(),
+        eventId: createdEvent._id,
+      },
+    ],
+    { session }
+  );
+
   await User.updateOne(
     {
       _id: currentUser._id,
@@ -150,31 +215,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
         createdEvents: createdEvent._id,
         registeredEvents: createdEvent._id,
       },
-    }
+    },
+    { session }
   );
-
-  /* Commenting out this notification code coz we don't use firebase anymore.
-
-    for (let i = 0; i < organization.members.length; i++) {
-    const user = await User.findOne({
-      _id: organization.members[i],
-    }).lean();
-
-  
-    
-    // Checks whether both user and user.token exist.
-    if (user && user.token) {
-      await admin.messaging().send({
-        token: user.token,
-        notification: {
-          title: "New Event",
-          body: `${currentUser.firstName} has created a new event in ${organization.name}`,
-        },
-      });
-    }
-  }
-     */
-
-  // Returns the createdEvent.
-  return createdEvent.toObject();
-};
+}
