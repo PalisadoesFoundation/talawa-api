@@ -1,8 +1,5 @@
 import "dotenv/config";
-import type {
-  MutationResolvers,
-  Address,
-} from "../../types/generatedGraphQLTypes";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { User, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import { LENGTH_VALIDATION_ERROR } from "../../constants";
@@ -42,17 +39,14 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     let validationResultDescription = {
       isLessThanMaxLength: false,
     };
-    let validationResultAddress = {
-      isAddressValid: false,
+    let validationResultLocation = {
+      isLessThanMaxLength: false,
     };
 
-    if (args.data?.name && args.data?.description) {
+    if (args.data?.name && args.data?.description && args.data?.location) {
       validationResultName = isValidString(args.data?.name, 256);
       validationResultDescription = isValidString(args.data?.description, 500);
-    }
-
-    if (args.data?.address) {
-      validationResultAddress = validateAddress(args.data?.address);
+      validationResultLocation = isValidString(args.data?.location, 50);
     }
 
     if (!validationResultName.isLessThanMaxLength) {
@@ -71,14 +65,18 @@ export const createOrganization: MutationResolvers["createOrganization"] =
         LENGTH_VALIDATION_ERROR.CODE
       );
     }
-    if (!validationResultAddress.isAddressValid) {
-      throw new errors.InputValidationError("Not a Valid Address");
+    if (!validationResultLocation.isLessThanMaxLength) {
+      throw new errors.InputValidationError(
+        requestContext.translate(
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
+        ),
+        LENGTH_VALIDATION_ERROR.CODE
+      );
     }
 
     // Creates new organization.
     const createdOrganization = await Organization.create({
       ...args.data,
-      address: args.data?.address,
       image: uploadImageFileName ? uploadImageFileName : null,
       creatorId: context.userId,
       admins: [context.userId],
@@ -107,62 +105,3 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     // Returns createdOrganization.
     return createdOrganization.toObject();
   };
-/**
- * Validates an address object to ensure its fields meet specified criteria.
- * @param address - The address object to validate
- * @returns An object containing the validation result: isAddressValid (true if the address is valid, false otherwise)
- */
-function validateAddress(address: Address | undefined): {
-  isAddressValid: boolean;
-} {
-  if (!address) {
-    return { isAddressValid: false };
-  }
-
-  const {
-    city,
-    countryCode,
-    dependentLocality,
-    line1,
-    line2,
-    postalCode,
-    sortingCode,
-    state,
-  } = address;
-
-  const isCityValid = !!city && city.length > 0;
-
-  // It should be a valid country code.
-  const isCountryCodeValid = !!countryCode && countryCode.length === 2; // Assuming country code is a 2-letter string
-
-  // It should exist and have a length greater than 0
-  const isDependentLocalityValid =
-    !!dependentLocality && dependentLocality.length > 0;
-
-  // Line 1 should exist and have a length greater than 0
-  const isLine1Valid = !!line1 && line1.length > 0;
-
-  // Line 2 should exist and have a length greater than 0
-  const isLine2Valid = !!line2 && line2.length > 0;
-
-  // It should exist and have a valid format.
-  const isPostalCodeValid = !!postalCode && /^\d+$/.test(postalCode);
-
-  // It should exist and have a valid format based on your criteria
-  const isSortingCodeValid = !!sortingCode && sortingCode.length > 0; // Assuming a specific format or requirement
-
-  // It should exist and have a length greater than 0
-  const isStateValid = !!state && state.length > 0;
-
-  const isAddressValid =
-    isCityValid &&
-    isCountryCodeValid &&
-    isDependentLocalityValid &&
-    isLine1Valid &&
-    isLine2Valid &&
-    isPostalCodeValid &&
-    isSortingCodeValid &&
-    isStateValid;
-
-  return { isAddressValid };
-}
