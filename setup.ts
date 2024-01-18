@@ -12,7 +12,7 @@ dotenv.config();
 // Check if all the fields in .env.sample are present in .env
 /**
  * The function `checkEnvFile` checks if any fields are missing in the .env file compared to the .env.sample file, and
- * if so, it copies the missing fields from .env.sample to .env.
+ * if so, it copies the missing fields from .env.sampale to .env.
  */
 function checkEnvFile(): void {
   const env = dotenv.parse(fs.readFileSync(".env"));
@@ -88,9 +88,9 @@ async function setNodeEnvironment(): Promise<void> {
 /**
  * The function `accessAndRefreshTokens` generates and updates access and refresh tokens if they are
  * null.
- * @param {string | null} accessTokenSecret - A string representing the access token secret. It is
+ * @param accessTokenSecret - A string representing the access token secret. It is
  * initially set to `null` and will be generated if it is `null`.
- * @param {string | null} refreshTokenSecret - The `refreshTokenSecret` parameter is a string that
+ * @param refreshTokenSecret - The `refreshTokenSecret` parameter is a string that
  * represents the secret key used to generate and verify refresh tokens. Refresh tokens are typically
  * used in authentication systems to obtain new access tokens without requiring the user to
  * re-authenticate.
@@ -118,7 +118,7 @@ async function accessAndRefreshTokens(
 /**
  * The function `checkRedisConnection` checks if a connection to Redis can be established using the
  * provided URL.
- * @param {string} url - The `url` parameter is a string that represents the URL of the Redis server.
+ * @param url - The `url` parameter is a string that represents the URL of the Redis server.
  * It is used to establish a connection to the Redis server.
  * @returns a Promise that resolves to a boolean value.
  */
@@ -200,8 +200,9 @@ async function checkExistingRedis(): Promise<string | null> {
 
 // get the redis url
 /**
- * The `redisConfiguration` function connects to a Redis server and sets the Redis parameters in the
- * environment variables and updates the .env file.
+ * The `redisConfiguration` function updates the Redis configuration by prompting the user for the
+ * Redis URL, checking the connection, and updating the environment variables and .env file
+ * accordingly.
  */
 async function redisConfiguration(): Promise<void> {
   try {
@@ -332,7 +333,7 @@ async function checkExistingMongoDB(): Promise<string | null> {
  * The function `checkConnection` is an asynchronous function that checks the connection to a MongoDB
  * database using the provided URL and returns a boolean value indicating whether the connection was
  * successful or not.
- * @param {string} url - The `url` parameter is a string that represents the connection URL for the
+ * @param url - The `url` parameter is a string that represents the connection URL for the
  * MongoDB server. It typically includes the protocol (e.g., `mongodb://`), the host and port
  * information, and any authentication credentials if required.
  * @returns a Promise that resolves to a boolean value. The boolean value indicates whether the
@@ -507,7 +508,7 @@ async function recaptchaSiteKey(): Promise<void> {
 
 /**
  * The function `isValidEmail` checks if a given email address is valid according to a specific pattern.
- * @param {string} email - The `email` parameter is a string that represents an email address.
+ * @param email - The `email` parameter is a string that represents an email address.
  * @returns a boolean value. It returns true if the email passed as an argument matches the specified
  * pattern, and false otherwise.
  */
@@ -519,7 +520,7 @@ function isValidEmail(email: string): boolean {
 
 /**
  * The function validates whether a given string matches the pattern of a reCAPTCHA token.
- * @param {string} string - The `string` parameter represents the input string that needs to be
+ * @param string - The `string` parameter represents the input string that needs to be
  * validated. In this case, it is expected to be a string containing a Recaptcha response token.
  * @returns a boolean value.
  */
@@ -579,7 +580,7 @@ async function twoFactorAuth(): Promise<void> {
 /**
  * The function `shouldWipeExistingData` checks if there is existing data in a MongoDB database and prompts the user to delete
  * it before importing new data.
- * @param {string} url - The `url` parameter is a string that represents the connection URL for the
+ * @param url - The `url` parameter is a string that represents the connection URL for the
  * MongoDB database. It is used to establish a connection to the database using the `MongoClient` class
  * from the `mongodb` package.
  * @returns The function returns a Promise<boolean>.
@@ -848,12 +849,12 @@ async function main(): Promise<void> {
   if (!isDockerInstallation) {
     // Redis configuration
     if (process.env.REDIS_HOST && process.env.REDIS_PORT) {
-      const redis_password_str = process.env.REDIS_PASSWORD
+      const redisPasswordStr = process.env.REDIS_PASSWORD
         ? "X".repeat(process.env.REDIS_PASSWORD.length)
         : "";
 
       const url = `redis://${
-        process.env.REDIS_PASSWORD ? redis_password_str + "@" : ""
+        process.env.REDIS_PASSWORD ? redisPasswordStr + "@" : ""
       }${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`;
 
       console.log(`\nRedis URL already exists with the value:\n${url}`);
@@ -986,7 +987,7 @@ async function main(): Promise<void> {
         type: "confirm",
         name: "shouldRunDataImport",
         message: "Do you want to import sample data?",
-        default: true,
+        default: false,
       },
     ]);
 
