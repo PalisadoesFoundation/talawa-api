@@ -70,7 +70,9 @@ export const mutations = gql`
     ): Donation!
 
     createEvent(data: EventInput): Event! @auth
-
+    createAgendaItem(input: CreateAgendaItemInput!): AgendaItem!
+    updateAgendaItem(id: ID!, input: UpdateAgendaItemInput!): AgendaItem!
+    removeAgendaItem(id: ID!): ID!
     createEventProject(data: EventProjectInput!): EventProject! @auth
 
     createGroupChat(data: createGroupChatInput!): GroupChat! @auth
@@ -244,5 +246,17 @@ export const mutations = gql`
     updateUserType(data: UpdateUserTypeInput!): Boolean!
       @auth
       @role(requires: SUPERADMIN)
+    createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
+    deleteAgendaCategory(id: ID!): ID!
+    updateAgendaCategory(
+      id: ID!
+      input: UpdateAgendaCategoryInput!
+    ): AgendaCategory!
+    createAgendaSection(input: CreateAgendaSectionInput!): AgendaSection!
+    updateAgendaSection(
+      id: ID!
+      input: UpdateAgendaSectionInput!
+    ): AgendaSection!
+    removeAgendaSection(id: ID!): ID!
   }
 `;

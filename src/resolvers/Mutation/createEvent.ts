@@ -11,7 +11,6 @@ import { isValidString } from "../../libraries/validators/validateString";
 import { compareDates } from "../../libraries/validators/compareDates";
 import { EventAttendee } from "../../models/EventAttendee";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
-
 /**
  * This function enables to create an event.
  * @param _parent - parent of current request
@@ -23,6 +22,7 @@ import { cacheEvents } from "../../services/EventCache/cacheEvents";
  * 3. If the user is a part of the organization.
  * @returns Created event
  */
+
 export const createEvent: MutationResolvers["createEvent"] = async (
   _parent,
   args,

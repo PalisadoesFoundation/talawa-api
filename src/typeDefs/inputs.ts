@@ -73,6 +73,7 @@ export const inputs = gql`
     latitude: Latitude
     longitude: Longitude
     organizationId: ID!
+    items: CreateAgendaItemInput
   }
 
   input EventWhereInput {
@@ -150,6 +151,7 @@ export const inputs = gql`
     visibleInSearch: Boolean!
     apiUrl: URL
     image: String
+    agendaCategories: [CreateAgendaCategoryInput]
   }
 
   input OrganizationWhereInput {
@@ -407,5 +409,63 @@ export const inputs = gql`
     title: String
     imageUrl: String
     videoUrl: String
+  }
+  input CreateAgendaItemInput {
+    title: String!
+    description: String
+    duration: String!
+    attachments: [String]
+    relatedEvent: ID!
+    createdBy: ID!
+    urls: [String]
+    user: String
+    categories: [ID]
+    sequence: Int!
+    itemType: ItemType!
+    organization: ID
+    isNote: Boolean!
+  }
+
+  input UpdateAgendaItemInput {
+    title: String
+    description: String
+    duration: String
+    attachments: [String]
+    relatedEvent: ID
+    updatedBy: ID!
+    urls: [String]
+    user: String
+    categories: [ID]
+    sequence: Int
+    itemType: ItemType
+    isNote: Boolean
+  }
+
+  input CreateAgendaCategoryInput {
+    name: String!
+    description: String
+    organizationId: ID!
+    createdBy: ID
+  }
+
+  input UpdateAgendaCategoryInput {
+    name: String
+    description: String
+    organizationId: ID
+    updatedBy: ID!
+  }
+
+  input CreateAgendaSectionInput {
+    createdBy: ID
+    description: String!
+    relatedEvent: ID
+    items: [CreateAgendaItemInput]
+    sequence: Int!
+  }
+
+  input UpdateAgendaSectionInput {
+    relatedEvent: ID
+    description: String
+    sequence: Int
   }
 `;

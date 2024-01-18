@@ -1,0 +1,40 @@
+[
+  {
+    "_id": "65a8f66320bf8a003b6b2d22",
+    "attachments": [],
+    "urls": [],
+    "categories": [],
+    "isNote": false,
+    "title": "sample title",
+    "description": "Sample",
+    "duration": "duration",
+    "relatedEvent": "6437907585008f171cf2994c",
+    "createdBy": "64378abd85008f171cf2990d",
+    "user": "Sample user",
+    "sequence": 2,
+    "itemType": "Regular",
+    "organization": "6437904485008f171cf29924",
+    "updatedAt": "2024-01-18T09:58:59.679Z",
+    "createdAt": "2024-01-18T09:58:59.679Z",
+    "__v": 0
+  },
+  {
+    "_id": "65a9506687e222003ccefb87",
+    "attachments": [],
+    "urls": [],
+    "categories": [],
+    "isNote": false,
+    "title": "sample title",
+    "description": "Sample",
+    "duration": "duration",
+    "relatedEvent": "6437907585008f171cf2994c",
+    "createdBy": "64378abd85008f171cf2990d",
+    "user": "Sample user, but event admin",
+    "sequence": 2,
+    "itemType": "Regular",
+    "organization": "6437904485008f171cf29924",
+    "updatedAt": "2024-01-18T16:23:02.105Z",
+    "createdAt": "2024-01-18T16:23:02.105Z",
+    "__v": 0
+  }
+]

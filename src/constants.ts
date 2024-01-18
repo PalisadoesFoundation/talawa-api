@@ -218,6 +218,30 @@ export const USER_NOT_AUTHORIZED_TO_PIN = {
   PARAM: "user.notAuthorizedToPin",
 };
 
+export const AGENDA_ITEM_NOT_FOUND_ERROR = {
+  DESC: "Agenda item not found",
+  CODE: "agendaItem.notFound",
+  MESSAGE: "agendaItem.notFound",
+  PARAM: "agendaItem",
+};
+export const AGENDA_CATEGORY_NOT_FOUND_ERROR = {
+  DESC: "Agenda category not found",
+  CODE: "agendaCategory.notFound",
+  MESSAGE: "agendaCategory.notFound",
+  PARAM: "agendaCategory",
+};
+
+export const AGENDA_SECTION_NOT_FOUND_ERROR = {
+  DESC: "Agenda section not found",
+  CODE: "agendaSection.notFound",
+  MESSAGE: "agendaSection.notFound",
+  PARAM: "agendaSection",
+};
+export const AGENDA_SECTION_CREATION_ERROR = {
+  CODE: "AGENDA_SECTION_CREATION_ERROR",
+  MESSAGE: "An error occurred during agenda section creation",
+  PARAM: "AgendaSection creation error",
+};
 export const TAG_NOT_FOUND = {
   MESSAGE: "The tag with the specified ID doesn't exist.",
   CODE: "tag.doesNotExist",
@@ -364,6 +388,18 @@ export const USER_PROFILE_IMAGE_NOT_FOUND_ERROR = {
   CODE: "user.profileImage.notFound",
   MESSAGE: "user.profileImage.notFound",
   PARAM: "userProfileImage",
+};
+export const UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR = {
+  DESC: "Unauthorized to remove the agenda item",
+  CODE: "unauthorized.removeAgendaItem",
+  MESSAGE: "Unauthorized to remove the agenda item",
+  PARAM: "agendaItem",
+};
+export const UNAUTHORIZED_UPDATE_AGENDA_ITEM_ERROR = {
+  DESC: "Unauthorized to update the agenda item",
+  CODE: "unauthorized.updateAgendaItem",
+  MESSAGE: "Unauthorized to update the agenda item",
+  PARAM: "agendaItem",
 };
 
 export const EMAIL_ALREADY_EXISTS_ERROR = {

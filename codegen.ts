@@ -40,6 +40,12 @@ const config: CodegenConfig = {
 
           Event: "../models/Event#InterfaceEvent",
 
+          AgendaItem: "../models/AgendaItem#InterfaceAgendaItem",
+
+          AgendaCategory: "../models/AgendaCategory#InterfaceAgendaCategory",
+
+          AgendaSection: "../models/AgendaSection#InterfaceAgendaSection",
+
           EventAttendee: "../models/EventAttendee#InterfaceEventAttendee",
 
           EventProject: "../models/EventProject#InterfaceEventProject",

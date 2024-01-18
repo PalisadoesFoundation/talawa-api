@@ -2,6 +2,12 @@ import type { Types, PopulatedDoc, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
+import type { AgendaItemModel, InterfaceAgendaItem } from "./AgendaItem";
+import type {
+  AgendaCategoryModel,
+  InterfaceAgendaCategory,
+} from "./AgendaCategory";
+import { required } from "yargs";
 
 /**
  * This is an interface representing a document for an event in the database(MongoDB).
@@ -27,6 +33,7 @@ export interface InterfaceEvent {
   admins: PopulatedDoc<InterfaceUser & Document>[];
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   status: string;
+  items: PopulatedDoc<InterfaceAgendaItem & Document>[];
 }
 
 /**
@@ -65,6 +72,13 @@ const eventSchema = new Schema({
     type: String,
     required: false,
   },
+  items: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "AgendaItem",
+      required: true,
+    },
+  ],
   location: {
     type: String,
   },

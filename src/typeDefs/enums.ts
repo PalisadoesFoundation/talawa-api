@@ -152,4 +152,8 @@ export const enums = gql`
     WIDOWED
     SEPERATED
   }
+  enum ItemType {
+    Regular
+    Note
+  }
 `;

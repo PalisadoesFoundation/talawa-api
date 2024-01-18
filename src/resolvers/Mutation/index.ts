@@ -91,6 +91,15 @@ import { updateUserPassword } from "./updateUserPassword";
 import { updateUserTag } from "./updateUserTag";
 import { updateUserType } from "./updateUserType";
 import { deleteAdvertisementById } from "./deleteAdvertisementById";
+import { createAgendaItem } from "./createAgendaItem";
+import { removeAgendaItem } from "./removeAgendaItem";
+import { deleteAgendaCategory } from "./deleteAgendaCategory";
+import { createAgendaCategory } from "./createAgendaCategory";
+import { updateAgendaItem } from "./updateAgendaItem";
+import { createAgendaSection } from "./createAgendaSection";
+import { updateAgendaCategory } from "./updateAgendaCategory";
+import { removeAgendaSection } from "./removeAgendaSection";
+import { updateAgendaSection } from "./updateAgendaSection";
 
 export const Mutation: MutationResolvers = {
   acceptAdmin,
@@ -115,6 +124,9 @@ export const Mutation: MutationResolvers = {
   createAdmin,
   createComment,
   createAdvertisement,
+  createAgendaItem,
+  createAgendaCategory,
+  createAgendaSection,
   createDirectChat,
   createDonation,
   createEvent,
@@ -129,6 +141,7 @@ export const Mutation: MutationResolvers = {
   createUserTag,
   deleteDonationById,
   deleteAdvertisementById,
+  deleteAgendaCategory,
   forgotPassword,
   joinPublicOrganization,
   leaveOrganization,
@@ -143,6 +156,8 @@ export const Mutation: MutationResolvers = {
   rejectAdmin,
   rejectMembershipRequest,
   removeAdmin,
+  removeAgendaItem,
+  removeAgendaSection,
   removeComment,
   removeDirectChat,
   removeEvent,
@@ -175,6 +190,9 @@ export const Mutation: MutationResolvers = {
   unlikePost,
   unregisterForEventByUser,
   updateEvent,
+  updateAgendaItem,
+  updateAgendaCategory,
+  updateAgendaSection,
   updateEventProject,
   updateLanguage,
   updateOrganization,

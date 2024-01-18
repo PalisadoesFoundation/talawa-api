@@ -9,6 +9,46 @@ export const types = gql`
   type AggregateUser {
     count: Int!
   }
+  type AgendaItem {
+    _id: ID!
+    title: String!
+    description: String
+    duration: String!
+    attachments: [String]
+    createdBy: User!
+    updatedBy: User!
+    urls: [String]
+    user: String!
+    categories: [AgendaCategory]
+    sequence: Int!
+    itemType: ItemType!
+    createdAt: Date!
+    updatedAt: Date!
+    isNote: Boolean!
+    organization: Organization!
+    relatedEvent: Event!
+  }
+  type AgendaCategory {
+    _id: ID!
+    name: String!
+    description: String
+    organization: Organization!
+    createdBy: User!
+    updatedBy: User!
+    createdAt: Date!
+    updatedAt: Date!
+  }
+  type AgendaSection {
+    _id: ID!
+    relatedEvent: Event
+    description: String!
+    items: [AgendaItem]
+    sequence: Int!
+    createdAt: Date!
+    updatedAt: Date!
+    createdBy: User!
+    updatedBy: User
+  }
 
   type AuthData {
     user: User!
@@ -123,6 +163,7 @@ export const types = gql`
     projects: [EventProject]
     feedback: [Feedback!]!
     averageFeedbackScore: Float
+    items: [AgendaItem]
   }
 
   type EventProject {
@@ -227,6 +268,7 @@ export const types = gql`
       last: PositiveInt
     ): UserTagsConnection
     customFields: [OrganizationCustomField!]!
+    agendaCategories: [AgendaCategory]
   }
 
   type OrganizationCustomField {

@@ -27,7 +27,12 @@ import { userLanguage } from "./userLanguage";
 import { users } from "./users";
 import { getAdvertisements } from "./getAdvertisements";
 import { usersConnection } from "./usersConnection";
-
+import { getAgendaItem } from "./AgendaItemById";
+import { getAllAgendaItems } from "./AgendaItems";
+import { getAgendaSection } from "./getAgendaSectionById";
+import { getAllAgendaSections } from "./getAllAgendaSections";
+import { agendaCategory } from "./getAgendaCategoryById";
+import { agendaCategories } from "./getAllAgendaCategories";
 export const Query: QueryResolvers = {
   checkAuth,
   customFieldsByOrganization,
@@ -39,6 +44,12 @@ export const Query: QueryResolvers = {
   eventsByOrganizationConnection,
   getDonationById,
   getAdvertisements,
+  agendaCategory,
+  agendaCategories,
+  getAgendaItem,
+  getAllAgendaItems,
+  getAgendaSection,
+  getAllAgendaSections,
   getDonationByOrgId,
   getDonationByOrgIdConnection,
   getlanguage,

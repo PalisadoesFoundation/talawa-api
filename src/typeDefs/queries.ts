@@ -107,5 +107,11 @@ export const queries = gql`
       skip: Int
       orderBy: UserOrderByInput
     ): [User]! @auth
+    getAgendaItem(id: ID!): AgendaItem
+    getAllAgendaItems: [AgendaItem]
+    agendaCategories: [AgendaCategory]
+    agendaCategory(id: ID!): AgendaCategory
+    getAgendaSection(id: ID!): AgendaSection
+    getAllAgendaSections: [AgendaSection]
   }
 `;
