@@ -1,0 +1,96 @@
+import { TRANSACTION_LOG_PATH } from "../constants";
+import type { Query, Schema, Document } from "mongoose";
+import winston from "winston";
+
+export type TransactionLogInfo = {
+  timestamp: string;
+  model: string;
+  type: string;
+  query?: string;
+  update?: string;
+};
+
+const dbLogger = winston.createLogger({
+  level: "info",
+  format: winston.format.printf((logEntry) => {
+    let logMessage = `timestamp=${logEntry.timestamp}, model=${logEntry.model}, type=${logEntry.type}`;
+    if (logEntry.update && logEntry.update.length > 0) {
+      logMessage += `, update=${logEntry.update}`;
+    }
+    if (logEntry.query && logEntry.query.length > 0) {
+      logMessage += `, query=${logEntry.query}`;
+    }
+    return logMessage;
+  }),
+  transports: [new winston.transports.File({ filename: TRANSACTION_LOG_PATH })],
+});
+
+interface InterfaceLoggableDocument extends Document {
+  logInfo: TransactionLogInfo;
+}
+
+interface InterfaceLoggableQuery<T> extends Query<unknown, T> {
+  logInfo?: TransactionLogInfo;
+}
+
+export enum TransactionLogTypes {
+  CREATE = "CREATE",
+  UPDATE = "UPDATE",
+  DELETE = "DELETE",
+}
+
+export function createLoggingMiddleware<T extends Document>(
+  schema: Schema<T>,
+  modelName: string
+): void {
+  const logAction = (
+    type: TransactionLogTypes,
+    thisContext?: InterfaceLoggableQuery<T>
+  ): TransactionLogInfo => {
+    return {
+      timestamp: new Date().toISOString(),
+      model: modelName,
+      type: type,
+      query: thisContext ? JSON.stringify(thisContext.getQuery()) : undefined,
+      update:
+        thisContext && "getUpdate" in thisContext
+          ? JSON.stringify(thisContext.getUpdate())
+          : undefined,
+    };
+  };
+
+  schema.pre<InterfaceLoggableDocument>("save", function (next) {
+    this.logInfo = logAction(TransactionLogTypes.CREATE);
+    next();
+  });
+
+  schema.post<InterfaceLoggableDocument>("save", function () {
+    dbLogger.info("success", this.logInfo);
+  });
+
+  const updateOperations = ["findOneAndUpdate", "updateOne", "updateMany"];
+  updateOperations.forEach((operation) => {
+    schema.pre(operation, function (this: InterfaceLoggableQuery<T>, next) {
+      this.logInfo = logAction(TransactionLogTypes.UPDATE, this);
+      next();
+    });
+
+    schema.post(operation, function (this: InterfaceLoggableQuery<T>) {
+      dbLogger.info("success", this.logInfo);
+    });
+  });
+
+  const deleteOperations = ["deleteOne", "deleteMany"];
+  deleteOperations.forEach((operation) => {
+    schema.pre(operation, function (this: InterfaceLoggableQuery<T>, next) {
+      this.logInfo = logAction(TransactionLogTypes.DELETE, this);
+      next();
+    });
+
+    schema.post(operation, function (this: InterfaceLoggableQuery<T>) {
+      dbLogger.info("success", this.logInfo);
+    });
+  });
+}
+
+export default dbLogger;

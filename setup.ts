@@ -1,11 +1,13 @@
-const dotenv = require("dotenv");
-const fs = require("fs");
-const cryptolib = require("crypto");
-const inquirer = require("inquirer");
-const mongodb = require("mongodb");
-const redis = require("redis");
-const { exec } = require("child_process");
-const nodemailer = require("nodemailer");
+import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
+import * as cryptolib from "crypto";
+import inquirer from "inquirer";
+import mongodb from "mongodb";
+import redis from "redis";
+import { exec } from "child_process";
+import nodemailer from "nodemailer";
+import type { ExecException } from "child_process";
 
 dotenv.config();
 
@@ -46,10 +48,71 @@ async function accessAndRefreshTokens(
   }
 }
 
+function transactionLogPath(logPath: string | null): void {
+  const config = dotenv.parse(fs.readFileSync(".env"));
+  if (!logPath) {
+    // Check if the logs/transaction.log file exists, if not, create it
+    const defaultLogPath = path.resolve(__dirname, "logs");
+    const defaultLogFile = path.join(defaultLogPath, "transaction.log");
+    if (!fs.existsSync(defaultLogPath)) {
+      fs.mkdirSync(defaultLogPath);
+    }
+
+    config.TRANSACTION_LOG_PATH = defaultLogFile;
+  } else {
+    // Remove the default logs directory and it's files, if it exists
+    const logsDirPath = path.resolve(__dirname, "logs");
+    if (fs.existsSync(logsDirPath)) {
+      fs.readdirSync(logsDirPath).forEach((file: string) => {
+        const curPath = path.join(logsDirPath, file);
+        fs.unlinkSync(curPath);
+      });
+      fs.rmdirSync(logsDirPath);
+    }
+    config.TRANSACTION_LOG_PATH = logPath;
+  }
+  fs.writeFileSync(".env", "");
+  for (const key in config) {
+    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+  }
+}
+
+async function askForTransactionLogPath(): Promise<string> {
+  let logPath: string | null;
+  // Keep asking for path, until user gives a valid path
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const response = await inquirer.prompt([
+      {
+        type: "input",
+        name: "logPath",
+        message: "Enter absolute path of log file:",
+        default: null,
+      },
+    ]);
+    logPath = response.logPath;
+    if (logPath && fs.existsSync(logPath)) {
+      try {
+        fs.accessSync(logPath, fs.constants.R_OK | fs.constants.W_OK);
+        break;
+      } catch {
+        console.error(
+          "The file is not readable/writable. Please enter a valid file path."
+        );
+      }
+    } else {
+      console.error(
+        "Invalid path or file does not exist. Please enter a valid file path."
+      );
+    }
+  }
+  return logPath;
+}
+
 // Check connection to Redis with the specified URL.
 async function checkRedisConnection(url: string): Promise<boolean> {
   let response = false;
-  const client = redis.createClient(url);
+  const client = redis.createClient({ url });
 
   console.log("\nChecking Redis connection....");
 
@@ -407,7 +470,7 @@ async function importData(): Promise<void> {
     console.log("Importing sample data...");
     await exec(
       "npm run import:sample-data",
-      (error: { message: string }, stdout: string, stderr: string) => {
+      (error: ExecException | null, stdout: string, stderr: string) => {
         if (error) {
           console.error(`Error: ${error.message}`);
           abort();
@@ -431,7 +494,7 @@ async function importData(): Promise<void> {
 
 type VerifySmtpConnectionReturnType = {
   success: boolean;
-  error: any;
+  error: unknown;
 };
 async function verifySmtpConnection(
   config: Record<string, string>
@@ -450,7 +513,7 @@ async function verifySmtpConnection(
     await transporter.verify();
     console.log("SMTP connection verified successfully.");
     return { success: true, error: null };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("SMTP connection verification failed:");
     return { success: false, error };
   } finally {
@@ -521,7 +584,9 @@ async function configureSmtp(): Promise<void> {
     console.error(
       "SMTP configuration verification failed. Please check your SMTP settings."
     );
-    console.log(error.message);
+    if (error instanceof Error) {
+      console.log(error.message);
+    }
     return;
   }
 
@@ -580,6 +645,25 @@ async function main(): Promise<void> {
   }
 
   accessAndRefreshTokens(accessToken, refreshToken);
+
+  if (process.env.TRANSACTION_LOG_PATH) {
+    console.log(
+      `\n Transaction log path already exists with the value:\n${process.env.TRANSACTION_LOG_PATH}`
+    );
+  }
+
+  let logPath: string | null = null;
+  const { shouldUseCustomLogPath } = await inquirer.prompt({
+    type: "confirm",
+    name: "shouldUseCustomLogPath",
+    message: "Would you like to provide a custom path for storing logs?",
+    default: false,
+  });
+
+  if (shouldUseCustomLogPath) {
+    logPath = await askForTransactionLogPath();
+  }
+  transactionLogPath(logPath);
 
   const { isDockerInstallation } = await inquirer.prompt({
     type: "confirm",

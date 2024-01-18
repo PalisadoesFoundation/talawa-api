@@ -21,6 +21,9 @@ images/**
 video/**
 videos/**
 
+# Ignore log files
+logs/
+
 # Don't ignore any .gitignore files in any location
 !.gitignore
 

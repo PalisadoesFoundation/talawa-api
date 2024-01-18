@@ -5,6 +5,8 @@ import validator from "validator";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceOrganization } from "./Organization";
+import { createLoggingMiddleware } from "../libraries/dbLogger";
+
 /**
  * This is an interface that represents a database(MongoDB) document for User.
  */
@@ -282,6 +284,8 @@ userSchema.plugin(mongoosePaginate);
 
 const userModel = (): PaginateModel<InterfaceUser> =>
   model<InterfaceUser, PaginateModel<InterfaceUser>>("User", userSchema);
+
+createLoggingMiddleware(userSchema, "User");
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const User = (models.User || userModel()) as ReturnType<

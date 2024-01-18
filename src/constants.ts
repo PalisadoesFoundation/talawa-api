@@ -450,6 +450,14 @@ export const ACCESS_TOKEN_SECRET = ENV.ACCESS_TOKEN_SECRET;
 
 export const REFRESH_TOKEN_SECRET = ENV.REFRESH_TOKEN_SECRET;
 
+export const TRANSACTION_LOG_PATH = ENV.TRANSACTION_LOG_PATH;
+
+export const TRANSACTION_LOG_TYPES = {
+  CREATE: "CREATE",
+  UPDATE: "UPDATE",
+  DELETE: "DELETE",
+};
+
 export const MONGO_DB_URL = ENV.MONGO_DB_URL;
 
 export const RECAPTCHA_SECRET_KEY = ENV.RECAPTCHA_SECRET_KEY;
@@ -470,9 +478,9 @@ export const SMTP_OPTIONS = {
   SMTP_SSL_TLS: process.env.SMTP_SSL_TLS,
 };
 
-export const REDIS_HOST = process.env.REDIS_HOST!;
-export const REDIS_PORT = Number(process.env.REDIS_PORT);
-export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
+export const REDIS_HOST = ENV.REDIS_HOST;
+export const REDIS_PORT = Number(ENV.REDIS_PORT);
+export const REDIS_PASSWORD = ENV.REDIS_PASSWORD;
 
-export const key = process.env.ENCRYPTION_KEY as string;
+export const key = ENV.ENCRYPTION_KEY as string;
 export const iv = crypto.randomBytes(16).toString("hex");
