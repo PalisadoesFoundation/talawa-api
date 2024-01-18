@@ -138,7 +138,7 @@ export const inputs = gql`
   input OrganizationInput {
     name: String!
     description: String!
-    location: String
+    address: AddressInput!
     attendees: String
     apiUrl: URL
     image: String
