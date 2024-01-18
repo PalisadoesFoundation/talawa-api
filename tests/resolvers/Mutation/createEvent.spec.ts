@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, Organization, EventAttendee } from "../../../src/models";
+import { User, Organization, EventAttendee, Event } from "../../../src/models";
 import type { MutationCreateEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -17,7 +17,12 @@ import type {
   TestOrganizationType,
 } from "../../helpers/userAndOrg";
 import { createTestUser } from "../../helpers/userAndOrg";
-
+import {
+  InputValidationError,
+  NotFoundError,
+  UnauthorizedError,
+} from "../../../src/libraries/errors";
+import { fail } from "assert";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -30,9 +35,10 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    creator: testUser?._id,
+    creatorId: testUser?._id,
     admins: [testUser?._id],
     members: [testUser?._id],
+    visibleInSearch: true,
   });
 
   await User.updateOne(
@@ -69,8 +75,12 @@ describe("resolvers -> Mutation -> createEvent", () => {
       );
 
       await createEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
+      } else {
+        fail(`Expected NotFoundError, but got ${error}`);
+      }
     }
   });
 
@@ -105,8 +115,12 @@ describe("resolvers -> Mutation -> createEvent", () => {
       );
 
       await createEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      } else {
+        fail(`Expected NotFoundError, but got ${error}`);
+      }
     }
   });
 
@@ -129,7 +143,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
           startDate: "",
           startTime: "",
           title: "",
-          recurrance: "DAILY",
+          recurrance: "ONCE",
         },
       };
 
@@ -142,12 +156,18 @@ describe("resolvers -> Mutation -> createEvent", () => {
       );
 
       await createEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE);
+    } catch (error: unknown) {
+      if (error instanceof UnauthorizedError) {
+        expect(error.message).toEqual(
+          ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE
+        );
+      } else {
+        fail(`Expected UnauthorizedError, but got ${error}`);
+      }
     }
   });
 
-  it(`creates the event and returns it`, async () => {
+  it(`creates the single non-recurring event and returns it`, async () => {
     await User.updateOne(
       {
         _id: testUser?._id,
@@ -165,7 +185,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         organizationId: testOrganization?.id,
         allDay: false,
         description: "newDescription",
-        endDate: new Date().toUTCString(),
+        endDate: new Date("2023-01-29T00:00:00Z"),
         endTime: new Date().toUTCString(),
         isPublic: false,
         isRegisterable: false,
@@ -173,10 +193,10 @@ describe("resolvers -> Mutation -> createEvent", () => {
         longitude: 1,
         location: "newLocation",
         recurring: false,
-        startDate: new Date().toUTCString(),
+        startDate: new Date("2023-01-01T00:00:00Z"),
         startTime: new Date().toUTCString(),
         title: "newTitle",
-        recurrance: "DAILY",
+        recurrance: "ONCE",
       },
     };
 
@@ -200,16 +220,202 @@ describe("resolvers -> Mutation -> createEvent", () => {
         location: "newLocation",
         recurring: false,
         title: "newTitle",
-        recurrance: "DAILY",
-        creator: testUser?._id,
+        creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
       })
     );
 
+    const recurringEvents = await Event.find({
+      recurring: false,
+      recurrance: "ONCE",
+    }).lean();
+
+    expect(recurringEvents).toBeDefined();
+    expect(recurringEvents).toHaveLength(1);
+
     const attendeeExists = await EventAttendee.exists({
-      userId: testUser!._id,
-      eventId: createEventPayload!._id,
+      userId: testUser?._id,
+      eventId: createEventPayload?._id,
+    });
+
+    expect(attendeeExists).toBeTruthy();
+
+    const updatedTestUser = await User.findOne({
+      _id: testUser?._id,
+    })
+      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .lean();
+
+    expect(updatedTestUser).toEqual(
+      expect.objectContaining({
+        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
+        createdEvents: expect.arrayContaining([createEventPayload?._id]),
+        registeredEvents: expect.arrayContaining([createEventPayload?._id]),
+      })
+    );
+  });
+
+  it(`creates the single recurring event and returns it`, async () => {
+    await User.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization?._id,
+          joinedOrganizations: testOrganization?._id,
+        },
+      }
+    );
+
+    const args: MutationCreateEventArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        allDay: false,
+        description: "newDescription",
+        endDate: new Date("2023-01-29T00:00:00Z"),
+        endTime: new Date().toUTCString(),
+        isPublic: false,
+        isRegisterable: false,
+        latitude: 1,
+        longitude: 1,
+        location: "newLocation",
+        recurring: true,
+        startDate: new Date("2023-01-02T00:00:00Z"),
+        startTime: new Date().toUTCString(),
+        title: "newTitle",
+        recurrance: "ONCE",
+      },
+    };
+
+    const context = {
+      userId: testUser?.id,
+    };
+    const { createEvent: createEventResolver } = await import(
+      "../../../src/resolvers/Mutation/createEvent"
+    );
+
+    const createEventPayload = await createEventResolver?.({}, args, context);
+
+    expect(createEventPayload).toEqual(
+      expect.objectContaining({
+        allDay: false,
+        description: "newDescription",
+        isPublic: false,
+        isRegisterable: false,
+        latitude: 1,
+        longitude: 1,
+        location: "newLocation",
+        recurring: true,
+        title: "newTitle",
+        creatorId: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
+      })
+    );
+
+    const recurringEvents = await Event.find({
+      recurring: true,
+      recurrance: "ONCE",
+      startDate: "2023-01-02T00:00:00Z",
+    }).lean();
+
+    expect(recurringEvents).toBeDefined();
+    expect(recurringEvents).toHaveLength(1);
+
+    const attendeeExists = await EventAttendee.exists({
+      userId: testUser?._id,
+      eventId: createEventPayload?._id,
+    });
+
+    expect(attendeeExists).toBeTruthy();
+
+    const updatedTestUser = await User.findOne({
+      _id: testUser?._id,
+    })
+      .select(["eventAdmin", "createdEvents", "registeredEvents"])
+      .lean();
+
+    expect(updatedTestUser).toEqual(
+      expect.objectContaining({
+        eventAdmin: expect.arrayContaining([createEventPayload?._id]),
+        createdEvents: expect.arrayContaining([createEventPayload?._id]),
+        registeredEvents: expect.arrayContaining([createEventPayload?._id]),
+      })
+    );
+  });
+
+  it(`creates the Weekly recurring event and returns it`, async () => {
+    await User.updateOne(
+      {
+        _id: testUser?._id,
+      },
+      {
+        $push: {
+          createdOrganizations: testOrganization?._id,
+          joinedOrganizations: testOrganization?._id,
+        },
+      }
+    );
+
+    const args: MutationCreateEventArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        allDay: false,
+        description: "newDescription",
+        endDate: new Date("2023-01-29T00:00:00Z"),
+        endTime: new Date().toUTCString(),
+        isPublic: false,
+        isRegisterable: false,
+        latitude: 1,
+        longitude: 1,
+        location: "newLocation",
+        recurring: true,
+        startDate: new Date("2023-01-01T00:00:00Z"),
+        startTime: new Date().toUTCString(),
+        title: "newTitle",
+        recurrance: "WEEKLY",
+      },
+    };
+
+    const context = {
+      userId: testUser?.id,
+    };
+    const { createEvent: createEventResolver } = await import(
+      "../../../src/resolvers/Mutation/createEvent"
+    );
+
+    const createEventPayload = await createEventResolver?.({}, args, context);
+
+    expect(createEventPayload).toEqual(
+      expect.objectContaining({
+        allDay: false,
+        description: "newDescription",
+        isPublic: false,
+        isRegisterable: false,
+        latitude: 1,
+        longitude: 1,
+        location: "newLocation",
+        recurring: true,
+        title: "newTitle",
+        creatorId: testUser?._id,
+        admins: expect.arrayContaining([testUser?._id]),
+        organization: testOrganization?._id,
+      })
+    );
+
+    const recurringEvents = await Event.find({
+      recurring: true,
+      recurrance: "WEEKLY",
+    }).lean();
+
+    expect(recurringEvents).toBeDefined();
+    expect(recurringEvents).toHaveLength(5);
+
+    const attendeeExists = await EventAttendee.exists({
+      userId: testUser?._id,
+      eventId: createEventPayload?._id,
     });
 
     expect(attendeeExists).toBeTruthy();
@@ -323,10 +529,14 @@ describe("Check for validation conditions", () => {
       );
 
       await createEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
-      );
+    } catch (error: unknown) {
+      if (error instanceof InputValidationError) {
+        expect(error.message).toEqual(
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 256 characters in title`
+        );
+      } else {
+        fail(`Expected LengthValidationError, but got ${error}`);
+      }
     }
   });
   it(`throws String Length Validation error if description is greater than 500 characters`, async () => {
@@ -365,10 +575,14 @@ describe("Check for validation conditions", () => {
       );
 
       await createEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
-      );
+    } catch (error: unknown) {
+      if (error instanceof InputValidationError) {
+        expect(error.message).toEqual(
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 500 characters in description`
+        );
+      } else {
+        fail(`Expected LengthValidationError, but got ${error}`);
+      }
     }
   });
   it(`throws String Length Validation error if location is greater than 50 characters`, async () => {
@@ -406,10 +620,14 @@ describe("Check for validation conditions", () => {
       );
 
       await createEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
-      );
+    } catch (error: unknown) {
+      if (error instanceof InputValidationError) {
+        expect(error.message).toEqual(
+          `${LENGTH_VALIDATION_ERROR.MESSAGE} 50 characters in location`
+        );
+      } else {
+        fail(`Expected LengthValidationError, but got ${error}`);
+      }
     }
   });
   it(`throws Date Validation error if start date is greater than end date`, async () => {
@@ -447,8 +665,14 @@ describe("Check for validation conditions", () => {
       );
 
       await createEventResolverError?.({}, args, context);
-    } catch (error: any) {
-      expect(error.message).toEqual(`start date must be earlier than end date`);
+    } catch (error: unknown) {
+      if (error instanceof InputValidationError) {
+        expect(error.message).toEqual(
+          `start date must be earlier than end date`
+        );
+      } else {
+        fail(`Expected DateValidationError, but got ${error}`);
+      }
     }
   });
 });

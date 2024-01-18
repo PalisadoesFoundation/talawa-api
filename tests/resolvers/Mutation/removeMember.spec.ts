@@ -45,7 +45,7 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    creator: testUsers[0]?._id,
+    creatorId: testUsers[0]?._id,
     admins: [testUsers[4]?._id, testUsers[1]?._id],
     members: [
       testUsers[0]?._id,
@@ -53,6 +53,7 @@ beforeAll(async () => {
       testUsers[2]?._id,
       testUsers[4],
     ],
+    visibleInSearch: true,
   });
 
   // testUser[3] is not a member of the testOrganization

@@ -28,6 +28,7 @@ beforeAll(async () => {
     startDate: new Date(),
     type: "POPUP",
     name: "Cookies at just $5 for a packet",
+    creatorId: temp[0]?._id,
   });
 });
 

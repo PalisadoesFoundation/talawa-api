@@ -7,25 +7,32 @@ export interface InterfaceFeedback {
   eventId: PopulatedDoc<InterfaceEvent & Document>;
   rating: number;
   review: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-const feedbackSchema = new Schema({
-  eventId: {
-    type: Schema.Types.ObjectId,
-    ref: "Event",
-    required: true,
+const feedbackSchema = new Schema(
+  {
+    eventId: {
+      type: Schema.Types.ObjectId,
+      ref: "Event",
+      required: true,
+    },
+    rating: {
+      type: Number,
+      required: true,
+      default: 0,
+      max: 5,
+    },
+    review: {
+      type: String,
+      required: false,
+    },
   },
-  rating: {
-    type: Number,
-    required: true,
-    default: 0,
-    max: 5,
-  },
-  review: {
-    type: String,
-    required: false,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 // We will also create an index here for faster database querying
 feedbackSchema.index({
