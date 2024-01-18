@@ -17,4 +17,4 @@ export * from "./inputValidationError";
 // Used for File extension check
 export * from "./invalidFileTypeError";
 // Used for Image Upload size limit
-export * from "./ImageSizeLimitExceeded"
+export * from "./ImageSizeLimitExceeded";

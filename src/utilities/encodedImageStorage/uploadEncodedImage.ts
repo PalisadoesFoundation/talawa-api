@@ -16,7 +16,8 @@ export const uploadEncodedImage = async (
 
   const data = encodedImageURL.replace(/^data:image\/\w+;base64,/, "");
   const stringLength = data.length;
-  const sizeInKb = (4 * Math.ceil(stringLength / 3) * 0.5624896334383812) / 1000;
+  const sizeInKb =
+    (4 * Math.ceil(stringLength / 3) * 0.5624896334383812) / 1000;
 
   if (sizeInKb > Number(process.env.IMAGE_SIZE_LIMIT)) {
     throw new errors.ImageSizeLimitExceeded(
