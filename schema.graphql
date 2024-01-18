@@ -570,7 +570,6 @@ input OTPInput {
 
 type Organization {
   _id: ID!
-  address: Address
   admins(adminId: ID): [User!]
   apiUrl: URL!
   blockedUsers: [User]
@@ -579,6 +578,7 @@ type Organization {
   customFields: [OrganizationCustomField!]!
   description: String!
   image: String
+  location: String
   members: [User]
   membershipRequests: [MembershipRequest]
   name: String!
@@ -608,11 +608,11 @@ type OrganizationInfoNode {
 }
 
 input OrganizationInput {
-  address: AddressInput!
   apiUrl: URL
   attendees: String
   description: String!
   image: String
+  location: String
   name: String!
   userRegistrationRequired: Boolean
   visibleInSearch: Boolean

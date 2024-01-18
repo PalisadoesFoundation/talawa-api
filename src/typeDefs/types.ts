@@ -225,7 +225,7 @@ export const types = gql`
     _id: ID!
     name: String!
     description: String!
-    address: Address
+    location: String
     creator: User
     createdAt: DateTime!
     updatedAt: DateTime!
