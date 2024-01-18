@@ -29,7 +29,7 @@ export const mailer = (
 
   // For using custom smtp server
   /* c8 ignore next 12 */
-  if (SMTP_OPTIONS.IS_SMTP === true) {
+  if (SMTP_OPTIONS.IS_SMTP) {
     transporter = nodemailer.createTransport({
       host: String(SMTP_OPTIONS.SMTP_HOST),
       port: Number(SMTP_OPTIONS.SMTP_PORT),
@@ -52,10 +52,9 @@ export const mailer = (
 
   const mailOptions = {
     /* c8 ignore next 6 */
-    from:
-      SMTP_OPTIONS.IS_SMTP === false || SMTP_OPTIONS.IS_SMTP === undefined
-        ? "Talawa<>noreply@gmail.com"
-        : SMTP_OPTIONS.SMTP_USERNAME,
+    from: !SMTP_OPTIONS.IS_SMTP
+      ? "Talawa<>noreply@gmail.com"
+      : SMTP_OPTIONS.SMTP_USERNAME,
     to: mailFields.emailTo,
     subject: mailFields.subject,
     html: mailFields.body,
