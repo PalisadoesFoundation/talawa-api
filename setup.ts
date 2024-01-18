@@ -10,17 +10,91 @@ const nodemailer = require("nodemailer");
 dotenv.config();
 
 // Check if all the fields in .env.sample are present in .env
+/**
+ * The function `checkEnvFile` checks if any fields are missing in the .env file compared to the .env.sample file, and
+ * if so, it copies the missing fields from .env.sampale to .env.
+ */
 function checkEnvFile(): void {
   const env = dotenv.parse(fs.readFileSync(".env"));
   const envSample = dotenv.parse(fs.readFileSync(".env.sample"));
   const misplaced = Object.keys(envSample).filter((key) => !(key in env));
   if (misplaced.length > 0) {
-    console.log("Please copy the contents of .env.sample to .env file");
+    // copy the missing fields from .env.sample to .env
+    for (const key of misplaced) {
+      fs.appendFileSync(".env", `${key}=${envSample[key]}\n`);
+    }
+  }
+}
+
+// Update the value of an environment variable in .env file
+/**
+ * The function `updateEnvVariable` updates the values of environment variables in a .env file based on the provided
+ * configuration object.
+ * @param config - An object that contains key-value pairs where the keys are strings and the values
+ * can be either strings or numbers. These key-value pairs represent the environment variables that
+ * need to be updated.
+ */
+function updateEnvVariable(config: { [key: string]: string | number }): void {
+  const existingContent: string = fs.readFileSync(".env", "utf8");
+
+  let updatedContent: string = existingContent;
+  for (const key in config) {
+    const regex = new RegExp(`^${key}=.*`, "gm");
+    updatedContent = updatedContent.replace(regex, `${key}=${config[key]}`);
+  }
+
+  fs.writeFileSync(".env", updatedContent, "utf8");
+}
+
+// Get the node environment
+/**
+ * The function `getNodeEnvironment` is an asynchronous function that prompts the user to select a Node
+ * environment (either "development" or "production") and returns the selected environment as a string.
+ * @returns a Promise that resolves to a string representing the selected Node environment.
+ */
+async function getNodeEnvironment(): Promise<string> {
+  const { nodeEnv } = await inquirer.prompt([
+    {
+      type: "list",
+      name: "nodeEnv",
+      message: "Select Node environment:",
+      choices: ["development", "production"],
+      default: "development",
+    },
+  ]);
+
+  return nodeEnv;
+}
+
+/**
+ * The function `setNodeEnvironment` sets the Node environment by reading the value from a file, updating the process
+ * environment variable, and updating a configuration file.
+ */
+async function setNodeEnvironment(): Promise<void> {
+  try {
+    const nodeEnv = await getNodeEnvironment();
+    process.env.NODE_ENV = nodeEnv;
+
+    const config = dotenv.parse(fs.readFileSync(".env"));
+    config.NODE_ENV = nodeEnv;
+    updateEnvVariable(config);
+  } catch (err) {
+    console.error(err);
     abort();
   }
 }
 
 // Generate and update the access and refresh token secrets in .env
+/**
+ * The function `accessAndRefreshTokens` generates and updates access and refresh tokens if they are
+ * null.
+ * @param accessTokenSecret - A string representing the access token secret. It is
+ * initially set to `null` and will be generated if it is `null`.
+ * @param refreshTokenSecret - The `refreshTokenSecret` parameter is a string that
+ * represents the secret key used to generate and verify refresh tokens. Refresh tokens are typically
+ * used in authentication systems to obtain new access tokens without requiring the user to
+ * re-authenticate.
+ */
 async function accessAndRefreshTokens(
   accessTokenSecret: string | null,
   refreshTokenSecret: string | null
@@ -30,41 +104,48 @@ async function accessAndRefreshTokens(
   if (accessTokenSecret === null) {
     accessTokenSecret = cryptolib.randomBytes(32).toString("hex");
     config.ACCESS_TOKEN_SECRET = accessTokenSecret;
-    fs.writeFileSync(".env", "");
-    for (const key in config) {
-      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-    }
+    updateEnvVariable(config);
   }
 
   if (refreshTokenSecret === null) {
     refreshTokenSecret = cryptolib.randomBytes(32).toString("hex");
     config.REFRESH_TOKEN_SECRET = refreshTokenSecret;
-    fs.writeFileSync(".env", "");
-    for (const key in config) {
-      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-    }
+    updateEnvVariable(config);
   }
 }
 
 // Check connection to Redis with the specified URL.
+/**
+ * The function `checkRedisConnection` checks if a connection to Redis can be established using the
+ * provided URL.
+ * @param url - The `url` parameter is a string that represents the URL of the Redis server.
+ * It is used to establish a connection to the Redis server.
+ * @returns a Promise that resolves to a boolean value.
+ */
 async function checkRedisConnection(url: string): Promise<boolean> {
   let response = false;
-  const client = redis.createClient(url);
+  const client = redis.createClient({ url });
 
   console.log("\nChecking Redis connection....");
 
   try {
     await client.connect();
-    console.log("\nConnection to Redis successful! 🎉");
     response = true;
   } catch (error) {
     console.log(`\nConnection to Redis failed. Please try again.\n`);
+  } finally {
+    client.quit();
   }
-  client.quit();
   return response;
 }
 
 // Redis url prompt
+/**
+ * The function `askForRedisUrl` prompts the user to enter the Redis hostname, port, and password, and
+ * returns an object with these values.
+ * @returns The function `askForRedisUrl` returns a promise that resolves to an object with the
+ * properties `host`, `port`, and `password`.
+ */
 async function askForRedisUrl(): Promise<{
   host: string;
   port: number;
@@ -94,25 +175,87 @@ async function askForRedisUrl(): Promise<{
   return { host, port, password };
 }
 
-// get the redis url
-async function redisConfiguration(): Promise<void> {
-  const REDIS_URL = process.env.REDIS_URL;
+//check existing redis url
+/**
+ * The function `checkExistingRedis` checks if there is an existing Redis connection by iterating
+ * through a list of Redis URLs and testing the connection.
+ * @returns The function `checkExistingRedis` returns a Promise that resolves to a string or null.
+ */
+async function checkExistingRedis(): Promise<string | null> {
+  const existingRedisURL = ["redis://localhost:6379"];
 
+  for (const url of existingRedisURL) {
+    if (!url) {
+      continue;
+    }
+
+    const isConnected = await checkRedisConnection(url);
+    if (isConnected) {
+      return url;
+    }
+  }
+
+  return null;
+}
+
+// get the redis url
+/**
+ * The `redisConfiguration` function updates the Redis configuration by prompting the user for the
+ * Redis URL, checking the connection, and updating the environment variables and .env file
+ * accordingly.
+ */
+async function redisConfiguration(): Promise<void> {
   try {
-    let isConnected = false,
-      url = "";
+    let host!: string;
+    let port!: number;
+    let password!: string;
+    let url = await checkExistingRedis();
+    let isConnected = url !== null;
+
+    if (isConnected) {
+      console.log("Redis URL detected: " + url);
+      const { keepValues } = await inquirer.prompt({
+        type: "confirm",
+        name: "keepValues",
+        message: `Do you want to connect to the detected Redis URL?`,
+        default: true,
+      });
+
+      if (keepValues) {
+        console.log("Keeping existing Redis URL: " + url);
+        host = "localhost";
+        port = 6379;
+        password = "";
+      } else {
+        isConnected = false;
+      }
+    }
+    url = "";
+
     while (!isConnected) {
-      const { host, port, password } = await askForRedisUrl();
+      const result = await askForRedisUrl();
+      host = result.host;
+      port = result.port;
+      password = result.password;
       url = `redis://${password ? password + "@" : ""}${host}:${port}`;
       isConnected = await checkRedisConnection(url);
     }
 
-    const config = dotenv.parse(fs.readFileSync(".env"));
-    config.REDIS_URL = url;
-    fs.writeFileSync(".env", "");
-    for (const key in config) {
-      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+    if (isConnected) {
+      console.log("\nConnection to Redis successful! 🎉");
     }
+
+    // Set the Redis parameters in process.env
+    process.env.REDIS_HOST = host;
+    process.env.REDIS_PORT = port.toString();
+    process.env.REDIS_PASSWORD = password;
+
+    // Update the .env file
+    const config = dotenv.parse(fs.readFileSync(".env"));
+    config.REDIS_HOST = host;
+    config.REDIS_PORT = port;
+    config.REDIS_PASSWORD = password;
+    updateEnvVariable(config);
   } catch (err) {
     console.error(err);
     abort();
@@ -120,13 +263,20 @@ async function redisConfiguration(): Promise<void> {
 }
 
 //LAST_RESORT_SUPERADMIN_EMAIL prompt
+/**
+ * The function `askForSuperAdminEmail` asks the user to enter an email address and returns it as a promise.
+ * @returns The email entered by the user is being returned.
+ */
 async function askForSuperAdminEmail(): Promise<string> {
+  console.log(
+    "\nPlease make sure to register with this email before logging in.\n"
+  );
   const { email } = await inquirer.prompt([
     {
       type: "input",
       name: "email",
       message:
-        "Enter the email which you wish to assign as the Super Admin of last resort:",
+        "Enter the email which you wish to assign as the Super Admin of last resort :",
       validate: (input: string) =>
         isValidEmail(input) || "Invalid email. Please try again.",
     },
@@ -136,17 +286,16 @@ async function askForSuperAdminEmail(): Promise<string> {
 }
 
 // Get the super admin email
+/**
+ * The function `superAdmin` prompts the user for a super admin email, updates a configuration file
+ * with the email, and handles any errors that occur.
+ */
 async function superAdmin(): Promise<void> {
   try {
     const email = await askForSuperAdminEmail();
-
     const config = dotenv.parse(fs.readFileSync(".env"));
-
     config.LAST_RESORT_SUPERADMIN_EMAIL = email;
-    fs.writeFileSync(".env", "");
-    for (const key in config) {
-      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-    }
+    updateEnvVariable(config);
   } catch (err) {
     console.log(err);
     abort();
@@ -154,6 +303,11 @@ async function superAdmin(): Promise<void> {
 }
 
 // Function to check if Existing MongoDB instance is running
+/**
+ * The function `checkExistingMongoDB` checks for an existing MongoDB connection by iterating through a
+ * list of URLs and testing the connection using the `checkConnection` function.
+ * @returns The function `checkExistingMongoDB` returns a promise that resolves to a string or null.
+ */
 async function checkExistingMongoDB(): Promise<string | null> {
   const existingMongoDbUrls = [
     process.env.MONGO_DB_URL,
@@ -175,6 +329,16 @@ async function checkExistingMongoDB(): Promise<string | null> {
 }
 
 // Check the connection to MongoDB with the specified URL.
+/**
+ * The function `checkConnection` is an asynchronous function that checks the connection to a MongoDB
+ * database using the provided URL and returns a boolean value indicating whether the connection was
+ * successful or not.
+ * @param url - The `url` parameter is a string that represents the connection URL for the
+ * MongoDB server. It typically includes the protocol (e.g., `mongodb://`), the host and port
+ * information, and any authentication credentials if required.
+ * @returns a Promise that resolves to a boolean value. The boolean value indicates whether the
+ * connection to the MongoDB server was successful (true) or not (false).
+ */
 async function checkConnection(url: string): Promise<boolean> {
   console.log("\nChecking MongoDB connection....");
 
@@ -184,7 +348,6 @@ async function checkConnection(url: string): Promise<boolean> {
       useUnifiedTopology: true,
       serverSelectionTimeoutMS: 1000,
     });
-    console.log("\nConnection to MongoDB successful! 🎉");
     await connection.close();
     return true;
   } catch (error) {
@@ -194,6 +357,11 @@ async function checkConnection(url: string): Promise<boolean> {
 }
 
 //Mongodb url prompt
+/**
+ * The function `askForMongoDBUrl` prompts the user to enter a MongoDB URL and returns the entered URL
+ * as a string.
+ * @returns a Promise that resolves to a string.
+ */
 async function askForMongoDBUrl(): Promise<string> {
   const { url } = await inquirer.prompt([
     {
@@ -208,15 +376,31 @@ async function askForMongoDBUrl(): Promise<string> {
 }
 
 // Get the mongodb url
+/**
+ * The `mongoDB` function connects to a MongoDB database by asking for a URL, checking the connection,
+ * and updating the environment variable with the URL.
+ */
 async function mongoDB(): Promise<void> {
   let DB_URL = process.env.MONGO_DB_URL;
+
   try {
     let url = await checkExistingMongoDB();
-
     let isConnected = url !== null;
 
     if (isConnected) {
       console.log("MongoDB URL detected: " + url);
+      const { keepValues } = await inquirer.prompt({
+        type: "confirm",
+        name: "keepValues",
+        message: `Do you want to connect to the detected MongoDB URL?`,
+        default: true,
+      });
+
+      if (keepValues) {
+        console.log("Keeping existing MongoDB URL: " + url);
+      } else {
+        isConnected = false;
+      }
     }
 
     while (!isConnected) {
@@ -224,32 +408,43 @@ async function mongoDB(): Promise<void> {
       isConnected = await checkConnection(url);
     }
 
-    DB_URL = `${url}/talawa-api`;
+    if (isConnected) {
+      console.log("\nConnection to MongoDB successful! 🎉");
+    }
+    DB_URL = `${url?.endsWith("/talawa-api") ? url : `${url}/talawa-api`}`;
     const config = dotenv.parse(fs.readFileSync(".env"));
     config.MONGO_DB_URL = DB_URL;
-    // Modifying the environment variable to be able to access the url in importData function.
+    // Modifying the environment variable to be able to access the URL in importData function.
     process.env.MONGO_DB_URL = DB_URL;
-    fs.writeFileSync(".env", "");
-    for (const key in config) {
-      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-    }
+    updateEnvVariable(config);
   } catch (err) {
     console.error(err);
+    abort();
   }
 }
 
-//Get recaptcha details
-async function recaptcha(): Promise<void> {
-  console.log(
-    "\nPlease visit this URL to set up reCAPTCHA:\n\nhttps://www.google.com/recaptcha/admin/create"
-  );
-  console.log(
-    '\nSelect reCAPTCHA v2 and the "I`m not a robot" checkbox option'
-  );
-  console.log(
-    '\nAdd "localhost" in domains and accept the terms, then press submit'
-  );
+// Function to ask if the user wants to keep the entered values
+/**
+ * The function `askToKeepValues` prompts the user with a confirmation message and returns a boolean
+ * indicating whether the user wants to keep the entered key.
+ * @returns a boolean value, either true or false.
+ */
+async function askToKeepValues(): Promise<boolean> {
+  const { keepValues } = await inquirer.prompt({
+    type: "confirm",
+    name: "keepValues",
+    message: `Would you like to keep the entered key? `,
+    default: true,
+  });
+  return keepValues;
+}
 
+//Get recaptcha details
+/**
+ * The function `recaptcha` prompts the user to enter a reCAPTCHA secret key, validates the input, and
+ * allows the user to choose whether to keep the entered value or try again.
+ */
+async function recaptcha(): Promise<void> {
   const { recaptchaSecretKey } = await inquirer.prompt([
     {
       type: "input",
@@ -263,28 +458,33 @@ async function recaptcha(): Promise<void> {
       },
     },
   ]);
-  const config = dotenv.parse(fs.readFileSync(".env"));
-  config.RECAPTCHA_SECRET_KEY = recaptchaSecretKey;
-  fs.writeFileSync(".env", "");
-  for (const key in config) {
-    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+
+  const shouldKeepDetails = await askToKeepValues();
+
+  if (shouldKeepDetails) {
+    const config = dotenv.parse(fs.readFileSync(".env"));
+    config.RECAPTCHA_SECRET_KEY = recaptchaSecretKey;
+    updateEnvVariable(config);
+  } else {
+    await recaptcha();
   }
 }
-async function recaptchaSiteKey(): Promise<void> {
-  console.log(
-    "\nPlease visit this URL to set up reCAPTCHA:\n\nhttps://www.google.com/recaptcha/admin/create"
-  );
-  console.log(
-    '\nSelect reCAPTCHA v2 and the "I`m not a robot" checkbox option'
-  );
-  console.log(
-    '\nAdd "localhost" in domains and accept the terms, then press submit'
-  );
 
-  const { recaptchaSiteKey } = await inquirer.prompt([
+/**
+ * The function `recaptchaSiteKey` prompts the user to enter a reCAPTCHA site key, validates the input,
+ * and updates the environment variable if the user chooses to keep the entered value.
+ */
+async function recaptchaSiteKey(): Promise<void> {
+  if (process.env.RECAPTCHA_SITE_KEY) {
+    console.log(
+      `\nreCAPTCHA site key already exists with the value ${process.env.RECAPTCHA_SITE_KEY}`
+    );
+  }
+
+  const { recaptchaSiteKeyInp } = await inquirer.prompt([
     {
       type: "input",
-      name: "recaptchaSiteKey",
+      name: "recaptchaSiteKeyInp",
       message: "Enter your reCAPTCHA site key:",
       validate: async (input: string): Promise<boolean | string> => {
         if (validateRecaptcha(input)) {
@@ -294,31 +494,54 @@ async function recaptchaSiteKey(): Promise<void> {
       },
     },
   ]);
-  const config = dotenv.parse(fs.readFileSync(".env"));
-  config.RECAPTCHA_SITE_KEY = recaptchaSiteKey;
-  fs.writeFileSync(".env", "");
-  for (const key in config) {
-    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
+
+  const shouldKeepDetails = await askToKeepValues();
+
+  if (shouldKeepDetails) {
+    const config = dotenv.parse(fs.readFileSync(".env"));
+    config.RECAPTCHA_SITE_KEY = recaptchaSiteKeyInp;
+    updateEnvVariable(config);
+  } else {
+    await recaptchaSiteKey();
   }
 }
 
+/**
+ * The function `isValidEmail` checks if a given email address is valid according to a specific pattern.
+ * @param email - The `email` parameter is a string that represents an email address.
+ * @returns a boolean value. It returns true if the email passed as an argument matches the specified
+ * pattern, and false otherwise.
+ */
 function isValidEmail(email: string): boolean {
   const pattern = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
   const match = email.match(pattern);
   return match !== null && match[0] === email;
 }
 
+/**
+ * The function validates whether a given string matches the pattern of a reCAPTCHA token.
+ * @param string - The `string` parameter represents the input string that needs to be
+ * validated. In this case, it is expected to be a string containing a Recaptcha response token.
+ * @returns a boolean value.
+ */
 function validateRecaptcha(string: string): boolean {
   const pattern = /^[a-zA-Z0-9_-]{40}$/;
   return pattern.test(string);
 }
 
+/**
+ * The `abort` function logs a message and exits the process.
+ */
 function abort(): void {
   console.log("\nSetup process aborted. 🫠");
   process.exit(1);
 }
 
 //Get mail username and password
+/**
+ * The function `twoFactorAuth` prompts the user to set up Two-Factor Authentication Google Account and
+ * then collects their email and generated password to update environment variables.
+ */
 async function twoFactorAuth(): Promise<void> {
   console.log("\nIMPORTANT");
   console.log(
@@ -350,13 +573,18 @@ async function twoFactorAuth(): Promise<void> {
 
   config.MAIL_USERNAME = email;
   config.MAIL_PASSWORD = password;
-  fs.writeFileSync(".env", "");
-  for (const key in config) {
-    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-  }
+  updateEnvVariable(config);
 }
 
 //Checks if the data exists and ask for deletion
+/**
+ * The function `shouldWipeExistingData` checks if there is existing data in a MongoDB database and prompts the user to delete
+ * it before importing new data.
+ * @param url - The `url` parameter is a string that represents the connection URL for the
+ * MongoDB database. It is used to establish a connection to the database using the `MongoClient` class
+ * from the `mongodb` package.
+ * @returns The function returns a Promise<boolean>.
+ */
 async function shouldWipeExistingData(url: string): Promise<boolean> {
   let shouldImport = false;
   const client = new mongodb.MongoClient(url, {
@@ -396,6 +624,11 @@ async function shouldWipeExistingData(url: string): Promise<boolean> {
 }
 
 //Import sample data
+/**
+ * The function `importData` imports sample data into a MongoDB database if the database URL is provided and if it
+ * is determined that existing data should be wiped.
+ * @returns The function returns a Promise that resolves to `void`.
+ */
 async function importData(): Promise<void> {
   if (!process.env.MONGO_DB_URL) {
     console.log("Couldn't find mongodb url");
@@ -417,14 +650,7 @@ async function importData(): Promise<void> {
           abort();
         }
         console.log(`Output: ${stdout}`);
-        console.log(
-          "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
-        );
       }
-    );
-  } else {
-    console.log(
-      "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
     );
   }
 }
@@ -433,6 +659,17 @@ type VerifySmtpConnectionReturnType = {
   success: boolean;
   error: any;
 };
+
+/**
+ * The function `verifySmtpConnection` verifies the SMTP connection using the provided configuration
+ * and returns a success status and error message if applicable.
+ * @param config - The `config` parameter is an object that contains the configuration settings for the
+ * SMTP connection. It should have the following properties:
+ * @returns The function `verifySmtpConnection` returns a Promise that resolves to an object of type
+ * `VerifySmtpConnectionReturnType`. The `VerifySmtpConnectionReturnType` object has two properties:
+ * `success` and `error`. If the SMTP connection is verified successfully, the `success` property will
+ * be `true` and the `error` property will be `null`. If the SMTP connection verification fails
+ */
 async function verifySmtpConnection(
   config: Record<string, string>
 ): Promise<VerifySmtpConnectionReturnType> {
@@ -457,22 +694,13 @@ async function verifySmtpConnection(
     transporter.close();
   }
 }
+
+/**
+ * The function `configureSmtp` prompts the user to configure SMTP settings for sending emails through
+ * Talawa and saves the configuration in a .env file.
+ * @returns a Promise that resolves to void.
+ */
 async function configureSmtp(): Promise<void> {
-  console.log(
-    "SMTP Configuration is necessary for sending Emails through Talawa"
-  );
-  const { shouldConfigureSmtp } = await inquirer.prompt({
-    type: "confirm",
-    name: "shouldConfigureSmtp",
-    message: "Would you like to configure SMTP for Talawa to send emails?",
-    default: true,
-  });
-
-  if (!shouldConfigureSmtp) {
-    console.log("SMTP configuration skipped.");
-    return;
-  }
-
   const smtpConfig = await inquirer.prompt([
     {
       type: "input",
@@ -528,14 +756,15 @@ async function configureSmtp(): Promise<void> {
   const config = dotenv.parse(fs.readFileSync(".env"));
   config.IS_SMTP = "true";
   Object.assign(config, smtpConfig);
-  fs.writeFileSync(".env", "");
-  for (const key in config) {
-    fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-  }
+  updateEnvVariable(config);
 
   console.log("SMTP configuration saved successfully.");
 }
 
+/**
+ * The main function sets up the Talawa API by prompting the user to configure various environment
+ * variables and import sample data if desired.
+ */
 async function main(): Promise<void> {
   console.log("Welcome to the Talawa API setup! 🚀");
 
@@ -544,6 +773,11 @@ async function main(): Promise<void> {
   } else {
     checkEnvFile();
   }
+
+  if (process.env.NODE_ENV) {
+    console.log(`\nNode environment is already set to ${process.env.NODE_ENV}`);
+  }
+  await setNodeEnvironment();
 
   let accessToken: string | null = "",
     refreshToken: string | null = "";
@@ -556,7 +790,7 @@ async function main(): Promise<void> {
     type: "confirm",
     name: "shouldGenerateAccessToken",
     message: "Would you like to generate a new access token secret?",
-    default: true,
+    default: process.env.ACCESS_TOKEN_SECRET ? false : true,
   });
 
   if (shouldGenerateAccessToken) {
@@ -572,7 +806,7 @@ async function main(): Promise<void> {
     type: "confirm",
     name: "shouldGenerateRefreshToken",
     message: "Would you like to generate a new refresh token secret?",
-    default: true,
+    default: process.env.REFRESH_TOKEN_SECRET ? false : true,
   });
 
   if (shouldGenerateRefreshToken) {
@@ -606,10 +840,7 @@ async function main(): Promise<void> {
     process.env.REDIS_PORT = REDIS_PORT;
     process.env.REDIS_PASSWORD = REDIS_PASSWORD;
 
-    fs.writeFileSync(".env", "");
-    for (const key in config) {
-      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-    }
+    updateEnvVariable(config);
     console.log(`Your MongoDB URL is:\n${process.env.MONGO_DB_URL}`);
     console.log(`Your Redis host is:\n${process.env.REDIS_HOST}`);
     console.log(`Your Redis port is:\n${process.env.REDIS_PORT}`);
@@ -617,29 +848,49 @@ async function main(): Promise<void> {
 
   if (!isDockerInstallation) {
     // Redis configuration
-    if (process.env.REDIS_URL) {
-      console.log(
-        `\nRedis URL already exists with the value:\n${process.env.REDIS_URL}`
-      );
-    }
-    const { shouldSetRedis } = await inquirer.prompt({
-      type: "confirm",
-      name: "shouldSetRedis",
-      message: "Would you like to set up a Redis URL?",
-      default: true,
-    });
-    if (shouldSetRedis) {
+    if (process.env.REDIS_HOST && process.env.REDIS_PORT) {
+      const redisPasswordStr = process.env.REDIS_PASSWORD
+        ? "X".repeat(process.env.REDIS_PASSWORD.length)
+        : "";
+
+      const url = `redis://${
+        process.env.REDIS_PASSWORD ? redisPasswordStr + "@" : ""
+      }${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`;
+
+      console.log(`\nRedis URL already exists with the value:\n${url}`);
+
+      const { shouldSetupRedis } = await inquirer.prompt({
+        type: "confirm",
+        name: "shouldSetupRedis",
+        message: "Would you like to change the existing Redis URL?",
+        default:
+          process.env.REDIS_HOST && process.env.REDIS_PORT ? false : true,
+      });
+
+      if (shouldSetupRedis) {
+        await redisConfiguration();
+      }
+    } else {
       await redisConfiguration();
     }
 
-    const { shouldSetMongoDb } = await inquirer.prompt({
-      type: "confirm",
-      name: "shouldSetMongoDb",
-      message: "Would you like to set up a MongoDB URL?",
-      default: true,
-    });
+    // MongoDB configuration
+    if (process.env.MONGO_DB_URL) {
+      console.log(
+        `\nMongoDB URL already exists with the value:\n${process.env.MONGO_DB_URL}`
+      );
 
-    if (shouldSetMongoDb) {
+      const { shouldSetupMongo } = await inquirer.prompt({
+        type: "confirm",
+        name: "shouldSetupMongo",
+        message: "Would you like to change the existing Mongo DB URL?",
+        default: false,
+      });
+
+      if (shouldSetupMongo) {
+        await mongoDB();
+      }
+    } else {
       await mongoDB();
     }
   }
@@ -652,39 +903,49 @@ async function main(): Promise<void> {
     type: "confirm",
     name: "shouldSetRecaptcha",
     message: "Would you like to set up a reCAPTCHA secret key?",
-    default: true,
+    default: process.env.RECAPTCHA_SECRET_KEY ? false : true,
   });
 
   if (shouldSetRecaptcha) {
     await recaptcha();
-  }
-
-  const { shouldSetRecaptchaSiteKey } = await inquirer.prompt({
-    type: "confirm",
-    name: "shouldSetRecaptchaSiteKey",
-    message: "Would you like to set up a reCAPTCHA site key?",
-    default: true,
-  });
-
-  if (shouldSetRecaptchaSiteKey) {
     await recaptchaSiteKey();
   }
 
+  console.log(
+    "\n You can configure either SMTP or Mail for sending emails through Talawa.\n"
+  );
+
   if (process.env.MAIL_USERNAME) {
     console.log(
-      `\nMail username already exists with the value ${process.env.MAIL_USERNAME}`
+      `Mail username already exists with the value ${process.env.MAIL_USERNAME}`
     );
   }
-  await configureSmtp();
+
   const { shouldSetMail } = await inquirer.prompt([
     {
       type: "confirm",
       name: "shouldSetMail",
       message: "Would you like to setup the mail username and password?",
+      default: process.env.MAIL_USERNAME ? false : true,
     },
   ]);
   if (shouldSetMail) {
     await twoFactorAuth();
+  } else {
+    console.log("Mail configuration skipped.\n");
+
+    const { shouldConfigureSmtp } = await inquirer.prompt({
+      type: "confirm",
+      name: "shouldConfigureSmtp",
+      message: "Would you like to configure SMTP for Talawa to send emails?",
+      default: true,
+    });
+
+    if (shouldConfigureSmtp) {
+      await configureSmtp();
+    } else {
+      console.log("SMTP configuration skipped.\n");
+    }
   }
 
   if (process.env.LAST_RESORT_SUPERADMIN_EMAIL) {
@@ -698,7 +959,7 @@ async function main(): Promise<void> {
       type: "confirm",
       name: "shouldSetSuperUserEmail",
       message: "Would you like to setup a Super Admin email of last resort?",
-      default: true,
+      default: process.env.LAST_RESORT_SUPERADMIN_EMAIL ? false : true,
     },
   ]);
   if (shouldSetSuperUserEmail) {
@@ -717,10 +978,7 @@ async function main(): Promise<void> {
     }
     const config = dotenv.parse(fs.readFileSync(".env"));
     config.LAST_RESORT_SUPERADMIN_EMAIL = config.MAIL_USERNAME;
-    fs.writeFileSync(".env", "");
-    for (const key in config) {
-      fs.appendFileSync(".env", `${key}=${config[key]}\n`);
-    }
+    updateEnvVariable(config);
   }
 
   if (!isDockerInstallation) {
@@ -729,7 +987,7 @@ async function main(): Promise<void> {
         type: "confirm",
         name: "shouldRunDataImport",
         message: "Do you want to import sample data?",
-        default: true,
+        default: false,
       },
     ]);
 
