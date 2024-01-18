@@ -196,4 +196,4 @@ jobs:
 
       - uses: kamilkisiela/graphql-inspector@master
         with:
-          schema: ${{ github.ref }}:schema.graphql
+          schema: ${{ github.ref_name}}:schema.graphql
