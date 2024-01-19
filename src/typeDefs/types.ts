@@ -375,6 +375,7 @@ export const types = gql`
     educationGrade: EducationGrade
     email: EmailAddress!
     employmentStatus: EmploymentStatus
+    post: Post
     eventAdmin: [Event]
     firstName: String!
     gender: Gender

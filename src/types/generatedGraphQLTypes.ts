@@ -1345,6 +1345,7 @@ export type Query = {
   organizationsMemberConnection: UserConnection;
   plugin?: Maybe<Array<Maybe<Plugin>>>;
   post?: Maybe<Post>;
+  postByUser?: Maybe<Array<Maybe<Post>>>;
   postsByOrganization?: Maybe<Array<Maybe<Post>>>;
   postsByOrganizationConnection?: Maybe<PostConnection>;
   registeredEventsByUser?: Maybe<Array<Maybe<Event>>>;
@@ -1469,6 +1470,11 @@ export type QueryPluginArgs = {
 
 export type QueryPostArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryPostByUserArgs = {
+  userId: Scalars['ID']['input'];
 };
 
 
@@ -1669,6 +1675,7 @@ export type User = {
   organizationsBlockedBy?: Maybe<Array<Maybe<Organization>>>;
   phone?: Maybe<UserPhone>;
   pluginCreationAllowed: Scalars['Boolean']['output'];
+  post?: Maybe<Post>;
   registeredEvents?: Maybe<Array<Maybe<Event>>>;
   tagsAssignedWith?: Maybe<UserTagsConnection>;
   tokenVersion: Scalars['Int']['output'];
@@ -2787,6 +2794,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   organizationsMemberConnection?: Resolver<ResolversTypes['UserConnection'], ParentType, ContextType, RequireFields<QueryOrganizationsMemberConnectionArgs, 'orgId'>>;
   plugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryPluginArgs, 'orgId'>>;
   post?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryPostArgs, 'id'>>;
+  postByUser?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType, RequireFields<QueryPostByUserArgs, 'userId'>>;
   postsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType, RequireFields<QueryPostsByOrganizationArgs, 'id'>>;
   postsByOrganizationConnection?: Resolver<Maybe<ResolversTypes['PostConnection']>, ParentType, ContextType, RequireFields<QueryPostsByOrganizationConnectionArgs, 'id'>>;
   registeredEventsByUser?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryRegisteredEventsByUserArgs>>;
@@ -2863,6 +2871,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   organizationsBlockedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['UserPhone']>, ParentType, ContextType>;
   pluginCreationAllowed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  post?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType>;
   registeredEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   tagsAssignedWith?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<UserTagsAssignedWithArgs>>;
   tokenVersion?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;

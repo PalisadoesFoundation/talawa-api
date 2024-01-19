@@ -826,6 +826,7 @@ type Query {
   organizationsMemberConnection(first: Int, orderBy: UserOrderByInput, orgId: ID!, skip: Int, where: UserWhereInput): UserConnection!
   plugin(orgId: ID!): [Plugin]
   post(id: ID!): Post
+  postByUser(userId: ID!): [Post]
   postsByOrganization(id: ID!, orderBy: PostOrderByInput): [Post]
   postsByOrganizationConnection(first: Int, id: ID!, orderBy: PostOrderByInput, skip: Int, where: PostWhereInput): PostConnection
   registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
@@ -983,6 +984,7 @@ type User {
   organizationsBlockedBy: [Organization]
   phone: UserPhone
   pluginCreationAllowed: Boolean!
+  post: Post
   registeredEvents: [Event]
   tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection
   tokenVersion: Int!
