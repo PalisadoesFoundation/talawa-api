@@ -1,4 +1,4 @@
-import { TRANSACTION_LOG_PATH } from "../constants";
+import { LOG_PATH, TransactionLogTypes } from "../constants";
 import type { Query, Schema, Document } from "mongoose";
 import winston from "winston";
 
@@ -22,7 +22,7 @@ const dbLogger = winston.createLogger({
     }
     return logMessage;
   }),
-  transports: [new winston.transports.File({ filename: TRANSACTION_LOG_PATH })],
+  transports: [new winston.transports.File({ filename: LOG_PATH })],
 });
 
 interface InterfaceLoggableDocument extends Document {
@@ -31,12 +31,6 @@ interface InterfaceLoggableDocument extends Document {
 
 interface InterfaceLoggableQuery<T> extends Query<unknown, T> {
   logInfo?: TransactionLogInfo;
-}
-
-export enum TransactionLogTypes {
-  CREATE = "CREATE",
-  UPDATE = "UPDATE",
-  DELETE = "DELETE",
 }
 
 export function createLoggingMiddleware<T extends Document>(

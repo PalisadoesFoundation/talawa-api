@@ -22,7 +22,8 @@ video/**
 videos/**
 
 # Ignore log files
-logs/
+logs/*
+!logs/README.md
 
 # Don't ignore any .gitignore files in any location
 !.gitignore

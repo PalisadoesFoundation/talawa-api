@@ -4,7 +4,7 @@ import path from "path";
 import * as cryptolib from "crypto";
 import inquirer from "inquirer";
 import mongodb from "mongodb";
-import redis from "redis";
+import * as redis from "redis";
 import { exec } from "child_process";
 import nodemailer from "nodemailer";
 import type { ExecException } from "child_process";
@@ -50,26 +50,29 @@ async function accessAndRefreshTokens(
 
 function transactionLogPath(logPath: string | null): void {
   const config = dotenv.parse(fs.readFileSync(".env"));
+  config.LOG = "true";
   if (!logPath) {
     // Check if the logs/transaction.log file exists, if not, create it
     const defaultLogPath = path.resolve(__dirname, "logs");
     const defaultLogFile = path.join(defaultLogPath, "transaction.log");
     if (!fs.existsSync(defaultLogPath)) {
+      console.log("Creating logs/transaction.log file...");
       fs.mkdirSync(defaultLogPath);
     }
 
-    config.TRANSACTION_LOG_PATH = defaultLogFile;
+    config.LOG_PATH = defaultLogFile;
   } else {
-    // Remove the default logs directory and it's files, if it exists
+    // Remove the logs if any files, if it exists
     const logsDirPath = path.resolve(__dirname, "logs");
     if (fs.existsSync(logsDirPath)) {
       fs.readdirSync(logsDirPath).forEach((file: string) => {
-        const curPath = path.join(logsDirPath, file);
-        fs.unlinkSync(curPath);
+        if (file !== "README.md") {
+          const curPath = path.join(logsDirPath, file);
+          fs.unlinkSync(curPath);
+        }
       });
-      fs.rmdirSync(logsDirPath);
     }
-    config.TRANSACTION_LOG_PATH = logPath;
+    config.LOG_PATH = logPath;
   }
   fs.writeFileSync(".env", "");
   for (const key in config) {
@@ -646,24 +649,32 @@ async function main(): Promise<void> {
 
   accessAndRefreshTokens(accessToken, refreshToken);
 
-  if (process.env.TRANSACTION_LOG_PATH) {
-    console.log(
-      `\n Transaction log path already exists with the value:\n${process.env.TRANSACTION_LOG_PATH}`
-    );
-  }
-
-  let logPath: string | null = null;
-  const { shouldUseCustomLogPath } = await inquirer.prompt({
+  const { shouldLog } = await inquirer.prompt({
     type: "confirm",
-    name: "shouldUseCustomLogPath",
-    message: "Would you like to provide a custom path for storing logs?",
-    default: false,
+    name: "shouldLog",
+    message: "Would you like to enable logging for the database transactions?",
+    default: true,
   });
 
-  if (shouldUseCustomLogPath) {
-    logPath = await askForTransactionLogPath();
+  if (shouldLog) {
+    if (process.env.LOG_PATH) {
+      console.log(
+        `\n Log path already exists with the value:\n${process.env.LOG_PATH}`
+      );
+    }
+    let logPath: string | null = null;
+    const { shouldUseCustomLogPath } = await inquirer.prompt({
+      type: "confirm",
+      name: "shouldUseCustomLogPath",
+      message: "Would you like to provide a custom path for storing logs?",
+      default: false,
+    });
+
+    if (shouldUseCustomLogPath) {
+      logPath = await askForTransactionLogPath();
+    }
+    transactionLogPath(logPath);
   }
-  transactionLogPath(logPath);
 
   const { isDockerInstallation } = await inquirer.prompt({
     type: "confirm",
