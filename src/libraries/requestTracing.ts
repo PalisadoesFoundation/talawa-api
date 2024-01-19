@@ -7,19 +7,6 @@ import type { NextFunction, Request, Response } from "express";
 // Alphabets used in the custom nanoid function
 const alphabets = "0123456789abcdefghijklmnopqrstuvwxyz";
 
-/*
-Custom nanoid function to generate a unique 10 characters request ID
-using the characters in alphabets variable
-*/
-let nanoId: (size?: number | undefined) => string;
-const nanoidWrapper = async (): Promise<void> => {
-  const nanoid = import("nanoid").then((module) => {
-    return module.customAlphabet(alphabets, 10);
-  });
-  nanoId = await nanoid;
-};
-nanoidWrapper();
-
 export const requestTracingNamespace = cls.createNamespace("request-tracing");
 
 clsBluebird(requestTracingNamespace);
@@ -36,19 +23,27 @@ export const getTracingId = (): string => {
   return requestTracingNamespace.get(tracingIdContextKeyName) as string;
 };
 
-export const middleware = () => {
+export const middleware = (): ((
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => void) => {
   return (req: Request, res: Response, next: NextFunction): void => {
-    requestTracingNamespace.bindEmitter(req);
-    requestTracingNamespace.bindEmitter(res);
+    // Dynamically importing nanoid and then executin rest of the code
+    import("nanoid").then((module) => {
+      const nanoId = module.customAlphabet(alphabets, 10);
 
-    const tracingId = req.header(tracingIdHeaderName) || nanoId();
-    // We need to set header to ensure API gateway which proxies request, forwards the header as well
-    req.headers[tracingIdHeaderName] = tracingId;
-    res.header(tracingIdHeaderName, tracingId); // Adding tracing ID to response headers
+      requestTracingNamespace.bindEmitter(req);
+      requestTracingNamespace.bindEmitter(res);
 
-    requestTracingNamespace.run(() => {
-      setTracingId(tracingId);
-      next();
+      const tracingId = req.header(tracingIdHeaderName) || nanoId();
+      // We need to set header to ensure API gateway which proxies request, forwards the header as well
+      req.headers[tracingIdHeaderName] = tracingId;
+      res.header(tracingIdHeaderName, tracingId); // Adding tracing ID to response headers
+      requestTracingNamespace.run(() => {
+        setTracingId(tracingId);
+        next();
+      });
     });
   };
 };
@@ -57,6 +52,9 @@ export const trace = async <T>(
   tracingId: string,
   method: () => T
 ): Promise<void> => {
+  const nanoId = await import("nanoid").then((module) => {
+    return module.customAlphabet(alphabets, 10);
+  });
   await requestTracingNamespace.runAndReturn<T>(() => {
     setTracingId(tracingId || nanoId());
     return method();
