@@ -6,18 +6,18 @@ In order to give everyone a chance to submit a issues reports and contribute to 
 
 ___
 ## Table of Contents
-<!-- TOC -->
 
-- [Issue Report Guidelines](#issue-report-guidelines)
-    - [Table of Contents](#table-of-contents)
-    - [Issue Management](#issue-management)
-        - [New Issues](#new-issues)
-        - [Existing Issues](#existing-issues)
-        - [Feature Request Issues](#feature-request-issues)
-        - [Monitoring the Creation of New Issues](#monitoring-the-creation-of-new-issues)
-    - [General Guidelines](#general-guidelines)
+<!-- toc -->
 
-<!-- /TOC -->
+- [Issue Management](#issue-management)
+  - [New Issues](#new-issues)
+  - [Existing Issues](#existing-issues)
+  - [Feature Request Issues](#feature-request-issues)
+  - [Monitoring the Creation of New Issues](#monitoring-the-creation-of-new-issues)
+- [General Guidelines](#general-guidelines)
+
+<!-- tocstop -->
+
 ___
 ## Issue Management
 

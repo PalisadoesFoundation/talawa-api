@@ -19,7 +19,6 @@ export const eventsByOrganizationConnection: QueryResolvers["eventsByOrganizatio
       .limit(args.first ?? 0)
       .skip(args.skip ?? 0)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 

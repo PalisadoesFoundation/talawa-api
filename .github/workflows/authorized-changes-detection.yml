@@ -23,6 +23,10 @@ on:
       - 'vite.config.ts'
       - 'CODEOWNERS'
       - 'LICENSE'
+      - 'docker-compose.yaml'
+      - 'Dockerfile'
+      - 'setup.ts'
+      - 'schema.graphql'
       
 jobs:
   Checking-for-unauthorized-file-changes:

@@ -5,13 +5,24 @@ docs/schema.json
 # Ignore redis binary dump (dump.rdb) files
 *.rdb
 
-# Miscellaneous files
+# No node modules
+node_modules/**
 
-node_modules
+# No editor related files
 .idea
-.env
-images
 .vscode
+
+# Don't upload configuration files
+.env
+
+# Ignore uploads
+image/**
+images/**
+video/**
+videos/**
+
+# Don't ignore any .gitignore files in any location
+!.gitignore
 
 # Added as the documentation only refers to npm, not yarn and pnpm. 
 yarn.lock

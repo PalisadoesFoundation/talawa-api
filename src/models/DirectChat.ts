@@ -10,49 +10,58 @@ export interface InterfaceDirectChat {
   _id: Types.ObjectId;
   users: PopulatedDoc<InterfaceUser & Document>[];
   messages: PopulatedDoc<InterfaceDirectChatMessage & Document>[];
-  creator: PopulatedDoc<InterfaceUser & Document>;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   status: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 /**
  * This is the Structure of the direct chat.
  * @param users - Users of the chat
  * @param messages -  Messages
- * @param creator - Creator of the chat
+ * @param creatorId - Creator of the chat, ref to `User` model
  * @param organization - Organization
  * @param status - whether the chat is active, blocked or deleted.
+ * @param createdAt - Timestamp of chat creation
+ * @param updatedAt - Timestamp of chat updation
  */
-const directChatSchema = new Schema({
-  users: [
-    {
+const directChatSchema = new Schema(
+  {
+    users: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+    ],
+    messages: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "DirectChatMessage",
+      },
+    ],
+    creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-  ],
-  messages: [
-    {
+    organization: {
       type: Schema.Types.ObjectId,
-      ref: "DirectChatMessage",
+      ref: "Organization",
+      required: true,
     },
-  ],
-  creator: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
+    status: {
+      type: String,
+      required: true,
+      enum: ["ACTIVE", "BLOCKED", "DELETED"],
+      default: "ACTIVE",
+    },
   },
-  organization: {
-    type: Schema.Types.ObjectId,
-    ref: "Organization",
-    required: true,
-  },
-  status: {
-    type: String,
-    required: true,
-    enum: ["ACTIVE", "BLOCKED", "DELETED"],
-    default: "ACTIVE",
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 const directChatModel = (): Model<InterfaceDirectChat> =>
   model<InterfaceDirectChat>("DirectChat", directChatSchema);

@@ -42,7 +42,7 @@ beforeAll(async () => {
     name: "name",
     description: "description",
     isPublic: true,
-    creator: testUsers[0]?._id,
+    creatorId: testUsers[0]?._id,
     admins: [testUsers[0]?._id],
     members: [testUsers[0]?._id],
     visibleInSearch: true,
@@ -63,7 +63,7 @@ beforeAll(async () => {
 
   testDirectChat = await DirectChat.create({
     title: "title",
-    creator: testUsers[0]?._id,
+    creatorId: testUsers[0]?._id,
     organization: testOrganization._id,
     users: [testUsers[0]?._id, testUsers[1]?._id],
   });

@@ -42,8 +42,6 @@ const config: CodegenConfig = {
 
           EventAttendee: "../models/EventAttendee#InterfaceEventAttendee",
 
-          EventProject: "../models/EventProject#InterfaceEventProject",
-
           Feedback: "../models/Feedback#InterfaceFeedback",
 
           // File: '../models/File#InterfaceFile',
@@ -71,8 +69,6 @@ const config: CodegenConfig = {
           PluginField: "../models/PluginField#InterfacePluginField",
 
           Post: "../models/Post#InterfacePost",
-
-          Task: "../models/Task#InterfaceTask",
 
           UserTag: "../models/OrganizationTagUser#InterfaceOrganizationTagUser",
 

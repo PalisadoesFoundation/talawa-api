@@ -4,7 +4,10 @@ import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { Organization, Post } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import type { TestOrganizationType } from "../../helpers/userAndOrg";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
 import type { TestPostType } from "../../helpers/posts";
 import { createTestPost } from "../../helpers/posts";
 

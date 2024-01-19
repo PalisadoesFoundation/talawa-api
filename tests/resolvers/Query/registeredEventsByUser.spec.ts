@@ -43,7 +43,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -75,7 +74,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -107,7 +105,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -139,7 +136,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -171,7 +167,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -203,7 +198,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -235,7 +229,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -267,7 +260,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -299,7 +291,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -331,7 +322,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -363,7 +353,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -395,7 +384,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -427,7 +415,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -459,7 +446,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -491,7 +477,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -523,7 +508,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -555,7 +539,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -587,7 +570,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -619,7 +601,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -651,7 +632,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
@@ -679,7 +659,6 @@ describe("resolvers -> Query -> events", () => {
     })
       .sort(sort)
       .populate("creator", "-password")
-      .populate("tasks")
       .populate("admins", "-password")
       .lean();
 
