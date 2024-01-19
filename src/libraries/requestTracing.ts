@@ -2,7 +2,6 @@ import cls from "cls-hooked";
 // No type defintions available for package 'cls-bluebird'
 // @ts-ignore
 import clsBluebird from "cls-bluebird";
-import { customAlphabet } from "nanoid";
 import type { NextFunction, Request, Response } from "express";
 
 // Alphabets used in the custom nanoid function
@@ -12,7 +11,14 @@ const alphabets = "0123456789abcdefghijklmnopqrstuvwxyz";
 Custom nanoid function to generate a unique 10 characters request ID
 using the characters in alphabets variable
 */
-const nanoid = customAlphabet(alphabets, 10);
+let nanoId: (size?: number | undefined) => string;
+const nanoidWrapper = async (): Promise<void> => {
+  const nanoid = import("nanoid").then((module) => {
+    return module.customAlphabet(alphabets, 10);
+  });
+  nanoId = await nanoid;
+};
+nanoidWrapper();
 
 export const requestTracingNamespace = cls.createNamespace("request-tracing");
 
@@ -35,7 +41,7 @@ export const middleware = () => {
     requestTracingNamespace.bindEmitter(req);
     requestTracingNamespace.bindEmitter(res);
 
-    const tracingId = req.header(tracingIdHeaderName) || nanoid();
+    const tracingId = req.header(tracingIdHeaderName) || nanoId();
     // We need to set header to ensure API gateway which proxies request, forwards the header as well
     req.headers[tracingIdHeaderName] = tracingId;
     res.header(tracingIdHeaderName, tracingId); // Adding tracing ID to response headers
@@ -52,7 +58,7 @@ export const trace = async <T>(
   method: () => T
 ): Promise<void> => {
   await requestTracingNamespace.runAndReturn<T>(() => {
-    setTracingId(tracingId || nanoid());
+    setTracingId(tracingId || nanoId());
     return method();
   });
 };
