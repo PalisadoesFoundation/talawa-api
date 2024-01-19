@@ -75,6 +75,12 @@ export const ORGANIZATION_IMAGE_NOT_FOUND_ERROR = {
   MESSAGE: "organizationImage.notFound",
   PARAM: "organizationImage",
 };
+export const PLUGIN_NOT_FOUND = {
+  DESC: "Plugin not found",
+  CODE: "plugin.notFound",
+  MESSAGE: "plugin.notFound",
+  PARAM: "plugin",
+};
 export const POST_NOT_FOUND_ERROR = {
   DESC: "Post not found",
   CODE: "post.notFound",
@@ -462,15 +468,15 @@ export const LAST_RESORT_SUPERADMIN_EMAIL =
   process.env.LAST_RESORT_SUPERADMIN_EMAIL;
 
 export const SMTP_OPTIONS = {
-  IS_SMTP: process.env.IS_SMTP,
+  IS_SMTP: process.env.IS_SMTP === "true",
   SMTP_HOST: process.env.SMTP_HOST,
   SMTP_PASSWORD: process.env.SMTP_PASSWORD,
   SMTP_USERNAME: process.env.SMTP_USERNAME,
   SMTP_PORT: process.env.SMTP_PORT,
-  SMTP_SSL_TLS: process.env.SMTP_SSL_TLS,
+  SMTP_SSL_TLS: process.env.SMTP_SSL_TLS === "true",
 };
 
-export const REDIS_HOST = process.env.REDIS_HOST!;
+export const REDIS_HOST = process.env.REDIS_HOST || "";
 export const REDIS_PORT = Number(process.env.REDIS_PORT);
 export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 
