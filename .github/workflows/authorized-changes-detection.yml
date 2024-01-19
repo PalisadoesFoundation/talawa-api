@@ -23,6 +23,8 @@ on:
       - 'vite.config.ts'
       - 'CODEOWNERS'
       - 'LICENSE'
+      - 'docker-compose.yaml'
+      - 'Dockerfile'
       
 jobs:
   Checking-for-unauthorized-file-changes:
