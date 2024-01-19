@@ -462,17 +462,17 @@ export const LAST_RESORT_SUPERADMIN_EMAIL =
   process.env.LAST_RESORT_SUPERADMIN_EMAIL;
 
 export const SMTP_OPTIONS = {
-  IS_SMTP: process.env.IS_SMTP,
+  IS_SMTP: process.env.IS_SMTP === "true",
   SMTP_HOST: process.env.SMTP_HOST,
   SMTP_PASSWORD: process.env.SMTP_PASSWORD,
   SMTP_USERNAME: process.env.SMTP_USERNAME,
   SMTP_PORT: process.env.SMTP_PORT,
-  SMTP_SSL_TLS: process.env.SMTP_SSL_TLS,
+  SMTP_SSL_TLS: process.env.SMTP_SSL_TLS === "true",
 };
 
-export const REDIS_HOST = ENV.REDIS_HOST;
-export const REDIS_PORT = Number(ENV.REDIS_PORT);
-export const REDIS_PASSWORD = ENV.REDIS_PASSWORD;
+export const REDIS_HOST = process.env.REDIS_HOST || "";
+export const REDIS_PORT = Number(process.env.REDIS_PORT);
+export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 
 export const key = ENV.ENCRYPTION_KEY as string;
 export const iv = crypto.randomBytes(16).toString("hex");
