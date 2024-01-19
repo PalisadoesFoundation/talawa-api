@@ -10,6 +10,12 @@ import type { InterfaceOrganization } from "./Organization";
  */
 export interface InterfaceUser {
   _id: Types.ObjectId;
+  identifier: {
+    type: Number,
+    unique: true,
+    required: true,
+    immutable: true,
+  };
   address: {
     city: string;
     countryCode: string;
