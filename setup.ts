@@ -130,7 +130,7 @@ function transactionLogPath(logPath: string | null): void {
 
     config.LOG_PATH = defaultLogFile;
   } else {
-    // Remove the logs if any files, if it exists
+    // Remove the logs files, if exists
     const logsDirPath = path.resolve(__dirname, "logs");
     if (fs.existsSync(logsDirPath)) {
       fs.readdirSync(logsDirPath).forEach((file: string) => {
