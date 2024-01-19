@@ -8,7 +8,7 @@ import type { UserResolvers } from "../../types/generatedGraphQLTypes";
 
 export const post: UserResolvers["post"] = async (parent) => {
   const post = await Post.find({
-    createrId: parent._id,
+    creatorId: parent._id,
   }).lean();
 
   return post;

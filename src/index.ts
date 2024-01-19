@@ -41,6 +41,7 @@ const httpServer =
   process.env.NODE_ENV === "production"
     ? https.createServer(
         {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
           key: fs.readFileSync(path.join(__dirname, "../key.pem")),
           cert: fs.readFileSync(path.join(__dirname, "../cert.pem")),
@@ -53,6 +54,7 @@ const httpServer =
 const server = new ApolloServer({
   schema,
   formatError: (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     error: any
   ): { message: string; status: number; data: string[] } => {
     if (!error.originalError) {

@@ -1,18 +1,18 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, Post, Organization } from "../../models";
-import { errors, requestContext } from "../../libraries";
 import {
   LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
+import { errors, requestContext } from "../../libraries";
 import { isValidString } from "../../libraries/validators/validateString";
+import { Organization, Post, User } from "../../models";
+import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
+import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
+import { cachePosts } from "../../services/PostCache/cachePosts";
+import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
 import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
-import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
-import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
-import { cachePosts } from "../../services/PostCache/cachePosts";
 /**
  * This function enables to create a post.
  * @param _parent - parent of current request
@@ -55,7 +55,9 @@ export const createPost: MutationResolvers["createPost"] = async (
       _id: args.data.organizationId,
     }).lean();
 
-    await cacheOrganizations([organization!]);
+    if (organization) {
+      await cacheOrganizations([organization]);
+    }
   }
 
   // Checks whether organization with _id == args.data.organizationId exists.
@@ -150,7 +152,9 @@ export const createPost: MutationResolvers["createPost"] = async (
       }
     );
 
-    await cacheOrganizations([updatedOrganizaiton!]);
+    if (updatedOrganizaiton) {
+      await cacheOrganizations([updatedOrganizaiton]);
+    }
   }
 
   // Returns createdPost.
