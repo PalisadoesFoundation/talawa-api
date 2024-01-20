@@ -224,6 +224,12 @@ export const AGENDA_ITEM_NOT_FOUND_ERROR = {
   MESSAGE: "agendaItem.notFound",
   PARAM: "agendaItem",
 };
+export const AGENDA_ITEM_CREATION_ERROR = {
+  DESC: "Agenda item not created",
+  CODE: "agendaItem.notCreated",
+  MESSAGE: "agendaItem.notCreated",
+  PARAM: "agendaItem",
+};
 export const AGENDA_CATEGORY_NOT_FOUND_ERROR = {
   DESC: "Agenda category not found",
   CODE: "agendaCategory.notFound",

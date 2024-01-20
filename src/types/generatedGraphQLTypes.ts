@@ -1903,6 +1903,7 @@ export type User = {
   appLanguageCode: Scalars['String'];
   assignedTasks?: Maybe<Array<Maybe<Task>>>;
   birthDate?: Maybe<Scalars['Date']>;
+  createdAgendaItems?: Maybe<Array<Maybe<AgendaItem>>>;
   createdAt?: Maybe<Scalars['DateTime']>;
   createdEvents?: Maybe<Array<Maybe<Event>>>;
   createdOrganizations?: Maybe<Array<Maybe<Organization>>>;
@@ -3134,6 +3135,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   appLanguageCode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   assignedTasks?: Resolver<Maybe<Array<Maybe<ResolversTypes['Task']>>>, ParentType, ContextType>;
   birthDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  createdAgendaItems?: Resolver<Maybe<Array<Maybe<ResolversTypes['AgendaItem']>>>, ParentType, ContextType>;
   createdAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   createdOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;

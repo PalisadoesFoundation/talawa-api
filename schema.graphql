@@ -1115,6 +1115,7 @@ type User {
   appLanguageCode: String!
   assignedTasks: [Task]
   birthDate: Date
+  createdAgendaItems: [AgendaItem]
   createdAt: DateTime
   createdEvents: [Event]
   createdOrganizations: [Organization]

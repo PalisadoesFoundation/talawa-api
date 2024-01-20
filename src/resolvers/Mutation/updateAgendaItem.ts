@@ -23,7 +23,7 @@ export const updateAgendaItem: MutationResolvers["updateAgendaItem"] = async (
   args,
   context
 ) => {
-  const userID = context.userID || args.input.updatedBy;
+  const userID = context.userID;
 
   // Fetch the current user based on the provided ID
   const currentUser: InterfaceUser | null = await User.findOne({

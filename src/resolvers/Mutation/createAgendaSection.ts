@@ -24,7 +24,7 @@ import {
 export const createAgendaSection: MutationResolvers["createAgendaSection"] =
   async (_parent, args, context) => {
     // Verify that args and args.input exist
-    const userId = context.userId || args.input.createdBy;
+    const userId = context.userId;
     const currentUser = await User.findOne({
       _id: userId,
     }).lean();

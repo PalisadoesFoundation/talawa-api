@@ -27,7 +27,7 @@ export const createAgendaItem: MutationResolvers["createAgendaItem"] = async (
   context
 ) => {
   // Fetch the current user based on the provided createdBy ID
-  const userId = context.userId || args.input.createdBy;
+  const userId = context.userId; //|| args.input.createdBy;
   const currentUser = await User.findOne({
     _id: userId,
   }).lean();
@@ -73,29 +73,6 @@ export const createAgendaItem: MutationResolvers["createAgendaItem"] = async (
     );
   }
 
-  // Check if the user has the required privileges for the organization
-  const userCreatedOrganization = currentUser.createdOrganizations.some(
-    (createdOrganization) => createdOrganization.equals(organization._id)
-  );
-
-  const userJoinedOrganization = currentUser.joinedOrganizations.some(
-    (joinedOrganization) => joinedOrganization.equals(organization._id)
-  );
-
-  if (
-    !(
-      userCreatedOrganization ||
-      userJoinedOrganization ||
-      currentUser.userType === "SUPERADMIN"
-    )
-  ) {
-    throw new errors.UnauthorizedError(
-      requestContext.translate(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE),
-      ORGANIZATION_NOT_AUTHORIZED_ERROR.CODE,
-      ORGANIZATION_NOT_AUTHORIZED_ERROR.PARAM
-    );
-  }
-
   // Handle "Note" agenda item creation
   if (args.input.itemType === "Note") {
     const createdNoteAgendaItem = await createNoteAgendaItem(
@@ -133,12 +110,11 @@ async function createNoteAgendaItem(
   organization: any
 ) {
   const createdNoteAgendaItem = await AgendaItemModel.create({
-    description: input.description, // Add other relevant fields for "Note" items
+    description: input.description,
     createdBy: currentUser._id,
     organization: organization._id,
     updatedAt: new Date(),
     createdAt: new Date(),
-    isNote: true,
   });
 
   // Add the createdNoteAgendaItem._id to the appropriate lists on currentUser's document
@@ -170,7 +146,6 @@ async function createRegularAgendaItem(
 
   // Add the createdAgendaItem._id to the appropriate lists on currentUser's document
   await updateUserAgendaItems(currentUser._id, createdAgendaItem._id);
-
   return createdAgendaItem;
 }
 

@@ -444,6 +444,7 @@ export const types = gql`
     ): UserTagsConnection
     tokenVersion: Int!
     userType: String
+    createdAgendaItems: [AgendaItem]
   }
 
   type UserCustomData {

@@ -5,6 +5,7 @@ import validator from "validator";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceMembershipRequest } from "./MembershipRequest";
 import type { InterfaceOrganization } from "./Organization";
+import type { InterfaceAgendaItem } from "./AgendaItem";
 /**
  * This is an interface that represents a database(MongoDB) document for User.
  */
@@ -54,6 +55,7 @@ export interface InterfaceUser {
   token: string | undefined;
   tokenVersion: number;
   userType: string;
+  createdAgendaItems: PopulatedDoc<InterfaceAgendaItem & Document>[];
 }
 /**
  * This describes the schema for a `User` that corresponds to `InterfaceUser` document.
@@ -280,6 +282,12 @@ const userSchema = new Schema({
     enum: ["USER", "ADMIN", "SUPERADMIN"],
     default: "USER",
   },
+  createdAgendaItems: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "AgendaItem",
+    },
+  ],
 });
 
 userSchema.plugin(mongoosePaginate);
