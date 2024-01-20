@@ -29,6 +29,7 @@ import {
   TimeResolver,
   URLResolver,
 } from "graphql-scalars";
+import { FundCampaign } from "./FundCampaigns";
 
 const resolvers: Resolvers = {
   CheckIn,
@@ -37,6 +38,7 @@ const resolvers: Resolvers = {
   DirectChatMessage,
   Event,
   Feedback,
+  FundCampaign,
   GroupChat,
   GroupChatMessage,
   MembershipRequest,
