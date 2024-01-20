@@ -1,6 +1,5 @@
-import type { PopulatedDoc, Types, Document, Model } from "mongoose";
+import type { Types, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
-import type { InterfaceUser } from "./User";
 
 /**
  * This is an interface representing a document for a Fund Campaign in the database(MongoDB).
@@ -9,7 +8,7 @@ import type { InterfaceUser } from "./User";
 export interface InterfaceFundCampaign {
   _id: Types.ObjectId | string;
   name: string;
-  creatorId: PopulatedDoc<InterfaceUser & Document>;
+  creatorId: Types.ObjectId | string;
   goalAmount: number;
   currency: string;
   startDate: Date;

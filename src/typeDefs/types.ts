@@ -93,7 +93,7 @@ export const types = gql`
 
   type FundCampaign {
     _id: ID!
-    creator: User
+    creatorId: ID!
     goalAmount: Float!
     currency: Currency!
     startDate: DateTime!

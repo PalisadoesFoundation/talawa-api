@@ -402,7 +402,7 @@ export type FundCampaign = {
   __typename?: 'FundCampaign';
   _id: Scalars['ID']['output'];
   createdAt: Scalars['DateTime']['output'];
-  creator?: Maybe<User>;
+  creatorId: Scalars['ID']['output'];
   currency: Scalars['Currency']['output'];
   endDate: Scalars['DateTime']['output'];
   goalAmount: Scalars['Float']['output'];
@@ -2014,7 +2014,7 @@ export type ResolversTypes = {
   FieldError: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['FieldError']>;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   ForgotPasswordData: ForgotPasswordData;
-  FundCampaign: ResolverTypeWrapper<Omit<FundCampaign, 'creator'> & { creator?: Maybe<ResolversTypes['User']> }>;
+  FundCampaign: ResolverTypeWrapper<FundCampaign>;
   FundCampaignInput: FundCampaignInput;
   Gender: Gender;
   Group: ResolverTypeWrapper<InterfaceGroupModel>;
@@ -2148,7 +2148,7 @@ export type ResolversParentTypes = {
   FieldError: ResolversInterfaceTypes<ResolversParentTypes>['FieldError'];
   Float: Scalars['Float']['output'];
   ForgotPasswordData: ForgotPasswordData;
-  FundCampaign: Omit<FundCampaign, 'creator'> & { creator?: Maybe<ResolversParentTypes['User']> };
+  FundCampaign: FundCampaign;
   FundCampaignInput: FundCampaignInput;
   Group: InterfaceGroupModel;
   GroupChat: InterfaceGroupChatModel;
@@ -2452,7 +2452,7 @@ export type FieldErrorResolvers<ContextType = any, ParentType extends ResolversP
 export type FundCampaignResolvers<ContextType = any, ParentType extends ResolversParentTypes['FundCampaign'] = ResolversParentTypes['FundCampaign']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  creatorId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   currency?: Resolver<ResolversTypes['Currency'], ParentType, ContextType>;
   endDate?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   goalAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;

@@ -346,7 +346,7 @@ input ForgotPasswordData {
 type FundCampaign {
   _id: ID!
   createdAt: DateTime!
-  creator: User
+  creatorId: ID!
   currency: Currency!
   endDate: DateTime!
   goalAmount: Float!
