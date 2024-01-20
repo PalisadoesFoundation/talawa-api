@@ -113,6 +113,23 @@ export const inputs = gql`
     review: String
   }
 
+  input FundCampaignInput {
+    name: String!
+    goalAmount: Float!
+    currency: Currency!
+    startDate: DateTime!
+    endDate: DateTime!
+  }
+
+  input UpdateFundCampaignInput {
+    campaignId: ID!
+    name: String
+    goalAmount: Float
+    currency: Currency
+    startDate: DateTime
+    endDate: DateTime
+  }
+
   input ForgotPasswordData {
     userOtp: String!
     newPassword: String!

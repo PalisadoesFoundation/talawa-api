@@ -3,6 +3,7 @@ import { gql } from "graphql-tag";
 // Place fields alphabetically to ensure easier lookup and navigation.
 export const scalars = gql`
   scalar CountryCode
+  scalar Currency
   scalar Date
   scalar DateTime
   scalar EmailAddress

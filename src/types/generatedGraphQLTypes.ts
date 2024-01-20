@@ -38,6 +38,7 @@ export type Scalars = {
   Float: { input: number; output: number; }
   Any: { input: any; output: any; }
   CountryCode: { input: any; output: any; }
+  Currency: { input: any; output: any; }
   Date: { input: any; output: any; }
   DateTime: { input: any; output: any; }
   EmailAddress: { input: any; output: any; }
@@ -395,6 +396,26 @@ export type ForgotPasswordData = {
   newPassword: Scalars['String']['input'];
   otpToken: Scalars['String']['input'];
   userOtp: Scalars['String']['input'];
+};
+
+export type FundCampaign = {
+  __typename?: 'FundCampaign';
+  _id: Scalars['ID']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  creator: User;
+  currency: Scalars['Currency']['output'];
+  endDate: Scalars['DateTime']['output'];
+  goalAmount: Scalars['Float']['output'];
+  startDate: Scalars['DateTime']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+};
+
+export type FundCampaignInput = {
+  currency: Scalars['Currency']['input'];
+  endDate: Scalars['DateTime']['input'];
+  goalAmount: Scalars['Float']['input'];
+  name: Scalars['String']['input'];
+  startDate: Scalars['DateTime']['input'];
 };
 
 export type Gender =
@@ -1606,6 +1627,15 @@ export type UpdateEventInput = {
   title?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type UpdateFundCampaignInput = {
+  campaignId: Scalars['ID']['input'];
+  currency?: InputMaybe<Scalars['Currency']['input']>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  goalAmount?: InputMaybe<Scalars['Float']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
 export type UpdateOrganizationInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   location?: InputMaybe<Scalars['String']['input']>;
@@ -1952,6 +1982,7 @@ export type ResolversTypes = {
   ConnectionPageInfo: ResolverTypeWrapper<ConnectionPageInfo>;
   CountryCode: ResolverTypeWrapper<Scalars['CountryCode']['output']>;
   CreateUserTagInput: CreateUserTagInput;
+  Currency: ResolverTypeWrapper<Scalars['Currency']['output']>;
   CursorPaginationInput: CursorPaginationInput;
   Date: ResolverTypeWrapper<Scalars['Date']['output']>;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
@@ -1975,6 +2006,8 @@ export type ResolversTypes = {
   FieldError: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['FieldError']>;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   ForgotPasswordData: ForgotPasswordData;
+  FundCampaign: ResolverTypeWrapper<Omit<FundCampaign, 'creator'> & { creator: ResolversTypes['User'] }>;
+  FundCampaignInput: FundCampaignInput;
   Gender: Gender;
   Group: ResolverTypeWrapper<InterfaceGroupModel>;
   GroupChat: ResolverTypeWrapper<InterfaceGroupChatModel>;
@@ -2037,6 +2070,7 @@ export type ResolversTypes = {
   UpdateAdvertisementInput: UpdateAdvertisementInput;
   UpdateAdvertisementPayload: ResolverTypeWrapper<Omit<UpdateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversTypes['Advertisement']> }>;
   UpdateEventInput: UpdateEventInput;
+  UpdateFundCampaignInput: UpdateFundCampaignInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
   UpdateUserInput: UpdateUserInput;
   UpdateUserPasswordInput: UpdateUserPasswordInput;
@@ -2085,6 +2119,7 @@ export type ResolversParentTypes = {
   ConnectionPageInfo: ConnectionPageInfo;
   CountryCode: Scalars['CountryCode']['output'];
   CreateUserTagInput: CreateUserTagInput;
+  Currency: Scalars['Currency']['output'];
   CursorPaginationInput: CursorPaginationInput;
   Date: Scalars['Date']['output'];
   DateTime: Scalars['DateTime']['output'];
@@ -2105,6 +2140,8 @@ export type ResolversParentTypes = {
   FieldError: ResolversInterfaceTypes<ResolversParentTypes>['FieldError'];
   Float: Scalars['Float']['output'];
   ForgotPasswordData: ForgotPasswordData;
+  FundCampaign: Omit<FundCampaign, 'creator'> & { creator: ResolversParentTypes['User'] };
+  FundCampaignInput: FundCampaignInput;
   Group: InterfaceGroupModel;
   GroupChat: InterfaceGroupChatModel;
   GroupChatMessage: InterfaceGroupChatMessageModel;
@@ -2159,6 +2196,7 @@ export type ResolversParentTypes = {
   UpdateAdvertisementInput: UpdateAdvertisementInput;
   UpdateAdvertisementPayload: Omit<UpdateAdvertisementPayload, 'advertisement'> & { advertisement?: Maybe<ResolversParentTypes['Advertisement']> };
   UpdateEventInput: UpdateEventInput;
+  UpdateFundCampaignInput: UpdateFundCampaignInput;
   UpdateOrganizationInput: UpdateOrganizationInput;
   UpdateUserInput: UpdateUserInput;
   UpdateUserPasswordInput: UpdateUserPasswordInput;
@@ -2291,6 +2329,10 @@ export interface CountryCodeScalarConfig extends GraphQLScalarTypeConfig<Resolve
   name: 'CountryCode';
 }
 
+export interface CurrencyScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Currency'], any> {
+  name: 'Currency';
+}
+
 export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Date'], any> {
   name: 'Date';
 }
@@ -2397,6 +2439,18 @@ export type FieldErrorResolvers<ContextType = any, ParentType extends ResolversP
   __resolveType: TypeResolveFn<'InvalidCursor' | 'MaximumLengthError' | 'MaximumValueError' | 'MinimumLengthError' | 'MinimumValueError', ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+};
+
+export type FundCampaignResolvers<ContextType = any, ParentType extends ResolversParentTypes['FundCampaign'] = ResolversParentTypes['FundCampaign']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  currency?: Resolver<ResolversTypes['Currency'], ParentType, ContextType>;
+  endDate?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  goalAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  startDate?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type GroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['Group'] = ResolversParentTypes['Group']> = {
@@ -2908,6 +2962,7 @@ export type Resolvers<ContextType = any> = {
   ConnectionError?: ConnectionErrorResolvers<ContextType>;
   ConnectionPageInfo?: ConnectionPageInfoResolvers<ContextType>;
   CountryCode?: GraphQLScalarType;
+  Currency?: GraphQLScalarType;
   Date?: GraphQLScalarType;
   DateTime?: GraphQLScalarType;
   DeletePayload?: DeletePayloadResolvers<ContextType>;
@@ -2920,6 +2975,7 @@ export type Resolvers<ContextType = any> = {
   ExtendSession?: ExtendSessionResolvers<ContextType>;
   Feedback?: FeedbackResolvers<ContextType>;
   FieldError?: FieldErrorResolvers<ContextType>;
+  FundCampaign?: FundCampaignResolvers<ContextType>;
   Group?: GroupResolvers<ContextType>;
   GroupChat?: GroupChatResolvers<ContextType>;
   GroupChatMessage?: GroupChatMessageResolvers<ContextType>;

@@ -90,6 +90,18 @@ export const types = gql`
     createdAt: DateTime!
     updatedAt: DateTime!
   }
+
+  type FundCampaign {
+    _id: ID!
+    creator: User!
+    goalAmount: Float!
+    currency: Currency!
+    startDate: DateTime!
+    endDate: DateTime!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+  }
+
   type Advertisement {
     _id: ID!
     name: String!

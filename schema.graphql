@@ -116,6 +116,8 @@ input CreateUserTagInput {
   parentTagId: ID
 }
 
+scalar Currency
+
 input CursorPaginationInput {
   cursor: String
   direction: PaginationDirection!
@@ -339,6 +341,25 @@ input ForgotPasswordData {
   newPassword: String!
   otpToken: String!
   userOtp: String!
+}
+
+type FundCampaign {
+  _id: ID!
+  createdAt: DateTime!
+  creator: User!
+  currency: Currency!
+  endDate: DateTime!
+  goalAmount: Float!
+  startDate: DateTime!
+  updatedAt: DateTime!
+}
+
+input FundCampaignInput {
+  currency: Currency!
+  endDate: DateTime!
+  goalAmount: Float!
+  name: String!
+  startDate: DateTime!
 }
 
 enum Gender {
@@ -918,6 +939,15 @@ input UpdateEventInput {
   startDate: Date
   startTime: Time
   title: String
+}
+
+input UpdateFundCampaignInput {
+  campaignId: ID!
+  currency: Currency
+  endDate: DateTime
+  goalAmount: Float
+  name: String
+  startDate: DateTime
 }
 
 input UpdateOrganizationInput {
