@@ -10,6 +10,7 @@ import { eventsByOrganizationConnection } from "./eventsByOrganizationConnection
 import { getDonationById } from "./getDonationById";
 import { getDonationByOrgId } from "./getDonationByOrgId";
 import { getDonationByOrgIdConnection } from "./getDonationByOrgIdConnection";
+import { getFundCampaigns } from "./getFundCampaigns";
 import { getlanguage } from "./getlanguage";
 import { getPlugins } from "./getPlugins";
 import { me } from "./me";
@@ -41,6 +42,7 @@ export const Query: QueryResolvers = {
   getAdvertisements,
   getDonationByOrgId,
   getDonationByOrgIdConnection,
+  getFundCampaigns,
   getlanguage,
   getPlugins,
   isSampleOrganization,

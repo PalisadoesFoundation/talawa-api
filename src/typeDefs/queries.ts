@@ -39,6 +39,10 @@ export const queries = gql`
       skip: Int
     ): [Donation!]!
 
+    getFundCampaigns: [FundCampaign] @auth
+
+    # getFundCampaignsById(id: ID!): FundCampaign @auth
+
     getlanguage(lang_code: String!): [Translation]
 
     getPlugins: [Plugin]
