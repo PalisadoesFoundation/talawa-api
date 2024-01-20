@@ -10,16 +10,24 @@
   ],
   "overrides": [
     {
-      "files": ["./src/typeDefs/**/*.ts"],
-      "processor": "@graphql-eslint/graphql"
-    },
-    {
-      "files": ["./src/typeDefs/**/*.graphql"],
-      "parser": "@graphql-eslint/eslint-plugin",
-      "plugins": ["@graphql-eslint"],
-      // Do not apply naming conventions to .graphql files
+      //Override rules for both TypeScript and GraphQL files in typeDef directory
+      "files": ["./src/typeDefs/**/*.{ts,graphql}"],
+      // "parser": "@graphql-eslint/eslint-plugin",
+      // "plugins": ["@graphql-eslint"],
+      //In above if we use graphql parser it producing errors making conflict of
+      //typescript lint check or graphql lint check due to includes code of both
+      //typescript and graphql in .ts file
+
+      //For now,using typescript parser for files in typeDef directories
+      "parser": "@typescript-eslint/parser",
+      "plugins": ["@typescript-eslint", "eslint-plugin-tsdoc", "import"],
+
+      // Rules for both TypeScript and GraphQL files
       "rules": {
-        "@typescript-eslint/naming-convention": "off"
+        "@typescript-eslint/naming-convention": "off",
+        "@typescript-eslint/no-unused-vars": "warn"
+
+        // Add other rules as needed
       }
     },
     {
@@ -71,6 +79,7 @@
     "@typescript-eslint/no-var-requires": "error",
     "@typescript-eslint/ban-types": "error",
     "@typescript-eslint/no-duplicate-enum-values": "error",
+    "@typescript-eslint/no-unused-vars": "error",
 
     // Typescript rule to enforce PascalCase naming convention for types and interfaces
     "@typescript-eslint/naming-convention": [
