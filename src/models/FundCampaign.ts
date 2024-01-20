@@ -7,7 +7,7 @@ import type { InterfaceUser } from "./User";
  */
 
 export interface InterfaceFundCampaign {
-  _id: Types.ObjectId;
+  _id: Types.ObjectId | string;
   name: string;
   creatorId: PopulatedDoc<InterfaceUser & Document>;
   goalAmount: number;
@@ -55,8 +55,8 @@ const fundCampaignSchema = new Schema(
     },
     creatorId: {
       type: Schema.Types.ObjectId,
-      required: true,
       ref: "User",
+      required: true,
     },
   },
   {
@@ -64,8 +64,9 @@ const fundCampaignSchema = new Schema(
   }
 );
 
-export const FundCampaignModel = (): Model<InterfaceFundCampaign> =>
+const fundCampaignModel = (): Model<InterfaceFundCampaign> =>
   model<InterfaceFundCampaign>("FundCampaign", fundCampaignSchema);
 
+// This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const FundCampaign = (models.FundCampaign ||
-  FundCampaignModel()) as ReturnType<typeof FundCampaignModel>;
+  fundCampaignModel()) as ReturnType<typeof fundCampaignModel>;

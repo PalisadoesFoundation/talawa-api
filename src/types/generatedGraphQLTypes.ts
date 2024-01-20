@@ -402,7 +402,7 @@ export type FundCampaign = {
   __typename?: 'FundCampaign';
   _id: Scalars['ID']['output'];
   createdAt: Scalars['DateTime']['output'];
-  creator: User;
+  creator?: Maybe<User>;
   currency: Scalars['Currency']['output'];
   endDate: Scalars['DateTime']['output'];
   goalAmount: Scalars['Float']['output'];
@@ -1353,6 +1353,7 @@ export type Query = {
   getDonationById: Donation;
   getDonationByOrgId?: Maybe<Array<Maybe<Donation>>>;
   getDonationByOrgIdConnection: Array<Donation>;
+  getFundCampaignById: FundCampaign;
   getFundCampaigns?: Maybe<Array<Maybe<FundCampaign>>>;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
@@ -1436,6 +1437,11 @@ export type QueryGetDonationByOrgIdConnectionArgs = {
   orgId: Scalars['ID']['input'];
   skip?: InputMaybe<Scalars['Int']['input']>;
   where?: InputMaybe<DonationWhereInput>;
+};
+
+
+export type QueryGetFundCampaignByIdArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -1684,6 +1690,7 @@ export type User = {
   birthDate?: Maybe<Scalars['Date']['output']>;
   createdAt: Scalars['DateTime']['output'];
   createdEvents?: Maybe<Array<Maybe<Event>>>;
+  createdFundCampaigns?: Maybe<Array<Maybe<FundCampaign>>>;
   createdOrganizations?: Maybe<Array<Maybe<Organization>>>;
   educationGrade?: Maybe<EducationGrade>;
   email: Scalars['EmailAddress']['output'];
@@ -2007,7 +2014,7 @@ export type ResolversTypes = {
   FieldError: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['FieldError']>;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   ForgotPasswordData: ForgotPasswordData;
-  FundCampaign: ResolverTypeWrapper<Omit<FundCampaign, 'creator'> & { creator: ResolversTypes['User'] }>;
+  FundCampaign: ResolverTypeWrapper<Omit<FundCampaign, 'creator'> & { creator?: Maybe<ResolversTypes['User']> }>;
   FundCampaignInput: FundCampaignInput;
   Gender: Gender;
   Group: ResolverTypeWrapper<InterfaceGroupModel>;
@@ -2141,7 +2148,7 @@ export type ResolversParentTypes = {
   FieldError: ResolversInterfaceTypes<ResolversParentTypes>['FieldError'];
   Float: Scalars['Float']['output'];
   ForgotPasswordData: ForgotPasswordData;
-  FundCampaign: Omit<FundCampaign, 'creator'> & { creator: ResolversParentTypes['User'] };
+  FundCampaign: Omit<FundCampaign, 'creator'> & { creator?: Maybe<ResolversParentTypes['User']> };
   FundCampaignInput: FundCampaignInput;
   Group: InterfaceGroupModel;
   GroupChat: InterfaceGroupChatModel;
@@ -2445,7 +2452,7 @@ export type FieldErrorResolvers<ContextType = any, ParentType extends ResolversP
 export type FundCampaignResolvers<ContextType = any, ParentType extends ResolversParentTypes['FundCampaign'] = ResolversParentTypes['FundCampaign']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   currency?: Resolver<ResolversTypes['Currency'], ParentType, ContextType>;
   endDate?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   goalAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
@@ -2786,6 +2793,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getDonationById?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<QueryGetDonationByIdArgs, 'id'>>;
   getDonationByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Donation']>>>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdArgs, 'orgId'>>;
   getDonationByOrgIdConnection?: Resolver<Array<ResolversTypes['Donation']>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdConnectionArgs, 'orgId'>>;
+  getFundCampaignById?: Resolver<ResolversTypes['FundCampaign'], ParentType, ContextType, RequireFields<QueryGetFundCampaignByIdArgs, 'id'>>;
   getFundCampaigns?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundCampaign']>>>, ParentType, ContextType>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
@@ -2860,6 +2868,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   birthDate?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   createdEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
+  createdFundCampaigns?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundCampaign']>>>, ParentType, ContextType>;
   createdOrganizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   educationGrade?: Resolver<Maybe<ResolversTypes['EducationGrade']>, ParentType, ContextType>;
   email?: Resolver<ResolversTypes['EmailAddress'], ParentType, ContextType>;

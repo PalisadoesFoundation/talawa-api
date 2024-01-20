@@ -346,7 +346,7 @@ input ForgotPasswordData {
 type FundCampaign {
   _id: ID!
   createdAt: DateTime!
-  creator: User!
+  creator: User
   currency: Currency!
   endDate: DateTime!
   goalAmount: Float!
@@ -835,6 +835,7 @@ type Query {
   getDonationById(id: ID!): Donation!
   getDonationByOrgId(orgId: ID!): [Donation]
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
+  getFundCampaignById(id: ID!): FundCampaign!
   getFundCampaigns: [FundCampaign]
   getPlugins: [Plugin]
   getlanguage(lang_code: String!): [Translation]
@@ -999,6 +1000,7 @@ type User {
   birthDate: Date
   createdAt: DateTime!
   createdEvents: [Event]
+  createdFundCampaigns: [FundCampaign]
   createdOrganizations: [Organization]
   educationGrade: EducationGrade
   email: EmailAddress!
