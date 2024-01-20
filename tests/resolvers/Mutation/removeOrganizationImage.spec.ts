@@ -43,10 +43,10 @@ beforeAll(async () => {
     description: "description",
     isPublic: true,
     admins: [testAdminUser?._id],
-    creator: testAdminUser?._id,
-
+    creatorId: testAdminUser?._id,
     members: [testUser?._id],
     blockedUsers: [testUser?._id],
+    visibleInSearch: true,
   });
 
   await User.updateOne(

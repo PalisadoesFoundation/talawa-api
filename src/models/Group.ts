@@ -9,50 +9,53 @@ export interface InterfaceGroup {
   _id: Types.ObjectId;
   title: string;
   description: string | undefined;
-  createdAt: Date;
   organization: PopulatedDoc<InterfaceOrganization & Document>;
   status: string;
   admins: PopulatedDoc<InterfaceUser & Document>[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 /**
  * This is the structure of a group
  * @param title - Title
  * @param description - Description
- * @param createdAt - Created at Date
+ * @param createdAt - Timestamp of creation
+ * @param updatedAt - Timestamp of updation
  * @param status - Status
  * @param admins - Admins
  */
-const groupSchema = new Schema({
-  title: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  organization: {
-    type: Schema.Types.ObjectId,
-    ref: "Organization",
-    required: true,
-  },
-  status: {
-    type: String,
-    required: true,
-    enum: ["ACTIVE", "BLOCKED", "DELETED"],
-    default: "ACTIVE",
-  },
-  admins: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "User",
+const groupSchema = new Schema(
+  {
+    title: {
+      type: String,
       required: true,
     },
-  ],
-});
+    description: {
+      type: String,
+    },
+    organization: {
+      type: Schema.Types.ObjectId,
+      ref: "Organization",
+      required: true,
+    },
+    status: {
+      type: String,
+      required: true,
+      enum: ["ACTIVE", "BLOCKED", "DELETED"],
+      default: "ACTIVE",
+    },
+    admins: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  }
+);
 
 const groupModel = (): Model<InterfaceGroup> =>
   model<InterfaceGroup>("Group", groupSchema);
