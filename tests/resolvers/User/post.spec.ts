@@ -29,7 +29,9 @@ describe("resolvers -> User -> post", () => {
 
     if (result) {
       expect(result).toHaveLength(1);
-      expect((result[0] as InterfacePost)?.creatorId).toBe(parent?._id);
+      expect((result[0] as InterfacePost)?.creatorId).toStrictEqual(
+        parent?._id
+      );
     }
   });
 });
