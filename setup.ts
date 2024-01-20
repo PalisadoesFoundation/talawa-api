@@ -545,19 +545,18 @@ function validateRecaptcha(string: string): boolean {
 }
 
 /**
- * The function validates whether a given image size is less than 3000 and greater than 0.
+ * The function validates whether a given image size is less than 3 and greater than 0.
  * @param string - The `number` parameter represents the input size of the string
- * validated. In this case, it is expected to be a number less than 3000 and greater than 0.
+ * validated. In this case, it is expected to be a number less than 3 and greater than 0.
  * @returns a boolean value.
  */
 function validateImageFileSize(size: number): boolean {
-  return size > 0 && size <= 3000;
+  return size > 0 && size <= 3;
 }
 
 /**
  * The `abort` function logs a message and exits the process.
  */
-
 function abort(): void {
   console.log("\nSetup process aborted. 🫠");
   process.exit(1);
@@ -1026,16 +1025,14 @@ async function main(): Promise<void> {
     {
       type: "input",
       name: "imageSizeLimit",
-      message: "Enter the maximum size limit of Images uploaded (in Kb)",
-      default: 3000,
+      message: "Enter the maximum size limit of Images uploaded (in MB)",
+      default: 3,
       validate: (input: number) =>
-        validateImageFileSize(input) ||
-        "Enter a valid number between 0 and 3000",
+        validateImageFileSize(input) || "Enter a valid number between 0 and 3",
     },
   ]);
 
-  console.log(imageSizeLimit);
-  await setImageUploadSize(imageSizeLimit);
+  await setImageUploadSize(imageSizeLimit * 1000);
 
   console.log(
     "\nCongratulations! Talawa API has been successfully setup! 🥂🎉"
