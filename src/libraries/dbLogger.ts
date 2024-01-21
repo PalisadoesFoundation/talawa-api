@@ -1,4 +1,4 @@
-import { LOG_PATH, TransactionLogTypes } from "../constants";
+import { LOG, LOG_PATH, TransactionLogTypes } from "../constants";
 import type { Query, Schema, Document } from "mongoose";
 import winston from "winston";
 
@@ -10,20 +10,24 @@ export type TransactionLogInfo = {
   update?: string;
 };
 
-const dbLogger = winston.createLogger({
-  level: "info",
-  format: winston.format.printf((logEntry) => {
-    let logMessage = `timestamp=${logEntry.timestamp}, model=${logEntry.model}, type=${logEntry.type}`;
-    if (logEntry.update && logEntry.update.length > 0) {
-      logMessage += `, update=${logEntry.update}`;
-    }
-    if (logEntry.query && logEntry.query.length > 0) {
-      logMessage += `, query=${logEntry.query}`;
-    }
-    return logMessage;
-  }),
-  transports: [new winston.transports.File({ filename: LOG_PATH })],
-});
+let dbLogger: winston.Logger | null = null;
+
+if (LOG && LOG_PATH) {
+  dbLogger = winston.createLogger({
+    level: "info",
+    format: winston.format.printf((logEntry) => {
+      let logMessage = `timestamp=${logEntry.timestamp}, model=${logEntry.model}, type=${logEntry.type}`;
+      if (logEntry.update && logEntry.update.length > 0) {
+        logMessage += `, update=${logEntry.update}`;
+      }
+      if (logEntry.query && logEntry.query.length > 0) {
+        logMessage += `, query=${logEntry.query}`;
+      }
+      return logMessage;
+    }),
+    transports: [new winston.transports.File({ filename: LOG_PATH })],
+  });
+}
 
 interface InterfaceLoggableDocument extends Document {
   logInfo: TransactionLogInfo;
@@ -37,6 +41,10 @@ export function createLoggingMiddleware<T extends Document>(
   schema: Schema<T>,
   modelName: string
 ): void {
+  if (!dbLogger) {
+    return;
+  }
+
   const logAction = (
     type: TransactionLogTypes,
     thisContext?: InterfaceLoggableQuery<T>
@@ -59,7 +67,9 @@ export function createLoggingMiddleware<T extends Document>(
   });
 
   schema.post<InterfaceLoggableDocument>("save", function () {
-    dbLogger.info("success", this.logInfo);
+    if (dbLogger) {
+      dbLogger.info("success", this.logInfo);
+    }
   });
 
   const updateOperations = ["findOneAndUpdate", "updateOne", "updateMany"];
@@ -70,7 +80,9 @@ export function createLoggingMiddleware<T extends Document>(
     });
 
     schema.post(operation, function (this: InterfaceLoggableQuery<T>) {
-      dbLogger.info("success", this.logInfo);
+      if (dbLogger) {
+        dbLogger?.info("success", this.logInfo);
+      }
     });
   });
 
@@ -82,7 +94,9 @@ export function createLoggingMiddleware<T extends Document>(
     });
 
     schema.post(operation, function (this: InterfaceLoggableQuery<T>) {
-      dbLogger.info("success", this.logInfo);
+      if (dbLogger) {
+        dbLogger.info("success", this.logInfo);
+      }
     });
   });
 }
