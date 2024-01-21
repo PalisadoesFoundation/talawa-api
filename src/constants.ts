@@ -21,10 +21,10 @@ export const VENUE_ALREADY_EXISTS_ERROR = {
   PARAM: "venue",
 };
 
-export const VENUE_DOESNT_EXIST_ERROR = {
+export const VENUE_NOT_FOUND_ERROR = {
   DESC: "Venue does not exist",
-  CODE: "venue.doesntExist",
-  MESSAGE: "venue.doesntExist",
+  CODE: "venue.NotFound",
+  MESSAGE: "venue.NotFound",
   PARAM: "venue",
 };
 

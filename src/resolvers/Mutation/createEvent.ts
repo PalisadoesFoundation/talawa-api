@@ -2,14 +2,14 @@ import { organization } from "./../DirectChat/organization";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent, InterfaceUser } from "../../models";
-import { User, Organization } from "../../models";
+import { User, Organization, Event } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
   LENGTH_VALIDATION_ERROR,
   VENUE_ALREADY_SCHEDULED,
-  VENUE_DOESNT_EXIST_ERROR,
+  VENUE_NOT_FOUND_ERROR,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 import { compareDates } from "../../libraries/validators/compareDates";
@@ -123,6 +123,38 @@ export const createEvent: MutationResolvers["createEvent"] = async (
       compareDatesResult
     );
   }
+
+  // Update the date part of the startTime and endTime with their start date and end date respectively instead of current date
+  const startDateObject = args.data?.startDate;
+  const startTimeObject = args.data?.startTime;
+
+  if (startDateObject && startTimeObject) {
+    const startDate = new Date(startDateObject);
+    const startTime = new Date(startTimeObject);
+
+    startTime.setFullYear(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      startDate.getDate()
+    );
+    if (args.data) args.data.startTime = startTime;
+  }
+
+  const endDateObject = args.data?.endDate;
+  const endTimeObject = args.data?.endTime;
+
+  if (endDateObject && endTimeObject) {
+    const endDate = new Date(endDateObject);
+    const endTime = new Date(endTimeObject);
+
+    endTime.setFullYear(
+      endDate.getFullYear(),
+      endDate.getMonth(),
+      endDate.getDate()
+    );
+    if (args.data) args.data.endTime = endTime;
+  }
+
   // Checks if the venue is provided and whether that venue exists in the organization
   if (
     args.data?.venue &&
@@ -158,37 +190,40 @@ export const createEvent: MutationResolvers["createEvent"] = async (
         },
       ],
       $and: [
-        {
-          $or: [
-            {
-              allDay: true,
-            },
-            {
-              $and: [
-                { startTime: { $lte: args.data?.startTime } },
-                { endTime: { $gte: args.data?.startTime } },
+        // If the requested event is allDay then only date checks is sufficient
+        args.data?.allDay === true
+          ? {}
+          : {
+              $or: [
+                {
+                  allDay: true,
+                },
+                {
+                  $and: [
+                    { startTime: { $lte: args.data?.startTime } },
+                    { endTime: { $gte: args.data?.startTime } },
+                  ],
+                },
+                {
+                  $and: [
+                    { startTime: { $lte: args.data?.endTime } },
+                    { endTime: { $gte: args.data?.endTime } },
+                  ],
+                },
+                {
+                  $and: [
+                    { startTime: { $gte: args.data?.startTime } },
+                    { endTime: { $lte: args.data?.endTime } },
+                  ],
+                },
+                {
+                  $and: [
+                    { startTime: { $lte: args.data?.startTime } },
+                    { endTime: { $gte: args.data?.endTime } },
+                  ],
+                },
               ],
             },
-            {
-              $and: [
-                { startTime: { $lte: args.data?.endTime } },
-                { endTime: { $gte: args.data?.endTime } },
-              ],
-            },
-            {
-              $and: [
-                { startTime: { $gte: args.data?.startTime } },
-                { endTime: { $lte: args.data?.endTime } },
-              ],
-            },
-            {
-              $and: [
-                { startTime: { $lte: args.data?.startTime } },
-                { endTime: { $gte: args.data?.endTime } },
-              ],
-            },
-          ],
-        },
       ],
     });
 
@@ -211,9 +246,9 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     }
   } else if (args.data?.venue) {
     throw new errors.NotFoundError(
-      requestContext.translate(VENUE_DOESNT_EXIST_ERROR.MESSAGE),
-      VENUE_DOESNT_EXIST_ERROR.CODE,
-      VENUE_DOESNT_EXIST_ERROR.PARAM
+      requestContext.translate(VENUE_NOT_FOUND_ERROR.MESSAGE),
+      VENUE_NOT_FOUND_ERROR.CODE,
+      VENUE_NOT_FOUND_ERROR.PARAM
     );
   }
   if (session) {
@@ -247,7 +282,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
             organization,
             session
           );
-
+          console.log(createdEvent);
           for (const event of createdEvent) {
             await associateEventWithUser(currentUser, event, session);
             await cacheEvents([event]);

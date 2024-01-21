@@ -292,8 +292,8 @@ export type Event = {
   startTime?: Maybe<Scalars['Time']['output']>;
   status: Status;
   title: Scalars['String']['output'];
-  venue?: Maybe<Scalars['ID']['output']>;
   updatedAt: Scalars['DateTime']['output'];
+  venue?: Maybe<Scalars['ID']['output']>;
 };
 
 
@@ -2428,8 +2428,8 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   startTime?: Resolver<Maybe<ResolversTypes['Time']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  venue?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  venue?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
