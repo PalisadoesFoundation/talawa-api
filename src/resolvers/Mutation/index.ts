@@ -23,6 +23,7 @@ import { createComment } from "./createComment";
 import { createDirectChat } from "./createDirectChat";
 import { createDonation } from "./createDonation";
 import { createEvent } from "./createEvent";
+import { createFundCampaign } from "./createFundCampaign";
 import { createGroupChat } from "./createGroupChat";
 import { createMessageChat } from "./createMessageChat";
 import { createOrganization } from "./createOrganization";
@@ -112,6 +113,7 @@ export const Mutation: MutationResolvers = {
   createDirectChat,
   createDonation,
   createEvent,
+  createFundCampaign,
   createGroupChat,
   createMessageChat,
   createOrganization,

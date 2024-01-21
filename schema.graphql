@@ -346,7 +346,7 @@ input ForgotPasswordData {
 type FundCampaign {
   _id: ID!
   createdAt: DateTime!
-  creatorId: ID!
+  creator: User
   currency: Currency!
   endDate: DateTime!
   goalAmount: Float!
@@ -520,6 +520,7 @@ type Mutation {
   createDirectChat(data: createChatInput!): DirectChat!
   createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
   createEvent(data: EventInput): Event!
+  createFundCampaign(data: FundCampaignInput!): FundCampaign!
   createGroupChat(data: createGroupChatInput!): GroupChat!
   createMember(input: UserAndOrganizationInput!): Organization!
   createMessageChat(data: MessageChatInput!): MessageChat!
