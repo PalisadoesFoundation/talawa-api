@@ -9,8 +9,7 @@ import requestLogger from "morgan";
 import path from "path";
 import { appConfig } from "./config";
 import { requestContext, requestTracing, stream } from "./libraries";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-//@ts-ignore
+
 import graphqlUploadExpress from "graphql-upload/graphqlUploadExpress.mjs";
 
 const app = express();
