@@ -8,6 +8,10 @@ import { EncodedImage } from "../../models/EncodedImage";
 import path from "path";
 import { deletePreviousImage } from "./deletePreviousImage";
 
+const checkImageSizeLimit = (size: number): boolean => {
+  return size > 0 && size <= 20000;
+};
+
 export const uploadEncodedImage = async (
   encodedImageURL: string,
   previousImagePath?: string | null
@@ -18,8 +22,11 @@ export const uploadEncodedImage = async (
   const stringLength = data.length;
   const sizeInKb =
     (4 * Math.ceil(stringLength / 3) * 0.5624896334383812) / 1000;
+  const limit = checkImageSizeLimit(Number(process.env.IMAGE_SIZE_LIMIT))
+    ? Number(process.env.IMAGE_SIZE_LIMIT)
+    : 3000;
 
-  if (sizeInKb > Number(process.env.IMAGE_SIZE_LIMIT)) {
+  if (sizeInKb > limit) {
     throw new errors.ImageSizeLimitExceeded(
       IMAGE_SIZE_LIMIT.MESSAGE,
       IMAGE_SIZE_LIMIT.CODE,

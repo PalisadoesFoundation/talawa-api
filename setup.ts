@@ -545,13 +545,13 @@ function validateRecaptcha(string: string): boolean {
 }
 
 /**
- * The function validates whether a given image size is less than 3 and greater than 0.
+ * The function validates whether a given image size is less than 20 and greater than 0.
  * @param string - The `number` parameter represents the input size of the string
- * validated. In this case, it is expected to be a number less than 3 and greater than 0.
+ * validated. In this case, it is expected to be a number less than 20 and greater than 0.
  * @returns a boolean value.
  */
 function validateImageFileSize(size: number): boolean {
-  return size > 0 && size <= 3;
+  return size > 0 && size <= 20;
 }
 
 /**
@@ -1025,10 +1025,10 @@ async function main(): Promise<void> {
     {
       type: "input",
       name: "imageSizeLimit",
-      message: "Enter the maximum size limit of Images uploaded (in MB)",
+      message: "Enter the maximum size limit of Images uploaded (in MB) max: 20",
       default: 3,
       validate: (input: number) =>
-        validateImageFileSize(input) || "Enter a valid number between 0 and 3",
+        validateImageFileSize(input) || "Enter a valid number between 0 and 20",
     },
   ]);
 
