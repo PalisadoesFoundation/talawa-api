@@ -550,6 +550,7 @@ type Mutation {
   removeDirectChat(chatId: ID!, organizationId: ID!): DirectChat!
   removeEvent(id: ID!): Event!
   removeEventAttendee(data: EventAttendeeInput!): User!
+  removeFundCampaign(id: ID!): FundCampaign!
   removeGroupChat(chatId: ID!): GroupChat!
   removeMember(data: UserAndOrganizationInput!): Organization!
   removeOrganization(id: ID!): User!
