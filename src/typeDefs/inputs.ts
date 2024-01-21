@@ -122,7 +122,6 @@ export const inputs = gql`
   }
 
   input UpdateFundCampaignInput {
-    campaignId: ID!
     name: String
     goalAmount: Float
     currency: Currency

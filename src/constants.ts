@@ -33,6 +33,13 @@ export const FEEDBACK_ALREADY_SUBMITTED = {
   PARAM: "feedback.alreadySubmitted",
 };
 
+export const FUND_CAMPAIGN_NOT_FOUND = {
+  DESC: "Fund Campaign not found",
+  CODE: "fundCampaign.notFound",
+  MESSAGE: "fundCampaign.notFound",
+  PARAM: "fundCampaign",
+};
+
 export const INVALID_OTP = "Invalid OTP";
 
 export const IN_PRODUCTION = process.env.NODE_ENV === "production";

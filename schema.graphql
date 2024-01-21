@@ -575,6 +575,7 @@ type Mutation {
   unregisterForEventByUser(id: ID!): Event!
   updateAdvertisement(input: UpdateAdvertisementInput!): UpdateAdvertisementPayload
   updateEvent(data: UpdateEventInput, id: ID!): Event!
+  updateFundCampaign(data: UpdateFundCampaignInput, id: ID!): FundCampaign!
   updateLanguage(languageCode: String!): User!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
   updatePluginStatus(id: ID!, orgId: ID!): Plugin!
@@ -945,7 +946,6 @@ input UpdateEventInput {
 }
 
 input UpdateFundCampaignInput {
-  campaignId: ID!
   currency: Currency
   endDate: DateTime
   goalAmount: Float

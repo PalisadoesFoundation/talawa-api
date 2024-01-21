@@ -1,6 +1,7 @@
-import type { InterfaceFundCampaign } from "../../models";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { FundCampaign } from "../../models";
+import { errors, requestContext } from "../../libraries";
+import { FUND_CAMPAIGN_NOT_FOUND } from "../../constants";
 
 /**
  * This query will fetch the donation as a transaction from database.
@@ -11,9 +12,13 @@ import { FundCampaign } from "../../models";
 
 export const getFundCampaignById: QueryResolvers["getFundCampaignById"] =
   async (_parent, args) => {
-    return (
-      (await FundCampaign.findOne({
-        _id: args.id,
-      }).lean()) ?? ({} as InterfaceFundCampaign)
-    );
+    const fundCampaign = await FundCampaign.findById(args.id).lean();
+    if (!fundCampaign) {
+      throw new errors.NotFoundError(
+        requestContext.translate(FUND_CAMPAIGN_NOT_FOUND.DESC),
+        FUND_CAMPAIGN_NOT_FOUND.CODE,
+        FUND_CAMPAIGN_NOT_FOUND.MESSAGE
+      );
+    }
+    return await FundCampaign.findById(args.id).lean();
   };

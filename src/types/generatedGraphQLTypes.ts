@@ -637,6 +637,7 @@ export type Mutation = {
   unregisterForEventByUser: Event;
   updateAdvertisement?: Maybe<UpdateAdvertisementPayload>;
   updateEvent: Event;
+  updateFundCampaign: FundCampaign;
   updateLanguage: User;
   updateOrganization: Organization;
   updatePluginStatus: Plugin;
@@ -1042,6 +1043,12 @@ export type MutationUpdateAdvertisementArgs = {
 
 export type MutationUpdateEventArgs = {
   data?: InputMaybe<UpdateEventInput>;
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationUpdateFundCampaignArgs = {
+  data?: InputMaybe<UpdateFundCampaignInput>;
   id: Scalars['ID']['input'];
 };
 
@@ -1641,7 +1648,6 @@ export type UpdateEventInput = {
 };
 
 export type UpdateFundCampaignInput = {
-  campaignId: Scalars['ID']['input'];
   currency?: InputMaybe<Scalars['Currency']['input']>;
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   goalAmount?: InputMaybe<Scalars['Float']['input']>;
@@ -2668,6 +2674,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   unregisterForEventByUser?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUnregisterForEventByUserArgs, 'id'>>;
   updateAdvertisement?: Resolver<Maybe<ResolversTypes['UpdateAdvertisementPayload']>, ParentType, ContextType, RequireFields<MutationUpdateAdvertisementArgs, 'input'>>;
   updateEvent?: Resolver<ResolversTypes['Event'], ParentType, ContextType, RequireFields<MutationUpdateEventArgs, 'id'>>;
+  updateFundCampaign?: Resolver<ResolversTypes['FundCampaign'], ParentType, ContextType, RequireFields<MutationUpdateFundCampaignArgs, 'id'>>;
   updateLanguage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateLanguageArgs, 'languageCode'>>;
   updateOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateOrganizationArgs, 'id'>>;
   updatePluginStatus?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginStatusArgs, 'id' | 'orgId'>>;

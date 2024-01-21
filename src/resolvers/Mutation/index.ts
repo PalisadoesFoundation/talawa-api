@@ -76,6 +76,7 @@ import { unlikeComment } from "./unlikeComment";
 import { unlikePost } from "./unlikePost";
 import { unregisterForEventByUser } from "./unregisterForEventByUser";
 import { updateEvent } from "./updateEvent";
+import { updateFundCampaign } from "./updateFundCampaign";
 import { updateLanguage } from "./updateLanguage";
 import { updateOrganization } from "./updateOrganization";
 import { updatePluginStatus } from "./updatePluginStatus";
@@ -166,6 +167,7 @@ export const Mutation: MutationResolvers = {
   unlikePost,
   unregisterForEventByUser,
   updateEvent,
+  updateFundCampaign,
   updateLanguage,
   updateOrganization,
   updatePluginStatus,
