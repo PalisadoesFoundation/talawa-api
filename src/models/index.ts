@@ -1,6 +1,6 @@
 export * from "./ActionItem";
 export * from "./Advertisement";
-export * from "./Category";
+export * from "./ActionItemCategory";
 export * from "./CheckIn";
 export * from "./MessageChat";
 export * from "./Comment";

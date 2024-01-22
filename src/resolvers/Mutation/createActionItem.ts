@@ -1,12 +1,12 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import type { InterfaceActionItem, InterfaceEvent } from "../../models";
-import { User, Event, Category, ActionItem } from "../../models";
+import { User, Event, ActionItemCategory, ActionItem } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   EVENT_NOT_FOUND_ERROR,
-  CATEGORY_NOT_FOUND_ERROR,
+  ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR,
   USER_NOT_MEMBER_FOR_ORGANIZATION,
 } from "../../constants";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
@@ -21,7 +21,7 @@ import { Types } from "mongoose";
  * @remarks The following checks are done:
  * 1. If the user exists
  * 3. If the asignee exists
- * 4. If the category exists
+ * 4. If the actionItemCategory exists
  * 5. If the asignee is a member of the organization
  * 6. If the user is a member of the organization
  * 7. If the event exists (if action item related to an event)
@@ -60,24 +60,24 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
     );
   }
 
-  const category = await Category.findOne({
-    _id: args.categoryId,
+  const actionItemCategory = await ActionItemCategory.findOne({
+    _id: args.actionItemCategoryId,
   }).lean();
 
-  // Checks if the category exists
-  if (!category) {
+  // Checks if the actionItemCategory exists
+  if (!actionItemCategory) {
     throw new errors.NotFoundError(
-      requestContext.translate(CATEGORY_NOT_FOUND_ERROR.MESSAGE),
-      CATEGORY_NOT_FOUND_ERROR.CODE,
-      CATEGORY_NOT_FOUND_ERROR.PARAM
+      requestContext.translate(ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE),
+      ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.CODE,
+      ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.PARAM
     );
   }
 
   let asigneeIsOrganizationMember = false;
   asigneeIsOrganizationMember = assignee.joinedOrganizations.some(
     (organizationId) =>
-      organizationId === category.orgId ||
-      Types.ObjectId(organizationId).equals(category.orgId)
+      organizationId === actionItemCategory.orgId ||
+      Types.ObjectId(organizationId).equals(actionItemCategory.orgId)
   );
 
   // Checks if the asignee is a member of the organization
@@ -127,8 +127,8 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   // Checks if the currUser is an admin of the organization
   const currentUserIsOrgAdmin = currentUser.adminFor.some(
     (ogranizationId) =>
-      ogranizationId === category.orgId ||
-      Types.ObjectId(ogranizationId).equals(category.orgId)
+      ogranizationId === actionItemCategory.orgId ||
+      Types.ObjectId(ogranizationId).equals(actionItemCategory.orgId)
   );
 
   // Checks whether currentUser with _id === context.userId is authorized for the operation.
@@ -148,7 +148,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   const createActionItem = await ActionItem.create({
     assignedTo: args.data.assignedTo,
     assignedBy: context.userId,
-    categoryId: args.categoryId,
+    actionItemCategoryId: args.actionItemCategoryId,
     preCompletionNotes: args.data.preCompletionNotes,
     postCompletionNotes: args.data.postCompletionNotes,
     dueDate: args.data.dueDate,

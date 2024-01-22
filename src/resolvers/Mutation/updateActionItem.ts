@@ -55,7 +55,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
   const actionItem = await ActionItem.findOne({
     _id: args.id,
   })
-    .populate("categoryId")
+    .populate("actionItemCategoryId")
     .lean();
 
   // Checks if the actionItem exists
@@ -89,7 +89,7 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
       }
 
       let userIsOrganizationMember = false;
-      const currOrgId = actionItem.categoryId.orgId;
+      const currOrgId = actionItem.actionItemCategoryId.orgId;
       userIsOrganizationMember = newAssignedUser.joinedOrganizations.some(
         (organizationId) =>
           organizationId === currOrgId ||
@@ -109,8 +109,8 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
 
   const currentUserIsOrgAdmin = currentUser.adminFor.some(
     (ogranizationId) =>
-      ogranizationId === actionItem.categoryId.orgId ||
-      Types.ObjectId(ogranizationId).equals(actionItem.categoryId.orgId)
+      ogranizationId === actionItem.actionItemCategoryId.orgId ||
+      Types.ObjectId(ogranizationId).equals(actionItem.actionItemCategoryId.orgId)
   );
 
   let currentUserIsEventAdmin = false;

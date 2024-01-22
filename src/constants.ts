@@ -14,11 +14,11 @@ export const ACTION_ITEM_NOT_FOUND_ERROR = {
   PARAM: "actionItem",
 };
 
-export const CATEGORY_NOT_FOUND_ERROR = {
-  DESC: "Category not found",
-  CODE: "category.notFound",
-  MESSAGE: "category.notFound",
-  PARAM: "category",
+export const ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR = {
+  DESC: "ActionItemCategory not found",
+  CODE: "actionItemCategory.notFound",
+  MESSAGE: "actionItemCategory.notFound",
+  PARAM: "actionItemCategory",
 };
 
 export const CHAT_NOT_FOUND_ERROR = {

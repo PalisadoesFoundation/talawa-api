@@ -1,5 +1,5 @@
 import type { InterfaceActionItem } from "../../src/models";
-import { ActionItem, Category, Event } from "../../src/models";
+import { ActionItem, ActionItemCategory, Event } from "../../src/models";
 import type { Document } from "mongoose";
 import {
   createTestUser,
@@ -7,8 +7,8 @@ import {
   type TestOrganizationType,
   type TestUserType,
 } from "./userAndOrg";
-import type { TestCategoryType } from "./category";
-import { createTestCategory } from "./category";
+import type { TestActionItemCategoryType } from "./actionItemCategory";
+import { createTestCategory } from "./actionItemCategory";
 import { nanoid } from "nanoid";
 import type { TestEventType } from "./events";
 
@@ -18,7 +18,7 @@ export const createTestActionItem = async (): Promise<
   [
     TestUserType,
     TestOrganizationType,
-    TestCategoryType,
+    TestActionItemCategoryType,
     TestActionItemType,
     TestUserType
   ]
@@ -26,17 +26,17 @@ export const createTestActionItem = async (): Promise<
   const [testUser, testOrganization] = await createTestUserAndOrganization();
   const randomUser = await createTestUser();
 
-  const testCategory = await Category.create({
+  const testCategory = await ActionItemCategory.create({
     createdBy: testUser?._id,
     orgId: testOrganization?._id,
-    category: "Default",
+    name: "Default",
   });
 
   const testActionItem = await ActionItem.create({
     createdBy: testUser?._id,
     assignedTo: randomUser?._id,
     assignedBy: testUser?._id,
-    categoryId: testCategory?._id,
+    actionItemCategoryId: testCategory?._id,
   });
 
   return [testUser, testOrganization, testCategory, testActionItem, randomUser];
@@ -45,19 +45,19 @@ export const createTestActionItem = async (): Promise<
 interface InterfaceCreateNewTestAction {
   currUserId: string;
   assignedUserId: string;
-  categoryId: string;
+  actionItemCategoryId: string;
 }
 
 export const createNewTestActionItem = async ({
   currUserId,
   assignedUserId,
-  categoryId,
+  actionItemCategoryId,
 }: InterfaceCreateNewTestAction): Promise<TestActionItemType> => {
   const newTestActionItem = await ActionItem.create({
     createdBy: currUserId,
     assignedTo: assignedUserId,
     assignedBy: currUserId,
-    categoryId: categoryId,
+    actionItemCategoryId: actionItemCategoryId,
   });
 
   return newTestActionItem;
@@ -73,14 +73,14 @@ export const createTestActionItems = async (): Promise<
     createdBy: testUser?._id,
     assignedTo: randomUser?._id,
     assignedBy: testUser?._id,
-    categoryId: testCategory?._id,
+    actionItemCategoryId: testCategory?._id,
   });
 
   const testActionItem2 = await ActionItem.create({
     createdBy: testUser?._id,
     assignedTo: randomUser?._id,
     assignedBy: testUser?._id,
-    categoryId: testCategory?._id,
+    actionItemCategoryId: testCategory?._id,
   });
 
   const testEvent = await Event.create({

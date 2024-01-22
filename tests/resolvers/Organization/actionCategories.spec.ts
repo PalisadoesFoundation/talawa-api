@@ -2,10 +2,10 @@ import "dotenv/config";
 import { actionCategories as actionCategoriesResolver } from "../../../src/resolvers/Organization/actionCategories";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
-import { Category } from "../../../src/models";
+import { ActionItemCategory } from "../../../src/models";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestOrganizationType } from "../../helpers/userAndOrg";
-import { createTestCategories } from "../../helpers/category";
+import { createTestCategories } from "../../helpers/actionItemCategory";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;
@@ -29,7 +29,7 @@ describe("resolvers -> Organization -> actionCategories", () => {
         {}
       );
 
-      const categories = await Category.find({
+      const categories = await ActionItemCategory.find({
         orgId: testOrganization?._id,
       }).lean();
 

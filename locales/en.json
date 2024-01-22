@@ -4,7 +4,7 @@
   "user.notFound": "User not found",
   "user.alreadyMember": "User is already a member",
   "user.profileImage.notFound": "User profile image not found",
-  "category.notFound": "Category not found",
+  "actionItemCategory.notFound": "ActionItemCategory not found",
   "actionItem.notFound": "Action Item not found",
   "advertisement.notFound": "Advertisement not found",
   "event.notFound": "Event not found",

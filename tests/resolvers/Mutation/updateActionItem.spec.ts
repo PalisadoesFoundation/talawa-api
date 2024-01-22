@@ -21,7 +21,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 
-import type { TestCategoryType } from "../../helpers/category";
+import type { TestActionItemCategoryType } from "../../helpers/actionItemCategory";
 import { ActionItem, Event, User } from "../../../src/models";
 import type { TestActionItemType } from "../../helpers/actionItem";
 import { createTestActionItem } from "../../helpers/actionItem";
@@ -33,7 +33,7 @@ let assignedTestUser: TestUserType;
 let testUser: TestUserType;
 let testUser2: TestUserType;
 let testOrganization: TestOrganizationType;
-let testCategory: TestCategoryType;
+let testCategory: TestActionItemCategoryType;
 let testActionItem: TestActionItemType;
 let testEvent: TestEventType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -186,7 +186,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
     expect(updatedActionItemPayload).toEqual(
       expect.objectContaining({
         assignedTo: assignedTestUser?._id,
-        categoryId: testCategory?._id,
+        actionItemCategoryId: testCategory?._id,
       })
     );
   });
@@ -224,7 +224,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
     expect(updatedActionItemPayload).toEqual(
       expect.objectContaining({
         assignedTo: testUser?._id,
-        categoryId: testCategory?._id,
+        actionItemCategoryId: testCategory?._id,
       })
     );
   });
@@ -301,7 +301,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
 
     expect(updatedActionItemPayload).toEqual(
       expect.objectContaining({
-        categoryId: testCategory?._id,
+        actionItemCategoryId: testCategory?._id,
         assignedTo: testUser?._id,
       })
     );

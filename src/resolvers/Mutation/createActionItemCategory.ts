@@ -1,5 +1,5 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { User, Category, Organization } from "../../models";
+import { User, ActionItemCategory, Organization } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
   USER_NOT_FOUND_ERROR,
@@ -11,7 +11,7 @@ import { findOrganizationsInCache } from "../../services/OrganizationCache/findO
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 
 /**
- * This function enables to create a Category.
+ * This function enables to create an ActionItemCategory.
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @param context - context of entire application
@@ -19,10 +19,10 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
  * 1. If the User exists
  * 2. If the Organization exists
  * 3. Is the User is Authorized
- * @returns Created Category
+ * @returns Created ActionItemCategory
  */
 
-export const createCategory: MutationResolvers["createCategory"] = async (
+export const createActionItemCategory: MutationResolvers["createActionItemCategory"] = async (
   _parent,
   args,
   context
@@ -66,9 +66,9 @@ export const createCategory: MutationResolvers["createCategory"] = async (
   // Checks whether the user is authorized to perform the operation
   await adminCheck(context.userId, organization);
 
-  // Creates new category.
-  const createdCategory = await Category.create({
-    category: args.category,
+  // Creates new actionItemCategory.
+  const createdActionItemCategory = await ActionItemCategory.create({
+    name: args.name,
     orgId: args.orgId,
     createdBy: context.userId,
   });
@@ -78,10 +78,10 @@ export const createCategory: MutationResolvers["createCategory"] = async (
       _id: organization._id,
     },
     {
-      $push: { actionCategories: createdCategory._id },
+      $push: { actionCategories: createdActionItemCategory._id },
     }
   );
 
-  // Returns created category.
-  return createdCategory.toObject();
+  // Returns created actionItemCategory.
+  return createdActionItemCategory.toObject();
 };

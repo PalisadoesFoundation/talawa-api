@@ -2,7 +2,7 @@ import type { PopulatedDoc, Types, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceUser } from "./User";
 import type { InterfaceEvent } from "./Event";
-import type { InterfaceCategory } from "./Category";
+import type { InterfaceActionItemCategory } from "./ActionItemCategory";
 
 /**
  * This is an interface that represents a database(MongoDB) document for ActionItem.
@@ -12,7 +12,7 @@ export interface InterfaceActionItem {
   _id: Types.ObjectId;
   assignedTo: PopulatedDoc<InterfaceUser & Document>;
   assignedBy: PopulatedDoc<InterfaceUser & Document>;
-  categoryId: PopulatedDoc<InterfaceCategory & Document>;
+  actionItemCategoryId: PopulatedDoc<InterfaceActionItemCategory & Document>;
   preCompletionNotes: string;
   postCompletionNotes: string;
   assignmentDate: Date;
@@ -29,7 +29,7 @@ export interface InterfaceActionItem {
  * This describes the schema for a `ActionItem` that corresponds to `InterfaceActionItem` document.
  * @param assignedTo - User to whom the ActionItem is assigned, refer to `User` model.
  * @param assignedBy - User who assigned the ActionItem, refer to the `User` model.
- * @param categoryId - Category to which the ActionItem is related, refer to the `Category` model.
+ * @param actionItemCategoryId - ActionItemCategory to which the ActionItem is related, refer to the `ActionItemCategory` model.
  * @param preCompletionNotes - Notes prior to completion.
  * @param postCompletionNotes - Notes on completion.
  * @param assignmentDate - Date of assignment.
@@ -54,9 +54,9 @@ const actionItemSchema = new Schema(
       ref: "User",
       required: true,
     },
-    categoryId: {
+    actionItemCategoryId: {
       type: Schema.Types.ObjectId,
-      ref: "Category",
+      ref: "ActionItemCategory",
       required: true,
     },
     preCompletionNotes: {

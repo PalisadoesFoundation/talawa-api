@@ -1,9 +1,9 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import type { MutationCreateCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationCreateActionItemCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import { createCategory as createCategoryResolver } from "../../../src/resolvers/Mutation/createCategory";
+import { createActionItemCategory as createActionItemCategoryResolver } from "../../../src/resolvers/Mutation/createActionItemCategory";
 import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
@@ -45,16 +45,16 @@ afterAll(async () => {
 describe("resolvers -> Mutation -> createCategory", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
-      const args: MutationCreateCategoryArgs = {
+      const args: MutationCreateActionItemCategoryArgs = {
         orgId: testOrganization?._id,
-        category: "Default",
+        name: "Default",
       };
 
       const context = {
         userId: Types.ObjectId().toString(),
       };
 
-      await createCategoryResolver?.({}, args, context);
+      await createActionItemCategoryResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
@@ -62,16 +62,16 @@ describe("resolvers -> Mutation -> createCategory", () => {
 
   it(`throws NotFoundError if no organization exists with _id === args.orgId`, async () => {
     try {
-      const args: MutationCreateCategoryArgs = {
+      const args: MutationCreateActionItemCategoryArgs = {
         orgId: Types.ObjectId().toString(),
-        category: "Default",
+        name: "Default",
       };
 
       const context = {
         userId: testUser?.id,
       };
 
-      await createCategoryResolver?.({}, args, context);
+      await createActionItemCategoryResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
@@ -79,32 +79,32 @@ describe("resolvers -> Mutation -> createCategory", () => {
 
   it(`throws NotAuthorizedError if the user is not a superadmin or the admin of the organization`, async () => {
     try {
-      const args: MutationCreateCategoryArgs = {
+      const args: MutationCreateActionItemCategoryArgs = {
         orgId: testOrganization?._id,
-        category: "Default",
+        name: "Default",
       };
 
       const context = {
         userId: randomUser?.id,
       };
 
-      await createCategoryResolver?.({}, args, context);
+      await createActionItemCategoryResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_AUTHORIZED_ADMIN.MESSAGE);
     }
   });
 
-  it(`creates the category and returns it as an admin`, async () => {
-    const args: MutationCreateCategoryArgs = {
+  it(`creates the actionItemCategory and returns it as an admin`, async () => {
+    const args: MutationCreateActionItemCategoryArgs = {
       orgId: testOrganization?._id,
-      category: "Default",
+      name: "Default",
     };
 
     const context = {
       userId: testUser?._id,
     };
 
-    const createCategoryPayload = await createCategoryResolver?.(
+    const createCategoryPayload = await createActionItemCategoryResolver?.(
       {},
       args,
       context
@@ -113,7 +113,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
     expect(createCategoryPayload).toEqual(
       expect.objectContaining({
         orgId: testOrganization?._id,
-        category: "Default",
+        name: "Default",
       })
     );
 
@@ -130,7 +130,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
     );
   });
 
-  it(`creates the category and returns it as superAdmin`, async () => {
+  it(`creates the actionItemCategory and returns it as superAdmin`, async () => {
     const superAdminTestUser = await User.findOneAndUpdate(
       {
         _id: randomUser?._id,
@@ -143,16 +143,16 @@ describe("resolvers -> Mutation -> createCategory", () => {
       }
     );
 
-    const args: MutationCreateCategoryArgs = {
+    const args: MutationCreateActionItemCategoryArgs = {
       orgId: testOrganization?._id,
-      category: "Default",
+      name: "Default",
     };
 
     const context = {
       userId: superAdminTestUser?._id,
     };
 
-    const createCategoryPayload = await createCategoryResolver?.(
+    const createCategoryPayload = await createActionItemCategoryResolver?.(
       {},
       args,
       context
@@ -161,7 +161,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
     expect(createCategoryPayload).toEqual(
       expect.objectContaining({
         orgId: testOrganization?._id,
-        category: "Default",
+        name: "Default",
       })
     );
 

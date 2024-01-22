@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { Category } from "../../../src/models";
+import { ActionItemCategory } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
 import type { QueryCategoriesByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
-import { categoriesByOrganization as categoriesByOrganizationResolver } from "../../../src/resolvers/Query/categoriesByOrganization";
-import { createTestCategories } from "../../helpers/category";
+import { actionItemCategoriesByOrganization as categoriesByOrganizationResolver } from "../../../src/resolvers/Query/actionItemCategoriesByOrganization";
+import { createTestCategories } from "../../helpers/actionItemCategory";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestOrganizationType } from "../../helpers/userAndOrg";
 import type mongoose from "mongoose";
@@ -20,7 +20,7 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Query -> categoriesByOrganization", () => {
+describe("resolvers -> Query -> actionItemCategoriesByOrganization", () => {
   it(`returns list of all categories belonging to an organization`, async () => {
     const args: QueryCategoriesByOrganizationArgs = {
       orgId: testOrganization?._id,
@@ -29,7 +29,7 @@ describe("resolvers -> Query -> categoriesByOrganization", () => {
     const categoriesByOrganizationPayload =
       await categoriesByOrganizationResolver?.({}, args, {});
 
-    const categoriesByOrganizationInfo = await Category.find({
+    const categoriesByOrganizationInfo = await ActionItemCategory.find({
       orgId: testOrganization?._id,
     }).lean();
 

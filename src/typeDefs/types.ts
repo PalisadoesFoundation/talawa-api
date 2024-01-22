@@ -16,12 +16,12 @@ export const types = gql`
     refreshToken: String!
   }
 
-  # Action Item for a Category
+  # Action Item for a ActionItemCategory
   type ActionItem {
     _id: ID!
     assignedTo: User
     assignedBy: User
-    category: Category
+    actionItemCategory: ActionItemCategory
     preCompletionNotes: String
     postCompletionNotes: String
     assignmentDate: Date
@@ -248,7 +248,7 @@ export const types = gql`
     creator: User
     members: [User!]
     admins(adminId: ID): [User!]
-    actionCategories: [Category!]
+    actionCategories: [ActionItemCategory!]
     createdAt: DateTime!
     updatedAt: DateTime!
     membershipRequests: [MembershipRequest]
@@ -358,9 +358,9 @@ export const types = gql`
     aggregate: AggregatePost!
   }
 
-  type Category {
+  type ActionItemCategory {
     _id: ID!
-    category: String!
+    name: String!
     org: Organization
     disabled: Boolean!
     createdBy: User

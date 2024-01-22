@@ -4,7 +4,7 @@
   "user.notFound": "Usuario no encontrado",
   "user.alreadyMember": "El usuario ya es miembro",
   "user.profileImage.notFound": "No se encontró la imagen de perfil de usuario",
-  "category.notFound": "Categoría no encontrada",
+  "actionItemCategory.notFound": "Categoría no encontrada",
   "actionItem.notFound": "Elemento de acción no encontrado",
   "event.notFound": "Evento no encontrado",
   "organization.notFound": "Organización no encontrada",

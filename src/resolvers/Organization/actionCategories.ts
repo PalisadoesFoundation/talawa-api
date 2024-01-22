@@ -1,4 +1,4 @@
-import { Category } from "../../models";
+import { ActionItemCategory } from "../../models";
 import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 /**
  * This resolver function will fetch and return the categories of the Organization from database.
@@ -7,7 +7,7 @@ import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
  */
 export const actionCategories: OrganizationResolvers["actionCategories"] =
   async (parent) => {
-    return await Category.find({
+    return await ActionItemCategory.find({
       _id: {
         $in: parent.actionCategories,
       },

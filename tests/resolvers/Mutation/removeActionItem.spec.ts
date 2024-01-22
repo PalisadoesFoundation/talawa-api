@@ -20,7 +20,7 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 
-import type { TestCategoryType } from "../../helpers/category";
+import type { TestActionItemCategoryType } from "../../helpers/actionItemCategory";
 import { ActionItem, Event, User } from "../../../src/models";
 import type { TestActionItemType } from "../../helpers/actionItem";
 import {
@@ -35,7 +35,7 @@ let assignedTestUser: TestUserType;
 let testUser: TestUserType;
 let testUser2: TestUserType;
 let testOrganization: TestOrganizationType;
-let testCategory: TestCategoryType;
+let testCategory: TestActionItemCategoryType;
 let testActionItem: TestActionItemType;
 let testEvent: TestEventType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -147,7 +147,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
     const newTestActionItem = await createNewTestActionItem({
       currUserId: testUser?._id,
       assignedUserId: randomUser?._id,
-      categoryId: testCategory?._id,
+      actionItemCategoryId: testCategory?._id,
     });
 
     const superAdminTestUser = await User.findOneAndUpdate(
@@ -187,7 +187,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
     const newTestActionItem = await createNewTestActionItem({
       currUserId: testUser?._id,
       assignedUserId: randomUser?._id,
-      categoryId: testCategory?._id,
+      actionItemCategoryId: testCategory?._id,
     });
 
     const updatedTestActionItem = await ActionItem.findOneAndUpdate(
@@ -221,7 +221,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
     const newTestActionItem = await createNewTestActionItem({
       currUserId: testUser?._id,
       assignedUserId: randomUser?._id,
-      categoryId: testCategory?._id,
+      actionItemCategoryId: testCategory?._id,
     });
 
     const updatedTestActionItem = await ActionItem.findOneAndUpdate(

@@ -44,7 +44,7 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
   const actionItem = await ActionItem.findOne({
     _id: args.id,
   })
-    .populate("categoryId")
+    .populate("actionItemCategoryId")
     .lean();
 
   // Checks if the actionItem exists
@@ -58,8 +58,8 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
 
   const currentUserIsOrgAdmin = currentUser.adminFor.some(
     (ogranizationId) =>
-      ogranizationId === actionItem.categoryId.orgId ||
-      Types.ObjectId(ogranizationId).equals(actionItem.categoryId.orgId)
+      ogranizationId === actionItem.actionItemCategoryId.orgId ||
+      Types.ObjectId(ogranizationId).equals(actionItem.actionItemCategoryId.orgId)
   );
 
   let currentUserIsEventAdmin = false;

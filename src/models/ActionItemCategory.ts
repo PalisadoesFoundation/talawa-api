@@ -4,12 +4,12 @@ import type { InterfaceUser } from "./User";
 import type { InterfaceOrganization } from "./Organization";
 
 /**
- * This is an interface that represents a database(MongoDB) document for Category.
+ * This is an interface that represents a database(MongoDB) document for ActionItemCategory.
  */
 
-export interface InterfaceCategory {
+export interface InterfaceActionItemCategory {
   _id: Types.ObjectId;
-  category: string;
+  name: string;
   orgId: PopulatedDoc<InterfaceOrganization & Document>;
   disabled: boolean;
   createdBy: PopulatedDoc<InterfaceUser & Document>;
@@ -18,18 +18,18 @@ export interface InterfaceCategory {
 }
 
 /**
- * This describes the schema for a `category` that corresponds to `InterfaceCategory` document.
- * @param category - A category to be selected for ActionItems.
- * @param orgId - Organization the category belongs to, refer to the `Organization` model.
- * @param disabled - Whether category is disabled or not.
+ * This describes the schema for a `actionItemCategory` that corresponds to `InterfaceCategory` document.
+ * @param name - An actionItemCategory to be selected for ActionItems.
+ * @param orgId - Organization the actionItemCategory belongs to, refer to the `Organization` model.
+ * @param disabled - Whether actionItemCategory is disabled or not.
  * @param createdBy - Task creator, refer to `User` model.
  * @param createdAt - Time stamp of data creation.
  * @param updatedAt - Time stamp of data updation.
  */
 
-const categorySchema = new Schema(
+const actionItemCategorySchema = new Schema(
   {
-    category: {
+    name: {
       type: String,
       required: true,
     },
@@ -51,10 +51,10 @@ const categorySchema = new Schema(
   { timestamps: true }
 );
 
-const categoryModel = (): Model<InterfaceCategory> =>
-  model<InterfaceCategory>("Category", categorySchema);
+const actionItemCategoryModel = (): Model<InterfaceActionItemCategory> =>
+  model<InterfaceActionItemCategory>("ActionItemCategory", actionItemCategorySchema);
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const Category = (models.Category || categoryModel()) as ReturnType<
-  typeof categoryModel
+export const ActionItemCategory = (models.ActionItemCategory || actionItemCategoryModel()) as ReturnType<
+  typeof actionItemCategoryModel
 >;

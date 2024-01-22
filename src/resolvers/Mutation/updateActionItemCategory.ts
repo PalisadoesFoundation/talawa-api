@@ -1,29 +1,29 @@
 import {
-  CATEGORY_NOT_FOUND_ERROR,
+  ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import { User, Category } from "../../models";
+import { User, ActionItemCategory } from "../../models";
 import { adminCheck } from "../../utilities";
 /**
- * This function enables to update a category.
+ * This function enables to update a actionItemCategory.
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @param context - context of entire application
  * @remarks The following checks are done:
  * 1. If the user exists.
- * 2. If the category exists.
+ * 2. If the actionItemCategory exists.
  * 3. If the user is authorized.
- * @returns Updated category.
+ * @returns Updated actionItemCategory.
  */
 
 type UpdateCategoryInputType = {
-  category: string;
+  name: string;
   disabled: boolean;
 };
 
-export const updateCategory: MutationResolvers["updateCategory"] = async (
+export const updateActionItemCategory: MutationResolvers["updateActionItemCategory"] = async (
   _parent,
   args,
   context
@@ -41,24 +41,24 @@ export const updateCategory: MutationResolvers["updateCategory"] = async (
     );
   }
 
-  const category = await Category.findOne({
+  const actionItemCategory = await ActionItemCategory.findOne({
     _id: args.id,
   })
     .populate("orgId")
     .lean();
 
-  // Checks if the category exists
-  if (!category) {
+  // Checks if the actionItemCategory exists
+  if (!actionItemCategory) {
     throw new errors.NotFoundError(
-      requestContext.translate(CATEGORY_NOT_FOUND_ERROR.MESSAGE),
-      CATEGORY_NOT_FOUND_ERROR.CODE,
-      CATEGORY_NOT_FOUND_ERROR.PARAM
+      requestContext.translate(ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE),
+      ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.CODE,
+      ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.PARAM
     );
   }
 
-  await adminCheck(context.userId, category.orgId);
+  await adminCheck(context.userId, actionItemCategory.orgId);
 
-  const updatedCategory = await Category.findOneAndUpdate(
+  const updatedCategory = await ActionItemCategory.findOneAndUpdate(
     {
       _id: args.id,
     },

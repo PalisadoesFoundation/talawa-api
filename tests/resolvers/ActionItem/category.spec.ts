@@ -1,16 +1,16 @@
 import "dotenv/config";
-import { category as categoryResolver } from "../../../src/resolvers/ActionItem/category";
+import { actionItemCategory as actionItemCategoryResolver } from "../../../src/resolvers/ActionItem/actionItemCategory";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { Category } from "../../../src/models";
+import { ActionItemCategory } from "../../../src/models";
 import type { TestActionItemType } from "../../helpers/actionItem";
 import { createTestActionItem } from "../../helpers/actionItem";
-import type { TestCategoryType } from "../../helpers/category";
+import type { TestActionItemCategoryType } from "../../helpers/actionItemCategory";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testActionItem: TestActionItemType;
-let testCategory: TestCategoryType;
+let testCategory: TestActionItemCategoryType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -21,16 +21,16 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> ActionItem -> category", () => {
-  it(`returns the category for parent action item`, async () => {
+describe("resolvers -> ActionItem -> actionItemCategory", () => {
+  it(`returns the actionItemCategory for parent action item`, async () => {
     const parent = testActionItem?.toObject();
 
-    const categoryPayload = await categoryResolver?.(parent, {}, {});
+    const actionItemCategoryPayload = await actionItemCategoryResolver?.(parent, {}, {});
 
-    const categoryObject = await Category.findOne({
+    const actionItemCategoryObject = await ActionItemCategory.findOne({
       _id: testCategory?._id,
     }).lean();
 
-    expect(categoryPayload).toEqual(categoryObject);
+    expect(actionItemCategoryPayload).toEqual(actionItemCategoryObject);
   });
 });

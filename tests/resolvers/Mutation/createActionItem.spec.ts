@@ -6,7 +6,7 @@ import { createActionItem as createActionItemResolver } from "../../../src/resol
 import { connect, disconnect } from "../../helpers/db";
 import {
   USER_NOT_FOUND_ERROR,
-  CATEGORY_NOT_FOUND_ERROR,
+  ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   EVENT_NOT_FOUND_ERROR,
   USER_NOT_MEMBER_FOR_ORGANIZATION,
@@ -18,8 +18,8 @@ import type {
   TestUserType,
 } from "../../helpers/userAndOrg";
 
-import type { TestCategoryType } from "../../helpers/category";
-import { createTestCategory } from "../../helpers/category";
+import type { TestActionItemCategoryType } from "../../helpers/actionItemCategory";
+import { createTestCategory } from "../../helpers/actionItemCategory";
 import type { TestEventType } from "../../helpers/events";
 import { Event, User } from "../../../src/models";
 import { nanoid } from "nanoid";
@@ -29,7 +29,7 @@ let randomUser2: TestUserType;
 let superAdminTestUser: TestUserType;
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
-let testCategory: TestCategoryType;
+let testCategory: TestActionItemCategoryType;
 let testEvent: TestEventType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 
@@ -82,7 +82,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
         data: {
           assignedTo: randomUser?._id,
         },
-        categoryId: testCategory?._id,
+        actionItemCategoryId: testCategory?._id,
       };
 
       const context = {
@@ -95,13 +95,13 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     }
   });
 
-  it(`throws NotFoundError if no category exists with _id === args.orgId`, async () => {
+  it(`throws NotFoundError if no actionItemCategory exists with _id === args.orgId`, async () => {
     try {
       const args: MutationCreateActionItemArgs = {
         data: {
           assignedTo: randomUser?._id,
         },
-        categoryId: Types.ObjectId().toString(),
+        actionItemCategoryId: Types.ObjectId().toString(),
       };
 
       const context = {
@@ -110,7 +110,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
 
       await createActionItemResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(CATEGORY_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
@@ -120,7 +120,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
         data: {
           assignedTo: Types.ObjectId().toString(),
         },
-        categoryId: testCategory?._id,
+        actionItemCategoryId: testCategory?._id,
       };
 
       const context = {
@@ -139,7 +139,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
         data: {
           assignedTo: randomUser?._id,
         },
-        categoryId: testCategory?._id,
+        actionItemCategoryId: testCategory?._id,
       };
 
       const context = {
@@ -168,7 +168,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
           assignedTo: randomUser?._id,
           eventId: Types.ObjectId().toString(),
         },
-        categoryId: testCategory?._id,
+        actionItemCategoryId: testCategory?._id,
       };
 
       const context = {
@@ -187,7 +187,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
         data: {
           assignedTo: randomUser?._id,
         },
-        categoryId: testCategory?._id,
+        actionItemCategoryId: testCategory?._id,
       };
 
       const context = {
@@ -206,7 +206,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
         assignedTo: randomUser?._id,
         eventId: testEvent?._id,
       },
-      categoryId: testCategory?._id,
+      actionItemCategoryId: testCategory?._id,
     };
 
     const context = {
@@ -221,7 +221,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
 
     expect(createActionItemPayload).toEqual(
       expect.objectContaining({
-        categoryId: testCategory?._id,
+        actionItemCategoryId: testCategory?._id,
       })
     );
 
@@ -243,7 +243,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       data: {
         assignedTo: randomUser?._id,
       },
-      categoryId: testCategory?._id,
+      actionItemCategoryId: testCategory?._id,
     };
 
     const context = {
@@ -258,7 +258,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
 
     expect(createActionItemPayload).toEqual(
       expect.objectContaining({
-        categoryId: testCategory?._id,
+        actionItemCategoryId: testCategory?._id,
       })
     );
   });
@@ -268,7 +268,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
       data: {
         assignedTo: randomUser?._id,
       },
-      categoryId: testCategory?._id,
+      actionItemCategoryId: testCategory?._id,
     };
 
     const context = {
@@ -283,7 +283,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
 
     expect(createActionItemPayload).toEqual(
       expect.objectContaining({
-        categoryId: testCategory?._id,
+        actionItemCategoryId: testCategory?._id,
       })
     );
   });

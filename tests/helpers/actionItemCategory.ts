@@ -1,5 +1,5 @@
-import type { InterfaceCategory } from "../../src/models";
-import { Category, Organization } from "../../src/models";
+import type { InterfaceActionItemCategory } from "../../src/models";
+import { ActionItemCategory, Organization } from "../../src/models";
 import type { Document } from "mongoose";
 import {
   createTestUserAndOrganization,
@@ -7,16 +7,16 @@ import {
   type TestUserType,
 } from "./userAndOrg";
 
-export type TestCategoryType = InterfaceCategory & Document;
+export type TestActionItemCategoryType = InterfaceActionItemCategory & Document;
 
 export const createTestCategory = async (): Promise<
-  [TestUserType, TestOrganizationType, TestCategoryType]
+  [TestUserType, TestOrganizationType, TestActionItemCategoryType]
 > => {
   const [testUser, testOrganization] = await createTestUserAndOrganization();
-  const testCategory = await Category.create({
+  const testCategory = await ActionItemCategory.create({
     createdBy: testUser?._id,
     orgId: testOrganization?._id,
-    category: "Default",
+    name: "Default",
   });
 
   return [testUser, testOrganization, testCategory];
@@ -27,16 +27,16 @@ export const createTestCategories = async (): Promise<
 > => {
   const [testUser, testOrganization] = await createTestUserAndOrganization();
 
-  const testCategory1 = await Category.create({
+  const testCategory1 = await ActionItemCategory.create({
     createdBy: testUser?._id,
     orgId: testOrganization?._id,
-    category: "Default",
+    name: "Default",
   });
 
-  const testCategory2 = await Category.create({
+  const testCategory2 = await ActionItemCategory.create({
     createdBy: testUser?._id,
     orgId: testOrganization?._id,
-    category: "Default2",
+    name: "Default2",
   });
 
   const updatedTestOrganization = await Organization.findOneAndUpdate(

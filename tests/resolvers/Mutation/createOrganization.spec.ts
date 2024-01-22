@@ -1,6 +1,6 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
-import { Category, User } from "../../../src/models";
+import { ActionItemCategory, User } from "../../../src/models";
 import type { MutationCreateOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
@@ -152,14 +152,14 @@ describe("resolvers -> Mutation -> createOrganization", () => {
       })
     );
 
-    const defaultCategory = await Category.findOne({
+    const defaultCategory = await ActionItemCategory.findOne({
       orgId: createOrganizationPayload?._id,
     }).lean();
 
     expect(defaultCategory).toEqual(
       expect.objectContaining({
         orgId: createOrganizationPayload?._id,
-        category: "Default",
+        name: "Default",
         disabled: false,
       })
     );

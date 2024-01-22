@@ -1,16 +1,16 @@
 import "dotenv/config";
-import { org as orgResolver } from "../../../src/resolvers/Category/org";
+import { org as orgResolver } from "../../../src/resolvers/ActionItemCategory/org";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { Organization } from "../../../src/models";
 import { type TestOrganizationType } from "../../helpers/userAndOrg";
-import type { TestCategoryType } from "../../helpers/category";
-import { createTestCategory } from "../../helpers/category";
+import type { TestActionItemCategoryType } from "../../helpers/actionItemCategory";
+import { createTestCategory } from "../../helpers/actionItemCategory";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testOrganization: TestOrganizationType;
-let testCategory: TestCategoryType;
+let testCategory: TestActionItemCategoryType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -21,8 +21,8 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Category -> org", () => {
-  it(`returns the organization object for parent category`, async () => {
+describe("resolvers -> ActionItemCategory -> org", () => {
+  it(`returns the organization object for parent actionItemCategory`, async () => {
     const parent = testCategory?.toObject();
 
     const orgPayload = await orgResolver?.(parent, {}, {});

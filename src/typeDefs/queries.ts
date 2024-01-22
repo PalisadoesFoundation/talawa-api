@@ -11,9 +11,9 @@ export const queries = gql`
 
     actionItemsByEvent(eventId: ID!): [ActionItem]
 
-    category(id: ID!): Category
+    actionItemCategory(id: ID!): ActionItemCategory
 
-    categoriesByOrganization(orgId: ID!): [Category]
+    actionItemCategoriesByOrganization(orgId: ID!): [ActionItemCategory]
 
     checkAuth: User! @auth
 

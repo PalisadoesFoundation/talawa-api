@@ -6,7 +6,7 @@ import type {
   InterfaceOrganization,
   InterfaceComment,
   InterfacePost,
-  InterfaceCategory,
+  InterfaceActionItemCategory,
   InterfaceActionItem,
 } from "../../../src/models";
 import {
@@ -15,7 +15,7 @@ import {
   Post,
   Comment,
   MembershipRequest,
-  Category,
+  ActionItemCategory,
   ActionItem,
 } from "../../../src/models";
 import type { MutationRemoveOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
@@ -46,7 +46,7 @@ let testOrganization: InterfaceOrganization &
   Document<any, any, InterfaceOrganization>;
 let testPost: InterfacePost & Document<any, any, InterfacePost>;
 let testComment: InterfaceComment & Document<any, any, InterfaceComment>;
-let testCategory: InterfaceCategory & Document;
+let testCategory: InterfaceActionItemCategory & Document;
 let testActionItem: InterfaceActionItem & Document;
 
 beforeAll(async () => {
@@ -113,17 +113,17 @@ beforeAll(async () => {
     organization: testOrganization._id,
   });
 
-  testCategory = await Category.create({
+  testCategory = await ActionItemCategory.create({
     createdBy: testUsers[0]?._id,
     orgId: testOrganization?._id,
-    category: "Default",
+    name: "Default",
   });
 
   testActionItem = await ActionItem.create({
     createdBy: testUsers[0]?._id,
     assignedTo: testUsers[1]?._id,
     assignedBy: testUsers[0]?._id,
-    categoryId: testCategory?._id,
+    actionItemCategoryId: testCategory?._id,
   });
 
   await Organization.updateOne(
@@ -342,7 +342,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
       _id: testComment._id,
     }).lean();
 
-    const deletedTestCategories = await Category.find({
+    const deletedTestCategories = await ActionItemCategory.find({
       orgId: testOrganization?._id,
     }).lean();
 

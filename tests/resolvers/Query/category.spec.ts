@@ -1,16 +1,16 @@
 import "dotenv/config";
-import { category as categoryResolver } from "../../../src/resolvers/Query/category";
+import { actionItemCategory as actionItemCategoryResolver } from "../../../src/resolvers/Query/actionItemCategory";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { CATEGORY_NOT_FOUND_ERROR } from "../../../src/constants";
-import type { QueryCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
+import { ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR } from "../../../src/constants";
+import type { QueryActionItemCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import type { TestCategoryType } from "../../helpers/category";
-import { createTestCategory } from "../../helpers/category";
+import type { TestActionItemCategoryType } from "../../helpers/actionItemCategory";
+import { createTestCategory } from "../../helpers/actionItemCategory";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
-let testCategory: TestCategoryType;
+let testCategory: TestActionItemCategoryType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -22,27 +22,27 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Query -> category", () => {
-  it(`throws NotFoundError if no category exists with _id === args.id`, async () => {
+describe("resolvers -> Query -> actionItemCategory", () => {
+  it(`throws NotFoundError if no actionItemCategory exists with _id === args.id`, async () => {
     try {
-      const args: QueryCategoryArgs = {
+      const args: QueryActionItemCategoryArgs = {
         id: Types.ObjectId().toString(),
       };
 
-      await categoryResolver?.({}, args, {});
+      await actionItemCategoryResolver?.({}, args, {});
     } catch (error: any) {
-      expect(error.message).toEqual(CATEGORY_NOT_FOUND_ERROR.DESC);
+      expect(error.message).toEqual(ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.DESC);
     }
   });
 
-  it(`returns category with _id === args.id`, async () => {
-    const args: QueryCategoryArgs = {
+  it(`returns actionItemCategory with _id === args.id`, async () => {
+    const args: QueryActionItemCategoryArgs = {
       id: testCategory?._id,
     };
 
-    const categoryPayload = await categoryResolver?.({}, args, {});
+    const actionItemCategoryPayload = await actionItemCategoryResolver?.({}, args, {});
 
-    expect(categoryPayload).toEqual(
+    expect(actionItemCategoryPayload).toEqual(
       expect.objectContaining({
         _id: testCategory?._id,
       })
