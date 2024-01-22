@@ -25,27 +25,16 @@ import { adminCheck, superAdminCheck } from "../../utilities";
 export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
   async (_parent, args, context) => {
     // Find the current user based on the provided createdBy ID or use the context userId
-    const createdByUserId = args.input.createdBy;
+    const userId = context.userId;
+    const currentUser = await User.findById(userId).lean();
 
-    // Ensure createdByUserId is a valid non-null value
-    if (!createdByUserId) {
-      throw new Error("Invalid or missing createdBy user ID");
-    }
-
-    // Fetch the current user
-    const createdByUser = await User.findOne({
-      _id: createdByUserId,
-    }).lean();
-
-    // If the user is not found, throw a NotFoundError
-    if (!createdByUser) {
+    if (!currentUser) {
       throw new errors.NotFoundError(
         requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
         USER_NOT_FOUND_ERROR.CODE,
         USER_NOT_FOUND_ERROR.PARAM
       );
     }
-
     // Check if the organization exists
     const organization = await Organization.findById(
       args.input.organizationId
@@ -54,7 +43,7 @@ export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
     // If the organization is not found, throw a NotFoundError
     if (!organization) {
       throw new errors.NotFoundError(
-        requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
+        ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
         ORGANIZATION_NOT_FOUND_ERROR.PARAM
       );
@@ -62,12 +51,12 @@ export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
 
     // Check if the current user has the necessary permissions
     const hasAdminPermissions =
-      createdByUser.adminFor.includes(organization._id) ||
-      createdByUser.userType === "SUPERADMIN";
+      currentUser.adminFor.includes(organization._id) ||
+      currentUser.userType === "SUPERADMIN";
 
     if (!hasAdminPermissions) {
       throw new errors.UnauthorizedError(
-        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
         USER_NOT_AUTHORIZED_ERROR.CODE,
         USER_NOT_AUTHORIZED_ERROR.PARAM
       );
@@ -77,8 +66,8 @@ export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
     const createdAgendaCategory = await AgendaCategoryModel.create({
       ...args.input,
       organization: organization._id,
-      createdBy: createdByUser._id,
-      updatedBy: createdByUser._id,
+      createdBy: currentUser._id,
+      updatedBy: currentUser._id,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

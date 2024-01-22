@@ -17,19 +17,17 @@ import { errors, requestContext } from "../../libraries";
  */
 export const getAgendaSection: QueryResolvers["getAgendaSection"] = async (
   _parent,
-  args
+  { id }
 ) => {
   try {
     // Find the agenda section by ID
-    const agendaSection = await AgendaSectionModel.findById(args.id).lean();
+    const agendaSection = await AgendaSectionModel.findById(id).lean();
 
     // If the agenda section is not found, throw a NotFoundError
     if (!agendaSection) {
       throw new errors.NotFoundError(
-        requestContext.translate(
-          AGENDA_SECTION_NOT_FOUND_ERROR.MESSAGE,
-          AGENDA_SECTION_NOT_FOUND_ERROR.PARAM
-        ),
+        AGENDA_SECTION_NOT_FOUND_ERROR.MESSAGE,
+
         AGENDA_SECTION_NOT_FOUND_ERROR.CODE,
         AGENDA_SECTION_NOT_FOUND_ERROR.PARAM
       );

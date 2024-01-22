@@ -4,12 +4,10 @@ import { User, Organization, AgendaItemModel } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
-  ORGANIZATION_NOT_AUTHORIZED_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
 import { Types } from "mongoose";
 import { adminCheck, superAdminCheck } from "../../utilities";
-import { user } from "../CheckIn/user";
 
 /**
  * Create an agenda item based on the provided input.
@@ -26,13 +24,9 @@ export const createAgendaItem: MutationResolvers["createAgendaItem"] = async (
   args,
   context
 ) => {
-  // Fetch the current user based on the provided createdBy ID
-  const userId = context.userId; //|| args.input.createdBy;
-  const currentUser = await User.findOne({
-    _id: userId,
-  }).lean();
+  const userId = context.userId;
+  const currentUser = await User.findById(userId).lean();
 
-  // If the user is not found, throw a NotFoundError
   if (!currentUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
@@ -41,13 +35,9 @@ export const createAgendaItem: MutationResolvers["createAgendaItem"] = async (
     );
   }
 
-  // Fetch the organization based on the provided organization ID
   const organizationId = args.input.organization;
-  const organization = await Organization.findOne({
-    _id: organizationId?.toString(),
-  }).lean();
+  const organization = await Organization.findById(organizationId).lean();
 
-  // If the organization is not found, throw a NotFoundError
   if (!organization) {
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
@@ -57,12 +47,11 @@ export const createAgendaItem: MutationResolvers["createAgendaItem"] = async (
   }
 
   const isEventAdmin = currentUser.eventAdmin.some(
-    (eventId) => eventId === args.input.relatedEvent
+    (eventId) => eventId.toString() === args.input.relatedEvent
   );
 
-  // Perform authorization checks for the user
   const hasAdminPermissions =
-    currentUser.adminFor.includes(organization) ||
+    currentUser.adminFor.includes(organizationId) ||
     currentUser.userType === "SUPERADMIN";
 
   if (!hasAdminPermissions || isEventAdmin) {
@@ -73,71 +62,11 @@ export const createAgendaItem: MutationResolvers["createAgendaItem"] = async (
     );
   }
 
-  // Handle "Note" agenda item creation
-  if (args.input.itemType === "Note") {
-    const createdNoteAgendaItem = await createNoteAgendaItem(
-      args.input,
-      currentUser,
-      organization
-    );
-    return createdNoteAgendaItem.toObject();
-  }
-
-  // If the item type is not "Note", create a regular agenda item
-  const categoryId = args.input?.categories as string | undefined; // Type assertion
+  const categoryId = args.input?.categories as string | undefined;
   const category = categoryId ? Types.ObjectId(categoryId) : undefined;
 
-  const createdAgendaItem = await createRegularAgendaItem(
-    args.input,
-    currentUser,
-    category
-  );
-
-  return createdAgendaItem.toObject();
-};
-
-/**
- * Create a "Note" agenda item based on the provided input.
- *
- * @param input - The input payload for creating a "Note" agenda item.
- * @param currentUser - The current user performing the operation.
- * @param organization - The organization associated with the agenda item.
- * @returns The created "Note" agenda item.
- */
-async function createNoteAgendaItem(
-  input: any,
-  currentUser: any,
-  organization: any
-) {
-  const createdNoteAgendaItem = await AgendaItemModel.create({
-    description: input.description,
-    createdBy: currentUser._id,
-    organization: organization._id,
-    updatedAt: new Date(),
-    createdAt: new Date(),
-  });
-
-  // Add the createdNoteAgendaItem._id to the appropriate lists on currentUser's document
-  await updateUserAgendaItems(currentUser._id, createdNoteAgendaItem._id);
-
-  return createdNoteAgendaItem;
-}
-
-/**
- * Create a regular agenda item based on the provided input.
- *
- * @param input - The input payload for creating a regular agenda item.
- * @param currentUser - The current user performing the operation.
- * @param category - The category associated with the agenda item.
- * @returns The created regular agenda item.
- */
-async function createRegularAgendaItem(
-  input: any,
-  currentUser: any,
-  category: any
-) {
   const createdAgendaItem = await AgendaItemModel.create({
-    ...input,
+    ...args.input,
     createdBy: currentUser._id,
     category: category,
     updatedAt: new Date(),
@@ -145,9 +74,12 @@ async function createRegularAgendaItem(
   });
 
   // Add the createdAgendaItem._id to the appropriate lists on currentUser's document
-  await updateUserAgendaItems(currentUser._id, createdAgendaItem._id);
-  return createdAgendaItem;
-}
+  await updateUserAgendaItems(
+    currentUser._id.toString(),
+    createdAgendaItem._id
+  );
+  return createdAgendaItem.toObject();
+};
 
 /**
  * Update the lists of agenda items on the user's document.
@@ -162,7 +94,6 @@ async function updateUserAgendaItems(userId: string, agendaItemId: string) {
     },
     {
       $push: {
-        // Add relevant lists here based on your schema
         createdAgendaItems: agendaItemId,
       },
     }

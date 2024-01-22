@@ -19,6 +19,8 @@ let MONGOOSE_INSTANCE: typeof mongoose;
 let testEvent: TestEventType;
 let testOrganization: TestOrganizationType;
 let testUserSuperAdmin: TestUserType;
+let testAgendaItem: any;
+let testAgendaItem2: any;
 import type {
   TestUserType,
   TestOrganizationType,
@@ -39,7 +41,6 @@ beforeAll(async () => {
     admins: [testAdminUser?._id],
     members: [testUser?._id, testAdminUser?._id],
   });
-
   const temp = await createTestEvent();
   testEvent = temp[2];
   await User.updateOne(
@@ -49,6 +50,38 @@ beforeAll(async () => {
     {
       $push: {
         adminFor: testOrganization?._id,
+      },
+    }
+  );
+  testAgendaItem = await AgendaItemModel.create({
+    createdBy: testAdminUser?._id,
+    updatedAt: Date.now(),
+    createdAt: Date.now(),
+    title: "Test Item",
+    duration: "One hour",
+    relatedEvent: testEvent?._id,
+    sequence: 1,
+    itemType: "Regular",
+    isNote: false,
+  });
+  testAgendaItem2 = await AgendaItemModel.create({
+    createdBy: testAdminUser?._id,
+    updatedAt: Date.now(),
+    createdAt: Date.now(),
+    title: "Test Item2",
+    duration: "One hour",
+    relatedEvent: testEvent?._id,
+    sequence: 1,
+    itemType: "Regular",
+    isNote: false,
+  });
+  await User.updateOne(
+    {
+      _id: testAdminUser?._id,
+    },
+    {
+      $push: {
+        createdAgendaItems: [testAgendaItem, testAgendaItem2],
       },
     }
   );
@@ -66,7 +99,7 @@ describe("resolvers -> Mutation -> removeAgendaItem", () => {
   it("throws NotFoundError if no user exists with _id === userId", async () => {
     try {
       const args: MutationRemoveAgendaItemArgs = {
-        id: Types.ObjectId().toString(),
+        id: testAgendaItem?._id,
       };
 
       const context = {
@@ -90,7 +123,7 @@ describe("resolvers -> Mutation -> removeAgendaItem", () => {
       };
 
       const context = {
-        userId: testUser?._id,
+        userId: testAdminUser?._id,
       };
 
       if (removeAgendaItem) {
@@ -105,21 +138,8 @@ describe("resolvers -> Mutation -> removeAgendaItem", () => {
 
   it("throws UnauthorizedError if user is not the creator of the agenda item", async () => {
     try {
-      const agendaItem = await AgendaItemModel.create({
-        createdBy: Types.ObjectId().toString(),
-        updatedAt: Date.now(),
-        createdAt: Date.now(),
-        title: "",
-        duration: "",
-        relatedEvent: "",
-
-        sequence: null,
-        itemType: null,
-        isNote: null,
-      });
-
       const args: MutationRemoveAgendaItemArgs = {
-        id: agendaItem._id.toString(),
+        id: testAgendaItem?._id,
       };
 
       const context = {
@@ -139,21 +159,17 @@ describe("resolvers -> Mutation -> removeAgendaItem", () => {
   });
 
   it("removes the agenda item if user is the creator and updates user's createdAgendaItems list", async () => {
-    const agendaItem = await AgendaItemModel.create({
-      createdBy: testUser?._id,
-    });
-
     const args: MutationRemoveAgendaItemArgs = {
-      id: agendaItem._id.toString(),
+      id: testAgendaItem?._id,
     };
 
     const context = {
-      userId: testUser?._id,
+      userId: testAdminUser?._id,
     };
 
     if (removeAgendaItem) {
       const result = await removeAgendaItem({}, args, context);
-      expect(result).toEqual(agendaItem._id.toString());
+      expect(result).toEqual(testAgendaItem?._id.toString());
 
       // Check if the agenda item is removed from the database
       const deletedAgendaItem = await AgendaItemModel.findOne({
@@ -166,7 +182,30 @@ describe("resolvers -> Mutation -> removeAgendaItem", () => {
         _id: testUser?._id,
       }).lean();
       expect(updatedUser?.createdAgendaItems).not.toContainEqual(
-        agendaItem._id
+        testAgendaItem._id
+      );
+    } else {
+      throw new Error("removeAgendaItem resolver is undefined");
+    }
+  });
+
+  it("removes agendaItem._id from appropriate lists in currentUser's document", async () => {
+    const args: MutationRemoveAgendaItemArgs = {
+      id: testAgendaItem2._id.toString(),
+    };
+
+    const context = {
+      userId: testAdminUser?._id,
+    };
+
+    if (removeAgendaItem) {
+      await removeAgendaItem({}, args, context);
+      // Check if the agenda item is removed from the user's createdAgendaItems list
+      const updatedUser = await User.findOne({
+        _id: testAdminUser?._id,
+      }).lean();
+      expect(updatedUser?.createdAgendaItems).not.toContainEqual(
+        testAgendaItem._id.toString()
       );
     } else {
       throw new Error("removeAgendaItem resolver is undefined");

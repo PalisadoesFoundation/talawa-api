@@ -6,16 +6,20 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
-import { expect, vi , beforeAll, afterAll, describe, it } from "vitest";
+import { expect, vi, beforeAll, afterAll, describe, it } from "vitest";
 import type { MutationCreateAgendaItemArgs } from "../../../src/types/generatedGraphQLTypes";
 import { createAgendaItem } from "../../../src/resolvers/Mutation/createAgendaItem";
 import { connect, disconnect } from "../../helpers/db";
 import { createTestUser } from "../../helpers/userAndOrg";
-import type { TestUserType, TestOrganizationType  } from "../../helpers/userAndOrg";
+import type {
+  TestUserType,
+  TestOrganizationType,
+} from "../../helpers/userAndOrg";
 import type { TestEventType } from "../../helpers/events";
 import { Organization, Event, User } from "../../../src/models";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
+
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -61,6 +65,7 @@ beforeAll(async () => {
       },
     }
   );
+
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
     (message) => message
@@ -108,17 +113,21 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
       expect(createdAgendaItem?.createdBy).toBe(testUser?.id);
       expect(createdAgendaItem?.organization).toBe(testOrganization?.id);
       // Verify that the user's lists are updated correctly
-      // const updatedUser = await User.findById(testUser?.id).lean();
-      // expect(updatedUser?.createdAgendaItems).toContain(
-      //   createdAgendaItem?._id.toString()
-      // );
+      const updatedUser = await User.findById(testUser?.id).lean();
+      expect(updatedUser?.createdAgendaItems).toContain(
+        createdAgendaItem?._id.toString()
+      );
+      // Verify that the properties of the returneem match the expected values
+      expect(createdAgendaItem?.title).toEqual(args.input.title);
+      expect(createdAgendaItem?.description).toEqual(args.input.description);
+
+      // Optionally, you can check that the returneem does not contain Mongoose-specific properties
+      expect(createdAgendaItem?._id).toBeUndefined();
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
-});
 
-describe("resolvers -> Mutation -> createAgendaItem", () => {
   it("throws NotFoundError when creating an agenda item with a non-existing user", async () => {
     try {
       const args: MutationCreateAgendaItemArgs = {
@@ -208,32 +217,4 @@ describe("resolvers -> Mutation -> createAgendaItem", () => {
       expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
-
-  // it("throws validation error when creating a regular agenda item without specifying required fields", async () => {
-  //   try {
-  //     const args: MutationCreateAgendaItemArgs = {
-  //       input: {
-  //         createdBy: testUser?._id,
-  //         itemType: "Regular",
-  //         isNote: false,
-  //         duration: "",
-  //         relatedEvent: "",
-  //         sequence: 0,
-  //         title: ""
-  //       },
-  //     };
-
-  //     const context = {
-  //       userId: testUser?.id,
-  //     };
-
-  //     const { createAgendaItem: createAgendaItemResolver } = await import(
-  //       "../../../src/resolvers/Mutation/createAgendaItem"
-  //     );
-
-  //     await createAgendaItemResolver?.({}, args, context);
-  //   } catch (error: any) {
-  //     expect(error.message).toEqual(LENGTH_VALIDATION_ERROR.MESSAGE);
-  //   }
-  // });
 });

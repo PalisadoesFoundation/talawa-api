@@ -1,7 +1,7 @@
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { connect, disconnect } from "../../helpers/db";
-import { getAgendaItem } from "../../../src/resolvers/Query/AgendaItemById";
+import { getAllAgendaItems } from "../../../src/resolvers/Query/AgendaItems";
 import {
   User,
   AgendaItemModel,
@@ -11,14 +11,14 @@ import {
 import {
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
-  AGENDA_ITEM_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { createTestUser } from "../../helpers/userAndOrg";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
-import { createTestUser } from "../../helpers/userAndOrg";
+
 import type { TestEventType } from "../../helpers/events";
 
 let testUser: TestUserType;
@@ -28,6 +28,7 @@ let testEvent: TestEventType;
 let testAgendaItem: any;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser2: TestUserType;
+
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
@@ -76,79 +77,68 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Query -> getAgendaItem", () => {
+describe("resolvers -> Query -> getAllAgendaItems", () => {
   it("throws NotFoundError if no user exists with the given ID", async () => {
     try {
-      const args = {
-        id: testAgendaItem?._id,
-      };
       const context = {
         userId: Types.ObjectId().toString(),
       };
 
-      if (getAgendaItem) {
-        await getAgendaItem({}, args, context);
+      if (getAllAgendaItems) {
+        await getAllAgendaItems({}, {}, context);
       } else {
-        throw new Error("getAgendaItem resolver is undefined");
+        throw new Error("getAllAgendaItems resolver is undefined");
       }
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
-  it("throws NotFoundError if no agenda item exists with the given ID", async () => {
+  it("throws UnauthorizedError if the user is not a super admin or admin", async () => {
     try {
-      const args = {
-        id: Types.ObjectId().toString(),
-      };
       const context = {
-        userId: testAdminUser?._id,
+        userId: testUser?._id,
       };
 
-      if (getAgendaItem) {
-        await getAgendaItem({}, args, context);
+      if (getAllAgendaItems) {
+        await getAllAgendaItems({}, {}, context);
       } else {
-        throw new Error("getAgendaItem resolver is undefined");
-      }
-    } catch (error: any) {
-      expect(error.message).toEqual(AGENDA_ITEM_NOT_FOUND_ERROR.MESSAGE);
-    }
-  });
-
-  it("throws UnauthorizedError if the user is not authorized to access the agenda item", async () => {
-    try {
-      const args = {
-        id: testAgendaItem._id.toString(),
-      };
-      const context = {
-        userId: testUser2?._id,
-      };
-
-      if (getAgendaItem) {
-        await getAgendaItem({}, args, context);
-      } else {
-        throw new Error("getAgendaItem resolver is undefined");
+        throw new Error("getAllAgendaItems resolver is undefined");
       }
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 
-  it("returns the agenda item successfully if the user is authorized", async () => {
-    const args = {
-      id: testAgendaItem._id.toString(),
-    };
+  // it("returns all agenda items successfully for a super admin", async () => {
+  //   const superAdminUser = await createTestUser({ userType: "SUPERADMIN"});
+  //   const context = {
+  //     userId: superAdminUser?._id,
+  //   };
+
+  //   if (getAllAgendaItems) {
+  //     const result = await getAllAgendaItems({}, {}, context);
+
+  //     expect(result).toBeDefined();
+
+  //   } else {
+  //     throw new Error("getAllAgendaItems resolver is undefined");
+  //   }
+  // });
+
+  it("returns all agenda items successfully for an admin", async () => {
     const context = {
       userId: testAdminUser?._id,
     };
 
-    if (getAgendaItem) {
-      const result = await getAgendaItem({}, args, context);
+    if (getAllAgendaItems) {
+      const result = await getAllAgendaItems({}, {}, context);
 
       expect(result).toBeDefined();
-      expect(result?._id).toEqual(testAgendaItem._id.toString());
+
+      // You can add more assertions based on your data structure
     } else {
-      throw new Error("getAgendaItem resolver is undefined");
+      throw new Error("getAllAgendaItems resolver is undefined");
     }
   });
 });

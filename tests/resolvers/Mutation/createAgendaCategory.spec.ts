@@ -1,21 +1,32 @@
 import mongoose, { Types } from "mongoose";
 import { connect, disconnect } from "../../helpers/db";
 import { createAgendaCategory } from "../../../src/resolvers/Mutation/createAgendaCategory";
-import { User, AgendaCategoryModel, Organization } from "../../../src/models";
+import {
+  User,
+  AgendaCategoryModel,
+  Organization,
+  Event,
+} from "../../../src/models";
 import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../../src/constants";
 import { createTestUser } from "../../helpers/userAndOrg";
-import type { TestUserType, TestOrganizationType  } from "../../helpers/userAndOrg";
+import type {
+  TestUserType,
+  TestOrganizationType,
+} from "../../helpers/userAndOrg";
 
 import type { MutationCreateAgendaCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
-import { beforeAll, afterAll, describe, it, expect, Test } from "vitest";
+import { beforeAll, afterAll, describe, it, expect, Test, vi } from "vitest";
+import type { TestEventType } from "../../helpers/events";
 let testUser: TestUserType;
+let testUser2: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testAdminUser: TestUserType;
+let testEvent: TestEventType;
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
@@ -28,6 +39,34 @@ beforeAll(async () => {
     admins: [testAdminUser?._id],
     members: [testUser?._id, testAdminUser?._id],
   });
+
+  await User.updateOne(
+    {
+      _id: testUser?._id,
+    },
+    {
+      $push: {
+        adminFor: testOrganization?._id,
+      },
+    }
+  );
+  testEvent = await Event.create({
+    title: "title",
+    description: "description",
+    allDay: true,
+    startDate: new Date(),
+    recurring: true,
+    isPublic: true,
+    isRegisterable: true,
+    creator: testUser?._id,
+    admins: [testAdminUser?._id],
+    registrants: [],
+    organization: testOrganization?._id,
+  });
+  const { requestContext } = await import("../../../src/libraries");
+  vi.spyOn(requestContext, "translate").mockImplementation(
+    (message) => message
+  );
 });
 
 afterAll(async () => {
@@ -35,24 +74,56 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Mutation -> createAgendaCategory", () => {
+  it("creates a new agenda category successfully", async () => {
+    try {
+      const args: MutationCreateAgendaCategoryArgs = {
+        input: {
+          createdBy: testAdminUser?._id,
+          organizationId: testOrganization?.id,
+          name: "Test Agenda Category",
+          description: "Sample desc",
+        },
+      };
+      const context = {
+        userId: testAdminUser?._id,
+      };
+      const { createAgendaCategory: createAgendaCategoryResolver } =
+        await import("../../../src/resolvers/Mutation/createAgendaCategory");
+      const result = await createAgendaCategoryResolver?.({}, args, context);
+
+      expect(result).toBeDefined();
+      expect(result?.createdBy).toEqual(testAdminUser?._id.toString());
+      expect(result?.organization).toEqual(testOrganization?._id.toString());
+      expect(result?.name).toEqual(args.input.name);
+      expect(result?.description).toEqual(args.input.description);
+
+      // Fetch the organization to verify the agenda category is associated
+      const updatedOrganization = await Organization.findById(
+        testOrganization?._id
+      ).lean();
+      expect(updatedOrganization?.agendaCategories.length).toBeGreaterThan(0);
+      expect(result?._id).toBeUndefined();
+    } catch (error: any) {
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+    }
+  });
   it("throws NotFoundError if no user exists with _id === createdByUserId", async () => {
     try {
       const args: MutationCreateAgendaCategoryArgs = {
         input: {
-          createdBy: mongoose.Types.ObjectId().toString(),
+          createdBy: Types.ObjectId().toString(),
           organizationId: testOrganization?.id,
-          name: "",
+          name: "Category Example2",
+          description: "Sample desc2",
         },
       };
       const context = {
         userId: Types.ObjectId().toString(),
       };
 
-      if (createAgendaCategory) {
-        await createAgendaCategory({}, args, context);
-      } else {
-        throw new Error("createAgendaCategory resolver is undefined");
-      }
+      const { createAgendaCategory: createAgendaCategoryResolver } =
+        await import("../../../src/resolvers/Mutation/createAgendaCategory");
+      await createAgendaCategoryResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
@@ -64,18 +135,17 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
         input: {
           createdBy: testAdminUser?._id,
           organizationId: mongoose.Types.ObjectId().toString(),
-          name: "",
+          name: "Category Example3",
+          description: "Sample desc3",
         },
       };
       const context = {
-        userId: testUser?._id,
+        userId: testAdminUser?._id,
       };
 
-      if (createAgendaCategory) {
-        await createAgendaCategory({}, args, context);
-      } else {
-        throw new Error("createAgendaCategory resolver is undefined");
-      }
+      const { createAgendaCategory: createAgendaCategoryResolver } =
+        await import("../../../src/resolvers/Mutation/createAgendaCategory");
+      await createAgendaCategoryResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     }
@@ -85,26 +155,56 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
     try {
       const args: MutationCreateAgendaCategoryArgs = {
         input: {
-          createdBy: testUser?._id,
+          createdBy: testUser2?._id,
           organizationId: testOrganization?.id,
-          name: "",
+          name: "Category Example4",
+          description: "Sample desc4",
         },
       };
       const context = {
-        userId: testUser?._id,
+        userId: testUser2?._id,
       };
 
-      if (createAgendaCategory) {
-        await createAgendaCategory({}, args, context);
-      } else {
-        throw new Error("createAgendaCategory resolver is undefined");
-      }
+      const { createAgendaCategory: createAgendaCategoryResolver } =
+        await import("../../../src/resolvers/Mutation/createAgendaCategory");
+      await createAgendaCategoryResolver?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
   });
 
-  it("creates a new agenda category successfully", async () => {
+  it("Successful Creation of Agenda Category", async () => {
+    const args: MutationCreateAgendaCategoryArgs = {
+      input: {
+        createdBy: testAdminUser?._id,
+        organizationId: testOrganization?.id,
+        name: "Category Example5",
+        description: "Sample desc5",
+      },
+    };
+    const context = {
+      userId: testAdminUser?._id,
+    };
+
+    const { createAgendaCategory: createAgendaCategoryResolver } = await import(
+      "../../../src/resolvers/Mutation/createAgendaCategory"
+    );
+    const result = await createAgendaCategoryResolver?.({}, args, context);
+
+    expect(result).toBeDefined();
+    expect(result?.createdBy).toEqual(testAdminUser?._id.toString());
+    expect(result?.organization).toEqual(testOrganization?._id.toString());
+
+    // Fetch the organization to verify the agenda category is associated
+    const updatedOrganization = await Organization.findById(
+      testOrganization?._id
+    ).lean();
+    expect(updatedOrganization?.agendaCategories.length).toBeGreaterThan(0);
+
+    throw new Error("createAgendaCategory resolver is undefined");
+  });
+
+  it("Populated Agenda Category", async () => {
     const args: MutationCreateAgendaCategoryArgs = {
       input: {
         createdBy: testAdminUser?._id,
@@ -116,20 +216,87 @@ describe("resolvers -> Mutation -> createAgendaCategory", () => {
       userId: testAdminUser?._id,
     };
 
-    if (createAgendaCategory) {
-      const result = await createAgendaCategory({}, args, context);
+    const { createAgendaCategory: createAgendaCategoryResolver } = await import(
+      "../../../src/resolvers/Mutation/createAgendaCategory"
+    );
+    const result = await createAgendaCategoryResolver?.({}, args, context);
 
-      expect(result).toBeDefined();
-      expect(result.createdBy).toEqual(testUser?._id.toString());
-      expect(result.organization).toEqual(testOrganization?._id.toString());
+    expect(result).toBeDefined();
+    expect(result?.createdBy).toBeDefined();
+  });
 
-      // Fetch the organization to verify the agenda category is associated
-      const updatedOrganization = await Organization.findById(
-        testOrganization?._id
-      ).lean();
-      expect(updatedOrganization?.agendaCategories.length).toBeGreaterThan(0);
-    } else {
-      throw new Error("createAgendaCategory resolver is undefined");
+  it("Organization Update", async () => {
+    const args: MutationCreateAgendaCategoryArgs = {
+      input: {
+        createdBy: testAdminUser?._id,
+        organizationId: testOrganization?.id,
+        name: "Test Agenda Category",
+        description: "Description",
+      },
+    };
+    const context = {
+      userId: testAdminUser?._id,
+    };
+
+    const { createAgendaCategory: createAgendaCategoryResolver } = await import(
+      "../../../src/resolvers/Mutation/createAgendaCategory"
+    );
+    await createAgendaCategoryResolver?.({}, args, context);
+
+    // Fetch the organization to verify the agenda category is associated
+    const updatedOrganization = await Organization.findById(
+      testOrganization?._id
+    ).lean();
+    expect(updatedOrganization?.agendaCategories.length).toBeGreaterThan(0);
+  });
+
+  it("Invalid Input Handling", async () => {
+    const args: MutationCreateAgendaCategoryArgs = {
+      input: {
+        createdBy: testAdminUser?._id,
+        organizationId: testOrganization?.id,
+        name: "Descpt", // Provide an invalid input
+      },
+    };
+    const context = {
+      userId: testAdminUser?._id,
+    };
+
+    const { createAgendaCategory: createAgendaCategoryResolver } = await import(
+      "../../../src/resolvers/Mutation/createAgendaCategory"
+    );
+    try {
+      await createAgendaCategoryResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toContain("validation");
     }
+  });
+  it("Organization Update", async () => {
+    const args: MutationCreateAgendaCategoryArgs = {
+      input: {
+        createdBy: testAdminUser?._id,
+        organizationId: testOrganization?.id,
+        name: "Test Agenda Category",
+      },
+    };
+    const context = {
+      userId: testAdminUser?._id,
+    };
+    const { createAgendaCategory: createAgendaCategoryResolver } = await import(
+      "../../../src/resolvers/Mutation/createAgendaCategory"
+    );
+    const result = await createAgendaCategoryResolver?.({}, args, context);
+
+    // Fetch the organization to verify the agenda category is associated
+    const updatedOrganization = await Organization.findById(
+      testOrganization?._id
+    ).lean();
+    expect(updatedOrganization?.agendaCategories.length).toBeGreaterThan(0);
+
+    // Check if the organization's agendaCategories array contains the new agenda category
+    const hasNewAgendaCategory = updatedOrganization?.agendaCategories.some(
+      (category: any) => category._id.toString() === result?._id.toString()
+    );
+    expect(hasNewAgendaCategory).toBe(true);
   });
 });

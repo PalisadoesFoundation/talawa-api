@@ -15,18 +15,14 @@ import {
   AGENDA_ITEM_NOT_FOUND_ERROR,
   UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR,
 } from "../../constants";
-
 export const removeAgendaItem: MutationResolvers["removeAgendaItem"] = async (
   _parent,
   args,
   context
 ): Promise<string> => {
-  // Fetch the current user
   const currentUser = await User.findOne({
     _id: context.userId,
   }).lean();
-
-  // Throw NotFoundError if the user is not found
   if (!currentUser) {
     throw new errors.NotFoundError(
       requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
@@ -34,13 +30,9 @@ export const removeAgendaItem: MutationResolvers["removeAgendaItem"] = async (
       USER_NOT_FOUND_ERROR.PARAM
     );
   }
-
-  // Fetch the agenda item to be removed
   const agendaItem = await AgendaItemModel.findOne({
     _id: args.id,
   }).lean();
-
-  // Throw NotFoundError if the agenda item is not found
   if (!agendaItem) {
     throw new errors.NotFoundError(
       requestContext.translate(AGENDA_ITEM_NOT_FOUND_ERROR.MESSAGE),
@@ -49,9 +41,7 @@ export const removeAgendaItem: MutationResolvers["removeAgendaItem"] = async (
     );
   }
 
-  // Check if the current user is the creator of the agenda item
   if (!agendaItem.createdBy.equals(currentUser._id)) {
-    // Throw UnauthorizedError if the user is not the creator
     throw new errors.UnauthorizedError(
       requestContext.translate(UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR.MESSAGE),
       UNAUTHORIZED_REMOVE_AGENDA_ITEM_ERROR.CODE,
@@ -78,6 +68,5 @@ export const removeAgendaItem: MutationResolvers["removeAgendaItem"] = async (
     }
   );
 
-  // Convert ObjectId to string before returning
   return agendaItem._id.toString();
 };

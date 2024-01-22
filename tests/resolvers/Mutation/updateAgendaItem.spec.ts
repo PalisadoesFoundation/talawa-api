@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
-import { User, AgendaItemModel } from "../../../src/models";
+import { User, AgendaItemModel, Organization } from "../../../src/models";
 import type { MutationUpdateAgendaItemArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
@@ -11,28 +11,97 @@ import {
   AGENDA_ITEM_NOT_FOUND_ERROR,
   UNAUTHORIZED_UPDATE_AGENDA_ITEM_ERROR,
 } from "../../../src/constants";
+import { removeAgendaItem } from "../../../src/resolvers/Mutation/removeAgendaItem";
 import { createTestUser } from "../../helpers/userAndOrg";
 
 let testUser: TestUserType;
+let testAdminUser: TestUserType;
 let MONGOOSE_INSTANCE: typeof mongoose;
-import type { TestUserType } from "../../helpers/userAndOrg";
+let testEvent: TestEventType;
+let testOrganization: TestOrganizationType;
+let testUser2: TestUserType;
+let testAgendaItem: any;
+let testAgendaItem2: any;
+
+import type {
+  TestUserType,
+  TestOrganizationType,
+} from "../../helpers/userAndOrg";
+import type { TestEventType } from "../../helpers/eventsWithRegistrants";
+import { createTestEvent } from "../../helpers/events";
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
+  testAdminUser = await createTestUser();
+  testUser2 = await createTestUser();
+  testOrganization = await Organization.create({
+    name: "name",
+    description: "description",
+    isPublic: true,
+    creator: testUser?._id,
+    admins: [testAdminUser?._id],
+    members: [testUser?._id, testAdminUser?._id],
+  });
+  const temp = await createTestEvent();
+  testEvent = temp[2];
+  await User.updateOne(
+    {
+      _id: testUser?._id,
+    },
+    {
+      $push: {
+        adminFor: testOrganization?._id,
+      },
+    }
+  );
+  testAgendaItem = await AgendaItemModel.create({
+    createdBy: testAdminUser?._id,
+    updatedAt: Date.now(),
+    createdAt: Date.now(),
+    title: "Test Item",
+    duration: "One hour",
+    relatedEvent: testEvent?._id,
+    sequence: 1,
+    itemType: "Regular",
+    isNote: false,
+  });
+  testAgendaItem2 = await AgendaItemModel.create({
+    createdBy: testAdminUser?._id,
+    updatedAt: Date.now(),
+    createdAt: Date.now(),
+    title: "Test Item2",
+    duration: "One hour",
+    relatedEvent: testEvent?._id,
+    sequence: 1,
+    itemType: "Regular",
+    isNote: false,
+  });
+  await User.updateOne(
+    {
+      _id: testAdminUser?._id,
+    },
+    {
+      $push: {
+        createdAgendaItems: [testAgendaItem, testAgendaItem2],
+      },
+    }
+  );
   const { requestContext } = await import("../../../src/libraries");
   vi.spyOn(requestContext, "translate").mockImplementation(
     (message: any) => message
   );
 });
+
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
+
 describe("resolvers -> Mutation -> updateAgendaItem", () => {
   it("throws NotFoundError if no user exists with _id === userID", async () => {
     try {
       const args: MutationUpdateAgendaItemArgs = {
-        id: Types.ObjectId().toString(),
+        id: "",
         input: {
           updatedBy: Types.ObjectId().toString(),
         },
@@ -41,12 +110,7 @@ describe("resolvers -> Mutation -> updateAgendaItem", () => {
       const context = {
         userId: Types.ObjectId().toString(),
       };
-
-      if (updateAgendaItem) {
-        await updateAgendaItem({}, args, context);
-      } else {
-        throw new Error("updateAgendaItem resolver is undefined");
-      }
+      await updateAgendaItem?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
@@ -57,19 +121,14 @@ describe("resolvers -> Mutation -> updateAgendaItem", () => {
       const args: MutationUpdateAgendaItemArgs = {
         id: Types.ObjectId().toString(),
         input: {
-          updatedBy: testUser?._id,
+          updatedBy: testAdminUser?._id,
         },
       };
 
       const context = {
-        userId: testUser?._id,
+        userId: testAdminUser?._id,
       };
-
-      if (updateAgendaItem) {
-        await updateAgendaItem({}, args, context);
-      } else {
-        throw new Error("updateAgendaItem resolver is undefined");
-      }
+      await updateAgendaItem?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(AGENDA_ITEM_NOT_FOUND_ERROR.MESSAGE);
     }
@@ -77,28 +136,17 @@ describe("resolvers -> Mutation -> updateAgendaItem", () => {
 
   it("throws UnauthorizedError if user is not the creator of the agenda item", async () => {
     try {
-      const agendaItem = await AgendaItemModel.create({
-        createdBy: Types.ObjectId().toString(),
-        // Add other fields for the agenda item as needed
-      });
-
       const args: MutationUpdateAgendaItemArgs = {
-        id: agendaItem._id.toString(),
+        id: testAgendaItem._id.toString(),
         input: {
           updatedBy: testUser?._id,
-          // Add other fields for the input as needed
         },
       };
 
       const context = {
         userId: testUser?._id,
       };
-
-      if (updateAgendaItem) {
-        await updateAgendaItem({}, args, context);
-      } else {
-        throw new Error("updateAgendaItem resolver is undefined");
-      }
+      await updateAgendaItem?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(
         UNAUTHORIZED_UPDATE_AGENDA_ITEM_ERROR.MESSAGE
@@ -106,36 +154,59 @@ describe("resolvers -> Mutation -> updateAgendaItem", () => {
     }
   });
 
-  it("updates the agenda item if user is the creator", async () => {
-    const agendaItem = await AgendaItemModel.create({
-      createdBy: testUser?._id,
-      // Add other fields for the agenda item as needed
-    });
+  it("updates the agenda item successfully", async () => {
+    const updatedAgendaItem = await AgendaItemModel.findOneAndUpdate(
+      {
+        _id: testAgendaItem?._id,
+      },
+      {
+        $push: {
+          createdBy: testAdminUser?._id,
+        },
+      },
+      {
+        new: true,
+      }
+    ).lean();
+
+    await User.updateOne(
+      {
+        _id: testAdminUser?._id,
+      },
+      {
+        $push: {
+          updatedAgendaItem: [testAgendaItem],
+        },
+      }
+    );
 
     const args: MutationUpdateAgendaItemArgs = {
-      id: agendaItem._id.toString(),
+      id: testAgendaItem._id.toString(),
       input: {
-        updatedBy: testUser?._id,
-        // Add other fields for the input as needed
+        updatedBy: testAdminUser?._id,
+        title: "Test Item New",
+        duration: "One hour plus extra time ",
+        relatedEvent: testEvent?._id,
+        sequence: 2,
       },
     };
 
     const context = {
-      userId: testUser?._id,
+      userId: testAdminUser?._id,
     };
+    const { updateAgendaItem: updateAgendaItemResolver } = await import(
+      "../../../src/resolvers/Mutation/updateAgendaItem"
+    );
+    const updateAgendaItemPayload = await updateAgendaItemResolver?.(
+      {},
+      args,
+      context
+    );
 
-    if (updateAgendaItem) {
-      const result = await updateAgendaItem({}, args, context);
-      expect(result).toBeDefined();
+    const testUpdateAgendaItemPayload = await AgendaItemModel.findOne({
+      _id: testAgendaItem?._id,
+    }).lean();
 
-      // Check if the agenda item is updated in the database
-      const updatedAgendaItem = await AgendaItemModel.findOne({
-        _id: args.id,
-      }).lean();
-      expect(updatedAgendaItem).toBeDefined();
-      // Add assertions for other fields in the updated agenda item as needed
-    } else {
-      throw new Error("updateAgendaItem resolver is undefined");
-    }
+    expect(updateAgendaItemPayload).toEqual(testUpdateAgendaItemPayload);
   });
 });

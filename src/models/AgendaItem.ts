@@ -104,11 +104,11 @@ export const AgendaItemSchema = new Schema({
   },
   createdAt: {
     type: Date,
-    required: true,
+    // required: true,
   },
   updatedAt: {
     type: Date,
-    required: true,
+    // required: true,
   },
   isNote: {
     type: Boolean,
