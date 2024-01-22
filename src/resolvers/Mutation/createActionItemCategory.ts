@@ -20,6 +20,7 @@ import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrgani
  * 1. If the User exists
  * 2. If the Organization exists
  * 3. Is the User is Authorized
+ * 4. If the action item category already exists
  * @returns Created ActionItemCategory
  */
 
@@ -53,8 +54,6 @@ export const createActionItemCategory: MutationResolvers["createActionItemCatego
 
       await cacheOrganizations([organization!]);
     }
-
-    // Checks whether
 
     // Checks whether the organization with _id === args.organizationId exists.
     if (!organization) {
