@@ -70,7 +70,7 @@ describe("Database transaction logging", () => {
 
   it("createLoggingMiddleware should enable mongoose middlewares succesfully", async () => {
     process.env.LOG = "true";
-    process.env.LOG_PATH = "./logs/transaction.log";
+    process.env.LOG_PATH = "./logs/test.log";
 
     const { createLoggingMiddleware } = await import(
       "../../src/libraries/dbLogger"
