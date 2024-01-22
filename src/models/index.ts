@@ -8,6 +8,7 @@ export * from "./Donation";
 export * from "./Event";
 export * from "./EventAttendee";
 export * from "./Feedback";
+export * from "./Fund";
 export * from "./FundCampaign";
 export * from "./File";
 export * from "./Group";

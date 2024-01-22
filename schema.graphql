@@ -343,6 +343,19 @@ input ForgotPasswordData {
   userOtp: String!
 }
 
+type Fund {
+  _id: ID!
+  archived: Boolean!
+  campaigns: [FundCampaign]
+  createdAt: DateTime!
+  creator: User
+  defaultFund: Boolean!
+  name: String!
+  organization: Organization
+  taxDeductible: Boolean!
+  updatedAt: DateTime!
+}
+
 type FundCampaign {
   _id: ID!
   createdAt: DateTime!
@@ -350,6 +363,7 @@ type FundCampaign {
   currency: Currency!
   endDate: DateTime!
   goalAmount: Float!
+  name: String!
   startDate: DateTime!
   updatedAt: DateTime!
 }
@@ -360,17 +374,6 @@ input FundCampaignInput {
   goalAmount: Float!
   name: String!
   startDate: DateTime!
-}
-
-type Funds {
-  _id: ID!
-  archived: Boolean!
-  campaigns: [FundCampaign]
-  creator: User
-  defaultFund: Boolean!
-  name: String!
-  organization: Organization
-  taxDeductible: Boolean!
 }
 
 enum Gender {
@@ -851,6 +854,7 @@ type Query {
   getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
   getFundCampaignById(id: ID!): FundCampaign!
   getFundCampaigns: [FundCampaign]
+  getFunds: [Fund]
   getPlugins: [Plugin]
   getlanguage(lang_code: String!): [Translation]
   hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean

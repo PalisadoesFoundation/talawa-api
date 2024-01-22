@@ -2,7 +2,7 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { FundCampaign } from "../../models";
 
 /**
- * This query will fetch the donation as a transaction from database.
+ * This query will fetch the fund camapaign.
  * @param _parent-
  * @param args -
  * @returns A `fundCampaign` object.

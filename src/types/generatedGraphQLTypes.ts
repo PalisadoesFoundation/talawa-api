@@ -398,6 +398,20 @@ export type ForgotPasswordData = {
   userOtp: Scalars['String']['input'];
 };
 
+export type Fund = {
+  __typename?: 'Fund';
+  _id: Scalars['ID']['output'];
+  archived: Scalars['Boolean']['output'];
+  campaigns?: Maybe<Array<Maybe<FundCampaign>>>;
+  createdAt: Scalars['DateTime']['output'];
+  creator?: Maybe<User>;
+  defaultFund: Scalars['Boolean']['output'];
+  name: Scalars['String']['output'];
+  organization?: Maybe<Organization>;
+  taxDeductible: Scalars['Boolean']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+};
+
 export type FundCampaign = {
   __typename?: 'FundCampaign';
   _id: Scalars['ID']['output'];
@@ -406,6 +420,7 @@ export type FundCampaign = {
   currency: Scalars['Currency']['output'];
   endDate: Scalars['DateTime']['output'];
   goalAmount: Scalars['Float']['output'];
+  name: Scalars['String']['output'];
   startDate: Scalars['DateTime']['output'];
   updatedAt: Scalars['DateTime']['output'];
 };
@@ -416,18 +431,6 @@ export type FundCampaignInput = {
   goalAmount: Scalars['Float']['input'];
   name: Scalars['String']['input'];
   startDate: Scalars['DateTime']['input'];
-};
-
-export type Funds = {
-  __typename?: 'Funds';
-  _id: Scalars['ID']['output'];
-  archived: Scalars['Boolean']['output'];
-  campaigns?: Maybe<Array<Maybe<FundCampaign>>>;
-  creator?: Maybe<User>;
-  defaultFund: Scalars['Boolean']['output'];
-  name: Scalars['String']['output'];
-  organization?: Maybe<Organization>;
-  taxDeductible: Scalars['Boolean']['output'];
 };
 
 export type Gender =
@@ -1386,6 +1389,7 @@ export type Query = {
   getDonationByOrgIdConnection: Array<Donation>;
   getFundCampaignById: FundCampaign;
   getFundCampaigns?: Maybe<Array<Maybe<FundCampaign>>>;
+  getFunds?: Maybe<Array<Maybe<Fund>>>;
   getPlugins?: Maybe<Array<Maybe<Plugin>>>;
   getlanguage?: Maybe<Array<Maybe<Translation>>>;
   hasSubmittedFeedback?: Maybe<Scalars['Boolean']['output']>;
@@ -2044,9 +2048,9 @@ export type ResolversTypes = {
   FieldError: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['FieldError']>;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   ForgotPasswordData: ForgotPasswordData;
+  Fund: ResolverTypeWrapper<Omit<Fund, 'campaigns' | 'creator' | 'organization'> & { campaigns?: Maybe<Array<Maybe<ResolversTypes['FundCampaign']>>>, creator?: Maybe<ResolversTypes['User']>, organization?: Maybe<ResolversTypes['Organization']> }>;
   FundCampaign: ResolverTypeWrapper<Omit<FundCampaign, 'creator'> & { creator?: Maybe<ResolversTypes['User']> }>;
   FundCampaignInput: FundCampaignInput;
-  Funds: ResolverTypeWrapper<Omit<Funds, 'campaigns' | 'creator' | 'organization'> & { campaigns?: Maybe<Array<Maybe<ResolversTypes['FundCampaign']>>>, creator?: Maybe<ResolversTypes['User']>, organization?: Maybe<ResolversTypes['Organization']> }>;
   Gender: Gender;
   Group: ResolverTypeWrapper<InterfaceGroupModel>;
   GroupChat: ResolverTypeWrapper<InterfaceGroupChatModel>;
@@ -2179,9 +2183,9 @@ export type ResolversParentTypes = {
   FieldError: ResolversInterfaceTypes<ResolversParentTypes>['FieldError'];
   Float: Scalars['Float']['output'];
   ForgotPasswordData: ForgotPasswordData;
+  Fund: Omit<Fund, 'campaigns' | 'creator' | 'organization'> & { campaigns?: Maybe<Array<Maybe<ResolversParentTypes['FundCampaign']>>>, creator?: Maybe<ResolversParentTypes['User']>, organization?: Maybe<ResolversParentTypes['Organization']> };
   FundCampaign: Omit<FundCampaign, 'creator'> & { creator?: Maybe<ResolversParentTypes['User']> };
   FundCampaignInput: FundCampaignInput;
-  Funds: Omit<Funds, 'campaigns' | 'creator' | 'organization'> & { campaigns?: Maybe<Array<Maybe<ResolversParentTypes['FundCampaign']>>>, creator?: Maybe<ResolversParentTypes['User']>, organization?: Maybe<ResolversParentTypes['Organization']> };
   Group: InterfaceGroupModel;
   GroupChat: InterfaceGroupChatModel;
   GroupChatMessage: InterfaceGroupChatMessageModel;
@@ -2481,6 +2485,20 @@ export type FieldErrorResolvers<ContextType = any, ParentType extends ResolversP
   path?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
 };
 
+export type FundResolvers<ContextType = any, ParentType extends ResolversParentTypes['Fund'] = ResolversParentTypes['Fund']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  archived?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  campaigns?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundCampaign']>>>, ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  defaultFund?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
+  taxDeductible?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type FundCampaignResolvers<ContextType = any, ParentType extends ResolversParentTypes['FundCampaign'] = ResolversParentTypes['FundCampaign']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -2488,20 +2506,9 @@ export type FundCampaignResolvers<ContextType = any, ParentType extends Resolver
   currency?: Resolver<ResolversTypes['Currency'], ParentType, ContextType>;
   endDate?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   goalAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type FundsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Funds'] = ResolversParentTypes['Funds']> = {
-  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  archived?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  campaigns?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundCampaign']>>>, ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  defaultFund?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
-  taxDeductible?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2842,6 +2849,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getDonationByOrgIdConnection?: Resolver<Array<ResolversTypes['Donation']>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdConnectionArgs, 'orgId'>>;
   getFundCampaignById?: Resolver<ResolversTypes['FundCampaign'], ParentType, ContextType, RequireFields<QueryGetFundCampaignByIdArgs, 'id'>>;
   getFundCampaigns?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundCampaign']>>>, ParentType, ContextType>;
+  getFunds?: Resolver<Maybe<Array<Maybe<ResolversTypes['Fund']>>>, ParentType, ContextType>;
   getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
   getlanguage?: Resolver<Maybe<Array<Maybe<ResolversTypes['Translation']>>>, ParentType, ContextType, RequireFields<QueryGetlanguageArgs, 'lang_code'>>;
   hasSubmittedFeedback?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryHasSubmittedFeedbackArgs, 'eventId' | 'userId'>>;
@@ -3033,8 +3041,8 @@ export type Resolvers<ContextType = any> = {
   ExtendSession?: ExtendSessionResolvers<ContextType>;
   Feedback?: FeedbackResolvers<ContextType>;
   FieldError?: FieldErrorResolvers<ContextType>;
+  Fund?: FundResolvers<ContextType>;
   FundCampaign?: FundCampaignResolvers<ContextType>;
-  Funds?: FundsResolvers<ContextType>;
   Group?: GroupResolvers<ContextType>;
   GroupChat?: GroupChatResolvers<ContextType>;
   GroupChatMessage?: GroupChatMessageResolvers<ContextType>;

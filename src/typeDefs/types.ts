@@ -91,7 +91,7 @@ export const types = gql`
     updatedAt: DateTime!
   }
 
-  type Funds {
+  type Fund {
     _id: ID!
     creator: User
     organization: Organization
@@ -100,11 +100,14 @@ export const types = gql`
     defaultFund: Boolean!
     archived: Boolean!
     campaigns: [FundCampaign]
+    createdAt: DateTime!
+    updatedAt: DateTime!
   }
 
   type FundCampaign {
     _id: ID!
     creator: User
+    name: String!
     goalAmount: Float!
     currency: Currency!
     startDate: DateTime!
