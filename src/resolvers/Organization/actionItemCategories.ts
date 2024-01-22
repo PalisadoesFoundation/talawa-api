@@ -8,6 +8,6 @@ import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
 export const actionItemCategories: OrganizationResolvers["actionItemCategories"] =
   async (parent) => {
     return await ActionItemCategory.find({
-      organizationId: parent._id
+      organizationId: parent._id,
     }).lean();
   };

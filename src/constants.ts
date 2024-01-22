@@ -21,6 +21,13 @@ export const ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR = {
   PARAM: "actionItemCategory",
 };
 
+export const ACTION_ITEM_CATEGORY_ALREADY_EXISTS = {
+  DESC: "Action Item Category already exists",
+  CODE: "actionItemCategory.alreadyExists",
+  MESSAGE: "actionItemCategory.alreadyExists",
+  PARAM: "actionItemCategory",
+};
+
 export const CHAT_NOT_FOUND_ERROR = {
   DESC: "Chat not found",
   CODE: "chat.notFound",

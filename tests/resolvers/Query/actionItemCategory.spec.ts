@@ -40,7 +40,11 @@ describe("resolvers -> Query -> actionItemCategory", () => {
       id: testCategory?._id,
     };
 
-    const actionItemCategoryPayload = await actionItemCategoryResolver?.({}, args, {});
+    const actionItemCategoryPayload = await actionItemCategoryResolver?.(
+      {},
+      args,
+      {}
+    );
 
     expect(actionItemCategoryPayload).toEqual(
       expect.objectContaining({

@@ -23,11 +23,7 @@ describe("resolvers -> Organization -> actionItems", () => {
   it(`returns all actionItems for parent Event`, async () => {
     const parent = testEvent?.toObject();
     if (parent) {
-      const actionItemsPayload = await actionItemsResolver?.(
-        parent,
-        {},
-        {}
-      );
+      const actionItemsPayload = await actionItemsResolver?.(parent, {}, {});
 
       const actionItems = await ActionItem.find({
         eventId: testEvent?._id,

@@ -31,7 +31,7 @@ import { createPlugin } from "./createPlugin";
 import { createAdvertisement } from "./createAdvertisement";
 import { createPost } from "./createPost";
 import { createSampleOrganization } from "./createSampleOrganization";
-import { createCategory } from "./createActionItemCategory";
+import { createActionItemCategory } from "./createActionItemCategory";
 import { createUserTag } from "./createUserTag";
 import { deleteDonationById } from "./deleteDonationById";
 import { forgotPassword } from "./forgotPassword";
@@ -78,7 +78,7 @@ import { unlikeComment } from "./unlikeComment";
 import { unlikePost } from "./unlikePost";
 import { unregisterForEventByUser } from "./unregisterForEventByUser";
 import { updateActionItem } from "./updateActionItem";
-import { updateCategory } from "./updateActionItemCategory";
+import { updateActionItemCategory } from "./updateActionItemCategory";
 import { updateEvent } from "./updateEvent";
 import { updateLanguage } from "./updateLanguage";
 import { updateOrganization } from "./updateOrganization";
@@ -124,7 +124,7 @@ export const Mutation: MutationResolvers = {
   createPlugin,
   createPost,
   createSampleOrganization,
-  createCategory,
+  createActionItemCategory,
   createUserTag,
   deleteDonationById,
   deleteAdvertisementById,
@@ -172,7 +172,7 @@ export const Mutation: MutationResolvers = {
   unlikePost,
   unregisterForEventByUser,
   updateActionItem,
-  updateCategory,
+  updateActionItemCategory,
   updateEvent,
   updateLanguage,
   updateOrganization,

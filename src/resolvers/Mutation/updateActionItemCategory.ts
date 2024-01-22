@@ -23,52 +23,49 @@ type UpdateActionItemCategoryInputType = {
   isDisabled: boolean;
 };
 
-export const updateActionItemCategory: MutationResolvers["updateActionItemCategory"] = async (
-  _parent,
-  args,
-  context
-) => {
-  const currentUser = await User.findOne({
-    _id: context.userId,
-  });
+export const updateActionItemCategory: MutationResolvers["updateActionItemCategory"] =
+  async (_parent, args, context) => {
+    const currentUser = await User.findOne({
+      _id: context.userId,
+    });
 
-  // Checks if the user exists
-  if (currentUser === null) {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
-  }
-
-  const actionItemCategory = await ActionItemCategory.findOne({
-    _id: args.id,
-  })
-    .populate("organizationId")
-    .lean();
-
-  // Checks if the actionItemCategory exists
-  if (!actionItemCategory) {
-    throw new errors.NotFoundError(
-      requestContext.translate(ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE),
-      ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.CODE,
-      ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.PARAM
-    );
-  }
-
-  await adminCheck(context.userId, actionItemCategory.organizationId);
-
-  const updatedCategory = await ActionItemCategory.findOneAndUpdate(
-    {
-      _id: args.id,
-    },
-    {
-      ...(args.data as UpdateActionItemCategoryInputType),
-    },
-    {
-      new: true,
+    // Checks if the user exists
+    if (currentUser === null) {
+      throw new errors.NotFoundError(
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM
+      );
     }
-  ).lean();
 
-  return updatedCategory;
-};
+    const actionItemCategory = await ActionItemCategory.findOne({
+      _id: args.id,
+    })
+      .populate("organizationId")
+      .lean();
+
+    // Checks if the actionItemCategory exists
+    if (!actionItemCategory) {
+      throw new errors.NotFoundError(
+        requestContext.translate(ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE),
+        ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.CODE,
+        ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.PARAM
+      );
+    }
+
+    await adminCheck(context.userId, actionItemCategory.organizationId);
+
+    const updatedCategory = await ActionItemCategory.findOneAndUpdate(
+      {
+        _id: args.id,
+      },
+      {
+        ...(args.data as UpdateActionItemCategoryInputType),
+      },
+      {
+        new: true,
+      }
+    ).lean();
+
+    return updatedCategory;
+  };

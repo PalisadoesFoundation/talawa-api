@@ -52,10 +52,17 @@ const actionItemCategorySchema = new Schema(
   { timestamps: true }
 );
 
+actionItemCategorySchema.index(
+  { organizationId: 1, name: 1 },
+  { unique: true }
+);
+
 const actionItemCategoryModel = (): Model<InterfaceActionItemCategory> =>
-  model<InterfaceActionItemCategory>("ActionItemCategory", actionItemCategorySchema);
+  model<InterfaceActionItemCategory>(
+    "ActionItemCategory",
+    actionItemCategorySchema
+  );
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
-export const ActionItemCategory = (models.ActionItemCategory || actionItemCategoryModel()) as ReturnType<
-  typeof actionItemCategoryModel
->;
+export const ActionItemCategory = (models.ActionItemCategory ||
+  actionItemCategoryModel()) as ReturnType<typeof actionItemCategoryModel>;

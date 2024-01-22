@@ -13,7 +13,9 @@ export const queries = gql`
 
     actionItemCategory(id: ID!): ActionItemCategory
 
-    actionItemCategoriesByOrganization(organizationId: ID!): [ActionItemCategory]
+    actionItemCategoriesByOrganization(
+      organizationId: ID!
+    ): [ActionItemCategory]
 
     checkAuth: User! @auth
 

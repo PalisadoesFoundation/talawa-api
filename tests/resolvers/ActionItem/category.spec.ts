@@ -25,7 +25,11 @@ describe("resolvers -> ActionItem -> actionItemCategory", () => {
   it(`returns the actionItemCategory for parent action item`, async () => {
     const parent = testActionItem?.toObject();
 
-    const actionItemCategoryPayload = await actionItemCategoryResolver?.(parent, {}, {});
+    const actionItemCategoryPayload = await actionItemCategoryResolver?.(
+      parent,
+      {},
+      {}
+    );
 
     const actionItemCategoryObject = await ActionItemCategory.findOne({
       _id: testCategory?._id,

@@ -110,7 +110,9 @@ export const updateActionItem: MutationResolvers["updateActionItem"] = async (
   const currentUserIsOrgAdmin = currentUser.adminFor.some(
     (ogranizationId) =>
       ogranizationId === actionItem.actionItemCategoryId.organizationId ||
-      Types.ObjectId(ogranizationId).equals(actionItem.actionItemCategoryId.organizationId)
+      Types.ObjectId(ogranizationId).equals(
+        actionItem.actionItemCategoryId.organizationId
+      )
   );
 
   let currentUserIsEventAdmin = false;

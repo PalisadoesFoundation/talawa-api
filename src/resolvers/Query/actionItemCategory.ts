@@ -10,7 +10,10 @@ import { ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR } from "../../constants";
  * @remarks You can learn about GraphQL `Resolvers`
  * {@link https://www.apollographql.com/docs/apollo-server/data/resolvers/ | here}.
  */
-export const actionItemCategory: QueryResolvers["actionItemCategory"] = async (_parent, args) => {
+export const actionItemCategory: QueryResolvers["actionItemCategory"] = async (
+  _parent,
+  args
+) => {
   const actionItemCategory = await ActionItemCategory.findOne({
     _id: args.id,
   }).lean();

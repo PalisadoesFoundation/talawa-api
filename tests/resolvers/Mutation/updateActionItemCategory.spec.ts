@@ -79,7 +79,9 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
 
       await updateActionItemCategoryResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE
+      );
     }
   });
 
@@ -116,7 +118,11 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
       userId: testUser?._id,
     };
 
-    const updatedCategory = await updateActionItemCategoryResolver?.({}, args, context);
+    const updatedCategory = await updateActionItemCategoryResolver?.(
+      {},
+      args,
+      context
+    );
 
     expect(updatedCategory).toEqual(
       expect.objectContaining({
@@ -152,7 +158,11 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
       userId: superAdminTestUser?._id,
     };
 
-    const updatedCategory = await updateActionItemCategoryResolver?.({}, args, context);
+    const updatedCategory = await updateActionItemCategoryResolver?.(
+      {},
+      args,
+      context
+    );
 
     expect(updatedCategory).toEqual(
       expect.objectContaining({

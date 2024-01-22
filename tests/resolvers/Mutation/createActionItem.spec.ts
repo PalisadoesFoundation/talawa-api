@@ -110,7 +110,9 @@ describe("resolvers -> Mutation -> createActionItem", () => {
 
       await createActionItemResolver?.({}, args, context);
     } catch (error: any) {
-      expect(error.message).toEqual(ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE);
+      expect(error.message).toEqual(
+        ACTION_ITEM_CATEGORY_NOT_FOUND_ERROR.MESSAGE
+      );
     }
   });
 

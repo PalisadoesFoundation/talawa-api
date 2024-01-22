@@ -158,15 +158,15 @@ export const types = gql`
     longitude: Longitude
     organization: Organization
     creator: User
-    attendees: [User!]
-    # For each attendee, gives information about whether he/she has checked in yet or not
-    attendeesCheckInStatus: [CheckInStatus!]
-    admins(adminId: ID): [User!]
-    actionItems: [ActionItem]
     createdAt: DateTime!
     updatedAt: DateTime!
+    attendees: [User]
+    # For each attendee, gives information about whether he/she has checked in yet or not
+    attendeesCheckInStatus: [CheckInStatus!]!
+    actionItems: [ActionItem]
+    admins(adminId: ID): [User!]
     status: Status!
-    feedback: [Feedback!]
+    feedback: [Feedback!]!
     averageFeedbackScore: Float
   }
 
@@ -256,11 +256,11 @@ export const types = gql`
     description: String!
     location: String
     creator: User
-    members: [User!]
-    admins(adminId: ID): [User!]
-    actionItemCategories: [ActionItemCategory!]
     createdAt: DateTime!
     updatedAt: DateTime!
+    members: [User]
+    actionItemCategories: [ActionItemCategory]
+    admins(adminId: ID): [User!]
     membershipRequests: [MembershipRequest]
     userRegistrationRequired: Boolean!
     visibleInSearch: Boolean!
@@ -273,7 +273,7 @@ export const types = gql`
       first: PositiveInt
       last: PositiveInt
     ): UserTagsConnection
-    customFields: [OrganizationCustomField!]
+    customFields: [OrganizationCustomField!]!
   }
 
   type OrganizationCustomField {

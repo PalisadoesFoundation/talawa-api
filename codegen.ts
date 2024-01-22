@@ -27,7 +27,8 @@ const config: CodegenConfig = {
         mappers: {
           ActionItem: "../models/ActionItem#InterfaceActionItem",
 
-          ActionItemCategory: "../models/ActionItemCategory#InterfaceActionItemCategory",
+          ActionItemCategory:
+            "../models/ActionItemCategory#InterfaceActionItemCategory",
 
           CheckIn: "../models/CheckIn#InterfaceCheckIn",
 

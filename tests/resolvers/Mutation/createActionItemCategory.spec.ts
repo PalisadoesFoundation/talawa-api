@@ -8,6 +8,7 @@ import {
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ADMIN,
+  ACTION_ITEM_CATEGORY_ALREADY_EXISTS,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import {
@@ -133,7 +134,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
 
     const args: MutationCreateActionItemCategoryArgs = {
       organizationId: testOrganization?._id,
-      name: "Default",
+      name: "Default2",
     };
 
     const context = {
@@ -149,8 +150,27 @@ describe("resolvers -> Mutation -> createCategory", () => {
     expect(createCategoryPayload).toEqual(
       expect.objectContaining({
         organizationId: testOrganization?._id,
-        name: "Default",
+        name: "Default2",
       })
     );
+  });
+
+  it(`throws ConflictError when the actionItemCategory with given name already exists for the current organization`, async () => {
+    try {
+      const args: MutationCreateActionItemCategoryArgs = {
+        organizationId: testOrganization?._id,
+        name: "Default2",
+      };
+
+      const context = {
+        userId: randomUser?._id,
+      };
+
+      await createActionItemCategoryResolver?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(
+        ACTION_ITEM_CATEGORY_ALREADY_EXISTS.MESSAGE
+      );
+    }
   });
 });

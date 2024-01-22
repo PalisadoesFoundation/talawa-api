@@ -61,7 +61,10 @@ export const mutations = gql`
       actionItemCategoryId: ID!
     ): ActionItem! @auth
 
-    createActionItemCategory(name: String!, organizationId: ID!): ActionItemCategory! @auth
+    createActionItemCategory(
+      name: String!
+      organizationId: ID!
+    ): ActionItemCategory! @auth
 
     createComment(postId: ID!, data: CommentInput!): Comment @auth
 
@@ -211,7 +214,10 @@ export const mutations = gql`
 
     updateActionItem(id: ID!, data: UpdateActionItemInput!): ActionItem @auth
 
-    updateActionItemCategory(id: ID!, data: UpdateActionItemCategoryInput!): ActionItemCategory @auth
+    updateActionItemCategory(
+      id: ID!
+      data: UpdateActionItemCategoryInput!
+    ): ActionItemCategory @auth
 
     updateAdvertisement(
       input: UpdateAdvertisementInput!
