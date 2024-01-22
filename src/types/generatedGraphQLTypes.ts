@@ -421,6 +421,7 @@ export type FundCampaign = {
   endDate: Scalars['DateTime']['output'];
   goalAmount: Scalars['Float']['output'];
   name: Scalars['String']['output'];
+  parentFundId?: Maybe<Fund>;
   startDate: Scalars['DateTime']['output'];
   updatedAt: Scalars['DateTime']['output'];
 };
@@ -430,6 +431,7 @@ export type FundCampaignInput = {
   endDate: Scalars['DateTime']['input'];
   goalAmount: Scalars['Float']['input'];
   name: Scalars['String']['input'];
+  parentFundId: Scalars['ID']['input'];
   startDate: Scalars['DateTime']['input'];
 };
 
@@ -2055,7 +2057,7 @@ export type ResolversTypes = {
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   ForgotPasswordData: ForgotPasswordData;
   Fund: ResolverTypeWrapper<Omit<Fund, 'campaigns' | 'creator' | 'organization'> & { campaigns?: Maybe<Array<Maybe<ResolversTypes['FundCampaign']>>>, creator?: Maybe<ResolversTypes['User']>, organization?: Maybe<ResolversTypes['Organization']> }>;
-  FundCampaign: ResolverTypeWrapper<Omit<FundCampaign, 'creator'> & { creator?: Maybe<ResolversTypes['User']> }>;
+  FundCampaign: ResolverTypeWrapper<Omit<FundCampaign, 'creator' | 'parentFundId'> & { creator?: Maybe<ResolversTypes['User']>, parentFundId?: Maybe<ResolversTypes['Fund']> }>;
   FundCampaignInput: FundCampaignInput;
   Gender: Gender;
   Group: ResolverTypeWrapper<InterfaceGroupModel>;
@@ -2190,7 +2192,7 @@ export type ResolversParentTypes = {
   Float: Scalars['Float']['output'];
   ForgotPasswordData: ForgotPasswordData;
   Fund: Omit<Fund, 'campaigns' | 'creator' | 'organization'> & { campaigns?: Maybe<Array<Maybe<ResolversParentTypes['FundCampaign']>>>, creator?: Maybe<ResolversParentTypes['User']>, organization?: Maybe<ResolversParentTypes['Organization']> };
-  FundCampaign: Omit<FundCampaign, 'creator'> & { creator?: Maybe<ResolversParentTypes['User']> };
+  FundCampaign: Omit<FundCampaign, 'creator' | 'parentFundId'> & { creator?: Maybe<ResolversParentTypes['User']>, parentFundId?: Maybe<ResolversParentTypes['Fund']> };
   FundCampaignInput: FundCampaignInput;
   Group: InterfaceGroupModel;
   GroupChat: InterfaceGroupChatModel;
@@ -2513,6 +2515,7 @@ export type FundCampaignResolvers<ContextType = any, ParentType extends Resolver
   endDate?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   goalAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  parentFundId?: Resolver<Maybe<ResolversTypes['Fund']>, ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

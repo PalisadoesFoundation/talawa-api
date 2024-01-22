@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type { MutationCreateFundCampaignArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
-import type mongoose from "mongoose";
+import mongoose from "mongoose";
 import { createFundCampaign as createFundCampaignResolver } from "../../../src/resolvers/Mutation/createFundCampaign";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import type { TestUserType } from "../../helpers/user";
@@ -30,6 +30,7 @@ describe("resolvers -> Muatation -> createFundCampaign", () => {
         name: "testFundCampaign",
         endDate: new Date(),
         startDate: Date.now(),
+        parentFundId: new mongoose.Types.ObjectId().toString(),
       },
     };
 

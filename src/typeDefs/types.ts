@@ -114,7 +114,7 @@ export const types = gql`
     endDate: DateTime!
     createdAt: DateTime!
     updatedAt: DateTime!
-    # parentFundId: ID!
+    parentFundId: Fund
   }
 
   type Advertisement {

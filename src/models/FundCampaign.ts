@@ -15,6 +15,7 @@ export interface InterfaceFundCampaign {
   endDate: Date;
   createdAt: Date;
   updatedAt: Date;
+  parentFund: Types.ObjectId | string;
 }
 
 /**
@@ -55,6 +56,11 @@ const fundCampaignSchema = new Schema(
     creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
+    },
+    parentFund: {
+      type: Schema.Types.ObjectId,
+      ref: "Fund",
       required: true,
     },
   },

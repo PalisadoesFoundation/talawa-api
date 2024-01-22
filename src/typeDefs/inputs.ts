@@ -115,6 +115,7 @@ export const inputs = gql`
 
   input FundCampaignInput {
     name: String!
+    parentFundId: ID!
     goalAmount: Float!
     currency: Currency!
     startDate: DateTime!

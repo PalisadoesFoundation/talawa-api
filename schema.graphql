@@ -364,6 +364,7 @@ type FundCampaign {
   endDate: DateTime!
   goalAmount: Float!
   name: String!
+  parentFundId: Fund
   startDate: DateTime!
   updatedAt: DateTime!
 }
@@ -373,6 +374,7 @@ input FundCampaignInput {
   endDate: DateTime!
   goalAmount: Float!
   name: String!
+  parentFundId: ID!
   startDate: DateTime!
 }
 
