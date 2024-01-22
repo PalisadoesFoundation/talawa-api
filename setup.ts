@@ -1030,11 +1030,15 @@ async function main(): Promise<void> {
     {
       type: "input",
       name: "imageSizeLimit",
-      message:
-        "Enter the maximum size limit of Images uploaded (in MB) max: 20",
+      message: `Enter the maximum size limit of Images uploaded (in MB) max: ${
+        MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
+      }`,
       default: 3,
       validate: (input: number) =>
-        validateImageFileSize(input) || "Enter a valid number between 0 and 20",
+        validateImageFileSize(input) ||
+        `Enter a valid number between 0 and ${
+          MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
+        }`,
     },
   ]);
 
