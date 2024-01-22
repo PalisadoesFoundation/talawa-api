@@ -25,7 +25,7 @@ afterAll(async () => {
 
 describe("resolvers -> Event -> organization", () => {
   it(`returns the creator user object for parent event`, async () => {
-    const parent = testFundCampaign?.toObject()._id;
+    const parent = testFundCampaign?.toObject();
 
     const creatorIdPayload = await creatorResolver?.(parent, {}, {});
 
