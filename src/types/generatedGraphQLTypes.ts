@@ -1387,6 +1387,7 @@ export type Query = {
   getDonationById: Donation;
   getDonationByOrgId?: Maybe<Array<Maybe<Donation>>>;
   getDonationByOrgIdConnection: Array<Donation>;
+  getFundById: Fund;
   getFundCampaignById: FundCampaign;
   getFundCampaigns?: Maybe<Array<Maybe<FundCampaign>>>;
   getFunds?: Maybe<Array<Maybe<Fund>>>;
@@ -1472,6 +1473,11 @@ export type QueryGetDonationByOrgIdConnectionArgs = {
   orgId: Scalars['ID']['input'];
   skip?: InputMaybe<Scalars['Int']['input']>;
   where?: InputMaybe<DonationWhereInput>;
+};
+
+
+export type QueryGetFundByIdArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -2847,6 +2853,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getDonationById?: Resolver<ResolversTypes['Donation'], ParentType, ContextType, RequireFields<QueryGetDonationByIdArgs, 'id'>>;
   getDonationByOrgId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Donation']>>>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdArgs, 'orgId'>>;
   getDonationByOrgIdConnection?: Resolver<Array<ResolversTypes['Donation']>, ParentType, ContextType, RequireFields<QueryGetDonationByOrgIdConnectionArgs, 'orgId'>>;
+  getFundById?: Resolver<ResolversTypes['Fund'], ParentType, ContextType, RequireFields<QueryGetFundByIdArgs, 'id'>>;
   getFundCampaignById?: Resolver<ResolversTypes['FundCampaign'], ParentType, ContextType, RequireFields<QueryGetFundCampaignByIdArgs, 'id'>>;
   getFundCampaigns?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundCampaign']>>>, ParentType, ContextType>;
   getFunds?: Resolver<Maybe<Array<Maybe<ResolversTypes['Fund']>>>, ParentType, ContextType>;

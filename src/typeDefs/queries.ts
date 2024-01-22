@@ -41,6 +41,8 @@ export const queries = gql`
 
     getFunds: [Fund]
 
+    getFundById(id: ID!): Fund!
+
     getFundCampaigns: [FundCampaign]
 
     getFundCampaignById(id: ID!): FundCampaign!
