@@ -292,7 +292,7 @@ export const inputs = gql`
 
   input AddressInput {
     city: String
-    countryCode: CountryCode
+    countryCode: String
     dependentLocality: String
     line1: String
     line2: String

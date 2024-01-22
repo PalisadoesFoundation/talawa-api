@@ -54,7 +54,7 @@ export type Scalars = {
 export type Address = {
   __typename?: 'Address';
   city?: Maybe<Scalars['String']['output']>;
-  countryCode?: Maybe<Scalars['CountryCode']['output']>;
+  countryCode?: Maybe<Scalars['String']['output']>;
   dependentLocality?: Maybe<Scalars['String']['output']>;
   line1?: Maybe<Scalars['String']['output']>;
   line2?: Maybe<Scalars['String']['output']>;
@@ -65,7 +65,7 @@ export type Address = {
 
 export type AddressInput = {
   city?: InputMaybe<Scalars['String']['input']>;
-  countryCode?: InputMaybe<Scalars['CountryCode']['input']>;
+  countryCode?: InputMaybe<Scalars['String']['input']>;
   dependentLocality?: InputMaybe<Scalars['String']['input']>;
   line1?: InputMaybe<Scalars['String']['input']>;
   line2?: InputMaybe<Scalars['String']['input']>;
@@ -2198,7 +2198,7 @@ export type RoleDirectiveResolver<Result, Parent, ContextType = any, Args = Role
 
 export type AddressResolvers<ContextType = any, ParentType extends ResolversParentTypes['Address'] = ResolversParentTypes['Address']> = {
   city?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  countryCode?: Resolver<Maybe<ResolversTypes['CountryCode']>, ParentType, ContextType>;
+  countryCode?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   dependentLocality?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   line1?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   line2?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

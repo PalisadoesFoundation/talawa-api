@@ -4,7 +4,7 @@ directive @role(requires: UserType) on FIELD_DEFINITION
 
 type Address {
   city: String
-  countryCode: CountryCode
+  countryCode: String
   dependentLocality: String
   line1: String
   line2: String
@@ -15,7 +15,7 @@ type Address {
 
 input AddressInput {
   city: String
-  countryCode: CountryCode
+  countryCode: String
   dependentLocality: String
   line1: String
   line2: String

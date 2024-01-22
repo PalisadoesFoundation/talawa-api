@@ -347,7 +347,7 @@ export const types = gql`
 
   type Address {
     city: String
-    countryCode: CountryCode
+    countryCode: String
     dependentLocality: String
     line1: String
     line2: String
