@@ -22,6 +22,7 @@
       "files": ["./src/typeDefs//.graphql"],
       "parser": "@graphql-eslint/eslint-plugin",
       "plugins": ["@graphql-eslint"],
+      // Do not apply naming conventions to .graphql files
       "rules": {
         "@typescript-eslint/naming-convention": "off"
       }
@@ -33,6 +34,8 @@
       }
     },
     {
+      // Disable explicit function return type for index.ts as it uses a lot of templated code
+      // which has convulated return types
       "files": ["./src/index.ts", "./src/utilities/copyToClipboard.ts"],
       "rules": {
         "@typescript-eslint/explicit-function-return-type": "off",
@@ -56,8 +59,14 @@
         "patterns": ["/src/"]
       }
     ],
+
+    // restrict the use of same package in multiple import statements
     "import/no-duplicates": "error",
+
+    // warn/1, error/2, off/0
     "tsdoc/syntax": "error",
+
+     // Typescript Rules
     "@typescript-eslint/ban-ts-comment": "error",
     "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/no-inferrable-types": "error",
@@ -66,6 +75,8 @@
     "@typescript-eslint/no-var-requires": "error",
     "@typescript-eslint/ban-types": "error",
     "@typescript-eslint/no-duplicate-enum-values": "error",
+
+    // Typescript rule to enforce PascalCase naming convention for types and interfaces
     "@typescript-eslint/naming-convention": [
       "error",
       // Interfaces must begin with Interface or TestInterface followed by a PascalCase name
@@ -106,6 +117,8 @@
       },
       { "selector": "variable", "modifiers": ["exported"], "format": null }
     ],
+    
+    // Typescript additional rules
     "@typescript-eslint/array-type": "error",
     "@typescript-eslint/consistent-type-assertions": "error",
     "@typescript-eslint/consistent-type-imports": "error",
