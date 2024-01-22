@@ -27,33 +27,17 @@ export const createTestCategories = async (): Promise<
 > => {
   const [testUser, testOrganization] = await createTestUserAndOrganization();
 
-  const testCategory1 = await ActionItemCategory.create({
+  await ActionItemCategory.create({
     creatorId: testUser?._id,
     organizationId: testOrganization?._id,
     name: "Default",
   });
 
-  const testCategory2 = await ActionItemCategory.create({
+  await ActionItemCategory.create({
     creatorId: testUser?._id,
     organizationId: testOrganization?._id,
     name: "Default2",
   });
 
-  const updatedTestOrganization = await Organization.findOneAndUpdate(
-    {
-      _id: testOrganization?._id,
-    },
-    {
-      $push: {
-        actionCategories: {
-          $each: [testCategory1._id, testCategory2._id],
-        },
-      },
-    },
-    {
-      new: true,
-    }
-  );
-
-  return [testUser, updatedTestOrganization];
+  return [testUser, testOrganization];
 };

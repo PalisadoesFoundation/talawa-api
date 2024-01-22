@@ -224,18 +224,6 @@ describe("resolvers -> Mutation -> createActionItem", () => {
         actionItemCategoryId: testCategory?._id,
       })
     );
-
-    const updatedTestEvent = await Event.findOne({
-      _id: testEvent?._id,
-    })
-      .select(["actionItems"])
-      .lean();
-
-    expect(updatedTestEvent).toEqual(
-      expect.objectContaining({
-        actionItems: expect.arrayContaining([createActionItemPayload?._id]),
-      })
-    );
   });
 
   it(`creates the actionItem when user is authorized as an orgAdmin`, async () => {

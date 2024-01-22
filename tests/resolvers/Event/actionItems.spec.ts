@@ -23,7 +23,7 @@ describe("resolvers -> Organization -> actionItems", () => {
   it(`returns all actionItems for parent Event`, async () => {
     const parent = testEvent?.toObject();
     if (parent) {
-      const actionCategoriesPayload = await actionItemsResolver?.(
+      const actionItemsPayload = await actionItemsResolver?.(
         parent,
         {},
         {}
@@ -33,7 +33,7 @@ describe("resolvers -> Organization -> actionItems", () => {
         eventId: testEvent?._id,
       }).lean();
 
-      expect(actionCategoriesPayload).toEqual(actionItems);
+      expect(actionItemsPayload).toEqual(actionItems);
     }
   });
 });

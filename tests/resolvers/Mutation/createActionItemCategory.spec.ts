@@ -116,18 +116,6 @@ describe("resolvers -> Mutation -> createCategory", () => {
         name: "Default",
       })
     );
-
-    const updatedTestOrganization = await Organization.findOne({
-      _id: testOrganization?._id,
-    })
-      .select(["actionCategories"])
-      .lean();
-
-    expect(updatedTestOrganization).toEqual(
-      expect.objectContaining({
-        actionCategories: [createCategoryPayload?._id],
-      })
-    );
   });
 
   it(`creates the actionItemCategory and returns it as superAdmin`, async () => {
@@ -162,18 +150,6 @@ describe("resolvers -> Mutation -> createCategory", () => {
       expect.objectContaining({
         organizationId: testOrganization?._id,
         name: "Default",
-      })
-    );
-
-    const updatedTestOrganization = await Organization.findOne({
-      _id: testOrganization?._id,
-    })
-      .select(["actionCategories"])
-      .lean();
-
-    expect(updatedTestOrganization).toEqual(
-      expect.objectContaining({
-        actionCategories: expect.arrayContaining([createCategoryPayload?._id]),
       })
     );
   });

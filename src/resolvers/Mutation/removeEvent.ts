@@ -127,7 +127,7 @@ export const removeEvent: MutationResolvers["removeEvent"] = async (
     await cacheEvents([updatedEvent]);
   }
 
-  await ActionItem.deleteMany({ _id: { $in: event.actionItems } });
+  await ActionItem.deleteMany({ eventId: event?._id });
 
   return event;
 };

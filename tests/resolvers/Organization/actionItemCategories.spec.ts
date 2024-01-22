@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { actionCategories as actionCategoriesResolver } from "../../../src/resolvers/Organization/actionCategories";
+import { actionItemCategories as actionItemCategoriesResolver } from "../../../src/resolvers/Organization/actionItemCategories";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { ActionItemCategory } from "../../../src/models";
@@ -19,11 +19,11 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Organization -> actionCategories", () => {
-  it(`returns all actionCategories for parent organization`, async () => {
+describe("resolvers -> Organization -> actionItemCategories", () => {
+  it(`returns all actionItemCategories for parent organization`, async () => {
     const parent = testOrganization?.toObject();
     if (parent) {
-      const actionCategoriesPayload = await actionCategoriesResolver?.(
+      const actionCategoriesPayload = await actionItemCategoriesResolver?.(
         parent,
         {},
         {}

@@ -73,15 +73,6 @@ export const createActionItemCategory: MutationResolvers["createActionItemCatego
     creatorId: context.userId,
   });
 
-  await Organization.findOneAndUpdate(
-    {
-      _id: organization._id,
-    },
-    {
-      $push: { actionCategories: createdActionItemCategory._id },
-    }
-  );
-
   // Returns created actionItemCategory.
   return createdActionItemCategory.toObject();
 };

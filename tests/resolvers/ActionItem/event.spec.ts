@@ -40,7 +40,6 @@ describe("resolvers -> ActionItem -> event", () => {
       creatorId: testUser?._id,
       admins: [testUser?._id],
       organization: testOrganization?._id,
-      actionItems: [testActionItem?._id],
     });
 
     const updatedTestActionItem = await ActionItem.findOneAndUpdate(
@@ -63,10 +62,6 @@ describe("resolvers -> ActionItem -> event", () => {
       {}
     );
 
-    expect(eventByPayload).toEqual(
-      expect.objectContaining({
-        actionItems: [updatedTestActionItem?._id],
-      })
-    );
+    expect(eventByPayload?._id).toEqual(updatedTestActionItem?.eventId);
   });
 });

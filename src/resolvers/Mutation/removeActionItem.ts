@@ -110,17 +110,6 @@ export const removeActionItem: MutationResolvers["removeActionItem"] = async (
     );
   }
 
-  if (actionItem.eventId) {
-    await Event.updateOne(
-      {
-        _id: actionItem.eventId,
-      },
-      {
-        $pull: { actionItems: actionItem._id },
-      }
-    );
-  }
-
   await ActionItem.deleteOne({
     _id: args.id,
   });

@@ -258,7 +258,7 @@ export const types = gql`
     creator: User
     members: [User!]
     admins(adminId: ID): [User!]
-    actionCategories: [ActionItemCategory!]
+    actionItemCategories: [ActionItemCategory!]
     createdAt: DateTime!
     updatedAt: DateTime!
     membershipRequests: [MembershipRequest]

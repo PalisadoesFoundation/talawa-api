@@ -5,7 +5,6 @@ import type { InterfaceMessage } from "./Message";
 import type { InterfaceOrganizationCustomField } from "./OrganizationCustomField";
 import type { InterfacePost } from "./Post";
 import type { InterfaceUser } from "./User";
-import type { InterfaceActionItemCategory } from "./ActionItemCategory";
 /**
  * This is an interface that represents a database(MongoDB) document for Organization.
  */
@@ -20,7 +19,6 @@ export interface InterfaceOrganization {
   status: string;
   members: PopulatedDoc<InterfaceUser & Document>[];
   admins: PopulatedDoc<InterfaceUser & Document>[];
-  actionCategories: PopulatedDoc<InterfaceActionItemCategory & Document>[];
   groupChats: PopulatedDoc<InterfaceMessage & Document>[];
   posts: PopulatedDoc<InterfacePost & Document>[];
   pinnedPosts: PopulatedDoc<InterfacePost & Document>[];
@@ -43,7 +41,6 @@ export interface InterfaceOrganization {
  * @param status - Status.
  * @param members - Collection of members, each object refer to `User` model.
  * @param admins - Collection of organization admins, each object refer to `User` model.
- * @param actionCategories - Collection of categories belonging to an organization, refer to `ActionItemCategory` model.
  * @param groupChats - Collection of group chats, each object refer to `Message` model.
  * @param posts - Collection of Posts in the Organization, each object refer to `Post` model.
  * @param membershipRequests - Collection of membership requests in the Organization, each object refer to `MembershipRequest` model.
@@ -87,12 +84,6 @@ const organizationSchema = new Schema(
       ref: "User",
       required: true,
     },
-    actionCategories: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "ActionItemCategory",
-      },
-    ],
     status: {
       type: String,
       required: true,

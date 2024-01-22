@@ -134,7 +134,6 @@ beforeAll(async () => {
       $push: {
         membershipRequests: testMembershipRequest._id,
         posts: testPost._id,
-        actionCategories: testCategory?._id,
       },
     }
   );

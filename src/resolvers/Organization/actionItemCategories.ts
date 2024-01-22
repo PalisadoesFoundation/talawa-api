@@ -5,11 +5,9 @@ import type { OrganizationResolvers } from "../../types/generatedGraphQLTypes";
  * @param parent - An object that is the return value of the resolver for this field's parent.
  * @returns An object that contains the list of all categories of the organization.
  */
-export const actionCategories: OrganizationResolvers["actionCategories"] =
+export const actionItemCategories: OrganizationResolvers["actionItemCategories"] =
   async (parent) => {
     return await ActionItemCategory.find({
-      _id: {
-        $in: parent.actionCategories,
-      },
+      organizationId: parent._id
     }).lean();
   };

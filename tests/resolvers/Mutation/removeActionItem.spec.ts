@@ -236,26 +236,6 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
       }
     );
 
-    const updatedTestEvent = await Event.findOneAndUpdate(
-      {
-        _id: testEvent?._id,
-      },
-      {
-        $push: { actionItems: newTestActionItem?._id },
-      },
-      {
-        new: true,
-      }
-    )
-      .select(["actionItems"])
-      .lean();
-
-    expect(updatedTestEvent).toEqual(
-      expect.objectContaining({
-        actionItems: expect.arrayContaining([updatedTestActionItem?._id]),
-      })
-    );
-
     const args: MutationRemoveActionItemArgs = {
       id: updatedTestActionItem?._id,
     };
@@ -273,18 +253,6 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
     expect(removedActionItemPayload).toEqual(
       expect.objectContaining({
         assigneeId: randomUser?._id,
-      })
-    );
-
-    const updatedTestEventInfo = await Event.findOne({
-      _id: testEvent?._id,
-    })
-      .select(["actionItems"])
-      .lean();
-
-    expect(updatedTestEventInfo).toEqual(
-      expect.objectContaining({
-        actionItems: expect.not.arrayContaining([updatedTestActionItem?._id]),
       })
     );
   });

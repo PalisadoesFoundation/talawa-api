@@ -127,12 +127,16 @@ export const removeOrganization: MutationResolvers["removeOrganization"] =
       { $pull: { organizationsBlockedBy: organization._id } }
     );
 
-    // Remove all ActionItemCategory documents whose id is in the actionCategories array
-    await ActionItemCategory.deleteMany({ _id: { $in: organization.actionCategories } });
+    // Get the ids of all ActionItemCategories associated with the organization
+    const actionItemCategories = await ActionItemCategory.find({ organizationId: organization?._id });
+    const actionItemCategoriesIds = actionItemCategories.map(category => category._id);
 
-    // Remove all ActionItem documents whose actionItemCategory is in the actionCategories array
+    // Remove all ActionItemCategory documents whose id is in the actionItemCategories array
+    await ActionItemCategory.deleteMany({ _id: { $in: actionItemCategoriesIds } });
+
+    // Remove all ActionItem documents whose actionItemCategory is in the actionItemCategories array
     await ActionItem.deleteMany({
-      actionItemCategoryId: { $in: organization.actionCategories },
+      actionItemCategoryId: { $in: actionItemCategoriesIds },
     });
 
     // Deletes the organzation.
