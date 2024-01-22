@@ -286,9 +286,7 @@ userSchema.plugin(mongoosePaginate);
 const userModel = (): PaginateModel<InterfaceUser> =>
   model<InterfaceUser, PaginateModel<InterfaceUser>>("User", userSchema);
 
-if (LOG) {
-  createLoggingMiddleware(userSchema, "User");
-}
+createLoggingMiddleware(userSchema, "User");
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const User = (models.User || userModel()) as ReturnType<
