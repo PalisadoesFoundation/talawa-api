@@ -1,44 +1,38 @@
 {
-  "env": {
-    "es2022": true,
-    "node": true
-  },
-  "extends": [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "prettier"
-  ],
   "overrides": [
     {
-      //Override rules for both TypeScript and GraphQL files in typeDef directory
-      "files": ["./src/typeDefs/**/*.{ts,graphql}"],
-      // "parser": "@graphql-eslint/eslint-plugin",
-      // "plugins": ["@graphql-eslint"],
-      //In above if we use graphql parser it producing errors making conflict of
-      //typescript lint check or graphql lint check due to includes code of both
-      //typescript and graphql in .ts file
-
-      //For now,using typescript parser for files in typeDef directories
-      "parser": "@typescript-eslint/parser",
-      "plugins": ["@typescript-eslint", "eslint-plugin-tsdoc", "import"],
-
-      // Rules for both TypeScript and GraphQL files
+      "files": ["*.ts"],
+      "env": {
+        "es2022": true,
+        "node": true
+      },
+      "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "prettier"
+      ],
+      "rules": {}
+    },
+    {
+      "files": ["./src/typeDefs//*.ts"],
+      "processor": "@graphql-eslint/graphql",
+      "rules": {}
+    },
+    {
+      "files": ["./src/typeDefs//.graphql"],
+      "parser": "@graphql-eslint/eslint-plugin",
+      "plugins": ["@graphql-eslint"],
       "rules": {
-        "@typescript-eslint/naming-convention": "off",
-        "@typescript-eslint/no-unused-vars": "warn"
-
-        // Add other rules as needed
+        "@typescript-eslint/naming-convention": "off"
       }
     },
     {
-      "files": ["tests/**/*"],
+      "files": ["tests/**/"],
       "rules": {
         "no-restricted-imports": "off"
       }
     },
     {
-      // Disable explicit function return type for index.ts as it uses a lot of templated code
-      // which has convulated return types
       "files": ["./src/index.ts", "./src/utilities/copyToClipboard.ts"],
       "rules": {
         "@typescript-eslint/explicit-function-return-type": "off",
@@ -46,7 +40,6 @@
       }
     }
   ],
-
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "project": "./tsconfig.json",
@@ -60,17 +53,11 @@
     "no-restricted-imports": [
       "error",
       {
-        "patterns": ["**/src/**"]
+        "patterns": ["/src/"]
       }
     ],
-
-    // restrict the use of same package in multiple import statements
     "import/no-duplicates": "error",
-
-    // warn/1, error/2, off/0
     "tsdoc/syntax": "error",
-
-    // Typescript Rules
     "@typescript-eslint/ban-ts-comment": "error",
     "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/no-inferrable-types": "error",
@@ -79,9 +66,6 @@
     "@typescript-eslint/no-var-requires": "error",
     "@typescript-eslint/ban-types": "error",
     "@typescript-eslint/no-duplicate-enum-values": "error",
-    "@typescript-eslint/no-unused-vars": "error",
-
-    // Typescript rule to enforce PascalCase naming convention for types and interfaces
     "@typescript-eslint/naming-convention": [
       "error",
       // Interfaces must begin with Interface or TestInterface followed by a PascalCase name
@@ -122,8 +106,6 @@
       },
       { "selector": "variable", "modifiers": ["exported"], "format": null }
     ],
-
-    // Typescript additional rules
     "@typescript-eslint/array-type": "error",
     "@typescript-eslint/consistent-type-assertions": "error",
     "@typescript-eslint/consistent-type-imports": "error",
