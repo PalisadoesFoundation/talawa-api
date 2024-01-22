@@ -30,7 +30,7 @@ describe("resolvers -> Organization -> actionCategories", () => {
       );
 
       const categories = await ActionItemCategory.find({
-        orgId: testOrganization?._id,
+        organizationId: testOrganization?._id,
       }).lean();
 
       expect(actionCategoriesPayload).toEqual(categories);

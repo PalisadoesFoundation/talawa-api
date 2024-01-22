@@ -48,7 +48,7 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   }
 
   const assignee = await User.findOne({
-    _id: args.data.assignedTo,
+    _id: args.data.assigneeId,
   });
 
   // Checks whether the asignee exists.
@@ -76,8 +76,8 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   let asigneeIsOrganizationMember = false;
   asigneeIsOrganizationMember = assignee.joinedOrganizations.some(
     (organizationId) =>
-      organizationId === actionItemCategory.orgId ||
-      Types.ObjectId(organizationId).equals(actionItemCategory.orgId)
+      organizationId === actionItemCategory.organizationId ||
+      Types.ObjectId(organizationId).equals(actionItemCategory.organizationId)
   );
 
   // Checks if the asignee is a member of the organization
@@ -127,8 +127,8 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
   // Checks if the currUser is an admin of the organization
   const currentUserIsOrgAdmin = currentUser.adminFor.some(
     (ogranizationId) =>
-      ogranizationId === actionItemCategory.orgId ||
-      Types.ObjectId(ogranizationId).equals(actionItemCategory.orgId)
+      ogranizationId === actionItemCategory.organizationId ||
+      Types.ObjectId(ogranizationId).equals(actionItemCategory.organizationId)
   );
 
   // Checks whether currentUser with _id === context.userId is authorized for the operation.
@@ -146,15 +146,15 @@ export const createActionItem: MutationResolvers["createActionItem"] = async (
 
   // Creates new action item.
   const createActionItem = await ActionItem.create({
-    assignedTo: args.data.assignedTo,
-    assignedBy: context.userId,
+    assigneeId: args.data.assigneeId,
+    assignerId: context.userId,
     actionItemCategoryId: args.actionItemCategoryId,
     preCompletionNotes: args.data.preCompletionNotes,
     postCompletionNotes: args.data.postCompletionNotes,
     dueDate: args.data.dueDate,
     completionDate: args.data.completionDate,
     eventId: args.data.eventId,
-    createdBy: context.userId,
+    creatorId: context.userId,
   });
 
   if (args.data.eventId) {

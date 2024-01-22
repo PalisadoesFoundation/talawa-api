@@ -18,9 +18,9 @@ import { adminCheck } from "../../utilities";
  * @returns Updated actionItemCategory.
  */
 
-type UpdateCategoryInputType = {
+type UpdateActionItemCategoryInputType = {
   name: string;
-  disabled: boolean;
+  isDisabled: boolean;
 };
 
 export const updateActionItemCategory: MutationResolvers["updateActionItemCategory"] = async (
@@ -44,7 +44,7 @@ export const updateActionItemCategory: MutationResolvers["updateActionItemCatego
   const actionItemCategory = await ActionItemCategory.findOne({
     _id: args.id,
   })
-    .populate("orgId")
+    .populate("organizationId")
     .lean();
 
   // Checks if the actionItemCategory exists
@@ -56,14 +56,14 @@ export const updateActionItemCategory: MutationResolvers["updateActionItemCatego
     );
   }
 
-  await adminCheck(context.userId, actionItemCategory.orgId);
+  await adminCheck(context.userId, actionItemCategory.organizationId);
 
   const updatedCategory = await ActionItemCategory.findOneAndUpdate(
     {
       _id: args.id,
     },
     {
-      ...(args.data as UpdateCategoryInputType),
+      ...(args.data as UpdateActionItemCategoryInputType),
     },
     {
       new: true,

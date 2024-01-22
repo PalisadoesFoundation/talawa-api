@@ -138,7 +138,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
     // console.log(removedActionItemPayload);
     expect(removedActionItemPayload).toEqual(
       expect.objectContaining({
-        assignedTo: assignedTestUser?._id,
+        assigneeId: assignedTestUser?._id,
       })
     );
   });
@@ -178,7 +178,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
 
     expect(removedActionItemPayload).toEqual(
       expect.objectContaining({
-        assignedTo: randomUser?._id,
+        assigneeId: randomUser?._id,
       })
     );
   });
@@ -272,7 +272,7 @@ describe("resolvers -> Mutation -> removeActionItem", () => {
 
     expect(removedActionItemPayload).toEqual(
       expect.objectContaining({
-        assignedTo: randomUser?._id,
+        assigneeId: randomUser?._id,
       })
     );
 

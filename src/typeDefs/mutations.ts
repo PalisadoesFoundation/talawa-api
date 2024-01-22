@@ -61,6 +61,8 @@ export const mutations = gql`
       actionItemCategoryId: ID!
     ): ActionItem! @auth
 
+    createActionItemCategory(name: String!, organizationId: ID!): ActionItemCategory! @auth
+
     createComment(postId: ID!, data: CommentInput!): Comment @auth
 
     createDirectChat(data: createChatInput!): DirectChat! @auth
@@ -105,8 +107,6 @@ export const mutations = gql`
     createUserTag(input: CreateUserTagInput!): UserTag @auth
 
     createSampleOrganization: Boolean! @auth
-
-    createActionItemCategory(name: String!, orgId: ID!): ActionItemCategory! @auth
 
     deleteAdvertisementById(id: ID!): DeletePayload!
 
@@ -211,6 +211,8 @@ export const mutations = gql`
 
     updateActionItem(id: ID!, data: UpdateActionItemInput!): ActionItem @auth
 
+    updateActionItemCategory(id: ID!, data: UpdateActionItemCategoryInput!): ActionItemCategory @auth
+
     updateAdvertisement(
       input: UpdateAdvertisementInput!
     ): UpdateAdvertisementPayload @auth
@@ -230,8 +232,6 @@ export const mutations = gql`
     updatePluginStatus(id: ID!, orgId: ID!): Plugin!
 
     updateUserTag(input: UpdateUserTagInput!): UserTag @auth
-
-    updateActionItemCategory(id: ID!, data: UpdateActionItemCategoryInput!): ActionItemCategory @auth
 
     updateUserProfile(data: UpdateUserInput, file: String): User! @auth
 

@@ -75,7 +75,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       const args: MutationUpdateActionItemArgs = {
         id: Types.ObjectId().toString(),
         data: {
-          assignedTo: randomUser?._id,
+          assigneeId: randomUser?._id,
         },
       };
 
@@ -94,7 +94,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       const args: MutationUpdateActionItemArgs = {
         id: Types.ObjectId().toString(),
         data: {
-          assignedTo: randomUser?._id,
+          assigneeId: randomUser?._id,
         },
       };
 
@@ -108,12 +108,12 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
     }
   });
 
-  it(`throws NotFoundError if no user exists with _id === args.data.assignedTo`, async () => {
+  it(`throws NotFoundError if no user exists with _id === args.data.assigneeId`, async () => {
     try {
       const args: MutationUpdateActionItemArgs = {
         id: testActionItem?._id,
         data: {
-          assignedTo: Types.ObjectId().toString(),
+          assigneeId: Types.ObjectId().toString(),
         },
       };
 
@@ -132,7 +132,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       const args: MutationUpdateActionItemArgs = {
         id: testActionItem?._id,
         data: {
-          assignedTo: randomUser?._id,
+          assigneeId: randomUser?._id,
         },
       };
 
@@ -151,7 +151,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       const args: MutationUpdateActionItemArgs = {
         id: testActionItem?._id,
         data: {
-          assignedTo: testUser?._id,
+          assigneeId: testUser?._id,
         },
       };
 
@@ -169,7 +169,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
     const args: MutationUpdateActionItemArgs = {
       id: testActionItem?._id,
       data: {
-        assignedTo: assignedTestUser?._id,
+        assigneeId: assignedTestUser?._id,
       },
     };
 
@@ -185,7 +185,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
 
     expect(updatedActionItemPayload).toEqual(
       expect.objectContaining({
-        assignedTo: assignedTestUser?._id,
+        assigneeId: assignedTestUser?._id,
         actionItemCategoryId: testCategory?._id,
       })
     );
@@ -207,7 +207,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
     const args: MutationUpdateActionItemArgs = {
       id: testActionItem?._id,
       data: {
-        assignedTo: testUser?._id,
+        assigneeId: testUser?._id,
       },
     };
 
@@ -223,7 +223,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
 
     expect(updatedActionItemPayload).toEqual(
       expect.objectContaining({
-        assignedTo: testUser?._id,
+        assigneeId: testUser?._id,
         actionItemCategoryId: testCategory?._id,
       })
     );
@@ -255,7 +255,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
       const args: MutationUpdateActionItemArgs = {
         id: updatedTestActionItem?._id,
         data: {
-          assignedTo: randomUser?._id,
+          assigneeId: randomUser?._id,
         },
       };
 
@@ -284,7 +284,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
 
     const args: MutationUpdateActionItemArgs = {
       data: {
-        assignedTo: testUser?._id,
+        assigneeId: testUser?._id,
       },
       id: updatedTestActionItem?._id,
     };
@@ -302,7 +302,7 @@ describe("resolvers -> Mutation -> updateActionItem", () => {
     expect(updatedActionItemPayload).toEqual(
       expect.objectContaining({
         actionItemCategoryId: testCategory?._id,
-        assignedTo: testUser?._id,
+        assigneeId: testUser?._id,
       })
     );
   });

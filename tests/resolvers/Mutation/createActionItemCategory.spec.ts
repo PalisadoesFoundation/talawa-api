@@ -46,7 +46,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
       const args: MutationCreateActionItemCategoryArgs = {
-        orgId: testOrganization?._id,
+        organizationId: testOrganization?._id,
         name: "Default",
       };
 
@@ -60,10 +60,10 @@ describe("resolvers -> Mutation -> createCategory", () => {
     }
   });
 
-  it(`throws NotFoundError if no organization exists with _id === args.orgId`, async () => {
+  it(`throws NotFoundError if no organization exists with _id === args.organizationId`, async () => {
     try {
       const args: MutationCreateActionItemCategoryArgs = {
-        orgId: Types.ObjectId().toString(),
+        organizationId: Types.ObjectId().toString(),
         name: "Default",
       };
 
@@ -80,7 +80,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
   it(`throws NotAuthorizedError if the user is not a superadmin or the admin of the organization`, async () => {
     try {
       const args: MutationCreateActionItemCategoryArgs = {
-        orgId: testOrganization?._id,
+        organizationId: testOrganization?._id,
         name: "Default",
       };
 
@@ -96,7 +96,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
 
   it(`creates the actionItemCategory and returns it as an admin`, async () => {
     const args: MutationCreateActionItemCategoryArgs = {
-      orgId: testOrganization?._id,
+      organizationId: testOrganization?._id,
       name: "Default",
     };
 
@@ -112,7 +112,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
 
     expect(createCategoryPayload).toEqual(
       expect.objectContaining({
-        orgId: testOrganization?._id,
+        organizationId: testOrganization?._id,
         name: "Default",
       })
     );
@@ -144,7 +144,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
     );
 
     const args: MutationCreateActionItemCategoryArgs = {
-      orgId: testOrganization?._id,
+      organizationId: testOrganization?._id,
       name: "Default",
     };
 
@@ -160,7 +160,7 @@ describe("resolvers -> Mutation -> createCategory", () => {
 
     expect(createCategoryPayload).toEqual(
       expect.objectContaining({
-        orgId: testOrganization?._id,
+        organizationId: testOrganization?._id,
         name: "Default",
       })
     );

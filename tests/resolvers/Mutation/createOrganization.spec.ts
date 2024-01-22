@@ -153,14 +153,14 @@ describe("resolvers -> Mutation -> createOrganization", () => {
     );
 
     const defaultCategory = await ActionItemCategory.findOne({
-      orgId: createOrganizationPayload?._id,
+      organizationId: createOrganizationPayload?._id,
     }).lean();
 
     expect(defaultCategory).toEqual(
       expect.objectContaining({
-        orgId: createOrganizationPayload?._id,
+        organizationId: createOrganizationPayload?._id,
         name: "Default",
-        disabled: false,
+        isDisabled: false,
       })
     );
   });

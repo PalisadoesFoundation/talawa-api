@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { ActionItemCategory } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
-import type { QueryCategoriesByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { QueryActionItemCategoriesByOrganizationArgs } from "../../../src/types/generatedGraphQLTypes";
 import { actionItemCategoriesByOrganization as categoriesByOrganizationResolver } from "../../../src/resolvers/Query/actionItemCategoriesByOrganization";
 import { createTestCategories } from "../../helpers/actionItemCategory";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -22,15 +22,15 @@ afterAll(async () => {
 
 describe("resolvers -> Query -> actionItemCategoriesByOrganization", () => {
   it(`returns list of all categories belonging to an organization`, async () => {
-    const args: QueryCategoriesByOrganizationArgs = {
-      orgId: testOrganization?._id,
+    const args: QueryActionItemCategoriesByOrganizationArgs = {
+      organizationId: testOrganization?._id,
     };
 
     const categoriesByOrganizationPayload =
       await categoriesByOrganizationResolver?.({}, args, {});
 
     const categoriesByOrganizationInfo = await ActionItemCategory.find({
-      orgId: testOrganization?._id,
+      organizationId: testOrganization?._id,
     }).lean();
 
     expect(categoriesByOrganizationPayload).toEqual(

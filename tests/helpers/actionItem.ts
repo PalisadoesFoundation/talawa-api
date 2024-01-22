@@ -27,15 +27,15 @@ export const createTestActionItem = async (): Promise<
   const randomUser = await createTestUser();
 
   const testCategory = await ActionItemCategory.create({
-    createdBy: testUser?._id,
-    orgId: testOrganization?._id,
+    creatorId: testUser?._id,
+    organizationId: testOrganization?._id,
     name: "Default",
   });
 
   const testActionItem = await ActionItem.create({
-    createdBy: testUser?._id,
-    assignedTo: randomUser?._id,
-    assignedBy: testUser?._id,
+    creatorId: testUser?._id,
+    assigneeId: randomUser?._id,
+    assignerId: testUser?._id,
     actionItemCategoryId: testCategory?._id,
   });
 
@@ -54,9 +54,9 @@ export const createNewTestActionItem = async ({
   actionItemCategoryId,
 }: InterfaceCreateNewTestAction): Promise<TestActionItemType> => {
   const newTestActionItem = await ActionItem.create({
-    createdBy: currUserId,
-    assignedTo: assignedUserId,
-    assignedBy: currUserId,
+    creatorId: currUserId,
+    assigneeId: assignedUserId,
+    assignerId: currUserId,
     actionItemCategoryId: actionItemCategoryId,
   });
 
@@ -70,16 +70,16 @@ export const createTestActionItems = async (): Promise<
   const [testUser, testOrganization, testCategory] = await createTestCategory();
 
   const testActionItem1 = await ActionItem.create({
-    createdBy: testUser?._id,
-    assignedTo: randomUser?._id,
-    assignedBy: testUser?._id,
+    creatorId: testUser?._id,
+    assigneeId: randomUser?._id,
+    assignerId: testUser?._id,
     actionItemCategoryId: testCategory?._id,
   });
 
   const testActionItem2 = await ActionItem.create({
-    createdBy: testUser?._id,
-    assignedTo: randomUser?._id,
-    assignedBy: testUser?._id,
+    creatorId: testUser?._id,
+    assigneeId: randomUser?._id,
+    assignerId: testUser?._id,
     actionItemCategoryId: testCategory?._id,
   });
 

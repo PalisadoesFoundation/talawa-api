@@ -1,14 +1,14 @@
 import type { ActionItemResolvers } from "../../types/generatedGraphQLTypes";
-import { assignedTo } from "./assignedTo";
-import { assignedBy } from "./assignedBy";
+import { assignee } from "./assignee";
+import { assigner } from "./assigner";
 import { actionItemCategory } from "./actionItemCategory";
 import { event } from "./event";
-import { createdBy } from "./createdBy";
+import { creator } from "./creator";
 
 export const ActionItem: ActionItemResolvers = {
-  assignedTo,
-  assignedBy,
+  assignee,
+  assigner,
   actionItemCategory,
   event,
-  createdBy,
+  creator,
 };

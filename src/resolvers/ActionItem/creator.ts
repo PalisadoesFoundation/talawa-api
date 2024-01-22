@@ -1,8 +1,8 @@
 import type { ActionItemResolvers } from "../../types/generatedGraphQLTypes";
 import { User } from "../../models";
 
-export const createdBy: ActionItemResolvers["createdBy"] = async (parent) => {
+export const creator: ActionItemResolvers["creator"] = async (parent) => {
   return User.findOne({
-    _id: parent.createdBy,
+    _id: parent.creatorId,
   }).lean();
 };

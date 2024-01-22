@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { org as orgResolver } from "../../../src/resolvers/ActionItemCategory/org";
+import { organization as organizationResolver } from "../../../src/resolvers/ActionItemCategory/organization";
 import { connect, disconnect } from "../../helpers/db";
 import type mongoose from "mongoose";
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
@@ -25,7 +25,7 @@ describe("resolvers -> ActionItemCategory -> org", () => {
   it(`returns the organization object for parent actionItemCategory`, async () => {
     const parent = testCategory?.toObject();
 
-    const orgPayload = await orgResolver?.(parent, {}, {});
+    const orgPayload = await organizationResolver?.(parent, {}, {});
 
     const orgObject = await Organization.findOne({
       _id: testOrganization?._id,

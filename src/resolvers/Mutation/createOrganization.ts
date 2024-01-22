@@ -86,8 +86,8 @@ export const createOrganization: MutationResolvers["createOrganization"] =
     // Creating a default actionItemCategory
     const createdCategory = await ActionItemCategory.create({
       name: "Default",
-      orgId: createdOrganization._id,
-      createdBy: context.userId,
+      organizationId: createdOrganization._id,
+      creatorId: context.userId,
     });
 
     // Adding the default actionItemCategory to the createdOrganization

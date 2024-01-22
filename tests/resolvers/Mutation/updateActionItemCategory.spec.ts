@@ -49,7 +49,7 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
         id: Types.ObjectId().toString(),
         data: {
           name: "updatedDefault",
-          disabled: true,
+          isDisabled: true,
         },
       };
 
@@ -69,7 +69,7 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
         id: Types.ObjectId().toString(),
         data: {
           name: "updatedDefault",
-          disabled: true,
+          isDisabled: true,
         },
       };
 
@@ -89,7 +89,7 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
         id: testCategory?._id,
         data: {
           name: "updatedDefault",
-          disabled: true,
+          isDisabled: true,
         },
       };
 
@@ -108,7 +108,7 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
       id: testCategory?._id,
       data: {
         name: "updatedDefault",
-        disabled: true,
+        isDisabled: true,
       },
     };
 
@@ -120,9 +120,9 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
 
     expect(updatedCategory).toEqual(
       expect.objectContaining({
-        orgId: testOrganization?._id,
+        organizationId: testOrganization?._id,
         name: "updatedDefault",
-        disabled: true,
+        isDisabled: true,
       })
     );
   });
@@ -144,7 +144,7 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
       id: testCategory?._id,
       data: {
         name: "updatedDefault",
-        disabled: false,
+        isDisabled: false,
       },
     };
 
@@ -156,9 +156,9 @@ describe("resolvers -> Mutation -> updateActionItemCategoryResolver", () => {
 
     expect(updatedCategory).toEqual(
       expect.objectContaining({
-        orgId: testOrganization?._id,
+        organizationId: testOrganization?._id,
         name: "updatedDefault",
-        disabled: false,
+        isDisabled: false,
       })
     );
   });

@@ -10,9 +10,9 @@ import type { InterfaceOrganization } from "./Organization";
 export interface InterfaceActionItemCategory {
   _id: Types.ObjectId;
   name: string;
-  orgId: PopulatedDoc<InterfaceOrganization & Document>;
-  disabled: boolean;
-  createdBy: PopulatedDoc<InterfaceUser & Document>;
+  organizationId: PopulatedDoc<InterfaceOrganization & Document>;
+  isDisabled: boolean;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -20,9 +20,9 @@ export interface InterfaceActionItemCategory {
 /**
  * This describes the schema for a `actionItemCategory` that corresponds to `InterfaceCategory` document.
  * @param name - An actionItemCategory to be selected for ActionItems.
- * @param orgId - Organization the actionItemCategory belongs to, refer to the `Organization` model.
- * @param disabled - Whether actionItemCategory is disabled or not.
- * @param createdBy - Task creator, refer to `User` model.
+ * @param organizationId - Organization the actionItemCategory belongs to, refer to the `Organization` model.
+ * @param isDisabled - Whether actionItemCategory is disabled or not.
+ * @param creatorId - Task creator, refer to `User` model.
  * @param createdAt - Time stamp of data creation.
  * @param updatedAt - Time stamp of data updation.
  */
@@ -33,16 +33,17 @@ const actionItemCategorySchema = new Schema(
       type: String,
       required: true,
     },
-    orgId: {
+    organizationId: {
       type: Schema.Types.ObjectId,
       ref: "Organization",
       required: true,
     },
-    disabled: {
+    isDisabled: {
       type: Boolean,
+      required: true,
       default: false,
     },
-    createdBy: {
+    creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,

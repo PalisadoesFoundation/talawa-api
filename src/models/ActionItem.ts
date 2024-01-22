@@ -10,46 +10,46 @@ import type { InterfaceActionItemCategory } from "./ActionItemCategory";
 
 export interface InterfaceActionItem {
   _id: Types.ObjectId;
-  assignedTo: PopulatedDoc<InterfaceUser & Document>;
-  assignedBy: PopulatedDoc<InterfaceUser & Document>;
+  assigneeId: PopulatedDoc<InterfaceUser & Document>;
+  assignerId: PopulatedDoc<InterfaceUser & Document>;
   actionItemCategoryId: PopulatedDoc<InterfaceActionItemCategory & Document>;
   preCompletionNotes: string;
   postCompletionNotes: string;
   assignmentDate: Date;
   dueDate: Date;
   completionDate: Date;
-  completed: boolean;
+  isCompleted: boolean;
   eventId: PopulatedDoc<InterfaceEvent & Document>;
-  createdBy: PopulatedDoc<InterfaceUser & Document>;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
   createdAt: Date;
   updatedAt: Date;
 }
 
 /**
  * This describes the schema for a `ActionItem` that corresponds to `InterfaceActionItem` document.
- * @param assignedTo - User to whom the ActionItem is assigned, refer to `User` model.
- * @param assignedBy - User who assigned the ActionItem, refer to the `User` model.
+ * @param assigneeId - User to whom the ActionItem is assigned, refer to `User` model.
+ * @param assignerId - User who assigned the ActionItem, refer to the `User` model.
  * @param actionItemCategoryId - ActionItemCategory to which the ActionItem is related, refer to the `ActionItemCategory` model.
  * @param preCompletionNotes - Notes prior to completion.
  * @param postCompletionNotes - Notes on completion.
  * @param assignmentDate - Date of assignment.
  * @param dueDate - Due date.
  * @param completionDate - Completion date.
- * @param completed - Whether the ActionItem has been completed.
+ * @param isCompleted - Whether the ActionItem has been completed.
  * @param eventId - Event to which the ActionItem is related, refer to the `Event` model.
- * @param createdBy - User who created the ActionItem, refer to the `User` model.
+ * @param creatorId - User who created the ActionItem, refer to the `User` model.
  * @param createdAt - Timestamp when the ActionItem was created.
  * @param updatedAt - Timestamp when the ActionItem was last updated.
  */
 
 const actionItemSchema = new Schema(
   {
-    assignedTo: {
+    assigneeId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    assignedBy: {
+    assignerId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
@@ -67,25 +67,29 @@ const actionItemSchema = new Schema(
     },
     assignmentDate: {
       type: Date,
+      required: true,
       default: Date.now(),
     },
     dueDate: {
       type: Date,
+      required: true,
       default: Date.now() + 7 * 24 * 60 * 60 * 1000,
     },
     completionDate: {
       type: Date,
+      required: true,
       default: Date.now() + 7 * 24 * 60 * 60 * 1000,
     },
-    completed: {
+    isCompleted: {
       type: Boolean,
+      required: true,
       default: false,
     },
     eventId: {
       type: Schema.Types.ObjectId,
       ref: "Event",
     },
-    createdBy: {
+    creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,

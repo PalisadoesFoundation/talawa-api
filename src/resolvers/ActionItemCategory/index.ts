@@ -1,8 +1,8 @@
 import type { ActionItemCategoryResolvers } from "../../types/generatedGraphQLTypes";
-import { org } from "./org";
-import { createdBy } from "./createdBy";
+import { organization } from "./organization";
+import { creator } from "./creator";
 
 export const ActionItemCategory: ActionItemCategoryResolvers = {
-  org,
-  createdBy,
+  organization,
+  creator,
 };

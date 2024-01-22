@@ -114,15 +114,15 @@ beforeAll(async () => {
   });
 
   testCategory = await ActionItemCategory.create({
-    createdBy: testUsers[0]?._id,
-    orgId: testOrganization?._id,
+    creatorId: testUsers[0]?._id,
+    organizationId: testOrganization?._id,
     name: "Default",
   });
 
   testActionItem = await ActionItem.create({
-    createdBy: testUsers[0]?._id,
-    assignedTo: testUsers[1]?._id,
-    assignedBy: testUsers[0]?._id,
+    creatorId: testUsers[0]?._id,
+    assigneeId: testUsers[1]?._id,
+    assignerId: testUsers[0]?._id,
     actionItemCategoryId: testCategory?._id,
   });
 
@@ -343,7 +343,7 @@ describe("resolvers -> Mutation -> removeOrganization", () => {
     }).lean();
 
     const deletedTestCategories = await ActionItemCategory.find({
-      orgId: testOrganization?._id,
+      organizationId: testOrganization?._id,
     }).lean();
 
     const deteledTestActionItems = await ActionItem.find({

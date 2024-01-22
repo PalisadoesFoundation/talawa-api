@@ -1,8 +1,8 @@
 import type { ActionItemCategoryResolvers } from "../../types/generatedGraphQLTypes";
 import { Organization } from "../../models";
 
-export const org: ActionItemCategoryResolvers["org"] = async (parent) => {
+export const organization: ActionItemCategoryResolvers["organization"] = async (parent) => {
   return Organization.findOne({
-    _id: parent.orgId,
+    _id: parent.organizationId,
   }).lean();
 };

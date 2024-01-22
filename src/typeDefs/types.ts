@@ -16,20 +16,30 @@ export const types = gql`
     refreshToken: String!
   }
 
+  type ActionItemCategory {
+    _id: ID!
+    name: String!
+    organization: Organization
+    isDisabled: Boolean!
+    creator: User
+    createdAt: Date!
+    updatedAt: Date!
+  }
+
   # Action Item for a ActionItemCategory
   type ActionItem {
     _id: ID!
-    assignedTo: User
-    assignedBy: User
+    assignee: User
+    assigner: User
     actionItemCategory: ActionItemCategory
     preCompletionNotes: String
     postCompletionNotes: String
-    assignmentDate: Date
-    dueDate: Date
-    completionDate: Date
-    completed: Boolean
+    assignmentDate: Date!
+    dueDate: Date!
+    completionDate: Date!
+    isCompleted: Boolean!
     event: Event
-    createdBy: User
+    creator: User
     createdAt: Date!
     updatedAt: Date!
   }
@@ -356,16 +366,6 @@ export const types = gql`
     edges: [Post]!
 
     aggregate: AggregatePost!
-  }
-
-  type ActionItemCategory {
-    _id: ID!
-    name: String!
-    org: Organization
-    disabled: Boolean!
-    createdBy: User
-    createdAt: Date!
-    updatedAt: Date!
   }
 
   type Translation {

@@ -42,19 +42,19 @@ export const createActionItemCategory: MutationResolvers["createActionItemCatego
 
   let organization;
 
-  const organizationFoundInCache = await findOrganizationsInCache([args.orgId]);
+  const organizationFoundInCache = await findOrganizationsInCache([args.organizationId]);
 
   organization = organizationFoundInCache[0];
 
   if (organizationFoundInCache[0] == null) {
     organization = await Organization.findOne({
-      _id: args.orgId,
+      _id: args.organizationId,
     }).lean();
 
     await cacheOrganizations([organization!]);
   }
 
-  // Checks whether the organization with _id === args.orgId exists.
+  // Checks whether the organization with _id === args.organizationId exists.
   if (!organization) {
     throw new errors.NotFoundError(
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
@@ -69,8 +69,8 @@ export const createActionItemCategory: MutationResolvers["createActionItemCatego
   // Creates new actionItemCategory.
   const createdActionItemCategory = await ActionItemCategory.create({
     name: args.name,
-    orgId: args.orgId,
-    createdBy: context.userId,
+    organizationId: args.organizationId,
+    creatorId: context.userId,
   });
 
   await Organization.findOneAndUpdate(

@@ -36,13 +36,13 @@ export const inputs = gql`
   }
 
   input CreateActionItemInput {
-    assignedTo: ID!
+    assigneeId: ID!
     preCompletionNotes: String
     postCompletionNotes: String
     assignmentDate: Date
     dueDate: Date
     completionDate: Date
-    completed: Boolean
+    isCompleted: Boolean
     eventId: ID
   }
 
@@ -249,11 +249,11 @@ export const inputs = gql`
   }
 
   input UpdateActionItemInput {
-    assignedTo: ID
+    assigneeId: ID
     preCompletionNotes: String
     postCompletionNotes: String
     dueDate: Date
-    completed: Boolean
+    isCompleted: Boolean
   }
 
   input UpdateEventInput {
@@ -311,7 +311,7 @@ export const inputs = gql`
 
   input UpdateActionItemCategoryInput {
     name: String
-    disabled: Boolean
+    isDisabled: Boolean
   }
 
   input AddressInput {

@@ -14,8 +14,8 @@ export const createTestCategory = async (): Promise<
 > => {
   const [testUser, testOrganization] = await createTestUserAndOrganization();
   const testCategory = await ActionItemCategory.create({
-    createdBy: testUser?._id,
-    orgId: testOrganization?._id,
+    creatorId: testUser?._id,
+    organizationId: testOrganization?._id,
     name: "Default",
   });
 
@@ -28,14 +28,14 @@ export const createTestCategories = async (): Promise<
   const [testUser, testOrganization] = await createTestUserAndOrganization();
 
   const testCategory1 = await ActionItemCategory.create({
-    createdBy: testUser?._id,
-    orgId: testOrganization?._id,
+    creatorId: testUser?._id,
+    organizationId: testOrganization?._id,
     name: "Default",
   });
 
   const testCategory2 = await ActionItemCategory.create({
-    createdBy: testUser?._id,
-    orgId: testOrganization?._id,
+    creatorId: testUser?._id,
+    organizationId: testOrganization?._id,
     name: "Default2",
   });
 

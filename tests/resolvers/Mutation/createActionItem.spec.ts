@@ -80,7 +80,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     try {
       const args: MutationCreateActionItemArgs = {
         data: {
-          assignedTo: randomUser?._id,
+          assigneeId: randomUser?._id,
         },
         actionItemCategoryId: testCategory?._id,
       };
@@ -95,11 +95,11 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     }
   });
 
-  it(`throws NotFoundError if no actionItemCategory exists with _id === args.orgId`, async () => {
+  it(`throws NotFoundError if no actionItemCategory exists with _id === args.organizationId`, async () => {
     try {
       const args: MutationCreateActionItemArgs = {
         data: {
-          assignedTo: randomUser?._id,
+          assigneeId: randomUser?._id,
         },
         actionItemCategoryId: Types.ObjectId().toString(),
       };
@@ -114,11 +114,11 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     }
   });
 
-  it(`throws NotFoundError if no user exists with _id === args.data.assignedTo`, async () => {
+  it(`throws NotFoundError if no user exists with _id === args.data.assigneeId`, async () => {
     try {
       const args: MutationCreateActionItemArgs = {
         data: {
-          assignedTo: Types.ObjectId().toString(),
+          assigneeId: Types.ObjectId().toString(),
         },
         actionItemCategoryId: testCategory?._id,
       };
@@ -137,7 +137,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     try {
       const args: MutationCreateActionItemArgs = {
         data: {
-          assignedTo: randomUser?._id,
+          assigneeId: randomUser?._id,
         },
         actionItemCategoryId: testCategory?._id,
       };
@@ -165,7 +165,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     try {
       const args: MutationCreateActionItemArgs = {
         data: {
-          assignedTo: randomUser?._id,
+          assigneeId: randomUser?._id,
           eventId: Types.ObjectId().toString(),
         },
         actionItemCategoryId: testCategory?._id,
@@ -185,7 +185,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
     try {
       const args: MutationCreateActionItemArgs = {
         data: {
-          assignedTo: randomUser?._id,
+          assigneeId: randomUser?._id,
         },
         actionItemCategoryId: testCategory?._id,
       };
@@ -203,7 +203,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
   it(`creates the actionItem when user is authorized as an eventAdmin`, async () => {
     const args: MutationCreateActionItemArgs = {
       data: {
-        assignedTo: randomUser?._id,
+        assigneeId: randomUser?._id,
         eventId: testEvent?._id,
       },
       actionItemCategoryId: testCategory?._id,
@@ -241,7 +241,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
   it(`creates the actionItem when user is authorized as an orgAdmin`, async () => {
     const args: MutationCreateActionItemArgs = {
       data: {
-        assignedTo: randomUser?._id,
+        assigneeId: randomUser?._id,
       },
       actionItemCategoryId: testCategory?._id,
     };
@@ -266,7 +266,7 @@ describe("resolvers -> Mutation -> createActionItem", () => {
   it(`creates the actionItem when user is authorized as superadmin`, async () => {
     const args: MutationCreateActionItemArgs = {
       data: {
-        assignedTo: randomUser?._id,
+        assigneeId: randomUser?._id,
       },
       actionItemCategoryId: testCategory?._id,
     };
