@@ -1,3 +1,5 @@
+import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
+
 const dotenv = require("dotenv");
 const fs = require("fs");
 const cryptolib = require("crypto");
@@ -120,9 +122,12 @@ async function accessAndRefreshTokens(
  * @returns The function `checkExistingRedis` returns a void Promise.
  */
 async function setImageUploadSize(size: number): Promise<void> {
+  if (size > MAXIMUM_IMAGE_SIZE_LIMIT_KB) {
+    size = MAXIMUM_IMAGE_SIZE_LIMIT_KB;
+  }
   const config = dotenv.parse(fs.readFileSync(".env"));
 
-  config.IMAGE_SIZE_LIMIT = size.toString();
+  config.IMAGE_SIZE_LIMIT_KB = size.toString();
   fs.writeFileSync(".env", "");
   for (const key in config) {
     fs.appendFileSync(".env", `${key}=${config[key]}\n`);
@@ -551,7 +556,7 @@ function validateRecaptcha(string: string): boolean {
  * @returns a boolean value.
  */
 function validateImageFileSize(size: number): boolean {
-  return size > 0 && size <= 20;
+  return size > 0;
 }
 
 /**
@@ -1025,7 +1030,8 @@ async function main(): Promise<void> {
     {
       type: "input",
       name: "imageSizeLimit",
-      message: "Enter the maximum size limit of Images uploaded (in MB) max: 20",
+      message:
+        "Enter the maximum size limit of Images uploaded (in MB) max: 20",
       default: 3,
       validate: (input: number) =>
         validateImageFileSize(input) || "Enter a valid number between 0 and 20",

@@ -5,7 +5,7 @@ import { uploadEncodedImage } from "../../../src/utilities/encodedImageStorage/u
 import { EncodedImage } from "../../../src/models/EncodedImage";
 import { connect, disconnect } from "../../helpers/db";
 import path from "path";
-import { IMAGE_SIZE_LIMIT, INVALID_FILE_TYPE } from "../../../src/constants";
+import { IMAGE_SIZE_LIMIT_KB, INVALID_FILE_TYPE } from "../../../src/constants";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testPreviousImagePath: string;
@@ -54,13 +54,13 @@ describe("src -> utilities -> encodedImageStorage -> uploadEncodedImage", () => 
   });
 
   it("should not create new image if it is bigger than the limit", async () => {
-    const size = Number(process.env.IMAGE_SIZE_LIMIT);
+    const size = Number(process.env.IMAGE_SIZE_LIMIT_KB);
     try {
       const img = "data:image/jpg;base64," + generateRandomString(size + 1000);
       console.log(img.length);
       await uploadEncodedImage(img, null);
     } catch (error: any) {
-      expect(error.message).toEqual(IMAGE_SIZE_LIMIT.MESSAGE);
+      expect(error.message).toEqual(IMAGE_SIZE_LIMIT_KB.MESSAGE);
     }
   });
 

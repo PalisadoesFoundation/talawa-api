@@ -100,7 +100,7 @@ export const INVALID_FILE_TYPE = {
   PARAM: "internalServerError",
 };
 
-export const IMAGE_SIZE_LIMIT = {
+export const IMAGE_SIZE_LIMIT_KB = {
   MESSAGE: "The Image Size Limit has been exceeded",
   CODE: "internalServerError",
   PARAM: "internalServerError",
@@ -449,6 +449,8 @@ export const CUSTOM_FIELD_TYPE_MISSING = {
 };
 
 export const MAXIMUM_FETCH_LIMIT = 100;
+
+export const MAXIMUM_IMAGE_SIZE_LIMIT_KB = 20000;
 
 export const BASE_URL = `http://localhost:${process.env.port || 4000}/`;
 

@@ -3,7 +3,7 @@ import * as fs from "fs";
 import { writeFile } from "fs/promises";
 import { encodedImageExtentionCheck } from "./encodedImageExtensionCheck";
 import { errors, requestContext } from "../../libraries";
-import { IMAGE_SIZE_LIMIT, INVALID_FILE_TYPE } from "../../constants";
+import { IMAGE_SIZE_LIMIT_KB, INVALID_FILE_TYPE } from "../../constants";
 import { EncodedImage } from "../../models/EncodedImage";
 import path from "path";
 import { deletePreviousImage } from "./deletePreviousImage";
@@ -22,15 +22,15 @@ export const uploadEncodedImage = async (
   const stringLength = data.length;
   const sizeInKb =
     (4 * Math.ceil(stringLength / 3) * 0.5624896334383812) / 1000;
-  const limit = checkImageSizeLimit(Number(process.env.IMAGE_SIZE_LIMIT))
-    ? Number(process.env.IMAGE_SIZE_LIMIT)
+  const limit = checkImageSizeLimit(Number(process.env.IMAGE_SIZE_LIMIT_KB))
+    ? Number(process.env.IMAGE_SIZE_LIMIT_KB)
     : 3000;
 
   if (sizeInKb > limit) {
     throw new errors.ImageSizeLimitExceeded(
-      IMAGE_SIZE_LIMIT.MESSAGE,
-      IMAGE_SIZE_LIMIT.CODE,
-      IMAGE_SIZE_LIMIT.PARAM
+      IMAGE_SIZE_LIMIT_KB.MESSAGE,
+      IMAGE_SIZE_LIMIT_KB.CODE,
+      IMAGE_SIZE_LIMIT_KB.PARAM
     );
   }
 
