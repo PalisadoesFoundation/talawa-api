@@ -29,11 +29,11 @@ if (LOG && LOG_PATH) {
   });
 }
 
-interface InterfaceLoggableDocument extends Document {
+export interface InterfaceLoggableDocument extends Document {
   logInfo: TransactionLogInfo;
 }
 
-interface InterfaceLoggableQuery<T> extends Query<unknown, T> {
+export interface InterfaceLoggableQuery<T> extends Query<unknown, T> {
   logInfo?: TransactionLogInfo;
 }
 
