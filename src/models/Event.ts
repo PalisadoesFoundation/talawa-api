@@ -100,7 +100,8 @@ const eventSchema = new Schema(
       type: Date,
       required: function (): () => boolean {
         // @ts-ignore
-        return !this.allDay;
+        // endDate is required if it's not an all-day event (!this.allDay) or if the recurrence is set to "ONCE"
+        return !this.allDay || this.recurrence === "ONCE";
       },
     },
     startTime: {

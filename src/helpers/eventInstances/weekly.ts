@@ -34,9 +34,13 @@ export async function generateEvents(
 
   occurrences.map((date) => {
     const formattedDate = format(date, "yyyy-MM-dd");
-
+    const startTimeObject = args.data?.startTime;
+    const startTime = new Date(
+      `${formattedDate}T${startTimeObject?.toISOString().split("T")[1]}`
+    );
     const createdEvent = {
       ...data,
+      startTime: startTime,
       startDate: new Date(formattedDate),
       creatorId: currentUser._id,
       admins: [currentUser._id],
