@@ -435,6 +435,14 @@ export type FundCampaignInput = {
   startDate: Scalars['DateTime']['input'];
 };
 
+export type FundInput = {
+  archived: Scalars['Boolean']['input'];
+  defaultFund: Scalars['Boolean']['input'];
+  name: Scalars['String']['input'];
+  organizationId: Scalars['ID']['input'];
+  taxDeductible: Scalars['Boolean']['input'];
+};
+
 export type Gender =
   | 'FEMALE'
   | 'MALE'
@@ -2059,6 +2067,7 @@ export type ResolversTypes = {
   Fund: ResolverTypeWrapper<Omit<Fund, 'campaigns' | 'creator' | 'organization'> & { campaigns?: Maybe<Array<Maybe<ResolversTypes['FundCampaign']>>>, creator?: Maybe<ResolversTypes['User']>, organization?: Maybe<ResolversTypes['Organization']> }>;
   FundCampaign: ResolverTypeWrapper<Omit<FundCampaign, 'creator' | 'parentFundId'> & { creator?: Maybe<ResolversTypes['User']>, parentFundId?: Maybe<ResolversTypes['Fund']> }>;
   FundCampaignInput: FundCampaignInput;
+  FundInput: FundInput;
   Gender: Gender;
   Group: ResolverTypeWrapper<InterfaceGroupModel>;
   GroupChat: ResolverTypeWrapper<InterfaceGroupChatModel>;
@@ -2194,6 +2203,7 @@ export type ResolversParentTypes = {
   Fund: Omit<Fund, 'campaigns' | 'creator' | 'organization'> & { campaigns?: Maybe<Array<Maybe<ResolversParentTypes['FundCampaign']>>>, creator?: Maybe<ResolversParentTypes['User']>, organization?: Maybe<ResolversParentTypes['Organization']> };
   FundCampaign: Omit<FundCampaign, 'creator' | 'parentFundId'> & { creator?: Maybe<ResolversParentTypes['User']>, parentFundId?: Maybe<ResolversParentTypes['Fund']> };
   FundCampaignInput: FundCampaignInput;
+  FundInput: FundInput;
   Group: InterfaceGroupModel;
   GroupChat: InterfaceGroupChatModel;
   GroupChatMessage: InterfaceGroupChatMessageModel;

@@ -71,6 +71,8 @@ export const mutations = gql`
 
     createEvent(data: EventInput): Event! @auth
 
+    # createFund(data: FundInput): Fund! @auth
+
     createFundCampaign(data: FundCampaignInput!): FundCampaign! @auth
 
     createGroupChat(data: createGroupChatInput!): GroupChat! @auth

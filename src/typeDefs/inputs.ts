@@ -113,6 +113,14 @@ export const inputs = gql`
     review: String
   }
 
+  input FundInput {
+    name: String!
+    organizationId: ID!
+    taxDeductible: Boolean!
+    defaultFund: Boolean!
+    archived: Boolean!
+  }
+
   input FundCampaignInput {
     name: String!
     parentFundId: ID!
