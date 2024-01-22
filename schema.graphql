@@ -362,6 +362,17 @@ input FundCampaignInput {
   startDate: DateTime!
 }
 
+type Funds {
+  _id: ID!
+  archived: Boolean!
+  campaigns: [FundCampaign]
+  creator: User
+  defaultFund: Boolean!
+  name: String!
+  organization: Organization
+  taxDeductible: Boolean!
+}
+
 enum Gender {
   FEMALE
   MALE
