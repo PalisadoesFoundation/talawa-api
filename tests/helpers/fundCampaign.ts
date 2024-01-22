@@ -12,6 +12,8 @@ export const createTestFundCampaign = async (): Promise<
   [TestUserType, TestFundCampaignType]
 > => {
   const testUser = await createTestUser();
+  const date: Date = new Date();
+  date.setDate(date.getDate() + 2);
 
   if (testUser) {
     const testFundCampaign = await FundCampaign.create({
@@ -19,7 +21,7 @@ export const createTestFundCampaign = async (): Promise<
       goalAmount: Math.floor(Math.random() * 10000),
       currency: "USD",
       name: `fund${nanoid().toLowerCase()}`,
-      endDate: new Date().toUTCString(),
+      endDate: date,
     });
     return [testUser, testFundCampaign];
   } else {

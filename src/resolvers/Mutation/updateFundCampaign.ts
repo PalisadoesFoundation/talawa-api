@@ -3,7 +3,6 @@ import { Advertisement, FundCampaign, User } from "../../models";
 import { errors, requestContext } from "../../libraries";
 import {
   FUND_CAMPAIGN_NOT_FOUND,
-  USER_NOT_FOUND_ERROR,
   START_DATE_VALIDATION_ERROR,
   END_DATE_VALIDATION_ERROR,
 } from "../../constants";
@@ -12,18 +11,6 @@ export const updateFundCampaign: MutationResolvers["updateFundCampaign"] =
   async (_parent, args, context) => {
     const data = args.data;
     const campaignId = args.id;
-
-    const currentUser = await User.findOne({
-      _id: context.userId,
-    });
-
-    if (currentUser === null) {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
-        USER_NOT_FOUND_ERROR.CODE,
-        USER_NOT_FOUND_ERROR.PARAM
-      );
-    }
 
     // check if the campaign exists or not
     const getfundCampaign = FundCampaign.findById(campaignId).lean();
@@ -56,14 +43,22 @@ export const updateFundCampaign: MutationResolvers["updateFundCampaign"] =
       );
     }
 
-    return await Advertisement.findOneAndUpdate( {
-      _id: campaignId,
-    },
-    {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ...(data as any),
-    },
-    {
-      new: true,
-    }).lean();
+    return await FundCampaign.findOneAndUpdate(
+      {
+        _id: campaignId,
+      },
+      {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        $set: {
+          name: args.data?.name,
+          currency: args.data?.currency,
+          startDate: args.data?.startDate,
+          endDate: args.data?.endDate,
+          goalAmount: args.data?.goalAmount,
+        },
+      },
+      {
+        new: true,
+      }
+    ).lean();
   };
