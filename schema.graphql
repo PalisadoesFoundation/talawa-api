@@ -921,8 +921,8 @@ input UpdateEventInput {
 }
 
 input UpdateOrganizationInput {
+  address: AddressInput
   description: String
-  location: String
   name: String
   userRegistrationRequired: Boolean
   visibleInSearch: Boolean

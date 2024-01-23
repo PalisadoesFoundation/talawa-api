@@ -280,7 +280,7 @@ export const inputs = gql`
   input UpdateOrganizationInput {
     name: String
     description: String
-    location: String
+    address: AddressInput
     userRegistrationRequired: Boolean
     visibleInSearch: Boolean
   }

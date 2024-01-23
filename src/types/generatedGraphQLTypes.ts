@@ -1607,8 +1607,8 @@ export type UpdateEventInput = {
 };
 
 export type UpdateOrganizationInput = {
+  address?: InputMaybe<AddressInput>;
   description?: InputMaybe<Scalars['String']['input']>;
-  location?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   userRegistrationRequired?: InputMaybe<Scalars['Boolean']['input']>;
   visibleInSearch?: InputMaybe<Scalars['Boolean']['input']>;

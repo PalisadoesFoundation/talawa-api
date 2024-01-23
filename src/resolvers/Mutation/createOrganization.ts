@@ -85,7 +85,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
       members: [context.userId],
     });
 
-    await cacheOrganizations([createdOrganization.toObject()!]);
+    await cacheOrganizations([createdOrganization.toObject()]);
 
     /*
     Adds createdOrganization._id to joinedOrganizations, createdOrganizations
@@ -133,7 +133,7 @@ function validateAddress(address: Address | undefined): {
   const isCityValid = !!city && city.length > 0;
 
   // It should be a valid country code.
-  const isCountryCodeValid = !!countryCode && countryCode.length === 2; // Assuming country code is a 2-letter string
+  const isCountryCodeValid = !!countryCode && countryCode.length >= 2; // Assuming country code is a 2-letter string
 
   // It should exist and have a length greater than 0
   const isDependentLocalityValid =
