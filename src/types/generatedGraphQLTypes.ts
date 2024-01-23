@@ -279,6 +279,7 @@ export type Event = {
   organization?: Maybe<Organization>;
   recurrance?: Maybe<Recurrance>;
   recurring: Scalars['Boolean']['output'];
+  rruleString?: Maybe<Scalars['String']['output']>;
   startDate: Scalars['Date']['output'];
   startTime?: Maybe<Scalars['Time']['output']>;
   status: Status;
@@ -2369,6 +2370,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   recurrance?: Resolver<Maybe<ResolversTypes['Recurrance']>, ParentType, ContextType>;
   recurring?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  rruleString?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   startTime?: Resolver<Maybe<ResolversTypes['Time']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;

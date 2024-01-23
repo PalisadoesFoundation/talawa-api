@@ -123,6 +123,7 @@ export const types = gql`
     allDay: Boolean!
     recurring: Boolean!
     recurrance: Recurrance
+    rruleString: String
     isPublic: Boolean!
     isRegisterable: Boolean!
     location: String

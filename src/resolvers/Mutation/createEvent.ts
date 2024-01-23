@@ -1,7 +1,6 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
-import type { InterfaceEvent, InterfaceUser } from "../../models";
-import { User, Organization } from "../../models";
+import { User, Organization, Event } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
@@ -12,12 +11,15 @@ import { isValidString } from "../../libraries/validators/validateString";
 import { compareDates } from "../../libraries/validators/compareDates";
 import { EventAttendee } from "../../models/EventAttendee";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
-import type mongoose from "mongoose";
-import { session } from "../../db";
-import { Weekly, Once } from "../../helpers/eventInstances";
+import { RRule } from "rrule";
+import { addYears, format } from "date-fns";
 
 /**
- * This function enables to create an event.
+ * This function enables to create dynamically create events.
+ *
+ * This mutation allows users to create a new event with recurrence support.
+ * Recurrence is managed using the `rrule` library.
+ *
  * @param _parent - parent of current request
  * @param args - payload provided with the request
  * @param context - context of entire application
@@ -25,6 +27,14 @@ import { Weekly, Once } from "../../helpers/eventInstances";
  * 1. If the user exists
  * 2. If the organization exists
  * 3. If the user is a part of the organization.
+ *
+ * Workflow
+ *
+ * 1. Validate input parameters.
+ * 2. Generate recurrence rule (`rrule`) based on recurrence type and options.
+ * 3. Create a new event object with the generated recurrence rule.
+ * 4. Save the event to the database, storing only a single instance for recurring events.
+ * 5. Return the created event details, including the recurrence rule.
  * @returns Created event
  */
 export const createEvent: MutationResolvers["createEvent"] = async (
@@ -123,88 +133,120 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     );
   }
 
-  if (session) {
-    session.startTransaction();
+  //Get Date at 100 years from now
+  const currentDate = new Date();
+  const specificEndDate = addYears(currentDate, 100);
+  specificEndDate.setUTCHours(0, 0, 0, 0);
+
+  const { data } = args;
+  const startDate = new Date(data?.startDate);
+  const endDate = !isNaN(data?.endDate) ? data?.endDate : specificEndDate;
+
+  // Check if the end date is greater than 100 years from the current date
+  if (endDate > specificEndDate) {
+    throw new errors.InputValidationError(
+      `End date cannot be greater than the ${format(
+        specificEndDate,
+        "MMM dd yyyy"
+      )}`
+    );
   }
 
-  try {
-    let createdEvent!: InterfaceEvent[];
+  // Create recurring rule based on recurrence type
+  let rule: RRule = new RRule();
+  switch (data?.recurrance) {
+    case "ONCE": {
+      rule = new RRule({
+        freq: RRule.DAILY,
+        dtstart: startDate,
+        until: endDate,
+        count: 1,
+      });
 
-    if (args.data?.recurring) {
-      switch (args.data?.recurrance) {
-        case "ONCE":
-          createdEvent = await Once.generateEvent(
-            args,
-            currentUser,
-            organization,
-            session
-          );
-
-          for (const event of createdEvent) {
-            await associateEventWithUser(currentUser, event, session);
-            await cacheEvents([event]);
-          }
-
-          break;
-
-        case "WEEKLY":
-          createdEvent = await Weekly.generateEvents(
-            args,
-            currentUser,
-            organization,
-            session
-          );
-
-          for (const event of createdEvent) {
-            await associateEventWithUser(currentUser, event, session);
-            await cacheEvents([event]);
-          }
-
-          break;
-      }
-    } else {
-      createdEvent = await Once.generateEvent(
-        args,
-        currentUser,
-        organization,
-        session
-      );
-
-      for (const event of createdEvent) {
-        await associateEventWithUser(currentUser, event, session);
-        await cacheEvents([event]);
-      }
+      break;
     }
 
-    if (session) {
-      await session.commitTransaction();
+    case "DAILY": {
+      rule = new RRule({
+        freq: RRule.DAILY,
+        dtstart: startDate,
+        until: endDate,
+      });
+
+      break;
     }
 
-    // Returns the createdEvent.
-    return createdEvent[0];
-  } catch (error) {
-    if (session) {
-      await session.abortTransaction();
+    case "WEEKLY": {
+      rule = new RRule({
+        freq: RRule.WEEKLY,
+        dtstart: startDate,
+        until: endDate,
+      });
+
+      break;
     }
-    throw error;
+
+    case "MONTHLY": {
+      const weekdayNumeric = startDate.getDay();
+      const dayOfMonth = startDate.getUTCDate();
+      const occurrence = Math.floor((dayOfMonth - 1) / 7) + 1;
+
+      const weekdays = [
+        RRule.SU,
+        RRule.MO,
+        RRule.TU,
+        RRule.WE,
+        RRule.TH,
+        RRule.FR,
+        RRule.SA,
+      ];
+
+      rule = new RRule({
+        freq: RRule.MONTHLY,
+        dtstart: startDate,
+        until: endDate,
+        byweekday: [
+          weekdays[weekdayNumeric].nth(occurrence < 5 ? occurrence : -1),
+        ],
+      });
+
+      break;
+    }
+
+    case "YEARLY": {
+      rule = new RRule({
+        freq: RRule.YEARLY,
+        dtstart: startDate,
+        until: endDate,
+      });
+
+      break;
+    }
   }
-};
 
-async function associateEventWithUser(
-  currentUser: InterfaceUser,
-  createdEvent: InterfaceEvent,
-  session: mongoose.ClientSession
-): Promise<void> {
-  await EventAttendee.create(
-    [
-      {
-        userId: currentUser._id.toString(),
-        eventId: createdEvent._id,
-      },
-    ],
-    { session }
-  );
+  const recurringRule = rule.toString();
 
+  // Create and cache the event with the generated recurrence rule
+  const createdEvent = await Event.create({
+    ...args.data,
+    endDate: endDate,
+    rruleString: recurringRule,
+    creatorId: currentUser._id,
+    admins: [currentUser._id],
+    organization: organization._id,
+  });
+
+  if (createdEvent !== null) {
+    await cacheEvents([createdEvent]);
+  }
+
+  // Create an event attendee entry
+  await EventAttendee.create({
+    userId: currentUser._id.toString(),
+    eventId: createdEvent._id,
+  });
+
+  // Update user's document with created event
   await User.updateOne(
     {
       _id: currentUser._id,
@@ -215,7 +257,9 @@ async function associateEventWithUser(
         createdEvents: createdEvent._id,
         registeredEvents: createdEvent._id,
       },
-    },
-    { session }
+    }
   );
-}
+
+  // Return the created event
+  return createdEvent.toObject();
+};
