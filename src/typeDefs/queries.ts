@@ -7,6 +7,8 @@ export const queries = gql`
   type Query {
     adminPlugin(orgId: ID!): [Plugin]
 
+    checkVenue(data: CheckVenueInput): [Venue]!
+
     checkAuth: User! @auth
 
     customFieldsByOrganization(id: ID!): [OrganizationCustomField]

@@ -18,6 +18,15 @@ export const inputs = gql`
     allotedSeat: String
   }
 
+  input CheckVenueInput {
+    allDay: Boolean!
+    endDate: Date!
+    endTime: Time!
+    organizationId: ID!
+    startDate: Date!
+    startTime: Time!
+  }
+
   input createChatInput {
     userIds: [ID!]!
     organizationId: ID!

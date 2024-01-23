@@ -137,6 +137,15 @@ export type CheckInStatus = {
   user: User;
 };
 
+export type CheckVenueInput = {
+  allDay: Scalars['Boolean']['input'];
+  endDate: Scalars['Date']['input'];
+  endTime: Scalars['Time']['input'];
+  organizationId: Scalars['ID']['input'];
+  startDate: Scalars['Date']['input'];
+  startTime: Scalars['Time']['input'];
+};
+
 export type Comment = {
   __typename?: 'Comment';
   _id: Scalars['ID']['output'];
@@ -1346,6 +1355,7 @@ export type Query = {
   __typename?: 'Query';
   adminPlugin?: Maybe<Array<Maybe<Plugin>>>;
   checkAuth: User;
+  checkVenue: Array<Maybe<Venue>>;
   customDataByOrganization: Array<UserCustomData>;
   customFieldsByOrganization?: Maybe<Array<Maybe<OrganizationCustomField>>>;
   directChatsByUserID?: Maybe<Array<Maybe<DirectChat>>>;
@@ -1383,6 +1393,11 @@ export type Query = {
 
 export type QueryAdminPluginArgs = {
   orgId: Scalars['ID']['input'];
+};
+
+
+export type QueryCheckVenueArgs = {
+  data?: InputMaybe<CheckVenueInput>;
 };
 
 
@@ -1995,6 +2010,7 @@ export type ResolversTypes = {
   CheckIn: ResolverTypeWrapper<InterfaceCheckInModel>;
   CheckInInput: CheckInInput;
   CheckInStatus: ResolverTypeWrapper<Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversTypes['CheckIn']>, user: ResolversTypes['User'] }>;
+  CheckVenueInput: CheckVenueInput;
   Comment: ResolverTypeWrapper<InterfaceCommentModel>;
   CommentInput: CommentInput;
   ConnectionError: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['ConnectionError']>;
@@ -2131,6 +2147,7 @@ export type ResolversParentTypes = {
   CheckIn: InterfaceCheckInModel;
   CheckInInput: CheckInInput;
   CheckInStatus: Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversParentTypes['CheckIn']>, user: ResolversParentTypes['User'] };
+  CheckVenueInput: CheckVenueInput;
   Comment: InterfaceCommentModel;
   CommentInput: CommentInput;
   ConnectionError: ResolversUnionTypes<ResolversParentTypes>['ConnectionError'];
@@ -2778,6 +2795,7 @@ export type PostConnectionResolvers<ContextType = any, ParentType extends Resolv
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   adminPlugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryAdminPluginArgs, 'orgId'>>;
   checkAuth?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  checkVenue?: Resolver<Array<Maybe<ResolversTypes['Venue']>>, ParentType, ContextType, Partial<QueryCheckVenueArgs>>;
   customDataByOrganization?: Resolver<Array<ResolversTypes['UserCustomData']>, ParentType, ContextType, RequireFields<QueryCustomDataByOrganizationArgs, 'organizationId'>>;
   customFieldsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['OrganizationCustomField']>>>, ParentType, ContextType, RequireFields<QueryCustomFieldsByOrganizationArgs, 'id'>>;
   directChatsByUserID?: Resolver<Maybe<Array<Maybe<ResolversTypes['DirectChat']>>>, ParentType, ContextType, RequireFields<QueryDirectChatsByUserIdArgs, 'id'>>;

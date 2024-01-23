@@ -59,6 +59,15 @@ type AuthData {
   user: User!
 }
 
+input CheckVenueInput {
+  allDay: Boolean!
+  endDate: Date!
+  endTime: Time!
+  organizationId: ID!
+  startDate: Date!
+  startTime: Time!
+}
+
 type CheckIn {
   _id: ID!
   allotedRoom: String
@@ -818,6 +827,7 @@ type Query {
   checkAuth: User!
   customDataByOrganization(organizationId: ID!): [UserCustomData!]!
   customFieldsByOrganization(id: ID!): [OrganizationCustomField]
+  checkVenue(data: CheckVenueInput): [Venue]!
   directChatsByUserID(id: ID!): [DirectChat]
   directChatsMessagesByChatID(id: ID!): [DirectChatMessage]
   event(id: ID!): Event

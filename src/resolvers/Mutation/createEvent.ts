@@ -1,4 +1,3 @@
-import { organization } from "./../DirectChat/organization";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent, InterfaceUser } from "../../models";
@@ -18,6 +17,7 @@ import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import type mongoose from "mongoose";
 import { session } from "../../db";
 import { Weekly, Once } from "../../helpers/eventInstances";
+import { EndTime, StartTime } from "../../helpers/timeCorrection";
 
 /**
  * This function enables to create an event.
@@ -125,35 +125,10 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   }
 
   // Update the date part of the startTime and endTime with their start date and end date respectively instead of current date
-  const startDateObject = args.data?.startDate;
-  const startTimeObject = args.data?.startTime;
-
-  if (startDateObject && startTimeObject) {
-    const startDate = new Date(startDateObject);
-    const startTime = new Date(startTimeObject);
-
-    startTime.setFullYear(
-      startDate.getFullYear(),
-      startDate.getMonth(),
-      startDate.getDate()
-    );
-    if (args.data) args.data.startTime = startTime;
-  }
-
-  const endDateObject = args.data?.endDate;
-  const endTimeObject = args.data?.endTime;
-
-  if (endDateObject && endTimeObject) {
-    const endDate = new Date(endDateObject);
-    const endTime = new Date(endTimeObject);
-
-    endTime.setFullYear(
-      endDate.getFullYear(),
-      endDate.getMonth(),
-      endDate.getDate()
-    );
-    if (args.data) args.data.endTime = endTime;
-  }
+  if (args.data && args.data.startTime && args.data.startDate)
+    args.data.startTime = StartTime.correct(args);
+  if (args.data && args.data.endTime && args.data.endDate)
+    args.data.endTime = EndTime.correct(args);
 
   // Checks if the venue is provided and whether that venue exists in the organization
   if (
@@ -282,7 +257,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
             organization,
             session
           );
-          console.log(createdEvent);
+          
           for (const event of createdEvent) {
             await associateEventWithUser(currentUser, event, session);
             await cacheEvents([event]);
