@@ -51,7 +51,7 @@ export const posts: UserResolvers["posts"] = async (parent, args) => {
     pageInfo,
   };
 };
-async function hasNextPage(
+export async function hasNextPage(
   userId: string,
   after: string,
   before: string,
@@ -73,7 +73,7 @@ async function hasNextPage(
   }
 }
 
-async function hasPreviousPage(
+export async function hasPreviousPage(
   userId: string,
   after: string,
   before: string,
