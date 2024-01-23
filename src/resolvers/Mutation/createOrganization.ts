@@ -133,7 +133,7 @@ function validateAddress(address: Address | undefined): {
   const isCityValid = !!city && city.length > 0;
 
   // It should be a valid country code.
-  const isCountryCodeValid = !!countryCode && countryCode.length >= 2; // Assuming country code is a 2-letter string
+  const isCountryCodeValid = !!countryCode && countryCode.length >= 2;
 
   // It should exist and have a length greater than 0
   const isDependentLocalityValid =
@@ -142,14 +142,17 @@ function validateAddress(address: Address | undefined): {
   // Line 1 should exist and have a length greater than 0
   const isLine1Valid = !!line1 && line1.length > 0;
 
-  // Line 2 should exist and have a length greater than 0
-  const isLine2Valid = !!line2 && line2.length > 0;
+  //Optional
+  const isLine2Valid =
+    line2 === undefined || (typeof line2 === "string" && line2.length > 0);
 
   // It should exist and have a valid format.
   const isPostalCodeValid = !!postalCode && /^\d+$/.test(postalCode);
 
-  // It should exist and have a valid format based on your criteria
-  const isSortingCodeValid = !!sortingCode && sortingCode.length > 0; // Assuming a specific format or requirement
+  //Optional
+  const isSortingCodeValid =
+    sortingCode === undefined ||
+    (typeof sortingCode === "string" && sortingCode.length > 0);
 
   // It should exist and have a length greater than 0
   const isStateValid = !!state && state.length > 0;
@@ -164,5 +167,5 @@ function validateAddress(address: Address | undefined): {
     isSortingCodeValid &&
     isStateValid;
 
-  return { isAddressValid };
+  return { isAddressValid: isAddressValid };
 }
