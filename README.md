@@ -30,7 +30,6 @@ Core features include:
   - [Installation](#installation)
   - [Image Upload](#image-upload)
 
-
 <!-- tocstop -->
 
 ## Talawa Components
