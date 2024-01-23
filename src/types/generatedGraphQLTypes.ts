@@ -1588,7 +1588,7 @@ export type UnauthorizedError = Error & {
 export type UpdateAdvertisementInput = {
   _id: Scalars['ID']['input'];
   endDate?: InputMaybe<Scalars['Date']['input']>;
-  file?: InputMaybe<Scalars['URL']['input']>;
+  file?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   startDate?: InputMaybe<Scalars['Date']['input']>;
   type?: InputMaybe<AdvertisementType>;

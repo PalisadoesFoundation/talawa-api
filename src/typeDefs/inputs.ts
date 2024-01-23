@@ -271,7 +271,7 @@ export const inputs = gql`
   input UpdateAdvertisementInput {
     _id: ID!
     name: String
-    file: URL
+    file: String
     type: AdvertisementType
     startDate: Date
     endDate: Date

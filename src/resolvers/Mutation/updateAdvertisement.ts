@@ -10,6 +10,8 @@ import {
   FIELD_NON_EMPTY_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
 } from "../../constants";
+import { uploadEncodedImage } from "../../utilities/encodedImageStorage/uploadEncodedImage";
+import { uploadEncodedVideo } from "../../utilities/encodedVideoStorage/uploadEncodedVideo";
 
 export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
   async (_parent, args, _context) => {
@@ -82,12 +84,29 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
       );
     }
 
+    let uploadMediaFile = null;
+
+    if (args.input.file) {
+      const dataUrlPrefix = "data:";
+      if (args.input.file.startsWith(dataUrlPrefix + "image/")) {
+        uploadMediaFile = await uploadEncodedImage(args.input.file, null);
+        console.log(uploadMediaFile, "Media File");
+      } else if (args.input.file.startsWith(dataUrlPrefix + "video/")) {
+        uploadMediaFile = await uploadEncodedVideo(args.input.file, null);
+      } else {
+        throw new Error("Unsupported file type.");
+      }
+    }
+
     const updatedAdvertisement = await Advertisement.findOneAndUpdate(
       {
         _id: args.input._id,
       },
       {
-        ...(args.input as any),
+        $set: {
+          ...args.input,
+          mediaUrl: uploadMediaFile,
+        },
       },
       {
         new: true,

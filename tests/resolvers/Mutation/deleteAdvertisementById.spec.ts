@@ -22,17 +22,13 @@ beforeAll(async () => {
   const temp = await createTestUserAndOrganization();
   const testOrganization = temp[1];
   testAdvertisement = await Advertisement.create({
-    orgId: testOrganization?._id,
+    organizationId: testOrganization?._id,
     endDate: new Date(),
-    mediaUrl: "data:image/png;base64,bWVkaWEgY29udGVudA==",
     startDate: new Date(),
     type: "POPUP",
     name: "Cookies at just $5 for a packet",
-<<<<<<< HEAD
     file: "data:image/png;base64,bWVkaWEgY29udGVudA==",
-=======
     creatorId: temp[0]?._id,
->>>>>>> 5a25fd5d27baf4e3e6eb2e5978b291c2f02bdf4a
   });
 });
 
