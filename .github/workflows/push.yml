@@ -164,9 +164,10 @@ jobs:
         user_email: '${{env.email}}'
         user_name: '${{github.actor}}'
         commit_message: 'Talawa API docs updated'
-
+        
+# You can find the deployment instructions in the scripts/cloud-api-demo/README.md file
   Deploy-Workflow:
-    name: Deploying Application
+    name: Deploying Application to Cloud VPS
     runs-on: ubuntu-latest
     steps:
     - name: Execute remote ssh commands 
