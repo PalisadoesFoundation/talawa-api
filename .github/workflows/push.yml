@@ -164,4 +164,19 @@ jobs:
         user_email: '${{env.email}}'
         user_name: '${{github.actor}}'
         commit_message: 'Talawa API docs updated'
+
+  Deploy-Workflow:
+    name: Deploying Application
+    runs-on: ubuntu-latest
+    steps:
+    - name: Execute remote ssh commands 
+      uses: appleboy/ssh-action
+      with:
+        host: ${{ secrets.API_DEMO_HOST }}
+        username: ${{ secrets.API_DEMO_USERNAME }}
+        key: ${{ secrets.API_DEMO_SSH_KEY }}
+        port: ${{ secrets.API_DEMO_PORT }}
+        command_timeout: 30m
+        script: |
+          /usr/local/bin/deploy.sh
       
