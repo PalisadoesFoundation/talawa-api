@@ -170,7 +170,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Execute remote ssh commands 
-      uses: appleboy/ssh-action
+      uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.API_DEMO_HOST }}
         username: ${{ secrets.API_DEMO_USERNAME }}
