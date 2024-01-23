@@ -1,13 +1,12 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import type { InterfaceEvent, InterfaceUser } from "../../models";
-import { User, Organization, Event } from "../../models";
+import { User, Organization } from "../../models";
 import {
   USER_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
   LENGTH_VALIDATION_ERROR,
-  VENUE_ALREADY_SCHEDULED,
   VENUE_NOT_FOUND_ERROR,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
@@ -133,93 +132,8 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   // Checks if the venue is provided and whether that venue exists in the organization
   if (
     args.data?.venue &&
-    organization.venues?.some((venue) => venue._id.equals(args.data?.venue))
+    !organization.venues?.some((venue) => venue._id.equals(args.data?.venue))
   ) {
-    const conflictingEvents = await Event.find({
-      organization: args.data?.organizationId,
-      venue: args.data?.venue ?? "",
-      $or: [
-        {
-          $and: [
-            { startDate: { $lte: args.data?.startDate } },
-            { endDate: { $gte: args.data?.startDate } },
-          ],
-        },
-        {
-          $and: [
-            { startDate: { $lte: args.data?.endDate } },
-            { endDate: { $gte: args.data?.endDate } },
-          ],
-        },
-        {
-          $and: [
-            { startDate: { $gte: args.data?.startDate } },
-            { endDate: { $lte: args.data?.endDate } },
-          ],
-        },
-        {
-          $and: [
-            { startDate: { $lte: args.data?.startDate } },
-            { endDate: { $gte: args.data?.endDate } },
-          ],
-        },
-      ],
-      $and: [
-        // If the requested event is allDay then only date checks is sufficient
-        args.data?.allDay === true
-          ? {}
-          : {
-              $or: [
-                {
-                  allDay: true,
-                },
-                {
-                  $and: [
-                    { startTime: { $lte: args.data?.startTime } },
-                    { endTime: { $gte: args.data?.startTime } },
-                  ],
-                },
-                {
-                  $and: [
-                    { startTime: { $lte: args.data?.endTime } },
-                    { endTime: { $gte: args.data?.endTime } },
-                  ],
-                },
-                {
-                  $and: [
-                    { startTime: { $gte: args.data?.startTime } },
-                    { endTime: { $lte: args.data?.endTime } },
-                  ],
-                },
-                {
-                  $and: [
-                    { startTime: { $lte: args.data?.startTime } },
-                    { endTime: { $gte: args.data?.endTime } },
-                  ],
-                },
-              ],
-            },
-      ],
-    });
-
-    if (conflictingEvents.length > 0) {
-      const conflictDetails = conflictingEvents.map((event) => ({
-        _id: event._id,
-        title: event.title,
-        description: event.description,
-        allDay: event.allDay,
-        startDate: event.startDate,
-        endDate: event.endDate,
-        startTime: event.startTime,
-        endTime: event.endTime,
-      }));
-      throw new errors.ConflictError(
-        requestContext.translate(VENUE_ALREADY_SCHEDULED.MESSAGE),
-        VENUE_ALREADY_SCHEDULED.CODE,
-        VENUE_ALREADY_SCHEDULED.PARAM
-      );
-    }
-  } else if (args.data?.venue) {
     throw new errors.NotFoundError(
       requestContext.translate(VENUE_NOT_FOUND_ERROR.MESSAGE),
       VENUE_NOT_FOUND_ERROR.CODE,
@@ -257,7 +171,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
             organization,
             session
           );
-          
+
           for (const event of createdEvent) {
             await associateEventWithUser(currentUser, event, session);
             await cacheEvents([event]);
