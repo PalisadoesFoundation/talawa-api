@@ -1251,14 +1251,24 @@ export type Post = {
   videoUrl?: Maybe<Scalars['URL']['output']>;
 };
 
-/** A connection to a list of items. */
 export type PostConnection = {
   __typename?: 'PostConnection';
-  aggregate: AggregatePost;
-  /** A list of edges. */
-  edges: Array<Maybe<Post>>;
-  /** Information to aid in pagination. */
-  pageInfo: PageInfo;
+  edges: Array<PostEdge>;
+  pageInfo: PostConnectionInfo;
+};
+
+export type PostConnectionInfo = {
+  __typename?: 'PostConnectionInfo';
+  endCursor?: Maybe<Scalars['String']['output']>;
+  hasNextPage: Scalars['Boolean']['output'];
+  hasPreviousPage: Scalars['Boolean']['output'];
+  startCursor?: Maybe<Scalars['String']['output']>;
+};
+
+export type PostEdge = {
+  __typename?: 'PostEdge';
+  cursor: Scalars['String']['output'];
+  node: Post;
 };
 
 export type PostInput = {
@@ -1668,12 +1678,20 @@ export type User = {
   organizationsBlockedBy?: Maybe<Array<Maybe<Organization>>>;
   phone?: Maybe<UserPhone>;
   pluginCreationAllowed: Scalars['Boolean']['output'];
-  post?: Maybe<Array<Maybe<Post>>>;
+  posts?: Maybe<PostConnection>;
   registeredEvents?: Maybe<Array<Maybe<Event>>>;
   tagsAssignedWith?: Maybe<UserTagsConnection>;
   tokenVersion: Scalars['Int']['output'];
   updatedAt: Scalars['DateTime']['output'];
   userType: UserType;
+};
+
+
+export type UserPostsArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  first?: InputMaybe<Scalars['PositiveInt']['input']>;
+  last?: InputMaybe<Scalars['PositiveInt']['input']>;
 };
 
 
@@ -2017,7 +2035,9 @@ export type ResolversTypes = {
   PluginInput: PluginInput;
   PositiveInt: ResolverTypeWrapper<Scalars['PositiveInt']['output']>;
   Post: ResolverTypeWrapper<InterfacePostModel>;
-  PostConnection: ResolverTypeWrapper<Omit<PostConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['Post']>> }>;
+  PostConnection: ResolverTypeWrapper<Omit<PostConnection, 'edges'> & { edges: Array<ResolversTypes['PostEdge']> }>;
+  PostConnectionInfo: ResolverTypeWrapper<PostConnectionInfo>;
+  PostEdge: ResolverTypeWrapper<Omit<PostEdge, 'node'> & { node: ResolversTypes['Post'] }>;
   PostInput: PostInput;
   PostOrderByInput: PostOrderByInput;
   PostUpdateInput: PostUpdateInput;
@@ -2143,7 +2163,9 @@ export type ResolversParentTypes = {
   PluginInput: PluginInput;
   PositiveInt: Scalars['PositiveInt']['output'];
   Post: InterfacePostModel;
-  PostConnection: Omit<PostConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['Post']>> };
+  PostConnection: Omit<PostConnection, 'edges'> & { edges: Array<ResolversParentTypes['PostEdge']> };
+  PostConnectionInfo: PostConnectionInfo;
+  PostEdge: Omit<PostEdge, 'node'> & { node: ResolversParentTypes['Post'] };
   PostInput: PostInput;
   PostUpdateInput: PostUpdateInput;
   PostWhereInput: PostWhereInput;
@@ -2712,9 +2734,22 @@ export type PostResolvers<ContextType = any, ParentType extends ResolversParentT
 };
 
 export type PostConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PostConnection'] = ResolversParentTypes['PostConnection']> = {
-  aggregate?: Resolver<ResolversTypes['AggregatePost'], ParentType, ContextType>;
-  edges?: Resolver<Array<Maybe<ResolversTypes['Post']>>, ParentType, ContextType>;
-  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['PostEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PostConnectionInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type PostConnectionInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['PostConnectionInfo'] = ResolversParentTypes['PostConnectionInfo']> = {
+  endCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  hasNextPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  hasPreviousPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  startCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type PostEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PostEdge'] = ResolversParentTypes['PostEdge']> = {
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['Post'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2820,7 +2855,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   organizationsBlockedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['UserPhone']>, ParentType, ContextType>;
   pluginCreationAllowed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  post?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType>;
+  posts?: Resolver<Maybe<ResolversTypes['PostConnection']>, ParentType, ContextType, Partial<UserPostsArgs>>;
   registeredEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   tagsAssignedWith?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<UserTagsAssignedWithArgs>>;
   tokenVersion?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -2950,6 +2985,8 @@ export type Resolvers<ContextType = any> = {
   PositiveInt?: GraphQLScalarType;
   Post?: PostResolvers<ContextType>;
   PostConnection?: PostConnectionResolvers<ContextType>;
+  PostConnectionInfo?: PostConnectionInfoResolvers<ContextType>;
+  PostEdge?: PostEdgeResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   Time?: GraphQLScalarType;

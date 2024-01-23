@@ -321,23 +321,6 @@ export const types = gql`
     pinned: Boolean
   }
 
-  """
-  A connection to a list of items.
-  """
-  type PostConnection {
-    """
-    Information to aid in pagination.
-    """
-    pageInfo: PageInfo!
-
-    """
-    A list of edges.
-    """
-    edges: [Post]!
-
-    aggregate: AggregatePost!
-  }
-
   type Translation {
     lang_code: String
     en_value: String
@@ -375,7 +358,12 @@ export const types = gql`
     educationGrade: EducationGrade
     email: EmailAddress!
     employmentStatus: EmploymentStatus
-    post: [Post]
+    posts(
+      after: String
+      before: String
+      first: PositiveInt
+      last: PositiveInt
+    ): PostConnection
     eventAdmin: [Event]
     firstName: String!
     gender: Gender
@@ -398,6 +386,20 @@ export const types = gql`
     tokenVersion: Int!
     updatedAt: DateTime!
     userType: UserType!
+  }
+  type PostConnection {
+    edges: [PostEdge!]!
+    pageInfo: PostConnectionInfo!
+  }
+  type PostEdge {
+    node: Post!
+    cursor: String!
+  }
+  type PostConnectionInfo {
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
+    startCursor: String
+    endCursor: String
   }
 
   type UserCustomData {

@@ -732,15 +732,21 @@ type Post {
   videoUrl: URL
 }
 
-"""A connection to a list of items."""
 type PostConnection {
-  aggregate: AggregatePost!
+  edges: [PostEdge!]!
+  pageInfo: PostConnectionInfo!
+}
 
-  """A list of edges."""
-  edges: [Post]!
+type PostConnectionInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+}
 
-  """Information to aid in pagination."""
-  pageInfo: PageInfo!
+type PostEdge {
+  cursor: String!
+  node: Post!
 }
 
 input PostInput {
@@ -983,7 +989,7 @@ type User {
   organizationsBlockedBy: [Organization]
   phone: UserPhone
   pluginCreationAllowed: Boolean!
-  post: [Post]
+  posts(after: String, before: String, first: PositiveInt, last: PositiveInt): PostConnection
   registeredEvents: [Event]
   tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection
   tokenVersion: Int!

@@ -2,7 +2,8 @@
 import type mongoose from "mongoose";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { InterfacePost, InterfaceUser } from "../../../src/models";
-import { post as postResolver } from "../../../src/resolvers/User/post";
+import { posts as postResolver } from "../../../src/resolvers/User/post";
+import type { PostConnection } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 import { createTestPost } from "../../helpers/posts";
 import type { TestUserType } from "../../helpers/userAndOrg";
@@ -28,10 +29,12 @@ describe("resolvers -> User -> post", () => {
     const result = await postResolver?.(parent, {}, {});
 
     if (result) {
-      expect(result).toHaveLength(1);
-      expect((result[0] as InterfacePost)?.creatorId).toStrictEqual(
-        parent?._id
-      );
+      const postConnection = result as unknown as PostConnection;
+      console.log(postConnection.edges[0].node);
+      expect(postConnection.edges).toHaveLength(1);
+      expect(
+        (postConnection.edges[0]?.node as unknown as InterfacePost).creatorId
+      ).toStrictEqual(parent?._id);
     }
   });
 });
