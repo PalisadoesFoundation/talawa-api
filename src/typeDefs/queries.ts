@@ -39,10 +39,6 @@ export const queries = gql`
       skip: Int
     ): [Donation!]!
 
-    getFunds: [Fund]
-
-    getFundById(id: ID!): Fund!
-
     getFundCampaigns: [FundCampaign]
 
     getFundCampaignById(id: ID!): FundCampaign!
