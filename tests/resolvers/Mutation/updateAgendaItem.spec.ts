@@ -155,31 +155,6 @@ describe("resolvers -> Mutation -> updateAgendaItem", () => {
   });
 
   it("updates the agenda item successfully", async () => {
-    const updatedAgendaItem = await AgendaItemModel.findOneAndUpdate(
-      {
-        _id: testAgendaItem?._id,
-      },
-      {
-        $push: {
-          createdBy: testAdminUser?._id,
-        },
-      },
-      {
-        new: true,
-      }
-    ).lean();
-
-    await User.updateOne(
-      {
-        _id: testAdminUser?._id,
-      },
-      {
-        $push: {
-          updatedAgendaItem: [testAgendaItem],
-        },
-      }
-    );
-
     const args: MutationUpdateAgendaItemArgs = {
       id: testAgendaItem._id.toString(),
       input: {

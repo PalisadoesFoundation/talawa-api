@@ -1826,6 +1826,7 @@ export type UpdateAgendaSectionInput = {
   description?: InputMaybe<Scalars['String']>;
   relatedEvent?: InputMaybe<Scalars['ID']>;
   sequence?: InputMaybe<Scalars['Int']>;
+  updatedBy: Scalars['ID'];
 };
 
 export type UpdateEventInput = {

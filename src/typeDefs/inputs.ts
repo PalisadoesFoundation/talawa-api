@@ -467,5 +467,6 @@ export const inputs = gql`
     relatedEvent: ID
     description: String
     sequence: Int
+    updatedBy: ID!
   }
 `;

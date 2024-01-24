@@ -1037,6 +1037,7 @@ input UpdateAgendaSectionInput {
   description: String
   relatedEvent: ID
   sequence: Int
+  updatedBy: ID!
 }
 
 input UpdateEventInput {
