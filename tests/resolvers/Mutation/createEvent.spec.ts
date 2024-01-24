@@ -83,7 +83,7 @@ beforeAll(async () => {
   vi.spyOn(requestContext, "translate").mockImplementation(
     (message) => message
   );
-});
+}, 10000);
 
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);

@@ -126,11 +126,11 @@ export const createEvent: MutationResolvers["createEvent"] = async (
   // Update the date part of the startTime and endTime with their start date and end date respectively instead of current date
   if (args.data && args.data.startTime && args.data.startDate)
     args.data.startTime = Time.correct(
-      args.data?.startDate,
-      args.data?.startTime
+      args.data.startDate,
+      args.data.startTime
     );
   if (args.data && args.data.endTime && args.data.endDate)
-    args.data.endTime = Time.correct(args.data?.endDate, args.data?.endTime);
+    args.data.endTime = Time.correct(args.data.endDate, args.data.endTime);
 
   // Checks if the venue is provided and whether that venue exists in the organization
   if (

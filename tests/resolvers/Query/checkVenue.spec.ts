@@ -1,10 +1,10 @@
+import { QueryCheckVenueArgs } from "./../../../src/types/generatedGraphQLTypes";
 import { TestEventType } from "./../../helpers/eventsWithRegistrants";
 import { TestVenueType, createTestVenue } from "./../../helpers/venue";
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { User, Organization, Event } from "../../../src/models";
-import type { MutationCreateEventArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -24,9 +24,9 @@ import {
 import { fail } from "assert";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
-let testVenueA: TestVenueType;
-let testVenueB: TestVenueType;
-let testVenueC: TestVenueType;
+let testVenue1: TestVenueType;
+let testVenue2: TestVenueType;
+let testVenue3: TestVenueType;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let scheduledEvent: TestEventType;
 
@@ -34,9 +34,9 @@ beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
   testUser = await createTestUser();
-  testVenueA = await createTestVenue();
-  testVenueB = await createTestVenue();
-  testVenueC = await createTestVenue();
+  testVenue1 = await createTestVenue();
+  testVenue2 = await createTestVenue();
+  testVenue3 = await createTestVenue();
   testOrganization = await Organization.create({
     name: "name",
     description: "description",
@@ -47,13 +47,14 @@ beforeAll(async () => {
     visibleInSearch: true,
   });
 
+  testOrganization.populate("venues");
   await Organization.updateOne(
     {
       _id: testOrganization?._id,
     },
     {
       $push: {
-        venues: [testVenueA?._id, testVenueB?._id, testVenueB?._id],
+        venues: [testVenue1?._id, testVenue2?._id, testVenue3?._id],
       },
     }
   );
@@ -61,8 +62,8 @@ beforeAll(async () => {
     organization: testOrganization?.id,
     allDay: false,
     description: "Description",
-    endDate: new Date("2023-01-29T00:00:00Z"),
-    endTime: new Date("2023-01-29T00:00:00Z"),
+    endDate: new Date("2023-01-03T00:00:00Z"),
+    endTime: new Date("2023-01-03T00:00:00Z"),
     isPublic: false,
     isRegisterable: false,
     latitude: 1,
@@ -70,11 +71,11 @@ beforeAll(async () => {
     location: "Location",
     creatorId: testUser?._id,
     recurring: false,
-    startDate: new Date("2023-01-01T00:00:00Z"),
-    startTime: new Date("2023-01-01T00:00:00Z"),
+    startDate: new Date("2023-01-02T00:00:00Z"),
+    startTime: new Date("2023-01-02T00:00:00Z"),
     title: "Scheduled",
     recurrance: "ONCE",
-    venue: testVenueA?._id,
+    venue: testVenue1?._id,
   });
 
   await User.updateOne(
@@ -100,17 +101,17 @@ afterAll(async () => {
 describe("resolvers -> Query -> checkVenue", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
-      const args: MutationCreateEventArgs = {};
+      const args: QueryCheckVenueArgs = {};
 
       const context = {
         userId: Types.ObjectId().toString(),
       };
 
-      const { createEvent: createEventResolverError } = await import(
-        "../../../src/resolvers/Mutation/createEvent"
+      const { checkVenue } = await import(
+        "../../../src/resolvers/Query/checkVenue"
       );
 
-      await createEventResolverError?.({}, args, context);
+      await checkVenue?.({}, args, context);
     } catch (error: unknown) {
       if (error instanceof NotFoundError) {
         expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
@@ -123,24 +124,14 @@ describe("resolvers -> Query -> checkVenue", () => {
 
 it(`throws NotFoundError if no organization exists with _id === args.data.organizationId`, async () => {
   try {
-    const args: MutationCreateEventArgs = {
+    const args: QueryCheckVenueArgs = {
       data: {
-        organizationId: testOrganization?.id,
+        organizationId: Types.ObjectId().toString(),
         allDay: false,
-        description: "Description",
-        endDate: new Date("2023-01-01T00:00:00Z"),
-        endTime: new Date("2023-01-01T00:00:00Z"),
-        isPublic: false,
-        isRegisterable: false,
-        latitude: 1,
-        longitude: 1,
-        location: "Location",
-        recurring: false,
-        startDate: new Date("2023-01-29T00:00:00Z"),
-        startTime: new Date("2023-01-29T00:00:00Z"),
-        title: "TiLareadytle",
-        recurrance: "ONCE",
-        venue: testVenueA?.id,
+        endDate: new Date("2023-01-29T00:00:00Z"),
+        endTime: new Date("2023-01-29T00:00:00Z"),
+        startDate: new Date("2023-01-01T00:00:00Z"),
+        startTime: new Date("2023-01-01T00:00:00Z"),
       },
     };
 
@@ -148,13 +139,13 @@ it(`throws NotFoundError if no organization exists with _id === args.data.organi
       userId: testUser?.id,
     };
 
-    const { createEvent: createEventResolverError } = await import(
-      "../../../src/resolvers/Mutation/createEvent"
+    const { checkVenue } = await import(
+      "../../../src/resolvers/Query/checkVenue"
     );
 
-    await createEventResolverError?.({}, args, context);
+    await checkVenue?.({}, args, context);
   } catch (error: unknown) {
-    if (error instanceof InputValidationError) {
+    if (error instanceof NotFoundError) {
       expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
     } else {
       fail(`Expected NotFoundError, but got ${error}`);
@@ -162,23 +153,14 @@ it(`throws NotFoundError if no organization exists with _id === args.data.organi
   }
   it(`throws InputValidationError if end date is before start date`, async () => {
     try {
-      const args: MutationCreateEventArgs = {
+      const args: QueryCheckVenueArgs = {
         data: {
-          organizationId: Types.ObjectId().toString(),
+          organizationId: testOrganization?.id,
           allDay: false,
-          description: "",
-          endDate: "",
-          endTime: "",
-          isPublic: false,
-          isRegisterable: false,
-          latitude: 1,
-          longitude: 1,
-          location: "",
-          recurring: false,
-          startDate: "",
-          startTime: "",
-          title: "",
-          recurrance: "DAILY",
+          endDate: new Date("2023-01-01T00:00:00Z"),
+          endTime: new Date("2023-01-01T00:00:00Z"),
+          startDate: new Date("2023-01-29T00:00:00Z"),
+          startTime: new Date("2023-01-29T00:00:00Z"),
         },
       };
 
@@ -186,11 +168,11 @@ it(`throws NotFoundError if no organization exists with _id === args.data.organi
         userId: testUser?.id,
       };
 
-      const { createEvent: createEventResolverError } = await import(
-        "../../../src/resolvers/Mutation/createEvent"
+      const { checkVenue } = await import(
+        "../../../src/resolvers/Query/checkVenue"
       );
 
-      await createEventResolverError?.({}, args, context);
+      await checkVenue?.({}, args, context);
     } catch (error: unknown) {
       if (error instanceof InputValidationError) {
         expect(error.message).toEqual(
@@ -202,7 +184,30 @@ it(`throws NotFoundError if no organization exists with _id === args.data.organi
     }
   });
   it(`fetch all the available venues in a time frame`, async () => {
-    try {
-    } catch (error: unknown) {}
+    const args: QueryCheckVenueArgs = {
+      data: {
+        organizationId: testOrganization?.id,
+        allDay: false,
+        endDate: new Date("2023-01-29T00:00:00Z"),
+        endTime: new Date("2023-01-29T00:00:00Z"),
+        startDate: new Date("2023-01-01T00:00:00Z"),
+        startTime: new Date("2023-01-01T00:00:00Z"),
+      },
+    };
+
+    const context = {
+      userId: testUser?.id,
+    };
+
+    const { checkVenue } = await import(
+      "../../../src/resolvers/Query/checkVenue"
+    );
+
+    const venues = await checkVenue?.({}, args, context);
+    const availableVenues = testOrganization?.venues.filter(
+      (venue) => venue._id !== testVenue1?._id
+    );
+
+    expect(venues).toEqual(availableVenues);
   });
 });
