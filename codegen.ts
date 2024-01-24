@@ -73,6 +73,8 @@ const config: CodegenConfig = {
           UserTag: "../models/OrganizationTagUser#InterfaceOrganizationTagUser",
 
           User: "../models/User#InterfaceUser",
+
+          UserToReturn: "../models/User#InterfaceUserToReturn",
         },
 
         useTypeImports: true,
