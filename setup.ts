@@ -1,3 +1,5 @@
+import { loadDefaultOrganization } from "./src/utilities/loadDefaultOrganization";
+
 const dotenv = require("dotenv");
 const fs = require("fs");
 const cryptolib = require("crypto");
@@ -841,6 +843,7 @@ async function main(): Promise<void> {
     process.env.REDIS_PASSWORD = REDIS_PASSWORD;
 
     updateEnvVariable(config);
+    await loadDefaultOrganization();
     console.log(`Your MongoDB URL is:\n${process.env.MONGO_DB_URL}`);
     console.log(`Your Redis host is:\n${process.env.REDIS_HOST}`);
     console.log(`Your Redis port is:\n${process.env.REDIS_PORT}`);
@@ -893,6 +896,7 @@ async function main(): Promise<void> {
     } else {
       await mongoDB();
     }
+    await loadDefaultOrganization();
   }
   if (process.env.RECAPTCHA_SECRET_KEY) {
     console.log(

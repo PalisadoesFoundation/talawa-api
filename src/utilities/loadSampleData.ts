@@ -5,13 +5,13 @@ import path from "path";
 import { connect } from "../db";
 import { User, Organization, Event, Post } from "../models";
 
-interface InterfaceArgs {
+export interface InterfaceArgs {
   items?: string;
   format?: boolean;
   _: unknown;
 }
 
-async function formatDatabase(): Promise<void> {
+export async function formatDatabase(): Promise<void> {
   await Promise.all([
     User.deleteMany({}),
     Organization.deleteMany({}),
