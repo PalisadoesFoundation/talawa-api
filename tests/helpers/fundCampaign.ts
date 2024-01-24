@@ -1,17 +1,30 @@
 import { nanoid } from "nanoid";
-import { FundCampaign, type InterfaceFundCampaign } from "../../src/models";
+import {
+  Fund,
+  FundCampaign,
+  type InterfaceFundCampaign,
+} from "../../src/models";
 import type { Document } from "mongoose";
+import mongoose from "mongoose";
 import type { TestUserType } from "./user";
 import { createTestUser } from "./user";
+import { createTestFund, type TestFundType } from "./fund";
+import {
+  createTestUserAndOrganization,
+  type TestOrganizationType,
+} from "./userAndOrg";
 
 export type TestFundCampaignType =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (InterfaceFundCampaign & Document<any, any, InterfaceFundCampaign>) | null;
 
 export const createTestFundCampaign = async (): Promise<
-  [TestUserType, TestFundCampaignType]
+  [TestUserType, TestFundCampaignType, TestOrganizationType, TestFundType]
 > => {
-  const testUser = await createTestUser();
+  const result = await createTestFund();
+  const testUser = result[0];
+  const testOrg = result[1];
+  const testFund = result[2];
   const date: Date = new Date();
   date.setDate(date.getDate() + 2);
 
@@ -22,9 +35,55 @@ export const createTestFundCampaign = async (): Promise<
       currency: "USD",
       name: `fund${nanoid().toLowerCase()}`,
       endDate: date,
+      parentFund: testFund?._id,
     });
-    return [testUser, testFundCampaign];
+
+    await testFund?.update({ $push: { campaigns: testFundCampaign._id } });
+
+    return [testUser, testFundCampaign, testOrg, testFund];
   } else {
-    return [testUser, null];
+    return [testUser, null, testOrg, testFund];
   }
+};
+
+export const createTestFundAndFundCampaign = async (): Promise<
+  [TestUserType, TestFundCampaignType, TestOrganizationType, TestFundType]
+> => {
+  const testUserandOrg = await createTestUserAndOrganization();
+
+  const testUser = testUserandOrg[0];
+  const testOrg = testUserandOrg[1];
+
+  const testFund = await Fund.create({
+    // _id: new mongoose.Types.ObjectId().toString(),
+    creatorId: testUser?._id,
+    organizationId: testOrg?._id,
+    archived: false,
+    taxDeductible: true,
+    defaultFund: true,
+    name: `testFund${nanoid().toLowerCase()}`,
+  });
+
+  const date: Date = new Date();
+  date.setDate(date.getDate() + 2);
+
+  const testFundCampaign = await FundCampaign.create({
+    creatorId: testUser?._id,
+    goalAmount: Math.floor(Math.random() * 10000),
+    currency: "USD",
+    name: `fund${nanoid().toLowerCase()}`,
+    endDate: date,
+    parentFund: testFund._id,
+  });
+
+  const newTestFund = await Fund.findByIdAndUpdate(
+    {
+      _id: testFund._id,
+    },
+    {
+      $push: { campaigns: testFundCampaign._id },
+    }
+  );
+
+  return [testUser, testFundCampaign, testOrg, newTestFund];
 };

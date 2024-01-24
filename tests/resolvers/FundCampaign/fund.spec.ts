@@ -61,18 +61,18 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> fund campaign -> creatorId", () => {
-  it(`returns the creator object for parent fund campaign`, async () => {
+describe("resolvers -> fund campaign -> parentFund", () => {
+  it(`returns the fund object for child fund campaign`, async () => {
     const parent = testFundCampaign?.toObject();
 
-    const { creator: creatorResolver } = await import(
-      "../../../src/resolvers/FundCampaign/creator"
+    const { parentFundId: creatorResolver } = await import(
+      "../../../src/resolvers/FundCampaign/fund"
     );
     if (parent) {
       await creatorResolver?.(parent, {}, {});
       const creatorPayload = await creatorResolver?.(parent, {}, {});
-      const creator = await User.findOne({
-        _id: testFundCampaign?.creatorId,
+      const creator = await Fund.findOne({
+        _id: testFundCampaign?.parentFund,
       }).lean();
 
       expect(creatorPayload).toEqual(creator);

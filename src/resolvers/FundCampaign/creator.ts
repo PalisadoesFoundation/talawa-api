@@ -7,6 +7,6 @@ import { User } from "../../models";
  */
 export const creator: FundCampaignResolvers["creator"] = async (parent) => {
   return await User.findOne({
-    id: parent?.creator,
+    id: parent?.creator?._id,
   }).lean();
 };

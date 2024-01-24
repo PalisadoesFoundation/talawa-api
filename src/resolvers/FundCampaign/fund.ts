@@ -9,6 +9,6 @@ export const parentFundId: FundCampaignResolvers["parentFundId"] = async (
   parent
 ) => {
   return await Fund.findOne({
-    id: parent?.parentFundId,
+    id: parent?.parentFundId?._id,
   }).lean();
 };
