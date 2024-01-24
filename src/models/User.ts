@@ -334,12 +334,14 @@ const userModel = (): PaginateModel<InterfaceUser> =>
   model<InterfaceUser, PaginateModel<InterfaceUser>>("User", userSchema);
 
 const userToReturnModel = (): PaginateModel<InterfaceUserToReturn> =>
-  model<InterfaceUserToReturn, PaginateModel<InterfaceUserToReturn>>("UserToReturn", userSchema);
+  model<InterfaceUserToReturn, PaginateModel<InterfaceUserToReturn>>(
+    "UserToReturn",
+    userSchema
+  );
 
 // This syntax is needed to prevent Mongoose OverwriteModelError while running tests.
 export const User = (models.User || userModel()) as ReturnType<
   typeof userModel
 >;
-export const UserToReturn =(models.UserToReturn || userToReturnModel()) as ReturnType<
-  typeof userToReturnModel
->;
+export const UserToReturn = (models.UserToReturn ||
+  userToReturnModel()) as ReturnType<typeof userToReturnModel>;
