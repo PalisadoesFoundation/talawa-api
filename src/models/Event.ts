@@ -122,7 +122,7 @@ const eventSchema = new Schema(
     },
     rruleObject: {
       type: String,
-      required: true,
+      required: false,
     },
     isPublic: {
       type: Boolean,
