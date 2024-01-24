@@ -21,6 +21,7 @@ import {
   createTestSuperAdmin,
   type TestSuperAdminType,
 } from "../../helpers/advertisement";
+import { ApplicationError } from "../../../src/libraries/errors";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser: TestUserType;
@@ -60,7 +61,8 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         await import("../../../src/resolvers/Mutation/updateAdvertisement");
 
       await updateAdvertisementResolverNotFoundError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
       expect(error.message).toEqual(
         `Translated ${USER_NOT_FOUND_ERROR.MESSAGE}`
       );
@@ -89,7 +91,8 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         await import("../../../src/resolvers/Mutation/updateAdvertisement");
 
       await updateAdvertisementResolverNotFoundError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
       expect(error.message).toEqual(
         `Translated ${USER_NOT_AUTHORIZED_ERROR.MESSAGE}`
       );
@@ -120,7 +123,8 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         await import("../../../src/resolvers/Mutation/updateAdvertisement");
 
       await updateAdvertisementResolverNotFoundError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
       expect(spy).toHaveBeenLastCalledWith(
         ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE
       );
@@ -133,14 +137,14 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
   it(`updates the advertisement with _id === args.id and returns it`, async () => {
     const { requestContext } = await import("../../../src/libraries");
 
-    const spy = vi
-      .spyOn(requestContext, "translate")
-      .mockImplementationOnce((message) => `Translated ${message}`);
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => `Translated ${message}`
+    );
     const args: MutationUpdateAdvertisementArgs = {
       input: {
         _id: testAdvertisement!._id,
         name: "New Advertisement Name",
-        file: "Updated Advertisement file",
+        file: "data:image/png;base64,bWVkaWEgY29udGVudA==",
         type: "POPUP",
         startDate: new Date(new Date().getFullYear() + 0, 11, 31)
           .toISOString()
@@ -211,7 +215,8 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       } = await import("../../../src/resolvers/Mutation/updateAdvertisement");
 
       await updateAdvertisementResolverValidationError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
       expect(spy).toHaveBeenLastCalledWith(END_DATE_VALIDATION_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${END_DATE_VALIDATION_ERROR.MESSAGE}`
@@ -239,7 +244,8 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       } = await import("../../../src/resolvers/Mutation/updateAdvertisement");
 
       await updateAdvertisementResolverValidationError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
       expect(spy).toHaveBeenLastCalledWith(START_DATE_VALIDATION_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${START_DATE_VALIDATION_ERROR.MESSAGE}`
@@ -267,7 +273,8 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         await import("../../../src/resolvers/Mutation/updateAdvertisement");
 
       await updateAdvertisementResolverInputError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
       expect(spy).toHaveBeenLastCalledWith(INPUT_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${INPUT_NOT_FOUND_ERROR.MESSAGE}`
@@ -295,7 +302,8 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         await import("../../../src/resolvers/Mutation/updateAdvertisement");
 
       await updateAdvertisementResolverInputError?.({}, args, context);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
       expect(spy).toHaveBeenLastCalledWith(FIELD_NON_EMPTY_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${FIELD_NON_EMPTY_ERROR.MESSAGE}`

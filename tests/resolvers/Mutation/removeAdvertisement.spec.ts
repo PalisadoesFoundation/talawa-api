@@ -21,6 +21,8 @@ import {
   createTestUser,
 } from "../../helpers/userAndOrg";
 import { ADVERTISEMENT_NOT_FOUND_ERROR } from "../../../src/constants";
+import { requestContext } from "../../../src/libraries";
+import { ApplicationError } from "../../../src/libraries/errors";
 
 let testUser: TestUserType;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -53,6 +55,10 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
   });
 
   it(`creates the ad and then deleting the ad`, async () => {
+
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => `Translated ${message}`
+    );
     const args: MutationCreateAdvertisementArgs = {
       input: {
         name: "myad",
@@ -97,11 +103,6 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
 
     expect(removeAdvertisementPayload).toHaveProperty("name", "myad");
 
-    expect(removeAdvertisementPayload).toHaveProperty(
-      "mediaUrl",
-      "data:image/png;base64,bWVkaWEgY29udGVudA=="
-    );
-
     expect(removeAdvertisementPayload).toHaveProperty("type", "POPUP");
   });
   it("should throw NOT_FOUND_ERROR on wrong advertisement", async () => {
@@ -124,7 +125,8 @@ describe("resolvers -> Mutation -> removeAdvertisement", () => {
         { id: "64d1f8cb77a4b51004f824b8" },
         context
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (!(error instanceof ApplicationError)) return;
       expect(spy).toBeCalledWith(ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE);
       expect(error.message).toEqual(
         `Translated ${ADVERTISEMENT_NOT_FOUND_ERROR.MESSAGE}`

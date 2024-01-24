@@ -18,8 +18,12 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Query -> getAdvertisment", () => {
+  const context = {
+    apiRootUrl: ''
+  };
+  
   it(`returns list of all existing advertisement`, async () => {
-    const adsPayload = await getAdvertisements?.({}, {}, {});
+    const adsPayload = await getAdvertisements?.({}, {}, context);
 
     const ads = await Advertisement.find().lean();
 

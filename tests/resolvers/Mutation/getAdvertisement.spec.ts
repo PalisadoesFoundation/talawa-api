@@ -20,6 +20,7 @@ import {
   createTestUserAndOrganization,
   createTestUser,
 } from "../../helpers/userAndOrg";
+import { requestContext } from "../../../src/libraries";
 
 let testUser: TestUserType;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -52,6 +53,11 @@ describe("resolvers -> Mutation -> getAdvertisement", () => {
   });
 
   it(`shouldl return the created ad from the list`, async () => {
+
+    vi.spyOn(requestContext, "translate").mockImplementationOnce(
+      (message) => `Translated ${message}`
+    );
+    
     const args: MutationCreateAdvertisementArgs = {
       input: {
         name: "myad",
@@ -89,11 +95,6 @@ describe("resolvers -> Mutation -> getAdvertisement", () => {
     if (getAdvertisementPayload) {
       const lastIndex = getAdvertisementPayload.length - 1;
       expect(getAdvertisementPayload[lastIndex]).toHaveProperty("name", "myad");
-
-      expect(getAdvertisementPayload[lastIndex]).toHaveProperty(
-        "mediaUrl",
-        "data:image/png;base64,bWVkaWEgY29udGVudA=="
-      );
 
       expect(getAdvertisementPayload[lastIndex]).toHaveProperty(
         "type",

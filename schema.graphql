@@ -119,8 +119,7 @@ input CreateAdvertisementInput {
 }
 
 type CreateAdvertisementPayload {
-  _id: ID
-  advertisement: Advertisement!
+  advertisement: Advertisement
 }
 
 scalar CountryCode
