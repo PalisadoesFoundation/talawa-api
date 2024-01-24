@@ -1,5 +1,8 @@
-import type { Types, Model } from "mongoose";
+import type { Types, Model, PopulatedDoc, Document } from "mongoose";
 import { Schema, model, models } from "mongoose";
+import type { InterfaceUser } from "./User";
+import type { InterfaceFund } from "./Fund";
+import type { InterfaceCampaignPledge } from "./CampaignPledge";
 
 /**
  * This is an interface representing a document for a Fund Campaign in the database(MongoDB).
@@ -8,14 +11,15 @@ import { Schema, model, models } from "mongoose";
 export interface InterfaceFundCampaign {
   _id: Types.ObjectId | string;
   name: string;
-  creatorId: Types.ObjectId | string;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
   goalAmount: number;
   currency: string;
   startDate: Date;
   endDate: Date;
   createdAt: Date;
   updatedAt: Date;
-  parentFund: Types.ObjectId | string;
+  parentFund: PopulatedDoc<InterfaceFund & Document>;
+  pledgeId: PopulatedDoc<InterfaceCampaignPledge & Document>;
 }
 
 /**
@@ -61,7 +65,11 @@ const fundCampaignSchema = new Schema(
     parentFund: {
       type: Schema.Types.ObjectId,
       ref: "Fund",
-      required: true,
+      // required: true,
+    },
+    pledgeId: {
+      type: Schema.Types.ObjectId,
+      ref: "CampaignPledge",
     },
   },
   {

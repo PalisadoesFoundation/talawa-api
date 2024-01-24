@@ -115,6 +115,20 @@ export const types = gql`
     createdAt: DateTime!
     updatedAt: DateTime!
     parentFundId: Fund
+    pledgeId: CampaignPledge
+  }
+
+  type CampaignPledge {
+    _id: ID!
+    creator: User
+    amount: Float!
+    currency: Currency!
+    members: [User]
+    campaigns: [FundCampaign]
+    startDate: DateTime!
+    endDate: DateTime!
+    createdAt: DateTime!
+    updatedAt: DateTime!
   }
 
   type Advertisement {

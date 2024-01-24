@@ -1,6 +1,8 @@
 import type { Types, Model, PopulatedDoc, Document } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceFundCampaign } from "./FundCampaign";
+import type { InterfaceUser } from "./User";
+import type { InterfaceOrganization } from "./Organization";
 
 /**
  * This is an interface representing a document for a Fund in the database(MongoDB).
@@ -9,8 +11,8 @@ import type { InterfaceFundCampaign } from "./FundCampaign";
 export interface InterfaceFund {
   _id: Types.ObjectId | string;
   name: string;
-  creatorId: Types.ObjectId | string;
-  organizationId: Types.ObjectId | string;
+  creatorId: PopulatedDoc<InterfaceUser & Document>;
+  organizationId: PopulatedDoc<InterfaceOrganization & Document>;
   taxDeductible: boolean;
   defaultFund: boolean;
   archived: boolean;

@@ -59,6 +59,19 @@ type AuthData {
   user: User!
 }
 
+type CampaignPledge {
+  _id: ID!
+  amount: Float!
+  campaigns: [FundCampaign]
+  createdAt: DateTime!
+  creator: User
+  currency: Currency!
+  endDate: DateTime!
+  members: [User]
+  startDate: DateTime!
+  updatedAt: DateTime!
+}
+
 type CheckIn {
   _id: ID!
   allotedRoom: String
@@ -365,6 +378,7 @@ type FundCampaign {
   goalAmount: Float!
   name: String!
   parentFundId: Fund
+  pledgeId: CampaignPledge
   startDate: DateTime!
   updatedAt: DateTime!
 }
@@ -374,7 +388,8 @@ input FundCampaignInput {
   endDate: DateTime!
   goalAmount: Float!
   name: String!
-  parentFundId: ID!
+  parentFundId: ID
+  pledgeId: ID
   startDate: DateTime!
 }
 

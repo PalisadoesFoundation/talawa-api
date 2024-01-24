@@ -1,5 +1,5 @@
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
-import { Fund, FundCampaign } from "../../models";
+import { CampaignPledge, Fund, FundCampaign } from "../../models";
 
 /**
  * This function enables to create a donation as transaction
@@ -20,19 +20,36 @@ export const createFundCampaign: MutationResolvers["createFundCampaign"] =
       endDate: args?.data?.endDate,
       creatorId: context?.userId,
       parentFund: args?.data?.parentFundId,
+      pledgeId: args?.data?.pledgeId,
     });
 
-    await Fund.updateOne(
-      { _id: args.data.parentFundId },
-      {
-        $push: {
-          campaigns: createdFundCampaign._id,
+    if (args?.data?.parentFundId) {
+      await Fund.updateOne(
+        { id: args?.data?.parentFundId },
+        {
+          $push: {
+            campaigns: createdFundCampaign._id,
+          },
         },
-      },
-      {
-        new: true,
-      }
-    );
+        {
+          new: true,
+        }
+      );
+    }
+
+    if (args?.data?.pledgeId) {
+      await CampaignPledge.updateOne(
+        { id: args?.data?.pledgeId },
+        {
+          $push: {
+            campaigns: createdFundCampaign._id,
+          },
+        },
+        {
+          new: true,
+        }
+      );
+    }
 
     return createdFundCampaign;
   };

@@ -111,6 +111,20 @@ export type AuthData = {
   user: User;
 };
 
+export type CampaignPledge = {
+  __typename?: 'CampaignPledge';
+  _id: Scalars['ID']['output'];
+  amount: Scalars['Float']['output'];
+  campaigns?: Maybe<Array<Maybe<FundCampaign>>>;
+  createdAt: Scalars['DateTime']['output'];
+  creator?: Maybe<User>;
+  currency: Scalars['Currency']['output'];
+  endDate: Scalars['DateTime']['output'];
+  members?: Maybe<Array<Maybe<User>>>;
+  startDate: Scalars['DateTime']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+};
+
 export type CheckIn = {
   __typename?: 'CheckIn';
   _id: Scalars['ID']['output'];
@@ -422,6 +436,7 @@ export type FundCampaign = {
   goalAmount: Scalars['Float']['output'];
   name: Scalars['String']['output'];
   parentFundId?: Maybe<Fund>;
+  pledgeId?: Maybe<CampaignPledge>;
   startDate: Scalars['DateTime']['output'];
   updatedAt: Scalars['DateTime']['output'];
 };
@@ -431,7 +446,8 @@ export type FundCampaignInput = {
   endDate: Scalars['DateTime']['input'];
   goalAmount: Scalars['Float']['input'];
   name: Scalars['String']['input'];
-  parentFundId: Scalars['ID']['input'];
+  parentFundId?: InputMaybe<Scalars['ID']['input']>;
+  pledgeId?: InputMaybe<Scalars['ID']['input']>;
   startDate: Scalars['DateTime']['input'];
 };
 
@@ -2031,6 +2047,7 @@ export type ResolversTypes = {
   Any: ResolverTypeWrapper<Scalars['Any']['output']>;
   AuthData: ResolverTypeWrapper<Omit<AuthData, 'user'> & { user: ResolversTypes['User'] }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
+  CampaignPledge: ResolverTypeWrapper<Omit<CampaignPledge, 'campaigns' | 'creator' | 'members'> & { campaigns?: Maybe<Array<Maybe<ResolversTypes['FundCampaign']>>>, creator?: Maybe<ResolversTypes['User']>, members?: Maybe<Array<Maybe<ResolversTypes['User']>>> }>;
   CheckIn: ResolverTypeWrapper<InterfaceCheckInModel>;
   CheckInInput: CheckInInput;
   CheckInStatus: ResolverTypeWrapper<Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversTypes['CheckIn']>, user: ResolversTypes['User'] }>;
@@ -2065,7 +2082,7 @@ export type ResolversTypes = {
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   ForgotPasswordData: ForgotPasswordData;
   Fund: ResolverTypeWrapper<Omit<Fund, 'campaigns' | 'creator' | 'organization'> & { campaigns?: Maybe<Array<Maybe<ResolversTypes['FundCampaign']>>>, creator?: Maybe<ResolversTypes['User']>, organization?: Maybe<ResolversTypes['Organization']> }>;
-  FundCampaign: ResolverTypeWrapper<Omit<FundCampaign, 'creator' | 'parentFundId'> & { creator?: Maybe<ResolversTypes['User']>, parentFundId?: Maybe<ResolversTypes['Fund']> }>;
+  FundCampaign: ResolverTypeWrapper<Omit<FundCampaign, 'creator' | 'parentFundId' | 'pledgeId'> & { creator?: Maybe<ResolversTypes['User']>, parentFundId?: Maybe<ResolversTypes['Fund']>, pledgeId?: Maybe<ResolversTypes['CampaignPledge']> }>;
   FundCampaignInput: FundCampaignInput;
   FundInput: FundInput;
   Gender: Gender;
@@ -2170,6 +2187,7 @@ export type ResolversParentTypes = {
   Any: Scalars['Any']['output'];
   AuthData: Omit<AuthData, 'user'> & { user: ResolversParentTypes['User'] };
   Boolean: Scalars['Boolean']['output'];
+  CampaignPledge: Omit<CampaignPledge, 'campaigns' | 'creator' | 'members'> & { campaigns?: Maybe<Array<Maybe<ResolversParentTypes['FundCampaign']>>>, creator?: Maybe<ResolversParentTypes['User']>, members?: Maybe<Array<Maybe<ResolversParentTypes['User']>>> };
   CheckIn: InterfaceCheckInModel;
   CheckInInput: CheckInInput;
   CheckInStatus: Omit<CheckInStatus, 'checkIn' | 'user'> & { checkIn?: Maybe<ResolversParentTypes['CheckIn']>, user: ResolversParentTypes['User'] };
@@ -2201,7 +2219,7 @@ export type ResolversParentTypes = {
   Float: Scalars['Float']['output'];
   ForgotPasswordData: ForgotPasswordData;
   Fund: Omit<Fund, 'campaigns' | 'creator' | 'organization'> & { campaigns?: Maybe<Array<Maybe<ResolversParentTypes['FundCampaign']>>>, creator?: Maybe<ResolversParentTypes['User']>, organization?: Maybe<ResolversParentTypes['Organization']> };
-  FundCampaign: Omit<FundCampaign, 'creator' | 'parentFundId'> & { creator?: Maybe<ResolversParentTypes['User']>, parentFundId?: Maybe<ResolversParentTypes['Fund']> };
+  FundCampaign: Omit<FundCampaign, 'creator' | 'parentFundId' | 'pledgeId'> & { creator?: Maybe<ResolversParentTypes['User']>, parentFundId?: Maybe<ResolversParentTypes['Fund']>, pledgeId?: Maybe<ResolversParentTypes['CampaignPledge']> };
   FundCampaignInput: FundCampaignInput;
   FundInput: FundInput;
   Group: InterfaceGroupModel;
@@ -2340,6 +2358,20 @@ export type AuthDataResolvers<ContextType = any, ParentType extends ResolversPar
   accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   refreshToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type CampaignPledgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CampaignPledge'] = ResolversParentTypes['CampaignPledge']> = {
+  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  amount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  campaigns?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundCampaign']>>>, ParentType, ContextType>;
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  currency?: Resolver<ResolversTypes['Currency'], ParentType, ContextType>;
+  endDate?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  members?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType>;
+  startDate?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2526,6 +2558,7 @@ export type FundCampaignResolvers<ContextType = any, ParentType extends Resolver
   goalAmount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parentFundId?: Resolver<Maybe<ResolversTypes['Fund']>, ParentType, ContextType>;
+  pledgeId?: Resolver<Maybe<ResolversTypes['CampaignPledge']>, ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -3042,6 +3075,7 @@ export type Resolvers<ContextType = any> = {
   AggregateUser?: AggregateUserResolvers<ContextType>;
   Any?: GraphQLScalarType;
   AuthData?: AuthDataResolvers<ContextType>;
+  CampaignPledge?: CampaignPledgeResolvers<ContextType>;
   CheckIn?: CheckInResolvers<ContextType>;
   CheckInStatus?: CheckInStatusResolvers<ContextType>;
   Comment?: CommentResolvers<ContextType>;
