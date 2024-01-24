@@ -16,7 +16,7 @@ import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import type mongoose from "mongoose";
 import { session } from "../../db";
 import { Weekly, Once } from "../../helpers/eventInstances";
-import { EndTime, StartTime } from "../../helpers/timeCorrection";
+import { Time } from "../../helpers/timeCorrection";
 
 /**
  * This function enables to create an event.
@@ -125,9 +125,12 @@ export const createEvent: MutationResolvers["createEvent"] = async (
 
   // Update the date part of the startTime and endTime with their start date and end date respectively instead of current date
   if (args.data && args.data.startTime && args.data.startDate)
-    args.data.startTime = StartTime.correct(args);
+    args.data.startTime = Time.correct(
+      args.data?.startDate,
+      args.data?.startTime
+    );
   if (args.data && args.data.endTime && args.data.endDate)
-    args.data.endTime = EndTime.correct(args);
+    args.data.endTime = Time.correct(args.data?.endDate, args.data?.endTime);
 
   // Checks if the venue is provided and whether that venue exists in the organization
   if (
@@ -215,7 +218,7 @@ async function associateEventWithUser(
   await EventAttendee.create(
     [
       {
-        userId: currentUser._id.toString(),
+        userId: currentUser._id,
         eventId: createdEvent._id,
       },
     ],

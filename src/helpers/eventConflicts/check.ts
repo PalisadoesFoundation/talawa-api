@@ -1,7 +1,6 @@
 import { Event, InterfaceEvent } from "../../models";
 import {
   MutationCreateEventArgs,
-  QueryCheckVenueArgs,
 } from "./../../types/generatedGraphQLTypes";
 export async function check(
   args: Partial<MutationCreateEventArgs>

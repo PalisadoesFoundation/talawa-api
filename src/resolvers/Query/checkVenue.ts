@@ -6,7 +6,7 @@ import {
 } from "../../constants";
 import { compareDates } from "../../libraries/validators/compareDates";
 import { errors, requestContext } from "../../libraries";
-import { EndTime, StartTime } from "../../helpers/timeCorrection";
+import { Time } from "../../helpers/timeCorrection";
 import { CheckVenue } from "../../helpers/checkVenue";
 /**
  * This query will fetch all the available venues in a time frame.
@@ -54,9 +54,13 @@ export const checkVenue: QueryResolvers["checkVenue"] = async (
       compareDatesResult
     );
   }
-  if (args.data) args.data.startTime = StartTime.correct(args);
-  if (args.data) args.data.endTime = EndTime.correct(args);
-
+  if (args.data && args.data.startTime && args.data.startDate)
+    args.data.startTime = Time.correct(
+      args.data?.startDate,
+      args.data?.startTime
+    );
+  if (args.data && args.data.endTime && args.data.endDate)
+    args.data.endTime = Time.correct(args.data?.endDate, args.data?.endTime);
   const eventConflicts = await CheckVenue.check(args);
 
   const unavailableVenueIds = eventConflicts.map((conflict) =>

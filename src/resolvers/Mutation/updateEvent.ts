@@ -8,11 +8,13 @@ import {
   USER_NOT_AUTHORIZED_ERROR,
   LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  VENUE_NOT_FOUND_ERROR,
 } from "../../constants";
 import { isValidString } from "../../libraries/validators/validateString";
 import { findEventsInCache } from "../../services/EventCache/findEventInCache";
 import { cacheEvents } from "../../services/EventCache/cacheEvents";
 import { Types } from "mongoose";
+import { Time } from "../../helpers/timeCorrection";
 /**
  * This function enables to update an event.
  * @param _parent - parent of current request
@@ -130,88 +132,25 @@ export const updateEvent: MutationResolvers["updateEvent"] = async (
     );
   }
 
+  // Update the date part of the startTime and endTime with their start date and end date respectively instead of current date
+  if (args.data && args.data.startTime && args.data.startDate)
+    args.data.startTime = Time.correct(
+      args.data?.startDate,
+      args.data?.startTime
+    );
+  if (args.data && args.data.endTime && args.data.endDate)
+    args.data.endTime = Time.correct(args.data?.endDate, args.data?.endTime);
+
   // Checks if the venue is provided and whether that venue exists in the organization
   if (
     args.data?.venue &&
-    organization.venues?.some((venue) => venue._id.equals(args.data?.venue))
+    !organization.venues?.some((venue) => venue._id.equals(args.data?.venue))
   ) {
-    const conflictingEvents = await Event.find({
-      organization: event?.organization,
-      venue: args.data?.venue ?? "",
-      $or: [
-        {
-          $and: [
-            { startDate: { $lte: args.data?.startDate } },
-            { endDate: { $gte: args.data?.startDate } },
-          ],
-        },
-        {
-          $and: [
-            { startDate: { $lte: args.data?.endDate } },
-            { endDate: { $gte: args.data?.endDate } },
-          ],
-        },
-        {
-          $and: [
-            { startDate: { $gte: args.data?.startDate } },
-            { endDate: { $lte: args.data?.endDate } },
-          ],
-        },
-        {
-          $and: [
-            { startDate: { $lte: args.data?.startDate } },
-            { endDate: { $gte: args.data?.endDate } },
-          ],
-        },
-      ],
-      $and: [
-        {
-          $or: [
-            {
-              allDay: true,
-            },
-            {
-              $and: [
-                { startTime: { $lte: args.data?.startTime } },
-                { endTime: { $gte: args.data?.startTime } },
-              ],
-            },
-            {
-              $and: [
-                { startTime: { $lte: args.data?.endTime } },
-                { endTime: { $gte: args.data?.endTime } },
-              ],
-            },
-            {
-              $and: [
-                { startTime: { $gte: args.data?.startTime } },
-                { endTime: { $lte: args.data?.endTime } },
-              ],
-            },
-            {
-              $and: [
-                { startTime: { $lte: args.data?.startTime } },
-                { endTime: { $gte: args.data?.endTime } },
-              ],
-            },
-          ],
-        },
-      ],
-    });
-
-    if (conflictingEvents.length > 0) {
-      const conflictDetails = conflictingEvents.map((event) => ({
-        eventId: event._id,
-        startDate: event.startDate,
-        endDate: event.endDate,
-        startTime: event.startTime,
-        endTime: event.endTime,
-      }));
-      console.log("Conflict Details:", conflictingEvents);
-      throw new Error("Venue not available due to schedule conflicts");
-    }
-  } else if (args.data?.venue) {
-    throw new Error("Venue is not available in the organization");
+    throw new errors.NotFoundError(
+      requestContext.translate(VENUE_NOT_FOUND_ERROR.MESSAGE),
+      VENUE_NOT_FOUND_ERROR.CODE,
+      VENUE_NOT_FOUND_ERROR.PARAM
+    );
   }
 
   const updatedEvent = await Event.findOneAndUpdate(

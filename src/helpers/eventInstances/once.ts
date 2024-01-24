@@ -16,15 +16,17 @@ export async function generateEvent(
   organization: InterfaceOrganization,
   session: mongoose.ClientSession
 ): Promise<Promise<InterfaceEvent[]>> {
-  const eventConflicts = await EventConflict.check(args);
-  if (eventConflicts.length > 0) {
-    throw new errors.ConflictError(
-      requestContext.translate(VENUE_ALREADY_SCHEDULED.MESSAGE),
-      VENUE_ALREADY_SCHEDULED.CODE,
-      VENUE_ALREADY_SCHEDULED.PARAM
-    );
+  if (args.data?.venue) {
+    const venueConflicts = await EventConflict.check(args);
+    if (venueConflicts.length > 0) {
+      throw new errors.ConflictError(
+        requestContext.translate(VENUE_ALREADY_SCHEDULED.MESSAGE),
+        VENUE_ALREADY_SCHEDULED.CODE,
+        VENUE_ALREADY_SCHEDULED.PARAM
+      );
+    }
   }
-  
+
   const createdEvent = await Event.create(
     [
       {

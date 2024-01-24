@@ -1,3 +1,6 @@
+import { TestEventType } from "./../../helpers/eventsWithRegistrants";
+import { ConflictError } from "./../../../src/libraries/errors/conflictError";
+import { TestVenueType, createTestVenue } from "./../../helpers/venue";
 import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
@@ -10,6 +13,8 @@ import {
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   USER_NOT_FOUND_ERROR,
+  VENUE_ALREADY_SCHEDULED,
+  VENUE_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import type {
@@ -25,12 +30,15 @@ import {
 import { fail } from "assert";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
+let testVenue: TestVenueType;
 let MONGOOSE_INSTANCE: typeof mongoose;
+let scheduledEvent: TestEventType;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
 
   testUser = await createTestUser();
+  testVenue = await createTestVenue();
   testOrganization = await Organization.create({
     name: "name",
     description: "description",
@@ -39,6 +47,26 @@ beforeAll(async () => {
     admins: [testUser?._id],
     members: [testUser?._id],
     visibleInSearch: true,
+  });
+
+  scheduledEvent = await Event.create({
+    organization: testOrganization?.id,
+    allDay: false,
+    description: "Description",
+    endDate: new Date("2023-01-29T00:00:00Z"),
+    endTime: new Date("2023-01-29T00:00:00Z"),
+    isPublic: false,
+    isRegisterable: false,
+    latitude: 1,
+    longitude: 1,
+    location: "Location",
+    creatorId: testUser?._id,
+    recurring: false,
+    startDate: new Date("2023-01-01T00:00:00Z"),
+    startTime: new Date("2023-01-01T00:00:00Z"),
+    title: "Scheduled",
+    recurrance: "ONCE",
+    venue: testVenue?._id,
   });
 
   await User.updateOne(
@@ -167,7 +195,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
     }
   });
 
-  it(`creates the single non-recurring event and returns it`, async () => {
+  it(`throws NotFoundError if the provided venue doesn't exist in the organization`, async () => {
     await User.updateOne(
       {
         _id: testUser?._id,
@@ -179,14 +207,105 @@ describe("resolvers -> Mutation -> createEvent", () => {
         },
       }
     );
+    try {
+      const args: MutationCreateEventArgs = {
+        data: {
+          organizationId: testOrganization?.id,
+          allDay: false,
+          description: "",
+          endDate: "",
+          endTime: "",
+          isPublic: false,
+          isRegisterable: false,
+          latitude: 1,
+          longitude: 1,
+          location: "",
+          recurring: false,
+          startDate: "",
+          startTime: "",
+          title: "",
+          recurrance: "ONCE",
+          venue: Types.ObjectId().toString(),
+        },
+      };
 
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { createEvent: createEventResolver } = await import(
+        "../../../src/resolvers/Mutation/createEvent"
+      );
+      const createEventPayload = await createEventResolver?.({}, args, context);
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        expect(error.message).toEqual(VENUE_NOT_FOUND_ERROR.MESSAGE);
+      } else {
+        fail(`Expected NotFoundError, but got ${error}`);
+      }
+    }
+  });
+
+  it(`throws ConflictError when the provided venue is already scheduled for an event in the organization`, async () => {
+    try {
+      await Organization.updateOne(
+        {
+          _id: testOrganization?._id,
+        },
+        {
+          $push: {
+            venues: testVenue?._id,
+          },
+        }
+      );
+
+      const args: MutationCreateEventArgs = {
+        data: {
+          organizationId: testOrganization?.id,
+          allDay: false,
+          description: "Description",
+          endDate: new Date("2023-01-29T00:00:00Z"),
+          endTime: new Date("2023-01-29T00:00:00Z"),
+          isPublic: false,
+          isRegisterable: false,
+          latitude: 1,
+          longitude: 1,
+          location: "Location",
+          recurring: false,
+          startDate: new Date("2023-01-01T00:00:00Z"),
+          startTime: new Date("2023-01-01T00:00:00Z"),
+          title: "TiLareadytle",
+          recurrance: "ONCE",
+          venue: testVenue?.id,
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { createEvent: createEventResolver } = await import(
+        "../../../src/resolvers/Mutation/createEvent"
+      );
+      const createEventPayload = await createEventResolver?.({}, args, context);
+    } catch (error: unknown) {
+      if (error instanceof ConflictError) {
+        expect(error.message).toEqual(VENUE_ALREADY_SCHEDULED.MESSAGE);
+      } else {
+        fail(`Expected ConflictError, but got ${error}`);
+      }
+    }
+  });
+
+  it(`creates the single non-recurring event and returns it`, async () => {
+    await Event.findByIdAndDelete(scheduledEvent?.id);
     const args: MutationCreateEventArgs = {
       data: {
         organizationId: testOrganization?.id,
         allDay: false,
         description: "newDescription",
         endDate: new Date("2023-01-29T00:00:00Z"),
-        endTime: new Date().toUTCString(),
+        endTime: new Date("2023-01-29T00:00:00Z"),
         isPublic: false,
         isRegisterable: false,
         latitude: 1,
@@ -194,9 +313,10 @@ describe("resolvers -> Mutation -> createEvent", () => {
         location: "newLocation",
         recurring: false,
         startDate: new Date("2023-01-01T00:00:00Z"),
-        startTime: new Date().toUTCString(),
+        startTime: new Date("2023-01-01T00:00:00Z"),
         title: "newTitle",
         recurrance: "ONCE",
+        venue: testVenue?.id,
       },
     };
 
@@ -223,6 +343,7 @@ describe("resolvers -> Mutation -> createEvent", () => {
         creatorId: testUser?._id,
         admins: expect.arrayContaining([testUser?._id]),
         organization: testOrganization?._id,
+        venue: testVenue?._id,
       })
     );
 

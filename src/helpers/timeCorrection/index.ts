@@ -1,4 +1,3 @@
-import * as StartTime from "./correctStartTime";
-import * as EndTime from "./correctEndTime";
+import * as Time from "./correctTime";
 
-export { StartTime, EndTime };
+export { Time };
