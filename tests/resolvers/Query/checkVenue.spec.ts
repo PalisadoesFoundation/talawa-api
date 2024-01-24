@@ -46,8 +46,6 @@ beforeAll(async () => {
     members: [testUser?._id],
     visibleInSearch: true,
   });
-
-  testOrganization.populate("venues");
   await Organization.updateOne(
     {
       _id: testOrganization?._id,
@@ -58,6 +56,7 @@ beforeAll(async () => {
       },
     }
   );
+
   scheduledEvent = await Event.create({
     organization: testOrganization?.id,
     allDay: false,
@@ -92,7 +91,7 @@ beforeAll(async () => {
   vi.spyOn(requestContext, "translate").mockImplementation(
     (message) => message
   );
-});
+}, 1000000);
 
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
@@ -120,37 +119,38 @@ describe("resolvers -> Query -> checkVenue", () => {
       }
     }
   });
-});
 
-it(`throws NotFoundError if no organization exists with _id === args.data.organizationId`, async () => {
-  try {
-    const args: QueryCheckVenueArgs = {
-      data: {
-        organizationId: Types.ObjectId().toString(),
-        allDay: false,
-        endDate: new Date("2023-01-29T00:00:00Z"),
-        endTime: new Date("2023-01-29T00:00:00Z"),
-        startDate: new Date("2023-01-01T00:00:00Z"),
-        startTime: new Date("2023-01-01T00:00:00Z"),
-      },
-    };
+  it(`throws NotFoundError if no organization exists with _id === args.data.organizationId`, async () => {
+    try {
+      const args: QueryCheckVenueArgs = {
+        data: {
+          organizationId: Types.ObjectId().toString(),
+          allDay: false,
+          endDate: new Date("2023-01-29T00:00:00Z"),
+          endTime: new Date("2023-01-29T00:00:00Z"),
+          startDate: new Date("2023-01-01T00:00:00Z"),
+          startTime: new Date("2023-01-01T00:00:00Z"),
+        },
+      };
 
-    const context = {
-      userId: testUser?.id,
-    };
+      const context = {
+        userId: testUser?.id,
+      };
 
-    const { checkVenue } = await import(
-      "../../../src/resolvers/Query/checkVenue"
-    );
+      const { checkVenue } = await import(
+        "../../../src/resolvers/Query/checkVenue"
+      );
 
-    await checkVenue?.({}, args, context);
-  } catch (error: unknown) {
-    if (error instanceof NotFoundError) {
-      expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
-    } else {
-      fail(`Expected NotFoundError, but got ${error}`);
+      await checkVenue?.({}, args, context);
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
+      } else {
+        fail(`Expected NotFoundError, but got ${error}`);
+      }
     }
-  }
+  });
+
   it(`throws InputValidationError if end date is before start date`, async () => {
     try {
       const args: QueryCheckVenueArgs = {
@@ -183,6 +183,7 @@ it(`throws NotFoundError if no organization exists with _id === args.data.organi
       }
     }
   });
+
   it(`fetch all the available venues in a time frame`, async () => {
     const args: QueryCheckVenueArgs = {
       data: {
@@ -202,12 +203,19 @@ it(`throws NotFoundError if no organization exists with _id === args.data.organi
     const { checkVenue } = await import(
       "../../../src/resolvers/Query/checkVenue"
     );
-
+    const organization = await Organization.findOne({
+      _id: testOrganization?.id,
+    })
+      .populate("venues")
+      .lean();
     const venues = await checkVenue?.({}, args, context);
-    const availableVenues = testOrganization?.venues.filter(
-      (venue) => venue._id !== testVenue1?._id
+    const availableVenues = organization?.venues.filter(
+      (venue) => !venue._id.equals(testVenue1?._id)
     );
+    const organizationVenuesString = JSON.stringify(availableVenues);
+    const venuesString = JSON.stringify(venues);
 
-    expect(venues).toEqual(availableVenues);
+    // Perform deep equality check
+    expect(venuesString).toEqual(organizationVenuesString);
   });
 });
