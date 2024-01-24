@@ -23,7 +23,7 @@ import {
   UnauthorizedError,
 } from "../../../src/libraries/errors";
 import { fail } from "assert";
-import { addYears } from "date-fns";
+import { addYears, format } from "date-fns";
 let testUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let MONGOOSE_INSTANCE: typeof mongoose;
@@ -615,8 +615,13 @@ describe("resolvers -> Mutation -> createEvent", () => {
       await createEventResolverError?.({}, args, context);
     } catch (error: unknown) {
       if (error instanceof InputValidationError) {
+        const currentDate = new Date();
+        const specificEndDate = addYears(currentDate, 100);
         expect(error.message).toEqual(
-          `End date cannot be greater than the Jan 23 2124`
+          `End date cannot be greater than the ${format(
+            specificEndDate,
+            "MMM dd yyyy"
+          )}`
         );
       } else {
         fail(`Expected DateValidationError, but got ${error}`);

@@ -154,6 +154,7 @@ export const createEvent: MutationResolvers["createEvent"] = async (
 
   // Create recurring rule based on recurrence type
   let rule: RRule = new RRule();
+
   switch (data?.recurrance) {
     case "ONCE": {
       rule = new RRule({
@@ -224,13 +225,11 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     }
   }
 
-  const recurringRule = rule.toString();
-
   // Create and cache the event with the generated recurrence rule
   const createdEvent = await Event.create({
     ...args.data,
     endDate: endDate,
-    rruleString: recurringRule,
+    rruleObject: JSON.stringify(rule),
     creatorId: currentUser._id,
     admins: [currentUser._id],
     organization: organization._id,

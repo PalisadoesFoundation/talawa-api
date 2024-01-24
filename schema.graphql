@@ -229,7 +229,7 @@ type Event {
   organization: Organization
   recurrance: Recurrance
   recurring: Boolean!
-  rruleString: String
+  rruleObject: String!
   startDate: Date!
   startTime: Time
   status: Status!

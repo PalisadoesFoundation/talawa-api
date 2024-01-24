@@ -2,6 +2,7 @@ import type { Types, PopulatedDoc, Document, Model } from "mongoose";
 import { Schema, model, models } from "mongoose";
 import type { InterfaceOrganization } from "./Organization";
 import type { InterfaceUser } from "./User";
+import { number } from "yargs";
 
 /**
  * This is an interface representing a document for an event in the database(MongoDB).
@@ -57,7 +58,6 @@ export interface InterfaceEvent {
  * @param createdAt - Timestamp of event creation
  * @param updatedAt - Timestamp of event updation
  */
-
 const eventSchema = new Schema(
   {
     title: {
@@ -120,9 +120,9 @@ const eventSchema = new Schema(
       enum: ["ONCE", "DAILY", "WEEKLY", "MONTHLY", "YEARLY"],
       default: "ONCE",
     },
-    rruleString: {
+    rruleObject: {
       type: String,
-      required: false,
+      required: true,
     },
     isPublic: {
       type: Boolean,
