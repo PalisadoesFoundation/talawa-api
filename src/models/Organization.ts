@@ -81,7 +81,6 @@ const organizationSchema = new Schema({
     {
       type: Schema.Types.ObjectId,
       ref: "AgendaCategory",
-      required: true,
     },
   ],
   status: {

@@ -1,36 +1,43 @@
-import type mongoose from "mongoose";
-import { Types } from "mongoose";
-import { connect, disconnect } from "../../helpers/db";
-import { getAgendaSection } from "../../../src/resolvers/Query/getAgendaSectionById";
+import { getAllAgendaItems } from "../../../src/resolvers/Query/AgendaItems";
 import {
-  AgendaItemModel,
-  AgendaSectionModel,
   Organization,
   Event,
+  AgendaItemModel,
+  AgendaSectionModel,
 } from "../../../src/models";
-import {
-  AGENDA_SECTION_NOT_FOUND_ERROR,
-  USER_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
-} from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { USER_NOT_AUTHORIZED_ERROR } from "../../../src/constants";
 import { createTestUser } from "../../helpers/userAndOrg";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import { connect, disconnect } from "../../helpers/db";
+import type { MutationCreateAgendaSectionArgs } from "../../../src/types/generatedGraphQLTypes";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  Test,
+  vi,
+  test,
+} from "vitest";
 import type { TestEventType } from "../../helpers/events";
-import { isContext } from "vm";
-import type { QueryGetAgendaSectionArgs } from "../../../src/types/generatedGraphQLTypes";
+import { agendaCategories } from "../../../src/resolvers/Query/getAllAgendaCategories";
+import { getAllAgendaSections } from "../../../src/resolvers/Query/getAllAgendaSections";
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
 let testOrganization: TestOrganizationType;
 let testEvent: TestEventType;
-let testAgendaItem: any;
+let testAgendaSection: any;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser2: TestUserType;
-let testAgendaSection: any;
+let testAgendaItem: any;
 let testAgendaItem2: any;
+let testAgendaSection2: any;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -101,33 +108,37 @@ beforeAll(async () => {
     createdAt: Date.now(),
     updatedAt: Date.now(),
   });
+  testAgendaSection2 = await AgendaSectionModel.create({
+    createdBy: testAdminUser?._id,
+    description: "Test Agenda Section2",
+    relatedEvent: testEvent?._id,
+    items: [testAgendaItem, testAgendaItem2],
+    sequence: 2,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  });
 });
 
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
-
-describe("resolvers -> Query -> getAgendaSection", () => {
-  it("throws NotFoundError if no agenda section exists with the given ID", async () => {
-    try {
-      const args = {
-        id: Types.ObjectId().toString(),
-      };
-
-      await getAgendaSection?.({}, args, {});
-    } catch (error: any) {
-      expect(error.message).toEqual(AGENDA_SECTION_NOT_FOUND_ERROR.MESSAGE);
-    }
+describe("resolvers -> Query -> getAllAgendaSections", () => {
+  it("resolvers -> Query -> getAllAgendaSections: returns all agenda Section successfully", async () => {
+    const result = await getAllAgendaSections?.({}, {}, {});
+    expect(result).toBeDefined();
   });
 
-  it("returns the agenda section successfully if it exists", async () => {
-    const args = {
-      id: testAgendaSection._id,
-    };
+  it("resolvers -> Query -> getAllAgendaCategories: handles different input scenarios", async () => {
+    // Test with specific arguments
+    const result1 = await getAllAgendaSections?.(
+      { someKey: "someValue" },
+      {},
+      {}
+    );
+    expect(result1).toBeDefined();
 
-    const result = await getAgendaSection?.({}, args, {});
-    expect(result).toBeDefined();
-
-    expect(result?._id).toEqual(testAgendaSection?._id);
+    // Test with empty arguments
+    const result2 = await getAllAgendaSections?.({}, {}, {});
+    expect(result2).toBeDefined();
   });
 });

@@ -19,28 +19,19 @@ export const getAgendaSection: QueryResolvers["getAgendaSection"] = async (
   _parent,
   { id }
 ) => {
-  try {
-    // Find the agenda section by ID
-    const agendaSection = await AgendaSectionModel.findById(id).lean();
+  // Find the agenda section by ID
+  const agendaSection = await AgendaSectionModel.findById(id).lean();
 
-    // If the agenda section is not found, throw a NotFoundError
-    if (!agendaSection) {
-      throw new errors.NotFoundError(
-        AGENDA_SECTION_NOT_FOUND_ERROR.MESSAGE,
+  // If the agenda section is not found, throw a NotFoundError
+  if (!agendaSection) {
+    throw new errors.NotFoundError(
+      AGENDA_SECTION_NOT_FOUND_ERROR.MESSAGE,
 
-        AGENDA_SECTION_NOT_FOUND_ERROR.CODE,
-        AGENDA_SECTION_NOT_FOUND_ERROR.PARAM
-      );
-    }
-
-    // Return the retrieved agenda section
-    return agendaSection;
-  } catch (error) {
-    console.error(error);
-
-    // Handle other potential errors (e.g., validation errors)
-    throw new errors.InternalServerError(
-      "An error occurred while fetching the agenda section"
+      AGENDA_SECTION_NOT_FOUND_ERROR.CODE,
+      AGENDA_SECTION_NOT_FOUND_ERROR.PARAM
     );
   }
+
+  // Return the retrieved agenda section
+  return agendaSection;
 };

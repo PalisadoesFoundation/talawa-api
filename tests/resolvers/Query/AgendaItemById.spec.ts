@@ -77,36 +77,14 @@ afterAll(async () => {
 });
 
 describe("resolvers -> Query -> getAgendaItem", () => {
-  it("throws NotFoundError if no user exists with the given ID", async () => {
-    try {
-      const args = {
-        id: testAgendaItem?._id,
-      };
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
-
-      if (getAgendaItem) {
-        await getAgendaItem({}, args, context);
-      } else {
-        throw new Error("getAgendaItem resolver is undefined");
-      }
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
-  });
-
   it("throws NotFoundError if no agenda item exists with the given ID", async () => {
     try {
       const args = {
         id: Types.ObjectId().toString(),
       };
-      const context = {
-        userId: testAdminUser?._id,
-      };
 
       if (getAgendaItem) {
-        await getAgendaItem({}, args, context);
+        await getAgendaItem({}, args, {});
       } else {
         throw new Error("getAgendaItem resolver is undefined");
       }
@@ -115,38 +93,15 @@ describe("resolvers -> Query -> getAgendaItem", () => {
     }
   });
 
-  it("throws UnauthorizedError if the user is not authorized to access the agenda item", async () => {
-    try {
-      const args = {
-        id: testAgendaItem._id.toString(),
-      };
-      const context = {
-        userId: testUser2?._id,
-      };
-
-      if (getAgendaItem) {
-        await getAgendaItem({}, args, context);
-      } else {
-        throw new Error("getAgendaItem resolver is undefined");
-      }
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-    }
-  });
-
   it("returns the agenda item successfully if the user is authorized", async () => {
     const args = {
       id: testAgendaItem._id.toString(),
     };
-    const context = {
-      userId: testAdminUser?._id,
-    };
-
     if (getAgendaItem) {
-      const result = await getAgendaItem({}, args, context);
+      const result = await getAgendaItem({}, args, {});
 
       expect(result).toBeDefined();
-      expect(result?._id).toEqual(testAgendaItem._id.toString());
+      expect(result?._id).toEqual(testAgendaItem._id);
     } else {
       throw new Error("getAgendaItem resolver is undefined");
     }

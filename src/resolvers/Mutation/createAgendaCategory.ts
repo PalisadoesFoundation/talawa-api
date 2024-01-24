@@ -25,7 +25,9 @@ import { adminCheck, superAdminCheck } from "../../utilities";
 export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
   async (_parent, args, context) => {
     // Find the current user based on the provided createdBy ID or use the context userId
+
     const userId = context.userId;
+
     const currentUser = await User.findById(userId).lean();
 
     if (!currentUser) {
@@ -50,45 +52,35 @@ export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
     }
 
     // Check if the current user has the necessary permissions
-    const hasAdminPermissions =
-      currentUser.adminFor.includes(organization._id) ||
-      currentUser.userType === "SUPERADMIN";
+    const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
+      (organization) => organization.equals(organization)
+    );
 
-    if (!hasAdminPermissions) {
+    if (
+      !currentUserIsOrganizationAdmin ||
+      !(currentUser.userType === "SUPERADMIN")
+    ) {
       throw new errors.UnauthorizedError(
         USER_NOT_AUTHORIZED_ERROR.MESSAGE,
         USER_NOT_AUTHORIZED_ERROR.CODE,
         USER_NOT_AUTHORIZED_ERROR.PARAM
       );
     }
-
     // Create a new AgendaCategory using the Mongoose model
     const createdAgendaCategory = await AgendaCategoryModel.create({
       ...args.input,
-      organization: organization._id,
-      createdBy: currentUser._id,
-      updatedBy: currentUser._id,
+      createdBy: args.input.createdBy,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-
-    // Fetch the populated AgendaCategory
-    const populatedAgendaCategory = await AgendaCategoryModel.findById(
-      createdAgendaCategory._id
-    )
-      .populate("createdBy")
-      .lean();
-
-    // Update the organization with the new AgendaCategory
     await Organization.findByIdAndUpdate(
       organization._id,
       {
         $push: {
-          agendaCategories: populatedAgendaCategory,
+          agendaCategories: createdAgendaCategory,
         },
       },
       { new: true }
     );
-
-    return createdAgendaCategory.toObject(); // Return as a plain JavaScript object
+    return createdAgendaCategory.toObject();
   };

@@ -21,9 +21,10 @@ import {
  * @throws {InternalServerError} Throws an error for other potential issues during agenda category deletion.
  */
 export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
-  async (_parent, args, context): Promise<string> => {
+  async (_parent, args, context) => {
     const categoryId = args.id;
     const agendaCategory = await AgendaCategoryModel.findById(args.id).lean();
+
     const userId = context.userId;
 
     // Fetch the user to get the organization ID
@@ -32,35 +33,35 @@ export const deleteAgendaCategory: MutationResolvers["deleteAgendaCategory"] =
     // If the user is not found, throw a NotFoundError
     if (!user) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.MESSAGE,
         USER_NOT_FOUND_ERROR.CODE,
         USER_NOT_FOUND_ERROR.PARAM
       );
     }
 
+    if (!agendaCategory) {
+      throw new errors.NotFoundError(
+        AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE,
+        AGENDA_CATEGORY_NOT_FOUND_ERROR.CODE,
+        AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM
+      );
+    }
+
     // If the user is a normal user, throw an error
     if (
-      user.userType !== "SUPER_ADMIN" ||
+      user.userType !== "SUPERADMIN" ||
       agendaCategory?.createdBy !== userId
     ) {
       throw new errors.UnauthorizedError(
-        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+        USER_NOT_AUTHORIZED_ERROR.MESSAGE,
         USER_NOT_AUTHORIZED_ERROR.CODE,
         USER_NOT_AUTHORIZED_ERROR.PARAM
       );
     }
 
     // If the AgendaCategory is not found, throw a NotFoundError
-    if (!agendaCategory) {
-      throw new errors.NotFoundError(
-        requestContext.translate(AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE),
-        AGENDA_CATEGORY_NOT_FOUND_ERROR.CODE,
-        AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM
-      );
-    }
 
     // Delete the AgendaCategory
     await AgendaCategoryModel.findByIdAndDelete(args.id);
-
     return categoryId;
   };

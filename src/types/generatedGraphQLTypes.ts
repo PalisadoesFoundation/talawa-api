@@ -95,9 +95,9 @@ export type AgendaCategory = {
   createdBy: User;
   description?: Maybe<Scalars['String']>;
   name: Scalars['String'];
-  organization: Organization;
-  updatedAt: Scalars['Date'];
-  updatedBy: User;
+  organization?: Maybe<Organization>;
+  updatedAt?: Maybe<Scalars['Date']>;
+  updatedBy?: Maybe<User>;
 };
 
 export type AgendaItem = {
@@ -130,7 +130,7 @@ export type AgendaSection = {
   items?: Maybe<Array<Maybe<AgendaItem>>>;
   relatedEvent?: Maybe<Event>;
   sequence: Scalars['Int'];
-  updatedAt: Scalars['Date'];
+  updatedAt?: Maybe<Scalars['Date']>;
   updatedBy?: Maybe<User>;
 };
 
@@ -202,7 +202,7 @@ export type ConnectionPageInfo = {
 };
 
 export type CreateAgendaCategoryInput = {
-  createdBy?: InputMaybe<Scalars['ID']>;
+  createdBy: Scalars['ID'];
   description?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
   organizationId: Scalars['ID'];
@@ -2493,9 +2493,9 @@ export type AgendaCategoryResolvers<ContextType = any, ParentType extends Resolv
   createdBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  organization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
-  updatedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
-  updatedBy?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
+  updatedAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  updatedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2528,7 +2528,7 @@ export type AgendaSectionResolvers<ContextType = any, ParentType extends Resolve
   items?: Resolver<Maybe<Array<Maybe<ResolversTypes['AgendaItem']>>>, ParentType, ContextType>;
   relatedEvent?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType>;
   sequence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  updatedAt?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
+  updatedAt?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
   updatedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

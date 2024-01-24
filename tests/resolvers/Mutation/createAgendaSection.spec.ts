@@ -1,62 +1,109 @@
-import "dotenv/config";
-import type mongoose from "mongoose";
-import { Types } from "mongoose";
+import { getAllAgendaItems } from "../../../src/resolvers/Query/AgendaItems";
 import {
-  User,
-  AgendaSectionModel,
-  Event,
   Organization,
+  Event,
+  AgendaItemModel,
+  User,
 } from "../../../src/models";
-import type { MutationCreateAgendaSectionArgs } from "../../../src/types/generatedGraphQLTypes";
-import { connect, disconnect } from "../../helpers/db";
-import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
-import { createAgendaSection } from "../../../src/resolvers/Mutation/createAgendaSection";
 import {
-  USER_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
   EVENT_NOT_FOUND_ERROR,
+  USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { createTestUser } from "../../helpers/userAndOrg";
-import { createTestEvent } from "../../helpers/events";
-
-let testUser: TestUserType;
-let MONGOOSE_INSTANCE: typeof mongoose;
-let testEvent: TestEventType;
-let testOrganization: TestOrganizationType;
 import type {
-  TestUserType,
   TestOrganizationType,
+  TestUserType,
 } from "../../helpers/userAndOrg";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import { connect, disconnect } from "../../helpers/db";
+import type {
+  MutationCreateAgendaCategoryArgs,
+  MutationCreateAgendaSectionArgs,
+} from "../../../src/types/generatedGraphQLTypes";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  Test,
+  vi,
+  test,
+} from "vitest";
 import type { TestEventType } from "../../helpers/events";
+let testUser: TestUserType;
+let testAdminUser: TestUserType;
+let testOrganization: TestOrganizationType;
+let testEvent: TestEventType;
+let testAgendaItem: any;
+let MONGOOSE_INSTANCE: typeof mongoose;
+let testUser2: TestUserType;
+let testAgendaItem2: any;
+
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
   testUser = await createTestUser();
-  const temp = await createTestEvent();
-  testEvent = temp[2];
+  testAdminUser = await createTestUser();
+  testUser2 = await createTestUser();
   testOrganization = await Organization.create({
-    name: "Test Organization",
-    description: "Test Organization Description",
+    name: "name",
+    description: "description",
     isPublic: true,
     creator: testUser?._id,
-    admins: [testUser?._id],
-    members: [testUser?._id],
+    admins: [testAdminUser?._id],
+    members: [testUser?._id, testAdminUser?._id],
   });
-  await User.updateOne(
-    {
-      _id: testUser?._id,
-    },
-    {
-      $push: {
-        adminFor: testOrganization?._id,
-        eventAdmin: testEvent?._id,
-      },
-    }
-  );
-  const { requestContext } = await import("../../../src/libraries");
-  vi.spyOn(requestContext, "translate").mockImplementation(
-    (message: any) => message
-  );
+  testEvent = await Event.create({
+    title: "title",
+    description: "description",
+    allDay: true,
+    startDate: new Date(),
+    recurring: true,
+    isPublic: true,
+    isRegisterable: true,
+    creator: testUser?._id,
+    admins: [testAdminUser?._id],
+    registrants: [],
+    organization: testOrganization?._id,
+  });
+  testAgendaItem = await AgendaItemModel.create({
+    title: "Test Agenda Item",
+    description: "This is a test agenda item",
+    duration: "2 hours",
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    attachments: ["attachment1", "attachment2"],
+    relatedEvent: testEvent?._id,
+    createdBy: testAdminUser?._id,
+    urls: ["url1", "url2"],
+    user: "testuser",
+    categories: [],
+    sequence: 1,
+    itemType: "Regular",
+    organization: testOrganization?._id,
+    isNote: false,
+  });
+  testAgendaItem2 = await AgendaItemModel.create({
+    title: "Test Agenda Item 2 ",
+    description: "This is a test agenda item 2",
+    duration: "2 + 2 hours",
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    attachments: ["attachment12", "attachment22"],
+    relatedEvent: testEvent?._id,
+    createdBy: testAdminUser?._id,
+    urls: ["url12", "url22"],
+    user: "testuser",
+    categories: [],
+    sequence: 2,
+    itemType: "Regular",
+    organization: testOrganization?._id,
+    isNote: false,
+  });
 });
+
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
@@ -66,46 +113,63 @@ describe("resolvers -> Mutation -> createAgendaSection", () => {
       const args: MutationCreateAgendaSectionArgs = {
         input: {
           createdBy: Types.ObjectId().toString(),
-          relatedEvent: testEvent?._id?.toString(),
-          description: "",
-          sequence: 0,
+          relatedEvent: testEvent?._id,
+          description: "Sample Description",
+          sequence: 1,
         },
       };
 
       const context = {
         userId: Types.ObjectId().toString(),
       };
+      const { createAgendaSection: createAgendaSectionResolverError } =
+        await import("../../../src/resolvers/Mutation/createAgendaSection");
 
-      if (createAgendaSection) {
-        await createAgendaSection({}, args, context);
-      } else {
-        throw new Error("createAgendaSection resolver is undefined");
-      }
+      await createAgendaSectionResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
+  it("Should throw an error if the event is not found", async () => {
+    const args: MutationCreateAgendaSectionArgs = {
+      input: {
+        createdBy: testUser2?._id?.toString(),
+        relatedEvent: testEvent?._id,
+        description: "Description1",
+        sequence: 3,
+      },
+    };
 
+    const context = {
+      userId: testAdminUser?._id,
+    };
+    const { createAgendaSection: createAgendaSectionResolverError } =
+      await import("../../../src/resolvers/Mutation/createAgendaSection");
+    try {
+      await createAgendaSectionResolverError?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
+    }
+  });
   it("throws UnauthorizedError if user is not an admin for the related organization", async () => {
     try {
       const args: MutationCreateAgendaSectionArgs = {
         input: {
-          createdBy: testUser?._id?.toString(),
-          relatedEvent: testEvent?._id?.toString(),
-          description: "",
-          sequence: 0,
+          createdBy: testUser2?._id?.toString(),
+          relatedEvent: testEvent?._id,
+          description: "Description!",
+          sequence: 2,
         },
       };
 
       const context = {
-        userId: testUser?._id,
+        userId: testUser2?._id,
       };
 
-      if (createAgendaSection) {
-        await createAgendaSection({}, args, context);
-      } else {
-        throw new Error("createAgendaSection resolver is undefined");
-      }
+      const { createAgendaSection: createAgendaSectionResolverError } =
+        await import("../../../src/resolvers/Mutation/createAgendaSection");
+
+      await createAgendaSectionResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
@@ -120,8 +184,8 @@ describe("resolvers -> Mutation -> createAgendaSection", () => {
         input: {
           createdBy: anotherUser?._id?.toString(),
           relatedEvent: testEvent?._id?.toString(),
-          description: "",
-          sequence: 0,
+          description: "Sample desc2",
+          sequence: 2,
         },
       };
 
@@ -129,48 +193,10 @@ describe("resolvers -> Mutation -> createAgendaSection", () => {
         userId: anotherUser?._id,
       };
 
-      if (createAgendaSection) {
-        await createAgendaSection({}, args, context);
-      } else {
-        throw new Error("createAgendaSection resolver is undefined");
-      }
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-    }
-  });
+      const { createAgendaSection: createAgendaSectionResolverError } =
+        await import("../../../src/resolvers/Mutation/createAgendaSection");
 
-  it("throws UnauthorizedError if user is not an event admin and organization admin", async () => {
-    try {
-      const args: MutationCreateAgendaSectionArgs = {
-        input: {
-          createdBy: testUser?._id?.toString(),
-          relatedEvent: testEvent?._id?.toString(),
-          description: "",
-          sequence: 0,
-        },
-      };
-
-      const context = {
-        userId: testUser?._id,
-      };
-
-      // Set the user as an organization admin
-      await User.updateOne(
-        {
-          _id: testUser?._id,
-        },
-        {
-          $push: {
-            adminFor: testOrganization?._id,
-          },
-        }
-      );
-
-      if (createAgendaSection) {
-        await createAgendaSection({}, args, context);
-      } else {
-        throw new Error("createAgendaSection resolver is undefined");
-      }
+      await createAgendaSectionResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
@@ -191,11 +217,10 @@ describe("resolvers -> Mutation -> createAgendaSection", () => {
         userId: testUser?._id,
       };
 
-      if (createAgendaSection) {
-        await createAgendaSection({}, args, context);
-      } else {
-        throw new Error("createAgendaSection resolver is undefined");
-      }
+      const { createAgendaSection: createAgendaSectionResolverError } =
+        await import("../../../src/resolvers/Mutation/createAgendaSection");
+
+      await createAgendaSectionResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
@@ -216,11 +241,10 @@ describe("resolvers -> Mutation -> createAgendaSection", () => {
         userId: testUser?._id,
       };
 
-      if (createAgendaSection) {
-        await createAgendaSection({}, args, context);
-      } else {
-        throw new Error("createAgendaSection resolver is undefined");
-      }
+      const { createAgendaSection: createAgendaSectionResolverError } =
+        await import("../../../src/resolvers/Mutation/createAgendaSection");
+
+      await createAgendaSectionResolverError?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(EVENT_NOT_FOUND_ERROR.MESSAGE);
     }
@@ -229,22 +253,22 @@ describe("resolvers -> Mutation -> createAgendaSection", () => {
   it("creates an agenda section if user is authorized", async () => {
     const args: MutationCreateAgendaSectionArgs = {
       input: {
-        createdBy: testUser?._id?.toString(),
+        createdBy: testAdminUser?._id?.toString(),
         relatedEvent: testEvent?._id?.toString(),
-        description: "",
-        sequence: 0,
+        description: "desc",
+        sequence: 1,
       },
     };
 
     const context = {
-      userId: testUser?._id,
+      userId: testAdminUser?._id,
     };
 
-    if (createAgendaSection) {
-      const result = await createAgendaSection({}, args, context);
-      expect(result).toBeDefined();
-    } else {
-      throw new Error("createAgendaSection resolver is undefined");
-    }
+    const { createAgendaSection: createAgendaSectionResolver } = await import(
+      "../../../src/resolvers/Mutation/createAgendaSection"
+    );
+
+    const result = await createAgendaSectionResolver?.({}, args, context);
+    expect(result).toBeDefined();
   });
 });

@@ -445,7 +445,7 @@ export const inputs = gql`
     name: String!
     description: String
     organizationId: ID!
-    createdBy: ID
+    createdBy: ID!
   }
 
   input UpdateAgendaCategoryInput {

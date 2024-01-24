@@ -7,6 +7,7 @@ import {
   USER_NOT_FOUND_ERROR,
   EVENT_NOT_FOUND_ERROR,
 } from "../../constants";
+import { Types } from "mongoose";
 
 /**
  * Resolver function for the GraphQL mutation 'createAgendaSection'.
@@ -32,54 +33,49 @@ export const createAgendaSection: MutationResolvers["createAgendaSection"] =
     // If the user is not found, throw a NotFoundError
     if (!currentUser) {
       throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.MESSAGE,
         USER_NOT_FOUND_ERROR.CODE,
         USER_NOT_FOUND_ERROR.PARAM
       );
     }
-
-    if (!args || !args.input) {
-      throw new errors.InternalServerError("Invalid arguments");
-    }
-
-    // Verify that createdBy is defined in args.input
-    if (userId === null || userId === undefined) {
-      throw new errors.InternalServerError("Invalid createdBy value");
-    }
-
-    console.log("Args:", args);
-    console.log("Args Input:", args.input);
-
-    // Check if the user is an event admin
-    const isEventAdmin = currentUser.eventAdmin.some(
-      (eventId) => eventId === args.input.relatedEvent
-    );
     const event = await Event.findOne({
       _id: args.input.relatedEvent?.toString(),
-    }).populate("organization");
-
-    if (event) {
-      const organizationId = event.organization?._id;
-      const hasAdminPermissions =
-        currentUser.adminFor.includes(organizationId) ||
-        currentUser.userType === "SUPERADMIN";
-
-      if (!hasAdminPermissions || isEventAdmin) {
-        throw new errors.UnauthorizedError(
-          requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-          USER_NOT_AUTHORIZED_ERROR.CODE,
-          USER_NOT_AUTHORIZED_ERROR.PARAM
-        );
-      }
-    } else {
-      throw new errors.UnauthorizedError(
-        requestContext.translate(EVENT_NOT_FOUND_ERROR.MESSAGE),
+    });
+    if (!event) {
+      throw new errors.NotFoundError(
+        EVENT_NOT_FOUND_ERROR.MESSAGE,
         EVENT_NOT_FOUND_ERROR.CODE,
         EVENT_NOT_FOUND_ERROR.PARAM
       );
     }
 
-    // Set createdAt and updatedAt fields
+    const currentUserIsEventAdmin = event.admins.some(
+      (admin) =>
+        admin === context.userID || Types.ObjectId(admin).equals(context.userId)
+    );
+    if (event) {
+      const organizationId = event.organization?._id;
+      const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
+        (organization) => organization.equals(event?.organization)
+      );
+
+      const currentUserIsEventAdmin = event.admins.some((admin) =>
+        admin.equals(currentUser._id)
+      );
+      if (
+        !(
+          currentUserIsOrganizationAdmin ||
+          currentUserIsEventAdmin ||
+          currentUser.userType === "SUPERADMIN"
+        )
+      ) {
+        throw new errors.UnauthorizedError(
+          USER_NOT_AUTHORIZED_ERROR.MESSAGE,
+          USER_NOT_AUTHORIZED_ERROR.CODE,
+          USER_NOT_AUTHORIZED_ERROR.PARAM
+        );
+      }
+    }
     const now = new Date();
     const agendaSectionData = {
       ...args.input,
@@ -88,12 +84,9 @@ export const createAgendaSection: MutationResolvers["createAgendaSection"] =
       updatedAt: now,
     };
 
-    // Create the AgendaSection
-    console.log("Agenda Section Data:", agendaSectionData);
     const createdAgendaSection = await AgendaSectionModel.create(
       agendaSectionData
     );
 
-    // Return the created agenda section
     return createdAgendaSection;
   };

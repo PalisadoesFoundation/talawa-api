@@ -32,11 +32,11 @@ export const types = gql`
     _id: ID!
     name: String!
     description: String
-    organization: Organization!
+    organization: Organization
     createdBy: User!
-    updatedBy: User!
+    updatedBy: User
     createdAt: Date!
-    updatedAt: Date!
+    updatedAt: Date
   }
   type AgendaSection {
     _id: ID!
@@ -45,7 +45,7 @@ export const types = gql`
     items: [AgendaItem]
     sequence: Int!
     createdAt: Date!
-    updatedAt: Date!
+    updatedAt: Date
     createdBy: User!
     updatedBy: User
   }

@@ -40,7 +40,7 @@ beforeAll(async () => {
     name: "Sample Agenda Category",
     organization: testOrganization?._id,
     createdBy: testAdminUser?._id,
-    updatedBy: testUser?._id,
+    updatedBy: testAdminUser?._id,
     createdAt: new Date(),
     updatedAt: new Date(),
   });
@@ -60,17 +60,13 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      if (deleteAgendaCategory) {
-        await deleteAgendaCategory({}, args, context);
-      } else {
-        throw new Error("deleteAgendaCategory resolver is undefined");
-      }
+      await deleteAgendaCategory?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
-  it("throws UnauthorizedError if the user is not a super admin or the creator of the agenda category", async () => {
+  it("throws UnauthorizedError if the user is not a super admin ", async () => {
     try {
       const args = {
         id: sampleAgendaCategory?._id,
@@ -78,12 +74,20 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
       const context = {
         userId: testUser2?._id,
       };
-
-      if (deleteAgendaCategory) {
-        await deleteAgendaCategory({}, args, context);
-      } else {
-        throw new Error("deleteAgendaCategory resolver is undefined");
-      }
+      await deleteAgendaCategory?.({}, args, context);
+    } catch (error: any) {
+      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
+    }
+  });
+  it("throws UnauthorizedError if the user is not the creator of the agenda category", async () => {
+    try {
+      const args = {
+        id: sampleAgendaCategory?._id,
+      };
+      const context = {
+        userId: testUser?._id,
+      };
+      await deleteAgendaCategory?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
     }
@@ -97,33 +101,19 @@ describe("resolvers -> Mutation -> deleteAgendaCategory", () => {
       const context = {
         userId: testAdminUser?._id,
       };
-
-      if (deleteAgendaCategory) {
-        await deleteAgendaCategory({}, args, context);
-      } else {
-        throw new Error("deleteAgendaCategory resolver is undefined");
-      }
+      await deleteAgendaCategory?.({}, args, context);
     } catch (error: any) {
       expect(error.message).toEqual(AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE);
     }
   });
 
   it("deletes an agenda category successfully", async () => {
-    const newAgendaCategory = await AgendaCategoryModel.create({
-      name: "Test Agenda Category",
-      organization: testOrganization?._id,
-      createdBy: testUser?._id,
-      updatedBy: testUser?._id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-
     const args = {
-      id: newAgendaCategory._id.toString(),
+      id: sampleAgendaCategory._id,
     };
 
     const context = {
-      userId: testUser?._id,
+      userId: testAdminUser?._id,
     };
 
     if (deleteAgendaCategory) {

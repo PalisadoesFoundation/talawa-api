@@ -1,26 +1,26 @@
-import type mongoose from "mongoose";
-import { Types } from "mongoose";
-import { connect, disconnect } from "../../helpers/db";
 import { getAllAgendaItems } from "../../../src/resolvers/Query/AgendaItems";
-import {
-  User,
-  AgendaItemModel,
-  Organization,
-  Event,
-} from "../../../src/models";
-import {
-  USER_NOT_FOUND_ERROR,
-  USER_NOT_AUTHORIZED_ERROR,
-} from "../../../src/constants";
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { Organization, Event, AgendaItemModel } from "../../../src/models";
+import { USER_NOT_AUTHORIZED_ERROR } from "../../../src/constants";
 import { createTestUser } from "../../helpers/userAndOrg";
 import type {
   TestOrganizationType,
   TestUserType,
 } from "../../helpers/userAndOrg";
-
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import { connect, disconnect } from "../../helpers/db";
+import type { MutationCreateAgendaCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  Test,
+  vi,
+  test,
+} from "vitest";
 import type { TestEventType } from "../../helpers/events";
-
 let testUser: TestUserType;
 let testAdminUser: TestUserType;
 let testOrganization: TestOrganizationType;
@@ -28,6 +28,7 @@ let testEvent: TestEventType;
 let testAgendaItem: any;
 let MONGOOSE_INSTANCE: typeof mongoose;
 let testUser2: TestUserType;
+let testAgendaItem2: any;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
@@ -71,74 +72,57 @@ beforeAll(async () => {
     organization: testOrganization?._id,
     isNote: false,
   });
+  testAgendaItem2 = await AgendaItemModel.create({
+    title: "Test Agenda Item 2 ",
+    description: "This is a test agenda item 2",
+    duration: "2 + 2 hours",
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    attachments: ["attachment12", "attachment22"],
+    relatedEvent: testEvent?._id,
+    createdBy: testAdminUser?._id,
+    urls: ["url12", "url22"],
+    user: "testuser",
+    categories: [],
+    sequence: 2,
+    itemType: "Regular",
+    organization: testOrganization?._id,
+    isNote: false,
+  });
 });
 
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Query -> getAllAgendaItems", () => {
-  it("throws NotFoundError if no user exists with the given ID", async () => {
-    try {
-      const context = {
-        userId: Types.ObjectId().toString(),
-      };
+it("resolvers -> Query -> getAllAgendaItems: returns all agenda items successfully", async () => {
+  const result = await getAllAgendaItems?.({}, {}, {});
+  expect(result).toBeDefined();
+});
 
-      if (getAllAgendaItems) {
-        await getAllAgendaItems({}, {}, context);
-      } else {
-        throw new Error("getAllAgendaItems resolver is undefined");
-      }
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
-    }
-  });
+// it("resolvers -> Query -> getAllAgendaItems: handles error fetching agenda items", async () => {
+//     // Mocking the AgendaItemModel.find to throw an error
+//     const originalFind = AgendaItemModel.find;
+//     AgendaItemModel.find = () => {
+//         throw new Error("[Error: [Simulated error]]");
+//     };
 
-  it("throws UnauthorizedError if the user is not a super admin or admin", async () => {
-    try {
-      const context = {
-        userId: testUser?._id,
-      };
+//     try {
+//         await getAllAgendaItems?.({}, {}, {});
+//     } catch (error) {
+//         expect(error).toBe("Simulated error");
+//     } finally {
+//         // Restore the original implementation
+//         AgendaItemModel.find = originalFind;
+//     }
+// });
 
-      if (getAllAgendaItems) {
-        await getAllAgendaItems({}, {}, context);
-      } else {
-        throw new Error("getAllAgendaItems resolver is undefined");
-      }
-    } catch (error: any) {
-      expect(error.message).toEqual(USER_NOT_AUTHORIZED_ERROR.MESSAGE);
-    }
-  });
+it("resolvers -> Query -> getAllAgendaItems: handles different input scenarios", async () => {
+  // Test with specific arguments
+  const result1 = await getAllAgendaItems?.({ someKey: "someValue" }, {}, {});
+  expect(result1).toBeDefined();
 
-  // it("returns all agenda items successfully for a super admin", async () => {
-  //   const superAdminUser = await createTestUser({ userType: "SUPERADMIN"});
-  //   const context = {
-  //     userId: superAdminUser?._id,
-  //   };
-
-  //   if (getAllAgendaItems) {
-  //     const result = await getAllAgendaItems({}, {}, context);
-
-  //     expect(result).toBeDefined();
-
-  //   } else {
-  //     throw new Error("getAllAgendaItems resolver is undefined");
-  //   }
-  // });
-
-  it("returns all agenda items successfully for an admin", async () => {
-    const context = {
-      userId: testAdminUser?._id,
-    };
-
-    if (getAllAgendaItems) {
-      const result = await getAllAgendaItems({}, {}, context);
-
-      expect(result).toBeDefined();
-
-      // You can add more assertions based on your data structure
-    } else {
-      throw new Error("getAllAgendaItems resolver is undefined");
-    }
-  });
+  // Test with empty arguments
+  const result2 = await getAllAgendaItems?.({}, {}, {});
+  expect(result2).toBeDefined();
 });

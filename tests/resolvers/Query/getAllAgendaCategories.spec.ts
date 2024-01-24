@@ -1,53 +1,90 @@
-// import mongoose from "mongoose";
-// import { connect, disconnect } from "../../helpers/db";
-// import { agendaCategories } from "../../../src/resolvers/Query/getAllAgendaCategories";
-// import { AgendaCategoryModel } from "../../../src/models";
-// import { AGENDA_CATEGORY_NOT_FOUND_ERROR } from "../../../src/constants";
-// import { beforeAll, afterAll, describe, it, expect } from "vitest";
+import { getAllAgendaItems } from "../../../src/resolvers/Query/AgendaItems";
+import {
+  Organization,
+  Event,
+  AgendaItemModel,
+  AgendaCategoryModel,
+} from "../../../src/models";
+import { USER_NOT_AUTHORIZED_ERROR } from "../../../src/constants";
+import { createTestUser } from "../../helpers/userAndOrg";
+import type {
+  TestOrganizationType,
+  TestUserType,
+} from "../../helpers/userAndOrg";
+import type mongoose from "mongoose";
+import { Types } from "mongoose";
+import { connect, disconnect } from "../../helpers/db";
+import type { MutationCreateAgendaCategoryArgs } from "../../../src/types/generatedGraphQLTypes";
+import {
+  beforeAll,
+  afterAll,
+  describe,
+  it,
+  expect,
+  Test,
+  vi,
+  test,
+} from "vitest";
+import type { TestEventType } from "../../helpers/events";
+import { agendaCategories } from "../../../src/resolvers/Query/getAllAgendaCategories";
+let testUser: TestUserType;
+let testAdminUser: TestUserType;
+let testOrganization: TestOrganizationType;
+let testEvent: TestEventType;
+let testAgendaCategory: any;
+let MONGOOSE_INSTANCE: typeof mongoose;
+let testUser2: TestUserType;
+let testAgendaCategory2: any;
 
-// let MONGOOSE_INSTANCE: typeof mongoose;
+beforeAll(async () => {
+  MONGOOSE_INSTANCE = await connect();
+  testUser = await createTestUser();
+  testAdminUser = await createTestUser();
+  testOrganization = await Organization.create({
+    name: "name",
+    description: "description",
+    isPublic: true,
+    creator: testUser?._id,
+    admins: [testAdminUser?._id],
+    members: [testUser?._id, testAdminUser?._id],
+  });
 
-// beforeAll(async () => {
-//   MONGOOSE_INSTANCE = await connect();
-// });
+  testAgendaCategory = await AgendaCategoryModel.create({
+    name: "Test Categ",
+    description: "Test Desc",
+    organization: testOrganization?._id,
+    createdBy: testAdminUser?._id,
+    updatedBy: testAdminUser?._id,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  });
+  testAgendaCategory2 = await AgendaCategoryModel.create({
+    name: "Test Categ2",
+    description: "Test Desc2",
+    organization: testOrganization?._id,
+    createdBy: testAdminUser?._id,
+    updatedBy: testAdminUser?._id,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  });
+});
 
-// afterAll(async () => {
-//   await disconnect(MONGOOSE_INSTANCE);
-// });
+afterAll(async () => {
+  await disconnect(MONGOOSE_INSTANCE);
+});
+describe("resolvers -> Query -> getAllAgendaCategories", () => {
+  it("resolvers -> Query -> getAllAgendaItems: returns all agenda category successfully", async () => {
+    const result = await agendaCategories?.({}, {}, {});
+    expect(result).toBeDefined();
+  });
 
-// describe("resolvers -> Query -> agendaCategories", () => {
-//   it("fetches all agenda categories successfully", async () => {
-//     // Create sample agenda categories for testing
-//     const agendaCategoriesData = [
-//       { name: "Category 1" },
-//       { name: "Category 2" },
-//     ];
+  it("resolvers -> Query -> getAllAgendaCategories: handles different input scenarios", async () => {
+    // Test with specific arguments
+    const result1 = await agendaCategories?.({ someKey: "someValue" }, {}, {});
+    expect(result1).toBeDefined();
 
-//     await AgendaCategoryModel.create(agendaCategoriesData);
-
-//     const result = await agendaCategories();
-
-//     expect(result).toBeDefined();
-//     expect(result).toHaveLength(agendaCategoriesData.length);
-
-//     // Assuming that the order of returned categories is the same as insertion order
-//     for (let i = 0; i < agendaCategoriesData.length; i++) {
-//       expect(result[i].name).toEqual(agendaCategoriesData[i].name);
-//     }
-//   });
-
-//   it("throws InternalServerError if there is an issue fetching agenda categories", async () => {
-//     // Simulate an error during fetching
-//     jest.spyOn(AgendaCategoryModel, "find").mockImplementationOnce(() => {
-//       throw new Error("Database connection error");
-//     });
-
-//     try {
-//       await agendaCategories();
-//     } catch (error: any) {
-//       expect(error.message).toEqual(
-//         "An error occurred while fetching agenda categories"
-//       );
-//     }
-//   });
-// });
+    // Test with empty arguments
+    const result2 = await agendaCategories?.({}, {}, {});
+    expect(result2).toBeDefined();
+  });
+});

@@ -84,6 +84,11 @@ describe("resolvers -> Mutation -> removeAgendaSection", () => {
     try {
       const agendaSection = await AgendaSectionModel.create({
         createdBy: Types.ObjectId().toString(),
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        updatedBy: Types.ObjectId().toString(),
+        sequence: 1,
+        description: "Sample description...",
       });
 
       const args: MutationRemoveAgendaSectionArgs = {
@@ -107,6 +112,10 @@ describe("resolvers -> Mutation -> removeAgendaSection", () => {
   it("removes the agenda section if user is the creator or superadmin", async () => {
     const agendaSection = await AgendaSectionModel.create({
       createdBy: testUser?._id,
+      createdAt: Date.now(),
+      sequence: 3,
+      description: "Sample description....!",
+      updatedAt: Date.now(),
     });
 
     const args: MutationRemoveAgendaSectionArgs = {
@@ -126,6 +135,40 @@ describe("resolvers -> Mutation -> removeAgendaSection", () => {
       });
 
       expect(deletedAgendaSection).toBeNull();
+    } else {
+      throw new Error("removeAgendaSection resolver is undefined");
+    }
+  });
+
+  // Test case: Check if the resolver throws an error when the database operation fails
+  it("throws an error when the database operation fails", async () => {
+    const agendaSection = await AgendaSectionModel.create({
+      createdBy: testUser?._id,
+      createdAt: Date.now(),
+      sequence: 2,
+      description: "Sample description...!",
+      updatedAt: Date.now(),
+    });
+
+    const args: MutationRemoveAgendaSectionArgs = {
+      id: agendaSection._id.toString(),
+    };
+
+    const context = {
+      userId: testUser?._id,
+    };
+
+    // Mock the AgendaSectionModel.deleteOne method to throw an error
+    vi.spyOn(AgendaSectionModel, "deleteOne").mockImplementation(() => {
+      throw new Error("Database operation failed");
+    });
+
+    if (removeAgendaSection) {
+      try {
+        await removeAgendaSection({}, args, context);
+      } catch (error: any) {
+        expect(error.message).toEqual("Database operation failed");
+      }
     } else {
       throw new Error("removeAgendaSection resolver is undefined");
     }

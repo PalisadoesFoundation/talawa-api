@@ -20,31 +20,18 @@ export const agendaCategory: QueryResolvers["agendaCategory"] = async (
   args,
   _context
 ) => {
-  try {
-    // Find the AgendaCategory by ID
-    const foundAgendaCategory = await AgendaCategoryModel.findById(
-      args.id
-    ).lean();
+  // Find the AgendaCategory by ID
+  const foundAgendaCategory = await AgendaCategoryModel.findById(
+    args.id
+  ).lean();
 
-    // If the AgendaCategory is not found, throw a NotFoundError
-    if (!foundAgendaCategory) {
-      throw new errors.NotFoundError(
-        requestContext.translate(AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE),
-        AGENDA_CATEGORY_NOT_FOUND_ERROR.CODE,
-        AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM
-      );
-    }
-
-    // Log the found agenda category for debugging purposes
-    console.log(foundAgendaCategory);
-
-    return foundAgendaCategory;
-  } catch (error) {
-    console.error(error);
-
-    // Handle other potential errors (e.g., validation errors)
-    throw new errors.InternalServerError(
-      "An error occurred while fetching agenda category"
+  // If the AgendaCategory is not found, throw a NotFoundError
+  if (!foundAgendaCategory) {
+    throw new errors.NotFoundError(
+      AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE,
+      AGENDA_CATEGORY_NOT_FOUND_ERROR.CODE,
+      AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM
     );
   }
+  return foundAgendaCategory;
 };

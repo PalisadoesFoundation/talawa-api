@@ -16,20 +16,7 @@ import { AGENDA_CATEGORY_NOT_FOUND_ERROR } from "../../constants";
  */
 export const agendaCategories: QueryResolvers["agendaCategories"] =
   async () => {
-    try {
-      // Fetch all agenda categories from the database
-      const allAgendaCategories = await AgendaCategoryModel.find()
-        .lean()
-        .exec();
+    const allAgendaCategories = await AgendaCategoryModel.find().lean().exec();
 
-      return allAgendaCategories;
-    } catch (error) {
-      // Log the error stack trace
-      console.error("Error fetching agenda categories:", error);
-
-      // Handle other potential errors in a consistent way
-      throw new errors.InternalServerError(
-        "An error occurred while fetching agenda categories"
-      );
-    }
+    return allAgendaCategories;
   };

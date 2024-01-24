@@ -40,9 +40,9 @@ type AgendaCategory {
   createdBy: User!
   description: String
   name: String!
-  organization: Organization!
-  updatedAt: Date!
-  updatedBy: User!
+  organization: Organization
+  updatedAt: Date
+  updatedBy: User
 }
 
 type AgendaItem {
@@ -73,7 +73,7 @@ type AgendaSection {
   items: [AgendaItem]
   relatedEvent: Event
   sequence: Int!
-  updatedAt: Date!
+  updatedAt: Date
   updatedBy: User
 }
 
@@ -142,7 +142,7 @@ type ConnectionPageInfo {
 scalar CountryCode
 
 input CreateAgendaCategoryInput {
-  createdBy: ID
+  createdBy: ID!
   description: String
   name: String!
   organizationId: ID!
