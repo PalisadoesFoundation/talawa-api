@@ -86,13 +86,13 @@ export const updateAdvertisement: MutationResolvers["updateAdvertisement"] =
 
     let uploadMediaFile = null;
 
-    if (args.input.file) {
+    if (args.input.mediaFile) {
       const dataUrlPrefix = "data:";
-      if (args.input.file.startsWith(dataUrlPrefix + "image/")) {
-        uploadMediaFile = await uploadEncodedImage(args.input.file, null);
+      if (args.input.mediaFile.startsWith(dataUrlPrefix + "image/")) {
+        uploadMediaFile = await uploadEncodedImage(args.input.mediaFile, null);
         console.log(uploadMediaFile, "Media File");
-      } else if (args.input.file.startsWith(dataUrlPrefix + "video/")) {
-        uploadMediaFile = await uploadEncodedVideo(args.input.file, null);
+      } else if (args.input.mediaFile.startsWith(dataUrlPrefix + "video/")) {
+        uploadMediaFile = await uploadEncodedVideo(args.input.mediaFile, null);
       } else {
         throw new Error("Unsupported file type.");
       }

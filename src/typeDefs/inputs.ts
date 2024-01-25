@@ -271,7 +271,7 @@ export const inputs = gql`
   input UpdateAdvertisementInput {
     _id: ID!
     name: String
-    file: String
+    mediaFile: String
     type: AdvertisementType
     startDate: Date
     endDate: Date
@@ -398,6 +398,6 @@ export const inputs = gql`
     organizationId: ID!
     startDate: Date!
     type: String!
-    file: String!
+    mediaFile: String!
   }
 `;

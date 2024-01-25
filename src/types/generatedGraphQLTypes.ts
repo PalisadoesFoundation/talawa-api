@@ -165,7 +165,7 @@ export type ConnectionPageInfo = {
 
 export type CreateAdvertisementInput = {
   endDate: Scalars['Date']['input'];
-  file: Scalars['String']['input'];
+  mediaFile: Scalars['String']['input'];
   name: Scalars['String']['input'];
   organizationId: Scalars['ID']['input'];
   startDate: Scalars['Date']['input'];
@@ -174,7 +174,6 @@ export type CreateAdvertisementInput = {
 
 export type CreateAdvertisementPayload = {
   __typename?: 'CreateAdvertisementPayload';
-  _id: Scalars['ID']['output'];
   advertisement?: Maybe<Advertisement>;
 };
 
@@ -1588,7 +1587,7 @@ export type UnauthorizedError = Error & {
 export type UpdateAdvertisementInput = {
   _id: Scalars['ID']['input'];
   endDate?: InputMaybe<Scalars['Date']['input']>;
-  file?: InputMaybe<Scalars['String']['input']>;
+  mediaFile?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   startDate?: InputMaybe<Scalars['Date']['input']>;
   type?: InputMaybe<AdvertisementType>;

@@ -111,7 +111,7 @@ type ConnectionPageInfo {
 
 input CreateAdvertisementInput {
   endDate: Date!
-  file: String!
+  mediaFile: String!
   name: String!
   organizationId: ID!
   startDate: Date!
@@ -907,7 +907,7 @@ type UnauthorizedError implements Error {
 input UpdateAdvertisementInput {
   _id: ID!
   endDate: Date
-  file: String
+  mediaFile: String
   name: String
   startDate: Date
   type: AdvertisementType

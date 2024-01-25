@@ -144,7 +144,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
       input: {
         _id: testAdvertisement!._id,
         name: "New Advertisement Name",
-        file: "data:image/png;base64,bWVkaWEgY29udGVudA==",
+        mediaFile: "data:image/png;base64,bWVkaWEgY29udGVudA==",
         type: "POPUP",
         startDate: new Date(new Date().getFullYear() + 0, 11, 31)
           .toISOString()
@@ -200,7 +200,7 @@ describe("resolvers -> Mutation -> updateAdvertisement", () => {
         input: {
           _id: testAdvertisement!._id,
           name: "New Advertisement Name",
-          file: "Updated Advertisement file",
+          mediaFile: "data:image/png;base64,bWVkaWEgY29udGVudA==",
           type: "POPUP",
           startDate: new Date(new Date().getFullYear() + 1, 11, 31)
             .toISOString()
