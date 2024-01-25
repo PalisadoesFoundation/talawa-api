@@ -56,7 +56,7 @@ beforeAll(async () => {
       },
     }
   );
-
+  // book testVenue1 for an event
   scheduledEvent = await Event.create({
     organization: testOrganization?.id,
     allDay: false,
@@ -91,7 +91,7 @@ beforeAll(async () => {
   vi.spyOn(requestContext, "translate").mockImplementation(
     (message) => message
   );
-}, 1000000);
+}, 10000);
 
 afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
@@ -215,7 +215,6 @@ describe("resolvers -> Query -> checkVenue", () => {
     const organizationVenuesString = JSON.stringify(availableVenues);
     const venuesString = JSON.stringify(venues);
 
-    // Perform deep equality check
     expect(venuesString).toEqual(organizationVenuesString);
   });
 });

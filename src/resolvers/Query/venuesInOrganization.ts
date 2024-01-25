@@ -2,10 +2,10 @@ import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Organization } from "../../models";
 
 /**
- * This query will fetch the list of all post within an Organization from database.
+ * This query will fetch the list of all venues within an Organization from database.
  * @param _parent-
- * @param args - An object that contains `id` of the organization, `orderBy` fields.
- * @returns An object that contains the Post.
+ * @param args - An object that contains `id` of the organization.
+ * @returns An object that contains the venues.
  */
 
 export const venuesInOrganization: QueryResolvers["venuesInOrganization"] =

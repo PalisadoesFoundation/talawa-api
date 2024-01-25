@@ -1,7 +1,7 @@
 import {
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
-  VENUE_DOESNT_EXIST_ERROR,
+  VENUE_NOT_FOUND_ERROR,
 } from "./../../constants";
 import { Organization, User } from "../../models";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
@@ -95,9 +95,9 @@ export const editVenue: MutationResolvers["editVenue"] = async (
 
   if (!updatedVenue) {
     throw new errors.NotFoundError(
-      requestContext.translate(VENUE_DOESNT_EXIST_ERROR.MESSAGE),
-      VENUE_DOESNT_EXIST_ERROR.CODE,
-      VENUE_DOESNT_EXIST_ERROR.PARAM
+      requestContext.translate(VENUE_NOT_FOUND_ERROR.MESSAGE),
+      VENUE_NOT_FOUND_ERROR.CODE,
+      VENUE_NOT_FOUND_ERROR.PARAM
     );
   }
   return updatedVenue;
