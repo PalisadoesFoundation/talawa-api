@@ -123,7 +123,7 @@ export const types = gql`
     allDay: Boolean!
     recurring: Boolean!
     recurrance: Recurrance
-    rruleObject: String
+    rruleObject: rruleField
     isPublic: Boolean!
     isRegisterable: Boolean!
     location: String
@@ -320,6 +320,15 @@ export const types = gql`
     likeCount: Int
     commentCount: Int
     pinned: Boolean
+  }
+
+  type rruleField {
+    dtstart: Date
+    until: Date
+    frequency: Int
+    count: Int
+    byweekday: Int
+    weekdayOccurence: Int
   }
 
   """

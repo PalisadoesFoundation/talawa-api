@@ -229,7 +229,7 @@ type Event {
   organization: Organization
   recurrance: Recurrance
   recurring: Boolean!
-  rruleObject: String
+  rruleObject: rruleField
   startDate: Date!
   startTime: Time
   status: Status!
@@ -1145,4 +1145,13 @@ input createGroupChatInput {
   organizationId: ID!
   title: String!
   userIds: [ID!]!
+}
+
+type rruleField {
+  byweekday: Int
+  count: Int
+  dtstart: Date
+  frequency: Int
+  until: Date
+  weekdayOccurence: Int
 }

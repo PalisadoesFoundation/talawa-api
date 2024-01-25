@@ -58,6 +58,35 @@ export interface InterfaceEvent {
  * @param createdAt - Timestamp of event creation
  * @param updatedAt - Timestamp of event updation
  */
+
+const rruleField = new Schema({
+  dtstart: {
+    type: Date,
+    required: false,
+  },
+  until: {
+    type: Date,
+    required: false,
+  },
+  frequency: {
+    type: Number,
+    required: false,
+  },
+  count: {
+    type: Number,
+    required: false,
+  },
+  byweekday: {
+    type: Number,
+    required: false,
+  },
+  weekdayOccurence: {
+    type: Number,
+    required: false,
+  },
+  //More feild can be added when dealing with custom event
+});
+
 const eventSchema = new Schema(
   {
     title: {
@@ -121,7 +150,7 @@ const eventSchema = new Schema(
       default: "ONCE",
     },
     rruleObject: {
-      type: String,
+      type: rruleField,
       required: false,
     },
     isPublic: {

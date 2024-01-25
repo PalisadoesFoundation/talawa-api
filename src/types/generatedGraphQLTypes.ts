@@ -279,7 +279,7 @@ export type Event = {
   organization?: Maybe<Organization>;
   recurrance?: Maybe<Recurrance>;
   recurring: Scalars['Boolean']['output'];
-  rruleObject?: Maybe<Scalars['String']['output']>;
+  rruleObject?: Maybe<RruleField>;
   startDate: Scalars['Date']['output'];
   startTime?: Maybe<Scalars['Time']['output']>;
   status: Status;
@@ -1859,6 +1859,16 @@ export type CreateGroupChatInput = {
   userIds: Array<Scalars['ID']['input']>;
 };
 
+export type RruleField = {
+  __typename?: 'rruleField';
+  byweekday?: Maybe<Scalars['Int']['output']>;
+  count?: Maybe<Scalars['Int']['output']>;
+  dtstart?: Maybe<Scalars['Date']['output']>;
+  frequency?: Maybe<Scalars['Int']['output']>;
+  until?: Maybe<Scalars['Date']['output']>;
+  weekdayOccurence?: Maybe<Scalars['Int']['output']>;
+};
+
 
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
@@ -2065,6 +2075,7 @@ export type ResolversTypes = {
   UsersConnectionResult: ResolverTypeWrapper<Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversTypes['UsersConnection']>, errors: Array<ResolversTypes['ConnectionError']> }>;
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
+  rruleField: ResolverTypeWrapper<RruleField>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -2185,6 +2196,7 @@ export type ResolversParentTypes = {
   UsersConnectionResult: Omit<UsersConnectionResult, 'data' | 'errors'> & { data?: Maybe<ResolversParentTypes['UsersConnection']>, errors: Array<ResolversParentTypes['ConnectionError']> };
   createChatInput: CreateChatInput;
   createGroupChatInput: CreateGroupChatInput;
+  rruleField: RruleField;
 };
 
 export type AuthDirectiveArgs = { };
@@ -2370,7 +2382,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   recurrance?: Resolver<Maybe<ResolversTypes['Recurrance']>, ParentType, ContextType>;
   recurring?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  rruleObject?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  rruleObject?: Resolver<Maybe<ResolversTypes['rruleField']>, ParentType, ContextType>;
   startDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   startTime?: Resolver<Maybe<ResolversTypes['Time']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
@@ -2897,6 +2909,16 @@ export type UsersConnectionResultResolvers<ContextType = any, ParentType extends
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type RruleFieldResolvers<ContextType = any, ParentType extends ResolversParentTypes['rruleField'] = ResolversParentTypes['rruleField']> = {
+  byweekday?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  dtstart?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  frequency?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  until?: Resolver<Maybe<ResolversTypes['Date']>, ParentType, ContextType>;
+  weekdayOccurence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type Resolvers<ContextType = any> = {
   Address?: AddressResolvers<ContextType>;
   Advertisement?: AdvertisementResolvers<ContextType>;
@@ -2970,6 +2992,7 @@ export type Resolvers<ContextType = any> = {
   UserTagsConnectionResult?: UserTagsConnectionResultResolvers<ContextType>;
   UsersConnection?: UsersConnectionResolvers<ContextType>;
   UsersConnectionResult?: UsersConnectionResultResolvers<ContextType>;
+  rruleField?: RruleFieldResolvers<ContextType>;
 };
 
 export type DirectiveResolvers<ContextType = any> = {

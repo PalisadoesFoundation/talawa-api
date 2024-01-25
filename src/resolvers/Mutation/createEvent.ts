@@ -1,4 +1,7 @@
-import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
+import type {
+  MutationResolvers,
+  RruleField,
+} from "../../types/generatedGraphQLTypes";
 import { errors, requestContext } from "../../libraries";
 import { User, Organization, Event } from "../../models";
 import {
@@ -225,11 +228,22 @@ export const createEvent: MutationResolvers["createEvent"] = async (
     }
   }
 
+  //Construct rrlue object to store in database
+  const rrulefield: RruleField = {
+    dtstart: rule.options.dtstart,
+    until: rule.options.until,
+    frequency: rule.options.freq,
+    count: rule.options.count,
+    byweekday: rule.options.bynweekday?.[0][0],
+    weekdayOccurence: rule.options.bynweekday?.[0][1],
+    //More feild can be added when dealing with custom event
+  };
+
   // Create and cache the event with the generated recurrence rule
   const createdEvent = await Event.create({
     ...args.data,
     endDate: endDate,
-    rruleObject: JSON.stringify(rule),
+    rruleObject: rrulefield,
     creatorId: currentUser._id,
     admins: [currentUser._id],
     organization: organization._id,
