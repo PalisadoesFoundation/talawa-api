@@ -53,6 +53,7 @@ export const createOrganization: MutationResolvers["createOrganization"] =
 
     if (args.data?.address) {
       validationResultAddress = validateAddress(args.data?.address);
+      console.log(validateAddress(args.data?.address));
     }
 
     if (!validationResultName.isLessThanMaxLength) {
@@ -130,32 +131,38 @@ function validateAddress(address: Address | undefined): {
     state,
   } = address;
 
-  const isCityValid = !!city && city.length > 0;
-
-  // It should be a valid country code.
+  // Mandatory: It should be a valid country code.
   const isCountryCodeValid = !!countryCode && countryCode.length >= 2;
 
-  // It should exist and have a length greater than 0
+  // Mandatory: It should exist and have a length greater than 0
+  const isCityValid = !!city && city.length > 0;
+
+  // Optional: It should exist and have a length greater than 0
   const isDependentLocalityValid =
-    !!dependentLocality && dependentLocality.length > 0;
+    dependentLocality === undefined ||
+    (typeof dependentLocality === "string" && dependentLocality.length >= 0);
 
-  // Line 1 should exist and have a length greater than 0
-  const isLine1Valid = !!line1 && line1.length > 0;
+  // Optional: Line 1 should exist and have a length greater than 0
+  const isLine1Valid =
+    line1 === undefined || (typeof line1 === "string" && line1.length >= 0);
 
-  //Optional
+  // Optional: Line 2 should exist and have a length greater than 0, if provided
   const isLine2Valid =
-    line2 === undefined || (typeof line2 === "string" && line2.length > 0);
+    line2 === undefined || (typeof line2 === "string" && line2.length >= 0);
 
-  // It should exist and have a valid format.
-  const isPostalCodeValid = !!postalCode && /^\d+$/.test(postalCode);
+  // Optional: It should exist and have a valid format.
+  const isPostalCodeValid =
+    postalCode === undefined ||
+    (typeof postalCode === "string" && /^\d*$/.test(postalCode));
 
-  //Optional
+  // Optional: It should exist and have a length greater than 0, if provided
   const isSortingCodeValid =
     sortingCode === undefined ||
-    (typeof sortingCode === "string" && sortingCode.length > 0);
+    (typeof sortingCode === "string" && sortingCode.length >= 0);
 
-  // It should exist and have a length greater than 0
-  const isStateValid = !!state && state.length > 0;
+  // Optional: It should exist and have a length greater than 0, if provided
+  const isStateValid =
+    state === undefined || (typeof state === "string" && state.length >= 0);
 
   const isAddressValid =
     isCityValid &&

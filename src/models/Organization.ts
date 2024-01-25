@@ -77,9 +77,11 @@ const organizationSchema = new Schema(
     address: {
       city: {
         type: String,
+        required: true,
       },
       countryCode: {
         type: String,
+        required: true,
       },
       dependentLocality: {
         type: String,
