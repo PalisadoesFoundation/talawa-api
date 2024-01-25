@@ -1,4 +1,5 @@
 import "dotenv/config";
+import bcrypt from "bcryptjs";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { Organization, User } from "../../../src/models";
@@ -104,7 +105,7 @@ describe("resolvers -> Mutation -> signUp", () => {
     expect(signUpPayload?.refreshToken.length).toBeGreaterThan(1);
   });
 
-  it(`creates the user and returns the created with a membership request, adminAprooved=false, accessToken and refreshToken when organization doesn't require user registration`, async () => {
+  it(`creates the user and returns the created with a membership request, adminAprooved=false, accessToken and refreshToken when organization require user registration`, async () => {
     const email = `email${nanoid().toLowerCase()}@gmail.com`;
     const localTestOrganization = await createTestUserAndOrganization(
       true,
@@ -137,7 +138,16 @@ describe("resolvers -> Mutation -> signUp", () => {
     }).toEqual({
       user: createdUser,
     });
-
+    const password = await User.findOne({
+      email,
+    })
+      .select("password")
+      .lean();
+    const ifRightPassword = await bcrypt.compare(
+      args.data.password,
+      password?.password!
+    );
+    expect(ifRightPassword).toBe(true);
     expect(createdUser?.adminApproved).toBe(false);
     expect(typeof signUpPayload?.accessToken).toEqual("string");
     expect(signUpPayload?.accessToken.length).toBeGreaterThan(1);
@@ -177,11 +187,6 @@ describe("resolvers -> Mutation -> signUp", () => {
   });
 
   it(`Promotes the user to SUPER ADMIN if the email registering with is same that as provided in configuration file`, async () => {
-    const localTestOrganization = await createTestUserAndOrganization(
-      true,
-      true,
-      true
-    );
     const email = LAST_RESORT_SUPERADMIN_EMAIL;
     const args: MutationSignUpArgs = {
       data: {
@@ -190,7 +195,7 @@ describe("resolvers -> Mutation -> signUp", () => {
         lastName: "lastName",
         password: "password",
         appLanguageCode: "en",
-        selectedOrgainzation: localTestOrganization[1]?.id,
+        selectedOrgainzation: testOrganization?.id,
       },
     };
     const { signUp: signUpResolver } = await import(

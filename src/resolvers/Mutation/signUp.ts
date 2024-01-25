@@ -4,7 +4,6 @@ import {
   //LENGTH_VALIDATION_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
   EMAIL_ALREADY_EXISTS_ERROR,
-  USER_NOT_FOUND_ERROR,
   //REGEX_VALIDATION_ERROR,
 } from "../../constants";
 import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
@@ -150,29 +149,21 @@ export const signUp: MutationResolvers["signUp"] = async (_parent, args) => {
     );
   }
 
-  if (createdUser) {
-    const accessToken = await createAccessToken(createdUser);
-    const refreshToken = await createRefreshToken(createdUser);
+  const accessToken = await createAccessToken(createdUser!);
+  const refreshToken = await createRefreshToken(createdUser!);
 
-    copyToClipboard(`{
+  copyToClipboard(`{
   "Authorization": "Bearer ${accessToken}"
 }`);
 
-    const filteredCreatedUser = createdUser.toObject();
+  const filteredCreatedUser = createdUser!.toObject();
 
-    const userToBeReturned = omit(filteredCreatedUser, "password");
+  const userToBeReturned = omit(filteredCreatedUser, "password");
 
-    return {
-      user: userToBeReturned,
-      selectedOrganization: args.data.selectedOrgainzation,
-      accessToken,
-      refreshToken,
-    };
-  } else {
-    throw new errors.NotFoundError(
-      requestContext.translate(USER_NOT_FOUND_ERROR),
-      USER_NOT_FOUND_ERROR.CODE,
-      USER_NOT_FOUND_ERROR.PARAM
-    );
-  }
+  return {
+    user: userToBeReturned,
+    selectedOrganization: args.data.selectedOrgainzation,
+    accessToken,
+    refreshToken,
+  };
 };

@@ -657,6 +657,37 @@ async function importData(): Promise<void> {
   }
 }
 
+//Import sample data
+/**
+ * The function `importDefaultOrganization` will import the default organization
+ * with wiping of existing data.
+ * @returns The function returns a Promise that resolves to `void`.
+ */
+
+async function importDefaultOrganization() {
+  if (!process.env.MONGO_DB_URL) {
+    console.log("Couldn't find mongodb url");
+    return;
+  }
+  const shouldImport = await shouldWipeExistingData(process.env.MONGO_DB_URL);
+  if (shouldImport) {
+    await exec(
+      "npm run import:sample-data-defaultOrg",
+      (error: { message: string }, stdout: string, stderr: string) => {
+        if (error) {
+          console.error(`Error: ${error.message}`);
+          abort();
+        }
+        if (stderr) {
+          console.error(`Error: ${stderr}`);
+          abort();
+        }
+        console.log(`Output: ${stdout}`);
+      }
+    );
+  }
+}
+
 type VerifySmtpConnectionReturnType = {
   success: boolean;
   error: any;
@@ -843,7 +874,6 @@ async function main(): Promise<void> {
     process.env.REDIS_PASSWORD = REDIS_PASSWORD;
 
     updateEnvVariable(config);
-    await loadDefaultOrganization();
     console.log(`Your MongoDB URL is:\n${process.env.MONGO_DB_URL}`);
     console.log(`Your Redis host is:\n${process.env.REDIS_HOST}`);
     console.log(`Your Redis port is:\n${process.env.REDIS_PORT}`);
@@ -896,7 +926,6 @@ async function main(): Promise<void> {
     } else {
       await mongoDB();
     }
-    await loadDefaultOrganization();
   }
   if (process.env.RECAPTCHA_SECRET_KEY) {
     console.log(
@@ -994,9 +1023,10 @@ async function main(): Promise<void> {
         default: false,
       },
     ]);
-
     if (shouldRunDataImport) {
       await importData();
+    } else {
+      await importDefaultOrganization();
     }
   }
 

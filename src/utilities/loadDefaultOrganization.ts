@@ -1,10 +1,25 @@
 import mongoose from "mongoose";
 import path from "path";
-import { Organization } from "../models";
+import { Organization, Post, User, Event } from "../models";
 import fs from "fs";
 import dotenv from "dotenv";
 import yargs from "yargs";
-import { InterfaceArgs, formatDatabase } from "./loadSampleData";
+
+interface InterfaceArgs {
+  items?: string;
+  format?: boolean;
+  _: unknown;
+}
+
+export async function formatDatabase(): Promise<void> {
+  await Promise.all([
+    User.deleteMany({}),
+    Organization.deleteMany({}),
+    Event.deleteMany({}),
+    Post.deleteMany({}),
+  ]);
+  console.log("Cleared all collections\n");
+}
 
 dotenv.config();
 /**
@@ -47,6 +62,12 @@ export async function loadDefaultOrganization(): Promise<void> {
     await formatDatabase();
   }
   session = await mongoose.startSession();
+  const userData = await fs.readFileSync(
+    path.join(__dirname, `../../sample_data/defaultOrganizationAdmin.json`),
+    "utf8"
+  );
+  const userDocs = JSON.parse(userData) as Record<string, unknown>[];
+  await User.insertMany(userDocs);
   const data = await fs.readFileSync(
     path.join(__dirname, `../../sample_data/defaultOrganization.json`),
     "utf8"
