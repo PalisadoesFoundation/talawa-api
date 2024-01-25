@@ -4,7 +4,7 @@ import "dotenv/config";
 import type mongoose from "mongoose";
 import { Types } from "mongoose";
 import { Organization, Venue } from "../../../src/models";
-import type { MutationCreateVenueArgs } from "../../../src/types/generatedGraphQLTypes";
+import type { MutationEditVenueArgs } from "../../../src/types/generatedGraphQLTypes";
 import { connect, disconnect } from "../../helpers/db";
 
 import {
@@ -67,13 +67,15 @@ afterAll(async () => {
   await disconnect(MONGOOSE_INSTANCE);
 });
 
-describe("resolvers -> Mutation -> createVenue", () => {
+describe("resolvers -> Mutation -> editVenue", () => {
   it(`throws NotFoundError if no user exists with _id === context.userId`, async () => {
     try {
-      const args: MutationCreateVenueArgs = {
+      const args: MutationEditVenueArgs = {
         data: {
+          _id: Types.ObjectId().toString(),
           capacity: 10,
           name: "testVenue",
+          description: "newDescription",
           organizationId: testOrganization?.id,
         },
       };
@@ -82,11 +84,11 @@ describe("resolvers -> Mutation -> createVenue", () => {
         userId: Types.ObjectId().toString(),
       };
 
-      const { createVenue } = await import(
-        "../../../src/resolvers/Mutation/createVenue"
+      const { editVenue } = await import(
+        "../../../src/resolvers/Mutation/editVenue"
       );
 
-      await createVenue?.({}, args, context);
+      await editVenue?.({}, args, context);
     } catch (error: unknown) {
       if (error instanceof NotFoundError) {
         expect(error.message).toEqual(USER_NOT_FOUND_ERROR.MESSAGE);
@@ -96,12 +98,15 @@ describe("resolvers -> Mutation -> createVenue", () => {
     }
   });
 
-  it(`throws NotFoundError if no organization exists with _id === args.data.organizationId`, async () => {
+  it(`throws NotFoundError if no organization exists with _id === args.data.or
+  _id: testVenue?.id,ganizationId`, async () => {
     try {
-      const args: MutationCreateVenueArgs = {
+      const args: MutationEditVenueArgs = {
         data: {
+          _id: Types.ObjectId().toString(),
           capacity: 10,
           name: "testVenue",
+          description: "newDescription",
           organizationId: Types.ObjectId().toString(),
         },
       };
@@ -110,11 +115,11 @@ describe("resolvers -> Mutation -> createVenue", () => {
         userId: testUser?.id,
       };
 
-      const { createVenue } = await import(
-        "../../../src/resolvers/Mutation/createVenue"
+      const { editVenue } = await import(
+        "../../../src/resolvers/Mutation/editVenue"
       );
 
-      await createVenue?.({}, args, context);
+      await editVenue?.({}, args, context);
     } catch (error: unknown) {
       if (error instanceof NotFoundError) {
         expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
@@ -126,10 +131,12 @@ describe("resolvers -> Mutation -> createVenue", () => {
 
   it(`throws UnauthorizedError if user with _id === context.userId is neither an admin of the organization with _id === args.organizationId nor a SUPERADMIN`, async () => {
     try {
-      const args: MutationCreateVenueArgs = {
+      const args: MutationEditVenueArgs = {
         data: {
+          _id: testVenue?.id,
           capacity: 10,
           name: "testVenue",
+          description: "newDescription",
           organizationId: testOrganization?.id,
         },
       };
@@ -138,10 +145,10 @@ describe("resolvers -> Mutation -> createVenue", () => {
         userId: testUser?.id,
       };
 
-      const { createVenue } = await import(
-        "../../../src/resolvers/Mutation/createVenue"
+      const { editVenue } = await import(
+        "../../../src/resolvers/Mutation/editVenue"
       );
-      await createVenue?.({}, args, context);
+      await editVenue?.({}, args, context);
     } catch (error: unknown) {
       if (error instanceof UnauthorizedError) {
         expect(error.message).toEqual(
@@ -165,10 +172,12 @@ describe("resolvers -> Mutation -> createVenue", () => {
           },
         }
       );
-      const args: MutationCreateVenueArgs = {
+      const args: MutationEditVenueArgs = {
         data: {
+          _id: testVenue?.id,
           capacity: 10,
           name: "",
+          description: "newDescription",
           organizationId: testOrganization?.id,
         },
       };
@@ -177,10 +186,10 @@ describe("resolvers -> Mutation -> createVenue", () => {
         userId: testUser?.id,
       };
 
-      const { createVenue } = await import(
-        "../../../src/resolvers/Mutation/createVenue"
+      const { editVenue } = await import(
+        "../../../src/resolvers/Mutation/editVenue"
       );
-      await createVenue?.({}, args, context);
+      await editVenue?.({}, args, context);
     } catch (error: unknown) {
       if (error instanceof InputValidationError) {
         expect(error.message).toEqual(VENUE_NAME_MISSING_ERROR.MESSAGE);
@@ -192,10 +201,12 @@ describe("resolvers -> Mutation -> createVenue", () => {
 
   it(`throws ConflictError if a venue with same place already exists in the organization`, async () => {
     try {
-      const args: MutationCreateVenueArgs = {
+      const args: MutationEditVenueArgs = {
         data: {
+          _id: testVenue?.id,
           capacity: 10,
           name: "testVenue",
+          description: "newDescription",
           organizationId: testOrganization?.id,
         },
       };
@@ -204,10 +215,10 @@ describe("resolvers -> Mutation -> createVenue", () => {
         userId: testUser?.id,
       };
 
-      const { createVenue } = await import(
-        "../../../src/resolvers/Mutation/createVenue"
+      const { editVenue } = await import(
+        "../../../src/resolvers/Mutation/editVenue"
       );
-      await createVenue?.({}, args, context);
+      await editVenue?.({}, args, context);
     } catch (error: unknown) {
       if (error instanceof ConflictError) {
         expect(error.message).toEqual(VENUE_ALREADY_EXISTS_ERROR.MESSAGE);
@@ -217,11 +228,13 @@ describe("resolvers -> Mutation -> createVenue", () => {
     }
   });
 
-  it(`creates a new venue inside the provided organization`, async () => {
-    const args: MutationCreateVenueArgs = {
+  it(`Edits the provided venue inside the provided organization`, async () => {
+    const args: MutationEditVenueArgs = {
       data: {
-        capacity: 10,
+        _id: testVenue?.id,
+        capacity: 90,
         name: "newTestVenue",
+        description: "newDescription",
         organizationId: testOrganization?.id,
       },
     };
@@ -230,17 +243,22 @@ describe("resolvers -> Mutation -> createVenue", () => {
       userId: testUser?.id,
     };
 
-    const { createVenue } = await import(
-      "../../../src/resolvers/Mutation/createVenue"
+    const { editVenue } = await import(
+      "../../../src/resolvers/Mutation/editVenue"
     );
-    const venue = await createVenue?.({}, args, context);
+    const venue = await editVenue?.({}, args, context);
     const organization = await Organization.findById({
       _id: testOrganization?.id,
-    });
+    })
+      .populate("venues")
+      .lean();
     expect(organization?.venues).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           _id: venue?._id,
+          name: venue?.name,
+          description: venue?.description,
+          capacity: venue?.capacity,
         }),
       ])
     );

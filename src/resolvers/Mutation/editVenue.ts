@@ -1,6 +1,8 @@
 import {
   ORGANIZATION_NOT_AUTHORIZED_ERROR,
   ORGANIZATION_NOT_FOUND_ERROR,
+  VENUE_ALREADY_EXISTS_ERROR,
+  VENUE_NAME_MISSING_ERROR,
   VENUE_NOT_FOUND_ERROR,
 } from "./../../constants";
 import { Organization, User } from "../../models";
@@ -43,6 +45,7 @@ export const editVenue: MutationResolvers["editVenue"] = async (
     _id: args.data?._id,
   }).lean();
 
+  
   const organization = await Organization.findOne({
     _id: args.data?.organizationId,
   }).lean();
@@ -53,8 +56,16 @@ export const editVenue: MutationResolvers["editVenue"] = async (
       requestContext.translate(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE),
       ORGANIZATION_NOT_FOUND_ERROR.CODE,
       ORGANIZATION_NOT_FOUND_ERROR.PARAM
-    );
-  }
+      );
+    }
+    
+    if (!venue) {
+      throw new errors.NotFoundError(
+        requestContext.translate(VENUE_NOT_FOUND_ERROR.MESSAGE),
+        VENUE_NOT_FOUND_ERROR.CODE,
+        VENUE_NOT_FOUND_ERROR.PARAM
+      );
+    }
 
   // Checks Whether the user is admin or superadmin or not
   if (
@@ -67,6 +78,24 @@ export const editVenue: MutationResolvers["editVenue"] = async (
       requestContext.translate(ORGANIZATION_NOT_AUTHORIZED_ERROR.MESSAGE),
       ORGANIZATION_NOT_AUTHORIZED_ERROR.CODE,
       ORGANIZATION_NOT_AUTHORIZED_ERROR.PARAM
+    );
+  }
+
+  if (!args.data?.name ?? "") {
+    // Check if the venue name provided is null, undefined or empty string
+    throw new errors.InputValidationError(
+      requestContext.translate(VENUE_NAME_MISSING_ERROR.MESSAGE),
+      VENUE_NAME_MISSING_ERROR.CODE,
+      VENUE_NAME_MISSING_ERROR.PARAM
+    );
+  }
+
+  // Check if a venue with the same place already exists in the organization
+  if (organization.venues?.some((venue) => venue.name === args.data?.name)) {
+    throw new errors.ConflictError(
+      requestContext.translate(VENUE_ALREADY_EXISTS_ERROR.MESSAGE),
+      VENUE_ALREADY_EXISTS_ERROR.CODE,
+      VENUE_ALREADY_EXISTS_ERROR.PARAM
     );
   }
 
