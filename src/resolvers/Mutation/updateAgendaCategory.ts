@@ -26,22 +26,9 @@ import { adminCheck } from "../../utilities";
 export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
   async (_parent, args, context) => {
     // Check if the AgendaCategory exists
-    const existingAgendaCategory = await AgendaCategoryModel.findById(
-      args.id
-    ).lean();
-
-    // If the AgendaCategory is not found, throw a NotFoundError
-    if (!existingAgendaCategory) {
-      throw new errors.NotFoundError(
-        requestContext.translate(AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE),
-        AGENDA_CATEGORY_NOT_FOUND_ERROR.CODE,
-        AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM
-      );
-    }
+    // Fetch the user to get the organization ID
 
     const userId = context.userId;
-
-    // Fetch the user to get the organization ID
     const user = await User.findById(userId);
 
     // If the user is not found, throw a NotFoundError
@@ -52,13 +39,16 @@ export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
         USER_NOT_FOUND_ERROR.PARAM
       );
     }
+    const existingAgendaCategory = await AgendaCategoryModel.findById(
+      args.id
+    ).lean();
 
-    // If the user is a normal user, throw an error
-    if (user.userType === "USER") {
-      throw new errors.UnauthorizedError(
-        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-        USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
+    // If the AgendaCategory is not found, throw a NotFoundError
+    if (!existingAgendaCategory) {
+      throw new errors.NotFoundError(
+        requestContext.translate(AGENDA_CATEGORY_NOT_FOUND_ERROR.MESSAGE),
+        AGENDA_CATEGORY_NOT_FOUND_ERROR.CODE,
+        AGENDA_CATEGORY_NOT_FOUND_ERROR.PARAM
       );
     }
 
@@ -78,7 +68,7 @@ export const updateAgendaCategory: MutationResolvers["updateAgendaCategory"] =
         ...(args.input as any),
       },
       {
-        new: true, // Return the updated document
+        new: true,
       }
     ).lean();
 

@@ -26,7 +26,7 @@ export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
   async (_parent, args, context) => {
     // Find the current user based on the provided createdBy ID or use the context userId
 
-    const userId = context.userId;
+    const userId = args.input.createdBy;
 
     const currentUser = await User.findById(userId).lean();
 
@@ -38,12 +38,12 @@ export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
       );
     }
     // Check if the organization exists
-    const organization = await Organization.findById(
+    const relatedOrganization = await Organization.findById(
       args.input.organizationId
     ).lean();
 
     // If the organization is not found, throw a NotFoundError
-    if (!organization) {
+    if (!relatedOrganization) {
       throw new errors.NotFoundError(
         ORGANIZATION_NOT_FOUND_ERROR.MESSAGE,
         ORGANIZATION_NOT_FOUND_ERROR.CODE,
@@ -53,9 +53,9 @@ export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
 
     // Check if the current user has the necessary permissions
     const currentUserIsOrganizationAdmin = currentUser.adminFor.some(
-      (organization) => organization.equals(organization)
+      (organization) => organization.equals(relatedOrganization)
     );
-
+    console.log(currentUserIsOrganizationAdmin);
     if (
       !currentUserIsOrganizationAdmin ||
       !(currentUser.userType === "SUPERADMIN")
@@ -74,7 +74,7 @@ export const createAgendaCategory: MutationResolvers["createAgendaCategory"] =
       updatedAt: new Date(),
     });
     await Organization.findByIdAndUpdate(
-      organization._id,
+      relatedOrganization._id,
       {
         $push: {
           agendaCategories: createdAgendaCategory,

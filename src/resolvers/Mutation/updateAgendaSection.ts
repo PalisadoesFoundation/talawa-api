@@ -3,6 +3,7 @@ import type { MutationResolvers } from "../../types/generatedGraphQLTypes";
 import {
   AGENDA_SECTION_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
+  USER_NOT_FOUND_ERROR,
 } from "../../constants";
 import { AgendaSectionModel, User } from "../../models";
 import { errors, requestContext } from "../../libraries";
@@ -24,6 +25,19 @@ export const updateAgendaSection: MutationResolvers["updateAgendaSection"] =
   async (_parent, args, context) => {
     const { id, input } = args;
 
+    // Fetch the current user
+    const currentUser = await User.findOne({
+      _id: context.userId,
+    }).lean();
+
+    // If the user is not found, throw a NotFoundError
+    if (!currentUser) {
+      throw new errors.NotFoundError(
+        requestContext.translate(USER_NOT_FOUND_ERROR.MESSAGE),
+        USER_NOT_FOUND_ERROR.CODE,
+        USER_NOT_FOUND_ERROR.PARAM
+      );
+    }
     // Find the agenda section by ID
     const agendaSection = await AgendaSectionModel.findById(id);
 
@@ -40,18 +54,18 @@ export const updateAgendaSection: MutationResolvers["updateAgendaSection"] =
     }
 
     // Fetch the current user
-    const currentUser = await User.findOne({
-      _id: context.userId,
-    }).lean();
+    // const currentUser = await User.findOne({
+    //   _id: context.userId,
+    // }).lean();
 
-    // If the user is not found, throw a NotFoundError
-    if (!currentUser) {
-      throw new errors.NotFoundError(
-        requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
-        USER_NOT_AUTHORIZED_ERROR.CODE,
-        USER_NOT_AUTHORIZED_ERROR.PARAM
-      );
-    }
+    // // If the user is not found, throw a NotFoundError
+    // if (!currentUser) {
+    //   throw new errors.NotFoundError(
+    //     requestContext.translate(USER_NOT_AUTHORIZED_ERROR.MESSAGE),
+    //     USER_NOT_AUTHORIZED_ERROR.CODE,
+    //     USER_NOT_AUTHORIZED_ERROR.PARAM
+    //   );
+    // }
 
     // Check if the current user is the creator of the agenda section or is a superadmin
     if (
