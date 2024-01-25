@@ -71,13 +71,14 @@ export const createVenue: MutationResolvers["createVenue"] = async (
   }
 
   if (!args.data?.name ?? "") {
-    // Checks if the venue name provided is null, undefined or empty string
+    // Check if the venue name provided is null, undefined or empty string
     throw new errors.InputValidationError(
       requestContext.translate(VENUE_NAME_MISSING_ERROR.MESSAGE),
       VENUE_NAME_MISSING_ERROR.CODE,
       VENUE_NAME_MISSING_ERROR.PARAM
     );
   }
+  
   // Check if a venue with the same place already exists in the organization
   if (organization.venues?.some((venue) => venue.name === args.data?.name)) {
     throw new errors.ConflictError(
@@ -107,6 +108,6 @@ export const createVenue: MutationResolvers["createVenue"] = async (
     { $push: { venues: newVenue._id } },
     { new: true }
   );
-  console.log(newVenue);
+
   return newVenue;
 };

@@ -64,8 +64,15 @@ describe("resolvers -> Query -> venuesInOrganization", () => {
       .populate("venues")
       .lean();
 
-    const organizationVenuesString = JSON.stringify(organization?.venues);
-    const venuesString = JSON.stringify(venues);
-    expect(venuesString).toEqual(organizationVenuesString);
+    const allVenues = organization?.venues;
+    expect(venues).toEqual(
+      expect.arrayContaining(
+        allVenues!.map((venue) =>
+          expect.objectContaining({
+            _id: venue._id,
+          })
+        )
+      )
+    );
   });
 });

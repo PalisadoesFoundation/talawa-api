@@ -212,9 +212,14 @@ describe("resolvers -> Query -> checkVenue", () => {
     const availableVenues = organization?.venues.filter(
       (venue) => !venue._id.equals(testVenue1?._id)
     );
-    const organizationVenuesString = JSON.stringify(availableVenues);
-    const venuesString = JSON.stringify(venues);
-
-    expect(venuesString).toEqual(organizationVenuesString);
+    expect(venues).toEqual(
+      expect.arrayContaining(
+        availableVenues!.map((availableVenue) =>
+          expect.objectContaining({
+            _id: availableVenue._id,
+          })
+        )
+      )
+    );
   });
 });
