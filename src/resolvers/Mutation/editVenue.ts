@@ -122,12 +122,5 @@ export const editVenue: MutationResolvers["editVenue"] = async (
     { new: true }
   );
 
-  if (!updatedVenue) {
-    throw new errors.NotFoundError(
-      requestContext.translate(VENUE_NOT_FOUND_ERROR.MESSAGE),
-      VENUE_NOT_FOUND_ERROR.CODE,
-      VENUE_NOT_FOUND_ERROR.PARAM
-    );
-  }
-  return updatedVenue;
+  return updatedVenue!;
 };

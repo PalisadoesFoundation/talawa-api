@@ -13,6 +13,7 @@ import {
   USER_NOT_FOUND_ERROR,
   VENUE_ALREADY_EXISTS_ERROR,
   VENUE_NAME_MISSING_ERROR,
+  VENUE_NOT_FOUND_ERROR,
 } from "../../../src/constants";
 import { beforeAll, afterAll, describe, it, expect, vi } from "vitest";
 import type {
@@ -125,6 +126,35 @@ describe("resolvers -> Mutation -> editVenue", () => {
         expect(error.message).toEqual(ORGANIZATION_NOT_FOUND_ERROR.MESSAGE);
       } else {
         fail(`Expected NotFoundError, but got ${error}`);
+      }
+    }
+  });
+
+  it(`throws NotFoundError if the provided venue doesn't exists in the organization`, async () => {
+    try {
+      const args: MutationEditVenueArgs = {
+        data: {
+          _id: Types.ObjectId().toString(),
+          capacity: 10,
+          name: "testVenue",
+          description: "newDescription",
+          organizationId: testOrganization?.id,
+        },
+      };
+
+      const context = {
+        userId: testUser?.id,
+      };
+
+      const { editVenue } = await import(
+        "../../../src/resolvers/Mutation/editVenue"
+      );
+      await editVenue?.({}, args, context);
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        expect(error.message).toEqual(VENUE_NOT_FOUND_ERROR.MESSAGE);
+      } else {
+        fail(`Expected UnauthorizedError, but got ${error}`);
       }
     }
   });
